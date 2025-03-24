@@ -1,0 +1,28 @@
+#+TITLE: guix-aggregator
+an automated repository that aggregates many guix dotfiles to be
+indexed by GitHub's search. this is updated once a day.
+
+if you find your dotfiles in here and would like it removed, please
+feel free to contact me or open a pull request. or if you want to add
+your dotfiles instead, also please, PRs are welcome.
+
+* motivation
+i found myself frequently going through multiple git forges, some of
+which don't have search/grep functionality, trying to find how others
+solved certain problems that i was encountering. this is an attempt to
+aggregate useful guix dotfiles and other guix related projects, so i
+can easily find examples.
+
+* ~repositories.txt~
+this is the list of repositories you might want to change, it is a
+file with three whitespace seperated column, in the format
+#+BEGIN_SRC
+# owner/name		 url						branch
+aemogie/aetheria	 https://codeberg.org/aemogie/aetheria.git 	dev
+#+END_SRC
+
+the first column "owner/name" is used as the subdirectory to clone the
+repository into, the second as the url to the git repository, and the
+final as the branch to be cloned. empty lines and lines starting with
+~#~ are ignored, thus comments have to be on a seperate line.
+
