@@ -1,0 +1,22 @@
+# colors
+set color-status                blue default
+set color-status-info           blue default
+set color-status-fail           red default
+set color-list-item             default default
+set color-list-item-unread      blue default
+set color-list-item-important   yellow default
+set color-list-feed             default default
+set color-list-feed-unread      blue default
+set color-list-section          default default
+set color-list-section-unread   blue default
+
+# other settings
+set global-section-name  All
+set reload-period        15
+set scrolloff            2
+
+# binds
+bind   R    reload-all
+bind   o    exec $BROWSER %l
+bind   m    exec setsid -f mpv %l >/dev/null 2>&1 & disown
+bind   s    status-history-menu

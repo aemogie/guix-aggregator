@@ -1,0 +1,5 @@
+font-family = JetBrains Mono NL
+font-size = 13
+theme = catppuccin-mocha
+window-decoration = false
+gtk-adwaita = false

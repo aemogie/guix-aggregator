@@ -1,0 +1,44 @@
+#info
+h       backward-char
+j       next-line
+k       prev-line
+l       forward-char
+J       next-node
+K       prev-node
+
+gk      first-node
+gj      last-node
+gh      beginning-of-node
+gl      end-of-node
+gn      goto-node
+gd      dir-node
+
+sj      scroll-forward-page-only
+sk      scroll-backward-page-only
+d       scroll-half-screen-down
+u       scroll-half-screen-up
+I       goto-invocation-node
+n       search-next
+N       search-previous
+^c      abort-key
+i       get-info-help-node
+\:      execute-command
+:q      quit
+
+#echo-area
+\mh     echo-area-backward
+\ml     echo-area-forward
+\m0     echo-area-beg-of-line
+\m$     echo-area-end-of-line
+\mw     echo-area-forward-word
+\mx     echo-area-delete
+\mu     echo-area-abort
+^v      echo-area-quoted-insert
+\mX     echo-area-kill-word
+
+#var
+link-style=blue
+active-link-style=blue,bold
+match-style=blue,standout
+follow-strategy=path
+scroll-behaviour=Page Only

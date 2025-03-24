@@ -1,0 +1,83 @@
+#+title: Supreme Sexp System - SSS
+#+author: Josep Bigorra
+#+email: jjbigorra@gmail.com
+#+language: en
+#+options: toc:nil num:nil
+
+[[https://jointhefreeworld.org/static-assets/badges/GNU-Guix-c48702.png]] [[https://jointhefreeworld.org/static-assets/badges/Scheme-Guile-d0730f.png]] [[https://jointhefreeworld.org/static-assets/badges/Wayland-Hyprland-6a6aff.png]] [[https://jointhefreeworld.org/static-assets/badges/Emacs-30-a8516e.png]] [[https://jointhefreeworld.org/static-assets/badges/Shell-Fish-2fffb2.png]] 
+
+
+SSS is a Lisp machine adventure, where the hacking culture is celebrated. Let me help you achieve /GNUrvana/.
+
+If you like my work, please support me by [[https://bmc.link/jjbigorra][buying me a cup of coffee ☕]] so I can continue with a lot of motivation.
+
+You can follow the project here on Codeberg, or on the fediverse at Mastodon: https://mastodon.social/@sss_project
+
+This custom GNU + Linux setup enhances customization to infinity, encourages the hacking spirit, and offers a superior user experience thanks in part too to REPL (Read Eval Print Loop) and Lisps.
+
+SSS strives to have all things configured via Lisp dialects when possible and convenient, staying accessible to all kinds of users, and allowing for magical things to happen 🪄.
+
+⚠️ Installing and managing SSS is not meant for people new to GNU/Linux systems. You should already have some experience with software development. Knowing Lisp dialects, or functional programming techniquest is also a big help and is something you will learn further.
+
+Note: Screenshots below might be outdated and no longer representative of the current, ever-changing state of SSS.
+
+This screenshot is from version (v2.0.4):
+
+[[https://jointhefreeworld.org/static-assets/sss/screenshots/2025-03-11.png]]
+
+-----
+
+I would appreciate if you write your findings when using SSS and if you can, fork the project, and contribute some improvements, or mail me at <jjbigorra@gmail.com>
+
+It is recommended to use tagged releases of SSS, as those are considered as stable by the developers.
+
+
+* What lies here?
+
+** An operating system (OS) configured in Lisp (Guile Scheme)
+
+- GNU Guix system configuration
+- Hyprland configuration
+- 🎨 Theme palettes that affect the entire system (ef-themes, solarized-light, everforest dark and light)
+- Labwc configuration (work-in progress)
+- Fish shell configuration
+- Conky configuration
+- Alacritty terminal emulator  
+- Foot terminal emulator
+- Waybar configuration and style
+- Rofi application launcher
+- Mako configuration and style
+- multi-user Git configuration setup (work/personal)
+- Nyxt browser configuration  
+- Qutebrowser configuration
+- Fastfetch configuration
+- Multi user configuration
+
+  and more....
+  
+** Joe's Emacs configuration
+
+An operating system unto itself 🐂.
+
+- Advanced and modular Emacs configurations with Emacs Lisp + Elpaca
+- Dev setup for: Scheme, Scala, Haskell, Lisp, Rust, Python, Shell, Nix, Golang and more
+
+
+* SSS Manuals
+
+I strive to provide proper and extensive documentation on the Supreme Sexp System (SSS), in several formats, available at your convenience.
+
+- Org format [[file:docs/Manual/README.org]]
+- Online HTML: [[https://jointhefreeworld.org/manuals/sss/index.html]] 
+- HTML format [[file:docs/Manual/README.html]]
+- Markdown format [[file:docs/Manual/README.md]]  
+
+
+
+* SSS Project
+
+Contributing to free software is a uniquely beautiful act because it embodies principles of generosity, collaboration, and empowerment.
+
+We welcome everyone to feel invited to the SSS Project, and encourage active contribution in all forms, to improve it and/or suggest improvements, brainstorm with me, make it more modular/flexible, etc, feel free to contact me <jjbigorra@gmail.com> to chat, discuss or report feedback.
+
+Find here the Backlog and Kanban boards for SSS: https://lucidplan.jointhefreeworld.org/tickets/sss

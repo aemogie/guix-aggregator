@@ -1,0 +1,39 @@
+
+
+window#waybar {
+    color: #585050;
+    margin-bottom: 5px;
+}
+* {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    font-family: "Iosevka Etoile";
+    font-size: 18px;
+    min-height: 0;
+}
+
+#window {
+    font-weight: bold;
+}
+
+#workspaces button {
+    padding: 0 5px;
+    background: transparent;
+    color: @base03;
+    border-top: 2px solid transparent;
+}
+
+#workspaces button.focused {
+    color: #585050;
+    border-top: 2px solid @base08;
+}
+
+label.module {
+    background: rgba(244, 236, 236, 0.8);
+    border-radius: 25px;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+}

@@ -1,0 +1,156 @@
+@section Trying it
+There are several ways to get the taste of rde.
+
+@subsection rde Live Image
+The primary one is to get the latest ISO image, write it to DVD or USB
+stick, boot from it and try it.
+
+The image is available here:
+
+@c @value{WEB-PAGE}/current-live/amd64/rde-live-latest-amd64.iso
+@uref{@value{ISO-DIRECTORY-URL}}
+
+To write it to usb stick you can use any software, we provide you with
+@command{dd} example:
+
+@example
+# /dev/sdX is your USB stick device, which can be found in sudo dmesg
+sudo dd if=@value{ISO-NAME} of=/dev/sdX bs=32M status=progress oflag=sync
+@end example
+
+After boot in live system, you can want to adjust a few settings.
+
+By default qwerty and dvorak layouts are available.  Ctrl is bound to
+Caps in adition to usual position.  Layout can be changed by pressing
+both shifts simultaneosly.  @kbd{s} means a key with a logo, usually
+placed between Alt and Ctrl.  @kbd{C} is for Ctrl, @kbd{M} is for Alt,
+@kbd{S} is for Shift.
+
+To set other keyboard layouts switch to the fourth workspace (@kbd{s-4})
+open Emacs (@kbd{s-@key{RET}}), open eshell (@kbd{s-e}), adjust to your
+preference and type the following commands:
+
+@example
+swaymsg 'input type:keyboard xkb_layout "us,ru"'
+swaymsg 'input type:keyboard xkb_variant "dvorak,"'
+@end example
+
+To jump back and forth between workspaces type @kbd{s-@key{TAB}}, to
+launch application use @kbd{s-S-d}.
+
+To get more information about sway settings and keybinding visit
+@file{~/.config/sway/config} by typing @kbd{C-x C-f ~/.c/s/c RET}.
+
+There are a bunch of useful keybindings for Emacs: @kbd{s-o} for jumping
+between Emacs windows (usually called panes in other programs),
+@kbd{C-g} for aborting/cancel actions, @kbd{M-x} for executing Emacs
+commands (interactive functions), @kbd{s-r} for @command{recompile},
+@kbd{C-c C-k} for interrupting compilation, @kbd{C-x C-f} for openning
+file, @kbd{M-n/p} for next/previous thing in minibuffer/eshell history,
+@kbd{M-s g} for searching a text in files, @kbd{M-g l} for searching
+text in current file.  @kbd{C-h m} to see keybindings and other
+information about enabled modes.
+
+There are a few keys, which can be useful for navigating info: @kbd{C-h
+i} to open info, @kbd{m} for menu, @kbd{i} or @kbd{I} for working with
+indecies, @kbd{^} or @kbd{u} go up in the document structure, @kbd{l} go
+back to previous place.
+
+To change timezone use eshell and the following commands:
+
+@example
+ls $TZDIR
+# Find appropriate timezone, Etc/UTC for example
+sudo cp $TZDIR/Etc/UTC /etc/localtime
+# Waring: this command can reset some settings, like keyboard layout
+swaymsg reload
+@end example
+
+To start interacting with the community you can join IRC by calling
+@kbd{M-x} @command{rde-erc-connect} or @command{erc-tls}.  Say hi, ask
+for help or just hangout around.
+
+After all or some of the corners of live operating system are explored,
+you can proceed with installation (@pxref{Installation}).
+Alternatively, you can use a current Guix System installation and just
+use rde on top of it, the steps will be similiar.
+
+@subsection rde home on Foreign Distro
+The secondary option is to use rde on already existing non-Guix
+operating system with @command{guix} command available.  On Debian
+GNU/Linux and derivatives Guix can be installed and started in two
+commands:
+
+@example
+sudo apt update && sudo apt install guix
+sudo systemctl start guix-daemon
+@end example
+
+After that you can use rde home as usual or even proceed with full
+operating system installation (@pxref{Installation}).
+
+@subsection rde as a Channel
+Some advanced users may prefer to use only parts of rde they are
+interested: features, services, or just packages.
+
+In that case you can add the following channel to @file{channels.scm}.
+
+@example
+(cons*
+ (channel
+  (name 'rde)
+  (url "@value{GIT-REPO}")
+  (introduction
+   (make-channel-introduction
+    "257cebd587b66e4d865b3537a9a88cccd7107c95"
+    (openpgp-fingerprint
+     "2841 9AC6 5038 7440 C7E9  2FFA 2208 D209 58C1 DEB0"))))
+ %default-channels)
+@end example
+
+@anchor{Installation}
+@section Installation
+
+For now this section will be just a bare minimum to get started, later
+more details will be added.
+
+@subsection Writing Config
+The simpliest way is to take example configuration, explore it and edit
+according to your needs.  Live image contains
+@file{~/example-rde-configs}, which is a real-world full-blown rde
+configuration.
+
+The other option is to craft the configuration from scratch, take
+rde-config record declaration from example configuration and remove all
+the features and start adding them one by one, expanding the scope
+covered by the configuration.
+
+@subsection Applying Config
+There is a @file{Makefile} in example configuration, it contains various
+targets for reconfiguration, building and initialization of home
+environment, operating system and guix profiles, use them directly or
+just as an example to create your own targets.  To navigate through the
+list of targets can use @code{imenu} (@kbd{M-g i}).  To actually run the
+target use @code{compile} emacs command, just type @kbd{M-x compile RET}
+and type the name of the target, after you started typing part of the
+target name, corfu (@pxref{Corfu}) will show a tooltip with a list of
+available options.
+
+Most of the targets uses @code{$@{GUIX@}}, which points to the
+@command{guix} binary, it helps to make sure builds are reproducible,
+but you need to create this binary by calling @code{make
+target/profiles/guix}, it will generate a guix binary based on the content
+of @file{rde/channels-lock.scm}.  After that feel free to experiment
+with other targets.
+
+On foreign system you are mostly interested in @code{*/home/*} targets,
+but if you manage your whole operating system with GNU Guix pay
+attention to @code{*/system/reconfigure} or if installing a fresh OS
+take a look at @code{cow-store} and @code{*/system/init} targets.
+
+To get more information about installation process read @xref{Manual
+Installation,,, guix,}, skip unrelated sections like keyboard
+configuration and keep in mind that we already have @code{cow-store} and
+@code{*/system/init} targets in Makefile for you.
+
+Happy hacking, see you in a bit in the next section.

@@ -1,0 +1,27 @@
+# Provide more space for reading
+set statusbar-h-padding 0
+set statusbar-v-padding 0
+
+#Re-maps
+map K zoom in
+map J zoom out
+map u scroll half-up
+map d scroll half-down
+map D toggle_made_mode
+set window-title-basename "true"
+set selection-clipboard "clipboard"
+
+#index mode
+map index ; navigate_index collapse
+map index k navigate_index up
+map index j navigate_index down
+
+set font = "Iosevka Term 14"
+
+#theme
+include themerc
+set default-bg rgba(244, 236, 236, 0.8)
+set recolor-lightcolor rgba(0,0,0,0)
+
+set adjust-open width
+set recolor true

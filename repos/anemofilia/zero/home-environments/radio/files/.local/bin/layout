@@ -1,0 +1,44 @@
+#!/usr/bin/env -S guile
+!#
+
+(use-modules (ice-9 format) (ice-9 match) (ice-9 popen) (ice-9 textual-ports))
+
+(define (current-layout)
+  (let* [[cmd "river-bedload -print layout | jq -r '.[0].layout'"]
+         [output (call-with-port (open-input-pipe cmd) read)]]
+    output))
+
+(define (next-layout)
+  (match (current-layout)
+    ['left 'top]
+    ['top 'right]
+    ['right 'monocle]
+    ['monocle 'left]))
+
+(define (send-layout-command fmt . args)
+  (system (format #f "riverctl send-layout-cmd rivercarro '~?'" fmt args)))
+
+(match (command-line)
+  [(_) (display (current-layout))]
+  [(_ "cycle") (send-layout-command "main-location ~a" (next-layout))]
+  [(_ "resize" "left")
+   (match (current-layout)
+     ['left  (send-layout-command "main-ratio -0.05")]
+     ['right (send-layout-command "main-ratio +0.05")]
+     [else #t])]
+  [(_ "resize" "right")
+   (match (current-layout)
+     ['left  (send-layout-command "main-ratio +0.05")]
+     ['right (send-layout-command "main-ratio -0.05")]
+     [else #t])]
+  [(_ "resize" "up")
+   (match (current-layout)
+     ['top (send-layout-command "main-ratio -0.05")]
+     ['bottom (send-layout-command "main-ratio -0.05")]
+     [else #t])]
+  [(_ "resize" "down")
+   (match (current-layout)
+     ['top (send-layout-command "main-ratio +0.05")]
+     ['bottom (send-layout-command "main-ratio -0.05")]
+     [else #t])]
+  [else #t])

@@ -1,0 +1,5 @@
+#!/bin/sh
+
+mount.ntfs-3g /dev/sda2 /mnt/LDisk-E
+mount.ntfs-3g /dev/sda5 /mnt/LDisk-D
+# mount.ntfs-3g /dev/sdc1 /mnt/exthd

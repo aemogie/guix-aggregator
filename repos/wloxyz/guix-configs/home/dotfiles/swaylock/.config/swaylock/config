@@ -1,0 +1,18 @@
+scaling=fill
+show-keyboard-layout
+show-failed-attempts
+
+
+image=~/Pictures/Wallpapers/witchbridge-exp.png
+effect-blur=16x16
+
+clock
+# font='Go Mono'
+
+inside-color=000000
+inside-clear-color=000000
+inside-wrong-color=000000
+
+line-color=000000
+
+key-hl-color=000000

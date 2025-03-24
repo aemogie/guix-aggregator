@@ -1,0 +1,297 @@
+#!/bin/sh
+
+# Please, no cursor ___________________________________________________________
+riverctl hide-cursor when-typing enabled
+
+# Hibernate when lid is closed ________________________________________________
+riverctl declare-mode wlrctl
+for mode in locked normal wlrctl; do
+    riverctl map-switch $mode lid close "doas zzz"
+done
+
+# Autostart applications ______________________________________________________
+
+spawn () {
+    $1 >> ~/.local/state/log/$(basename $1).log 2>&1 &
+}
+
+# xdg-desktop-portal
+dbus-update-activation-environment DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=river
+spawn ~/.guix-home/profile/libexec/xdg-desktop-portal-termfilechooser -l TRACE -r
+spawn ~/.guix-home/profile/libexec/xdg-desktop-portal-wlr
+spawn ~/.guix-home/profile/libexec/xdg-desktop-portal
+spawn fnott
+
+eww open bar
+wlsunset -t 3600K -T 5800K -s 18:30 -S 06:30 -d 1800 &
+wayneko --background-colour 0x606060 --layer overlay --follow-pointer false &
+
+# Decorations _________________________________________________________________
+
+# wallpaper
+wbg ~/media/pictures/wallpapers/wall.png &
+
+# Set background and border color
+riverctl border-color-focused 0x8581e0
+riverctl border-color-unfocused 0x313131
+riverctl border-color-urgent 0xdce081
+riverctl border-width 1
+
+# Window layout _______________________________________________________________
+
+# Set the default layout generator to be rivercarro and start it.
+# River will send the process group of the init executable SIGTERM on exit.
+riverctl default-layout rivercarro
+rivercarro -inner-gaps 10 -outer-gaps 10 -no-smart-gaps -per-tag &
+
+# Window focus ________________________________________________________________
+riverctl focus-follows-cursor normal
+
+# Inputs ______________________________________________________________________
+riverctl input pointer-2-10-TPPS/2_IBM_TrackPoint accel-profile none
+riverctl input pointer-2-10-TPPS/2_IBM_TrackPoint pointer-accel 1.0
+
+# Keyboard ____________________________________________________________________
+
+# layout
+riverctl keyboard-layout\
+         -options grp:menu_switch,parens:swap_brackets,caps:swapescape \
+         us,br
+
+# repeat rate
+riverctl set-repeat 50 300
+
+# Bindings ____________________________________________________________________
+
+## kill river __________________________________________________________________
+riverctl map normal Super+Shift Q exit
+
+## cycle layout
+riverctl map normal Super Space spawn "layout cycle"
+
+# toggle monocle layout
+riverctl map normal Super M send-layout-cmd rivercarro "main-location monocle"
+riverctl map normal Super T send-layout-cmd rivercarro "main-location left"
+
+# Super+H,J,K,L decrease/increase the main ratio of rivercarro
+riverctl map -repeat normal Super H spawn "layout resize left"
+riverctl map -repeat normal Super J spawn "layout resize down"
+riverctl map -repeat normal Super K spawn "layout resize up"
+riverctl map -repeat normal Super L spawn "layout resize right"
+
+# Super+Shift+H and Super+Alt+L to (re)move views from rivercarro(1) main
+riverctl map normal Super+Alt+Control H send-layout-cmd rivercarro "main-count +1"
+riverctl map normal Super+Alt+Control L send-layout-cmd rivercarro "main-count -1"
+
+# Super+J and Super+K to focus the next/previous view in the layout stack
+riverctl map normal Super Tab focus-view "next"
+riverctl map normal Super+Shift Tab focus-view "previous"
+
+## view related keybindings ___________________________________________________
+
+riverctl map normal Super w enter-mode "wlrctl"
+riverctl map wlrctl Super w enter-mode "normal"
+riverctl map wlrctl Super Escape enter-mode "normal"
+
+# Super+{H,J,K,L} to move the cursor
+riverctl map -repeat wlrctl Super H spawn "wlrctl pointer move -10   0"
+riverctl map -repeat wlrctl Super J spawn "wlrctl pointer move   0  10"
+riverctl map -repeat wlrctl Super K spawn "wlrctl pointer move   0 -10"
+riverctl map -repeat wlrctl Super L spawn "wlrctl pointer move  10   0"
+
+# Super+Shift+{H,J,K,L} to scroll the window under the cursor
+riverctl map -repeat wlrctl Super+Shift H spawn "wlrctl pointer scroll  0  1"
+riverctl map -repeat wlrctl Super+Shift J spawn "wlrctl pointer scroll  1  0"
+riverctl map -repeat wlrctl Super+Shift K spawn "wlrctl pointer scroll -1  0"
+riverctl map -repeat wlrctl Super+Shift L spawn "wlrctl pointer scroll  0 -1"
+
+# Super+Alt+{H,J,K} to left, middle, right click
+riverctl map wlrctl Super+Alt H spawn "wlrctl pointer click left"
+riverctl map wlrctl Super+Alt J spawn "wlrctl pointer click middle"
+riverctl map wlrctl Super+Alt K spawn "wlrctl pointer click right"
+
+# Super+Control+{H,J,K,L} to swap views
+riverctl map -repeat normal Super+Shift H swap left
+riverctl map -repeat normal Super+Shift J swap down
+riverctl map -repeat normal Super+Shift K swap up
+riverctl map -repeat normal Super+Shift L swap right
+
+# Super+Alt+{H,J,K,L} to move views
+riverctl map -repeat normal Super+Control H move left 10
+riverctl map -repeat normal Super+Control J move down 10
+riverctl map -repeat normal Super+Control K move up 10
+riverctl map -repeat normal Super+Control L move right 10
+
+# Super+Alt+Shift+{H,J,K,L} to resize views
+riverctl map -repeat normal Super+Alt H resize horizontal -10
+riverctl map -repeat normal Super+Alt J resize vertical 10
+riverctl map -repeat normal Super+Alt K resize vertical -10
+riverctl map -repeat normal Super+Alt L resize horizontal 10
+
+# Super + Left Mouse Button to move views
+riverctl map-pointer normal Super BTN_LEFT move-view
+
+# Super + Right Mouse Button to resize views
+riverctl map-pointer normal Super BTN_RIGHT resize-view
+
+# Super + Middle Mouse Button to toggle float
+riverctl map-pointer normal Super BTN_MIDDLE toggle-float
+
+# Super + f to toggle float
+riverctl map normal Super f toggle-float
+
+# Super+F to toggle fullscreen
+riverctl map normal Super F11 toggle-fullscreen
+
+# close the focused view
+riverctl map normal Super q close
+
+## Application related keybindings ____________________________________________
+
+# $TERMINAL
+riverctl map normal Super Return spawn "$TERMINAL"
+
+# $EDITOR
+riverctl map normal Super e spawn "$TERMINAL -e $EDITOR"
+riverctl map normal Super+Shift e spawn "emacsclient -r"
+
+# file manager
+riverctl map normal Super d spawn "$TERMINAL -e lf"
+
+# btop
+riverctl map normal Super b spawn "$TERMINAL -e btop"
+
+# senpai
+riverctl map normal Super s spawn "$TERMINAL -e senpai"
+
+# application launcher
+riverctl map normal Super Semicolon spawn fuzzel
+
+# webcam (TODO: fix)
+riverctl map normal None XF86WebCam spawn "cam"
+riverctl map normal None XF86Sleep spawn "doas zzz"
+
+# rss reader (TODO: fix)
+riverctl map normal None XF86Launch1 spawn "$TERMINAL -e newsraft"
+
+# keepassxc
+riverctl map normal Super c spawn keepassxc
+
+# loot some ships
+riverctl map normal Super z spawn anna
+
+# guix repl
+riverctl map normal Super g spawn "$TERMINAL -e guix repl -i ~/.config/guile/guilerc"
+
+## Tag related keybindings ____________________________________________________
+
+# go to last tag
+riverctl map normal Super Escape focus-previous-tags
+
+for mode in normal wlrctl; do
+    for i in $(seq 1 7); do
+        tags=$((1 << ($i - 1)))
+
+        # Super+[1-8] to focus tag [0-7]
+        riverctl map $mode Super $i set-focused-tags $tags
+
+        # Super+Shift+[1-8] to tag focused view with tag [0-7]
+        riverctl map $mode Super+Shift $i set-view-tags $tags
+
+        # Super+Control+[1-8] to toggle focus of tag [0-7]
+        riverctl map $mode Super+Control $i toggle-focused-tags $tags
+
+        # Super+Shift+Control+[1-8] to toggle tag [0-7] of focused view
+        riverctl map $mode Super+Shift+Control $i toggle-view-tags $tags
+    done
+done
+scratch_tag=$((1 << 7))
+
+for mode in normal wlrctl; do
+    # toggle the scratchpad
+    riverctl map $mode Super period toggle-focused-tags ${scratch_tag}
+
+    # send windows to the scratchpad
+    riverctl map $mode Super+Shift period set-view-tags ${scratch_tag}
+
+    # Super+0 to focus all tags
+    # Super+Shift+0 to tag focused view with all tags
+    all_tags=$(((1 << 7) - 1))
+    riverctl map $mode Super 0 set-focused-tags $all_tags
+    riverctl map $mode Super+Shift 0 set-view-tags $all_tags
+done
+
+## Clipboard related keybindings ______________________________________________
+
+riverctl map normal None Print \
+         spawn 'riverctl zoom \
+                && region="$(slurp)" \
+                && sleep 0.1 \
+                && grim -g "$region" -t png - | wl-copy -t image/png'
+
+# screenshot (TODO: fix)
+riverctl map normal Super Print \
+         spawn 'riverctl zoom \
+                && region="$(slurp)" \
+                && sleep 0.1 \
+                && grim -g "$region" ~/media/pictures/screenshots/$(date +%Y-%m-%d--%H-%M-%S.png)'
+
+## Audio related keybindings __________________________________________________
+for mode in normal locked wlrctl
+do
+    riverctl map -repeat $mode None XF86AudioRaiseVolume \
+             spawn 'wpctl set-volume -l 1.2 @DEFAULT_AUDIO_SINK@ 5%+'
+    riverctl map -repeat $mode None  XF86AudioLowerVolume \
+             spawn 'wpctl set-volume -l 1.2 @DEFAULT_AUDIO_SINK@ 5%-'
+    riverctl map -repeat $mode None XF86AudioMute        \
+             spawn 'wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle'
+    riverctl map -repeat $mode None XF86AudioMicMute     \
+             spawn 'wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle'
+
+    # control mpv playlist listening on socket /tmp/mpv-socket
+    riverctl map $mode Super XF86AudioLowerVolume \
+             spawn "echo '{ \"command\": [\"keypress\", \"<\"] }' | socat - /tmp/mpv-socket"
+    riverctl map $mode Super XF86AudioRaiseVolume \
+             spawn "echo '{ \"command\": [\"keypress\", \">\"] }' | socat - /tmp/mpv-socket"
+    riverctl map $mode Super XF86AudioMute        \
+             spawn "echo '{ \"command\": [\"keypress\", \"p\"] }' | socat - /tmp/mpv-socket"
+    riverctl map $mode Super A                    \
+             spawn "echo '{ \"command\": [\"keypress\", \"N\"] }' | socat - /tmp/mpv-socket"
+
+    # Control screen backlight brightness
+    riverctl map $mode None  XF86MonBrightnessUp   \
+             spawn 'brightnessctl set +5%'
+    riverctl map $mode Shift XF86MonBrightnessUp   \
+             spawn 'brightnessctl set +10%'
+    riverctl map $mode None  XF86MonBrightnessDown \
+             spawn 'brightnessctl set 5%-'
+    riverctl map $mode Shift XF86MonBrightnessDown \
+             spawn 'brightnessctl set 10%-'
+done
+
+# lock screen
+riverctl map normal Super+Shift S \
+         spawn "swaylock -k -i ~/media/pictures/wallpapers/lockscreen"
+
+# Declare a passthrough mode. This mode has only a single mapping to return to
+# normal mode. This makes it useful for testing a nested wayland compositor
+riverctl declare-mode passthrough
+
+# Super+F12 to enter passthrough mode
+riverctl map normal Super F12 enter-mode passthrough
+
+# Super+F12 to return to normal mode
+riverctl map passthrough Super F12 enter-mode normal
+
+# Application rules ___________________________________________________________
+
+# telegram
+riverctl rule-add -app-id 'org.telegram' position 493 33
+riverctl rule-add -app-id 'org.telegram' dimensions 380 724
+riverctl rule-add -app-id 'org.telegram' float
+riverctl rule-add -app-id 'org.telegram' ssd
+riverctl rule-add -app-id 'org.telegram' tags ${scratch_tag}
+
+# browser
+riverctl rule-add -app-id 'zen' tags 2
+riverctl rule-add -app-id 'zen' ssd

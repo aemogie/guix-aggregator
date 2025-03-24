@@ -1,0 +1,185 @@
+#|Specific settings|#
+source "%val{config}/rc/buffers.kak"
+source "%val{config}/rc/colorscheme.kak"
+source "%val{config}/rc/git.kak"
+source "%val{config}/rc/languages.kak"
+source "%val{config}/rc/projects.kak"
+source "%val{config}/rc/state.kak"
+
+#|Keep status bar in the default place|#
+set-option -add global ui_options terminal_status_on_top=false
+
+#|Set an invisible padding char|#
+set-option -add global ui_options terminal_padding_char= 
+
+#|Always keep two lines and two columns displayed around the cursor|#
+set-option global scrolloff 2,2
+
+#|Assistant|#
+set-option -add global ui_options terminal_assistant=cat
+
+# __________ commands __________
+define-command -override lf-open \
+  -docstring 'pick a file with lf' %{
+  terminal /bin/sh -c %{
+    # Local variables
+    kak_buffile=$1 kak_session=$2 kak_client=$3
+ 
+    # Create temporary file for selection
+    lf_tmp=$(mktemp "${TMPDIR:-/tmp}"/lf-open.XXXXXXXXXX)
+ 
+    # Get working directory of current buffer
+    kak_pwd=$(dirname "${kak_buffile}")
+ 
+    # Pick a file with lf
+    $(lf -selection-path "${lf_tmp}" "${kak_pwd}")
+ 
+    # Get first line of selection file (ignoring multiple selections)
+    filename=$(head -n 1 "${lf_tmp}")
+ 
+    # Only echo a command back if there was a selection
+    if [ -n "$filename" ]; then
+      # Construct the command to pass to kakoune
+      kak_cmd="evaluate-commands -client $kak_client edit $filename"
+ 
+      # Echo the command back to the parent session
+      echo $kak_cmd | kak -p $kak_session
+    fi
+  } -- %val{buffile} %val{session} %val{client}
+}
+
+define-command -override colorscheme-config \
+  -docstring 'edit colorscheme configuration file' %{
+  ": e %opt{home_files}/.config/kak/autoload/colorscheme.kak<ret>"
+}
+
+define-command -override config \
+  -docstring 'edit kakoune main configuration file' %{
+  edit "%opt{home_files}/.config/kak/kakrc"
+}
+
+define-command -override rss \
+  -docstring 'edit rss feeds file' %{
+  ": e %opt{home_files}/.config/newsraft/feeds"
+}
+
+define-command -override remind \
+  -docstring 'edit reminders' %{
+  execute-keys ': e /home/radio/.local/share/reminders/'
+}
+
+define-command -override qalc \
+  -docstring 'compute equation with Qalculate!' \
+  -params .. %{
+    echo %sh{qalc ${@}}
+}
+complete-command qalc shell-script-candidates \
+  "{ qalc --list-functions | head -n -3;
+     qalc --list-variables | head -n -3 } | tr ' ' '\n' | sort | uniq"
+
+# __________ hidden commands __________
+define-command -override -hidden edit-from-here %{
+  execute-keys ":edit %sh{dirname $kak_buffile}/"
+} # edit a file, searching from current file's directory
+
+define-command -override -hidden spawn-terminal-here %{
+  set-register b "%sh{pwd}"
+  change-directory "%sh{dirname $kak_buffile}"
+  evaluate-commands "terminal %sh{echo $SHELL}"
+  change-directory "%reg{b}"
+} # Spawn a terminal in the current buffer's file directory
+
+# __________ mappings __________
+map global user d ': lf-open<ret>' \
+  -docstring 'pick a file with lf'
+
+## equations
+map global normal = ': prompt math: %{exec "a %val{text}<lt>esc>|qalc -t +u8 -f -<lt>ret>"}<ret>' \
+  -docstring 'Replace selection by the result of some operation over it'
+
+## open selection operations
+try %{ declare-user-mode open-sel }
+map global user o ': enter-user-mode open-sel<ret>' \
+  -docstring 'enter open-sel user mode'
+
+map global open-sel b '$ $BROWSER $kak_reg_dot & disown<ret>' \
+  -docstring "on %sh{echo $BROWSER}"
+
+map global open-sel i '$ imv $kak_reg_dot & disown<ret>' \
+  -docstring 'on imv'
+
+map global open-sel s '$ sioyek $kak_reg_dot & disown<ret>' \
+  -docstring 'on sioyek'
+
+map global open-sel m '$ mpv $kak_reg_dot & disown<ret>' \
+  -docstring 'on mpv'
+
+## surrounding operations
+map global object <ret> 'c\n,\n<ret>'\
+  -docstring 'newlines'
+map global object <space> 'c<space>,<space><ret>'\
+  -docstring 'spaces'
+
+### operations relative to current file's directory
+map global user <ret> ': spawn-terminal-here<ret>' \
+  -docstring "open a new terminal within the current file's directory"
+
+map global user e ": edit-from-here<ret>" \
+  -docstring "edit a file, searching from current file's directory"
+
+### entering user modes
+map global user s ': enter-user-mode surround<ret>' \
+  -docstring 'enter surround user mode'
+
+### remind
+map global user r ': remind<ret>' \
+  -docstring 'edit reminders'
+
+# __________ hooks __________
+hook global BufCreate '\*scratch\*' %{
+  execute-keys '%<a-d>'
+  add-highlighter buffer/ wrap -indent -word -marker '↩'
+  add-highlighter buffer/ show-whitespaces -indent '' -tab '→'
+} # remove the *scratch* message, and set highlighters
+
+hook global BufCreate .* %{
+  add-highlighter buffer/ number-lines -relative -hlcursor
+} # set relative line numbers and visual line break
+
+hook global InsertCompletionShow .* %{
+  map window insert <tab> <c-n>
+  map window insert <s-tab> <c-p>
+}
+hook global InsertCompletionHide .* %{
+  map window insert <tab> <c-n>
+  map window insert <s-tab> <c-p>
+} # use tab for completion movement
+
+hook global WinCreate .* %{
+  kakboard-enable
+} # sync clipboards
+
+hook global WinSetOption filetype=kak %{
+  hook global NormalIdle .* %{
+    evaluate-commands -save-regs 'a' %{
+      try %{
+        execute-keys -draft <a-i>w"ay
+        evaluate-commands %sh{ (
+          color="${kak_reg_a}"
+          inverted_color=$(echo "${color}" | tr '0123456789abcdefABCDEF' 'fedcba9876543210543210')
+          printf "%s\n" "evaluate-commands -client $kak_client %{ try %{
+                     echo -markup %{{rgb:${inverted_color},rgb:${color}+b} #${color} }
+                   }}" | kak -p $kak_session
+          ) >/dev/null 2>&1 </dev/null &
+        }
+      }
+    }
+  }
+} #|color previews|#
+
+map global user <space> ": phantom-selection-select-all; phantom-selection-clear<ret>" \
+  -docstring "exit phantom selection 'mode'"
+map global user <tab>   ": phantom-selection-iterate-next<ret>" \
+  -docstring "iterate next phantom selection"
+map global user <s-tab> ": phantom-selection-iterate-prev<ret>" \
+  -docstring "iterate previous phantom selection"

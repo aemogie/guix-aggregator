@@ -1,0 +1,14 @@
+#!/bin/sh
+
+  lswt | grep -q 'org.telegram'
+  if [ $? -ne 0 ]; then
+      setsid -f telegram-desktop >/dev/null 2>&1 & disown
+      sleep 3
+  fi
+  if [ $1 = "-c" ]; then
+     shift 1
+     for f in $@; do echo $PWD/$f; done | wl-copy
+  fi
+  wlrctl keyboard type '.' modifiers SUPER
+  wlrctl toplevel focus org.telegram
+  telegram-desktop -sendpath $(for f in $@; do realpath $f; done)

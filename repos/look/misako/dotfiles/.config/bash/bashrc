@@ -1,0 +1,104 @@
+#!/bin/bash
+
+BLACK=$(tput setaf 0)
+RED=$(tput setaf 1)
+GREEN=$(tput setaf 2)
+LIME_YELLOW=$(tput setaf 190)
+YELLOW=$(tput setaf 3)
+POWDER_BLUE=$(tput setaf 153)
+BLUE=$(tput setaf 4)
+MAGENTA=$(tput setaf 5)
+CYAN=$(tput setaf 6)
+WHITE=$(tput setaf 7)
+BRIGHT=$(tput bold)
+NORMAL=$(tput sgr0)
+BLINK=$(tput blink)
+REVERSE=$(tput smso)
+UNDERLINE=$(tput smul)
+
+PS1="${GUIX_ENVIRONMENT:+(env) }\[${BRIGHT}\]\[${RED}\]\u\[${WHITE}\]@\[${BLUE}\]\h \[${WHITE}\]in \[${RED}\]\W\[${WHITE}\] $: \[${NORMAL}\]"
+
+# If not running interactively, don't do anything
+[[ $- != *i* ]] && return
+
+if [ -d "$HOME/.bin" ]; then
+	PATH="$HOME/.bin:$PATH"
+fi
+
+if [ -d "$HOME/.local/bin" ]; then
+	PATH="$HOME/.local/bin:$PATH"
+fi
+
+#ignore upper and lowercase when TAB completion
+bind "set completion-ignore-case on"
+
+### ALIASES ###
+
+#list
+alias ls='ls -lhFv --group-directories-first --color=auto'
+alias l.="ls -A | grep -E '^\.'"
+
+#fix obvious typo's
+alias cd..='cd ..'
+alias pdw='pwd'
+
+## Colorize the grep command output for ease of use (good for log files)##
+alias grep='grep --color=auto'
+
+#readable output
+alias df='df -h'
+
+#shopt
+shopt -s autocd  # change to named directory
+shopt -s cdspell # autocorrects cd misspellings
+shopt -s cmdhist # save multi-line commands in history as single line
+shopt -s dotglob
+shopt -s histappend     # do not overwrite history
+shopt -s expand_aliases # expand aliases
+
+# # ex = EXtractor for all kinds of archives
+# # usage: ex <file>
+ex() {
+	if [ -f $1 ]; then
+		case $1 in
+		*.tar.bz2) tar xjf $1 ;;
+		*.tar.gz) tar xzf $1 ;;
+		*.bz2) bunzip2 $1 ;;
+		*.rar) unrar x $1 ;;
+		*.gz) gunzip $1 ;;
+		*.tar) tar xf $1 ;;
+		*.tbz2) tar xjf $1 ;;
+		*.tgz) tar xzf $1 ;;
+		*.zip) unzip $1 ;;
+		*.Z) uncompress $1 ;;
+		*.7z) 7z x $1 ;;
+		*.deb) ar x $1 ;;
+		*.tar.xz) tar xf $1 ;;
+		*.tar.zst) tar xf $1 ;;
+		*) echo "'$1' cannot be extracted via ex()" ;;
+		esac
+	else
+		echo "'$1' is not a valid file"
+	fi
+}
+
+# gfortran-6 path
+# export LD_LIBRARY_PATH=/usr/lib/gcc/x86_64-pc-linux-gnu/6.5.0
+
+alias du="du -sh -- *"
+
+alias reboot="doas reboot"
+alias poweroff="doas poweroff"
+
+alias src="source .env/bin/activate"
+
+alias disk-space="du -h | grep '^\s*[0-9\.]\+G' | sort -rn"
+
+alias ssh='TERM=xterm-256color ssh'
+
+alias lock-resolv='doas cp /etc/resolv.conf.fix /etc/resolv.conf && doas chattr +i /etc/resolv.conf'
+alias unlock-resolv='doas chattr -i /etc/resolv.conf && doas dinitctl restart dhclient'
+
+alias set-github="git config user.name 'Muril-o' && git config user.email 'Muril-o@users.noreply.github.com'"
+
+alias set-codeberg="git config user.name 'Muril-o' && git config user.email 'Muril-o@noreply.codeberg.org'"

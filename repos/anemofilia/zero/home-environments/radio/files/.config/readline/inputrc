@@ -1,0 +1,95 @@
+set editing-mode vi
+set keymap vi
+
+# Display mode
+set show-mode-in-prompt on
+set vi-cmd-mode-string ":"
+set vi-ins-mode-string "+"
+
+# Directly to listing on ambiguous/unmodified completion
+set show-all-if-ambiguous on
+set show-all-if-unmodified on
+set blink-matching-paren on
+
+## Pretty completion
+set mark-directories on
+set colored-stats on
+set mark-symlinked-directories on
+set menu-complete-display-prefix on
+set visible-stats on
+
+## Completion is for completing, nothing more
+#set skip-completed-text on
+
+## Kakounesque behavior 
+#set enable-active-region On
+#set active-region-start-color \01\033[48;2;255;255;255;30m\02
+#set active-region-end-color \01\033[0m\02
+
+# Navigation# Weird unlikely-to-be-used mappings for the functions we want to use
+"\C-a\C-xm":  set-mark
+"\C-a\C-xh":  backward-char
+"\C-a\C-xl":  forward-char
+"\C-a\C-xw":  vi-forward-word
+"\C-a\C-xW":  vi-forward-bigword
+"\C-a\C-xb":  vi-backward-word
+"\C-a\C-xB":  vi-backward-bigword
+"\C-a\C-xe":  vi-end-word
+"\C-a\C-xE":  vi-end-bigword
+"\C-a\C-xf":  vi-char-search
+"\C-a\C-xt":  vi-char-search
+"\C-a\C-xF":  vi-char-search
+"\C-a\C-xT":  vi-char-search
+"\C-a\C-x0":  beginning-of-line
+"\C-a\C-x$":  end-of-line
+"\C-a\C-xd":  kill-region
+"\C-a\C-xy":  copy-region-as-kill
+"\C-a\C-x\e": 
+
+# Kakoune keybindings defined as concatenations of the above functions
+"h": "\C-a\C-xm\C-a\C-xh"
+"H": "\C-a\C-xh"
+"\M-h": "\C-a\C-xm\C-a\C-x0"
+"\M-H": "\C-a\C-x0"
+"gh": "\C-a\C-x0\C-a\C-xm"
+"Gh": "\C-a\C-x0"
+"GH": "\C-a\C-x0"
+"l": "\C-a\C-xm\C-a\C-xl"
+"L": "\C-a\C-xl"
+"gl": "\C-a\C-x$\C-a\C-xm"
+"Gl": "\C-a\C-x$"
+"GL": "\C-a\C-x$"
+"\M-l": "\C-a\C-xm\C-a\C-x$"
+"\M-L": "\C-a\C-x$"
+"w": "\C-a\C-xm\C-a\C-xw"
+"W": "\C-a\C-xw"
+"\M-w": "\C-a\C-xm\C-a\C-xW"
+"\M-W": "\C-a\C-xW"
+"b": "\C-a\C-xm\C-a\C-xb"
+"B": "\C-a\C-xb"
+"\M-b": "\C-a\C-xm\C-a\C-xB"
+"\M-B": "\C-a\C-xB"
+"e": "\C-a\C-xm\C-a\C-xe"
+"E": "\C-a\C-xE"
+"\M-e": "\C-a\C-xm\C-a\C-xE"
+"\M-E": "\C-a\C-xE"
+"f": "\C-a\C-xm\C-a\C-xf"
+"F": "\C-a\C-xf"
+"\M-f": "\C-a\C-xm\C-a\C-xF"
+"\M-F": "\C-a\C-xF"
+"t": "\C-a\C-xm\C-a\C-xt"
+"T": "\C-a\C-xt"
+"\M-t": "\C-a\C-xm\C-a\C-xT"
+"\M-T": "\C-a\C-xT"
+"x": "\C-a\C-x0\C-a\C-xm\C-a\C-x$"
+";": "\C-a\C-xm"
+"\M-;": exchange-point-and-mark
+"d": kill-region
+"gg": beginning-of-history
+"gk": beginning-of-history
+"gj": end-of-history
+"ge": end-of-history 
+"c": "\C-a\C-xdi"
+"y": "\C-a\C-xy"
+"P": "\C-a\C-xhp"
+

@@ -1,0 +1,14 @@
+#!/usr/bin/env -S guile
+!#
+
+(use-modules (ice-9 textual-ports)
+             (srfi srfi-197)
+             (radix utils))
+
+(for-each (lambda (line)
+            (display line)
+            (newline))
+          (chain (current-input-port)
+                 (get-string-all _)
+                 (string-split _ #\newline)
+                 (duplicates _)))

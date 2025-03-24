@@ -1,0 +1,18 @@
+steps:
+  update-jointhefreeworld:
+    image: debian
+    when:
+      - event: [push]
+        branch: [trunk]        
+    environment:
+      BYGGSTEG_KEY:
+        from_secret: BYGGSTEG_KEY
+    commands: |
+      apt-get update
+      apt-get install -y curl
+      curl 'https://byggsteg.jointhefreeworld.org/api/v1/jobs/manage/submit' \
+        -X POST -H 'Content-Type: application/x-www-form-urlencoded' \
+        --data-urlencode 'username=Joe' \
+        --data-urlencode "password=$BYGGSTEG_KEY" \
+        --data-urlencode 'job-code=(lambda() `((project . "sss")(branch-name . "trunk")(task . "pull-and-deploy")(clone-url . "https://codeberg.org/jjba23/sss")))'
+

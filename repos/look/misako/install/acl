@@ -1,0 +1,68 @@
+(acl 
+ (entry 
+  (public-key 
+   (ecc 
+    (curve Ed25519)
+    (q #C1FD53E5D4CE971933EC50C9F307AE2171A2D3B52C804642A7A35F84F3A4EA98#)
+    )
+   )
+  (tag 
+   (guix import)
+   )
+  )
+ (entry 
+  (public-key 
+   (ecc 
+    (curve Ed25519)
+    (q #89FBA276A976A8DE2A69774771A92C8C879E0F24614AAAAE23119608707B3F06#)
+    )
+   )
+  (tag 
+   (guix import)
+   )
+  )
+ (entry 
+  (public-key 
+   (ecc 
+    (curve Ed25519)
+    (q #E2E2E6DB03AC62403691C5BDF285BB79D660957801184905870F3CF5EE940B52#)
+    )
+   )
+  (tag 
+   (guix import)
+   )
+  )
+ (entry 
+  (public-key 
+   (ecc 
+    (curve Ed25519)
+    (q #EBD4DD318A84F9F0AD13300D8A2ACF022F16088DA59B57E539F6DC3BD9C33A52#)
+    )
+   )
+  (tag 
+   (guix import)
+   )
+  )
+ (entry 
+  (public-key 
+   (ecc 
+    (curve Ed25519)
+    (q #8D156F295D24B0D9A86FA5741A840FF2D24F60F7B6C4134814AD55625971B394#)
+    )
+   )
+  (tag 
+   (guix import)
+   )
+  )
+ (entry 
+  (public-key 
+   (ecc 
+    (curve Ed25519)
+    (q #7D602902D3A2DBB83F8A0FB98602A754C5493B0B778C8D1DD4E0F41DE14DE34F#)
+    )
+   )
+  (tag 
+   (guix import)
+   )
+  )
+ )

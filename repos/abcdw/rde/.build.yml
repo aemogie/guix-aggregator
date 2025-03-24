@@ -1,0 +1,37 @@
+image: guix
+packages:
+  - make
+sources:
+  - https://git.sr.ht/~abcdw/rde
+tasks:
+  - check: |
+      cd rde
+      make check
+  - build-minimal-example-home: |
+      cd rde
+      # Create a local keyring branch from origin/keyring to make it possible
+      # to authenticate local RDE channel and go back to the current HEAD
+      git switch keyring
+      git switch --detach -
+      cd examples
+
+      # Don't try to authenticate channels, when patches sent to mailing list
+      if [[ "$BUILD_REASON" == "patchset" ]]; then
+        make minimal/home/build/ci-no-auth
+      else
+        make minimal/home/build/ci
+      fi
+  - readme: |
+      cd rde
+
+      # Deploy readme only when abcdw pushes.  Managing shared secrets
+      # without organizations and teams is too cumbersome.
+      if [[ "$BUILD_SUBMITTER" == "git.sr.ht" ]] && \
+         [[ "$JOB_URL" =~ ^https://builds.sr.ht/~abcdw/job/.*$ ]]; then
+        make deploy-README.html
+      fi
+oauth: git.sr.ht/REPOSITORIES:RW git.sr.ht/PROFILE:RO
+triggers:
+  - action: email
+    condition: failure
+    to: ~abcdw/rde-devel@lists.sr.ht

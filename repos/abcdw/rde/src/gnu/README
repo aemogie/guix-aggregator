@@ -1,0 +1,8 @@
+-*- mode: org -*-
+
+The leftovers from original Guix Home implementation and services for it.
+
+All the things from here should be properly migrated to ~(rde home services)~.
+
+Proper migration means implementation of serializer and extensions according
+to ~doc/decision-log/0004-rde-flavor-guix-services.org~.

@@ -1,0 +1,195 @@
+#!/bin/sh
+
+# set '-eu' options for shell commands
+# These options are used to have safer shell commands. Option '-e' is used to
+# exit on error and option '-u' is used to give error for unset variables.
+# Option '-f' disables pathname expansion which can be useful when $f, $fs, and
+# $fx variables contain names with '*' or '?' characters. However, this option
+# is used selectively within individual commands as it can be limiting at
+# times.
+set shellopts '-eu'
+
+# set internal field separator (IFS) to "\n" for shell commands
+# This is useful to automatically split file names in $fs and $fx properly
+# since default file separator used in these variables (i.e. 'filesep' option)
+# is newline. You need to consider the values of these options and create your
+# commands accordingly.
+set ifs "\n"
+
+# leave some space at the top and the bottom of the screen
+set scrolloff 10
+
+# Style
+set borderfmt "\033[34m"
+set promptfmt "\033[34m%d%f\033[0m"
+set statfmt "\033[34m%p\033[0m| %c| %u| %g| %S| %t| -> %l"
+
+# Basic Settings
+set watch true
+set preview true
+set sixel true
+set shell /bin/sh
+set previewer ~/.local/bin/lf/preview
+set drawbox true
+set info time
+
+# Custom Functions
+cmd open ${{
+    case $(file -bL --mime-type "$f") in
+        text/*) setsid -f "$TERMINAL" -e xdg-open "$f" >/dev/null 2>&1 &;;
+        *) setsid -f xdg-open "$f" >/dev/null 2>&1 &;;
+    esac
+}}
+
+# Share on telegram
+cmd send $send -c $fx
+
+ZERO="~/projects/code/scm/zero"
+# Open lf config
+cmd config $$EDITOR "$ZERO/home-environments/radio/files/.config/lf/lfrc"
+
+# mkdir with :mkdir
+cmd mkdir %mkdir -- "$@"
+
+# copy the filenames of all selected files
+cmd copy-filenames $for f in "$fx"; do echo "$f"; done | wl-copy
+
+# rename file
+cmd rename $mv $f $1
+cmd bulkrename $bulkrename $(for f in $fx; do basename $f; done)
+
+# Open editor
+cmd edit $setsid -f "$TERMINAL -e $EDITOR $f" &
+
+# Change file mode bits
+cmd chmod %chmod "$@" && echo "Mode bits changed" & lf -remote reload
+
+# Copy filename without extension
+cmd yank-basename $basename -a -- $fx | head -c-1 | wl-copy
+
+# Upload selected files to 0x0 and yank it's path and link
+cmd share %printf {for f in $fx; do echo "$f\n $(curl -F file=@$f http://0x0.st)" } | wl-copy && echo "File shared"
+
+# Rotate file
+cmd rotate-file %{{
+    case "$1" in
+    right) direction=1;;
+    left) direction=-1;;
+    *) direction=0;;
+    esac
+    case $(file --mime-type "$f" -bL) in
+            image/*) convert "$f" -rotate $((90*direction)) "$f";;
+    application/pdf) pdftk "$f" cat 1-end"$1" output "rotated-${f##*/}" \
+                     && rm "$f" \
+                     && mv "rotated-${f##*/}" "$f";;
+            video/*) ffmpeg -i "$f" -vf "transpose=$((direction+1))" "rotated-${f##*/}" \
+                     && rm "$f" \
+                     && mv "rotated-${f##*/}" "$f";;
+    inode/directory) for file in $(ls "$f"); do rotate "$1" "$file"; done;;
+    esac
+    echo "File rotated"
+}}
+
+# Rotate selected files
+cmd rotate %{{
+    case "$1" in
+        right) direction=1;;
+         left) direction=-1;;
+            *) direction=0;;
+    esac
+    for file in "$fx"; do
+        case $(file --mime-type "${file}" -bL) in
+                image/*) convert "${file}" -rotate $((90*direction)) "${file}";;
+        application/pdf) pdftk "${file}" cat 1-end"$1" output "rotated-${file##*/}" \
+                         && rm "${file}" \
+                         && mv "rotated-${file##*/}" "$file";;
+                video/*) ffmpeg -i "${file}" -vf "transpose=$((direction+1))" "rotated-${file##*/}" \
+                         && rm "${file}" \
+                         && mv "rotated-${file##*/}" "${file}";;
+        esac
+    done
+    echo "File rotated!"
+}}
+
+cmd extract ${{
+    set -f
+    case $f in
+        *.tar.bz|*.tar.bz2|*.tbz|*.tbz2) tar xjvf $f;;
+        *.tar.gz|*.tgz) tar xzvf $f;;
+        *.tar.xz|*.txz) tar xJvf $f;;
+        *.zip) unzip $f;;
+        *.rar) unrar x $f;;
+        *.7z) 7z x $f;;
+    esac
+}}
+
+cmd compress ${{
+    set -f
+    mkdir $1
+    cp -r $fx $1
+    tar czf $1.tar.gz $1
+    rm -rf $1
+}}
+
+cmd newfold %{{
+    set -f
+    mkdir -- "$1"
+    mv -- $fx "$1"
+}}
+
+cmd term &{{
+   setsid -f $TERMINAL >/dev/null 2>&1 & disown
+}}
+
+cmd e :edit
+cmd q :quit
+
+# Bindings
+# Remove some defaults
+map n
+map e
+map r
+map dd
+
+# File openers
+map ee $$EDITOR "$f"
+map e! $doas $EDITOR "$f"
+map b  &setsid -f $BROWSER "$f"
+
+# Basic functions
+map d delete
+map x cut
+map <enter> open
+map <delete> delete
+map rc push :rename<space>
+map re $lf -remote "send $id :rename<space>$(printf '%q' ${f##*/})"
+map <a-h> set hidden!
+map <a-:> push $<space>
+map <a-n> push :newfold<space>
+map <a-r><a-r> :rotate right
+map <a-r><a-l> :rotate left
+map <a-t> :term 
+
+# Movement
+map gk top
+map gj bottom
+map ga &lf -remote "send $id :cd $XDG_DESKTOP_DIR"
+map gc &lf -remote "send $id :cd $XDG_CONFIG_HOME"
+map gd &lf -remote "send $id :cd $XDG_DOCUMENTS_DIR"
+map gl &lf -remote "send $id :cd $XDG_DOWNLOAD_DIR"
+map gm &lf -remote "send $id :cd $XDG_MUSIC_DIR"
+map gp &lf -remote "send $id :cd $XDG_PICTURES_DIR"
+map gv &lf -remote "send $id :cd $XDG_VIDEOS_DIR"
+
+# run on startup
+cmd on-cd &{{
+    # '&' commands run silently in background (which is what we want here),
+    # but are not connected to stdout.
+    # To make sure our escape sequence still reaches stdout we pipe it to /dev/tty
+    printf "\033]0; $(pwd | sed "s|$HOME|~|;s|.*/||g") - lf\007" > /dev/tty
+}}
+ 
+# also run at startup
+on-cd
+
+%[ $LF_LEVEL -eq 1 ] || echo "Warning: You're in a nested lf instance of depth $LF_LEVEL!"

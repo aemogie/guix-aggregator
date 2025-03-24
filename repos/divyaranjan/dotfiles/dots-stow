@@ -1,0 +1,11 @@
+#!/bin/sh
+
+stow -S .config -t /home/divya/.config/
+stow -S .emacs.d -t /home/divya/.emacs.d/
+stow -S .stumpwm.d -t /home/divya/.stumpwm.d/
+stow -S alsa -t /home/divya/
+stow -S bash -t /home/divya/
+stow -S suckless -t /home/divya/suckless/
+stow -S tmux -t /home/divya/
+stow -S x -t /home/divya/
+stow -S zsh -t /home/divya/

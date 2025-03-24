@@ -1,0 +1,44 @@
+#!/bin/sh
+
+##ALIASES##
+
+alias yta='ytfzf -t -m'
+alias yt='ytfzf -t'
+alias cd-math='cd "/mnt/LDisk-E/Albert Einstein/Books & Resources/MIT OCW/Mathematics/"'
+alias cd-phy='cd "/mnt/LDisk-E/Albert Einstein/Books & Resources/MIT OCW/Physics/"'
+alias cd-einstein='cd "/mnt/LDisk-E/Albert Einstein/"'
+alias cd-phil='cd "/mnt/LDisk-E/Albert Einstein/Books & Resources/Philosophy/"'
+alias cd-psych='cd "/mnt/LDisk-E/Albert Einstein/Books & Resources/Psychology/"'
+alias cd-list='cd "/mnt/LDisk-E/Albert Einstein/Books & Resources/Literature"'
+alias cd-books='cd "/mnt/LDisk-E/Albert Einstein/Books & Resources/"'
+alias cd-gm='cd "/mnt/LDisk-E/Albert Einstein/Books & Resources/Sociology/Gender Mainstreaming/Megha"'
+
+
+alias z="zathura"
+alias g="git"
+alias v=$EDITOR
+alias p="sudo pacman"
+alias ka="killall"
+alias cp="cp -iv"
+alias mv="mv -iv"
+alias mkd="mkdir -pv"
+alias tc="touch"
+alias grep="grep --color -E"
+
+alias ls='ls --color'
+
+# Guix #
+alias gsr='sudo guix system reconfigure ~/.config/guix/system.scm'
+alias ghr='guix home reconfigure ~/.config/guix/home-divya.scm'
+alias gshr='sudo guix system reconfigure ~/.config/guix/system.scm && guix home reconfigure ~/.config/guix/home-divya.scm'
+alias gpi='guix install'
+alias gpr='guix remove'
+alias gps='guix search'
+alias gpl='guix package -I'
+alias gsw='sudo guix system switch-generation'
+alias gslg='guix system list-generations'
+alias ghlg='guix home list-generations'
+alias gsdg='sudo guix system delete-generations'
+alias ghdg='guix home delete-generations'
+alias ghw='guix home switch-generation'
+alias ggc='guix gc'

@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# Backup the dotfiles themselves
+yes | cp -rp /home/divya/.dotfiles/ '/mnt/LDisk-E/Albert Einstein/THE UNIVERSE/backup/'
+
+# Backup life into several places
+yes | cp -rp /home/divya/life '/mnt/LDisk-E/Albert Einstein/THE UNIVERSE/backup/'
+yes | cp -rp /home/divya/life '/mnt/LDisk-D/'
+
+# Bookmarks
+yes | cp -p /home/divya/.dotfiles/.emacs.d/bookmarks /home/divya/life/bookmarks/emacs-bookmarks
+
+# Backing up notes
+yes | cp -rp '/home/divya/notes/' '/mnt/LDisk-E/Albert Einstein/Books & Resources/Notes/latest/'
+yes | cp -rp '/home/divya/notes/' '/mnt/LDisk-D/'
+
+
+# Compress and create old copy
+mv '/mnt/LDisk-E/Albert Einstein/Books & Resources/Notes/latest/notes-latest.gz' "/mnt/LDisk-E/Albert Einstein/Books & Resources/Notes/latest/notes-$(date +"%Y-%m-%d").gz"
+yes | tar -cvzf '/mnt/LDisk-E/Albert Einstein/Books & Resources/Notes/latest/notes-latest.gz' '/home/divya/notes/' > /dev/null 2>&1
+
+# Encrypt it
+rm '/mnt/LDisk-E/Albert Einstein/Books & Resources/Notes/latest/notes-latest.gz.gpg'
+gpg --encrypt --recipient divya '/mnt/LDisk-E/Albert Einstein/Books & Resources/Notes/latest/notes-latest.gz'
+
+# Notify
+notify-send "Everything has been backed up"

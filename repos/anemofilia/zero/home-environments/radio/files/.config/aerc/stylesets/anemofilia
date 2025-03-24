@@ -1,0 +1,82 @@
+# vim: ft=dosini
+#
+# aerc default styleset
+#
+# This styleset uses the terminal defaults as its base.
+# More information on how to configure the styleset can be found in
+# the aerc-stylesets(7) manpage. Please read the manual before
+# modifying or creating a styleset.
+
+# Uncomment these two lines to reset all attributes (except in the [viewer]
+# section) and start from scratch.
+#*.default = true
+#*.normal = true
+
+#*.selected.bg = 12
+#*.selected.fg = 15
+#*.selected.bold = true
+
+statusline_*.dim = false
+statusline_*.bg = 0
+statusline_*.fg = 4
+
+#*warning.fg = 3
+#*success.fg = 2
+#*error.fg = 1
+#*error.bold = true
+
+#border.fg = 12
+#border.bold = true
+#title.bg = 12
+#title.fg = 15
+#title.bold = true
+
+#header.fg = 4
+#header.bold = true
+
+#msglist_unread.bold = true
+#msglist_deleted.dim = true
+msglist_default.selected.bg = 0
+msglist_default.selected.fg = 12
+msglist_marked.bg = 8
+msglist_marked.fg = 0
+msglist_marked.selected.bg = 12
+msglist_marked.selected.fg = 0
+msglist_pill.bg = 12
+msglist_pill.fg = 15
+
+#part_mimetype.fg = 12
+
+#selector_chooser.bold = true
+#selector_focused.bold = true
+#selector_focused.bg = 12
+#selector_focused.fg = 15
+
+#completion_pill.bg = 12
+#completion_default.bg = 8
+#completion_default.fg = 15
+
+#[viewer]
+# Uncomment these two lines to reset all attributes in the [viewer] section.
+#*.default = true
+#*.normal = true
+#url.underline = true
+#url.fg = 3
+#header.bold = true
+#header.fg = 4
+#signature.dim = true
+#signature.fg = 4
+#diff_meta.bold = true
+#diff_chunk.fg = 6
+#diff_chunk_func.fg = 6
+#diff_chunk_func.dim = true
+#diff_add.fg = 2
+#diff_del.fg = 1
+#quote_1.fg = 6
+#quote_2.fg = 4
+#quote_3.fg = 6
+#quote_3.dim = true
+#quote_4.fg = 4
+#quote_4.dim = true
+#quote_x.fg = 5
+#quote_x.dim = true

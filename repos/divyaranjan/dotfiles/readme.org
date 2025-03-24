@@ -1,0 +1,9 @@
+#+TITLE: Divya's GNU Guix Dotfiles
+#+OPTIONS: toc:nil num:nil
+
+This repository contains the dotfiiles of my GNU/Linux system from the GNU Guix distribution.
+
+It previously contained the configuraiton for Arch distribution, while some of the generic funcitonality is still the same, but it is currently targeted to work best with GNU Guix and GNU Emacs.
+
+* Guix
+The Guile Scheme files for the Guix system and home configuration are in =.config/guix/system.scm= and =.config/guix/home-divya.scm= respectively. I keep updating the package list, so it might not reflect the most recent set but it has all the essentials that I use on a day to day basis.

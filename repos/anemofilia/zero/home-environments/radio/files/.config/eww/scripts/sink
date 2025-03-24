@@ -1,0 +1,26 @@
+#!/usr/bin/env -S guile
+!#
+
+(use-modules (radix system monitoring) (ice-9 format) (ice-9 match))
+
+(define (show-volume-json)
+  (call-with-values
+    (lambda () (sink-volume))
+    (lambda (volume status)
+      (format #t "{\"volume\": ~d, \"status\": ~s}~%"
+                 (inexact->exact (round volume))
+                 status))))
+
+(match (command-line)
+  [(_ "status")
+   (show-volume-json)]
+  [(_ "toggle" "mute")
+   (system "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")
+   (show-volume-json)]
+  [(_ "volume" "up")
+   (system "wpctl set-volume -l 1.2 @DEFAULT_AUDIO_SINK@ 5%+")
+   (show-volume-json)]
+  [(_ "volume" "down")
+   (system "wpctl set-volume -l 1.2 @DEFAULT_AUDIO_SINK@ 5%-")
+   (show-volume-json)])
+

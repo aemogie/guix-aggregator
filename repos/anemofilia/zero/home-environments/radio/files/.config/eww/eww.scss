@@ -1,0 +1,143 @@
+// Colors (anemofilia)
+$normal-bg: #1A1A1A;
+$normal-fg: #DDDDDD;
+$focused-bg: #313131;
+$focused-fg: #8581E0;
+
+box {
+  border-radius: 0px;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  padding-right: 4px;
+  padding-left: 4px;
+  min-height: 0px;
+}
+
+.focused-occupied {
+  min-width: 15px;
+  border-top: 2px solid $focused-fg;
+  background: $focused-bg;
+  color: $focused-fg;
+}
+
+.focused-empty {
+  min-width: 15px;
+  border-top: 2px solid transparent;
+  background: $focused-bg;
+  color: $focused-fg;
+}
+
+.unfocused-occupied {
+  min-width: 15px;
+  border-top: 2px solid $normal-fg;
+  background: transparent;
+}
+
+.unfocused-empty {
+  min-width: 15px;
+  border-top: 2px solid transparent;
+  border-radius: 0px;
+}
+
+.tags {
+  background: transparent;
+}
+
+.focused-toplevel {
+  color: $focused-fg;
+  background: $normal-bg;
+  margin-left: 10px;
+}
+
+.separator-1 {
+  font-size: 0pt;
+  border-top: 10px solid $normal-bg;
+  border-bottom: 10px solid $normal-bg;
+  border-right: 10px solid $focused-bg;
+}
+
+.separator-2 {
+  font-size: 0pt;
+  border-top: 10px solid $focused-bg;
+  border-bottom: 10px solid $focused-bg;
+  border-right: 10px solid $normal-bg;
+}
+
+.net {
+  background: $focused-bg;
+  border-right: 5px solid $focused-bg;
+}
+
+.memory {
+  background: $normal-bg;
+  border-right: 5px solid $normal-bg;
+}
+
+.cpu {
+  background: $focused-bg;
+  border-right: 5px solid $focused-bg;
+}
+
+.temperature {
+  background: $normal-bg;
+  border-right: 5px solid $normal-bg;
+}
+
+.volume {
+  background: $focused-bg;
+  border-right: 5px solid $focused-bg;
+}
+
+.battery {
+  background: $normal-bg;
+  border-right: 5px solid $normal-bg;
+}
+
+.time {
+  background: $focused-bg;
+  border-right: 5px solid $focused-bg;
+}
+
+.layout {
+  background: $normal-bg;
+  border-right: 5px solid $normal-bg;
+}
+
+.bar {
+  background: $normal-bg;
+  color: $normal-fg;
+  font-family: Meslo LG M DZ;
+  font-size: 12px;
+}
+
+calendar {
+  font-size: 12px;
+  background-color: $normal-bg;
+  color: $normal-fg;
+}
+
+calendar:selected {
+  background-color: $focused-fg;
+  color: $normal-bg;
+  font-weight: bold;
+}
+
+calendar.header {
+  font-size: 2px;
+  font-weight: bold;
+}
+
+calendar.button {
+  color: $focused-bg;
+}
+
+calendar.highlight {
+  color: $focused-fg;
+  font-weight: bold;
+  padding-left: 3px;
+  padding-right: 3px;
+}
+
+calendar:indeterminate {
+  color: $normal-bg;
+}

@@ -1,0 +1,8 @@
+address chat.sr.ht
+nickname look
+password-cmd cat /run/user/1000/secrets/senpai/sourcehut/password
+highlight look: saayix cargo2guix misako ghostty helix
+on-highlight-path /home/look/.config/senpai/scripts/on-highlight.sh
+tls true
+typings false
+mouse true

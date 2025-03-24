@@ -1,0 +1,144 @@
+# SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+flush ruleset
+
+table inet filter {
+    chain input {
+        type filter hook input priority 0; policy drop;
+
+        iifname lo accept \
+        comment "Accept any localhost traffic"
+
+        ct state { established, related } accept \
+        comment "Accept traffic originated from us"
+
+        ct state invalid drop \
+        comment "Drop invalid connections"
+
+        tcp dport 113 reject with icmpx type port-unreachable \
+        comment "Reject AUTH to make it fail fast"
+
+        # ICMPv4
+        ip protocol icmp icmp type {
+            echo-reply,              # type 0
+            destination-unreachable, # type 3
+            echo-request,            # type 8
+            time-exceeded,           # type 11
+            parameter-problem,       # type 12
+        } accept \
+        comment "Accept ICMP"
+
+        # ICMPv6
+        icmpv6 type {
+            destination-unreachable, # type 1
+            packet-too-big,          # type 2
+            time-exceeded,           # type 3
+            parameter-problem,       # type 4
+            echo-request,            # type 128
+            echo-reply,              # type 129
+        } accept \
+        comment "Accept basic IPv6 functionality"
+
+        icmpv6 type {
+            nd-router-solicit,   # type 133
+            nd-router-advert,    # type 134
+            nd-neighbor-solicit, # type 135
+            nd-neighbor-advert,  # type 136
+        } ip6 hoplimit 255 accept \
+        comment "Allow IPv6 SLAAC"
+
+        icmpv6 type {
+            mld-listener-query,     # type 130
+            mld-listener-report,    # type 131
+            mld-listener-reduction,  # type 132
+            mld2-listener-report,    # type 143
+        } ip6 saddr fe80::/10 accept \
+        comment "Allow IPv6 multicast listener discovery on link-local"
+
+        ip6 saddr fe80::/10 udp sport 547 udp dport 546 accept \
+        comment "Accept DHCPv6 replies from IPv6 link-local addresses"
+
+        udp dport { 4950, 4955 } accept
+        tcp dport 6695-6699 accept \
+        comment "Allow Warframe"
+
+        meta l4proto { tcp, udp } th dport 15308 accept \
+        comment "Allow qBittorrent"
+
+        udp dport 21027 accept \
+        comment "Allow Syncthing (for discovery broadcasts on IPv4 and multicasts on IPv6)"
+        meta l4proto { tcp, udp } th dport 22000 accept \
+        comment "Allow Syncthing (TCP and QUIC based sync protocol traffic)"
+
+        udp dport 41641 accept \
+        comment "Allow Tailscale"
+    }
+
+    chain forward {
+        type filter hook forward priority 0; policy drop;
+    }
+
+    chain output {
+        type filter hook output priority 0; policy accept;
+    }
+}
+
+table inet proxy {
+    set IPv4_RESERVED {
+        typeof ip daddr
+        flags interval
+        elements = {
+            0.0.0.0/8,
+            10.0.0.0/8,
+            100.64.0.0/10,
+            127.0.0.0/8,
+            169.254.0.0/16,
+            172.16.0.0/12,
+            192.0.0.0/24,
+            192.0.2.0/24,
+            192.88.99.0/24,
+            192.168.0.0/16,
+            198.18.0.0/15,
+            198.51.100.0/24,
+            203.0.113.0/24,
+            224.0.0.0/4,
+            240.0.0.0/4
+        }
+    }
+
+    set IPv6_RESERVED {
+        typeof ip6 daddr
+        flags interval
+        elements = {
+            ::/128,
+            ::1/128,
+            ::ffff:0:0:0/96,
+            64:ff9b::/96,
+            100::/64,
+            2001::/32,
+            2001:20::/28,
+            2001:db8::/32,
+            2002::/16,
+            fc00::/7,
+            fe80::/10,
+            ff00::/8
+        }
+    }
+
+    chain prerouting {
+        type filter hook prerouting priority mangle; policy accept;
+        ip daddr @IPv4_RESERVED return
+        ip6 daddr @IPv6_RESERVED return
+        meta l4proto { tcp, udp } tproxy to :7890 meta mark set 38417
+    }
+
+    chain output {
+        type route hook output priority mangle; policy accept;
+        ip daddr @IPv4_RESERVED return
+        ip6 daddr @IPv6_RESERVED return
+        meta skgid clash return
+        meta l4proto { tcp, udp } meta mark set 38417
+    }
+}

@@ -1,0 +1,311 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE CARLA-PROJECT>
+<CARLA-PROJECT VERSION='2.5'>
+ <EngineSettings>
+  <ForceStereo>true</ForceStereo>
+  <PreferPluginBridges>true</PreferPluginBridges>
+  <PreferUiBridges>true</PreferUiBridges>
+  <UIsAlwaysOnTop>false</UIsAlwaysOnTop>
+  <MaxParameters>200</MaxParameters>
+  <UIBridgesTimeout>4000</UIBridgesTimeout>
+ </EngineSettings>
+
+ <Transport>
+  <BeatsPerMinute>120</BeatsPerMinute>
+ </Transport>
+
+ <ExternalPatchbay>
+  <Connection>
+   <Source>OnePlus BulletsWireless Z2 ANC-348:capture_MONO</Source>
+   <Target>DiscordIn:input_MONO</Target>
+  </Connection>
+  <Connection>
+   <Source>OnePlus BulletsWireless Z2 ANC-348:capture_MONO</Source>
+   <Target>ElementIn:input_MONO</Target>
+  </Connection>
+  <Connection>
+   <Source>OnePlus BulletsWireless Z2 ANC-348:capture_MONO</Source>
+   <Target>BrowserOut-214:input_MONO</Target>
+  </Connection>
+  <Connection>
+   <Source>OnePlus BulletsWireless Z2 ANC-348:capture_MONO</Source>
+   <Target>MeetIn:input_MONO</Target>
+  </Connection>
+  <Connection>
+   <Source>OnePlus BulletsWireless Z2 ANC-348:capture_MONO</Source>
+   <Target>Recording:input_MONO</Target>
+  </Connection>
+  <Connection>
+   <Source>USB PnP Audio Device Mono:capture_MONO</Source>
+   <Target>jack_mixer:Microphone L</Target>
+  </Connection>
+  <Connection>
+   <Source>USB PnP Audio Device Mono:capture_MONO</Source>
+   <Target>jack_mixer:Microphone R</Target>
+  </Connection>
+  <Connection>
+   <Source>jack_mixer:Microphone Out L</Source>
+   <Target>TelegramIn:input_MONO</Target>
+  </Connection>
+  <Connection>
+   <Source>jack_mixer:Microphone Out R</Source>
+   <Target>TelegramIn:input_MONO</Target>
+  </Connection>
+  <Connection>
+   <Source>jack_mixer:Telegram Out L</Source>
+   <Target>Built-in Audio Analog Stereo:playback_FL</Target>
+  </Connection>
+  <Connection>
+   <Source>jack_mixer:Telegram Out R</Source>
+   <Target>Built-in Audio Analog Stereo:playback_FR</Target>
+  </Connection>
+  <Connection>
+   <Source>jack_mixer:Discord Out L</Source>
+   <Target>Built-in Audio Analog Stereo:playback_FL</Target>
+  </Connection>
+  <Connection>
+   <Source>jack_mixer:Discord Out R</Source>
+   <Target>Built-in Audio Analog Stereo:playback_FR</Target>
+  </Connection>
+  <Connection>
+   <Source>jack_mixer:Element Out L</Source>
+   <Target>Built-in Audio Analog Stereo:playback_FL</Target>
+  </Connection>
+  <Connection>
+   <Source>jack_mixer:Element Out R</Source>
+   <Target>Built-in Audio Analog Stereo:playback_FR</Target>
+  </Connection>
+  <Connection>
+   <Source>jack_mixer:Meet Out L</Source>
+   <Target>Built-in Audio Analog Stereo:playback_FL</Target>
+  </Connection>
+  <Connection>
+   <Source>jack_mixer:Meet Out R</Source>
+   <Target>Built-in Audio Analog Stereo:playback_FR</Target>
+  </Connection>
+  <Connection>
+   <Source>jack_mixer:Browser Out L</Source>
+   <Target>Built-in Audio Analog Stereo:playback_FL</Target>
+  </Connection>
+  <Connection>
+   <Source>jack_mixer:Browser Out R</Source>
+   <Target>Built-in Audio Analog Stereo:playback_FR</Target>
+  </Connection>
+  <Connection>
+   <Source>jack_mixer:MPD Out L</Source>
+   <Target>Built-in Audio Analog Stereo:playback_FL</Target>
+  </Connection>
+  <Connection>
+   <Source>jack_mixer:MPD Out R</Source>
+   <Target>Built-in Audio Analog Stereo:playback_FL</Target>
+  </Connection>
+  <Connection>
+   <Source>jack_mixer:MPV Out L</Source>
+   <Target>Built-in Audio Analog Stereo:playback_FR</Target>
+  </Connection>
+  <Connection>
+   <Source>jack_mixer:MPV Out R</Source>
+   <Target>Built-in Audio Analog Stereo:playback_FR</Target>
+  </Connection>
+  <Connection>
+   <Source>jack_mixer:VLC Out L</Source>
+   <Target>Built-in Audio Analog Stereo:playback_FL</Target>
+  </Connection>
+  <Connection>
+   <Source>jack_mixer:VLC Out R</Source>
+   <Target>Built-in Audio Analog Stereo:playback_FR</Target>
+  </Connection>
+  <Connection>
+   <Source>jack_mixer:Misc. Out L</Source>
+   <Target>Built-in Audio Analog Stereo:playback_FL</Target>
+  </Connection>
+  <Connection>
+   <Source>jack_mixer:Misc. Out R</Source>
+   <Target>Built-in Audio Analog Stereo:playback_FR</Target>
+  </Connection>
+  <Connection>
+   <Source>TelegramOutput:output_FL</Source>
+   <Target>jack_mixer:Telegram L</Target>
+  </Connection>
+  <Connection>
+   <Source>TelegramOutput:output_FL</Source>
+   <Target>OnePlus BulletsWireless Z2 ANC:playback_FL</Target>
+  </Connection>
+  <Connection>
+   <Source>TelegramOutput:output_FR</Source>
+   <Target>jack_mixer:Telegram R</Target>
+  </Connection>
+  <Connection>
+   <Source>TelegramOutput:output_FR</Source>
+   <Target>OnePlus BulletsWireless Z2 ANC:playback_FR</Target>
+  </Connection>
+  <Connection>
+   <Source>DiscordOut:output_FL</Source>
+   <Target>jack_mixer:Discord L</Target>
+  </Connection>
+  <Connection>
+   <Source>DiscordOut:output_FL</Source>
+   <Target>OnePlus BulletsWireless Z2 ANC:playback_FL</Target>
+  </Connection>
+  <Connection>
+   <Source>DiscordOut:output_FR</Source>
+   <Target>jack_mixer:Discord R</Target>
+  </Connection>
+  <Connection>
+   <Source>DiscordOut:output_FR</Source>
+   <Target>OnePlus BulletsWireless Z2 ANC:playback_FR</Target>
+  </Connection>
+  <Connection>
+   <Source>ElementOut:output_FL</Source>
+   <Target>jack_mixer:Element L</Target>
+  </Connection>
+  <Connection>
+   <Source>ElementOut:output_FL</Source>
+   <Target>OnePlus BulletsWireless Z2 ANC:playback_FL</Target>
+  </Connection>
+  <Connection>
+   <Source>ElementOut:output_FR</Source>
+   <Target>jack_mixer:Element R</Target>
+  </Connection>
+  <Connection>
+   <Source>ElementOut:output_FR</Source>
+   <Target>OnePlus BulletsWireless Z2 ANC:playback_FR</Target>
+  </Connection>
+  <Connection>
+   <Source>BrowserOut:output_FL</Source>
+   <Target>jack_mixer:Browser L</Target>
+  </Connection>
+  <Connection>
+   <Source>BrowserOut:output_FL</Source>
+   <Target>OnePlus BulletsWireless Z2 ANC:playback_FL</Target>
+  </Connection>
+  <Connection>
+   <Source>BrowserOut:output_FR</Source>
+   <Target>jack_mixer:Browser R</Target>
+  </Connection>
+  <Connection>
+   <Source>BrowserOut:output_FR</Source>
+   <Target>OnePlus BulletsWireless Z2 ANC:playback_FR</Target>
+  </Connection>
+  <Connection>
+   <Source>MeetOut:output_FL</Source>
+   <Target>jack_mixer:Meet L</Target>
+  </Connection>
+  <Connection>
+   <Source>MeetOut:output_FL</Source>
+   <Target>OnePlus BulletsWireless Z2 ANC:playback_FL</Target>
+  </Connection>
+  <Connection>
+   <Source>MeetOut:output_FR</Source>
+   <Target>jack_mixer:Meet R</Target>
+  </Connection>
+  <Connection>
+   <Source>MeetOut:output_FR</Source>
+   <Target>OnePlus BulletsWireless Z2 ANC:playback_FR</Target>
+  </Connection>
+  <Connection>
+   <Source>MPVOut:output_FL</Source>
+   <Target>jack_mixer:MPV L</Target>
+  </Connection>
+  <Connection>
+   <Source>MPVOut:output_FL</Source>
+   <Target>OnePlus BulletsWireless Z2 ANC:playback_FL</Target>
+  </Connection>
+  <Connection>
+   <Source>MPVOut:output_FR</Source>
+   <Target>jack_mixer:MPV R</Target>
+  </Connection>
+  <Connection>
+   <Source>MPVOut:output_FR</Source>
+   <Target>OnePlus BulletsWireless Z2 ANC:playback_FR</Target>
+  </Connection>
+  <Connection>
+   <Source>MPDOut:output_FL</Source>
+   <Target>jack_mixer:MPD L</Target>
+  </Connection>
+  <Connection>
+   <Source>MPDOut:output_FL</Source>
+   <Target>OnePlus BulletsWireless Z2 ANC:playback_FL</Target>
+  </Connection>
+  <Connection>
+   <Source>MPDOut:output_FR</Source>
+   <Target>jack_mixer:MPD R</Target>
+  </Connection>
+  <Connection>
+   <Source>MPDOut:output_FR</Source>
+   <Target>OnePlus BulletsWireless Z2 ANC:playback_FR</Target>
+  </Connection>
+  <Connection>
+   <Source>VLCOut:output_FL</Source>
+   <Target>jack_mixer:VLC L</Target>
+  </Connection>
+  <Connection>
+   <Source>VLCOut:output_FL</Source>
+   <Target>OnePlus BulletsWireless Z2 ANC:playback_FL</Target>
+  </Connection>
+  <Connection>
+   <Source>VLCOut:output_FR</Source>
+   <Target>jack_mixer:VLC R</Target>
+  </Connection>
+  <Connection>
+   <Source>VLCOut:output_FR</Source>
+   <Target>OnePlus BulletsWireless Z2 ANC:playback_FR</Target>
+  </Connection>
+  <Positions>
+   <Position x1="477" y1="1635" x2="2291" y2="57">
+    <Name>Built-in Audio Analog Stereo</Name>
+   </Position>
+   <Position x1="2339" y1="1656" x2="2031" y2="1344">
+    <Name>Loopback Analog Stereo</Name>
+   </Position>
+   <Position x1="361" y1="361" x2="1149" y2="270">
+    <Name>USB PnP Audio Device Mono</Name>
+   </Position>
+   <Position x1="1387" y1="193">
+    <Name>jack_mixer</Name>
+   </Position>
+   <Position x1="333" y1="392">
+    <Name>TelegramOutput</Name>
+   </Position>
+   <Position x1="2340" y1="301">
+    <Name>TelegramIn</Name>
+   </Position>
+   <Position x1="876" y1="1429">
+    <Name>DiscordOut</Name>
+   </Position>
+   <Position x1="2354" y1="956">
+    <Name>DiscordIn</Name>
+   </Position>
+   <Position x1="880" y1="635">
+    <Name>ElementOut</Name>
+   </Position>
+   <Position x1="2359" y1="635">
+    <Name>ElementIn</Name>
+   </Position>
+   <Position x1="859" y1="493">
+    <Name>BrowserOut</Name>
+   </Position>
+   <Position x1="873" y1="942">
+    <Name>MeetOut</Name>
+   </Position>
+   <Position x1="2352" y1="463">
+    <Name>MeetIn</Name>
+   </Position>
+   <Position x1="872" y1="1264">
+    <Name>MPVOut</Name>
+   </Position>
+   <Position x1="871" y1="1096">
+    <Name>MPDOut</Name>
+   </Position>
+   <Position x1="894" y1="778">
+    <Name>VLCOut</Name>
+   </Position>
+   <Position x1="2357" y1="791">
+    <Name>Recording</Name>
+   </Position>
+   <Position x1="480" y1="580" x2="1097" y2="608">
+    <Name>OnePlus BulletsWireless Z2 ANC</Name>
+   </Position>
+  </Positions>
+ </ExternalPatchbay>
+</CARLA-PROJECT>

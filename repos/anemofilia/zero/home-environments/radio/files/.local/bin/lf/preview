@@ -1,0 +1,121 @@
+#!/bin/sh
+
+set -exu
+
+WIDTH=$2
+HEIGHT=$3
+image() {
+    chafa -f sixel \
+          -s "$((${WIDTH}-2))x$((${HEIGHT}-2))" \
+          --polite on \
+          --animate on "$1"
+}
+
+batorcat() {
+    shift
+    if command -v bat > /dev/null 2>&1; then
+        bat --color=always --style=plain --pager=never "$1"
+    else
+        cat "$1"
+    fi
+}
+
+mkdir -p "${XDG_CACHE_HOME}/lf"
+
+FILE=$(readlink -f "$1")
+HASH="$(stat --printf '%n\0%i\0%F\0%s\0%W\0%Y' -- "$FILE" \
+        | sha256sum \
+        | awk '{print $1}')"
+CACHE="${XDG_CACHE_HOME}/lf/thumbnail.${HASH}"
+
+case "${FILE}" in
+    *.bmp|*.jpg|*.jpeg|*.png|*.xpm|*.webp|*.gif|*.jfif)
+        image "${FILE}"
+        exit 1
+        ;;
+    *.pdf)
+        [ ! -f "${CACHE}.jpg" ] && pdftoppm -jpeg -f 1 -singlefile "${FILE}" "${CACHE}"
+        image "${CACHE}.jpg"
+        exit 1
+        ;;
+    *.svg)
+        [ ! -f "${CACHE}.jpg" ] && convert "${FILE}" "${CACHE}.jpg"
+        image "${CACHE}.jpg"
+        exit 1
+        ;;
+    *.avi|*.mp4|*.wmv|*.dat|*.3gp|*.ogv|*.mkv|*.mpg|*.mpeg|*.vob|*.fl[icv]|*.m2v|*.mov|*.webm|*.ts|*.mts|*.m4v|*.r[am]|*.qt|*.divx)
+        [ ! -f "${CACHE}.jpg" ] && ffmpegthumbnailer -i "${FILE}" -o "${CACHE}.jpg" -s 0 -q 5
+        image "${CACHE}.jpg"
+        exit 1
+        ;;
+    *.wav|*.mp3|*.flac|*.m4a|*.wma|*.ape|*.ac3|*.og[agx]|*.spx|*.opus|*.as[fx]|*.mka)
+        exiftool "${FILE}"
+        ;;
+    *.epub)
+        [ ! -f "${CACHE}" ] && epub-thumbnailer "${FILE}" "${CACHE}" 1024
+        image "${CACHE}"
+        ;;
+    *.cbz|*.cbr|*.cbt)
+        [ ! -f "${CACHE}" ] && comicthumb "${FILE}" "${CACHE}" 1024
+        image "${CACHE}"
+        ;;
+    *.tgz|*.tar.gz)
+        tar tzf "${FILE}"
+        ;;
+    *.tar.bz2|*.tbz2)
+        tar tjf "${FILE}"
+        ;;
+    *.tar.txz|*.txz)
+        xz --list "${FILE}"
+        ;;
+    *.tar)
+        tar tf "${FILE}"
+        ;;
+    *.zip|*.jar|*.war|*.ear|*.oxt)
+        unzip -l "${FILE}"
+        ;;
+    *.rar)
+        unrar l "${FILE}"
+        ;;
+    *.md)
+        glow -s dark "${FILE}"
+        ;;
+    *.7z)
+        7z l "${FILE}"
+        ;;
+    *.[1-8])
+        man "${FILE}" | col -b
+        ;;
+    *.o)
+        nm "${FILE}"
+        ;;
+    *.torrent)
+        transmission-show "${FILE}"
+        ;;
+    *.iso)
+        iso-info --no-header -l "${FILE}"
+        ;;
+    *.odt|*.ods|*.odp|*.sxw)
+        odt2txt "${FILE}"
+        ;;
+    *.doc)
+        catdoc "${FILE}"
+        ;;
+    *.docx)
+        docx2txt "${FILE}" -
+        ;;
+    *.xml|*.html)
+        w3m -dump "${FILE}"
+        ;;
+    *.xls|*.xlsx)
+        ssconvert --export-type=Gnumeric_stf:stf_csv "${FILE}" "fd://1" | batorcat --language=csv
+        ;;
+    *.ino)
+        batorcat --language=cpp "${FILE}"
+        ;;
+    *)
+        cat "${FILE}"
+        ;;
+esac
+
+exit 0

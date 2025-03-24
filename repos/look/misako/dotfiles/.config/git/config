@@ -1,0 +1,28 @@
+[color]
+ui = true
+
+[core]
+editor = hx
+
+[commit]
+gpgsign = true
+
+[user]
+signingkey = 3FFA7335973E0A4947FC0A8C38D596BE07D334AB
+
+[init]
+defaultBranch = main
+
+[alias]
+see = log --graph --all --oneline
+last = log -1 HEAD
+
+[remote "origin"]
+fetch = +refs/pull/*/head:refs/remotes/origin/pr/*
+
+[sendemail]
+smtpserver = {{{ aerc.primary.url }}}
+smtpuser = {{{ aerc.primary.email }}}
+smtpencryption = ssl
+smtpserverport = 465
+annotate = true

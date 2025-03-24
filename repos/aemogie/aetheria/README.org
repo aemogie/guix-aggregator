@@ -1,0 +1,22 @@
+* aetheria
+a guix system configuration, targeting to become eye candy while attempting to
+fix the issues with nivea.  in contrast to nivea (which is a nixos based
+reproducible system, just like aetheria), aetheria will attempt to from it's
+inception have functionality for:
++ ephemeral root :: in nivea, the hardware configuration became a bottleneck
+  later on. this attempts to target ephemeral root from the onset.
++ secrets management :: secrets could potentially be managed declaratively as
+  well, but in-case i end up not liking it or decide to manage them seperately
+  from the git repository, this should be optional.
++ dynamic color themes :: nivea was originally designed for catppuccin, and
+  with the significant amount of ports available and my lack of technical
+  knowhow, it was arguably a good decision. yet depsite to this day believing
+  it to be a good palette, ive come to realise being greeted to the same few
+  colours everyday was making logging in less exciting. although with less
+  ports than catppuccin, i want to attempt using base16 instead for this task,
+  as base16 is a framework allows for a vast amount of themes.
++ other superficial things that i missed... :: none of these things are
+  actually unfeasible in nixos. i'd argue nixos makes it much easier through a
+  richer ecosystem, including projects like nix-impermenance, sops-nix, and
+  stylix. it was just that switching to guix gave me an opportunity to start
+  over from scratch

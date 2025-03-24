@@ -1,0 +1,4 @@
+#!/usr/bin/env -S sh
+wl-paste > /tmp/hx-guix-style.temp
+guix style -f /tmp/hx-guix-style.temp
+cat /tmp/hx-guix-style.temp

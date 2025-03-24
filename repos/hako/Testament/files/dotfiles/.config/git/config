@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+[commit]
+        gpgsign = true
+[core]
+        quotePath = false
+[diff "scheme"]
+        xfuncname = "^(\\(define.*)$"
+[diff "texinfo"]
+        xfuncname = "^@node[[:space:]]+([^,]+).*$"
+[init]
+        defaultBranch = trunk
+[pull]
+        rebase = true
+[rerere]
+        enabled = true
+[sendemail]
+        smtpEncryption = ssl
+        smtpServer = mx.boiledscript.com
+        smtpUser = hako@ultrarare.space
+[user]
+        name = Hilton Chain
+        email = hako@ultrarare.space
+        signingkey = ACC66D09CA528292!

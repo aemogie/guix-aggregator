@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<jack_mixer geometry="954x1074" paned_position="903" visible="True">
+	<input_channel name="Master" type="stereo" direct_output="True" volume="-1.200000" balance="0.000000" wide="True" meter_prefader="False" out_mute="False" volume_midi_cc="11" balance_midi_cc="12" mute_midi_cc="13" solo_midi_cc="14"/>
+	<input_channel name="Microphone" type="stereo" direct_output="True" volume="-1.200000" balance="0.100000" wide="True" meter_prefader="False" out_mute="False" volume_midi_cc="15" balance_midi_cc="16" mute_midi_cc="17" solo_midi_cc="18"/>
+	<input_channel name="Telegram" type="stereo" direct_output="True" volume="-2.245752" balance="0.000000" wide="True" meter_prefader="False" out_mute="False" volume_midi_cc="19" balance_midi_cc="20" mute_midi_cc="21" solo_midi_cc="22"/>
+	<input_channel name="Discord" type="stereo" direct_output="True" volume="-1.200000" balance="0.000000" wide="True" meter_prefader="False" out_mute="False" volume_midi_cc="23" balance_midi_cc="24" mute_midi_cc="25" solo_midi_cc="26"/>
+	<input_channel name="Element" type="stereo" direct_output="True" volume="-3.600000" balance="0.000000" wide="True" meter_prefader="False" out_mute="False" volume_midi_cc="27" balance_midi_cc="28" mute_midi_cc="29" solo_midi_cc="30"/>
+	<input_channel name="Meet" type="stereo" direct_output="True" volume="-1.200000" balance="0.000000" wide="True" meter_prefader="False" out_mute="False" volume_midi_cc="31" balance_midi_cc="32" mute_midi_cc="33" solo_midi_cc="34"/>
+	<input_channel name="Browser" type="stereo" direct_output="True" volume="-1.200000" balance="0.000000" wide="True" meter_prefader="False" out_mute="False" volume_midi_cc="35" balance_midi_cc="36" mute_midi_cc="37" solo_midi_cc="38"/>
+	<input_channel name="Recording" type="stereo" direct_output="True" volume="-1.200000" balance="0.000000" wide="True" meter_prefader="False" out_mute="False" volume_midi_cc="39" balance_midi_cc="40" mute_midi_cc="41" solo_midi_cc="42"/>
+	<input_channel name="MPD" type="stereo" direct_output="True" volume="0.000000" balance="0.000000" wide="True" meter_prefader="False" out_mute="False" volume_midi_cc="43" balance_midi_cc="44" mute_midi_cc="45" solo_midi_cc="46"/>
+	<input_channel name="MPV" type="stereo" direct_output="True" volume="0.000000" balance="0.000000" wide="True" meter_prefader="False" out_mute="False" volume_midi_cc="47" balance_midi_cc="48" mute_midi_cc="49" solo_midi_cc="50"/>
+	<input_channel name="VLC" type="stereo" direct_output="True" volume="-1.200000" balance="0.000000" wide="True" meter_prefader="False" out_mute="False" volume_midi_cc="51" balance_midi_cc="52" mute_midi_cc="53" solo_midi_cc="54"/>
+	<input_channel name="Misc." type="stereo" direct_output="True" volume="-2.400000" balance="0.000000" wide="True" meter_prefader="False" out_mute="False" volume_midi_cc="55" balance_midi_cc="56" mute_midi_cc="57" solo_midi_cc="58"/>
+	<gui_factory confirm-quit="False" default_meter_scale="K20" default_project_path="" default_slider_scale="linear_30dB" midi_behavior_mode="0" use_custom_widgets="False" vumeter_color="#ccb300" vumeter_color_scheme="default" auto_reset_peak_meters="False" auto_reset_peak_meters_time_seconds="2.0" meter_refresh_period_milliseconds="33"/>
+</jack_mixer>

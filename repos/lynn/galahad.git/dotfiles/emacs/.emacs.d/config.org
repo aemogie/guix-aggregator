@@ -1,0 +1,458 @@
+
+#+TITLE: Literate Emacs @lynn
+#+PROPERTY: header-args :tangle ./init.el
+#+auto_tangle: t
+
+Prevent Emacs from loading out of date, native compiled jsonrpc:
+#+begin_src emacs-lisp :tangle ./early-init.el
+  ;; this is the early init file
+  (setq load-no-native t)
+ #+end_src
+ 
+ #+begin_src emacs-lisp
+   ;; generated from config.org via tangle
+   (require 'package)
+   (require 'use-package)
+   (use-package org-auto-tangle
+     :hook (org-mode . org-auto-tangle-mode))
+#+end_src
+* Installed
+** Keep our forests clean
+#+begin_src emacs-lisp
+  (use-package no-littering)
+  (setq backup-directory-alist
+	`((".*" . ,temporary-file-directory)))
+  (setq auto-save-file-name-transforms
+	`((".*" ,temporary-file-directory t)))
+  (setq create-lockfiles nil)
+(setq custom-file "~/.emacs.d/custom.el")
+(load-file custom-file)  
+#+end_src
+** Theme
+#+begin_src emacs-lisp
+  (use-package base16-theme)
+  (load-theme 'base16-atelier-forest-light t)
+#+end_src
+** Fonts
+#+begin_src emacs-lisp
+  (setq x-underline-at-descent-line t) ; for some reason there is an issue with modeline
+
+  (use-package mixed-pitch) ; prettier org mode  
+#+end_src
+*** Ligatures
+#+begin_src emacs-lisp
+  (use-package ligature
+    :config
+    ;; Enable all Iosevka ligatures in programming modes
+    (ligature-set-ligatures 'prog-mode '("<---" "<--"  "<<-" "<-" "->" "-->" "--->" "<->" "<-->" "<--->" "<---->"
+					 "<!--" "<==" "<===" "<=" "=>" "=>>" "==>" "===>" ">=" "<=>" "<==>"
+					 "<===>" "<====>" "<!---" "<~~" "<~" "~>" "~~>" "::" ":::" "==" "!="
+					 "===" "!==" ":=" ":-" ":+" "<*" "<*>" "*>" "<|" "<|>" "|>" "+:" "-:"
+					 "=:" "<******>" "++" "+++"))
+  ;; Enables ligature checks globally in all buffers. You can also do it
+  ;; per mode with `ligature-mode'.
+  (global-ligature-mode t))
+#+end_src
+** QoL
+#+begin_src emacs-lisp
+  (use-package swiper)
+  (use-package counsel
+    :bind (("M-x" . counsel-M-x)
+	   ("C-x b" . counsel-ibuffer)
+	   ("C-x C-f" . counsel-find-file)
+	   :map minibuffer-local-map
+	   ("C-r" . counsel-minibuffer-history)))
+  (use-package ivy
+    :diminish
+    :bind (("C-s" . swiper-isearch))
+    :config
+    (ivy-mode 1))
+  (use-package which-key
+    :defer 0
+    :diminish which-key-mode
+    :config
+    (which-key-mode)
+    (setq which-key-idle-delay 1))
+#+end_src
+** Dired
+Turning dired into a subtree buffer that can allow for better management of projects.
+#+begin_src emacs-lisp
+  (use-package dired-subtree
+    :bind
+    (:map dired-mode-map
+  	("<enter>" . lynn/dwim-toggle-or-open)
+  	("<return>" . lynn/dwim-toggle-or-open)
+  	("<tab>" . lynn/dwim-toggle-or-open))
+    :config
+      (setq dired-subtree-use-backgrounds nil))
+#+end_src
+Dired-subtree's functionality is within =dired-subtree-toggle=
+#+begin_src emacs-lisp
+  (defun lynn/dwim-toggle-or-open ()
+    "Toggle the subtree, or open a file."
+    (interactive)
+    (let ((file (dired-get-file-for-visit)))
+      (if (and (file-directory-p file)
+  	     (not (or (string= file ".")
+  		      (string= file ".."))))
+  	(dired-subtree-toggle)
+        (dired-find-file))))
+#+end_src
+** Pinentry
+#+begin_src emacs-lisp
+(use-package pinentry
+  :init
+  (setf epa-pinentry-mode 'loopback)
+  :config
+  (pinentry-start))
+#+end_src
+** Reading
+** Org
+#+begin_src emacs-lisp
+  (use-package org)
+  (use-package org-modern)
+  (use-package olivetti)
+  (use-package org-roam
+    :custom
+    (org-roam-directory "~/docs/roam/")
+    :bind (("C-c n l" . org-roam-buffer-toggle)
+  	 ("C-c n f" . org-roam-node-find)
+  	 ("C-c n i" . org-roam-node-insert)
+  	 :map org-mode-map
+  	 ("C-M-i"    . completion-at-point))
+    :config
+    (org-roam-setup))
+#+end_src
+** LaTeX
+#+begin_src emacs-lisp
+  (use-package auctex)
+  (setq TeX-auto-save t)
+  (setq TeX-parse-self t)
+  (setq-default TeX-master nil)
+#+end_src
+** HTML
+#+begin_src emacs-lisp
+  (use-package rainbow-mode)
+  (use-package simple-httpd)
+  (use-package htmlize)
+#+end_src
+  For quality of writing, flycheck and vale linting
+  #+begin_src emacs-lisp
+    (use-package flycheck)
+    ;(use-package flycheck-pos-tip) this isn't packaged for guix, should find alternative? or package it?  
+#+end_src
+** Modeline
+#+begin_src emacs-lisp
+   (use-package doom-modeline
+     :hook (after-init . doom-modeline-mode))
+  (use-package nerd-icons) ; modeline requires this
+#+end_src 
+** Modal Editing
+#+begin_src emacs-lisp
+    (use-package meow)
+      (defun meow-setup ()
+	(setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
+	(meow-motion-overwrite-define-key
+	 '("j" . meow-next)
+	 '("k" . meow-prev)
+	 '("<escape>" . ignore))
+	(meow-leader-define-key
+	 ;; SPC j/k will run the original command in MOTION state.
+	 '("j" . "H-j")
+	 '("k" . "H-k")
+	 ;; Use SPC (0-9) for digit arguments.
+	 '("1" . meow-digit-argument)
+	 '("2" . meow-digit-argument)
+	 '("3" . meow-digit-argument)
+	 '("4" . meow-digit-argument)
+	 '("5" . meow-digit-argument)
+	 '("6" . meow-digit-argument)
+	 '("7" . meow-digit-argument)
+	 '("8" . meow-digit-argument)
+	 '("9" . meow-digit-argument)
+	 '("0" . meow-digit-argument)
+	 '("/" . meow-keypad-describe-key)
+	 '("?" . meow-cheatsheet))
+	(meow-normal-define-key
+	 '("0" . meow-expand-0)
+	 '("9" . meow-expand-9)
+	 '("8" . meow-expand-8)
+	 '("7" . meow-expand-7)
+	 '("6" . meow-expand-6)
+	 '("5" . meow-expand-5)
+	 '("4" . meow-expand-4)
+	 '("3" . meow-expand-3)
+	 '("2" . meow-expand-2)
+	 '("1" . meow-expand-1)
+	 '("-" . negative-argument)
+	 '(";" . meow-reverse)
+	 '("," . meow-inner-of-thing)
+	 '("." . meow-bounds-of-thing)
+	 '("[" . meow-beginning-of-thing)
+	 '("]" . meow-end-of-thing)
+	 '("a" . meow-append)
+	 '("A" . meow-open-below)
+	 '("b" . meow-back-word)
+	 '("B" . meow-back-symbol)
+	 '("c" . meow-change)
+	 '("d" . meow-delete)
+	 '("D" . meow-backward-delete)
+	 '("e" . meow-next-word)
+	 '("E" . meow-next-symbol)
+	 '("f" . meow-find)
+	 '("g" . meow-cancel-selection)
+	 '("G" . meow-grab)
+	 '("h" . meow-left)
+	 '("H" . meow-left-expand)
+	 '("i" . meow-insert)
+	 '("I" . meow-open-above)
+	 '("j" . meow-next)
+	 '("J" . meow-next-expand)
+	 '("k" . meow-prev)
+	 '("K" . meow-prev-expand)
+	 '("l" . meow-right)
+	 '("L" . meow-right-expand)
+	 '("m" . meow-join)
+	 '("n" . meow-search)
+	 '("o" . meow-block)
+	 '("O" . meow-to-block)
+	 '("p" . meow-yank)
+	 '("q" . meow-quit)
+	 '("Q" . meow-goto-line)
+	 '("r" . meow-replace)
+	 '("R" . meow-swap-grab)
+	 '("s" . meow-kill)
+	 '("t" . meow-till)
+	 '("u" . meow-undo)
+	 '("U" . meow-undo-in-selection)
+	 '("v" . meow-visit)
+	 '("w" . meow-mark-word)
+	 '("W" . meow-mark-symbol)
+	 '("x" . meow-line)
+	 '("X" . meow-goto-line)
+	 '("y" . meow-save)
+	 '("Y" . meow-sync-grab)
+	 '("z" . meow-pop-selection)
+	 '("'" . repeat)
+	 '("<escape>" . ignore)))
+  (require 'meow)
+  (meow-setup)
+  (meow-global-mode 1)
+#+end_src
+** Terminal
+#+begin_src emacs-lisp
+  (use-package eat :hook (eshell-load . eat-eshell-mode))
+#+end_src
+** Linting & Formatting
+#+begin_src emacs-lisp
+  (use-package clang-format)
+#+end_src
+** Lispy stuff
+*** Balancing Parens
+#+begin_src emacs-lisp
+  (use-package paredit
+    :hook ((lisp-mode emacs-lisp-mode scheme-mode) . paredit-mode))
+#+end_src
+*** Rainbow Parens
+#+begin_src emacs-lisp
+  (use-package rainbow-delimiters
+    :hook ((lisp-mode emacs-lisp-mode scheme-mode) . rainbow-delimiters-mode))
+#+end_src
+*** Indententation
+#+begin_src emacs-lisp
+  (use-package aggressive-indent
+    :hook ((lisp-mode emacs-lisp-mode scheme-mode) . aggressive-indent-mode))
+#+end_src
+** Treesitter
+#+begin_src emacs-lisp
+    (use-package treesit
+    :commands (treesit-install-language-grammar treesit-install-all-languages)
+    :init
+    (setq treesit-language-source-alist
+     '((bash . ("https://github.com/tree-sitter/tree-sitter-bash"))
+       (c . ("https://github.com/tree-sitter/tree-sitter-c"))
+       (cpp . ("https://github.com/tree-sitter/tree-sitter-cpp"))
+       (css . ("https://github.com/tree-sitter/tree-sitter-css"))
+       (cmake . ("https://github.com/uyha/tree-sitter-cmake"))
+       (html . ("https://github.com/tree-sitter/tree-sitter-html"))
+       (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript"))
+       (json . ("https://github.com/tree-sitter/tree-sitter-json"))
+       (make . ("https://github.com/alemuller/tree-sitter-make"))
+       (python . ("https://github.com/tree-sitter/tree-sitter-python"))
+       (php . ("https://github.com/tree-sitter/tree-sitter-php"))
+       (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
+       (tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src"))
+       (rust . ("https://github.com/tree-sitter/tree-sitter-rust"))
+       (sql . ("https://github.com/m-novikov/tree-sitter-sql"))
+       (toml . ("https://github.com/tree-sitter/tree-sitter-toml"))
+       (zig . ("https://github.com/maxxnino/tree-sitter-zig"))))
+    :config
+    (defun treesit-install-all-languages ()
+      "Install all languages specified by `treesit-language-source-alist'."
+      (interactive)
+      (let ((languages (mapcar 'car treesit-language-source-alist)))
+        (dolist (lang languages)
+            (treesit-install-language-grammar lang)
+            (message "`%s' parser was installed." lang)
+            (sit-for 0.75)))))
+#+end_src
+** Eglot
+#+begin_src emacs-lisp
+  (use-package company
+    :hook
+    (zig-mode . company-mode))
+  (use-package jsonrpc)
+  (use-package eglot
+    :hook
+    (zig-mode . eglot-ensure)
+    :config
+    (setq eglot-autoshutdown t)
+    (add-to-list 'eglot-server-programs '(zig-mode . ("~/zls"))))
+#+end_src
+** Zig
+#+begin_src emacs-lisp
+ (use-package zig-mode) 
+#+end_src
+** Manifests
+#+begin_src emacs-lisp
+    (use-package buffer-env
+      :config
+      (add-hook 'hack-local-variables-hook #'buffer-env-update)
+      (add-hook 'comint-mode-hook #'buffer-env-update)
+      :custom
+      (buffer-env-script-name "manifest.scm"))
+#+end_src
+* UX
+** Remove decorations on window
+#+begin_src emacs-lisp
+  (scroll-bar-mode -1)
+  (tool-bar-mode -1)
+  (menu-bar-mode -1)
+  (add-to-list 'default-frame-alist '(undecorated . t))
+  (setf frame-title-format "%b - Emacs")
+#+end_src
+when the Window (window manager) is not in focus, remove modeline for less noise
+** Font setup
+#+begin_src emacs-lisp
+  (set-face-attribute 'default nil :font "Iosevka Term" :height 140)
+  (set-face-attribute 'variable-pitch nil :font "Iosevka Etoile")
+  (set-face-attribute 'org-modern-symbol nil :font "Iosevka Etoile")
+#+end_src
+** Sweet sweet opacity
+#+begin_src emacs-lisp
+  (add-to-list 'default-frame-alist '(alpha-background . 90))
+#+end_src
+** Line & Column Numbers
+#+begin_src emacs-lisp
+  (setf display-line-numbers-type t)
+  (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+  (column-number-mode 1)
+#+end_src
+** Highlight current line
+#+begin_src emacs-lisp
+  (global-hl-line-mode 1)
+#+end_src
+* Organization & Work
+#+begin_src emacs-lisp
+  (defun ll/org-hook ()
+    (org-indent-mode)
+    (org-modern-mode)
+    (mixed-pitch-mode)
+    (auto-fill-mode 0)
+    (visual-line-mode 1))
+  (defun ll/org-agenda-hook ()
+    "Hook to run olivetti mode when entering org-agenda"
+    (olivetti-mode))
+  (defun ll/org-agenda-view-day ()
+    (interactive)
+    (org-agenda nil "d"))
+  (defun ll/org-agenda-view-todos ()
+    (interactive)
+    (org-agenda nil "t"))
+
+  (setq org-todo-keywords
+        '((sequence "TODO" "WORKING" "COMPLETE")))
+  (setq org-clock-in-switch-to-state "WORKING")
+  (setq org-clock-out-switch-to-state "TODO")
+  (setq org-agenda-custom-commands
+        '(("d" "Today's Tasks"
+           ((agenda "" ((org-agenda-span 1)
+                        (org-agenda-overriding-header "Today's Task")))))))
+  (setq org-agenda-files
+        (directory-files-recursively "~/docs/org" "\\.org$"))
+
+  (add-hook 'org-mode-hook 'll/org-hook)
+  (add-hook 'org-agenda-mode-hook 'll/org-agenda-hook)
+  (keymap-global-set "C-c a d" #'ll/org-agenda-view-day)
+  (keymap-global-set "C-c a t" #'ll/org-agenda-view-todos)
+
+  (setq org-src-window-setup 'current-window) ; C-c ' in same window
+#+end_src
+* Writing
+Lint any prose based on =$HOME/.vale.ini=
+
+#+begin_src emacs-lisp
+  (flycheck-define-checker
+   vale
+   "A checker for prose"
+   :command ("vale" "--output" "line" source)
+   :standart-input nil
+   :error-patterns
+   ((error
+     line-start (file-name) ":" line ":" column ":" (id (one-or-more (not (any ":")))) ":" (message) line-end))
+   :modes (markdown-mode org-mode text-mode))
+#+end_src
+Export LaTeX using the =sffms=, science fiction/fantasy manuscript, module
+#+begin_src emacs-lisp
+  (with-eval-after-load 'ox-latex
+    (add-to-list 'org-latex-classes
+		 '("fiction" "
+  \\documentclass[submission,latterpaper,courier]{sffms}
+  [NO-DEFAULT-PACKAGES]
+  [PACKAGES]
+  [EXTRA]
+  "
+		   ("\\chapter*{%s" . "\\chapter*{%s}"))))
+  (setq org-latex-hyperref-template "")
+#+end_src
+Export compatible with copy & pasting to submission forms, such as AO3, Fanfiction.net, &c
+#+begin_src emacs-lisp
+#+end_src
+* Reading
+* Programming
+** Guile
+#+begin_src emacs-lisp
+  (setf geiser-guile-binary "/run/current-system/profile/bin/guile")
+
+  (defvar geiser-guix-repl-binary (concat user-emacs-directory "/guix-repl.sh")
+    "Binary to run when interacting with Guix via geiser")
+  (defvar geiser-guix-channel-repl-binary (concat user-emacs-directory "/guix-channel-repl.sh")
+    "Binary to run when interacting with a Guix channel via geiser")
+  (defun guix-geiser ()
+    (interactive)
+    (let ((geiser-guile-binary geiser-guix-repl-binary))
+      (geiser 'guile)))
+  (defun guix-artoria-geiser ()
+    (interactive)
+    (let ((geiser-guile-binary geiser-guix-channel-repl-binary))
+      (geiser 'guile)))
+#+end_src
+** PHP
+#+begin_src emacs-lisp
+#+end_src
+** Typescript
+#+begin_src emacs-lisp
+#+end_src
+** C-language
+Includes a messy hack to format-on-save. 
+#+begin_src emacs-lisp
+  (defun clang-format-on-save ()
+    "Format the buffer before save."
+    (when (locate-dominating-file "." ".clang-format") (clang-format-buffer)))
+  
+  (add-hook
+   'c-mode-hook (lambda () (add-hook 'before-save-hook 'clang-format-on-save nil t)))
+   #+end_src
+** Rust
+#+begin_src emacs-lisp
+#+end_src

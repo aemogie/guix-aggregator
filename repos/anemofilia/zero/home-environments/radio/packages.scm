@@ -1,0 +1,320 @@
+(define-module (home-environments radio packages)
+  #|GNU packages|#
+  #|A|# #:use-module (gnu packages admin)
+  #|B|# #:use-module (gnu packages base)
+        #:use-module (gnu packages bittorrent)
+  #|C|# #:use-module (gnu packages c)
+        #:use-module (gnu packages calendar)
+        #:use-module (gnu packages commencement)
+        #:use-module (gnu packages curl)
+  #|D|# #:use-module (gnu packages databases)
+        #:use-module (gnu packages dictionaries)
+  #|E|# #:use-module (gnu packages emacs)
+        #:use-module (gnu packages emacs-xyz)
+  #|F|# #:use-module (gnu packages file)
+        #:use-module (gnu packages fonts)
+        #:use-module (gnu packages freedesktop)
+  #|G|# #:use-module (gnu packages games)
+        #:use-module (gnu packages glib)
+        #:use-module (gnu packages gnu-doc)
+        #:use-module (gnu packages gnupg)
+        #:use-module (gnu packages gtk)
+        #:use-module (gnu packages guile)
+        #:use-module (gnu packages guile-xyz)
+  #|H|# #:use-module (gnu packages haskell)
+        #:use-module (gnu packages haskell-apps)
+        #:use-module (gnu packages haskell-xyz)
+  #|I|# #:use-module (gnu packages image)
+        #:use-module (gnu packages image-viewers)
+        #:use-module (gnu packages imagemagick)
+        #:use-module (gnu packages irc)
+  #|L|# #:use-module (gnu packages libcanberra)
+        #:use-module (gnu packages linux)
+  #|M|# #:use-module (gnu packages mail)
+        #:use-module (gnu packages maths)
+        #:use-module (gnu packages messaging)
+        #:use-module (gnu packages minetest)
+  #|O|# #:use-module (gnu packages ocr)
+  #|P|# #:use-module (gnu packages password-utils)
+        #:use-module (gnu packages pdf)
+  #|R|# #:use-module (gnu packages rust-apps)
+  #|S|# #:use-module (gnu packages scheme)
+        #:use-module (gnu packages shells)
+        #:use-module (gnu packages ssh)
+        #:use-module (gnu packages suckless)
+        #:use-module (gnu packages syndication)
+  #|T|# #:use-module (gnu packages telegram)
+        #:use-module (gnu packages terminals)
+        #:use-module (gnu packages tex)
+        #:use-module (gnu packages text-editors)
+        #:use-module (gnu packages tmux)
+        #:use-module (gnu packages toys)
+  #|V|# #:use-module (gnu packages version-control)
+        #:use-module (gnu packages video)
+  #|W|# #:use-module (gnu packages web)
+        #:use-module (gnu packages wm)
+  #|X|# #:use-module (gnu packages xdisorg)
+        #:use-module (gnu packages xorg)
+  #|Z|# #:use-module (gnu packages zig-xyz)
+
+  #|Radix packages|#
+  #|B|# #:use-module (radix packages browser-extensions)
+  #|D|# #:use-module (radix packages disk)
+  #|I|# #:use-module (radix packages image-viewers)
+  #|E|# #:use-module (radix packages emacs-xyz)
+  #|F|# #:use-module (radix packages fish-xyz)
+        #:use-module (radix packages fonts)
+        #:use-module (radix packages freedesktop)
+  #|G|# #:use-module (radix packages games)
+  #|K|# #:use-module (radix packages kak-xyz)
+  #|M|# #:use-module (radix packages music)
+  #|P|# #:use-module (radix packages pulseaudio)
+  #|S|# #:use-module (radix packages seninha)
+  #|T|# #:use-module (radix packages text-editors)
+        #:use-module (radix packages toys)
+  #|V|# #:use-module (radix packages video)
+  #|W|# #:use-module (radix packages wm)
+  #|X|# #:use-module (radix packages xdisorg)
+
+  #|Saayix packages|#
+  #|B|# #:use-module (saayix packages binaries)
+  #|W|# #:use-module (saayix packages wm)
+
+  #:export (blogging
+            calendar
+            databases
+            desktop
+            development
+            documentation
+            downloads
+            emacs
+            file-managing
+            fonts
+            games
+            guix-contrib
+            haskell
+            image
+            messaging
+            music
+            password
+            reading
+            scheme
+            sound
+            tex
+            video
+            web))
+
+(define blogging
+  (list #|guile-xyz|# haunt))
+
+(define calendar
+  (list #|calendar|# remind))
+
+(define databases
+  (list #|databases|# recutils))
+
+(define desktop
+  (list #|admin      |# fastfetch
+        #|freedesktop|# xdg-utils xdg-desktop-portal xdg-desktop-portal-wlr
+                        xdg-desktop-portal-termfilechooser xdg-terminal-exec
+        #|glib       |# dbus
+        #|image      |# grim slurp
+        #|libcanberra|# sound-theme-freedesktop
+        #|terminals  |# foot
+        #|toys       |# wayneko
+        #|wm         |# eww/wayland fnott lswt river-bedload rivercarro wbg
+        #|web        |# jq
+        #|xdisorg    |# fuzzel-lowercase wl-clipboard wlrctl wlsunset
+        #|zig-xyz    |# river))
+
+(define development
+  (list #|admin         |# tree
+        #|base          |# patch
+        #|gnupg         |# gnupg pinentry
+        #|math          |# libqalculate
+        #|ssh           |# openssh
+        #|text-editors  |# kakoune kak-lsp
+        #|kak-xyz       |# kak-auto-pairs kak-board kak-buffers
+                           kak-phantom-selection kak-rainbower kak-state-save
+                           kak-snippets kak-surround kak-tree-sitter
+        #|tmux          |# tmux
+        #|vesion-control|# diff-so-fancy git))
+
+(define documentation
+  (list #|c      |# c-intro-and-ref
+        #|gnu-doc|# gnu-standards
+        #|scheme |# r7rs-small-texinfo sicp))
+
+(define downloads
+  (list #|bittorrent|# aria2 qbittorrent
+        #|curl      |# curl
+        #|video     |# yt-dlp))
+
+(define file-managing
+  (list #|disk         |# lf
+        #|file         |# file
+        #|haskell-xyz  |# pandoc
+        #|image-viewers|# chafa
+        #|pdf          |# img2pdf poppler
+        #|seninha      |# fmutils
+        #|video        |# ffmpegthumbnailer))
+
+(define fonts
+  (list #|fonts|# font-awesome font-google-noto font-google-noto-emoji
+                  font-juliamono font-liberation font-meslo-lg-dz
+                  font-misc-misc font-un font-wqy-zenhei))
+
+(define games
+  (list #|games|# minetest red-eclipse srb2 supertuxkart xonotic))
+
+(define guix-contrib
+  (list #|mail           |# mumi
+        #|version-control|# git `(,git "send-email")))
+
+(define haskell
+  (list #|commencement|# gcc-toolchain
+        #|haskell     |# ghc
+        #|haskell-xyz |# ghc-async ghc-base-prelude ghc-basement
+                         ghc-basic-prelude ghc-chart ghc-groups
+        #|haskell-apps|# hoogle))
+
+(define image
+  (list #|image-viewers|# imv
+        #|ocr          |# tesseract-ocr))
+
+(define messaging
+  (list #|telegram |# telegram-desktop
+        #|mail     |# aerc
+        #|messaging|# senpai))
+
+(define music
+  (list #|music|# kew))
+
+(define password
+  (list #|password-utils|# password-store tessen))
+
+(define reading
+  (list #|dictionaries|# translate-shell
+        #|pdf         |# sioyek
+        #|syndication |# newsraft))
+
+(define scheme
+  (list #|guile    |# guile-next guile-colorized guile-readline
+        #|guile-xyz|# guile-goblins guile-hoot guile-lib guile-srfi-197
+                      guile-srfi-232))
+
+(define tex
+  (list #|tex|# rubber
+                texlive-collection-fontsextra
+                texlive-collection-fontsrecommended
+                texlive-collection-latexextra
+                texlive-collection-luatex
+                texlive-collection-langportuguese
+                texlive-collection-langenglish
+                texlive-collection-langfrench
+                texlive-collection-mathscience))
+
+(define sound
+  (list #|linux     |# wireplumber-minimal
+        #|pulseaudio|# ncpamixer
+        #|rust-apps |# helvum))
+
+(define video
+  (list #|video|# ffmpeg mpv-minimal/wayland))
+
+(define web
+  (list #|binaries|# zen-browser-bin
+        #|gtk     |# gtk+ #;(needed for zen not crash when using termfilechooser)))
+
+(define emacs:base
+  (list emacs-next-pgtk
+        emacs-no-littering
+        emacs-centaur-tabs
+        emacs-helpful))
+
+(define emacs:modeline
+  (list emacs-diminish))
+
+(define emacs:completion
+  (list emacs-anzu emacs-cape emacs-corfu emacs-corfu-doc emacs-consult-lsp
+        emacs-marginalia emacs-orderless emacs-vertico))
+
+(define emacs:file-managing
+  (list emacs-dirvish emacs-dired-hide-dotfiles emacs-all-the-icons imagemagick))
+
+(define emacs:ide
+  (list emacs-magit emacs-hl-fill-column emacs-origami-el))
+
+(define emacs:guile
+  (list emacs-arei guile-ares-rs emacs-macrostep-geiser emacs-geiser-eros
+        emacs-flycheck emacs-flycheck-guile emacs-lispy emacs-rainbow-delimiters
+        emacs-lispyville emacs-isayt emacs-puni))
+
+(define emacs:guix
+  (cons emacs-guix emacs:guile))
+
+(define emacs:haskell
+  (list emacs-haskell-mode emacs-dante))
+
+(define emacs:themes
+  (list emacs-ef-themes))
+
+;; https://github.com/oantolin/embark ?
+(define emacs:modal-editing
+  (list emacs-meow
+        emacs-zones emacs-expand-region emacs-ryo-modal emacs-visual-regexp
+        emacs-undo-tree
+        emacs-selected emacs-crux))
+
+(define emacs:misc
+  (list emacs-osm emacs-pulsar))
+
+(define emacs:communication
+  (list emacs-circe emacs-notmuch))
+
+(define emacs:mathematics
+  (list emacs-lean4-mode))
+
+(define emacs:org
+  (list emacs-org-auto-tangle emacs-org-bullets emacs-org-fragtog emacs-org-present
+        emacs-org-roam emacs-org-modern emacs-olivetti)) ;emacs-org-pdftools
+
+(define emacs:studying
+  (list emacs-gnosis
+        emacs-hyperbole
+        emacs-pdf-tools
+        emacs-saveplace-pdf-view))
+
+(define emacs:social-media
+  (list emacs-mastodon))
+
+(define emacs:terminal
+  (list emacs-eat))
+
+(define emacs:writing
+  (list emacs-auctex emacs-latex-preview-pane))
+
+(define emacs:blogging
+  (cons* emacs-ox-haunt
+         emacs:writing))
+
+(define emacs
+  (append emacs:base
+          emacs:blogging
+          emacs:completion
+          emacs:communication
+          emacs:file-managing
+          emacs:guile
+          emacs:guix
+          emacs:haskell
+          emacs:ide
+          emacs:mathematics
+          emacs:misc
+          emacs:modal-editing
+          emacs:modeline
+          emacs:org
+          emacs:studying
+          emacs:social-media
+          emacs:terminal
+          emacs:themes
+          emacs:writing))

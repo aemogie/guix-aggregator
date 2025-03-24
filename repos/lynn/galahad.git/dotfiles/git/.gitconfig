@@ -1,0 +1,42 @@
+[user]
+	email = lynn@lynn.sh
+	name = Lynn Leichtle
+	signingkey = 55E797F631DDA03C
+[sendemail]
+	smtpServer = 127.0.0.1
+	smtpServerPort = 1025
+	smtpEncryption = tls
+	smtpUser = lynn@lynn.sh
+	smtpSSLCertPath = ~/ssl/cert.pem
+	
+[core]
+	editor = emacsclient -c 
+[alias]
+  aa = add -A
+  s = status -sb
+  c = commit
+  co = checkout
+  cob = checkout -b
+  cm = commit -S -m
+  last = log -1 HEAD --stat
+  ln = "!f() { git log -n $1 --author $2; }; f"
+  bcleano = "!f() { git branch --merged ${1-master} | grep -v " ${1-master}$" | xargs -r git branch -d; }; f"
+  bclean = "!f() { git branch --merged ${1-main} | grep -v " ${1-main}$" | xargs -r git branch -d; }; f"
+  plus = commit -a --amend -C HEAD
+  new = !sh -c 'git log $1@{1}..$1@{0} "$@"'
+  del = branch -D
+  undo = reset HEAD~1 --mixed
+  dvim = difftool -t nvimdiff
+  search = !git rev-list --all | xargs git grep -F
+  bl = branch --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(contents:subject) %(color:green)(%(committerdate:relative)) [%(authorname)]' --sort=-committerdate
+  lg = !git log --pretty=format:\"%C(magenta)%h%Creset -%C(red)%d%Creset %s %C(dim green)(%cr) [%an]\" --abbrev-commit -30
+[credential]
+	helper = store
+[http]
+	sslVerify = true
+[push]
+	autoSetupRemote = true
+[init]
+	defaultBranch = main
+[commit]
+	gpgsign = true

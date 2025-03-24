@@ -1,0 +1,56 @@
+#!/usr/bin/env -S guile
+!#
+
+(use-modules (ice-9 pretty-print)
+             (ice-9 match)
+             (srfi srfi-1)
+             (ice-9 readline))
+
+(define (read-port port)
+  (let iter ((result '()) (chr (read-char port)))
+    (if (eof-object? chr)
+        (list->string result)
+        (iter (append result (list chr)) (read-char port)))))
+
+(define str (read-port (current-input-port)))
+
+(define (false-if-empty s)
+  (if (equal? s "")
+      #f
+      s))
+
+(define (get-lines s)
+  (define l
+    (string-split s #\newline))
+  (filter-map false-if-empty l))
+
+(define (get-package s)
+  (define p
+    (last
+      (string-split
+        (first (string-split s #\)))
+        #\()))
+  (false-if-empty p))
+
+(define formatted-str
+  (let* ((lines (get-lines str))
+         (packages (filter-map get-package lines))
+         (first-line (car lines))
+         (rest-lines (cdr lines)))
+    (define (get-useful-part s)
+      (string-append
+        (first (string-split s #\:))
+        ":"))
+    (define (lst-to-string l)
+      (fold string-append "" l))
+    (string-join
+      (cons* first-line
+             (map (lambda (m)
+                    (string-append "(" (get-package m) "):"
+                                   " Inherit from "
+                                   (first packages)
+                                   "."))
+                  rest-lines))
+      "\n")))
+
+(display formatted-str)

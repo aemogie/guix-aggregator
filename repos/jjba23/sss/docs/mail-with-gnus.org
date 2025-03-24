@@ -1,0 +1,783 @@
+#+title: Mail management with GNUS
+
+I have recently taken on the mission of fixing and organizing my insanely cluttered and disorganized mail inboxes in several accounts.
+
+In contrast to my computer, and software that I write, which are organized, structured and neat, my e-mail looks more like Azathoth's wrath was unleashed upon it.
+
+Check the extensive GNUS manual for more information: [[https://www.gnu.org/software/emacs/manual/html_node/gnus/Don_0027t-Panic.html][here]].
+
+** Preparing
+
+For starters, if you plan to use Gmail with GNUS you should create an "application password" which will allow you to connect without OAuth. Note that this is a different password than the usual one, and is buried inside your Google account settings.
+
+Then add your info in ~~/.authinfo~
+#+begin_src
+machine imap.gmail.com login you@gmail.com port imaps password mypassword
+machine smtp.gmail.com login you@gmail.com password mypassword port 587
+#+end_src
+
+Then configure GNUS to use Gmail (tweak ~~/.gnus.el~):
+#+begin_src elisp
+(setq user-mail-address "you@gmail.com")
+(setq user-full-name "Your Name")
+
+(setq gnus-select-method
+      '(nnimap "gmail"
+	       (nnimap-address "imap.gmail.com")  ; it could also be imap.googlemail.com if that's your server.
+	       (nnimap-server-port "imaps")
+	       (nnimap-stream ssl)))
+
+(setq smtpmail-smtp-server "smtp.gmail.com"
+      smtpmail-smtp-service 587
+      gnus-ignored-newsgroups "^to\\.\\|^[0-9. ]+\\( \\|$\\)\\|^[\"]\"[#'()]")
+
+#+end_src
+
+
+Then ~M-x gnus~ should work. You might need ~libxml2~ installed to read HTML mail.
+
+
+* Practical guide to use Gnus with Gmail                                        :emacs:gnus:email:gmail:
+
+Gnus is a good email client.
+
+But many newbies get lost in its features. It would be much easier if they had learned the *essential 5% features* and ignored the remaining 95% at the beginning.
+
+Here is my guide on that 5%.
+
+** Why (OPTIONAL)
+- Gnus is *solid*
+- Works on all platforms
+- Less hardware resource required
+- Searcher and filter is great
+- Mail can be viewed when offline. See the "offline" in section "Advanced tips"
+- Powerful when used with other Emacs plugins like [[https://github.com/capitaomorte/yasnippet][yasnippet]]
+
+** Quick start
+*** Things you need to know at first
+- This guide applies to Emacs24+
+- You need install GnuTLS and OpenSSH on Linux/Mac/Window(Cygwin)
+- =C= means =Ctrl= and =M= means =Alt=. For example, =M-x= means pressing =Alt= and =x= together.
+- =M-x mycommand= means pressing =Alt= and =x=, input "mycommand", and press =Enter= key.
+- =RET= means =Enter= key
+- =Group= means the mail folder
+- =Group buffer= is the buffer listing folders
+- =Summary buffer= is the buffer listing mails
+- =~= means HOME directory. The full path of =~= is setup in the environment variable =HOME=. For example, =~/.gnus.el= means a file named =.gnus.el= is placed in HOME directory. *Only* on windows, you must setup HOME environment variable manually. If you are a windows user, please setup HOME right now!
+*** Sample setup
+=M-x gnus= will load =~/.gnus.el=. Usually we place all setup code in =~/.gnus.el= so third party libraries used only by Gnus is not loaded during Emacs startup.
+
+Before start Gnus, you *must* create =.gnus.el=. Please check [[http://www.emacswiki.org/emacs/GnusGmail]] or use my setup at the end of this article.
+*** Usage
+After starting Gnus by =M-x gnus=, you come to the "Group Buffer". The "Group Buffer" lists the mail folders. In Gnus, the folder is called "Group". By default, the folders are *invisible*!
+
+You need subscribe the groups to make it visible. For example, INBOX is named "nnimap+gmail:INBOX" in "Group Buffer" and *it's invisible* at the beginning!. I admit it's confusing.
+
+Check section "Subscribe groups" for details.
+
+At minimum, you need subscribe INBOX group. The subscribed groups could still be *invisible* if they contains NO unread mails. Yes, I admit this makes no sense for a modern email client!
+
+You need =C-u 5 M-x gnus-group-list-all-groups= to solve this problem.
+
+You can insert below code into =~/.gnus= to create hotkey =o= for =C-u 5 M-x gnus-group-list-all-groups= :
+#+BEGIN_SRC emacs-lisp
+(defun my-gnus-group-list-subscribed-groups ()
+  "List all subscribed groups with or without un-read messages"
+  (interactive)
+  (gnus-group-list-all-groups 5))
+
+(define-key gnus-group-mode-map
+  ;; list all the subscribed groups even they contain zero un-read messages
+  (kbd "o") 'my-gnus-group-list-subscribed-groups)
+#+END_SRC
+
+In the "Group Buffer", you can enter a folder by pressing =RET=. But I strongly suggest using =C-u RET= in order to see all the mails instead of unread mails.
+
+In the folder, you are viewing "Summary Buffer" which is, as I said before, the list of your mails.
+
+Now it's simple. Press =RET= to see the mail. Press =q= to quit "Summary Buffer".
+
+In short, "Group Buffer" lists mail folders. "Summary Buffer" lists mails in one folder.
+
+That's all you need to know. You could go to section "My Gnus configuration (for Gmail)" to use Gnus now without reading remaining sections.
+** Essential 5%
+Don't memorize all key bindings. Only pick up what you actually use.
+
+At the end of this article, I provides *my [[https://github.com/abo-abo/hydra][Hydra]] setup* so you don't need remembering key binding any more.
+
+Please check section "Use Hydra to avoid remembering key bindings" for more details.
+*** Search mails
+Press =G G= or =M-x gnus-group-make-nnir-group= to search mails at *server side* in "Group Buffer".
+
+You can press =#= to mark the groups.  Search will be limited to marked groups. =M-#= to un-mark.
+
+If no group marked, the group under cursor is searched.
+
+Place the cursor before the first group, all groups will be searched.
+
+To search certain fields in the mail, press =C-u G G= or =C-u M-x gnus-group-make-nnir-group= instead. This is a very useful technique.
+
+You can apply [[http://tools.ietf.org/html/rfc3501#section-6.4.4][more advanced search syntax (RFC3501 section SEARCH command)]] by:
+- Press =C-u G G= or =C-u M-x gnus-group-make-nnir-group=
+- Input query statements, press Enter
+- Type =imap=, press Enter
+
+For example, I can use query like =TEXT github SINCE 1-Jan-2016 FROM chenbin= to search mails which are sent by me and contains keyword =github= on year 2016.
+
+People who dislike "friendly" RFC3501 could use [[https://support.google.com/mail/answer/7190?hl=en][Gmail]] syntax for search ([[https://github.com/rhashimoto][Roy Hashimoto]] provides this tip),
+#+begin_src elisp
+;; Let Gnus know Gmail search syntax
+(add-to-list 'nnir-imap-search-arguments '("gmail" . "X-GM-RAW"))
+;; `gnus-group-make-nnir-group' use Gmail search syntax *by default*.
+;; You can press `G G` instead `C-u G G` instead.
+(setq nnir-imap-default-search-key "gmail")
+#+end_src
+*** Filter mails locally
+Press =/ /= to limit the mails by subject at "Summary Buffer". "Limiting" means *filtering mails locally*.
+
+Press =/ a= to limit the mails by author.
+
+=/ w= to cancel the current filter.
+
+You can apply the limits sequentially and cancel them in reverse order by pressing =/ w= multiple times.
+
+"Limiting" is cool. See [[http://www.gnu.org/software/emacs/manual/html_mono/gnus.html#Limiting]] for more Limiting tricks.
+
+You can also see [[http://sachachua.com/blog/2008/05/emacs-gnus-searching-mail/]] for technical details.
+
+*** Subscribe groups
+Press =A A= or =M-x gnus-group-list-active= in "Group Buffer" to fetch groups at *all connected server*. It take a while. I suggest pressing "L" to use local cache instead after =A A= once.
+
+After =A A= or =L=, press =u= to subscribe/unsubscribe specific group.
+
+In order to see all the mails in "INBOX" folder/group, you need *MANUALLY* subscribe the group "INBOX"!
+
+Pressing =o= is *much better*. It is the hotkey I created for =C-u 5 M-x gnus-group-list-all-groups=, as mentioned in previous sections.
+
+Press =g= or =M-x gnus-group-get-new-news= to refresh groups list.
+
+You can also subscribe groups programmatically. Insert below code into =~/.gnus.el=:
+#+begin_src elisp
+(defvar gnus-subscribe-groups-done nil
+  "Only subscribe groups once.  Or else Gnus will NOT restart.")
+(unless gnus-subscribe-groups-done
+  (gnus-subscribe-hierarchically "nnimap+hotmail:Inbox")
+  (setq gnus-subscribe-groups-done t))
+#+end_src
+*** Reply email
+Press =R= or =M-x gnus-summary-reply-with-original= to reply WITH quoted text. Press =r= or =M-x gnus-summary-reply= to reply WITHOUT quoted text.
+
+Press =S W= (capitalized S then capitalized W) or =M-x gnus-summary-wide-reply-with-original= to reply all WITH quoted text. It's called "wide reply" in Emacs.
+
+Press =S w= or =M-x gnus-summary-wide-reply= to reply all WITHOUT quoted text.
+*** Compose new email
+Press =m= or =M-x gnus-new-mail= in "Summary Buffer".
+
+You could also =C-x m= or =M-x compose-mail= anywhere in Emacs without bugging Gnus.
+*** Re-send as new mail
+Press =S D e= or =M-x gnus-summary-resend-message-edit=. For example, you may need re-send mail in Draft folder.
+*** Attach a file
+Press =C-c C-a= or =M-x mml-attach-file=.
+
+The attached file is actually plain text embedded in mail body. You can copy and modify the text.
+*** Save attachment
+Move *focus over the attachment* and press =o= or =M-x gnus-mime-save-part=. See "[[http://www.gnu.org/software/emacs/manual/html_node/gnus/Using-MIME.html][Using Mime]]" in Emacs manual for details.
+*** Open attachment
+Move *focus over the attachment* and press =Enter= or =M-x gnus-article-press-button=.
+
+The variable [[https://www.gnu.org/software/emacs/manual/html_node/emacs-mime/mailcap.html][mailcap-mime-data]] defines the program to open the attachment.
+
+You can tweak the variable on Windows or OSX.
+
+On Linux, I press =M-x mailcap-parse-mailcaps= to load data from ~/.mailcap into =mailcap-mime-data= instead of tweaking =mailcap-mime-data= directly.
+
+My =~/.mailcap=:
+#+begin_src conf
+# url
+text/html; w3m -I %{charset} -T text/html; copiousoutput;
+
+# image viewer
+image/*; feh -F -d -S filename '%s';
+
+# pdf
+application/pdf; zathura '%s';
+image/pdf; zathura '%s'
+
+# video
+video/* ; mplayer '%s'
+audio/* ; mplayer '%s'
+
+# Office files.
+application/msword; soffice '%s'
+application/rtf; soffice '%s'
+text/richtext; soffice '%s'
+application/vnd.ms-excel; soffice '%s'
+application/vnd.ms-powerpoint; soffice '%s'
+#+end_src
+
+*** Send email
+Press =C-c C-c= or =M-x message-send-and-exit=.
+*** Refresh "Summary Buffer" (check new mails)
+Press =/ N= or =M-x gnus-summary-insert-new-articles=.
+*** Make all mails visible (IMPORTANT)
+Press =C-u RET= on the selected group in "Group Buffer", or =C-u M-g= in "Summary Buffer".
+
+That's the *most important part* of this article! By default, Gnus only displays unread mails.
+
+Check [[http://stackoverflow.com/questions/4982831/i-dont-want-to-expire-mail-in-gnus]] for details.
+*** Forward mail
+Press =C-c C-f= or =M-x gnus-summary-mail-forward= in "Summary Buffer".
+
+You can mark multiple mails to forward (hotkey is "#") and forward them in one mail. [[https://plus.google.com/112423173565156165016/posts][Holger Schauer]] provided the tip.
+
+After the forwarded email is created, you may copy the body of that email without sending it. The copied content could be inserted into new mail.
+*** Mark mails as read
+Press =c= either in "Summary Buffer" or "Group Buffer". This is *my favorite used command* which it's more efficient than average mail client.
+*** Tree view of mail folders
+[[http://www.gnu.org/software/emacs/manual/html_node/gnus/Group-Topics.html][Group Topics]] is used to re-organize the mail folder into tree view.
+
+For example, you can place mail folders from Gmail into "gmail" topic, mails from Outlook.com into "hotmail" topic, place "gmail" and "hotmail" under root topic "Gnus".
+
+The setup is only one line,
+#+begin_src elisp
+(add-hook 'gnus-group-mode-hook 'gnus-topic-mode)
+#+end_src
+
+After setup, you can read its [[http://www.gnu.org/software/emacs/manual/html_node/gnus/Topic-Commands.html][official manual]] to learn its commands to organize mail folders *manually*.
+
+It's tiresome to do this folder organizing thing again and again on different computers.
+
+So you'd better *use my way*.
+
+All you need to do is to insert below code into =~/.gnus.el=,
+#+begin_src elisp
+(eval-after-load 'gnus-topic
+  '(progn
+     (setq gnus-message-archive-group '((format-time-string "sent.%Y")))
+     (setq gnus-topic-topology '(("Gnus" visible)
+                                 (("misc" visible))
+                                 (("hotmail" visible nil nil))
+                                 (("gmail" visible nil nil))))
+
+     ;; Please not the key of topic is specified in my sample setup
+     (setq gnus-topic-alist '(("hotmail" ; the key of topic
+                               "nnimap+hotmail:Inbox"
+                               "nnimap+hotmail:Drafts"
+                               "nnimap+hotmail:Sent")
+                              ("gmail" ; the key of topic
+                               "INBOX"
+                               "[Gmail]/Sent Mail"
+                               "Drafts")
+                              ("misc" ; the key of topic
+                               "nnfolder+archive:sent.2015-12"
+                               "nnfolder+archive:sent.2016"
+                               "nndraft:drafts")
+                              ("Gnus")))))
+#+end_src
+
+Instead of remembering extra commands, editing above snippet is more straightforward. The only requirement is a little bit of Emacs Lisp knowledge.
+
+The flag =gnus-message-archive-group= defines *local* archive folder of sent mails. By default new folder is created *monthly*. My setup creates the folder *yearly*.
+** Advanced tips
+*** Windows setup
+It's *100% usable* if you install [[https://www.cygwin.com/][Cygwin]] at first.
+
+Gnus from Cygwin version of Emacs works out of the box.
+
+Native [[https://ftp.gnu.org/gnu/emacs/windows/][Emacs for Windows]] need a little setup:
+- Right-click "My Computer" and go to "Properties -> Advanced -> Environmental Variables"
+- Setup *user variables* which does not require Administrator right
+- Set the variable "HOME" to the parent directory of your ".emacs.d" directory
+- Set the variable "PATH" to the "C:\cygwin64\bin". I suppose Cygwin is installed at driver C.
+- Install GnuTLS and OpenSSH through Cygwin package manager
+*** Microsoft Outlook
+If your Exchange Server is not using standard protocol like IMAP or you can't access IMAP port behind firewall, you can use [[http://davmail.sourceforge.net/][DavMail]]. DavMail is a "POP/IMAP/SMTP/CalDAV/CardDAV/LDAP exchange gateway".
+
+Please read [[http://davmail.sourceforge.net/gettingstarted.html][its manual]], it's easy to setup.
+
+Here are a few tips for DavMail setup.
+
+The Administrator might use non-standard =OWA url=, you can use [[http://ewseditor.codeplex.com/][EWSEditor]] to find out the url.
+
+The IMAP setup should set =nnimap-stream= to =plain= by default.
+
+Here is a sample setup for Davmail:
+#+begin_src elisp
+(setq gnus-select-method
+      '(nnimap "companyname"
+               (nnimap-address "127.0.0.1")
+               (nnimap-server-port 1143)
+               (nnimap-stream plain)
+               (nnir-search-engine imap)))
+#+end_src
+*** Auto-complete mail address
+Install [[http://bbdb.sourceforge.net/][BBDB]]  through [[http://melpa.milkbox.net/#/bbdb][melpa]]. It is a email address database written in Emacs Lisp.
+
+You can always use =M-x bbdb-complete-name= and =M-x bbdb-complete-mail= provided by BBDB.
+
+But there are other better plugins based on BBDB (so you still need install BBDB at first):
+- [[https://github.com/redguardtoo/counsel-bbdb][counsel-bbdb]] (counsel-bbdb is a lightweight alternative developed by me)
+- [[https://github.com/company-mode/company-mode][company-mode]]
+- [[https://github.com/tumashu/bbdb-handy][bbdb-handy]]
+
+You only need one of above packages.
+*** Synchronize from Gmail contacts
+Please,
+- Go to [[https://www.google.com/contacts/]]
+- Click "More -> Export -> vCard Format -> Export"
+- Install [[https://github.com/redguardtoo/gmail2bbdb]] (developed by me) and press =M-x gmail2bbdb-import-file=. The contacts will be output into =~/.bbdb= which is automatically detected by Emacs
+
+Other plugins are strict on versions of BBDB. Mine doesn't have such issue.
+*** Customize "From" field
+Easiest solution is to switch the FROM field dynamically by =M-x toggle-mail-from-field=:
+#+begin_src elisp
+(defun toggle-mail-from-field ()
+  (interactive)
+  (cond
+   ((string= "personal@gmail.com" user-mail-address)
+    (setq user-mail-address "myname@office.com"))
+   (t
+    (setq user-mail-address "personal@gmail.com")))
+  (message "Mail FROM: %s" user-mail-address))
+#+end_src
+
+A more complex solution is setup FROM field by the computer you are using:
+#+BEGIN_SRC emacs-lisp
+;; (getenv "HOSTNAME") won't work because $HOSTNAME is not an env variable
+;; (system-name) won't work because my /etc/hosts has some weird setup in office
+(setq my-hostname (with-temp-buffer
+        (shell-command "hostname" t)
+        (goto-char (point-max))
+        (delete-char -1)
+        (buffer-string)))
+
+(defun at-office ()
+  (interactive)
+  (and (string= my-hostname "my-sydney-workpc")
+       (not (or (string= my-hostname "homepc")
+                (string= my-hostname "eee")))))
+
+(setq user-full-name "My Name"
+      user-mail-address (if (at-office) "me@mycompany.com" "me@gmail.com"))
+#+END_SRC
+
+Please note,
+- Command line program =hostname= is better than Emacs function =(system-name)=
+- I works on several computers which do *not* belong to me, so I cannot change /etc/hosts which =(system-name)= try to access
+- Please [[http://support.google.com/a/bin/answer.py?hl=en&answer=22370][verify]] your email address at Gmail if you use Google's SMTP server
+
+*** Classify email
+[[http://getpopfile.org/][Popfile]].
+
+You may think [[http://www.google.com/inbox/][Google Inbox]] equals to Popfile. Trust me, it's not. You only need Popfile!
+
+Popfile is open source software. The data is stored *locally* with my full control. For example, the algorithm trained by Gmail can be used to classify mails from Microsoft Exchange Mail Server.
+
+Check [[http://blog.binchen.org/posts/use-popfile-at-linux.html]] for details.
+
+The command I use to start popfile,
+#+begin_src bash
+cd ~/bin/popfile/ && perl popfile.pl
+#+end_src
+*** Write HTML mail
+Use [[http://orgmode.org/worg/org-contrib/org-mime.html][org-mime]].
+
+Usage is simple. Write mail in org format and =M-x org-mime-htmlize=.
+
+Please use my patched [[https://github.com/redguardtoo/][org-mime]] which supports Emacs 24.
+*** Read HTML mail
+Install [[http://w3m.sourceforge.net/][w3m]] and [[http://www.emacswiki.org/emacs/emacs-w3m][emacs-w3m]].
+
+Then insert below code into =~/.emacs=,
+#+BEGIN_SRC emacs-lisp
+(setq mm-text-html-renderer 'w3m)
+#+END_SRC
+
+If we don't specify the =w3m= as html render, Emacs will use its built in browser =shr= to render HTML since version =24.4=.
+
+I prefer =w3m= because it has powerful APIs and available on all operating systems.
+
+Some people prefer =shr= because it can display HTML colors. The =libxml= is required if you used =shr=. On windows, =libxml= need be installed manually.
+
+If you use =Cygwin= on Windows (as I said before, you have to install Cygwin because that's the easiest way to install  GnuTLS and OpenSSH), you can install =w3m= through =Cygwin=.
+*** Read mail offline
+Go to "Summary Buffer".
+
+You need mark the mails by pressing =!= or =M-x gnus-summary-tick-article-forward=.
+
+The marked mails enter the disk cache. They *can be read offline*.
+
+=M-x gnus-summary-put-mark-as-read= to remove the cached mail.
+
+You also need insert below code into ~/.emacs,
+#+BEGIN_SRC emacs-lisp
+(setq gnus-use-cache t)
+#+END_SRC
+Above code uses the cache to the full extent by "wasting" *tens of megabytes* of disk space.
+
+The disk cache is located at "~/News/cache/". You can back it up with GitHub private repository.
+*** Multiple accounts
+You only need copy the code containing "gnus-secondary-select-methods" from my setup.
+
+Here is a sample setup,
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'gnus-secondary-select-methods
+             '(nnimap "gmail-second"
+                      (nnimap-address "imap.gmail.com")
+                      (nnimap-server-port 993)
+                      (nnimap-stream ssl)
+                      (nnir-search-engine imap)
+                      ; @see http://www.gnu.org/software/emacs/manual/html_node/gnus/Expiring-Mail.html
+                      ;; press 'E' to expire email
+                      (nnmail-expiry-target "nnimap+gmail:[Gmail]/Trash")
+                      (nnmail-expiry-wait 90)))
+#+END_SRC
+
+=gnus-secondary-select-methods= is the list of your email accounts.
+
+The information of multiple accounts is stored at ~/.authinfo.gpg.
+*** Why Gnus displays more mails than Gmail
+Gnus counts by individual mail. Gmail counts by mail thread.
+*** Subscribe "[Gmail]/Sent Mail" folder
+You can see your *sent mails* in Gnus.
+*** Reconnect mail server
+Press =M-x gnus-group-enter-server-mode= to go into server list.
+
+Move the cursor to the *offline* server and =M-x gnus-server-open-server=.
+*** Use Hydra to avoid remembering key bindings
+- Install [[https://github.com/abo-abo/hydra][Hydra]] through [[http://melpa.org/]]
+- Insert below code into ~/.emacs. Then press =C-c C-y= when composing mail. Press =y= in other modes
+
+#+begin_src elisp
+(eval-after-load 'gnus-group
+  '(progn
+     (defhydra hydra-gnus-group (:color blue)
+       "Do?"
+       ("a" gnus-group-list-active "REMOTE groups A A")
+       ("l" gnus-group-list-all-groups "LOCAL groups L")
+       ("c" gnus-topic-catchup-articles "Read all c")
+       ("G" gnus-group-make-nnir-group "Search server G G")
+       ("g" gnus-group-get-new-news "Refresh g")
+       ("s" gnus-group-enter-server-mode "Servers")
+       ("m" gnus-group-new-mail "Compose m OR C-x m")
+       ("#" gnus-topic-mark-topic "mark #")
+       ("q" nil "cancel"))
+     ;; y is not used by default
+     (define-key gnus-group-mode-map "y" 'hydra-gnus-group/body)))
+
+;; gnus-summary-mode
+(eval-after-load 'gnus-sum
+  '(progn
+     (defhydra hydra-gnus-summary (:color blue)
+       "Do?"
+       ("s" gnus-summary-show-thread "Show thread")
+       ("h" gnus-summary-hide-thread "Hide thread")
+       ("n" gnus-summary-insert-new-articles "Refresh / N")
+       ("f" gnus-summary-mail-forward "Forward C-c C-f")
+       ("!" gnus-summary-tick-article-forward "Mail -> disk !")
+       ("p" gnus-summary-put-mark-as-read "Mail <- disk")
+       ("c" gnus-summary-catchup-and-exit "Read all c")
+       ("e" gnus-summary-resend-message-edit "Resend S D e")
+       ("R" gnus-summary-reply-with-original "Reply with original R")
+       ("r" gnus-summary-reply "Reply r")
+       ("W" gnus-summary-wide-reply-with-original "Reply all with original S W")
+       ("w" gnus-summary-wide-reply "Reply all S w")
+       ("#" gnus-topic-mark-topic "mark #")
+       ("q" nil "cancel"))
+     ;; y is not used by default
+     (define-key gnus-summary-mode-map "y" 'hydra-gnus-summary/body)))
+
+;; gnus-article-mode
+(eval-after-load 'gnus-art
+  '(progn
+     (defhydra hydra-gnus-article (:color blue)
+       "Do?"
+       ("f" gnus-summary-mail-forward "Forward")
+       ("R" gnus-article-reply-with-original "Reply with original R")
+       ("r" gnus-article-reply "Reply r")
+       ("W" gnus-article-wide-reply-with-original "Reply all with original S W")
+       ("o" gnus-mime-save-part "Save attachment at point o")
+       ("w" gnus-article-wide-reply "Reply all S w")
+       ("q" nil "cancel"))
+     ;; y is not used by default
+     (define-key gnus-article-mode-map "y" 'hydra-gnus-article/body)))
+
+(eval-after-load 'message
+  '(progn
+     (defhydra hydra-message (:color blue)
+       "Do?"
+       ("ca" mml-attach-file "Attach C-c C-a")
+       ("cc" message-send-and-exit "Send C-c C-c")
+       ("q" nil "cancel"))
+     (global-set-key (kbd "C-c C-y") 'hydra-message/body)))
+#+end_src
+
+*** Use Gwene to read RSS/Atom feed as a news group
+You can either submit [[http://gwene.org/][single RSS/Atom feed url]] or upload [[http://gwene.org/opml.php][OMPL file]].
+
+I suggest using [[https://www.emacswiki.org/emacs/emacs-w3m][emacs-w3m]] to upload [[https://en.wikipedia.org/wiki/OPML][OPML]] file because it's easy to select the links created by Gwene.
+
+Then you can use techniques I introduced in previous section "Tree view of mail folders" to organize the feeds. Please make up your mind before uploading.
+
+To view/download embedded video/audio in feed, you can use mplayer if its support for network streaming is enabled. It's enabled by default at most Linux distributions, OSX, and Windows.
+
+There are also CLI tricks to open images at different OS. Check my code for details.
+
+Here are three commands =w3mext-open-with-mplayer=, =w3mext-download-rss-stream=, and =w3mext-open-link-or-image-or-url= to process multimedia:
+#+begin_src elisp
+;; https://www.emacswiki.org/emacs/emacs-w3m
+(require 'w3m)
+;; Install https://github.com/rolandwalker/simpleclip for clipboard support
+(require 'simpleclip)
+
+(defun my-buffer-str ()
+  (buffer-substring-no-properties (point-min) (point-max)))
+
+(defun my-guess-image-viewer-path (file &optional is-stream)
+  (let ((rlt "mplayer"))
+    (cond
+     (*is-a-mac*
+      (setq rlt
+            (format "open %s &" file)))
+     (*linux*
+      (setq rlt
+            (if is-stream (format "curl -L %s | feh -F - &" file) (format "feh -F %s &" file))))
+     (*cygwin* (setq rlt "feh -F"))
+     (t ; windows
+      (setq rlt
+            (format "rundll32.exe %SystemRoot%\\\\System32\\\\\shimgvw.dll, ImageView_Fullscreen %s &" file))))
+    rlt))
+
+(defun my-guess-mplayer-path ()
+  (let* ((rlt "mplayer"))
+    (cond
+     (*is-a-mac* (setq rlt "mplayer -quiet"))
+     (*linux* (setq rlt "mplayer -quiet -stop-xscreensaver"))
+     (*cygwin*
+      (if (file-executable-p "/cygdrive/c/mplayer/mplayer.exe")
+          (setq rlt "/cygdrive/c/mplayer/mplayer.exe -quiet")
+        (setq rlt "/cygdrive/d/mplayer/mplayer.exe -quiet")))
+     (t ; windows
+      (if (file-executable-p "c:\\\\mplayer\\\\mplayer.exe")
+          (setq rlt "c:\\\\mplayer\\\\mplayer.exe -quiet")
+        (setq rlt "d:\\\\mplayer\\\\mplayer.exe -quiet"))))
+    rlt))
+
+(defun w3mext-subject-to-target-filename ()
+  (let (rlt str)
+    (save-excursion
+      (goto-char (point-min))
+      ;; first line in email could be some hidden line containing NO to field
+      (setq str (my-buffer-str)))
+    (if (string-match "^Subject: \\(.+\\)" str)
+        (setq rlt (match-string 1 str)))
+    ;; clean the timestamp at the end of subject
+    (setq rlt (replace-regexp-in-string "[ 0-9_.'/-]+$" "" rlt))
+    (setq rlt (replace-regexp-in-string "'s " " " rlt))
+    (setq rlt (replace-regexp-in-string "[ ,_'/-]+" "-" rlt))
+    rlt))
+
+(defun w3mext-download-rss-stream ()
+  (interactive)
+  (let (url cmd)
+    (when (or (string= major-mode "w3m-mode") (string= major-mode "gnus-article-mode"))
+      (setq url (w3m-anchor))
+      (cond
+       ((or (not url) (string= url "buffer://"))
+        (message "This link is not video/audio stream."))
+       (t
+        (setq cmd (format "curl -L %s > %s.%s"  url (w3mext-subject-to-target-filename) (file-name-extension url)))
+        (kill-new cmd)
+        (simpleclip-set-contents cmd)
+        (message "%s => clipd/kill-ring" cmd))))))
+
+(defun w3mext-open-link-or-image-or-url ()
+  "Opens the current link or image or current page's uri or any url-like text under cursor in icecat."
+  (interactive)
+  (let* (url)
+    (when (or (string= major-mode "w3m-mode") (string= major-mode "gnus-article-mode"))
+      (setq url (w3m-anchor))
+      (if (or (not url) (string= url "buffer://"))
+          (setq url (or (w3m-image) w3m-current-url))))
+    (browse-url-generic (if url url (car (browse-url-interactive-arg "URL: "))))))
+
+(defun w3mext-encode-specials (str)
+  (setq str (replace-regexp-in-string "(" "%28" str))
+  (setq str (replace-regexp-in-string ")" "%29" str))
+  (setq str (replace-regexp-in-string ")" "%20" str)))
+
+(defun w3mext-open-with-mplayer ()
+  (interactive)
+  (let (url cmd str)
+    (when (or (string= major-mode "w3m-mode") (string= major-mode "gnus-article-mode"))
+      ;; weird, `w3m-anchor' fail to extract url while `w3m-image' can
+      (setq url (or (w3m-anchor) (w3m-image)))
+      (unless url
+        (save-excursion
+          (goto-char (point-min))
+          (when (string-match "^Archived-at: <?\\([^ <>]*\\)>?" (setq str (my-buffer-str)))
+            (setq url (match-string 1 str)))))
+      (setq url (w3mext-encode-specials url))
+      (setq cmd (format "%s -cache 2000 %s &" (my-guess-mplayer-path) url))
+      (when (string= url "buffer://")
+        ;; cache 2M data and don't block UI
+        (setq cmd (my-guess-image-viewer-path url t))))
+    (if url (shell-command cmd))))
+#+end_src
+
+Please note these commands require =(setq mm-text-html-renderer 'w3m)= in your setup.
+** My setup
+This setup requires Emacs 24.3+.
+
+My ~/.gnus.el,
+#+BEGIN_SRC emacs-lisp
+(require 'nnir)
+
+;; @see http://www.emacswiki.org/emacs/GnusGmail#toc1
+(setq gnus-select-method '(nntp "news.gmane.org")) ;; if you read news groups
+
+;; ask encryption password once
+(setq epa-file-cache-passphrase-for-symmetric-encryption t)
+
+;; @see http://gnus.org/manual/gnus_397.html
+(add-to-list 'gnus-secondary-select-methods
+             '(nnimap "gmail"
+                      (nnimap-address "imap.gmail.com")
+                      (nnimap-server-port 993)
+                      (nnimap-stream ssl)
+                      (nnir-search-engine imap)
+                      ; @see http://www.gnu.org/software/emacs/manual/html_node/gnus/Expiring-Mail.html
+                      ;; press 'E' to expire email
+                      (nnmail-expiry-target "nnimap+gmail:[Gmail]/Trash")
+                      (nnmail-expiry-wait 90)))
+
+;; OPTIONAL, the setup for Microsoft Hotmail
+(add-to-list 'gnus-secondary-select-methods
+             '(nnimap "hotmail"
+                      (nnimap-address "imap-mail.outlook.com")
+                      (nnimap-server-port 993)
+                      (nnimap-stream ssl)
+                      (nnir-search-engine imap)
+                      (nnmail-expiry-wait 90)))
+
+(setq gnus-thread-sort-functions
+      '(gnus-thread-sort-by-most-recent-date
+        (not gnus-thread-sort-by-number)))
+
+; NO 'passive
+(setq gnus-use-cache t)
+
+;; BBDB: Address list
+(add-to-list 'load-path "/where/you/place/bbdb/")
+(require 'bbdb)
+(bbdb-initialize 'message 'gnus 'sendmail)
+(add-hook 'gnus-startup-hook 'bbdb-insinuate-gnus)
+(setq bbdb/mail-auto-create-p t
+      bbdb/news-auto-create-p t)
+
+;; auto-complete emacs address using bbdb UI
+(add-hook 'message-mode-hook
+          '(lambda ()
+             (flyspell-mode t)
+             (local-set-key (kbd "TAB") 'bbdb-complete-name)))
+
+;; Fetch only part of the article if we can.
+;; I saw this in someone's .gnus
+(setq gnus-read-active-file 'some)
+
+;; open attachment
+(eval-after-load 'mailcap
+  '(progn
+     (cond
+      ;; on OSX, maybe change mailcap-mime-data?
+      ((eq system-type 'darwin))
+      ;; on Windows, maybe change mailcap-mime-data?
+      ((eq system-type 'windows-nt))
+      (t
+       ;; Linux, read ~/.mailcap
+       (mailcap-parse-mailcaps)))))
+
+;; Tree view for groups.
+(add-hook 'gnus-group-mode-hook 'gnus-topic-mode)
+
+;; Threads!  I hate reading un-threaded email -- especially mailing
+;; lists.  This helps a ton!
+(setq gnus-summary-thread-gathering-function 'gnus-gather-threads-by-subject)
+
+;; Also, I prefer to see only the top level message.  If a message has
+;; several replies or is part of a thread, only show the first message.
+;; `gnus-thread-ignore-subject' will ignore the subject and
+;; look at 'In-Reply-To:' and 'References:' headers.
+(setq gnus-thread-hide-subtree t)
+(setq gnus-thread-ignore-subject t)
+
+;; Personal Information
+(setq user-full-name "My Name"
+      user-mail-address "username@gmail.com")
+
+;; Read HTML mail:
+;; You need install the command line web browser 'w3m' and Emacs plugin 'w3m'
+;; manually. It specify the html render as w3m so my setup works on all versions
+;; of Emacs.
+;;
+;; Since Emacs 24+, a default html rendering engine `shr' is provided:
+;;   - It works out of box without any cli program dependency or setup
+;;   - It can render html color
+;; So below line is optional.
+(setq mm-text-html-renderer 'w3m) ; OPTIONAL
+
+;; Send email through SMTP
+(setq message-send-mail-function 'smtpmail-send-it
+      smtpmail-default-smtp-server "smtp.gmail.com"
+      smtpmail-smtp-service 587
+      smtpmail-local-domain "homepc")
+;; http://www.gnu.org/software/emacs/manual/html_node/gnus/_005b9_002e2_005d.html
+(setq gnus-use-correct-string-widths nil)
+
+;; Sample on how to organize mail folders.
+;; It's dependent on `gnus-topic-mode'.
+(eval-after-load 'gnus-topic
+  '(progn
+     (setq gnus-message-archive-group '((format-time-string "sent.%Y")))
+     (setq gnus-server-alist '(("archive" nnfolder "archive" (nnfolder-directory "~/Mail/archive")
+                                (nnfolder-active-file "~/Mail/archive/active")
+                                (nnfolder-get-new-mail nil)
+                                (nnfolder-inhibit-expiry t))))
+
+     ;; "Gnus" is the root folder, and there are three mail accounts, "misc", "hotmail", "gmail"
+     (setq gnus-topic-topology '(("Gnus" visible)
+                                 (("misc" visible))
+                                 (("hotmail" visible nil nil))
+                                 (("gmail" visible nil nil))))
+
+     ;; each topic corresponds to a public imap folder
+     (setq gnus-topic-alist '(("hotmail" ; the key of topic
+                               "nnimap+hotmail:Inbox"
+                               "nnimap+hotmail:Drafts"
+                               "nnimap+hotmail:Sent"
+                               "nnimap+hotmail:Junk"
+                               "nnimap+hotmail:Deleted")
+                              ("gmail" ; the key of topic
+                               "INBOX"
+                               "[Gmail]/Sent Mail"
+                               "[Gmail]/Trash"
+                               "Sent Messages"
+                               "Drafts")
+                              ("misc" ; the key of topic
+                               "nnfolder+archive:sent.2015-12"
+                               "nnfolder+archive:sent.2016"
+                               "nnfolder+archive:sent.2017"
+                               "nndraft:drafts")
+                              ("Gnus")))))
+#+END_SRC
+
+Your login and password is stored at =~/.authinfo.gpg= which is read by Gnus. Please press =C-h v auth-sources= for more information.
+
+Multiple mail accounts share one =.authinfo.gpg=,
+#+BEGIN_SRC conf
+machine imap.gmail.com login username@gmail.com password my-secret-password port 993
+machine smtp.gmail.com login username@gmail.com password my-secret-password port 587
+machine imap-mail.outlook.com login username@hotmail.com password my-secret-password port 993
+#+END_SRC
+
+Please note ".authinfo.gpg" is encrypted by default. Emacs will do the encryption/description automatically if file extension is ".gpg". See [[http://emacswiki.org/emacs/EasyPG]] for details.

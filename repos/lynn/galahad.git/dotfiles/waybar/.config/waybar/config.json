@@ -1,0 +1,84 @@
+{
+    "layer": "bottom",
+    "position": "top",
+    "height": 48,
+    "spacing": 0,
+    "modules-left": ["sway/workspaces", "sway/mode", "sway/window"],
+    "modules-center": ["custom/spotify"],
+    "modules-right": ["idle_inhibitor","pulseaudio", "network", "battery", "clock"],
+    "sway/window": {
+	"format": "{app_id}",
+	"max-length": 40
+    },
+    "clock": {
+        "format": "{:%H:%M} ",
+        "format-alt": "{:L%A, %B %d, %Y (%R)} ",
+        "tooltip-format": "\n<span size='14pt' font='Sarasa Mono J'>{calendar}</span>",
+        "calendar": {
+            "mode"          : "year",
+            "mode-mon-col"  : 3,
+            "weeks-pos"     : "right",
+            "on-scroll"     : 1,
+            "format": {
+                "months":     "<span color='#ffead3'><b>{}</b></span>",
+                "days":       "<span color='#ecc6d9'><b>{}</b></span>",
+                "weeks":      "<span color='#99ffdd'><b>W{}</b></span>",
+                "weekdays":   "<span color='#ffcc66'><b>{}</b></span>",
+                "today":      "<span color='#ff6699'><b><u>{}</u></b></span>"
+            }
+        },
+        "actions":  {
+            "on-click-right": "mode",
+            "on-click-forward": "tz_up",
+            "on-click-backward": "tz_down",
+            "on-scroll-up": "shift_up",
+            "on-scroll-down": "shift_down"
+        }
+    },
+    "battery": {
+	"bat": "BAT0",
+	"states": {
+	    "good": 95,
+	    "warning": 30,
+	    "critical": 5
+	},
+	"format": "{capacity}% {icon}",
+	"format-charging": "{capacity}% (charging)",
+	"format-plugged": "{capacity}% (plugged)",
+	"format-icons": [" ", " ", " ", " ", " "]
+    },
+    "network": {
+        "format-wifi": "wi-fi ({signalStrength}%)  ",
+        "format-ethernet": "{ifname}: {ipaddr}/{cidr}  ",
+        "format-disconnected": "Disconnected ⚠"
+    },
+    "idle_inhibitor": {
+        "format": "{icon}",
+        "format-icons": {
+            "activated": " ",
+            "deactivated": " "
+        }
+    },
+    "pulseaudio": {
+        //"scroll-step": 1,
+        "format": "{volume}% {icon}",
+        "format-bluetooth": "{volume}% {icon}",
+        "format-muted": " ",
+        "format-icons": {
+            "headphones": "",
+            "handsfree": "",
+            "headset": "",
+            "phone": "",
+            "portable": "",
+            "car": "",
+            "default": [" ", " "]
+        },
+        "on-click": "pavucontrol"
+    },
+    "custom/spotify": {
+        "format": "♫ {}",
+        "max-length": 60,
+        "interval": 30, // Remove this if your script is endless and write in loop
+	"exec": "$HOME/.config/waybar/media.sh 2> /dev/null",
+    }
+}

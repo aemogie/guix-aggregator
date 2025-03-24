@@ -1,0 +1,30 @@
+# When the link refers to a video on a playlist, download only the video by default
+--no-playlist
+
+# Limit the number of simultaneous downloads
+--concurrent-fragments 10
+
+# Select best video up to 720p and best available audio
+--format "bestvideo[height<=?720][fps<=?45][vbr<=?3000]+bestaudio[acodec=opus]/bestvideo[height<=?720]+bestaudio/bestvideo+bestaudio"
+
+# Prefer formats that use free and open-source codecs
+--prefer-free-formats
+
+# Disable post-processing to save CPU resources
+--no-post-overwrites
+--no-mtime
+
+# Set a download speed limit to reduce CPU load
+--limit-rate 500K
+
+# Disable embed thumbnails to save CPU
+--no-embed-thumbnail
+
+# Adjust logging verbosity to minimal to save CPU
+--quiet
+
+# Set user-agent if required (sometimes helps with certain sites)
+--user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+
+# Set the output file template (adjust the path as needed)
+--output "%(title)s.%(ext)s"

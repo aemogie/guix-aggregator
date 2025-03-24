@@ -1,0 +1,137 @@
+(define-module (misako operating-systems yumiko)
+  #|Misako|#
+  #:use-module (misako home-environments look)
+  #:use-module (misako operating-systems base)
+  #:use-module (misako operating-systems yumiko file-systems)
+  #:use-module (misako operating-systems yumiko cuirass)
+  #:use-module (misako utils)
+  #|Guix|#
+  #:use-module (guix gexp)
+  #|GNU System|#
+  #:use-module (gnu system)
+  #:use-module (gnu system accounts)
+  #:use-module (gnu system pam)
+  #|GNU Packages|#
+  #:use-module (gnu packages databases)
+  #|GNU Services|#
+  #:use-module (gnu services)
+  #:use-module (gnu services avahi)
+  #:use-module (gnu services base)
+  #:use-module (gnu services containers)
+  #:use-module (gnu services cuirass)
+  #:use-module (gnu services databases)
+  #:use-module (gnu services docker)
+  #:use-module (gnu services guix)
+  #:use-module (gnu services networking)
+  #:use-module (gnu services ssh)
+  #:use-module (gnu services virtualization)
+  #|Non-GNU|#
+  #:use-module (nongnu packages linux)
+  #:use-module (nongnu packages nvidia)
+  #:use-module (nongnu services nvidia)
+  #:use-module (nongnu system linux-initrd)
+  #|Saayix|#
+  #|SOPS|#
+  #:use-module (sops secrets)
+  #|SOPS Service|#
+  #:use-module (sops services sops)
+  #:export (yumiko))
+
+#|Operating system definition|#
+(define yumiko
+  (nvidia-operating-system
+    (inherit base)
+    (host-name "yumiko")
+
+    (initrd microcode-initrd)
+    (firmware (list linux-firmware))
+
+    (kernel-arguments
+      (cons* "nvidia_drm.modeset=1"
+             "modprobe.blacklist=nouveau"
+             (operating-system-user-kernel-arguments base)))
+
+    (file-systems %btrfs-ephemeral-file-systems)
+
+    (services
+      (cons* #|QEMU builds|#
+             ; (service qemu-binfmt-service-type
+             ;   (qemu-binfmt-configuration
+             ;     (platforms (lookup-qemu-platforms "aarch64")))
+
+             #|NVIDIA|#
+             (service nvidia-service-type
+               (nvidia-configuration
+                 (driver nvda)
+                 (module nvidia-module)
+                 (firmware nvidia-firmware)))
+
+             (service pam-limits-service-type
+               (list
+                 (pam-limits-entry "*" 'hard 'nofile 1048576)))
+
+             #|CI services|#
+             ; (service postgresql-service-type
+             ;   (postgresql-configuration
+             ;     (postgresql postgresql)))
+
+             ; (service cuirass-service-type
+             ;   (cuirass-configuration
+             ;     (host "0.0.0.0")
+             ;     (port 8082)
+             ;     (interval 60)
+             ;     (fallback? #f)
+             ;     (specifications %cuirass-specs)))
+
+             (service iptables-service-type)
+             (service rootless-podman-service-type
+               (rootless-podman-configuration
+                 (containers-registries
+                   (local-file
+                     (string-append misako-dir
+                                    "/misako/operating-systems/yumiko"
+                                    "/podman/registries.conf")))
+                 (subgids (list (subid-range (name "look"))))
+                 (subuids (list (subid-range (name "look"))))))
+
+             #|SSH services|#
+             (service openssh-service-type
+               (openssh-configuration
+                 (port-number 2222)
+                 (permit-root-login #f)
+                 (password-authentication? #f)
+                 (x11-forwarding? #f)
+                 (authorized-keys
+                   `(("look" ,(local-file "/etc/ssh/look.pub"))))))
+
+             #|SOPS services|#
+             (service sops-secrets-service-type
+               (sops-service-configuration
+                 (gnupg-home "/root/.gnupg")
+                 (generate-key? #f)
+                 (config (local-file "../../secrets/.sops.yaml" "sops.yaml"))
+                 (secrets
+                   (list))))
+                     ; (sops-secret
+                     ;   (key '("wireguard"))
+                     ;   (file (local-file "../../secrets/yumiko.yaml"))
+                     ;   (user "root")
+                     ;   (group "root")
+                     ;   (permissions #o400))))))
+
+             #|Persistent Files|#
+             (extra-special-file "/etc/system.scm"
+               (string-append misako-dir "/misako/operating-systems/yumiko.scm"))
+             (extra-special-file "/etc/machine-id" "/gnu/persist/etc/machine-id")
+
+             (modify-services (operating-system-user-services base)
+               (guix-service-type
+                 config =>
+                 (guix-configuration
+                   (inherit config)
+                   (extra-options
+                     (cons* "--max-jobs=4"
+                            "--cores=12"
+                            (guix-configuration-extra-options config))))))))))
+
+yumiko

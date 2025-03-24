@@ -1,0 +1,20 @@
+# -*- mode: conf -*-
+# SPDX-FileCopyrightText: 2023, 2024 Hilton Chain <hako@ultrarare.space>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+[submodule "blobs"]
+	path = files/blobs
+	url = forgejo@mx.boiledscript.com:hako/Testament-blobs.git
+[submodule "dep/guix"]
+	path = external/guix
+        url = https://git.boiledscript.com/hako/guix.git
+[submodule "dep/nonguix"]
+	path = external/nonguix
+        url = https://git.boiledscript.com/hako/nonguix.git
+[submodule "dep/rosenthal"]
+	path = external/rosenthal
+        url = https://git.boiledscript.com/hako/Rosenthal.git
+[submodule "dep/sops-guix"]
+	path = external/sops-guix
+	url = https://github.com/fishinthecalculator/sops-guix

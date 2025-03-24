@@ -1,0 +1,17 @@
+#!/bin/sh
+
+if [ $# -gt 0 ]; then
+    if [ $1 = "-r" ]; then
+        URL=https://c.xkcd.com/random/comic
+    else
+        URL=https://xkcd.com/$1
+    fi
+else
+    URL=https://xkcd.com/
+fi
+URL=$(curl -s -L $URL \
+       | grep 'href= "https://imgs.xkcd.com/comics.*' \
+       |  cut -d'>' -f2 \
+       |  cut -d'<' -f1)
+curl $URL --output /tmp/xkcd 2>/dev/null
+chafa /tmp/xkcd

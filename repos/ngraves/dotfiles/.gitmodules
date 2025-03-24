@@ -1,0 +1,33 @@
+[submodule "channels/rde"]
+	path = channels/rde
+	url = https://git.sr.ht/~abcdw/rde
+[submodule "channels/guix"]
+	path = channels/guix
+	url = https://git.savannah.gnu.org/git/guix.git
+[submodule "channels/nonguix"]
+	path = channels/nonguix
+	url = https://gitlab.com/nonguix/nonguix.git
+[submodule "channels/odf-dsfr"]
+	path = channels/odf-dsfr
+	url = https://github.com/codegouvfr/odf-dsfr
+[submodule "channels/pass"]
+	path = files/pass
+	url = https://git.sr.ht/~ngraves/pass
+[submodule "channels/guix-stack"]
+	path = channels/guix-stack
+	url = https://git.sr.ht/~ngraves/guix-stack
+[submodule "channels/nrepl-python"]
+	path = channels/nrepl-python
+	url = https://git.sr.ht/~ngraves/nrepl-python
+[submodule "channels/guix-rde"]
+	path = channels/guix-rde
+	url = https://git.sr.ht/~ngraves/guix-rde
+[submodule "channels/guix-past"]
+	path = channels/guix-past
+	url = https://codeberg.org/guix-science/guix-past
+[submodule "channels/guix-science"]
+	path = channels/guix-science
+	url = https://codeberg.org/guix-science/guix-science
+[submodule "channels/guix-science-nonfree"]
+	path = channels/guix-science-nonfree
+	url = https://codeberg.org/guix-science/guix-science-nonfree

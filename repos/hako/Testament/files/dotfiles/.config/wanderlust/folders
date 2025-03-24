@@ -1,0 +1,27 @@
+# -*- mode: conf -*-
+# SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+.hako@ultrarare.space/INBOX     "New"
+.inbox  "Box"
+
+Archive {
+        .archive/admin          "Admin"
+        .archive/billing        "Billing"
+        .archive/support        "Support"
+        .archive/dmarc          "DMARC Reports"
+}
+
+List {
+        .hako@ultrarare.space/Lists/emacs-devel  "emacs-devel"
+        .hako@ultrarare.space/Lists/guile-devel  "guile-devel"
+        .hako@ultrarare.space/Lists/guix-bugs    "guix-bugs"
+        .hako@ultrarare.space/Lists/guix-devel   "guix-devel"
+        .hako@ultrarare.space/Lists/guix-patches "guix-patches"
+        .hako@ultrarare.space/Lists/guix-user    "guix-user"
+}
+
++draft                          "Draft"
++trash                          "Trash"
+.hako@ultrarare.space/Junk      "Junk"

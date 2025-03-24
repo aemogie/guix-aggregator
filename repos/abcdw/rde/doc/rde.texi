@@ -1,0 +1,707 @@
+\input texinfo    @c -*- texinfo -*-
+
+@c %**start of header
+@setfilename rde.info
+@settitle rde Manual
+@documentencoding UTF-8
+@documentlanguage en
+@c %**end of header
+
+@include version.texi
+@set WEB-PAGE https://trop.in/rde
+@set ISO-DIRECTORY-URL http://files.trop.in/rde/
+@set ISO-NAME rde-live-@value{VERSION}-x86_64.iso
+@set GIT-REPO https://git.sr.ht/~abcdw/rde
+
+@copying
+This manual is for rde, version @value{VERSION}.
+
+Copyright @copyright{} 2021 Andrew Tropin@*
+@end copying
+
+@dircategory System administration
+@direntry
+* rde: (rde).       Manage operating systems, dotfiles and development environments.
+@end direntry
+
+@dircategory Software development
+@direntry
+* rde Emacs: (rde)Emacs.      Emacs configuration with vanilla flavor.
+@end direntry
+
+@c @finalout
+@titlepage
+@title rde Manual
+@author The rde Developers
+
+@page
+@vskip 0pt plus 1filll
+Edition @value{EDITION} @*
+@value{UPDATED} @*
+
+@insertcopying
+@end titlepage
+
+@contents
+
+@node Top
+@top rde
+
+This document describes rde version @value{VERSION}, the GNU/Linux
+distribution, a set of tools for managing development environments, home
+environments, and operating systems, a set of predefined configurations,
+practices and workflows.
+
+@menu
+* Introduction::                What rde is?
+* Community::                   The best rde part.
+* Getting Started::             Try, customize and install.
+* Features::                    All the parts of rde.
+* Contributing::                Tips and guidelines.
+* Tips and Tricks::
+* FAQ::                         Frequently asked questions.
+
+* Acknowledgments::             Thanks!
+* Concept Index::               Concepts.
+
+@detailmenu
+ --- The Detailed Node Listing ---
+
+rde
+
+* Principles::
+
+@end detailmenu
+@end menu
+
+@node Introduction
+@chapter rde
+
+First of all rde is a developer and power user friendly GNU/Linux
+operating system, ready for use with a few to zero tweaks.  Let's call
+this part @dfn{rde GNU/Linux}.  Currently, it's targeted for single-user
+setups, to some extent it can be used by multiple people on the same
+machine, but with restrictions (@pxref{FAQ}).
+
+Sometimes, it can be treated as an Emacs distribution, but while GNU
+Emacs is an important part, in reality rde manages not only Emacs, its
+packages and configurations, but other software too (which often
+integrates with Emacs), mostly it's user space programs and their
+configurations, let's call this part @dfn{rde home}.  In addition to
+that, it can be used to manage home environments (@pxref{Home
+Configuration,,, guix,}) on the operating system other than rde
+GNU/Linux or Guix System.
+
+@c TODO: Part about per-project rde tools.
+
+@quotation Note
+The project is in an active development stage, API is a subject to
+change, watch rde-devel mailing list to be up to date with the latest
+news.
+@end quotation
+
+While rde is ultimately hackable and can be completely changed and
+customized according to someone's needs, features, programs and
+configurations provided out of the box has a strong opinionated flavor
+and follows a number of principles (@pxref{Principles}).  It's not
+possible to cover all existing free software, provide sane
+configurations and integrate it in rde, so we picked a tool for each
+area based on its technical capabilities, interoperability with the
+other programs and our own taste.  Focusing on only one tool for each
+job, we can provide good defaults, integrate it deeply with the rest
+of the system and make it pleasant and effortless to use, but due to
+flexible design it is always possible to substitute it with other
+alternative, however it can require some or a lot of work and
+additional knowledge on the user side.
+
+Take a brief look on the list of some tools we picked:
+@include rde-tool-list.texi
+
+Read the next section to get some ideas behind our choice.
+
+@menu
+* Principles::
+@end menu
+
+@node Principles
+@section Principles
+
+There is a list of principles we try to follow to simplify decision
+making process and provide a better understanding of our previous
+choices for newcommers.  If you see some part of rde hardly violating
+them please let us know.
+
+@subsection Primary
+
+@table @asis
+@item Ergonomic
+Sane keybindings, good contrast, and readable fonts.  The environment
+should be safe and comfortable for long-lasting working sessions
+@item Reproducible
+Setup can be easily replicated.  It not only helps with sharing and
+replicating setups, but also provides an ability to rollback to
+working state in case of missconfiguration or other problems.
+@item Hackable
+Easy to explore, throw out or modify any part of setup.  We have
+strong opinions on various aspects of working environments, but we
+don't enforce them.
+@item Stateless
+All state must be explicit and syncable or temporary, that means all
+the important data is backed up by default.  In combination with
+reproducibility it gives a sense of security and confidence that both
+your configurations and data are safe.
+@end table
+
+@subsection Secondary
+
+This is a list of additional principles, which we find reasonable and
+often refer to them.
+
+@table @asis
+@item Lightweight
+Not only because of undepowered hardware, but also cause of
+simplicity.  Slim solutions easier to understand, debug and fix.
+@item Energy and battery efficient
+Wayland, fast native applications.
+@item Offline
+Most of workflows and programs should work without network.
+@item Peaceful
+Attention-friendly, minimal use of notification and other distractive
+things.
+@end table
+
+
+@c TODO: this items.
+@c - [ ] Make mindeset section.  Be open minded, don't expect things to
+@c   work as they do in different place, explore and get rewarded with so
+@c   powerful and delightful workflows.  The real composability, not the
+@c   one advertised by UNIX phylosophy.
+@c   https://youtu.be/OE3mfOp5ZDI
+@c - [ ] Reporting problem section (rde-discuss ML, guix describe,
+@c   config, etc).
+
+@node Community
+@chapter Community
+
+@section Approaching The Project
+
+rde is a free/libre software (free as in a freedom), brought by
+passioned volunteers.  It's not easy to explain the culture of the
+project, we also don't have a formal code of conduct, but it seems
+@dfn{rde people}, who forms the community and its culture are nice,
+kind, smart, polite and well-minded.  We encourage you to join our
+communication channels, learn how everything usually happens here and
+try to make this cozy place only better, enjoy.
+
+There are a plenty of useful resources: documentation, manuals, and
+other learning materials, mailing lists and IRC channels, and of
+course the source code.  Use any or all of them.  Some information
+will be outdated, features will be missing and issues will be
+appearing, it's in a nature of software, please share the ideas,
+concerns, reports, suggestions and ask questions
+(@pxref{Communication}), don't hesitate to provide fixes, features,
+modifications or even experimental prototypes (@pxref{Contributing}).
+
+@anchor{Communication}
+@section Communication
+
+The primary way of communication is mailing lists.  The development,
+support, announcements happens here, and there are a few reasons why
+(@pxref{Mailing Lists}).  For casual discussions, more interactive
+support or just pleasant pastime we use IRC and Matrix.  Don't be shy,
+jump in and let us know that you use rde, it will help you make new
+friends, and will help the project to grow the community and awareness.
+
+@anchor{Mailing Lists}
+@subsection Mailing Lists
+Mailing lists are persistent and offline-friendly --- archives are
+available and can be explored or even downloaded much later than
+discussion took place, federated --- email is federated, anyone can
+participate with already existing account from any email server,
+accessible --- archives are additionally available over web-interface,
+and almost everyone have an email address and can easily join.
+
+There are a few @uref{https://lists.sr.ht/~abcdw, mailing lists} you
+can subscribe and/or post with your existing email account:
+@itemize
+@item @uref{https://lists.sr.ht/~abcdw/rde-announce, ~abcdw/rde-announce@@lists.sr.ht}
+for news and updates.
+@item @uref{https://lists.sr.ht/~abcdw/rde-discuss, ~abcdw/rde-discuss@@lists.sr.ht}
+for questions, discussions and support.
+@item @uref{https://lists.sr.ht/~abcdw/rde-devel, ~abcdw/rde-devel@@lists.sr.ht}
+for patches, development related discussions and bug reports.
+@end itemize
+
+@subsection Chat
+We use IRC as our primary chatting platform for a number of reasons,
+but the primary one is: it's hugely accessible --- IRC clients
+available for almost each hardware and software platform, there are of
+course web and mobile clients as well, no registration or other
+additional steps are required.
+
+Just join #tropin channel at @uref{https://libera.chat, libera.chat}.
+
+IRC is a great tool for a real-time text-based communication.  You
+join the channel when you need or want to and leave any time you
+desire. @c (@pxref{IRC} to learn more).
+
+@c libera <-> matrix brigdge is disable
+@c It's also possible to connect to IRC channel via Matrix bridge using
+@c #tropin:libera.chat room handle, learn more here:
+@c @uref{https://libera.chat/guides/faq#can-i-connect-with-matrix}
+
+@node Getting Started
+@chapter Getting Started
+
+@include getting-started.texi
+
+@node Features
+@chapter Features
+rde feature is a building block of rde configuration.
+
+TODO: Write here information about rde values, feature fields and basic
+conventions. Integration between features based on rde values.
+
+@section rde Emacs
+
+TODO: Write a paragraph about importance of Emacs in rde setup.  Deep
+integrations, consistent and uniform interface.
+
+@c How Prot learning Emacs: https://youtu.be/46w9e4GAjsU
+
+@c Emacs how undo works
+@c https://casouri.github.io/note/2021/visual-undo-tree/index.html
+
+@section Getting Help
+
+@anchor{Key Bindings}
+@section Key Bindings
+The most frequent actions are usually binded to combinations using
+@kbd{s-} modifier, where @kbd{s} is super key (@pxref{Modifier
+Keys,,,Emacs}).  @kbd{s-@key{RET}} to launch emacsclient,
+@kbd{s-@key{TAB}} switch back and forth between workspaces, inside Emacs
+@kbd{s-e} for toggle eshell, @kbd{s-b} for switch buffer, @kbd{s-r} for
+recompile.
+
+@quotation Note
+As you can see we use Emacs notation for keybindings.  We expect reader
+to be familiar with basic terminology, if you are not yet @xref{User
+Input,,,Emacs}, and @xref{Keys,,,Emacs}.
+@end quotation
+
+All of the key bindings are organized in keymaps
+(@pxref{Keymaps,,,Emacs}), and usually keymaps are binded to prefix
+keys.  For example @code{goto-map} is binded to @kbd{M-g} prefix,
+@kbd{M-g g} will invoke @code{goto-line} or similiar command.  Keymaps
+can overlap, for example you can bind @kbd{M-g s} in @code{global-map}
+and @kbd{o} in @code{goto-map}, the both @kbd{M-g s} and @kbd{M-g o}
+will coexist.  Also, one keymap can shadow binding of another, more
+information is available in Emacs manual.
+
+There are two important tricks, which used often in key bindings:
+continous modifiers and double tap.  If you want to make it easier to
+type a key sequence, use the same modifier: @kbd{M-g M-l} is much easier
+to press than @kbd{M-g C-l}, because in the first option you press
+modifier once and hold it, after that you type @kbd{gl} and in the
+second you press and hold @key{Meta}, press @kbd{g}, release @key{Meta},
+press and hold @key{Control}, press @kbd{l}.
+
+@anchor{Named ASCII Chars}
+@anchor{Control Characters}
+@quotation Note
+Some actions are bound to @kbd{@key{RET}}, @kbd{@key{TAB}}, etc and on
+regular keyboards it can be inconvinient to reach for such keys,
+especially in long key sequences.  In such cases @kbd{C-m}, @kbd{C-i}
+(@pxref{Named ASCII Chars,,,Emacs}) can be used.  For example @kbd{C-x
+C-f C-n C-n C-m} will open the second file in find-file dialog.
+@end quotation
+
+If the command is frequently used bind it to the same key as well:
+@kbd{M-g M-g} for goto-line or similiar action, @kbd{C-c C-c} for
+finishing org capture operation, git commit message or other action
+depending on the context, @kbd{s-b s-b} switching back and forth between
+current and previous buffer.
+
+The last example is a little special, because it's not a key sequence,
+but two actions bound to the same key, first one is
+@code{switch-to-buffer} defined in the @code{global-map}, bound to
+@kbd{s-b} and the second one is @code{exit-minibuffer} defined in
+@code{minibuffer-local-map}, bound to the same key, after the first
+press, when the minibuffer spawned for picking a candidate,
+@code{minibuffer-local-map} is activated and @kbd{s-b} shadowed with
+@code{exit-minibuffer}.  While implementation is a little special the
+idea is still the same.
+
+@section Navigation
+
+@anchor{Completion}
+@section Completion
+There are a lot of places, where completion happens, but most of the
+heavy work is usually done in Emacs, and this section is focused on it.
+Other applications can try to mimic a fraction of its power and work in
+a similiar way to some degree, and we try to configure them to do so,
+but there are no guarantees.
+
+The primary completion mechanism is tightly related to minibuffer
+(@pxref{Minibuffer,,,Emacs}) and internally utilize
+@code{completing-read} function (@pxref{Minibuffer Completion,,,Elisp}).
+Minibuffer usually used for reading values and dynamically adjust the
+behavior of command.  To simplify this process prompt, default value,
+possible options and predicates checking the value can be provided,
+based on it the completion facilities help to input correct value(s) or
+narrow the list of options and pick apropriate candidates.
+
+The way completion candidates are presented, updated, sorted, selected,
+the way hotkeys work and other aspects depend heavily on minibuffer
+completion UI. At the moment of writing rde preferred UI is Vertico, the
+reasons for this choice are described in the corresponding section
+(@pxref{Vertico,,,}).  The way they get filtered depends on completion
+styles (@pxref{Completion Styles,,,Emacs}) for particular completion
+category (@pxref{Programmed Completion,,,Elisp}), in addition to
+built-in styles, rde uses Orderless package and respective completion
+styles (@pxref{Orderless,,,}).
+
+The second completion mechanism is In-buffer Completion
+
+@subsection Completing Files
+You can use future history @kbd{M-n} to insert file under the point into
+minibuffer prompt.  Place a point on file, type @kbd{C-x C-f M-n C-m},
+boom, you are viewing/editing a file!  If there is no file under the
+cursor or you type @kbd{M-n} twice, current file will be inserted to the
+prompt by future history. (@pxref{Minibuffer History,,,Emacs})
+
+@subsection Sources of Completion
+
+@anchor{Consult}
+@subsubsection Consult
+@anchor{Cape}
+@subsubsection Cape
+
+@anchor{CAP}
+@anchor{In-buffer Completion}
+@subsection In-buffer Completion
+
+There are a few different completion mechanisms, which can be used for
+completing text in buffer.  Abbreviations, Dynamic Abbreviations,
+Snippets and Completion At Point.
+
+@subsubsection Abbreviations
+The first and one of the simplest completions in buffer can be done.
+Define abbreviations (@pxref{Defining Abbrevs,,,Emacs}) either
+interactively or programmatically.  Expand abbreviation with
+@code{expand-abbrev}, which usually bound to @kbd{C-x '}.  Alternatively
+@code{abbrev-mode} can be enabled and typing space or punctuation
+characters will automatically expand abbreviation.
+
+@subsubsection Dynamic Abbreviations
+The second and one of the most versatile completion can be done with
+@code{dabbrev-completion}, which is bound to @kbd{C-M-/}, it will
+present a list of words, which were used before in current buffer and
+have the same prefix as text before point.  While the list of candidates
+can be not preciese or sometimes even meaningless for current position,
+it works in almost any buffer in almost any mode.
+
+The list of candidates can be expanded by the prefix argument @kbd{C-u
+C-M-/} will also provide candidates from friendly buffers, @kbd{C-u C-u
+C-M-/} will use all buffers for searching candidates.
+
+@code{dabbrev-expand} expands current text instead of giving a list of
+candidates, it's bound to @kbd{M-/} and can used multiple times in a row
+to go further in the list of expansion candidates.
+
+For more information @xref{Dynamic Abbrevs,,,Emacs}.
+
+
+@subsubsection Completion at Point
+@dfn{CAP} is a very generic in-buffer completion mechanism, it tries
+functions from @code{completion-at-point-functions} and when one of them
+succeed, shows a list of candidates in buffer, minibuffer or overlay
+depending on completion UI (@pxref{Completion,,,}).  It can be used for
+almost everything: completing emails, programming constructs provided by
+REPL or LSP, words, snippets, emojis, anything else.
+
+@dfn{CAPF}s usually added automatically by lsp package, major-mode, but
+can be added manually by user as well, also a few CAPFs can be combined
+in a superCAPF in case you need candidates from different CAPFs be in
+the same list all at once.  For generally useful CAPFs take a look at
+Cape package (@pxref{Cape,,,}).
+
+Usually CAP triggered by @code{completion-at-point} function, often
+bound to @kbd{C-M-i} in many modes.  If @code{tab-always-indent} has
+value @code{'complete}, @kbd{@key{TAB}} can trigger
+@code{completion-at-point} as well.  UIs like Corfu can trigger CAP
+automatically after timeout and when enough number of charactors is
+present (@pxref{Corfu,,,}).
+
+
+@anchor{snippets}
+@anchor{feature-emacs-tempel}
+@anchor{TempEL}
+@subsubsection TempEL snippets
+Tempel is a simple template package, it uses tempo syntax and integrates
+well with CAPF and abbrev.  More information about templates syntax read
+@xref{,,,TempEL}.  Various rde features can extend a list of available
+templates using @code{home-emacs-tempel-service-type}.
+
+For expanding templates you have several options: Type the full template
+name and use @code{expand-abbrev}, which is usually bound to @kbd{C-x
+'}, type @code{<PART_OF_THE_TEMPLATE_NAME_MATCHING_COMPLETION_STYLE} and
+use @code{compeltion-at-point} (alternatively if you use corfu
+(@pxref{feature-corfu,,,}), the list will be shown automatically), by
+default @code{feature-emacs-tempel} automatically adds its capf by hooks
+specified in @code{tempel-capf-hooks}, this capf prepended to the list
+of capfs, but triggered only when the string start with
+@code{tempel-trigger-prefix} (@code{<} by default) or call
+@code{tempel-insert}, which bound to @kbd{M-+} by default.
+
+@subsection Completion Styles
+@anchor{Orderless}
+@subsubsection Orderless
+
+
+@subsection Annotations
+@anchor{Marginalia}
+@subsubsection Marginalia
+@anchor{Vertico}
+@anchor{feature-emacs-vertico}
+@subsection Vertico
+It's a well-implemented, hackless and simple, well-integrated with
+built-in Emacs mechanisms, performant, but still quite flexible and
+powerful minibuffer completion UI.  MCT, built-in completion buffers,
+icomplete and other similiar packages can work well, but some more
+sophisticated solutions like helm, ivy won't be a good fit for rde due
+to custom implementation of functionality (alternatives for which later
+appeared in Emacs itself like completion annotations) and thus they will
+have a lower integration quality and user experience consistency.
+
+Having a buffer based completion, like builtin one or mct allows for
+more sophisticated actions, for example to search through annotations
+and not only candidates themselves using isearch.  It can be treated as
+a downside of minibuffer-based completion UIs, however, in most cases
+it's possible to export a list of candidates using embark
+(@pxref{Embark,,,}) and perform the same operations on it.
+
+Vertico configuration in rde is quite minimalistic and intuitive, some
+commands/categories will be presented differently (in other window or in
+one line/ido-like), it's done to provide more room for commands, which
+works better, when there are more candidates visible at the same time
+and provide less distraction, when it's enough to show only a few items
+in one line without annotations.
+
+@anchor{Corfu}
+@anchor{feature-corfu}
+@subsection Corfu
+Corfu provides a UI for Completion At Point functions, similiar to the
+one you usually see in IDEs (a small tooltip near the point).  Corfu
+sets @code{completion-in-region-function} and after that
+@code{completion-at-point} starts showing this little overlay completion
+UI, completion candidates a generated using
+@code{completion-at-point-functions}, which provided by many major modes
+and separate packages like cape (@pxref{Cape,,,}), usually other
+features sets them automatically, but nothing stops anyone to adjust it
+to his liking.
+
+Corfu supports completion styles, including orderless, use
+@kbd{M-@key{SPC}} to insert space without closing completion UI.
+
+Use @kbd{M-h}/@kbd{M-g} to quickly review documentation/source code for
+selected candidate and @kbd{C-M-v}/@kbd{C-M-V} to scroll other window.
+
+Use @kbd{M-m} to move candidates to minibuffer, it maybe helpful if you
+want to apply embark (@pxref{Embark,,,}) actions or just get more room.
+
+@anchor{Embark}
+@subsection Embark
+
+@section Shells
+@subsection Bash
+rde uses GNU Bash (@pxref{,,,Bash}) with minimum customizations as a
+login shell (@pxref{login shell,,,Bash}), it's available on many foreign
+distributions and usually used as a login shell for user, so it won't
+require any additional setup or admin privileges to change some system
+settings while using rde home.
+
+@subsection Zsh
+However, the default shell is zsh (@pxref{,,,zsh}), in contrast to login
+shell, setting the default shell doesn't require admin privileges.  The
+configuration is quite customized to provide a good out of the box
+experience.
+
+@subsection Eshell
+Due to Emacs-centric approach of rde, eshell (@pxref{,,,Eshell}) is
+intended to be the primary shell for everyday use.  It's not a
+POSIX-complaint, and is not a shell you can use in usual terminal
+emulator.  It feels somehow similar to bash and zsh, but has a deep
+integration with Emacs and Emacs Lisp.
+
+@c TODO: Write about prefix arguments and ``tabs''.
+
+@section Terminals
+There is a notion of default and backup terminals in rde, the former is
+a terminal emulator intended for everyday use, the latter is one, which
+can be used for recovery work or during migration from usual CLI-based
+to Emacs-based workflows.
+
+rde uses emacsclient (@pxref{Emacs Server,,,Emacs}) as a default
+terminal, while emacsclient itself isn't a terminal emulator, it can
+launch @code{term}, @code{ansi-term} or @code{vterm}.  The latter is a
+full-fledged terminal emulator, which works inside Emacs and recommended
+as an alternative to a separate terminal applications, also, when
+@code{feature-vterm} is enabled @code{vterm} is bound to @key{s-t} and
+due to key binding approach (@pxref{Key Bindings}) can be easily invoked
+with @key{s-RET s-t}.  In addition to that in many cases the terminal
+emulator isn't needed and you can just spawn eshell directly with
+@key{s-RET s-e}.
+
+@subsection vterm
+
+@section Emacs Regular Expressions Cheatsheet
+[[:space:]]
++? non-hungry version
+(@pxref{Regular Expressions,,,Elisp})
+(@pxref{Regexps,,,Emacs})
+
+@anchor{Messaging}
+@section Messaging
+@anchor{Slack}
+@subsection Slack
+There is a Slack feature which allows you to access Slack workspaces via
+the @uref{https://github.com/yuya373/emacs-slack,emacs-slack} client.
+
+For authentication to work, you need to ensure you have set an Auth
+source back-end (@pxref{,,,Auth}) in Emacs.  If you use password-store
+(@pxref{The Unix password store,,,Auth}), you should have an entry of
+the form `nick@@workspace` for your Slack token and, if you need a
+cookie (consult
+@uref{https://github.com/yuya373/emacs-slack#how-to-get-token-and-cookie}
+for details), an entry of the form `nick^cookie@@workspace`.
+
+@section Programming Languages
+@subsection Clojure
+@subsection Common Lisp
+@subsection Go
+@subsection JavaScript
+@subsection OCaml
+@subsection Prolog
+@subsection Python
+
+@section Finances
+@ref{,,,ledger3} and @ref{,,,ledger-mode}.
+
+@section Graphical Environment
+@subsection Screen Capture
+@anchor{feature-sway-screenshot}
+
+There are 3 primary utilities for creating and modifying screenshots:
+@enumerate
+@item
+@command{shot-output}, which captures the current sway output and saves
+it to clipboard.
+@item
+@command{shot-window-or-selection}, which can capture either window
+under cursor (if clicked), or region (if region is selected with mouse).
+@item
+@command{swappy-clipboard}, which allows to edit the current content of
+the clipboard and save it back to it or file.
+@end enumerate
+
+The usual workflow is following: capture something (output with
+@kbd{s-@key{print}}, window or region with @kbd{s-S-@key{print}}),
+insert the content of clipboard to any application you want (browser,
+instant messanger, etc).  If you need to modify the content of clipboard
+(add a label, highlight something or make an arrow pointing to important
+object, etc) or save it to the file use @kbd{s-M-@key{print}}.
+
+@node Contributing
+@chapter Contributing
+
+@section Sharing Feedback
+The easiest way to contribute is to let us know you use rde.  Explaining
+how you use it and sharing constructive feedback will help the project
+even more.
+
+@section Sending Patches
+The process is similiar to many FLOSS projects, just send patch or
+series of patches on rde-devel mailing list.
+@uref{https://git-send-email.io/}
+
+Use cover letter if you send patch series, use subject prefix with a
+project name to trigger CI build.  The final Subject should look like:
+@code{[PATCH rde] packages: Add some fancy package} for single patch or
+@code{[PATCH guile-ares-rs 0/3] Adding support of multiple return
+values} for a patch series with cover letter.
+
+To avoid manually specifying command line arguments you can use this
+example @file{.git/config} for the repo:
+@example
+...
+[format]
+        to = ~abcdw/rde-devel@@lists.sr.ht
+        subjectPrefix = PATCH guile-ares-rs
+        coverLetter = auto
+@end example
+
+@section Commit Messages
+There are a few subsystem @code{system:} for system services,
+@code{home:} for home services, @code{packages:} for packages,
+@code{rde:} for rde features, use them and module/object you modify
+(skip prefix like feature- or other to save some space).  Use present
+simple in the subject line.  Elaborate on the reason behind change in
+the message body.  For example:
+
+@example
+rde: emacs: Update %default-emacs-package to emacs-next-stable
+
+This prevent clipboard issue from happening.
+@end example
+
+@c TODO: Add process similar to srfi?
+@c https://srfi.schemers.org/srfi-process.html
+
+@c @menu
+@c * New features, fixes or ideas: New features fixes or ideas.
+@c * Documentation::
+@c @end menu
+
+@c @node New features fixes or ideas
+@c @section New features, fixes or ideas
+
+@c Send mails, optionally with inline patches to rde-devel mailing list.
+
+@c @node Documentation
+@c @section Documentation
+
+@node Tips and Tricks
+@chapter Tips and Tricks
+@section guix build
+
+Building a package from the local sources.
+@example
+GUILE_LOAD_PATH=path/to/src guix build -e '(@@ (your module name) package-name)'
+@end example
+
+
+@node FAQ
+@chapter FAQ
+
+TODO: Write about multi-user usage.
+
+@node Acknowledgments
+@chapter Acknowledgments
+
+The project is inspired by Nix and GNU Guix, technically it heavily
+relies on Guix Home, Guix System and GNU Emacs, but it also take
+inspiration in Nix's home-manager, NixOS and Nix itself.  Some parts of
+rde become a part of Guix, different packages or services, additions to
+build system and some bigger parts like @command{guix home}, sometimes
+ideas drift from GNU Guix and its community to rde and we are very
+greatful for insights, collaboration and all the help.
+
+rde won't be possible without GNU, Emacs and many other Free/Libre and
+Open Source projects, much kudos to all of them.
+
+@node Concept Index
+@unnumbered Concept Index
+@printindex cp
+
+@bye

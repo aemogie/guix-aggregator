@@ -1,0 +1,19 @@
+#!/usr/bin/env -S guile
+!#
+
+(use-modules (ice-9 pretty-print)
+             (ice-9 match)
+             (guix packages)
+             (guix download)
+             (guix git-download)
+             (guix utils)
+             (guix gexp)
+             (gnu packages rust))
+
+(define expression
+  `(begin
+    ,(match (command-line)
+         [(_) (read)]
+         [(_ str) (with-input-from-string str read)])))
+
+(pretty-print expression)

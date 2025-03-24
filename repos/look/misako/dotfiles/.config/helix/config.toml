@@ -1,0 +1,169 @@
+# https://docs.helix-editor.com/master/configuration.html
+theme = "catppuccin_mocha"
+
+[editor]
+scrolloff = 5
+mouse = true
+middle-click-paste = true
+scroll-lines = 3
+shell = ["sh", "-c"]
+line-number = "relative"
+cursorline = false
+cursorcolumn = false
+auto-completion = true
+auto-format = true
+idle-timeout = 250
+completion-timeout = 250
+preview-completion-insert = true
+completion-trigger-len = 1
+completion-replace = true
+auto-info = true
+true-color = false
+undercurl = false
+rulers = []
+bufferline = "multiple"
+color-modes = false
+text-width = 80
+workspace-lsp-roots = []
+default-line-ending = "native"
+insert-final-newline = true
+popup-border = "none"
+indent-heuristic = "hybrid"
+jump-label-alphabet = "abcdefghijklmnopqrstuvwxyz"
+end-of-line-diagnostics = "hint"
+
+[editor.auto-save]
+focus-lost = false
+after-delay.enable = false
+after-delay.timeout = 1000
+
+[editor.statusline]
+left = ["mode", "spinner", "file-name", "read-only-indicator", "file-modification-indicator"]
+center = []
+right = ["file-encoding", "file-line-ending", "diagnostics", "selections", "register", "file-type", "total-line-numbers", "position-percentage", "position"]
+separator = "│"
+mode.normal = "NORMAL"
+mode.insert = "INSERT"
+mode.select = "SELECT"
+
+[editor.lsp]
+enable = true
+display-messages = false
+auto-signature-help = true
+display-inlay-hints = false
+display-signature-help-docs = true
+snippets = true
+goto-reference-include-declaration = true
+
+[editor.cursor-shape]
+normal = "block"
+insert = "block"
+select = "block"
+
+[editor.file-picker]
+hidden = false
+follow-symlinks = true
+deduplicate-links = true
+parents = true
+ignore = true
+git-ignore = true
+git-global = true
+git-exclude = true
+# max-depth = 3
+
+[editor.auto-pairs]
+'(' = ')'
+'{' = '}'
+'[' = ']'
+'"' = '"'
+'`' = '`'
+'<' = '>'
+
+[editor.search]
+smart-case = true
+wrap-around = true
+
+[editor.whitespace.render]
+space = "all"
+tab = "all"
+nbsp = "all"
+nnbsp = "all"
+newline = "all"
+
+[editor.whitespace.characters]
+space = "·"
+nbsp = "⍽"
+nnbsp = "␣"
+tab = "→"
+newline = "⏎"
+tabpad = "·" # Tabs will look like "→···" (depending on tab width)
+
+[editor.indent-guides]
+render = false
+character = "│" # Some characters that work well: "▏", "┆", "┊", "⸽"
+skip-levels = 0
+
+[editor.gutters]
+layout = ["diagnostics", "spacer", "line-numbers", "spacer", "diff"]
+
+[editor.gutters.line-numbers]
+min-width = 1
+
+[editor.soft-wrap]
+enable = true
+max-wrap = 20
+max-indent-retain = 40
+wrap-indicator = "↪"
+wrap-at-text-width = false
+
+[editor.smart-tab]
+enable = true
+supersede-menu = false
+
+[editor.inline-diagnostics]
+cursor-line = "warning"
+other-lines = "disable"
+prefix-len = 1
+max-wrap = 20
+max-diagnostics = 10
+
+#
+# Keybinds
+#
+
+[keys.normal]
+"=" = [":pipe parinfer-rust"]
+"A-c" = "@mammammammammammammammammammammammammammammammam"
+
+[keys.normal."@"]
+m = ":cd ~/projects/guile/misako"
+s = ":cd ~/projects/guile/saayix"
+r = ":cd ~/projects/guile/radix"
+z = ":cd ~/projects/guile/zero"
+g = ":cd ~/projects/guile/guix"
+n = ":cd ~/projects/guile/nonguix"
+c = ":cd ~/projects/guile/cargo2guix"
+R = ":cd ~/projects/guile/Rosenthal"
+o = ":cd ~/projects/guile/sops-guix"
+
+[keys.normal."#"]
+h = ":sh guix home reconfigure ~/.config/guix/home.scm --allow-downgrades"
+s = ":sh doas guix system reconfigure /etc/system.scm --allow-downgrades"
+p = ":sh guix pull --allow-downgrades"
+
+[keys.normal.g.a]
+# guix show package where cursor is inside the definition
+s = "@mammammammammammammammammammammammammammammammams\\(name<ret>f\";mim\"0y:sh guix show <C-r>0<ret>"
+# compute and replace HASH for PACKAGE where cursor is inside the definition
+h = "@mammammammammammammammammammammammammammammammams\\(name<ret>f\";mim\"0ymammammammammammammammammammammammammammammammams\\(base32<ret>f\";mimr0:w!<ret>|guix build -L. <C-r>0<ret>sactual hash: *<ret>lvgl<esc>\"0ymim\"0Rzz:w!<ret>;"
+# call personal committer
+c = [":sh ./committer"]
+# execute guix build on the current PACKAGE where cursor is inside the definition and display in-line
+b = "@mammammammammammammammammammammammammammammammams\\(name<ret>f\";mim\"0y:sh guix build -L. <C-r>0<ret>"
+# execute guix build on the current PACKAGE where cursor is inside the definition and display in a new vertical buffer window
+B = "@mammammammammammammammammammammammammammammammams\\(name<ret>f\";mim\"0y<space>wnv|guix build -L. <C-r>0<ret>"
+
+[keys.normal.g.c]
+S = ["yank_to_clipboard", ":pipe guix-style"]
+c = [":sh ./pre-inst-env etc/committer.scm"]
+i = [":pipe inherit-fix"]

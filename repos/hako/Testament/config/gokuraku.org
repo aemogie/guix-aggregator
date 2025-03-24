@@ -1,0 +1,529 @@
+# SPDX-FileCopyrightText: 2024, 2025 Hilton Chain <hako@ultrarare.space>
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: CC-BY-SA-4.0
+
+#+TITLE: gokuarku (Server)
+#+PROPERTY: header-args :noweb-prefix no
+
+* Guix System
+#+begin_src scheme :tangle gokuraku.scm :noweb yes
+  (define-module (gokuraku)
+    #:use-module (gnu)
+    #:use-module (testament common)
+    #:use-module (testament counter-stop)
+    #:use-module (testament packages)
+    <<module>>)
+
+  <<definition>>
+
+  (define %os
+    (operating-system
+      (bootloader <<bootloader>>)
+      (kernel <<kernel>>)
+      (kernel-arguments (cons* <<kernel-argument>> %default-kernel-arguments))
+      (file-systems (append <<file-systems>> %base-file-systems))
+      (swap-devices (list <<swap-space>>))
+      (host-name "gokuraku")
+      (timezone <<timezone>>)
+      (packages (cons* <<package>> %base-packages))
+      (users (cons* <<user>> %base-user-accounts))
+      (services (cons* <<service>> %base-services))))
+
+  ((compose <<transformation>>)
+   %os)
+#+end_src
+
+* Base
+#+begin_src scheme :noweb-ref module
+  #:use-module (srfi srfi-26)
+  #:use-module (ice-9 match)
+  #:use-module (gnu packages gnupg)
+  #:use-module (gnu packages shells)
+  #:use-module (sops packages sops)
+#+end_src
+
+** Bootloader
+#+name: bootloader
+#+begin_src scheme
+  (bootloader-configuration
+    (bootloader grub-bootloader)
+    (targets '("/dev/nvme1n1")))
+#+end_src
+
+** File Systems
+#+begin_src scheme :noweb-ref file-systems
+  (let ((file-system-base
+         (file-system
+           (type "btrfs")
+           (mount-point "/")
+           (device (uuid "0c7041a2-416f-419f-9b1a-cceae3330aae"))
+           (create-mount-point? #t)))
+        (options-for-subvolume
+         (cut string-append "compress=zstd,subvol=" <>)))
+    (cons (file-system
+            (inherit file-system-base)
+            (mount-point "/mnt/Lycoris")
+            (options "compress=zstd,subvolid=5")
+            (check? #f)
+            (create-mount-point? #t))
+          (map (match-lambda
+                 ((subvolume . mount-point)
+                  (file-system
+                    (inherit file-system-base)
+                    (mount-point mount-point)
+                    (options (options-for-subvolume subvolume))
+                    (check? (string=? "/" mount-point)))))
+               '(("@System" . "/")
+                 ("@Data"   . "/var/lib")))))
+#+end_src
+
+#+begin_src scheme :noweb-ref swap-space
+  (swap-space
+    (target (uuid "07f2b4fb-3d4e-4a0a-9953-c4200ebdf245"))
+    (discard? #t))
+#+end_src
+
+** Timezone
+#+name: timezone
+#+begin_src scheme
+  "Asia/Hong_Kong"
+#+end_src
+
+** Users
+#+begin_src scheme :noweb-ref user
+  (user-account
+    (name "hako")
+    (group "users")
+    (supplementary-groups '("wheel"))
+    (shell (file-append fish "/bin/fish")))
+#+end_src
+
+** Packages
+No need to install less used ones, ‘guix shell’ is always available.
+#+begin_src scheme :noweb-ref home-package
+  rsync
+#+end_src
+
+** Guix Daemon
+#+begin_src scheme :noweb-ref transformation
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (services
+       (modify-services (operating-system-user-services os)
+         (guix-service-type
+          config => (guix-configuration
+                     (inherit config)
+                     (authorized-keys
+                      (cons* %guix-authorized-key-dorphine
+                             %guix-authorized-key-nonguix
+                             %default-authorized-guix-keys))
+                     (substitute-urls
+                      `(,@%default-substitute-urls
+                        "https://substitutes.nonguix.org"))))))))
+#+end_src
+
+** SOPS Secrets
+#+begin_src scheme :noweb-ref package
+  gnupg
+  sops
+#+end_src
+
+#+begin_src scheme :noweb-ref definition
+  (define gokuraku.yaml
+    (testament-file-object "gokuraku.yaml"))
+
+  (define (sops-str key)
+    "The result will be publicly available in /gnu/store, YOU ARE WARNED."
+    (get-sops-secret key #:file gokuraku.yaml))
+
+  (define (sops-num key)
+    "The result will be publicly available in /gnu/store, YOU ARE WARNED."
+    (get-sops-secret key #:file gokuraku.yaml #:number? #t))
+#+end_src
+
+* Kernel
+#+begin_src scheme :noweb-ref module
+  #:use-module (gnu services sysctl)
+  #:use-module (gnu packages linux)
+#+end_src
+
+#+name: kernel
+#+begin_src scheme
+  linux-libre-lts
+#+end_src
+
+#+begin_src scheme :noweb-ref kernel-argument
+  "kernel.sysrq=0"
+  "zswap.enabled=1"
+  "zswap.max_pool_percent=90"
+#+end_src
+
+#+begin_src scheme :noweb-ref transformation
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (services
+       (modify-services (operating-system-user-services os)
+         (sysctl-service-type
+          _ => (sysctl-configuration
+                (settings
+                 `(;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
+                   ("net.core.rmem_max" . "7500000")
+                   ("net.core.wmem_max" . "7500000")
+                   ,@%default-sysctl-settings))))))))
+#+end_src
+
+* Networking
+** nftables
+#+begin_src scheme :noweb-ref module
+  #:use-module (gnu services networking)
+  #:use-module (rosenthal services networking)
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (service nftables-service-type
+    (nftables-configuration
+      (ruleset (testament-file-object "nftables-gokuraku.nft"))))
+#+end_src
+
+[[file:../files/plain/nftables-gokuraku.nft][nftables-gokuraku.nft]]
+
+** static-networking
+#+begin_src scheme :noweb-ref service
+  (service static-networking-service-type
+    (list (static-networking
+            (addresses
+             (map (lambda (version)
+                    (network-address
+                     (device (sops-str (list "network" version "name")))
+                     (value (sops-str (list "network" version "address")))))
+                  '("v4" "v6")))
+            (routes
+             (map (lambda (version)
+                    (network-route
+                     (destination "default")
+                     (device (sops-str (list "network" version "name")))
+                     (gateway (sops-str (list "network" version "gateway")))))
+                  '("v4" "v6")))
+            (name-servers
+             '("1.1.1.1"
+               "1.0.0.1"
+               "2606:4700:4700::1111"
+               "2606:4700:4700::1001")))))
+#+end_src
+
+** ntp
+#+begin_src scheme :noweb-ref service
+  (service ntp-service-type)
+#+end_src
+
+** tailscale
+#+begin_src scheme :noweb-ref service
+  (service tailscale-service-type)
+#+end_src
+
+* Session and Seat Management
+#+begin_src scheme :noweb-ref module
+  #:use-module (gnu services dbus)
+  #:use-module (gnu services desktop)
+#+end_src
+
+** dbus
+#+begin_src scheme :noweb-ref service
+  (service dbus-root-service-type)
+#+end_src
+
+** elogind
+#+begin_src scheme :noweb-ref service
+  (service elogind-service-type)
+#+end_src
+
+* SSH
+#+begin_src scheme :noweb-ref module
+  #:use-module (gnu services security)
+  #:use-module (gnu services ssh)
+  #:use-module (gnu packages ssh)
+#+end_src
+
+#+begin_src scheme :noweb-ref package
+  mosh
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (service (fail2ban-jail-service
+            openssh-service-type
+            (fail2ban-jail-configuration
+              (name "sshd")
+              (enabled? #t)
+              (extra-content
+               (list (plain-file "filter" "filter=sshd[_daemon='sshd-session']")))
+              (action
+               (list (fail2ban-jail-action-configuration
+                       (name "nftables"))))))
+    (openssh-configuration
+      (openssh openssh-sans-x)
+      (password-authentication? #f)
+      (authorized-keys
+       `(("hako" ,(plain-file "hako.pub" "ssh-ed25519 \
+  AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2"))))))
+#+end_src
+
+#+begin_src scheme :noweb-ref transformation
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (sudoers-file
+       (plain-file
+        "sudoers"
+        (string-append
+         (plain-file-content %sudoers-specification)
+         "hako ALL = NOPASSWD: ALL\n")))))
+#+end_src
+
+* Containers
+#+begin_src scheme :noweb-ref module
+  #:use-module (gnu services docker)
+#+end_src
+
+** containerd
+#+begin_src scheme :noweb-ref service
+  (service containerd-service-type)
+#+end_src
+
+** docker
+#+begin_src scheme :noweb-ref service
+  (service docker-service-type
+    (docker-configuration
+      (enable-iptables? #f)))
+#+end_src
+
+* Databases
+#+begin_src scheme :noweb-ref module
+  #:use-module (gnu services databases)
+  #:use-module (gnu packages databases)
+#+end_src
+
+** postgresql
+#+begin_src scheme :noweb-ref service
+  (service postgresql-service-type
+    (postgresql-configuration
+      (postgresql postgresql-15)))
+#+end_src
+
+** redis
+#+begin_src scheme :noweb-ref service
+  (service redis-service-type)
+#+end_src
+
+* Web Servers
+#+begin_src scheme :noweb-ref module
+  #:use-module (gnu services certbot)
+  #:use-module (rosenthal services child-error)
+#+end_src
+
+** cloudflared
+#+begin_src scheme :noweb-ref service
+  (service cloudflare-tunnel-service-type
+    (cloudflare-tunnel-configuration
+      (log-level "error")
+      (token (sops-str '("cloudflared")))))
+#+end_src
+
+** certbot
+#+begin_src scheme :noweb-ref service
+  (service certbot-service-type
+    (certbot-configuration
+      (certificates
+       (list (certificate-configuration
+               (domains '("mx.boiledscript.com")))))))
+#+end_src
+
+* Web Services
+#+begin_src scheme :noweb-ref module
+  #:use-module (gnu services cuirass)
+  #:use-module (rosenthal services child-error)
+  #:use-module (rosenthal services mail)
+  #:use-module (rosenthal services web)
+  #:use-module (gnu packages fonts)
+#+end_src
+
+** cuirass
+#+begin_src scheme :noweb yes :noweb-ref service
+  (service cuirass-service-type
+    (cuirass-configuration
+      (port 15497)
+      (specifications
+       #~(list <<cuirass-specification>>))))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (service guix-publish-service-type
+    (guix-publish-configuration
+      (port 27254)))
+#+end_src
+
+*** cuirass-job-rosenthal
+#+begin_src scheme :noweb-ref cuirass-specification
+  (specification
+    (name 'rosenthal)
+    (build '(channels rosenthal))
+    (channels
+     (list (channel
+             (name 'rosenthal)
+             (url "https://git.boiledscript.com/hako/rosenthal.git")
+             (branch "trunk"))
+           (channel
+             (inherit %default-guix-channel)
+             (url "https://git.boiledscript.com/mirror/guix.git"))))
+    (priority 5))
+#+end_src
+
+** docker-mailserver
+#+name: rspamd-redis-conf
+#+begin_src scheme
+  (plain-file
+   "rspamd-redis.conf" "\
+  servers = \"127.0.0.1:6379\";
+  expand_keys = true;")
+#+end_src
+
+#+begin_src scheme :noweb yes :noweb-ref service
+  (service docker-mailserver-service-type
+    (docker-mailserver-configuration
+      (shepherd-requirement
+       '(redis renew-certbot-certificates))
+      (options
+       '(("ENABLE_AMAVIS" . "0")
+         ("ENABLE_FAIL2BAN" . "1")
+         ("ENABLE_MTA_STS" . "1")
+         ("ENABLE_OPENDKIM" . "0")
+         ("ENABLE_OPENDMARC" . "0")
+         ("ENABLE_POLICYD_SPF" . "0")
+         ("ENABLE_RSPAMD" . "1")
+         ("ENABLE_RSPAMD_REDIS" . "0")
+         ("ENABLE_SPAMASSASSIN" . "0")
+         ("NETWORK_INTERFACE" . "enp0s31f6")
+         ("OVERRIDE_HOSTNAME" . "mx.boiledscript.com")
+         ("POSTMASTER_ADDRESS" . "admin@boiledscript.com")
+         ("RSPAMD_LEARN" . "1")
+         ("SPOOF_PROTECTION" . "1")
+         ("SSL_TYPE" . "letsencrypt")))
+      (extra-arguments
+       `("--cap-add=NET_ADMIN"      ;For fail2ban.
+         "--volume" "/etc/letsencrypt:/etc/letsencrypt:ro"
+         "--volume"
+         ,(file-append
+           <<rspamd-redis-conf>> ":/etc/rspamd/local.d/redis.conf:ro")
+         "--volume"
+         ,(file-append
+           (testament-file-object "rspamd-dkim-signing.conf")
+           ":/etc/rspamd/override.d/dkim_signing.conf:ro")))))
+#+end_src
+
+[[file:../files/plain/rspamd-dkim-signing.conf][rspamd-dkim-signing.conf]]
+
+** forgejo
+#+begin_src scheme :noweb-ref service
+  (service forgejo-service-type
+    (forgejo-configuration
+      (config-file (testament-file-object "forgejo.ini"))))
+#+end_src
+
+** jellyfin
+#+begin_src scheme :noweb-ref service
+  (service jellyfin-service-type
+    (jellyfin-configuration
+      (auto-start? #f)
+      (extra-options
+       `("--volume" "/mnt/Media:/media"
+         "--volume"
+         ,(let ((path "/share/fonts/truetype/NotoSansCJK-VF.otf.ttc"))
+            (file-append font-google-noto-sans-cjk path ":/usr" path))))))
+#+end_src
+
+** komga
+#+begin_src scheme :noweb-ref service
+  (service komga-service-type
+    (komga-configuration
+      (auto-start? #f)
+      (port 44293)))
+#+end_src
+
+** miniflux
+#+begin_src scheme :noweb-ref service
+  (service miniflux-service-type
+    (miniflux-configuration
+      (options
+       `(("BASE_URL" . ,(sops-str '("miniflux" "url")))
+         ("CLEANUP_ARCHIVE_READ_DAYS" . -1)
+         ("CLEANUP_ARCHIVE_UNREAD_DAYS" . -1)
+         ("DATABASE_URL" . ,(sops-str '("miniflux" "database")))
+         ("LISTEN_ADDR" . "/tmp/.miniflux.sock")
+         ("RUN_MIGRATIONS" . 1)))))
+#+end_src
+
+** misskey
+#+begin_src scheme :noweb-ref service
+  (service misskey-service-type
+    (misskey-configuration
+      (image "ghcr.io/rakino/misskey:latest")
+      (config
+       `((url . ,(sops-str '("misskey" "url")))
+         (port . 54493)
+         (db
+          . ((host . localhost)
+             (port . 5432)
+             (db . misskey)
+             (user . misskey)
+             (pass . ,(sops-str '("misskey" "password")))))
+         (dbReplications . #f)
+         (redis
+          . ((host . localhost)
+             (port . 6379)))
+         (fulltextSearch
+          . ((provider . sqlLike)))
+         (id . "aid")
+         (clusterLimit . 4)
+         (outgoingAddressFamily . dual)
+         (proxyBypassHosts
+          . #(api.deepl.com
+              api-free.deepl.com
+              www.recaptcha.net
+              hcaptcha.com
+              challenges.cloudflare.com))
+         (proxyRemoteFiles . #t)
+         (signToActivityPubGet . #t)))))
+#+end_src
+
+** navidrome
+#+begin_src scheme :noweb-ref service
+  (service navidrome-service-type
+    (navidrome-configuration
+      (auto-start? #f)
+      (extra-config (testament-file-content "navidrome.toml"))))
+#+end_src
+
+** vaultwarden
+#+begin_src scheme :noweb-ref service
+  (service vaultwarden-service-type
+    (vaultwarden-configuration
+      (database-url (sops-str '("vaultwarden")))
+      (port 23263)
+      (extra-options '(("ROCKET_ADDRESS" . "127.0.0.1")))))
+#+end_src
+
+* Miscellaneous
+#+begin_src scheme :noweb-ref module
+  #:use-module (rosenthal services file-systems)
+#+end_src
+
+** btrbk
+#+begin_src scheme :noweb-ref service
+  (service btrbk-service-type
+    (btrbk-configuration
+      (config-file
+       (testament-file-object "btrbk-gokuraku.conf"))))
+#+end_src
+
+[[file:../files/plain/btrbk-gokuraku.conf][btrbk-gokuraku.conf]]

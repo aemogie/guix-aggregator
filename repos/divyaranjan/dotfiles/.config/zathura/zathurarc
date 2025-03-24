@@ -1,0 +1,14 @@
+set sandbox none
+set statusbar -h padding 0
+set statusbar -v padding 0
+set page-padding 1
+set selection-clipboard clipboard
+map U scroll half-up
+map D scroll half-down
+map R reload
+map r rotate
+map i recolor
+map p print
+map g goto top
+map m toggle_statusbar
+

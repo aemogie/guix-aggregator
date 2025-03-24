@@ -1,0 +1,204 @@
+{
+    "layer": "top",
+    "position": "top",
+    "mod": "dock",
+    "exclusive": true,
+    "passthrough": false,
+    "gtk-layer-shell": true,
+    "height": 50,
+    "modules-left": [
+        "custom/launch_wofi",
+        "hyprland/workspaces",
+    ],
+    "modules-center": [],
+    "modules-right": [
+        "network",
+        "cpu",
+        "temperature",
+        "memory",
+        "battery",
+        "backlight",
+        "pulseaudio",
+        "pulseaudio#microphone",
+        "tray",
+        "clock"
+    ],
+
+    "custom/launch_wofi": {
+        "format": "",
+        "on-click": "bemenu-run -i -n -l 5 -p spawn:",
+        "tooltip": false
+    },
+
+    "hyprland/workspaces": {
+        "active-only": false,
+        "all-outputs": true,
+        // "persistent-workspaces": {},
+        // can add window-rewrite later, maybe I like it, but I kinda prefer the current setup
+        "show-special": false,
+        "sort-by": "number",
+        "disable-scroll": true,
+        "disable-scroll-wraparound": true,
+        "enable-bar-scroll": false,
+        "format": "{icon}",
+        "format-icons": {
+            "1": "α",
+            "2": "β",
+            "3": "γ",
+            "4": "δ",
+            "5": "ε",
+            "6": "ζ",
+            "7": "η",
+            "8": "θ",
+            "9": "ι",
+            "10": "κ"
+        }
+    },
+
+    "hyprland/window": {
+        "format": "{class} | {title}",
+        "separate-outputs": true,
+        "ignore-list": [
+           "Alacritty"
+        ],
+        "app_ids-mapping": {
+          "firefoxdeveloperedition": "firefox-developer-edition"
+        },
+        "rewrite": {
+            ".*\\| hx.*": "Helix",
+            "^foot.*": "Terminal",
+            "(.*) \\| (.*) — Zen Browser": "$2 — Zen",
+            ".*\\| yazi.*": "Yazi",
+            "^steam.*": "Steam"
+        }
+    },
+
+    "cpu": {
+        "interval": 10,
+        "format": " {usage}%",
+        "max-length": 10,
+        "on-click": "foot -e htop",
+        "states": {
+            "warning": 70,
+            "critical": 90
+        }
+    },
+
+    "temperature": {
+        "critical-threshold": 90,
+        "hwmon-path": "/sys/class/hwmon/hwmon2/temp1_input",
+        "interval": 5,
+        "format": "{icon} {temperatureC}°C",
+        "format-icons": [ "", "", "", "", "" ],
+        "tooltip": false
+    },
+
+    "memory": {
+        "interval": 30,
+        "format": " {}%",
+        "max-length": 25,
+        "tooltip": true,
+        "tooltip-format": " {used:0.1f}/{total:0.1f}GB"
+    },
+
+    "tray": {
+        "icon-size": 18,
+        "spacing": 10
+    },
+
+    "clock": {
+        "format": " {:%H:%M}",
+        "format-alt": " {:%A, %B %d, %Y (%R)}",
+        "tooltip-format": "<tt><small>{calendar}</small></tt>",
+        "calendar": {
+            "mode": "year",
+            "mode-mon-col": 3,
+            "weeks-pos": "right",
+            "on-scroll": 1,
+            "on-click-right": "mode",
+            "format": {
+                "months":     "<span color='#ffead3'><b>{}</b></span>",
+                "days":       "<span color='#ecc6d9'><b>{}</b></span>",
+                "weeks":      "<span color='#99ffdd'><b>W{}</b></span>",
+                "weekdays":   "<span color='#ffcc66'><b>{}</b></span>",
+                "today":      "<span color='#ff6699'><b><u>{}</u></b></span>"
+            }
+        },
+        "actions": {
+            "on-click-right": "mode",
+            "on-click-forward": "tz_up",
+            "on-click-backward": "tz_down",
+            "on-scroll-up": "shift_up",
+            "on-scroll-down": "shift_down"
+        }
+    },
+
+    "backlight": {
+        // "device": "acpi_video1",
+        "format": "{icon} {percent}%",
+        "format-icons": ["󰃞 ", "󰃟 ", "󰃠 "],
+        "on-scroll-up": "light -A 1",
+        "on-scroll-down": "light -U 1",
+        "on-click": "light -S 50",
+        "min-length": 6
+    },
+
+    "network": {
+        /* "format-wifi": "直", */
+        "format": "⚠ Disabled",
+        "interval": 2,
+        // "min-length": 30,
+        "format-wifi": "{icon} {signalStrength}% {essid}",
+        "format-ethernet": " {ifname}: {bandwidthDownBits} ↓↑ {bandwidthUpBits}",
+        "format-alt": " {ifname}: {ipaddr}/{cidr}",
+        "format-disconnected": "⚠ Disconnected",
+        "tooltip-format": "{essid}",
+        "format-icons": ["󰤯 ","󰤟 ","󰤢 ","󰤢 ","󰤨 "]
+    },
+
+    "battery": {
+        "states": {
+            "good": 95,
+            "warning": 30,
+            "critical": 20
+        },
+        "tooltip": false,
+        "format": "{icon} {capacity}%",
+        "format-time": "{H}:{M:02}",
+        "format-charging": " {capacity}% {time}",
+        "format-charging-full": " {capacity}%",
+        "format-plugged": " {capacity}% {time}",
+        "format-icons": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"]
+    },
+
+    "pulseaudio": {
+        "format": "{icon} {volume}%",
+        "format-bluetooth": "{icon} {volume}%",
+        "format-muted": " ",
+        "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+        "on-click-right": "foot -e ncpamixer",
+        "on-scroll-up": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+",
+        "on-scroll-down": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%-",
+        "scroll-step": 5,
+        "format-icons": {
+            "headphone": " ",
+            "hands-free": " ",
+            "headset": " ",
+            "phone": " ",
+            "portable": " ",
+            "car": " ",
+            "default": [" ", " ", " "]
+        }
+    },
+
+    "pulseaudio#microphone": {
+        "format": "{format_source}",
+        "format-source": " {volume}%",
+        "format-source-muted": "",
+        "on-click": "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle",
+        "on-click-right": "ncpamixer",
+        "on-scroll-up": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SOURCE@ 5%+",
+        "on-scroll-down": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SOURCE@ 5%-",
+        "scroll-step": 5
+    }
+}

@@ -1,0 +1,201 @@
+;; (tags) ______________________________________________________________________
+(deflisten tags
+  "river-bedload -minified -watch tags")
+
+(defwidget tags []
+  (box :class "tags"
+       :orientation "horizontal"
+       :halign "start"
+       (for n in "[0,1,2,3,4,5,6]"
+         (eventbox :onclick "riverctl set-focused-tags ${powi(2,n)}"
+                   (box :class "${tags[n].focused ? '' : 'un'}focused-${tags[n].occupied ? 'occupied' : 'empty'}"
+                        "${["α", "β", "γ", "δ", "ε", "ζ", "η"][n]}")))
+       (eventbox :onclick "riverctl toggle-focused-tags ${powi(2,7)}"
+                 (box :class "${tags[7].focused ? '' : 'un'}focused-${tags[7].occupied ? 'occupied' : 'empty'}"
+                      "•"))))
+
+;; (toplevels) ________________________________________________________________
+(deflisten focused-toplevel
+  "river-bedload -minified -watch title")
+
+(defwidget focused-toplevel []
+  (label :class "focused-toplevel"
+         :limit-width 100
+         :text {focused-toplevel[0].title}))
+
+;; (network) __________________________________________________________________
+(defwidget net []
+  (box :class "net"
+       :orientation "horizontal"
+       :halign "end"
+       :space-evenly false
+       (image :path "icons/net-upload.png")
+       {EWW_NET["wlp2s0"]["NET_UP"] > powi(10,6) ?
+        "${round(EWW_NET["wlp2s0"]["NET_UP"]/powi(10,6),1)}MB/s" :
+        EWW_NET["wlp2s0"]["NET_UP"] > powi(10,3) ?
+        "${round(EWW_NET["wlp2s0"]["NET_UP"]/powi(10,3),1)}KB/s" :
+        "${round(EWW_NET["wlp2s0"]["NET_UP"],1)}B/s"}
+       (image :path "icons/net-download.png")
+       {EWW_NET["wlp2s0"]["NET_DOWN"] > powi(10,6) ?
+        "${round(EWW_NET["wlp2s0"]["NET_DOWN"]/powi(10,6),1)}MB/s" :
+        EWW_NET["wlp2s0"]["NET_DOWN"] > powi(10,3) ?
+        "${round(EWW_NET["wlp2s0"]["NET_DOWN"]/powi(10,3),1)}KB/s" :
+        "${round(EWW_NET["wlp2s0"]["NET_DOWN"],1)}B/s"}))
+
+;; (memory) ___________________________________________________________________
+(defwidget memory []
+  (box :class "memory"
+       :orientation "horizontal"
+       :halign "end"
+       :space-evenly false
+       (image :path "icons/memory.png")
+       "${round(EWW_RAM.used_mem / 1000000, 0)}MB"))
+
+;; (cpu) ______________________________________________________________________
+(defwidget cpu []
+  (box :class "cpu"
+       :orientation "horizontal"
+       :halign "end"
+       :space-evenly false
+       (image :path "icons/cpu.png")
+       "${round(EWW_CPU.avg, 0)}%"))
+
+;; (temperature) ______________________________________________________________
+(defwidget temperature []
+  (box :class "temperature"
+       :orientation "horizontal"
+       :halign "end"
+       :space-evenly false
+       (image :path "icons/temperature.png")
+       "${EWW_TEMPS["ACPITZ_TEMP1"]}°C"))
+
+;; (volume) ___________________________________________________________________
+(defpoll sink
+  :interval "0.5s"
+  "scripts/sink status")
+
+(defwidget volume []
+  (eventbox :halign "end"
+            :onclick "scripts/sink volume down"
+            :onmiddleclick "scripts/sink toggle mute"
+            :onrightclick "scripts/sink volume up"
+            (box :class "volume"
+                 :orientation "horizontal"
+                 :space-evenly false
+                 (image :path {sink.status == "Muted" ?
+                               "icons/volume-mute.png" :
+                               sink.volume == 0 ?
+                               "icons/volume-no.png" :
+                               sink.volume <= 60 ?
+                               "icons/volume-low.png" :
+                               "icons/volume-high.png"})
+                 "${sink.volume}%")))
+
+;; (battery) __________________________________________________________________
+(defwidget battery []
+  (box :class "battery"
+       :orientation "horizontal"
+       :halign "end"
+       :space-evenly false
+       (image :path {EWW_BATTERY["BAT0"].status == "Charging" ?
+                     "icons/battery-charging.png" :
+                     EWW_BATTERY["BAT0"].capacity == 0 ?
+                     "icons/battery-empty.png" :
+                     EWW_BATTERY["BAT0"].capacity <= 25 ?
+                     "icons/battery-very-low.png" :
+                     EWW_BATTERY["BAT0"].capacity <= 45 ?
+                     "icons/battery-low.png" :
+                     EWW_BATTERY["BAT0"].capacity <= 65 ?
+                     "icons/battery-medium.png" :
+                     EWW_BATTERY["BAT0"].capacity <= 85 ?
+                     "icons/battery-high.png" :
+                     "icons/battery-full.png"})
+       "${EWW_BATTERY["BAT0"].capacity}%"))
+
+;; (time) _____________________________________________________________________
+(defvar calendar-visible false)
+
+(defwidget time []
+  (eventbox :halign "end"
+            :onclick {calendar-visible ?
+                       "${EWW_CMD} update calendar-visible=false \
+                        && ${EWW_CMD} open calendar" :
+                       "${EWW_CMD} update calendar-visible=true \
+                        && ${EWW_CMD} close calendar"}
+            (box :class "time"
+                 {formattime(EWW_TIME, "%a %d %b %H:%M")})))
+
+;; (layout) __________________________________________________________________
+(deflisten layout
+  :initial '[{"output":"LVDS-1","layout":"left"}]'
+  "river-bedload -minified -watch layout")
+
+(defwidget layout []
+  (eventbox :onclick "layout cycle"
+            :class "layout"
+            :halign "end"
+            (image :path "layouts/${layout[0].layout}.png")))
+
+;; (separators) _______________________________________________________________
+(defwidget separator [n]
+  (box :class "separator-${n}"
+       :orientation "horizontal"
+       :halign "end"
+       :width "0"
+       ""))
+
+;; (bar) ______________________________________________________________________
+(defwidget left-side []
+  (box :class "left-side"
+       :orientation "horizontal"
+       :space-evenly false
+       :halign "start"
+       (tags)
+       (focused-toplevel)))
+
+(defwidget right-side []
+  (box :class "right-side"
+       :orientation "horizontal"
+       :space-evenly false
+       :halign "end"
+       (separator :n 1)
+       (net)
+       (separator :n 2)
+       (memory)
+       (separator :n 1)
+       (cpu)
+       (separator :n 2)
+       (temperature)
+       (separator :n 1)
+       (volume)
+       (separator :n 2)
+       (battery)
+       (separator :n 1)
+       (time)
+       (separator :n 2)
+       (layout)))
+
+(defwidget bar []
+  (box :class "bar"
+       :orientation "horizontal"
+       (left-side)
+       (right-side)))
+
+(defwindow bar
+  :monitor 0
+  :windowtype "dock"
+  :geometry (geometry :width "100%"
+                      :anchor "top center")
+  :stacking "fg"
+  :exclusive true
+  :focusable false
+  (bar))
+
+;; (cal) _________________________________________________________
+(defwindow calendar
+  :monitor 0
+  :windowtype "dock"
+  :geometry (geometry :anchor "top right")
+  :stacking "fg"
+  :focusable false
+  (calendar :class "calendar"))

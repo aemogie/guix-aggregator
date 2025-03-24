@@ -1,0 +1,68 @@
+# -*- mode: org -*-
+
+* TODO Questions
+- What is a better format for new feature commit message?
+- Add links to the info/websites?
+- How to split long list of changelog items into more manageable pieces?
+- Check out https://gitlab.com/spritely/goblins/-/blob/master/CHANGELOG.org
+
+* Notes
+It's not a dump of commit log, it's carefully crafted list of items, which
+usually takes some of commit messages as a foundation.
+
+* Releases
+** Unreleased
+*** Breaking Changes
+- rde: mail: Updated directory naming, now accounts/ID is used.
+
+** 0.5.0 (2022-12-30)
+*** New
+- rde: wm: Add feature-swaynotificationcenter.
+- Add feature-foot.
+- examples: live: Add emacs-arei and guile-ares-rs.
+*** Updates
+- rde: compilation: Add notification on finish.
+- rde: presets: Remove emacs-geiser and emacs-guix features.
+There are much more updates, but they are not listed here, please consult ~git
+log~ to get the whole picture.
+
+** 0.4.0 (2022-06-30)
+*** Breaking Changes
+- rde: mpv: Remove extra-mpv-conf arguments.
+- rde: faces: Deprecate in favor of feature-fonts.
+- rde: Move [[https://protesilaos.com/emacs/modus-themes][modus-theme]] related stuff to feature-emacs-modus-themes.
+- examples: Move abcdw to rde-configs root module.
+
+*** Updates
+- rde: emacs-xyz: Services are shared in rde values and available for
+  extension.
+- rde: pipewire: Prevent pulseaudio autostart.
+- system: nginx: Add service-type.
+- serializers: nginx: Add serialize and merge functions.
+- contrib: emacs-evil: Add feature.
+- rde: emacs-org-recur: Add feature.
+- rde: emacs-smartparens: Add paredit bindings support, introduce a more flexible approach to its normal and strict mode hooks, and refine paren highlighting.
+- rde: emacs-calendar: Add feature.
+- rde: ungoogled-chromium: Add feature.
+- rde: emacs-project: Add support for extra project dominating files, improve project-wide compilation, add project-wide ripgrep and consult integration.
+- rde: features: Add merge-features function.
+- rde: emacs-calc: Add feature.
+- rde: password-store: Changed key to M-g P.
+- rde: emacs-elfeed: Changed capture key to e.
+- test: Added test infrastructure and tooling.
+- contrib: age: Add feature.
+- rde: completion: Reuse original ripgrep options. Now it can search in
+  compressed files, including el source code bundled with Emacs and so on.
+- rde: emacs: Add tree-sitter support.
+- rde: emacs-modus-themes: Add feature.
+- rde: emacs-circadian: Add feature.
+- rde: emacs-ebdb: Add feature.
+- rde: emacs-time: Add feature.
+- rde: emacs-appearance: Update to use with modus-themes@4.  4th version makes
+  configuration much more flexible.
+- rde: mail: Allow username to be different from email.
+- doc: Add Decision Log.  Important decision are now will be captured with the
+  context and recorded.
+
+** 0.3.0 (2022-12-31)
+- Write some information here.

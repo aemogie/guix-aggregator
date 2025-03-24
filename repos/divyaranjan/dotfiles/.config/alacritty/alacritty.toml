@@ -1,0 +1,36 @@
+## Alacritty Configuration
+
+[window]
+
+opacity = 0.93
+padding.x = 10
+padding.y = 10
+
+decorations = "Full"
+decorations_theme_variant = "Dark"
+
+[font]
+normal.family = "IBM Plex Mono"
+bold.family = "IBM Plex Mono"
+italic.family = "IBM Plex Mono"
+bold_italic.family= "IBM Plex Mono"
+
+size = 12.0
+
+[[hints.enabled]]
+regex = "[^ ]+\\.rs:\\d+:\\d+"
+command = { program = "code", args = [ "--goto" ] }
+mouse = { enabled = true }
+
+[terminal.shell]
+program = "/run/current-system/profile/bin/zsh"
+
+# Scrollback
+[scrolling]
+history = 10000  # Number of lines in scrollback history
+multiplier = 3
+
+[general]
+import = ["~/.config/alacritty/themes/themes/monokai_charcoal.toml"]
+
+[terminal]

@@ -1,0 +1,25 @@
+# Language support configuration.
+# See the languages documentation: https://docs.helix-editor.com/master/languages.html
+
+use-grammars = { except = [ "hare", "wren", "gemini" ] }
+
+[language-server]
+guile-lsp-server = { command = "guile-lsp-server", args = ["--stdio"] }
+
+[[language]]
+name = "scheme"
+scope = "source.scheme"
+injection-regex = "scheme"
+file-types = ["ss", "scm"]
+shebangs = ["scheme", "guile", "chicken"]
+comment-token = ";"
+indent = { tab-width = 2, unit = "  " }
+language-servers = [ "guile-lsp-server" ]
+auto-format = true
+formatter = { command = "parinfer-rust" }
+
+[language.auto-pairs]
+'(' = ')'
+'{' = '}'
+'[' = ']'
+'"' = '"'

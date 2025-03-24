@@ -1,0 +1,13 @@
+address chat.sr.ht
+nickname anemofilia
+password-cmd cat /run/user/1000/secrets/senpai/sourcehut/password
+highlight anemofilia: anemofilia, radix saayix cargo2guix  misako
+channel "#coreboot" "#fossandcrafts" "#fsf" "#gnu" "#guix" "#guile" "#hurd" "#kakoune" "#lisp" "#scheme" "#spritely" "#savannah" "#whereiseveryone"
+on-highlight-path /home/radio/.config/senpai/scripts/on-highlight.fish
+tls true
+typings false
+mouse true
+pane-widths {
+  nicknames 20
+  channels  20
+}
