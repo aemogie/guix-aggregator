@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -xeuo pipefail
 
 REPOS_FILE="repositories.txt"
 LOCK_FILE="repositories.lock"
@@ -17,15 +17,13 @@ while read -r path url branch || [[ -n "$path" ]]; do
 
   dir="$REPOS_DIR/$path"
 
-  echo "Cloning repository: $path"
   mkdir -p "$dir"
-  git clone --quiet --progress --depth 1 --no-tags --branch "$branch" "$url" "$dir"
+  git clone --depth 1 --no-tags --branch "$branch" "$url" "$dir"
 
   hash=$(git -C "$dir" rev-parse HEAD)
-  echo "$path $hash" >> "$LOCK_FILE"
+  echo "$dir $hash" >> "$LOCK_FILE"
 
   rm -rf "$dir/.git"
-  echo # newline
 done < "$REPOS_FILE"
 
 last_update=$(git log -1 --format=%cd --date=short 2>/dev/null || echo "initial")
@@ -34,5 +32,5 @@ commit_title="Update repositories: $last_update to $current_date"
 commit_body="$(git diff --word-diff HEAD -- "$LOCK_FILE" | tail -n +6)"
 
 git add .
-git commit -m "$commit_title" -m "$commit_body"
+git commit --quiet -m "$commit_title" -m "$commit_body" || true
 git push origin HEAD
