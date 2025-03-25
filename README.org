@@ -26,3 +26,41 @@ repository into, the second as the url to the git repository, and the
 final as the branch to be cloned. empty lines and lines starting with
 ~#~ are ignored, thus comments have to be on a seperate line.
 
+* cloning
+as this repository might be large, for cloning for the purpose of
+making edits, i recommend these command which clones everything
+excluding the ~repos/~ subdirectory
+#+BEGIN_SRC sh
+  git clone --depth=1 --filter=tree:0 --sparse --no-checkout https://github.com/aemogie/guix-aggregator.git
+  cd guix-aggregator
+  git sparse-checkout set --no-cone "/*" "!repos/"
+  git checkout
+#+END_SRC
++ ~--depth=1~ :: shallow clones only the last commit
++ ~--filter=tree:0~ :: partial clone, ensures that no trees are cloned
+  at all by default. the fetching happense lazily whenever you
+  checkout files. ~--filter=blob:none~ would also do if you want the
+  trees to be fetched, but not the file contents.
++ ~--sparse~ :: initializes the repository to be a sparse-checkout. by
+  default this checks-out the toplevel directory, without recursng
+  into any subdirectories. this is often good enough if you're only
+  modifying one of these files.
++ ~--no-checkout~ :: this is optinal, and more aggressive in that it
+  forces sparse to not even checkout the very top level directory
+  either.
+if using ~--no-checkout~ the ~git clone~ should only fetch a single
+object, similar to the sample output below.
+
+#+BEGIN_EXAMPLE
+Cloning into 'guix-aggregator'...
+remote: Enumerating objects: 1, done.
+remote: Counting objects: 100% (1/1), done.
+remote: Total 1 (delta 0), reused 1 (delta 0), pack-reused 0 (from 0)
+Receiving objects: 100% (1/1), done.
+#+END_EXAMPLE
+
+if you didn't include ~--no-checkout~ and already have the file you
+want to edit, then the next part is not relevant. otherwise, we
+furhter configure the already initialized sparse checkout to include
+everything *but* the ~repos/~ subdirectory. finally we run ~git
+checkout~ to ask git to finally checkout what we have requested.
