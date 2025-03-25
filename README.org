@@ -8,19 +8,25 @@ your dotfiles instead, also please, PRs are welcome.
 
 * repositories
 # BEGIN REPOLIST
-| [[repos/aemogie/aetheria]]     | https://github.com/aemogie/aetheria.git         | dev    |
-| [[repos/abcdw/rde]]            | https://git.sr.ht/~abcdw/rde                    | master |
-| [[repos/anemofilia/zero]]      | https://codeberg.org/anemofilia/zero.git        | main   |
-| [[repos/look/misako]]          | https://codeberg.org/look/misako.git            | main   |
-| [[repos/hako/Testament]]       | https://git.boiledscript.com/hako/Testament.git | trunk  |
-| [[repos/jjba23/sss]]           | https://codeberg.org/jjba23/sss.git             | trunk  |
-| [[repos/divyaranjan/dotfiles]] | https://codeberg.org/divyaranjan/dotfiles.git   | master |
-| [[repos/wloxyz/guix-configs]]  | https://codeberg.org/wloxyz/guix-configs.git    | main   |
-| [[repos/lynn/galahad.git]]     | https://git.transistor.house/lynn/galahad.git   | main   |
-| [[repos/ngraves/dotfiles]]     | https://git.sr.ht/~ngraves/dotfiles             | main   |
-# this was slow, doubt their servers would be okay with my
-# cronjobs. couldnt find any mirrors
-# | [[repos/freya/dotfiles-guix]]  | https://g.freya.cat/freya/dotfiles-guix.git     | main   |
+| [[repos/aemogie/aetheria]]       | https://github.com/aemogie/aetheria.git         | dev     |
+| [[repos/abcdw/rde]]              | https://git.sr.ht/~abcdw/rde                    | master  |
+| [[repos/anemofilia/zero]]        | https://codeberg.org/anemofilia/zero.git        | main    |
+| [[repos/look/misako]]            | https://codeberg.org/look/misako.git            | main    |
+| [[repos/hako/Testament]]         | https://git.boiledscript.com/hako/Testament.git | trunk   |
+| [[repos/jjba23/sss]]             | https://codeberg.org/jjba23/sss.git             | trunk   |
+| [[repos/divyaranjan/dotfiles]]   | https://codeberg.org/divyaranjan/dotfiles.git   | master  |
+| [[repos/wloxyz/guix-configs]]    | https://codeberg.org/wloxyz/guix-configs.git    | main    |
+| [[repos/lynn/galahad.git]]       | https://git.transistor.house/lynn/galahad.git   | main    |
+| [[repos/ngraves/dotfiles]]       | https://git.sr.ht/~ngraves/dotfiles             | main    |
+| [[repos/efraim/guix-config]]     | https://git.sr.ht/~efraim/guix-config           | master  |
+| [[repos/SqrtMinusOne/dotfiles]]  | https://github.com/SqrtMinusOne/dotfiles.git    | master  |
+| [[repos/boeg/home]]              | https://git.sr.ht/~boeg/home                    | master  |
+| [[repos/aartaka/guix-config]]    | https://github.com/aartaka/guix-config          | master  |
+| [[repos/jsoo1/dotfiles]]         | https://github.com/jsoo1/dotfiles.git           | release |
+| [[repos/polhuang/dotfiles]]      | https://github.com/polhuang/dotfiles            | master  |
+| [[repos/SunJukebox/guix-config]] | https://github.com/SunJukebox/guix-config       | master  |
+| [[repos/mrh/dotfiles]]           | https://codeberg.org/mrh/dotfiles.git           | trunk   |
+| [[repos/krevedkokun/dotfiles]]   | https://git.sr.ht/~krevedkokun/dotfiles         | master  |
 # END REPOLIST
 
 * motivation
