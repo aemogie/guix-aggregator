@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+LINKS=(
+    "$HOME/.config/vnstat/.vnstatrc $HOME/.vnstatrc"
+    "$HOME/.config/vim/vimrc $HOME/.vimrc"
+)
+for item in "${LINKS[@]}"
+do
+    ln -svf $item
+done
+
+emacs -Q --batch -l $HOME/.config/yadm/hooks/run-tangle.el
+
+# ln -s ~/.config/tridactyl/themes ~/themes

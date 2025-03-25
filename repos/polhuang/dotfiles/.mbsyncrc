@@ -1,0 +1,26 @@
+IMAPAccount proton
+Host 127.0.0.1
+Port 1143
+User paulleehuang@proton.me
+Pass HG6FmrFtXLlUc0aS51FJWg
+AuthMechs LOGIN
+SSLType STARTTLS
+SSLVersion TLSv1.2
+CertificateFile ~/.config/protonmail/cert.pem    
+
+MaildirStore proton-local
+Path ~/mail/Protonmail/
+Inbox ~/mail/Protonmail/inbox/
+SubFolders Verbatim
+
+IMAPStore proton-remote
+Account proton
+
+Channel proton
+Far :proton-remote:
+Near :proton-local:
+Patterns "*"
+CopyArrivalDate yes
+Create Both
+Expunge Both
+SyncState *

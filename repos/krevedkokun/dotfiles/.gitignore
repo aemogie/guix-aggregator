@@ -1,0 +1,4 @@
+current
+shell-authorized-directories
+/target/
+/.nrepl-port

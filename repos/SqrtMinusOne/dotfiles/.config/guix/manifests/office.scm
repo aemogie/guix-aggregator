@@ -1,0 +1,14 @@
+(specifications->manifest
+ '(
+   "obs"
+   "okular"
+   "inkscape"
+   "kdenlive"
+   "ffmpeg"
+   "krita"
+   "gimp"
+   "libreoffice"
+   "zathura-djvu"
+   "zathura-pdf-mupdf"
+   "zathura-ps"
+   "zathura"))

@@ -1,0 +1,5 @@
+; [[file:../../Emacs.org::*(OFF) yapf][(OFF) yapf:2]]
+[style]
+based_on_style = facebook
+column_limit = 80
+; (OFF) yapf:2 ends here

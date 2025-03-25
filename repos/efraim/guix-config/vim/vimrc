@@ -1,0 +1,112 @@
+" Start by using the defaults.
+source $VIMRUNTIME/defaults.vim
+set mouse&              " NO MOUSE
+
+set background=dark     " default light
+set number
+
+if getenv('XDG_CACHE_HOME') != v:null
+    let &g:directory=getenv('XDG_CACHE_HOME')
+"elseif getenv('XDG_RUNTIME_DIR') != v:null
+"    let &g:directory=getenv('XDG_RUNTIME_DIR')
+else
+    let &g:directory=getenv('HOME') . '/.cache'
+endif
+let &g:undodir=&g:directory . '/vim/undodir//'
+let &g:backupdir=&g:directory . '/vim/backupdir//'
+if !isdirectory(expand(&g:backupdir))
+    silent! call mkdir(expand(&g:backupdir), 'p', 0700)
+endif
+if !isdirectory(expand(&g:undodir))
+    silent! call mkdir(expand(&g:undodir), 'p', 0700)
+endif
+
+set undofile
+set backup
+set showmode
+
+" size of an "indent", for autoidentation
+set shiftwidth=4        " default 8
+" combo of spaces and tabs to simulate tab stops at a width other than the (hard)tabstop
+set softtabstop=4       " default 0
+" size of hard tabstop
+set tabstop=4           " default 8
+" always uses spaces instead of tab characters
+set expandtab
+
+set formatoptions+=j    " Delete comment character when joining commented lines
+
+set shiftround
+set autoindent
+set smartindent
+
+set laststatus=2        " default 1
+set noincsearch         " change is hard
+
+set visualbell
+
+" invisible characters; toggle with 'set list!'
+set listchars=tab:▸\ ,trail:▸,eol:¬     " default eol:$
+set list
+
+" highlight the column the cursor is on
+" set cursorcolumn
+
+" speling is hard
+iab teh the
+iab THe The
+iab THis This
+iab taht that
+iab definately definitely
+iab pacakges packages
+iab UPdate Update
+iab compatability compatibility
+
+highlight ExtraWhitespace term=inverse cterm=inverse gui=inverse
+" Show trailing whitespace and spaces before tabs
+autocmd Syntax * syn match ExtraWhitespace /\s+$\| \+\ze\t/ containedin=ALL
+
+" Per-project `.exrc' files. We enumerate them here because they're a
+" security risk.
+let use_local_vimrc = [
+            \ '/home/efraim/workspace/guix',
+            \ '/home/efraim/workspace/guix-bioinformatics',
+            \ '/home/efraim/workspace/guix-past',
+            \ '/home/efraim/workspace/guix-rust-team',
+            \ '/home/efraim/workspace/my-guix']
+" This only checks the directory of the current window.
+if index(use_local_vimrc, getcwd()) >=0
+  set secure exrc
+endif
+
+
+" also located in ~/.vim/after/ftplugin
+"autocmd FileType gitcommit setlocal spell
+"autocmd FileType mail setlocal spell
+"autocmd FileType text setlocal spell
+"autocmd FileType scheme setlocal shiftwidth=4 softtabstop=4 tabstop=4 expandtab
+"autocmd Filetype guix let b:dispatch = guix_binary . ' build ' . guix_build_options . ' <cword> '
+
+let g:markdown_fenced_languages = ['diff', 'html', 'scheme', 'vim']
+
+" Slime.vim
+" TODO: add fallback to no XDG_RUNTIME_DIR
+let g:slime_paste_file = getenv('XDG_RUNTIME_DIR') . "/.slime_paste"
+
+" Airline.vim
+let g:airline#extensions#tabline#enabled = 1
+
+" EditorConfig
+if has('syntax') && has('eval') && filereadable('.editorconfig')
+    packadd! editorconfig
+endif
+
+" Guix.vim
+let g:guix_binary = "/home/efraim/workspace/guix/pre-inst-env guix "
+let g:guix_build_options = "-L /home/efraim/workspace/my-guix -L /home/efraim/workspace/guix-config"
+let g:guix_build_options_work = "-L /home/efraim/workspace/guix-past/modules -L /home/efraim/workspace/guix-bioinformatics -L /home/efraim/workspace/guix-science"
+
+" gtags.vim
+set cscopetag
+set cscopeprg=gtags-cscope              " from global
+call setenv('GTAGSLABEL', 'pygments')

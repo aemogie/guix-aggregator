@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# [[file:../../Mail.org::*Sync script][Sync script:1]]
+export DISPLAY=:0
+CHECK_FILE="/home/pavel/Mail/.last_check"
+QUERY="tag:unread"
+ALL_QUERY="tag:unread"
+if [ -f "$CHECK_FILE" ]; then
+    DATE=$(cat "$CHECK_FILE")
+    QUERY="$QUERY and date:@$DATE.."
+fi
+
+notmuch new
+NEW_UNREAD=$(notmuch count "$QUERY")
+ALL_UNREAD=$(notmuch count "$ALL_QUERY")
+
+if [ $NEW_UNREAD -gt 0 ]; then
+    MAIN_UNREAD=$(notmuch count "tag:unread AND tag:main")
+    PROGIN_UNREAD=$(notmuch count "tag:unread AND tag:progin")
+    ETU_UNREAD=$(notmuch count "tag:unread AND tag:pvkorytov")
+    read -r -d '' NOTIFICATION <<EOM
+$NEW_UNREAD new messages
+$MAIN_UNREAD thexcloud@gmail.com
+$PROGIN_UNREAD progin6304@gmail.com
+$ETU_UNREAD pvkorytov@etu.ru
+$ALL_UNREAD total
+EOM
+    notify-send "New Mail" "$NOTIFICATION"
+fi
+
+echo "$(date +%s)" > $CHECK_FILE
+# Sync script:1 ends here

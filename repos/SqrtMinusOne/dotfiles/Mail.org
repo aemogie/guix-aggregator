@@ -1,0 +1,694 @@
+:PROPERTIES:
+:TOC:      :include all :depth 3
+:END:
+#+TITLE: Mail
+#+PROPERTY: header-args :mkdirp yes
+#+PROPERTY: header-args:emacs-lisp  :eval never-export
+#+PROPERTY: header-args:conf-unix   :comments link
+#+PROPERTY: header-args:conf-space  :comments link
+#+PROPERTY: header-args:bash        :tangle-mode (identity #o755) :comments link :shebang "#!/usr/bin/env bash"
+#+OPTIONS: broken-links:auto h:6 toc:nil
+
+My email configration. Currently I use [[https://github.com/gauteh/lieer][lieer]] to fetch emails from Gmail, [[http://davmail.sourceforge.net/][davmail]] & [[http://www.offlineimap.org/][offlineimap]] to fetch emails from MS Exchange, [[https://notmuchmail.org/][notmuch]] to index, [[https://marlam.de/msmtp/][msmtp]] to send emails. Also using notmuch frontend from Emacs.
+
+My problem with any particular mail setup was that I use Gmail labels quite extensively, and handling these over IMAP is rather awkward. Notmuch seems to be the only software that provides the same first-class support for labels.
+
+But I also have an Exchange account, with which I communicate via IMAP/SMTP adapter, and in this case, I synchronize notmuch tags and IMAP folders.
+
+References:
+- [[https://sqrtminusone.xyz/posts/2021-02-27-gmail/][My post]] about email configuration. I wrote it some time ago, but the general idea remains.
+
+* Lieer
+| Guix dependency |
+|-----------------|
+| python-lieer    |
+
+Lieer is a program to link up Gmail and notmuch. Basically, it downloads mail from Gmail via API, stores them in Maildir, and synchronizes labels with notmuch.
+
+I have a separate directory in my =~/Mail= for each address. To init lieer, run the following command in the directory:
+#+begin_example
+gmi init <address>
+#+end_example
+
+After which the settings will be stored in =gmailieer.json= and the credentials in =.credentials.gmailieer.json=. The latter file is stored encrypted.
+
+My preferred settings:
+#+begin_example
+gmi set --replace-slash-with-dot
+gmi set --ignore-tags-local new
+#+end_example
+
+Running =gmi sync= in the required directory performs the synchronization. The first sync takes a while, the subsequent syncs are pretty fast.
+* DavMail
+[[davmail.sourceforge.net][DavMail]] is a gateway between MS Exchange and the rest of the world, which uses IMAP/SMTP/LDAP/etc. As I have one corporate MS Exchange address, this is just the program I need. As of yet, it isn't packaged for Guix, but it's easy enough to download.
+
+It has a GUI mode, but I prefer headless config.
+#+begin_src conf-unix :tangle ~/bin/davmail-6.0.0-3375/davmail.properties
+davmail.server=true
+davmail.mode=Auto
+davmail.url=https://mail.etu.ru/owa/
+
+davmail.server.certificate.hash=0C:9E:CF:D3:62:26:DB:FA:F1:EE:36:9D:60:E7:31:71:CF:1F:92:85
+
+davmail.caldavPort=1080
+davmail.imapPort=1143
+davmail.ldapPort=1389
+davmail.popPort=1110
+davmail.smtpPort=1025
+
+davmail.imapAutoExpunge=false
+davmail.enableKeepalive=false
+#+end_src
+
+Also it's a bit of problem to get it launched as it looks for its jars in the pwd, so here is a script.
+#+begin_src bash :tangle ~/bin/davmail
+cd $HOME/bin/davmail-6.0.0-3375
+./davmail davmail.properties
+#+end_src
+
+Shepherd service is defined in [[file:Desktop.org::*Davmail][Desktop.org]].
+* OfflineIMAP
+| Guix dependency |
+|-----------------|
+| offlineimap     |
+
+[[https://github.com/OfflineIMAP/offlineimap][OfflineIMAP]] is a program that can synchronize IMAP mailbox and Maildir. Lieer does everything by itself, but my pirate Exchange IMAP needs this program. There is also [[https://isync.sourceforge.io/][isync]], but there I had some weird issues with duplicate UIDs, which don't occur for OfflineIMAP.
+
+I have a few options for setting a username and password. First, I can run =pass= in =remotepasswordeval=, and while this will work, it will keep my keyring unlocked because I want to run =offlineimap= every couple of minutes.
+
+Another option is to use noweb and not push the file below to the version control. Then I have a plaintext password of email on my computer, but I think it's a lesser evil than the entire keyring.
+
+I would use =password-store-get= from password-store.el, but I want this to be able to run without any 3rd party packages, so it's just bash.
+
+#+NAME: mail-username
+#+begin_src bash
+pass show Job/Digital/Email/pvkorytov@etu.ru | sed -n 's/username: //;2p'
+#+end_src
+
+#+NAME: mail-password
+#+begin_src bash
+pass show Job/Digital/Email/pvkorytov@etu.ru | head -n 1
+#+end_src
+
+#+begin_src conf-unix :tangle ~/.offlineimaprc :noweb yes
+[general]
+accounts = pvkorytov,pvkorytov-mbox
+
+[Account pvkorytov]
+localrepository = pvkorytov-local
+remoterepository = pvkorytov-remote
+
+[Account pvkorytov-mbox]
+localrepository = pvkorytov-mbox-local
+remoterepository = pvkorytov-mbox-remote
+
+[Repository pvkorytov-local]
+type = Maildir
+localfolders = ~/Mail/pvkorytov_etu/
+
+[Repository pvkorytov-remote]
+type = IMAP
+remotehost = localhost
+remoteuser = <<mail-username()>>
+remotepass = <<mail-password()>>
+remoteport = 1143
+starttls = no
+ssl = no
+sslcacertfile = /etc/ssl/certs/ca-certificates.crt
+
+[Repository pvkorytov-mbox-local]
+type = Maildir
+localfolders = ~/Mail/pvkorytov_etu_mbox/
+
+[Repository pvkorytov-mbox-remote]
+type = IMAP
+remotehost = mbox.etu.ru
+remoteuser = <<mail-username()>>
+remotepass = <<mail-password()>>
+remoteport = 993
+cert_fingerprint = 07bdfab4eaa79f5fc8ab93cd9ad0ba025ea0b4e5
+#+end_src
+* Notmuch
+| Guix dependency |
+|-----------------|
+| notmuch         |
+| parallel        |
+
+Notmuch is an email indexer program, which handles labels in a way somewhat similar to Gmail. It also provides a frontend for Emacs, but it's not the only one available.
+
+** Config
+:PROPERTIES:
+:header-args+: :tangle ~/.notmuch-config
+:END:
+
+Not much is going on here.
+
+First, the database path. It's different on desktop and termux.
+#+NAME: get-maildir-path
+#+begin_src emacs-lisp :tangle no
+(expand-file-name "~/Mail")
+#+end_src
+
+#+begin_src conf-unix :noweb yes
+[database]
+path=<<get-maildir-path()>>
+#+end_src
+
+My name and list of emails. It's not like it's a secret anyhow.
+#+begin_src conf-unix
+[user]
+name=Pavel Korytov
+primary_email=thexcloud@gmail.com
+other_email=progin6304@gmail.com;pvkorytov@etu.ru
+#+end_src
+
+A list of tags which will be added by =notmuch new= and directory names which will be ignored by =notmuch new=.
+
+#+begin_src conf-unix
+[new]
+tags=new;
+# ignore=.osync_workdir;.mbsyncstate;.uidvalidity;.lock;/.*gmailieer\.json.*/
+ignore=/.*[.](json|lock|bak|osync_workdir|mbsyncstate|uidvalidity)$/
+#+end_src
+
+Exclude these tags from search by default.
+#+begin_src conf-unix
+[search]
+exclude_tags=trash;spam;
+#+end_src
+
+Maildir compatibility.
+#+begin_src conf-unix
+[maildir]
+synchronize_flags=true
+#+end_src
+
+** Hooks
+Now we have to link up lieer & davmail's maildir and with notmuch. This is done via the notmuch hook system, which allows running custom scripts before and after any command.
+
+With lieer and Gmail, it is enough to simply run the program, because Gmail has first-class support for tags. Maildir does not, so I decide to synchronize notmuch tags and IMAP folders. In essence, the idea is to:
+- move emails to their folders by tags /before/ the synchronization
+- tag mails by their folders /after/ the synchronization
+
+The problem is that with that approach one email can have only one tag, but it's better than nothing.
+
+So, here are the rules which match tags & folders:
+#+NAME: pvkorytov_tags
+| tag                      | folder                   |
+|--------------------------+--------------------------|
+| inbox                    | INBOX                    |
+| sent                     | Sent                     |
+| spam                     | Junk                     |
+| trash                    | Trash                    |
+| job.digital              | Job_Digital              |
+| job.digital.docs         | Job_Digital.Docs         |
+| job.digital.support      | Job_Digital.Support      |
+| job.digital.superservice | Job_Digital.Superservice |
+| job.digital.applicants   | Job_Digital.Applicants   |
+| job.digital.testers      | Job_Digital.Testers      |
+| job.moevm                | Job_Moevm                |
+| etu                      | Etu                      |
+| etu.grad-school          | Etu.Grad_School          |
+
+&BCMENAQwBDsENQQ9BD0ESwQ1-
+
+And below is a noweb function, which generates the following commands for notmuch to execute:
+- /before/ sync:
+  - =notmuch search --output files "NOT path:[PATH] AND tag:[TAG] AND tag:[ROOT_TAG]" | xargs -I ! mv ! [PATH]=
+    Move emails with =TAG= but outside the matching =PATH= to the latter
+  - =notmuch search --output=files "NOT path:[ARCHIVE_PATH] AND tag:[ROOT_TAG] AND NOT tag:[TAG1] ... AND NOT tag:[TAGN]" | xargs -I ! mv ! [ARCHIVE_PATH]=
+    Move untagged emails to the =ARCHIVE_PATH=
+- /after/ sync:
+  - =notmuch tag +[TAG] "path:[PATH] AND NOT tag:[TAG]"=
+    Tag emails in =PATH= which do not yet have the matching =TAG=
+  - =notmuch tag -[TAG] "NOT path:[PATH] AND tag:[TAG] AND tag:[ROOT_TAG]"=
+    Remove =TAG= from emails which are outside the matching =PATH=
+
+These rules are getting included in the respective hooks.
+
+#+NAME: mail-tags
+#+begin_src emacs-lisp :var tags=pvkorytov_tags root="pvkorytov_etu" root_tag="pvkorytov" make_tag="" remove="" move="" archive_root=""
+(setq my/maildir-root "~/Mail")
+
+(let ((rules '()))
+  (dolist (row tags)
+    (let ((tag (nth 0 row))
+          (folder (nth 1 row)))
+      (unless (string-empty-p make_tag)
+        (add-to-list
+         'rules
+         (format "notmuch tag +%s \"path:%s/%s/cur/** AND NOT tag:%s\""
+                 tag root folder tag)
+         t))
+      (unless (string-empty-p remove)
+        (add-to-list
+         'rules
+         (format
+          "notmuch tag -%s \"NOT path:%s/%s/cur/** AND path:%s/** AND tag:%s AND tag:%s\""
+          tag root folder root tag root_tag)
+         t))
+      (unless (string-empty-p move)
+        (add-to-list
+         'rules
+         (concat
+          (format "notmuch search --output=files \"NOT path:%s/%s/cur/** AND path:%s/** AND tag:%s AND tag:%s\""
+                  root folder root tag root_tag)
+          (format " | xargs -I ! mv ! %s/%s/%s/cur/" my/maildir-root root folder))
+         t))))
+  (unless (string-empty-p archive_root)
+    (add-to-list
+     'rules
+     (concat
+      (format "notmuch search --output=files \"NOT path:%s/%s/cur/** AND path:%s/** AND %s AND tag:%s\""
+              root archive_root root
+              (mapconcat
+               (lambda (row)
+                 (format "NOT tag:%s" (car row)))
+               tags
+               " AND ")
+              root_tag)
+      (format " | xargs -I ! mv ! %s/%s/%s/cur/" my/maildir-root root archive_root))
+     t))
+  (string-join rules "\n"))
+#+end_src
+
+*** =pre_new=
+This hook runs fetch from Gmail & offlineimap in parallel before the =notmuch new= command. The =parallel= command is provided by [[https://www.gnu.org/software/parallel/][GNU Parallel]].
+
+It isn't necessary to run =cd= for offlineimap, but it's easier to write that way.
+
+#+NAME: pre-new-pvkorytov-tags
+#+begin_src emacs-lisp :var tags=pvkorytov_tags
+(my/mail-format-tags-rules tags "pvkorytov_etu" "pvkorytov" nil nil t "Archive")
+#+end_src
+
+#+begin_src bash :tangle ~/Mail/.notmuch/hooks/pre-new :noweb yes
+GMI="/home/pavel/Programs/miniconda3/envs/mail/bin/gmi"
+GMI="gmi"
+
+echo "Running pre-new filters"
+<<mail-tags(move="t",archive_root="Archive")>>
+
+<<mail-tags(move="t",archive_root="Archive",root="pvkorytov_etu_mbox")>>
+echo "Pre-new filters done"
+
+parallel --link -j0 "(cd /home/pavel/Mail/{1}/ && {2} {3})" ::: thexcloud progin6304 pvkorytov_etu ::: "$GMI" "$GMI" "offlineimap" ::: sync sync ""
+#+end_src
+
+*** =post_new=
+And this hook tags different mailboxes with different tags.
+
+#+NAME: post-new-pvkorytov-tags
+#+begin_src emacs-lisp :var tags=pvkorytov_tags
+(my/mail-format-tags-rules tags "pvkorytov_etu" "pvkorytov" t t)
+#+end_src
+
+#+begin_src bash :tangle ~/Mail/.notmuch/hooks/post-new :noweb yes
+notmuch tag +main "path:thexcloud/** AND tag:new"
+notmuch tag +progin "path:progin6304/** AND tag:new"
+notmuch tag +pvkorytov "path:pvkorytov_etu/** AND tag:new"
+notmuch tag +pvkorytov "path:pvkorytov_etu_mbox/** AND tag:new"
+notmuch tag +mbox "path:pvkorytov_etu_mbox/** AND tag:new"
+
+echo "Running post-new filters"
+<<mail-tags(make_tag="t",remove="t")>>
+
+<<mail-tags(make_tag="t",remove="t",root="pvkorytov_etu_mbox")>>
+
+echo "Post-new filters done"
+notmuch tag -new "tag:new"
+#+end_src
+* Sync script
+A script to run =notmuch new= and push a notification if there is new mail.
+
+#+begin_src bash :tangle ~/bin/scripts/check-email
+export DISPLAY=:0
+CHECK_FILE="/home/pavel/Mail/.last_check"
+QUERY="tag:unread"
+ALL_QUERY="tag:unread"
+if [ -f "$CHECK_FILE" ]; then
+    DATE=$(cat "$CHECK_FILE")
+    QUERY="$QUERY and date:@$DATE.."
+fi
+
+notmuch new
+NEW_UNREAD=$(notmuch count "$QUERY")
+ALL_UNREAD=$(notmuch count "$ALL_QUERY")
+
+if [ $NEW_UNREAD -gt 0 ]; then
+    MAIN_UNREAD=$(notmuch count "tag:unread AND tag:main")
+    PROGIN_UNREAD=$(notmuch count "tag:unread AND tag:progin")
+    ETU_UNREAD=$(notmuch count "tag:unread AND tag:pvkorytov")
+    read -r -d '' NOTIFICATION <<EOM
+$NEW_UNREAD new messages
+$MAIN_UNREAD thexcloud@gmail.com
+$PROGIN_UNREAD progin6304@gmail.com
+$ETU_UNREAD pvkorytov@etu.ru
+$ALL_UNREAD total
+EOM
+    notify-send "New Mail" "$NOTIFICATION"
+fi
+
+echo "$(date +%s)" > $CHECK_FILE
+#+end_src
+
+The script is ran via GNU Mcron every 5 minutes.
+#+begin_src scheme :tangle ~/.config/cron/mail.guile
+(job "*/5 * * * * " "~/bin/scripts/check-email")
+#+end_src
+* MSMTP
+| Guix dependency |
+|-----------------|
+| msmtp           |
+
+Sending emails can be done with MSMTP. It automatially chooses the email address and server based on the contents of the message, which is handy if there are multiple mailboxes to be managed.
+
+#+begin_src conf-space :tangle ~/.msmtprc
+defaults
+auth on
+tls on
+tls_trust_file /etc/ssl/certs/ca-certificates.crt
+logfile ~/.msmtp.log
+
+account main
+host smtp.gmail.com
+port 587
+from thexcloud@gmail.com
+user thexcloud@gmail.com
+passwordeval "pass show My_Online/APIs/google-main-app-password | head -n 1"
+
+account progin
+host smtp.gmail.com
+port 587
+from progin6304@gmail.com
+user progin6304@gmail.com
+passwordeval "pass show My_Online/ETU/progin6304@gmail.com | head -n 1"
+
+account pvkorytov
+host mbox.etu.ru
+port 465
+tls on
+tls_starttls off
+tls_fingerprint 87:1F:17:1C:12:A4:DE:82:6F:CF:E5:E6:9C:EE:F8:0B:D1:7D:B2:00:F9:7B:2C:96:21:65:FA:0A:F5:24:8E:0E
+from pvkorytov@etu.ru
+user pvkorytov
+passwordeval "pass show Job/Digital/Email/pvkorytov@etu.ru | head -n 1"
+#+end_src
+* Emacs
+:PROPERTIES:
+:header-args+: :tangle ~/.emacs.d/mail.el
+:END:
+
+| Guix dependency |
+|-----------------|
+| emacs-notmuch   |
+
+Finally, Emacs configuration. Let's start with some variables:
+#+begin_src emacs-lisp
+(setq user-mail-address "thexcloud@gmail.com")
+(setq user-full-name "Pavel Korytov")
+#+end_src
+
+Then, the problem with my Guix setup is that Emacs by default doesn't see the elisp files of notmuch, so here is a small workaround:
+#+begin_src emacs-lisp
+(let ((dir  "/home/pavel/.guix-extra-profiles/mail/mail/share/emacs/site-lisp"))
+  (when (file-directory-p dir)
+    (let ((default-directory dir))
+      (normal-top-level-add-subdirs-to-load-path))))
+#+end_src
+
+On termux the above doesn't work, and I don't need it here anyway.
+
+Some functions to toggle tags:
+#+begin_src emacs-lisp
+(defun my/notmuch-toggle-trash ()
+  (interactive)
+  (evil-collection-notmuch-toggle-tag "trash" "search" #'ignore))
+
+(defun my/notmuch-toggle-inbox ()
+  (interactive)
+  (evil-collection-notmuch-toggle-tag "inbox" "search" #'ignore))
+
+(defun my/notmuch-toggle-unread ()
+  (interactive)
+  (evil-collection-notmuch-toggle-tag "unread" "search" #'ignore))
+#+end_src
+
+And notmuch settings:
+#+begin_src emacs-lisp
+(use-package notmuch
+  :if (not my/is-termux)
+  ;; :ensure nil
+  :commands (notmuch notmuch-search)
+  :init
+  (my/use-colors
+   (notmuch-wash-cited-text :foreground (doom-color 'yellow)))
+  :config
+  (setq notmuch-fcc-dirs
+        '(("pvkorytov@etu.ru" . "pvkorytov_etu_mbox/Sent")
+          (".*" . "sent")))
+  (setq mail-specify-envelope-from t)
+  (setq message-sendmail-envelope-from 'header)
+  (setq mail-envelope-from 'header)
+  (setq notmuch-always-prompt-for-sender t)
+  (setq message-send-mail-function #'message-send-mail-with-sendmail)
+  (setq sendmail-program (executable-find "msmtp"))
+  (setq send-mail-function #'sendmail-send-it)
+  (setq mml-secure-openpgp-sign-with-sender t)
+  (setq notmuch-mua-user-agent-function 'notmuch-mua-user-agent-full)
+  (general-define-key
+   :keymaps 'notmuch-search-mode-map
+   :states '(normal)
+   "d" #'my/notmuch-toggle-trash
+   "i" #'my/notmuch-toggle-inbox
+   "u" #'my/notmuch-toggle-unread)
+  ;; Use org-contacts for completion
+  (require 'org-contacts)
+  (setq notmuch-address-command 'as-is)
+  (add-hook 'notmuch-hello-mode-hook
+            (lambda () (display-line-numbers-mode 0))))
+#+end_src
+
+The file is read in =init.el=.
+
+** Keybindings
+I used to have a more complicated keybinding system here, but that seemed to go against the Dao.
+
+Root keybindings:
+#+begin_src emacs-lisp
+(my-leader-def
+  "am" (my/command-in-persp "notmuch" "mail" 0 (notmuch)))
+#+end_src
+
+#+begin_src emacs-lisp
+(my/persp-add-rule
+  notmuch-hello-mode 0 "mail"
+  notmuch-search-mode 0 "mail"
+  notmuch-tree-mode 0 "mail"
+  notmuch-message-mode 0 "mail"
+  notmuch-show-mode 0 "mail")
+#+end_src
+
+#+NAME: root_tags
+| Root tag  | Prefix | Keybinding description |
+|-----------+--------+------------------------|
+| main      | m      | thexcloud@gmail.com    |
+| progin    | p      | progin6304@gmail.com   |
+| pvkorytov | v      | pvkorytov@etu.ru       |
+
+#+NAME: filter_tags
+| Tag    | Prefix | Name     |
+|--------+--------+----------|
+| inbox  | i      | inbox    |
+| unread | u      | unread   |
+| sent   | s      | sent     |
+|        | a      | all mail |
+
+The following formats the tables above to a proper syntax for =setq notmuch-saved-searches=:
+#+NAME: format-notmuch-saved-searches
+#+begin_src emacs-lisp :var root_tags=root_tags filter_tags=filter_tags :tangle no
+(let ((searches '()))
+  (dolist (root_tag root_tags)
+    (dolist (tag filter_tags)
+      (add-to-list
+       'searches
+       (format "(:name \"%s\" :query \"%s\" :key \"%s\")"
+               (format "%s (%s)"
+                       (nth 0 root_tag)
+                       (nth 2 tag))
+               (concat "tag:" (nth 0 root_tag)
+                       (unless (string-empty-p (nth 0 tag))
+                         (concat " AND tag:" (nth 0 tag))))
+               (concat (nth 1 root_tag) (nth 1 tag)))
+       t)))
+  (string-join searches "\n"))
+#+end_src
+
+#+begin_src emacs-lisp :noweb yes
+(setq notmuch-saved-searches
+      '((:name "drafts" :query "tag:draft" :key "d")
+        <<format-notmuch-saved-searches()>>))
+(setq notmuch-show-empty-saved-searches nil)
+#+end_src
+
+#+begin_src emacs-lisp
+(general-define-key
+ :states '(normal visual)
+ :keymaps '(notmuch-hello-mode-map)
+ "f" #'notmuch-jump-search)
+#+end_src
+** Signing messages
+#+begin_src emacs-lisp
+(with-eval-after-load 'notmuch
+  (add-hook 'message-setup-hook 'mml-secure-sign-pgpmime))
+
+(setq mml-secure-key-preferences
+      '((OpenPGP
+         (sign
+          ("thexcloud@gmail.com" "914472A1FD6775C166F96EBEED739ADF81C78160"))
+         (encrypt))
+        (CMS
+         (sign)
+         (encrypt))))
+#+end_src
+** Tuning signature
+Edit <2024-08-19 Mon>: Apparently this was a feature, not a bug. Disabling this.
+
+By default, =message.el= inserts the signature at the bottom of the message, like this:
+
+#+begin_example
+<message text>
+
+Person <person@mail.org> writes:
+
+> Stuff
+
+--
+Yours,
+me
+#+end_example
+
+This creates issues with certain email clients. For instance, MS Exchange often just cuts the text at =Person <person@mail.org>....=, so there's no way to see the signature from the UI.
+
+What's more, MS Exchange, Gmail and other such clients add the signature before the quotation block, like that:
+
+#+begin_example
+<message text>
+
+--
+Yours,
+me
+
+Person <person@mail.org> writes:
+
+> Stuff
+#+end_example
+
+So here I modifiy the citation function to insert the signature like in the second example for +certain cases+.
+
+Edit <2022-10-27 Thu>: for consistency's sake, I'll make the signature on the top for all cases.
+
+Edit <2024-08-19 Mon>: see above
+
+#+begin_src emacs-lisp
+(defun my/message-insert-signature-need-on-top ()
+  t)
+#+end_src
+
+Then advice the =notmuch-mua-reply= function:
+#+begin_src emacs-lisp
+(defun my/message-maybe-fix-signature (&rest _)
+  (when (my/message-insert-signature-need-on-top)
+    (save-excursion
+      (goto-char (point-min))
+      (when (re-search-forward message-signature-separator nil t)
+        (move-beginning-of-line 0)
+        (kill-region (point) (point-max)))
+      (message-goto-body)
+      (when (re-search-forward (rx "sign=pgpmime") nil t)
+        (forward-line))
+      (insert (current-kill 0))
+      (insert "\n\n")
+      (set-buffer-modified-p nil))))
+
+(with-eval-after-load 'notmuch-mua
+  (advice-add #'notmuch-mua-reply :after #'my/message-maybe-fix-signature))
+#+end_src
+** Warn if no subject
+#+begin_src emacs-lisp
+(defun my/message-ensure-subject ()
+  (unless (or (message-field-value "Subject")
+              (y-or-n-p "No subject. Send? "))
+    (user-error "Aborting.")))
+
+(add-hook 'notmuch-mua-send-hook #'my/message-ensure-subject)
+#+end_src
+** Capitalize formal pronous
+#+begin_src emacs-lisp
+(defvar my/ru-formal-pronous
+  '("вы" "вас" "вам" "вами" "ваш" "ваша" "ваше" "ваши" "вашего"
+    "вашей" "вашему" "вашим" "вашем" "вашеми"))
+
+(defvar my/ru-formal-pronous-regex
+  (regexp-opt
+   (mapcar (lambda (p) (format " %s " p)) my/ru-formal-pronous) 'words))
+
+(defun my/message-ensure-capitalized-formal-pronouns ()
+  (interactive)
+  (save-excursion
+    (message-goto-body)
+    (cl-block nil
+      (let ((case-fold-search nil)
+            confirmed)
+        (while (re-search-forward my/ru-formal-pronous-regex nil t)
+          (let* ((match (match-string 0))
+                 (capitalized (capitalize match))
+                 (beg (match-beginning 0))
+                 (end (match-end 0)))
+            (if (or confirmed
+                    (y-or-n-p (format "Replace %s with %s? "
+                                      match capitalized)))
+                (progn
+                  (delete-region beg end)
+                  (insert capitalized)
+                  (setq confirmed t))
+              (cl-return))))))))
+
+(add-hook 'notmuch-mua-send-hook #'my/message-ensure-capitalized-formal-pronouns)
+#+end_src
+** Ensure password is loaded
+Otherwise =msmtp= may call =pinentry= while Emacs is locked, which means EXWM can't process the password window.
+
+#+begin_src emacs-lisp
+(defun my/ensure-password ()
+  (interactive)
+  (my/password-store-get "Job/Digital/Email/pvkorytov@etu.ru"))
+
+(add-hook 'notmuch-mua-send-hook #'my/ensure-password)
+#+end_src
+
+* mailcap
+mailcap file is a file which defines how to read to different MIME types. Notmuch also uses it, so why not keep it here.
+
+#+begin_src text :tangle ~/.mailcap
+audio/*; mpc add %s
+
+image/*; feh %s
+
+application/msword; /usr/bin/xdg-open %s
+application/pdf; zathura %s
+application/postscript ; zathura %s
+
+text/html; firefox %s
+#+end_src
+* Guix settings
+#+NAME: packages
+#+begin_src emacs-lisp :tangle no
+(my/format-guix-dependencies)
+#+end_src
+
+#+begin_src scheme :tangle .config/guix/manifests/mail.scm :noweb yes
+(specifications->manifest
+ '(
+   <<packages()>>))
+#+end_src

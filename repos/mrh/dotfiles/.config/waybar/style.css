@@ -1,0 +1,121 @@
+* {
+    border: none;
+    border-radius: 0;
+    font-family: Hack, JuliaMono, Noto, FontAwesome, sans-serif;
+    font-size: 18px;
+}
+
+window#waybar {
+    background: rgba(28, 28, 28, 1.0);
+    color: #ebdbb2;
+}
+
+tooltip {
+  background: rgba(43, 48, 59, 0.8);
+  border: 1px solid rgba(100, 114, 125, 0.8);
+}
+
+tooltip label {
+  color: white;
+}
+
+#workspaces button {
+    color: #fabd2f;
+}
+
+#workspaces button.persistent {
+    color: #dfd2c4;
+}
+
+#workspaces button.focused {
+	border-top: 3px solid #fabd2f;
+}
+
+#workspaces button:hover {
+	box-shadow: inherit;
+	text-shadow: inherit;
+	background: #928374;
+	color: #282828;
+}
+
+#window {
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+#pulseaudio,#wireplumber,#network,#cpu,#memory,#backlight,#battery,#clock {
+	margin-left: 3px;
+	margin-right: 3px;
+	padding: 0 3px;
+}
+
+#wireplumber {
+    border-top: 3px solid #d65d0e;
+    color: #ebdbb2;
+}
+
+#wireplumber.muted {
+    color: #928374;
+}
+
+#network.wifi {
+	border-top: 3px solid #98971a;
+    color: #ebdbb2;
+}
+
+#network.disconnected {
+	border-top: 3px solid #cc241d;
+    color: #ebdbb2;
+}
+
+#cpu {
+    border-top: 3px solid #83a598;
+    color: #ebdbb2;
+}
+
+#memory {
+    border-top: 3px solid #928374;
+    color: #ebdbb2;
+}
+
+#backlight {
+    border-top: 3px solid #8ec07c;
+    color: #ebdbb2;
+}
+
+#battery.full {
+    border-top: 3px solid #b8bb26;
+    color: #ebdbb2;
+}
+
+#battery.good {
+    border-top: 3px solid #d79921;
+    color: #ebdbb2;
+}
+
+#battery.critical {
+    border-top: 3px solid #cc241d;
+    color: #ebdbb2;
+}
+
+#clock {
+    border-top: 3px solid #d3869b;
+    color: #ebdbb2;
+}
+
+@keyframes blink {
+    to {
+        background-color: #ffffff;
+        color: black;
+    }
+}
+
+#battery.warning:not(.charging) {
+    background: #f53c3c;
+    color: white;
+    animation-name: blink;
+    animation-duration: 0.5s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}

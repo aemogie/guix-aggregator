@@ -1,0 +1,590 @@
+; [[file:../../Desktop.org::*Colors][Colors:2]]
+[colors]
+black = #222222
+light-black = #303030
+dark-black = #131313
+red = #e28b8b
+light-red = #f69d9d
+dark-red = #cd7879
+green = #31ba54
+light-green = #4acd65
+dark-green = #09a642
+yellow = #e49300
+light-yellow = #faa522
+dark-yellow = #ce8000
+blue = #8f9fe3
+light-blue = #a2b1f7
+dark-blue = #7b8ccf
+magenta = #db81cf
+light-magenta = #ef93e2
+dark-magenta = #c66ebb
+cyan = #66a7e4
+light-cyan = #7ab9f8
+dark-cyan = #5094d0
+white = #fff8f0
+light-white = #fffef6
+dark-white = #eae3dc
+background = #c7c0ba
+foreground = #000000
+; Colors:2 ends here
+
+; [[file:../../Desktop.org::*Glyph settings][Glyph settings:1]]
+[glyph]
+gleft = 
+gright = 
+; Glyph settings:1 ends here
+
+; [[file:../../Desktop.org::*Generating glyphs][Generating glyphs:3]]
+[module/glyph-light-cyan--cyan]
+type = custom/text
+content-background = ${colors.light-cyan}
+content-foreground = ${colors.cyan}
+content = ${glyph.gright}
+content-font = 5
+
+[module/glyph-magenta--light-cyan]
+type = custom/text
+content-background = ${colors.magenta}
+content-foreground = ${colors.light-cyan}
+content = ${glyph.gright}
+content-font = 5
+
+[module/glyph-light-blue--blue]
+type = custom/text
+content-background = ${colors.light-blue}
+content-foreground = ${colors.blue}
+content = ${glyph.gright}
+content-font = 5
+
+[module/glyph-yellow--light-blue]
+type = custom/text
+content-background = ${colors.yellow}
+content-foreground = ${colors.light-blue}
+content = ${glyph.gright}
+content-font = 5
+
+[module/glyph-light-yellow--yellow]
+type = custom/text
+content-background = ${colors.light-yellow}
+content-foreground = ${colors.yellow}
+content = ${glyph.gright}
+content-font = 5
+
+[module/glyph-red--light-yellow]
+type = custom/text
+content-background = ${colors.red}
+content-foreground = ${colors.light-yellow}
+content = ${glyph.gright}
+content-font = 5
+
+[module/glyph-light-red--red]
+type = custom/text
+content-background = ${colors.light-red}
+content-foreground = ${colors.red}
+content = ${glyph.gright}
+content-font = 5
+
+[module/glyph-green--light-red]
+type = custom/text
+content-background = ${colors.green}
+content-foreground = ${colors.light-red}
+content = ${glyph.gright}
+content-font = 5
+
+[module/glyph-light-green--green]
+type = custom/text
+content-background = ${colors.light-green}
+content-foreground = ${colors.green}
+content = ${glyph.gright}
+content-font = 5
+
+[module/glyph-cyan--light-green]
+type = custom/text
+content-background = ${colors.cyan}
+content-foreground = ${colors.light-green}
+content = ${glyph.gright}
+content-font = 5
+
+[module/glyph-cyan--cyan]
+type = custom/text
+content-background = ${colors.cyan}
+content-foreground = ${colors.cyan}
+content = ${glyph.gright}
+content-font = 5
+
+[module/glyph-magenta--cyan]
+type = custom/text
+content-background = ${colors.magenta}
+content-foreground = ${colors.cyan}
+content = ${glyph.gright}
+content-font = 5
+
+[module/glyph-light-magenta--magenta]
+type = custom/text
+content-background = ${colors.light-magenta}
+content-foreground = ${colors.magenta}
+content = ${glyph.gright}
+content-font = 5
+
+[module/glyph-blue--background]
+type = custom/text
+content-background = ${colors.blue}
+content-foreground = ${colors.background}
+content = ${glyph.gright}
+content-font = 5
+
+[module/glyph-background--light-magenta]
+type = custom/text
+content-background = ${colors.background}
+content-foreground = ${colors.light-magenta}
+content = ${glyph.gright}
+content-font = 5
+
+[module/glyph-background--white]
+type = custom/text
+content-background = ${colors.background}
+content-foreground = ${colors.white}
+content = ${glyph.gright}
+content-font = 5
+; Generating glyphs:3 ends here
+
+; [[file:../../Desktop.org::*Global bar config][Global bar config:1]]
+[bar/mybar]
+monitor = ${env:MONITOR:}
+width = 100%
+height = ${env:HEIGHT:27}
+fixed-center = false
+bottom = ${env:POLYBAR_BOTTOM:true}
+
+background = ${colors.background}
+foreground = ${colors.black}
+; Global bar config:1 ends here
+
+; [[file:../../Desktop.org::*Global bar config][Global bar config:2]]
+; line-size = 3
+line-color = #f00
+
+padding = 0
+
+module-margin-left = 0
+module-margin-right = 0
+margin-bottom = 0
+margin-top = 0
+
+; underline-size = 0
+border-size = 0
+
+offset-x = 0
+offset-y = 0
+radius = 0.0
+; Global bar config:2 ends here
+
+; [[file:../../Desktop.org::*Global bar config][Global bar config:3]]
+; font-0 = ${env:FONT0:pango:monospace:size=10;1}
+; font-1 = ${env:FONT1:NotoEmoji:scale=10:antialias=false;0}
+; font-2 = ${env:FONT2:fontawesome:pixelsize=10;1}
+; font-3 = ${env:FONT3:JetBrains Mono Nerd Font:monospace:size=10;1}
+
+font-0 = pango:monospace:size=13;2
+font-1 = NotoEmoji:scale=10:antialias=false;1
+font-2 = fontawesome:pixelsize=13;3
+font-3 = JetBrains Mono Nerd Font:monospace:size=13;4
+font-4 = JetBrains Mono Nerd Font:monospace:size=17;4
+; Global bar config:3 ends here
+
+; [[file:../../Desktop.org::*Global bar config][Global bar config:4]]
+modules-left = i3 c-g glyph-left-light-background--blue
+; modules-center = test
+modules-right = ${env:RIGHT_BLOCKS}
+
+tray-position = ${env:TRAY:right}
+tray-padding = 0
+tray-maxsize = 16
+tray-background = ${colors.background}
+
+wm-restack = i3
+; override-redirect = true
+
+scroll-up = i3wm-wsnext
+scroll-down = i3wm-wsprev
+
+; cursor-click = pointer
+; cursor-scroll = ns-resize
+; Global bar config:4 ends here
+
+; [[file:../../Desktop.org::*Global bar config][Global bar config:5]]
+[settings]
+screenchange-reload = true
+compositing-background = source
+compositing-foreground = over
+compositing-overline = over
+compositing-underline = over
+compositing-border = over
+
+[global/wm]
+margin-top = 0
+margin-bottom = 0
+; Global bar config:5 ends here
+
+; [[file:../../Desktop.org::*pulseaudio][pulseaudio:1]]
+[module/pulseaudio]
+type = internal/pulseaudio
+use-ui-max = true
+
+bar-volume-width = 7
+; bar-volume-foreground-0 = ${colors.white}
+; bar-volume-foreground-1 = ${colors.yellow}
+; bar-volume-foreground-2 = ${colors.yellow}
+; bar-volume-foreground-3 = ${colors.blue}
+; bar-volume-foreground-4 = ${colors.blue}
+; bar-volume-foreground-5 = ${colors.green}
+; bar-volume-foreground-6 = ${colors.green}
+bar-volume-gradient = false
+bar-volume-indicator = |
+bar-volume-indicator-font = 2
+bar-volume-fill = ─
+bar-volume-fill-font = 2
+bar-volume-empty = ─
+bar-volume-empty-font = 2
+; bar-volume-empty-foreground = ${colors.light-white}
+
+format-volume = ♪ <ramp-volume> <label-volume>
+label-volume = %percentage%%
+
+ramp-volume-0 = ▁
+ramp-volume-1 = ▂
+ramp-volume-2 = ▃
+ramp-volume-3 = ▄
+ramp-volume-4 = ▅
+ramp-volume-5 = ▆
+ramp-volume-6 = ▇
+ramp-volume-7 = █
+
+format-muted = ♪ <label-muted>
+label-muted = MUTE
+
+format-volume-background = ${colors.light-magenta}
+format-muted-background = ${colors.light-magenta}
+format-volume-foreground = ${colors.foreground}
+format-muted-foreground = ${colors.foreground}
+
+; format-volume-underline = ${colors.white}
+; format-muted-underline = ${colors.light-black}
+; pulseaudio:1 ends here
+
+; [[file:../../Desktop.org::*mpd][mpd:1]]
+[module/mpd]
+type = internal/mpd
+
+format-playing = <toggle> <label-time> <label-song>
+format-paused = <toggle> <label-time> <label-song>
+format-stopped = " "
+label-song = [%album-artist%] %title%
+label-time = %elapsed%/%total%
+
+label-song-maxlen = 30
+label-song-ellipsis = true
+
+; format-playing-underline = ${colors.yellow}
+; format-paused-underline = ${colors.yellow}
+; format-stopped-underline = ${colors.yellow}
+
+format-playing-background = ${colors.magenta}
+format-paused-background = ${colors.magenta}
+format-stopped-background = ${colors.magenta}
+format-playing-foreground = ${colors.foreground}
+format-paused-foreground = ${colors.foreground}
+format-stopped-foreground = ${colors.foreground}
+
+label-separator = 0
+separator-foreground = ${colors.red}
+
+icon-pause = 
+icon-play = 
+icon-stop = 
+icon-prev = 1
+icon-next = 2
+; mpd:1 ends here
+
+; [[file:../../Desktop.org::*cpu][cpu:1]]
+[module/cpu]
+type = internal/cpu
+format = " <label>"
+label = %percentage%%
+format-background = ${colors.cyan}
+format-foreground = ${colors.foreground}
+; cpu:1 ends here
+
+; [[file:../../Desktop.org::*nvidia][nvidia:2]]
+[module/nvidia]
+type = custom/script
+exec = /home/pavel/bin/polybar/nvidia.sh
+interval = 2
+format =  <label>
+; tail = true
+
+format-background = ${colors.light-cyan}
+format-foreground = ${colors.foreground}
+; nvidia:2 ends here
+
+; [[file:../../Desktop.org::*ram-memory][ram-memory:1]]
+[module/ram-memory]
+type = internal/memory
+interval = 10
+
+ramp-used-0 = ▁
+ramp-used-1 = ▂
+ramp-used-2 = ▃
+ramp-used-3 = ▄
+ramp-used-4 = ▅
+ramp-used-5 = ▆
+ramp-used-6 = ▇
+ramp-used-7 = █
+
+format =  <label>
+label=%gb_used:.1f%
+
+; format-underline = ${colors.blue}
+format-background = ${colors.light-green}
+format-foreground = ${colors.foreground}
+; ram-memory:1 ends here
+
+; [[file:../../Desktop.org::*swap-memory][swap-memory:1]]
+[module/swap-memory]
+type = internal/memory
+interval = 10
+
+label= %gb_swap_used:.1f%
+format-background = ${colors.green}
+format-foreground = ${colors.foreground}
+; swap-memory:1 ends here
+
+; [[file:../../Desktop.org::*network][network:1]]
+[module/network]
+type = internal/network
+interval = 1
+
+interface = ${env:WLAN_INTERFACE}
+
+; format-connected = [<ramp-signal>] <label-connected>
+
+label-connected = ↓ %downspeed% ↑ %upspeed%
+label-disconnected = X
+
+; format-connected-underline = ${colors.green}
+; format-disconnected-underline = ${colors.red}
+format-connected-background = ${colors.nil}
+format-disconnected-background = ${colors.nil}
+format-connected-foreground = ${colors.foreground}
+format-disconnected-foreground = ${colors.foreground}
+
+ramp-signal-0 = 0
+ramp-signal-1 = 1
+ramp-signal-2 = 2
+ramp-signal-3 = 3
+ramp-signal-4 = 4
+ramp-signal-5 = 5
+; network:1 ends here
+
+; [[file:../../Desktop.org::*bandwidth][bandwidth:1]]
+[module/bandwidth]
+type = custom/script
+exec = /home/pavel/bin/polybar/bandwidth3.sh
+interval = 0
+tail = true
+
+format-background = ${colors.light-red}
+format-foreground = ${colors.foreground}
+; bandwidth:1 ends here
+
+; [[file:../../Desktop.org::*ipstack-vpn][ipstack-vpn:2]]
+[module/ipstack-vpn]
+type = custom/script
+exec = /home/pavel/bin/polybar/ipstack-vpn.sh
+interval = 1200
+; ipstack-vpn:2 ends here
+
+; [[file:../../Desktop.org::*openvpn][openvpn:2]]
+[module/openvpn]
+type = custom/script
+exec = /home/pavel/bin/polybar/openvpn.sh
+format-background = ${colors.light-red}
+format-foreground = ${colors.foreground}
+interval = 1200
+; openvpn:2 ends here
+
+; [[file:../../Desktop.org::*xkeyboard][xkeyboard:1]]
+[module/xkeyboard]
+type = internal/xkeyboard
+format = <label-layout>
+
+; format-underline = ${colors.magenta}
+format-background = ${colors.red}
+format-foreground = ${colors.foreground}
+label-layout = %icon%
+layout-icon-0 = ru;RU
+layout-icon-1 = us;US
+; xkeyboard:1 ends here
+
+; [[file:../../Desktop.org::*battery][battery:1]]
+[module/battery]
+type = internal/battery
+battery = BAT0
+adapter = ADP0
+
+time-format = %H:%M
+format-discharging = <ramp-capacity> <label-discharging>
+format-discharging-background = ${colors.cyan}
+format-charging-background = ${colors.cyan}
+format-full-background = ${colors.cyan}
+format-foreground = ${colors.foreground}
+label-discharging = %percentage%% %time%
+label-charging =  %percentage%% %time%
+
+ramp-capacity-0 = 
+ramp-capacity-1 = 
+ramp-capacity-2 = 
+ramp-capacity-3 = 
+ramp-capacity-4 = 
+; battery:1 ends here
+
+; [[file:../../Desktop.org::*temperature][temperature:1]]
+[module/temperature]
+type = internal/temperature
+interval = 2
+
+hwmon-path = ${env:TEMP_HWMON_PATH}
+
+format = <label>
+format-foreground = ${colors.foreground}
+format-background = ${colors.cyan}
+format-warn =  <label-warn>
+format-warn-foreground = ${colors.foreground}
+format-warn-background = ${colors.cyan}
+; temperature:1 ends here
+
+; [[file:../../Desktop.org::*weather][weather:2]]
+[module/weather]
+type = custom/script
+exec = /home/pavel/bin/polybar/weather.sh
+; format-underline = ${colors.red}
+format-background = ${colors.light-yellow}
+format-foreground = ${colors.foreground}
+interval = 1200
+; weather:2 ends here
+
+; [[file:../../Desktop.org::*sun][sun:2]]
+[module/sun]
+type = custom/script
+exec = /home/pavel/bin/polybar/sun.sh
+format-background = ${colors.yellow}
+format-foreground = ${colors.foreground}
+interval = 60
+; sun:2 ends here
+
+; [[file:../../Desktop.org::*aw-afk][aw-afk:2]]
+[module/aw-afk]
+type = custom/script
+exec = /home/pavel/bin/polybar/aw_afk.sh
+interval = 60
+format-background = ${colors.light-blue}
+format-foreground = ${colors.foreground}
+; aw-afk:2 ends here
+
+; [[file:../../Desktop.org::*date][date:1]]
+[module/date]
+type = internal/date
+interval = 5
+
+date =
+date-alt = "%Y-%m-%d"
+
+time = %H:%M
+time-alt = %H:%M:%S
+
+format-background = ${colors.blue}
+format-foreground = ${colors.foreground}
+label = "%date% %time%"
+; date:1 ends here
+
+; [[file:../../Desktop.org::*pomm][pomm:2]]
+[module/pomm]
+type = custom/script
+exec = /home/pavel/bin/polybar/pomm.sh
+interval = 1
+format-underline = ${colors.light-green}
+format-foreground = ${colors.foreground}
+; pomm:2 ends here
+
+; [[file:../../Desktop.org::*C-g][C-g:2]]
+[module/c-g]
+type = custom/text
+content = " C-g"
+click-left = bash ~/bin/polybar/c-g.sh
+content-background = ${colors.blue}
+; C-g:2 ends here
+
+; [[file:../../Desktop.org::*C-g][C-g:3]]
+[module/glyph-left-light-background--blue]
+type = custom/text
+content-background = ${colors.backround}
+content-foreground = ${colors.blue}
+content = ${glyph.gleft}
+content-font = 5
+; C-g:3 ends here
+
+; [[file:../../Desktop.org::*SEP][SEP:1]]
+[module/SEP]
+type = custom/text
+content = "|"
+content-foreground = ${colors.magenta}
+content-padding = 0
+content-margin = 0
+interval = 100000
+; SEP:1 ends here
+
+; [[file:../../Desktop.org::*TSEP][TSEP:2]]
+[module/TSEP]
+type = custom/script
+exec = /home/pavel/bin/polybar/tray-sep.sh
+format-foreground = ${colors.magenta}
+interval = 100000
+; TSEP:2 ends here
+
+; [[file:../../Desktop.org::*i3][i3:1]]
+[module/i3]
+type = internal/i3
+format = <label-state> <label-mode>
+index-sort = true
+wrapping-scroll = false
+
+; Only show workspaces on the same output as the bar
+pin-workspaces = true
+
+label-mode-padding = 1
+label-mode-foreground = ${colors.white}
+label-mode-background = ${colors.blue}
+
+; focused = Active workspace on focused monitor
+label-focused = %name%
+label-focused-background = ${colors.blue}
+label-focused-underline= ${colors.blue}
+label-focused-padding = 1
+
+; unfocused = Inactive workspace on any monitor
+label-unfocused = %name%
+label-unfocused-padding = 1
+label-unfocused-foreground = ${colors.white}
+
+; visible = Active workspace on unfocused monitor
+label-visible = %name%
+; label-visible-background = ${self.label-focused-background}
+label-visible-underline = ${self.label-focused-underline}
+label-visible-padding = ${self.label-focused-padding}
+
+; urgent = Workspace with urgency hint set
+label-urgent = %name%
+label-urgent-background = ${colors.red}
+label-urgent-foreground = ${colors.black}
+label-urgent-padding = 1
+; i3:1 ends here

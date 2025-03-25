@@ -1,0 +1,3 @@
+rofi \
+    -show drun \
+    -theme $HOME/.config/rofi/launchers/app-launcher.rasi

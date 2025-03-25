@@ -1,0 +1,12 @@
+[submodule "dmenu"]
+	path = dmenu
+	url = https://git.suckless.org/dmenu
+[submodule "st"]
+	path = st
+	url = https://git.suckless.org/st
+[submodule "surf"]
+	path = surf
+	url = https://git.suckless.org/surf
+[submodule "sent"]
+	path = sent
+	url = https://git.suckless.org/sent

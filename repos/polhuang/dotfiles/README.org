@@ -1,0 +1,16 @@
+In the process of moving dotfiles management to [[https://guix.gnu.org/][GNU Guix]] for reproducibility across four machines.
+
+Top-level module path is at [[https://github.com/polhuang/dotfiles/tree/master/polterguix][polterguix]].
+
+The aim is to modularize services and system configurations whenever possible. The [[https://github.com/polhuang/dotfiles/blob/master/polterguix/systems/core-system.scm][core system]] module contains the shared operating system declarations, along with a minimal set of services and packages, which are inherited by the individual system modules ([[https://github.com/polhuang/dotfiles/blob/master/polterguix/systems/akhetaten.scm][example]]). The system module adds some hardware/drive-specific configurations, then adds a =home= symbol containing a =home-environment= declaration.
+
+For =reconfigure= commands, a conditional checks an environment variable =GUIX_TARGET=. If the value is set to =system=, the =system= configuration is passed to =reconfigure=; likewise for =home=. Meanwhile, a shell script uses the =hostname= environment variable to determine which system module to use.
+
+* To do:
+- [ ] Add zsh and hyper symlinks to stow ignore
+- [ ] Create core home services module
+- [ ] Create hyprland module instead of using external channel
+- [ ] Create emacs home service and slowly migrate emacs package management from use-package to guix
+- [ ] Move rest of xdg dotfiles
+- [ ] Create personal installation ISO
+- [ ] Create system for babylon 

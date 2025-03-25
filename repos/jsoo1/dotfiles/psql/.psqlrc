@@ -1,0 +1,7 @@
+\set QUIET 1
+\set PROMPT1 '%/ %[\033[31m%]%n@%M:%>%[\033[0m%] λ '
+\set PROMPT2 '... λ '
+\x auto
+\pset null '(null)'
+\set VERBOSITY verbose
+\unset QUIET

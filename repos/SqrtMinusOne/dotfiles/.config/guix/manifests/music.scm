@@ -1,0 +1,9 @@
+(specifications->manifest
+ '(
+   "flac"
+   "cuetools"
+   "shntool"
+   "mpd-mpc"
+   "picard"
+   "ncmpcpp"
+   "mpd"))

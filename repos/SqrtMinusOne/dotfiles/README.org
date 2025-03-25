@@ -1,0 +1,61 @@
+#+TITLE: My dotfiles
+#+HUGO_ALIASES: /config
+
+[[file:dot-imgs/works-on-my-machine.svg]]
+
+These are my GNU/Linux configuration files. [[https://github.com/SqrtMinusOne/dotfiles][View at GitHub]].
+
+I use the [[https://leanpub.com/lit-config/read][literate configuration]] strategy via Emacs' [[https://orgmode.org/][Org Mode]] wherever possible. It has its pros and cons, but I find it pretty nice to keep the configs interweaved with comments in a handful of files.
+
+The files themselves are managed and deployed via [[https://yadm.io/][yadm]], although I use Org Mode for things like config templating.
+
+My current GNU/Linux distribution is [[https://guix.gnu.org/][GNU Guix]]. I like Guix because, among other things, it allows [[https://guix.gnu.org/cookbook/en/html_node/Advanced-package-management.html#Advanced-package-management][to declare the required software]] in configuration files, so I can have the same set of programs across multiple machines (look for tables with "Guix dependency" in the header).
+
+The central program to all of that is, of course, [[https://www.gnu.org/software/emacs/][GNU Emacs]]. At the time of this writing, it takes ~50% of my screen time and has the largest share of configuration here.
+
+Table of contents and software:
+- [[file:Emacs.org][Emacs.org]]
+  - [[file:Emacs.org][GNU Emacs]]
+- [[file:Desktop.org][Desktop.org]]
+  - /Active/: [[file:Desktop.org::*EXWM][EXWM]], [[file:Desktop.org::*Polybar][Polybar]], [[file:Desktop.org::*Rofi][Rofi]], [[file:Desktop.org::*Flameshot][Flameshot]], [[file:Desktop.org::*dunst][dunst]], [[file:Desktop.org::*Picom][Picom]], [[file:Desktop.org::*Zathura][Zathura]]
+  - /In Limbo/: [[file:Desktop.org::*i3wm][i3wm]], [[file:Desktop.org::*keynav][keynav]]
+- [[file:Console.org][Console.org]]
+  - /Active/: [[file:Console.org::*=.profile=][.profile]], [[file:Console.org::*Bash][Bash]], [[file:Console.org::*Fish][Fish]], [[file:Console.org::*Starship prompt][Starship]], [[file:Console.org::*Tmux][Tmux]], [[file:Console.org::*Alacritty][Alacritty]]
+  - /In Limbo/: [[file:Console.org::*Nushell][Nushell]]
+- [[file:Guix.org][Guix.org]]
+- [[file:Mail.org][Mail.org]]
+  - /Active/: [[file:Mail.org::*Lieer][Lieer]], [[file:Mail.org::*DavMail][DavMail]], [[file:Mail.org::*OfflineIMAP][OfflineIMAP]], [[file:Mail.org::*Notmuch][Notmuch]]
+
+(/Apparently, links on the second level work only in Emacs 🙁/)
+
+A few other repositories I may consider a part of my config:
+- [[https://github.com/SqrtMinusOne/channel-q][channel-q]] is my Guix channel
+- [[https://github.com/SqrtMinusOne/sqrt-data][sqrt-data]] is a home for my statistics gathering effort
+- [[https://sqrtminusone.xyz/emacs-packages/][My Emacs Packages]], some of which originated in my Emacs config
+
+See also [[https://sqrtminusone.xyz/posts/][my blog posts]].
+
+* Some statistics
+[[https://sqrtminusone.xyz/stats/all.png]]
+
+[[https://sqrtminusone.xyz/stats/emacs-vim.png]]
+
+[[https://sqrtminusone.xyz/stats/literate-config.png]]
+
+* Misc
+** Notes
+- =M-u C-c C-v t= to tangle a particular block
+- =M-u M-u C-c C-v t= to tangle a particular file
+- =C-c C-v d= to demarcate a block
+
+Uses yadm's =post_alt= hook to create symlinks
+** Encrypted files
+#+begin_src text :tangle ~/.config/yadm/encrypt
+Mail/thexcloud/.credentials.gmailieer.json
+Mail/progin6304/.credentials.gmailieer.json
+.emacs.d/private.org
+.emacs.d/private.el
+.emacs.d/.trello/sqrtminusone.el
+.emacs.d/gnus/*
+./.vpn/*
+#+end_src

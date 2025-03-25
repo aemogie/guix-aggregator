@@ -1,0 +1,8 @@
+\.git
+\.gitignore
+misc
+LICENSE
+/.config/hypr/hyprland.conf
+/.config/hypr/hyprland-base.conf
+.zshrc
+^/.*\.org

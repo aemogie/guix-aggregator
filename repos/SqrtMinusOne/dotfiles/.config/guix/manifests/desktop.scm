@@ -1,0 +1,22 @@
+(specifications->manifest
+ '(
+   "activitywatch-bin"
+   "shepherd"
+   "xdg-desktop-portal"
+   "flatpak"
+   "picom"
+   "keynav"
+   "libnotify"
+   "dunst"
+   "flameshot"
+   "python-i3-balance-workspace"
+   "rust-i3-switch-tabs"
+   "i3-gaps"
+   "xinput"
+   "xgamma"
+   "xrandr"
+   "gnome-themes-extra"
+   "xsettingsd"
+   "gnome-themes-standard"
+   "papirus-icon-theme"
+   "matcha-theme"))

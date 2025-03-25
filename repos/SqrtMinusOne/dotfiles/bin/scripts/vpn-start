@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# [[file:../../Guix.org::*vpn-start][vpn-start:1]]
+export DISPLAY=:0
+CONN=$(nmcli -f NAME con show --active | grep -Ev "(.*docker.*|NAME|br-.*|veth.*|tun.*|vnet.*|virbr.*)" | sed 's/ *$//g')
+
+if [ -z "$CONN" ]; then
+    echo "No connection!"
+    notify-send "VPN" "No connection for VPN to run"
+    exit
+fi
+
+# if [[ "$CONN" != *"Wired"* ]]; then
+#     echo "Connection: $CONN"
+#     notify-send "VPN" "Initializing for connection: $CONN"
+
+#     pkexec nmcli con modify "$CONN" ipv6.method ignore
+#     nmcli connection up "$CONN"
+# fi
+VPN_FILE=~/.vpn/sqrtminusone-$(hostname).ovpn
+if [[ $(hostname) == 'iris' ]]; then
+    VPN_FILE=~/.vpn/mullvad_openvpn_linux_se_all/mullvad_se_all.conf
+fi
+echo $VPN_FILE
+pkexec openvpn --config $VPN_FILE
+# vpn-start:1 ends here

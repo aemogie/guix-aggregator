@@ -1,0 +1,16 @@
+#!/bin/sh
+# [[file:../../Guix.org::*OpenVPN][OpenVPN:9]]
+echo "Adding default route to $route_vpn_gateway with /0 mask..."
+
+if [ -f "/run/current-system/profile/sbin/ip" ]; then
+    IP=/run/current-system/profile/sbin/ip
+else
+    IP=/usr/bin/ip
+fi
+
+$IP route add default via $route_vpn_gateway
+
+echo "Removing /1 routes..."
+$IP route del 0.0.0.0/1 via $route_vpn_gateway
+$IP route del 128.0.0.0/1 via $route_vpn_gateway
+# OpenVPN:9 ends here

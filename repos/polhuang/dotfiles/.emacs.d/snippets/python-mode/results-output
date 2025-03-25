@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: results-output
+# key: res-o
+# --
+:results output
