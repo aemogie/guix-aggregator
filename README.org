@@ -16,7 +16,7 @@ your dotfiles instead, also please, PRs are welcome.
 | [[repos/jjba23/sss]]             | https://codeberg.org/jjba23/sss.git             | trunk   |
 | [[repos/divyaranjan/dotfiles]]   | https://codeberg.org/divyaranjan/dotfiles.git   | master  |
 | [[repos/wloxyz/guix-configs]]    | https://codeberg.org/wloxyz/guix-configs.git    | main    |
-| [[repos/lynn/galahad.git]]       | https://git.transistor.house/lynn/galahad.git   | main    |
+| [[repos/lynn/galahad]]           | https://git.transistor.house/lynn/galahad.git   | main    |
 | [[repos/ngraves/dotfiles]]       | https://git.sr.ht/~ngraves/dotfiles             | main    |
 | [[repos/efraim/guix-config]]     | https://git.sr.ht/~efraim/guix-config           | master  |
 | [[repos/SqrtMinusOne/dotfiles]]  | https://github.com/SqrtMinusOne/dotfiles.git    | master  |
