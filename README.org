@@ -38,16 +38,16 @@ excluding the ~repos/~ subdirectory
 #+END_SRC
 + ~--depth=1~ :: shallow clones only the last commit
 + ~--filter=tree:0~ :: partial clone, ensures that no trees are cloned
-  at all by default. the fetching happense lazily whenever you
-  checkout files. ~--filter=blob:none~ would also do if you want the
+  at all on first clone. the fetching happens lazily whenever you
+  checkout files. ~--filter=blob:none~ would also work if you want the
   trees to be fetched, but not the file contents.
 + ~--sparse~ :: initializes the repository to be a sparse-checkout. by
   default this checks-out the toplevel directory, without recursng
   into any subdirectories. this is often good enough if you're only
   modifying one of these files.
-+ ~--no-checkout~ :: this is optinal, and more aggressive in that it
++ ~--no-checkout~ :: this is optional, and more aggressive in that it
   forces sparse to not even checkout the very top level directory
-  either.
+  either which is the default behaviour.
 if using ~--no-checkout~ the ~git clone~ should only fetch a single
 object, similar to the sample output below.
 
@@ -60,7 +60,7 @@ Receiving objects: 100% (1/1), done.
 #+END_EXAMPLE
 
 if you didn't include ~--no-checkout~ and already have the file you
-want to edit, then the next part is not relevant. otherwise, we
-furhter configure the already initialized sparse checkout to include
+want to edit, then the next two commands are not relevant. otherwise, we
+further configure the already initialized sparse checkout to include
 everything *but* the ~repos/~ subdirectory. finally we run ~git
 checkout~ to ask git to finally checkout what we have requested.
