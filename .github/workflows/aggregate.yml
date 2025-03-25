@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - 'repositories.txt'
+      - 'README.org'
 
 permissions:
   contents: write
