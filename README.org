@@ -9,7 +9,6 @@ your dotfiles instead, also please, PRs are welcome.
 * repositories
 # BEGIN REPOLIST
 | [[repos/aemogie/aetheria]]     | https://github.com/aemogie/aetheria.git         | dev    |
-| [[repos/aemogie/aetheria]]     | https://github.com/aemogie/aetheria.git         | dev    |
 | [[repos/abcdw/rde]]            | https://git.sr.ht/~abcdw/rde                    | master |
 | [[repos/anemofilia/zero]]      | https://codeberg.org/anemofilia/zero.git        | main   |
 | [[repos/look/misako]]          | https://codeberg.org/look/misako.git            | main   |
