@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -xeuo pipefail
 
-REPOS_FILE="repositories.txt"
+REPOS_FILE="README.org"
 LOCK_FILE="repositories.lock"
-REPOS_DIR="repos"
+REPOS_DIR="repos" # if changed, also remember to change in $REPOS_FILE
 
 # PURGE!!
 rm -rf "$REPOS_DIR"
@@ -11,11 +11,14 @@ mkdir -p "$REPOS_DIR"
 rm -f "$LOCK_FILE"
 
 # the `||` is for when there's no trailing new line, but we still have content in the last line
-while read -r path url branch || [[ -n "$path" ]]; do
+while IFS='|' read -r first dir url branch _ || [[ -n "$first" ]]; do
   # empty lines and comments allowed
-  [[ -z "$path" || "$path" == \#* ]] && continue
+  [[ -z "$dir" || "$first" == \#* ]] && continue
 
-  dir="$REPOS_DIR/$path"
+  # echo with no " to strip whitespace
+  dir=$(echo $dir | tr -d "[]")
+  url=$(echo $url)
+  branch=$(echo $branch)
 
   mkdir -p "$dir"
   git clone --depth 1 --no-tags --branch "$branch" "$url" "$dir"
@@ -24,7 +27,7 @@ while read -r path url branch || [[ -n "$path" ]]; do
   echo "$dir $hash" >> "$LOCK_FILE"
 
   rm -rf "$dir/.git"
-done < "$REPOS_FILE"
+done <<< $(sed -n '/# BEGIN REPOLIST/,/# END REPOLIST/{//!p}' "$REPOS_FILE")
 
 last_update=$(git log -1 --format=%cd --date=short 2>/dev/null || echo "initial")
 current_date=$(date +%Y-%m-%d)
