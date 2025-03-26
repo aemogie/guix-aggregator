@@ -31,3 +31,12 @@
 [submodule "channels/guix-science-nonfree"]
 	path = channels/guix-science-nonfree
 	url = https://codeberg.org/guix-science/guix-science-nonfree
+[submodule "packages/emacs-git-email"]
+	path = packages/emacs-git-email
+	url = https://codeberg.org/suhail/git-email
+[submodule "channels/guile-libinput"]
+	path = channels/guile-libinput
+	url = https://github.com/Z572/guile-libinput
+[submodule "channels/guile-bytestructure-class"]
+	path = channels/guile-bytestructure-class
+	url = https://github.com/Z572/guile-bytestructure-class
