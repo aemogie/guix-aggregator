@@ -32,7 +32,8 @@ done <<< $(sed -n '/# BEGIN REPOLIST/,/# END REPOLIST/{//!p}' "$REPOS_FILE")
 last_update=$(git log -1 --format=%cd --date=short 2>/dev/null || echo "initial")
 current_date=$(date +%Y-%m-%d)
 commit_title="Update repositories: $last_update to $current_date"
-commit_body="$(git diff --word-diff HEAD -- "$LOCK_FILE" | tail -n +6)"
+# get lines starting with `+` or `-`, but skip first two results (---,+++)
+commit_body="$(git diff -- "$LOCK_FILE" | grep '^[\+\-]' | tail -n +3)"
 
 git add .
 git commit --quiet -m "$commit_title" -m "$commit_body" || true
