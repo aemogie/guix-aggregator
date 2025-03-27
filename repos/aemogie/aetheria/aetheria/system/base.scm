@@ -43,6 +43,14 @@
     (substitute-urls (list "https://substitutes.nonguix.org"))
     (authorized-keys (list (local-file
                             (string-append %project-root "/substitutes/nonguix.pub")))))))
+(define guix-science-substitute-service
+  (simple-service
+   'guix-science-substitute-service
+   guix-service-type
+   (guix-extension
+    (substitute-urls (list "https://guix.bordeaux.inria.fr"))
+    (authorized-keys (list (local-file
+                            (string-append %project-root "/substitutes/guix-science.pub")))))))
 
 (define %aetheria-user-template
   (user-account
@@ -55,6 +63,7 @@
   (cons*
    (service guix-home-service-type (list (list "root" %aetheria-base-home)))
    nonguix-substitute-service
+   guix-science-substitute-service
    (service kmonad-service-type) ;; for udev rules
    (service bluetooth-service-type
             (bluetooth-configuration (auto-enable? #t)))

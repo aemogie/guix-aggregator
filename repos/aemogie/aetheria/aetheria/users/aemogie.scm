@@ -5,6 +5,7 @@
   #:use-module ((gnu services) #:select (simple-service))
   #:use-module ((gnu home) #:select (home-environment))
   #:use-module ((gnu home services) #:select (home-xdg-configuration-files-service-type))
+  #:use-module ((guix-science packages typst) #:select (typst))
   #:use-module ((aetheria services kmonad) #:select (kmonad-keyboard-service))
   #:use-module ((aetheria home services kmonad) #:select (home-kmonad-service-type))
   #:use-module ((aetheria home base) #:select (%aetheria-desktop-home
@@ -78,6 +79,7 @@ gpgSign = true")))))
    (packages (append (match hostname
                        ("serena" (list serena-nivea-emacs-script))
                        (_ '()))
+                     (list typst)
                      %aetheria-desktop-home-packages))
    (services (append (match hostname
                        ("serena" (list
