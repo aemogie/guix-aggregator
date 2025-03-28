@@ -42,6 +42,9 @@
                                                      ((equal? 'sss-palette-solarized-light
                                                               palette)
                                                       "Yaru")
+                                                     ((equal? 'sss-palette-everforest-light
+                                                              palette)
+                                                      "Yaru-sage")
                                                      (else "Yaru-sage-dark")))
                                        (standard_dialogs . default)))
                    "\n[Fonts]\n"

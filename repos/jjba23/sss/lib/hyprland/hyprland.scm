@@ -40,14 +40,15 @@
       ((eq? 'sss-palette-heavy-metal palette)
        (format #f "~a/resources/wallpapers/heavy-wall3.jpg" clone-dir))
       ((eq? 'sss-palette-solarized-light palette)
-       (format #f "~a/resources/wallpapers/ofcoisp7abfe1.jpeg" clone-dir))
+       (format #f "~a/resources/wallpapers/PXL_20250326_193029385.MP.jpg"
+               clone-dir))
       ((eq? 'sss-palette-ef-autumn palette)
        (format #f "~a/resources/wallpapers/0mar2ygf59je1.jpeg" clone-dir))
       ((eq? 'sss-palette-everforest-dark palette)
        (format #f "~a/resources/wallpapers/a_forest_with_moss_and_trees.jpg"
                clone-dir))
       ((eq? 'sss-palette-everforest-light palette)
-       (format #f "~a/resources/wallpapers/a_foggy_forest_with_trees_03.jpg"
+       (format #f "~a/resources/wallpapers/PXL_20250326_164100026.jpg"
                clone-dir))
       (else (format #f "~a/resources/wallpapers/some-forest.jpg" clone-dir))))
   (export hypr-wallpaper))

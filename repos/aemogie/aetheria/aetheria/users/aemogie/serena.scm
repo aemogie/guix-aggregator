@@ -1,5 +1,6 @@
 (define-module (aetheria users aemogie serena)
-  #:use-module ((srfi srfi-1) #:select (filter-map))
+  #:use-module ((srfi srfi-1) #:select (filter-map
+                                        fold-right))
   #:use-module ((ice-9 match) #:select (match))
   #:use-module ((guix gexp) #:select (gexp
                                       program-file))
@@ -45,42 +46,42 @@
   ;; formatting is just so that it's pretty
 
   (define fn-keys
-    ;; keys f1, f8 and f9 dont work well anymore, have to press with
-    ;; force. don't rely. same applies for action key variants of these keys
-    ;; as well
-    '(f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11  f12  ins))
+    ((lambda (xs) (append (car xs) (cdr xs)))
+     (fold-right
+      (lambda (x acc)
+        (cons
+         (if (car x) (cons (car x) (car acc)) (car acc))
+         (if (cdr x) (cons (cdr x) (cdr acc)) (cdr acc))))
+      '(() . ()) ;; face '(o.o)'
+      '( ;; keys f1, f8 and f9 dont work well anymore, have to press with
+        ;; force. don't rely. same applies for action key variants of these
+        ;; keys as well
 
-  (define action-keys
-    (filter-map
-     (lambda (fn-key)
-       (match fn-key
-         ;; "help" key for windows laptops. emits `windows + f1`.
-         ('f1 #f)
-         ;; won't get fired for some reason. libinput shows it, evtest shows
-         ;; it. kmonad doesnt
-         ('f2 'brdown)
-         ('f3 'brup) ;; wont fire this either
-         ;; "monitor" key for windows. emits `windows + p` the windows projection keybind.
-         ('f4 #f)
-         ;; blank key, emits nothing when pressed without `fn` key
-         ('f5 #f)
-         ('f6 'mute)
-         ('f7 'volumedown)
-         ('f8 'volumeup)
-         ('f9 'previoussong)
-         ('f10 'playpause)
-         ('f11 'nextsong)
-         ;; rfkill/airplane mode key. the name was merged into kmonad a while back, but that
-         ;; commit has yet to make it into any releases
-         ('f12 'missing247) ;; this doesnt get fired either
-         ('ins 'sysrq) ;; print screen
-         (_ #f)))
-     fn-keys))
+        ;; "help" key for windows laptops. emits `windows + f1`.
+        (f1 . #f)
+        ;; won't get fired for some reason. libinput shows it (and uses it cz
+        ;; hyprland works), evtest shows it. kmonad doesnt pick it up.
+        (f2 . brdown)
+        (f3 . brup) ;; wont fire this either
+        ;; "monitor" key for windows. emits `windows + p` the windows projection keybind.
+        (f4 . #f)
+        ;; blank key, emits nothing when pressed without `fn` key
+        (f5 . #f)
+        (f6 . mute)
+        (f7 . volumedown)
+        (f8 . volumeup)
+        (f9 . previoussong)
+        (f10 . playpause)
+        (f11 . nextsong)
+        ;; rfkill/airplane mode key. the name was merged into kmonad a while back, but that
+        ;; commit has yet to make it into any releases
+        (f12 . missing247) ;; this doesnt get fired either
+        (ins . sysrq)))))  ;; print screen
 
   (define main
     ;; esc and del are common to the rows
     ;; initial space helps keep alignment
-    `( esc                     ,@(append fn-keys action-keys)                        del
+    `( esc                                 ,@fn-keys                                 del
        #\`   1     2     3     4     5     6     7     8     9     0     #\-   #\=   bspc
        tab   q     w     e     r     t     y     u     i     o     p     #\[   #\]   #\\
        caps  a     s     d     f     g     h     j     k     l     #\;   #\'   ret

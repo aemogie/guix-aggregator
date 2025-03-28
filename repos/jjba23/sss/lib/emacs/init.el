@@ -226,6 +226,7 @@ According to size, color and font family"
                           :height (tekengrootte-mk-font-size 0.8)))
 
     ;; ====== Theme specific tweaks ======
+    ;; ====== Everforest dark specific tweaks ======
     (ignore-errors
       (cond ((equal sss-emacs-theme 'everforest-hard-dark)
              (progn
@@ -239,6 +240,22 @@ According to size, color and font family"
                                    :background "#96b070")
                (set-face-attribute 'dired-directory nil
                                    :inherit '(font-lock-string-face))))))
+
+    ;; ====== Everforest light specific tweaks ======
+    (ignore-errors
+      (cond ((equal sss-emacs-theme 'everforest-hard-light)
+             (progn
+               (set-face-attribute 'mode-line nil
+                                   :box 'unspecified
+                                   :foreground "#2b3339"
+                                   :background "#96b070")
+               (set-face-attribute 'mode-line-active nil
+                                   :box 'unspecified
+                                   :foreground "#2b3339"
+                                   :background "#96b070")
+               (set-face-attribute 'dired-directory nil
+                                   :inherit '(font-lock-string-face))))))
+
 
     ;; ====== Final tweaks ======
     (ignore-errors

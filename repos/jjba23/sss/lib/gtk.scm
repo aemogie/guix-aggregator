@@ -40,6 +40,8 @@
                               "Yaru-magenta-dark")
                              ((equal? 'sss-palette-solarized-light palette)
                               "Yaru")
+                             ((equal? 'sss-palette-everforest-light palette)
+                              "Yaru-sage")
                              (else "Yaru-sage-dark")))
       (gtk-theme-name unquote
                       (cond
@@ -55,6 +57,8 @@
                          "Yaru-magenta-dark")
                         ((equal? 'sss-palette-solarized-light palette)
                          "Yaru")
+                        ((equal? 'sss-palette-everforest-light palette)
+                         "Yaru-sage")
                         (else "Yaru-sage-dark")))
       (gtk-font-name . "Inter 11")
       (gtk-key-theme-name . "Emacs")
@@ -94,6 +98,8 @@
                               "Yaru-magenta-dark")
                              ((equal? 'sss-palette-solarized-light palette)
                               "Yaru")
+                             ((equal? 'sss-palette-everforest-light palette)
+                              "Yaru-sage")
                              (else "Yaru-sage-dark")))
       (gtk-theme-name unquote
                       (cond
@@ -109,6 +115,8 @@
                          "Yaru-magenta-dark")
                         ((equal? 'sss-palette-solarized-light palette)
                          "Yaru")
+                        ((equal? 'sss-palette-everforest-light palette)
+                         "Yaru-sage")
                         (else "Yaru-sage-dark")))
       (gtk-font-name . "Inter 11")
       (gtk-enable-event-sounds . 0)

@@ -1,8 +1,15 @@
-* aetheria
+#+TITLE: aetheria
 a guix system configuration, targeting to become eye candy while attempting to
-fix the issues with nivea.  in contrast to nivea (which is a nixos based
-reproducible system, just like aetheria), aetheria will attempt to from it's
-inception have functionality for:
+fix the issues with nivea.
+
+* progress
+much of the work happens on [[TODO.org]], check it out to see what i'm currently
+working on!
+
+* comparison with nivea
+in contrast to nivea (which is a nixos based reproducible system, just like
+aetheria), aetheria will attempt to from it's inception have functionality
+for:
 + ephemeral root :: in nivea, the hardware configuration became a bottleneck
   later on. this attempts to target ephemeral root from the onset.
 + secrets management :: secrets could potentially be managed declaratively as
@@ -20,3 +27,7 @@ inception have functionality for:
   richer ecosystem, including projects like nix-impermenance, sops-nix, and
   stylix. it was just that switching to guix gave me an opportunity to start
   over from scratch
+
+there are some benefits i see in using guix over nix, and that mostly comes
+down to the module system and the language. otherwise, i'd say both are
+amazing projects that are pretty identical in goals.

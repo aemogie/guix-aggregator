@@ -18,15 +18,8 @@
 (define-module (sss palette)
   #:use-module (gnu)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 exceptions)
   #:use-module (srfi srfi-64))
-
-(let ((l '(hello (world))))
-  (match l
-    ;; <- the input object
-    (('hello (who))
-     ;; <- the pattern
-     who)))
-;; <- the expression evaluated upon matching
 
 (define-public (sss-get-color palette sym)
   (match palette
@@ -39,7 +32,9 @@
     ('sss-palette-everforest-light (cdr (assoc sym
                                                sss-palette-everforest-light)))
     ('sss-palette-everforest-dark (cdr (assoc sym sss-palette-everforest-dark)))
-    (_ (cdr (assoc sym sss-palette-ef-dream)))))
+    (_ (raise-exception (make-exception-with-message (format #f
+                                                      "exception ocurred! unknown palette selected: ~a"
+                                                      palette))))))
 
 (begin
   (define (hex-to-decimal n)
@@ -60,7 +55,6 @@
 
 (define-public sss-palette-ef-dream
   `((primary . "#675072") (primary-l . "#b0a0cf")
-    (primary-d . "#a0a0cf")
     (text . "#efd5c5")
     (text-l . "#dec4b4")
     (background . "#232025")
@@ -68,7 +62,6 @@
 
 (define-public sss-palette-ef-bio
   `((primary . "#00552f") (primary-l . "#3fb83f")
-    (primary-d . "#0a4425")
     (text . "#dfefe6")
     (text-l . "#cfdfd5")
     (background . "#111111")
@@ -76,7 +69,6 @@
 
 (define-public sss-palette-ef-cyprus
   `((primary . "#b3d19d") (primary-l . "#c4f2af")
-    (primary-d . "#557400")
     (text . "#242521")
     (text-l . "#353632")
     (background . "#fcf7ef")
@@ -84,23 +76,20 @@
 
 (define-public sss-palette-ef-autumn
   `((primary . "#7a3b23") (primary-l . "#c0620e")
-    (primary-d . "#d0730f")
     (text . "#dfcdcb")
     (text-l . "#cfbcba")
     (background . "#26211d")
     (background-l . "#36322f")))
 
 (define-public sss-palette-solarized-light
-  `((primary . "#e89149") (primary-l . "#f5883f")
-    (primary-d . "#b7410e")
-    (text . "#475d64")
-    (text-l . "#586e75")
+  `((primary . "#f9a25a") (primary-l . "#e89149")
+    (text . "#142a31")
+    (text-l . "#253b42")
     (background . "#fdf6e3")
     (background-l . "#eee8d5")))
 
 (define-public sss-palette-heavy-metal
   `((primary . "#b02930") (primary-l . "#f47360")
-    (primary-d . "#d56f72")
     (text . "#ffe6d6")
     (text-l . "#efd5c5")
     (background . "#111111")
@@ -108,7 +97,6 @@
 
 (define-public sss-palette-everforest-dark
   `((primary . "#a7c080") (primary-l . "#b8d191")
-    (primary-d . "#96b070")
     (text . "#d3c6aa")
     (text-l . "#e4d7bb")
     (background . "#272e33")
@@ -116,11 +104,10 @@
 
 (define-public sss-palette-everforest-light
   `((primary . "#a7c080") (primary-l . "#b8d191")
-    (primary-d . "#96b070")
     (text . "#4b5961")
     (text-l . "#5c6a72")
-    (background . "#f3ead3")
-    (background-l . "#e5dfc5")))
+    (background . "#fffbef")
+    (background-l . "#f8f5e4")))
 
 (test-begin "sss-palette tests")
 
@@ -154,9 +141,7 @@
             (sss-get-color 'sss-palette-everforest-light
                            'background))
 
-;; Test default palette selection
-(test-equal "Retrieve primary color from default palette (ef-dream)" "#675072"
-            (sss-get-color 'unknown-palette
+(test-error (sss-get-color 'unknown-palette
                            'primary))
 
 ;; Test sss-hex-to-rgba conversion

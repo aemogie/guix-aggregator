@@ -19,8 +19,9 @@ system: $(sources) channels.lock.scm
 home: $(sources) channels.lock.scm
 	 $(guix) home reconfigure $(guix_home_options)
 
-geiser-repl:
-	$(guix) repl --listen=tcp:37146
+geiser-repl: --build-dirs
+	rm -f build/repl
+	$(guix) repl --listen=unix:build/repl
 
 --build-dirs:
 	@mkdir -p build/tmp
@@ -109,6 +110,7 @@ fi
 endef
 
 clean:
+	rm -f build/repl
 	$(call clean_file,build/tmp/channels.lock.scm)
 	$(call clean_link,build/tmp/system)
 	$(call clean_link,build/tmp/run-vm)

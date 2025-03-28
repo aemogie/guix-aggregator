@@ -1,3 +1,5 @@
+#+TITLE: aetheria project progress
+
 this file probably won't stay up-to date along with the progress of the
 project. i primarily use this to take a look at what my options are what i
 could possibly do next. for a full list of todos, in addition to this file,
@@ -24,7 +26,24 @@ the old keyd behaviour was as follows:
   rctl is left for using the overriden keys.
 originally try to do a 1:1 port, but maybe look into better worflows in the meanwhile
 
-** TODO figure out gpg
+** TODO security
+*** DONE figure out gpg
+keygen, ecc, subkeys, gpg-agent, ssh-agent, retroactively signing this
+repository
+*** TODO sops-guix
+https://github.com/fishinthecalculator/sops-guix
+ideally, the only stateful secret should be my gpg key
+*** TODO fix ssh pinentry in emacs
+magit/eshell create new tty per each operation, and the pinentry tty isn't
+updated in the gpg-agent. have no idea how to go about fixing this, other
+than dropping tty-based pinentry entirely? but pinentry-tty is /very/
+accessible.
++ ~gpg-connect-agent UPDATESTARTUPTTY /bye~ expects ~$GPG_TTY~ to be set.
++ attempting to set it inside ~~/.ssh/config~ is pointless, as ~exec~ in the
+  config isn't evaluated with a tty.
++ currently im setting it in ~\~/.bashrc~, which only works for pty
+  allocations which hand over to bash. eshell/magit don't.
++ maybe attempt to wrap ~ssh~?
 
 ** TODO migrate record fields to services
 the ~<operating-system>~ and ~<home-environment>~ record fields are fed back
@@ -124,15 +143,7 @@ extensions are the paths to be persisted. also leverage
 ~activation-service-type~ to retroactively copy and persist existing files
 that are on the tmpfs system.
 
-** +introduce ~<aethetria-os>~ and ~<aetheria-home>~ abstraction+
-have a configuration that then gets rendered down to a proper
-~<operating-system>~ or ~<home-environment>~ but is a less restrictive type
-that can be easily extended. (kinda builder pattern?)
-update: that's a bad idea, probably. has very bad implications on
-maintainability.
-update 2: services are what i needed.
-
-** TODO make ~(aetheria users ...)~ procedures that take in hostname
+** DONE make ~(aetheria users ...)~ procedures that take in hostname
 and the files themselves could produce a consumable result by calling the
 procedure with ~(gethostname)~. as little as possible should be on
 system-level config.
@@ -157,7 +168,6 @@ https://github.com/viperML/wrapper-manager
 *** TODO optional: we have flatpak at home
 wrap all that in a container as well. guix seems to have a lot of built-in
 tooling for this already
-
 
 * code
 ** TODO add pre-commit hook

@@ -17,6 +17,7 @@
   #:use-module (gnu home services)
   #:use-module (gnu home services admin)
   #:use-module (gnu home services desktop)
+  #:use-module (gnu home services fontutils)
   #:use-module (gnu home services gnupg)
   #:use-module (gnu home services guix)
   #:use-module (gnu home services shepherd)
@@ -145,8 +146,13 @@
         #|                |# libnotify
         #|SSH             |# openssh
         #|Video           |# mpv-minimal/wayland yt-dlp ffmpeg-nvenc obs
-        ;; TODO: make a font-nerd/all package
-        #|Fonts           |# font-jetbrains-mono font-nerd-symbols font-nerd-noto font-ipa-ex
+        #|Fonts           |# font-adobe-source-han-sans
+                             font-adobe-source-sans-pro
+                             font-adobe-source-serif-pro
+                             font-ipa-mj-mincho
+                             font-jetbrains-mono
+                             font-nerd-symbols
+                             font-openmoji
         #|XDG Portals     |# xdg-desktop-portal xdg-desktop-portal-hyprland xdg-desktop-portal-termfilechooser))
 
     (services
@@ -209,6 +215,28 @@
                       (substitutes secrets:all))))))
 
         (service home-syncthing-service-type)
+
+        (simple-service 'default-fonts home-fontconfig-service-type
+          (list '(alias
+                   (family "monospace")
+                   (prefer
+                     (family "OpenMoji Color")
+                     (family "JetBrains Mono NL")
+                     (family "Symbols Nerd Font")))
+                '(alias
+                   (family "serif")
+                   (prefer
+                     (family "OpenMoji Color")
+                     (family "Source Serif Pro")
+                     (family "IPAmjMincho")
+                     (family "Symbols Nerd Font")))
+                '(alias
+                   (family "sans-serif")
+                   (prefer
+                     (family "OpenMoji Color")
+                     (family "Source Sans Pro")
+                     (family "Source Han Sans")
+                     (family "Symbols Nerd Font")))))
 
         (service home-sops-secrets-service-type
           (home-sops-service-configuration
