@@ -8,6 +8,7 @@
                 #:prefix user:)
   #:use-module ((misako substitute-keys)
                 #:prefix substitute-key:)
+  #:use-module (misako packages linux)
   #|GNU Bootloader|#
   #:use-module (gnu bootloader)
   #:use-module (gnu bootloader grub)
@@ -76,7 +77,7 @@
       (keyboard-layout "br"
         #:options '("caps:swapescape")))
 
-    (kernel linux-6.13)
+    (kernel linux-latest)
     (kernel-arguments
       (list "loglevel=3"
             "quiet"

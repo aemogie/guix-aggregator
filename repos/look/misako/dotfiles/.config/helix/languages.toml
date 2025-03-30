@@ -23,3 +23,28 @@ formatter = { command = "parinfer-rust" }
 '{' = '}'
 '[' = ']'
 '"' = '"'
+
+[[language]]
+name = "latex"
+scope = "source.tex"
+injection-regex = "tex"
+file-types = ["tex", "sty", "cls", "Rd", "bbx", "cbx"]
+comment-token = "%"
+language-servers = [ "texlab" ]
+indent = { tab-width = 4, unit = " " }
+
+[language-server.texlab]
+command = "texlab"
+
+[language-server.texlab.config.texlab.build]
+forwardSearchAfter = true
+onSave = true
+
+[language-server.texlab.config.texlab.forwardSearch]
+executable = "sioyek"
+args = [ "--reuse-window", "--execute-command", "toggle_synctex", "--inverse-search", "texlab inverse-search -i \"%%1\" -l %%2", "--forward-search-file", "%f", "--forward-search-line", "%l", "%p" ]
+# executable = "zathura"
+# args = ["--synctex-forward", "%l:1:%f", "%p"]
+
+[language-server.texlab.config.texlab.chktex]
+onEdit = true
