@@ -1,0 +1,137 @@
+// -*- mode: jsonc -*-
+// SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space>
+//
+// SPDX-License-Identifier: CC0-1.0
+
+{
+    "layer": "top",
+    "spacing": 5,
+    "modules-left": [
+        "niri/workspaces",
+        "tray",
+        "wlr/taskbar",
+        "cpu",
+        "memory",
+        "custom/nvidia",
+        "temperature",
+    ],
+    "modules-center": [
+        "clock",
+    ],
+    "modules-right": [
+        "network",
+        "bluetooth",
+        "wireplumber",
+        "backlight",
+        "battery",
+    ],
+    // left
+    "niri/workspaces": {
+	"format": "{icon}",
+	"format-icons": {
+	    "active": "\uF192",
+	    "default": "\uF111",
+	}
+    },
+    "wlr/taskbar": {
+        "format": "{icon}",
+        "tooltip-format": "{title}",
+        "on-click": "activate",
+        "on-click-middle": "close",
+    },
+    "cpu": {
+        "format": "{usage}% \uF2DB",
+        "states": {
+            "full": 98,
+        },
+        "interval": 2,
+    },
+    "memory": {
+        "format": "{percentage}% \uF538",
+        "states": {
+            "full": 98,
+        },
+        "interval": 2,
+    },
+    "custom/nvidia": {
+        "exec": "nvidia-smi --query-gpu=utilization.gpu --format=csv,nounits,noheader",
+        "format": "{}% \uE163",
+        "interval": 2,
+        "tooltip": false,
+    },
+    "temperature": {
+        "critical-threshold": 80,
+        "format-critical": "{temperatureC}\u00B0C \uF769",
+        "format": "{temperatureC}\u00B0C \uF2CA",
+        "interval": 2,
+        "tooltip": false,
+    },
+    // center
+    "clock": {
+        "format": "{:%A, %B %d, %Y (%R)}",
+        "tooltip-format": "<tt><small>{calendar}</small></tt>",
+        "calendar": {
+            "mode"          : "year",
+            "mode-mon-col"  : 3,
+            "weeks-pos"     : "right",
+            "on-scroll"     : 1,
+            "format": {
+                "months":     "<span color='#FFEAD3'><b>{}</b></span>",
+                "days":       "<span color='#ECC6D9'><b>{}</b></span>",
+                "weeks":      "<span color='#99FFDD'><b>W{}</b></span>",
+                "weekdays":   "<span color='#FFCC66'><b>{}</b></span>",
+                "today":      "<span color='#FF6699'><b><u>{}</u></b></span>",
+            }
+        },
+        "actions":  {
+            "on-click-right": "mode",
+            "on-scroll-up": "tz_up",
+            "on-scroll-down": "tz_down",
+            "on-scroll-up": "shift_up",
+            "on-scroll-down": "shift_down",
+        }
+    },
+    // right
+    "network": {
+        "format-disabled": "\uF071 Disabled",
+        "format-disconnected": "\uF071 Disconnected",
+        "format-linked": "\uF071 {ifname} (No IP)",
+        "format-ethernet": "\uF6FF {ipaddr}/{cidr} {bandwidthDownBytes} \uF175 {bandwidthUpBytes} \uF176",
+        "format-wifi": "\uF1EB {essid} ({signalStrength}%) {bandwidthDownBytes} \uF175 {bandwidthUpBytes} \uF176",
+        "tooltip-format": "{ifname}: {ipaddr}/{cidr}",
+        "interval": 2,
+    },
+    "bluetooth": {
+	"format": "\uF294 {status}",
+	"format-connected": "\uF294 {device_alias}",
+	"format-connected-battery": "\uF294 {device_alias} {device_battery_percentage}%",
+	"tooltip-format": "{controller_alias}\t{controller_address}\n\n{num_connections} connected",
+	"tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{num_connections} connected\n\n{device_enumerate}",
+	"tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
+	"tooltip-format-enumerate-connected-battery": "{device_alias}\t{device_address}\t{device_battery_percentage}%",
+    },
+    "wireplumber": {
+        "scroll-step": 5,
+        "format": "{icon} {volume}%",
+        "format-icons": ["\uF026", "\uF027", "\uF028"],
+        "format-muted": "\uF6A9 {volume}%",
+        "on-click": "$$bin/wpctl$$ set-mute @DEFAULT_AUDIO_SINK@ toggle",
+        "on-click-right": "$$bin/pavucontrol$$",
+    },
+    "backlight": {
+        "on-scroll-down": "$$bin/light$$ -U 5",
+        "on-scroll-up": "$$bin/light$$ -A 5",
+        "format": "{icon} {percent}%",
+        "format-icons": ["\uF186", "\uF0EB"],
+        "tooltip": false,
+    },
+    "battery": {
+        "interval": 60,
+        "states": {
+            "warning": 30,
+            "critical": 15,
+        },
+        "format": "{icon} {capacity}%",
+        "format-icons": ["\uF244", "\uF243", "\uF242", "\uF241", "\uF240"],
+    },
+}

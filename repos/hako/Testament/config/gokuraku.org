@@ -38,6 +38,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 match)
   #:use-module (gnu packages gnupg)
+  #:use-module (gnu packages rsync)
   #:use-module (gnu packages shells)
   #:use-module (sops packages sops)
 #+end_src
@@ -99,8 +100,8 @@
 #+end_src
 
 ** Packages
-No need to install less used ones, ‘guix shell’ is always available.
-#+begin_src scheme :noweb-ref home-package
+No need to install less used ones, prefer ‘guix shell’.
+#+begin_src scheme :noweb-ref package
   rsync
 #+end_src
 

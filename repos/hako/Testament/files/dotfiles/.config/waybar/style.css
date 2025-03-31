@@ -1,0 +1,139 @@
+/* SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space> */
+/* SPDX-License-Identifier: CC0-1.0 */
+
+@define-color bg #FEFEFE;
+@define-color dark-bg #4D5072;
+
+* {
+    font-family: "SF Pro Text";
+    font-size: 1.2rem;
+    background-color: transparent;
+    border-radius: 5px;
+}
+
+tooltip {
+    background-color: @dark-bg;
+    border: 1px solid @dark-bg;
+}
+
+tooltip label {
+    text-shadow: none;
+}
+
+.modules-right {
+    margin: 10px 10px 0 0;
+}
+.modules-center {
+    margin: 10px 0 0 0;
+}
+.modules-left {
+    margin: 10px 0 0 10px;
+}
+
+#taskbar,
+#tray,
+#cpu,
+#custom-nvidia,
+#memory,
+#temperature,
+#clock,
+#network,
+#bluetooth,
+#wireplumber,
+#backlight,
+#battery {
+    padding: 0 10px;
+    background-color: @bg;
+    opacity: 0.95;
+}
+
+#workspaces button {
+    padding: 0 5px;
+}
+
+#tray menu {
+    background-color: @bg;
+}
+
+#tray > .passive {
+    -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+    -gtk-icon-effect: highlight;
+}
+
+#taskbar.empty {
+    background: transparent;
+    padding: 0;
+}
+
+#taskbar button {
+    padding: 0 5px;
+}
+
+#tray, #taskbar {
+    background-color: @dark-bg;
+}
+
+#battery.charging, #battery.plugged {
+    background-color: #A3BE8C;
+}
+
+#cpu.full,
+#memory.full,
+#temperature.critical,
+#network.disabled, #network.disconnected,
+#bluetooth.disabled, #bluetooth.off, #bluetooth.no-controller,
+#wireplumber.muted,
+#battery.warning, #battery.critical {
+    background-color: #EC7875;
+}
+
+#taskbar button.active {
+    background-color: #75A4CD;
+}
+
+#workspaces {
+    background-color: #D0CAD9;
+}
+
+#cpu {
+    background-color: #DEB8D7;
+}
+
+#custom-nvidia {
+    background-color: #B2C8E0;
+}
+
+#memory {
+    background-color: #D0CAD9;
+}
+
+#temperature {
+    background-color: #E2D2DD;
+}
+
+#clock {
+    background-color: #D7D5E3;
+}
+
+#network {
+    background-color: #D0CAD9;
+}
+
+#bluetooth {
+    background-color: #75A4CD;
+}
+
+#wireplumber {
+    background-color: #CAB9CE;
+}
+
+#backlight {
+    background-color: #DEB8D7;
+}
+
+#battery {
+    background-color: #B2C8E0;
+}

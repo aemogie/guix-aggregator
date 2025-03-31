@@ -7,6 +7,9 @@ This repository contains my dotfiles and Guix System literate configurations (wi
 
 I'm also managing Guix channels manually, which makes it easier to maintain a temporary Guix fork and avoids recompiling all Guix modules for trivial updates.  See =Usage= below and take a look at [[file:.envrc][.envrc]] and [[file:Makefile][Makefile]] if you are interested in my approach.
 
+** Screenshot
+[[file:files/plain/screenshot.png]]
+
 ** Structure
 + [[file:config][config]]: Guix System configurations.
 + [[file:external][external]]: External dependencies (Guix channels) saved as Git submodules.

@@ -620,64 +620,23 @@ To use NVK, mesa should be installed into a profile.
 
 #+name: niri-config
 #+begin_src scheme
-  (let ((filename "niri.kdl")
-        (light    (file-append light "/bin/light"))
-        (rofi     (file-append rofi-wayland "/bin/rofi"))
-        (swaylock (file-append swaylock-effects "/bin/swaylock"))
-        (wpctl    (file-append wireplumber "/bin/wpctl")))
-    (mixed-text-file
-     filename
-     (testament-file-content filename) "\n"
-     "prefer-no-csd\n"
-     "screenshot-path \"~/Library/Pictures/Screenshots/%Y%m%d-%H%M%S.png\"\n"
-     "binds {\n"
-     "    Mod+Shift+Q { close-window; }\n"
-     "    Mod+Left    { focus-column-left; }\n"
-     "    Mod+Down    { focus-window-down; }\n"
-     "    Mod+Up      { focus-window-up; }\n"
-     "    Mod+Right   { focus-column-right; }\n"
-
-     "    Mod+Shift+Left  { move-column-left; }\n"
-     "    Mod+Shift+Down  { move-window-down; }\n"
-     "    Mod+Shift+Up    { move-window-up; }\n"
-     "    Mod+Shift+Right { move-column-right; }\n"
-
-     "    Mod+WheelScrollDown       { focus-column-right; }\n"
-     "    Mod+WheelScrollUp         { focus-column-left; }\n"
-     "    Mod+Shift+WheelScrollDown { move-column-right; }\n"
-     "    Mod+Shift+WheelScrollUp   { move-column-left; }\n"
-
-     "    Mod+Comma  { consume-or-expel-window-left; }\n"
-     "    Mod+Period { consume-or-expel-window-right; }\n"
-
-     "    Mod+F       { maximize-column; }\n"
-     "    Mod+Shift+F { fullscreen-window; }\n"
-
-     "    Mod+C { center-column; }\n"
-     "    Mod+V       { toggle-window-floating; }\n"
-     "    Mod+Shift+V { switch-focus-between-floating-and-tiling; }\n"
-
-     "    Print      { screenshot; }\n"
-     "    Ctrl+Print { screenshot-screen; }\n"
-     "    Alt+Print  { screenshot-window; }\n"
-
-     "    XF86AudioRaiseVolume  allow-when-locked=true { spawn \"" wpctl "\" \"set-volume\" \"@DEFAULT_AUDIO_SINK@\" \"0.1+\" \"--limit\" \"1.0\"; }\n"
-     "    XF86AudioLowerVolume  allow-when-locked=true { spawn \"" wpctl "\" \"set-volume\" \"@DEFAULT_AUDIO_SINK@\" \"0.1-\"; }\n"
-     "    XF86AudioMute         allow-when-locked=true { spawn \"" wpctl "\" \"set-mute\"   \"@DEFAULT_AUDIO_SINK@\" \"toggle\"; }\n"
-     "    XF86AudioMicMute      allow-when-locked=true { spawn \"" wpctl "\" \"set-mute\"   \"@DEFAULT_AUDIO_SOURCE@\" \"toggle\"; }\n"
-     "    XF86MonBrightnessDown allow-when-locked=true { spawn \"" light "\" \"-U\" \"5\"; }\n"
-     "    XF86MonBrightnessUp   allow-when-locked=true { spawn \"" light "\" \"-A\" \"5\"; }\n"
-
-     "    Mod+Shift+E { spawn \"sh\" \"-c\" \"herd stop root && niri msg action quit\"; }\n"
-     "    Mod+Return { spawn \"emacsclient\" \"--create-frame\" \"--no-wait\"; }\n"
-     "    Mod+Space { spawn \"" rofi "\" \"-modes\" \"combi\" \"-show\" \"combi\"; }\n"
-     "    Mod+L { spawn \"" swaylock "\" \"--clock\" \"--daemonize\" \"--ignore-empty-password\" \"--image\" \"" (testament-file-object "115008128_p0.jpg") "\"; }\n"
-     "}\n"
-     "environment {\n"
-     "    DISPLAY \":233\"\n"
-     "}\n"
-     "spawn-at-startup \"" xwayland-satellite  "/bin/xwayland-satellite\" \":233\"\n"
-     "spawn-at-startup \"sh\" \"-c\" \"pgrep --uid $USER shepherd > /dev/null || shepherd\"\n"))
+  (with-imported-modules '((guix build utils))
+    (computed-file
+     "niri.kdl"
+     #~(begin
+         (use-modules (guix build utils))
+         (let ((inputs
+                '#$(list light
+                         rofi-wayland
+                         swaylock-effects
+                         wireplumber
+                         xwayland-satellite)))
+           (copy-file #$(testament-file-object "niri.kdl") #$output)
+           (substitute* #$output
+             (("\\$\\$LOCKSCREEN\\$\\$")
+              #$(testament-file-object "115008128_p0.jpg"))
+             (("\\$\\$(.*)\\$\\$" _ program)
+              (search-path inputs program)))))))
 #+end_src
 
 [[file:../files/plain/niri.kdl][niri.kdl]]
@@ -707,28 +666,27 @@ To use NVK, mesa should be installed into a profile.
 #+begin_src scheme :noweb-ref home-service
   (simple-service 'extra-fontconfig
       home-fontconfig-service-type
-    (let ((cjk "Chiron Hei HK VF")
-          (emoji "Noto Color Emoji")
-          (sans "SF Pro Text")
+    (let ((sans  "SF Pro Text")
           (serif "New York Medium")
-          (mono "Victor Mono"))
+          (mono  "Victor Mono")
+          (emoji "Noto Color Emoji"))
       `((alias
          (family "sans-serif")
          (prefer
           (family ,sans)
-          (family ,cjk)
+          (family "Chiron Hei HK VF")
           (family ,emoji)))
         (alias
          (family "serif")
          (prefer
           (family ,serif)
-          (family ,cjk)
+          (family "Chiron Sung HK VF")
           (family ,emoji)))
         (alias
          (family "monospace")
          (prefer
           (family ,mono)
-          (family ,cjk)
+          (family "Chiron Sung HK VF")
           (family ,emoji)))
 
         ,@(map (lambda (name)
@@ -846,6 +804,7 @@ home-emacs-service-type from [[https://issues.guix.gnu.org/64620][#64620]]
        (list emacs-gcmh
              emacs-no-littering
              emacs-debbugs
+             emacs-json-mode
              emacs-markdown-mode
              emacs-nftables-mode
              emacs-zig-mode))
@@ -1039,7 +998,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
   python-next
   rust
   `(,rust "cargo")
-  zig
+  zig-0.14
 #+end_src
 
 #+begin_src scheme :noweb-ref emacs-package
@@ -1061,7 +1020,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
                                       . ,(concat (getenv "XDG_CACHE_HOME")
                                                  "/ccls-cache")))))))))
                  ((zig-mode)
-                  . (#$(file-append zig-zls "/bin/zls")))))
+                  . (#$(file-append zig-zls-0.14 "/bin/zls")))))
               (add-to-list 'eglot-server-programs program))))
     (hooks
      (map (cut cons <> 'eglot-ensure)
@@ -1405,7 +1364,7 @@ Required for using Rime in minibuffer.
        (vterm-max-scrollback . 100000)
        (vterm-shell . ,(file-append fish "/bin/fish"))
        ;; Improve responsiveness.
-       (vterm-timer-delay . 0.01)))
+       (vterm-timer-delay . 0.05)))
     (extra-init
      (list #%(defun hako/vterm ()
                (interactive)
@@ -1425,7 +1384,6 @@ Required for using Rime in minibuffer.
                (let* ((default-directory (project-root (project-current t)))
                       (vterm-buffer-name (project-prefixed-buffer-name "vterm")))
                  (vterm arg)))))
-    (hooks '((vterm-mode . compilation-shell-minor-mode)))
     (keys-global '(("s-t" . hako/vterm)))
     (keys-local
      (list (emacs-keymap
@@ -1544,6 +1502,7 @@ Required for using Rime in minibuffer.
   #:use-module (gnu packages librewolf)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages mail)
+  #:use-module (gnu packages pulseaudio)
   #:use-module (gnu packages rust-apps)
   #:use-module (gnu packages security-token)
   #:use-module (gnu packages version-control)
@@ -1696,6 +1655,19 @@ Required for using Rime in minibuffer.
 
 [[file:../files/dotfiles/.config/l2md/config][~/.config/l2md/config]]
 
+** mako
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'mako
+      home-shepherd-service-type
+    (list (shepherd-service
+            (provision '(mako))
+            (requirement '(graphical-session wayland-display))
+            (start
+             #~(make-forkexec-constructor
+                (list #$(file-append mako "/bin/mako"))))
+            (stop #~(make-kill-destructor)))))
+#+end_src
+
 ** mcron
 #+begin_src scheme :noweb yes :noweb-ref home-service
   (service home-mcron-service-type
@@ -1777,6 +1749,41 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
      (syncthing-configuration
        (user "hako"))))
 #+end_src
+
+** waybar
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'waybar
+      home-shepherd-service-type
+    (list (shepherd-service
+            (provision '(waybar))
+            (requirement '(graphical-session wayland-display))
+            (start
+             #~(make-forkexec-constructor
+                (list #$(file-append waybar "/bin/waybar"))))
+            (stop #~(make-kill-destructor)))))
+#+end_src
+
+#+begin_src scheme :noweb yes :noweb-ref home-xdg-configuration-file
+  ("waybar/config.jsonc" ,<<waybar-config>>)
+#+end_src
+
+#+name: waybar-config
+#+begin_src scheme
+  (with-imported-modules '((guix build utils))
+    (computed-file
+     "waybar.jsonc"
+     #~(begin
+         (use-modules (guix build utils))
+         (let ((inputs '#$(list light pavucontrol wireplumber)))
+           (copy-file #$(testament-file-object "waybar.jsonc") #$output)
+           (substitute* #$output
+             (("\\$\\$(.*)\\$\\$" _ program)
+              (search-path inputs program)))))))
+#+end_src
+
+[[file:../files/plain/waybar.jsonc][waybar.jsonc]]
+
+[[file:../files/dotfiles/.config/waybar/style.css][~/.config/waybar/style.css]]
 
 ** zoxide
 #+begin_src scheme :noweb-ref home-fish-config
