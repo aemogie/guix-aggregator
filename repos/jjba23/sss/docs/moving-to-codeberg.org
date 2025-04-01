@@ -4,7 +4,7 @@ As I stand for my freedom and that of others, and want to avoid any ties to evil
 
 #+begin_src sh
   function ow_github_with_move_to_codeberg() {
-      cd ~/Ontwikkeling/Scratch/
+      cd ~/scratch/
       git clone "git@personal.github.com:jjba23/$1.git"
       cd "$1"
       rm -rf ./*

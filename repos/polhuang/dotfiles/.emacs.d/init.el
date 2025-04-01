@@ -213,7 +213,8 @@
 
 ;; fonts
 (defvar my/font-options
-  '(("Source Code Pro" . 125)
+  '(("Aporetic Sans Mono" . 125)
+    ("Source Code Pro" . 125)
     ("DejaVu Sans Mono" . 125)
     ("Fira Code" . 125)
     ("IBM Plex Mono" . 125)
@@ -875,7 +876,7 @@ Use prefix argument ARG for number of lines, otherwise use default."
   _p_: pomodoro
   _q_: go away
   _s_: search org files
-  _w_: windows + framse
+  _w_: windows + frames
 "
   ("C" copilot-mode :color blue)
   ("e" eat :color blue)
@@ -1400,6 +1401,14 @@ T - tag prefix
   (setq xref-show-xrefs-function #'consult-xref
 	xref-show-definitions-function #'consult-xref)
 
+  :custom
+  (consult-buffer-sources '(consult--source-buffer
+                            consult--source-recent-file
+                            consult--source-file-register
+                            consult--source-bookmark
+                            consult--source-project-buffer-hidden
+                            consult--source-project-recent-file-hidden
+                            consult--source-project-root-hidden))
   :config
   (consult-customize
    consult-theme :preview-key '(:debounce 0.1 any)

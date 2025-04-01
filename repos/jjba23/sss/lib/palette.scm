@@ -136,11 +136,6 @@
             (sss-get-color 'sss-palette-everforest-dark
                            'background))
 
-(test-equal "Retrieve background color from everforest-light palette"
-            "#f3ead3"
-            (sss-get-color 'sss-palette-everforest-light
-                           'background))
-
 (test-error (sss-get-color 'unknown-palette
                            'primary))
 

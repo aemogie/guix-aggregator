@@ -28,7 +28,6 @@
   #:use-module (nongnu packages mozilla)
   #:use-module (polterguix packages cli)
   #:use-module (polterguix packages desktop)
-  #:use-module (polterguix packages hyprland)
   ;;  #:use-module (gnu services)
   ;;  #:use-module (gnu services networking)
    
@@ -73,7 +72,7 @@
   (home-environment
    (packages (list asciiquarium
                    btop
-                   emacs-next-pgtk-xwidgets
+                   emacs-next-pgtk
                    emacs-guix
                    emacs-jinx
                    firefox
@@ -140,8 +139,20 @@
           (simple-service 'dotfiles
                           home-xdg-configuration-files-service-type
                           `(("hypr/hyprland.conf"  ,(local-file "../files/hypr/hyprland-akhetaten.conf"))
-                            ("hypr/hyprland-base.conf"  ,(local-file "../files/hypr/hyprland-base.conf"))))))))
+                            ("hypr/hyprland-base.conf"  ,(local-file "../files/hypr/hyprland-base.conf"))))
+
+          (simple-service 'add-nonguix-substitutes
+                               guix-service-type
+                               (guix-extension
+                                (substitute-urls
+                                 (append (list "https://substitutes.nonguix.org")
+                                         %default-substitute-urls))
+                                (authorized-keys
+                                 (append (list (plain-file "nonguix.pub"
+                                                           "(public-key (ecc (curve Ed25519) (q #C1FD53E5D4CE971933EC50C9F307AE2171A2D3B52C804642A7A35F84F3A4EA98#)))"))
+                                         %default-authorized-guix-keys))))))))
 
 (if (equal? (getenv "GUIX_TARGET") "home")
     home
     system)
+

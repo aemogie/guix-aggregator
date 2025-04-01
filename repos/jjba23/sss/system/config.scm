@@ -204,7 +204,7 @@
   (firmware (list linux-firmware))
   (sudoers-file (plain-file "sudoers"
                             (sss-sudoers)))
-
+  (mapped-devices sss-mapped-devices)
   (file-systems (append sss-filesystems %base-file-systems))
   (users sss-users)
   (packages (append (sss-system-packages #:per-host-packages

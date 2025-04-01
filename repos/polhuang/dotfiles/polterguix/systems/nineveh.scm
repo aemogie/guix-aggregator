@@ -7,13 +7,18 @@
              (gnu packages emacs)
              (gnu packages emacs-xyz)
              (gnu packages fcitx5)
+             (gnu packages fonts)
+             (gnu packages gnome-xyz)
+             (gnu packages guile)
              (gnu packages librewolf)
+             (gnu packages shells)
              (gnu packages shellutils)
              (gnu packages terminals)
              (gnu services)
-             (guix gexp)
              (gnu home services)
              (gnu home services shells)
+             (guix gexp)
+             (nongnu packages mozilla)
              (polterguix packages cli)
              ;; (polterguix packages emacs)
              )
@@ -28,9 +33,14 @@
              fcitx5-material-color-theme
              fcitx5-qt
              fcitx5-rime
+             firefox
+             font-aporetic
+             guile-next
              kitty ;; locale errors (tab-completion problem with unicode characters) when kitty isn't installed with guix package manager
              libime
              librewolf
+             papirus-icon-theme
+             zsh
              zsh-completions
              zsh-autosuggestions
              zsh-syntax-highlighting
@@ -57,7 +67,15 @@
                                     "../files/.zprofile"
                                     "zprofile")))))
 
+
          (simple-service 'dotfiles
                           home-xdg-configuration-files-service-type
                           `(("hypr/hyprland.conf"  ,(local-file "../files/hypr/hyprland-nineveh.conf"))
-                            ("hypr/hyprland-base.conf"  ,(local-file "../files/hypr/hyprland-base.conf")))))))
+                            ("hypr/hyprland-base.conf"  ,(local-file "../files/hypr/hyprland-base.conf"))))
+
+         (simple-service 'guix-substitute-env-vars-service
+		home-environment-variables-service-type
+		`(("GUIX_AUTHORIZED_KEYS" . "$HOME/.config/guix/nonguix.pub")
+                  ("GUIX_SUBSTITUTE_URLS" . "https://substitutes.nonguix.org https://ci.guix.gnu.org")))
+         
+         )))

@@ -50,5 +50,5 @@
 
 (for-each (lambda (x)
             (syscall (format #f
-                      "[ -d $HOME/Ontwikkeling/Persoonlijk/~a ] || git clone git@codeberg.org:jjba23/~a.git $HOME/Ontwikkeling/Persoonlijk/~a"
+                      "[ -d $HOME/hacking/~a ] || git clone git@codeberg.org:jjba23/~a.git $HOME/hacking/~a"
                       x x x))) sss-joe-clone-repos)

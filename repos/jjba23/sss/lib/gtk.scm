@@ -77,6 +77,9 @@
                                            ((equal? 'sss-palette-solarized-light
                                                     palette)
                                             0)
+                                           ((equal? 'sss-palette-everforest-light
+                                                    palette)
+                                            0)
                                            (else 1)))))
   (export sss-gtk3-config))
 
@@ -132,6 +135,9 @@
                                                     palette)
                                             1)
                                            ((equal? 'sss-palette-solarized-light
+                                                    palette)
+                                            0)
+                                           ((equal? 'sss-palette-everforest-light
                                                     palette)
                                             0)
                                            (else 1)))))

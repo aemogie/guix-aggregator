@@ -170,134 +170,6 @@ https://youtu.be/wZUes_10US8
 
 -----
 
-* Per host - per-host.scm
-
-It is *REQUIRED* to include a ~per-host.scm~ in the root of this project, which is excluded from Git, and will determine certain settings for your own machine.
-Find here a reference configuration with what is required.
-
-#+begin_src  scheme
-    (use-modules (gnu)
-                 (gnu packages))
-
-    ;; system language
-    (define sss-lang "en_US")
-
-    ;; system timezone
-    (define sss-timezone "Europe/Amsterdam")
-
-    ;; system keyboard layout
-    (define sss-keyboard-layout "us")
-
-    ;; caps to control enabled
-    (define sss-caps-to-ctrl
-      #t)
-
-    ;; system hostname
-    (define sss-hostname "gnusystem")
-
-    ;; disk partitioning
-    (define sss-filesystems
-      (list (file-system
-             (device "/dev/nvme0n1p3")
-             (mount-point "/")
-             (type "ext4"))
-            (file-system
-             (device "/dev/nvme0n1p1")
-             (mount-point "/boot/efi")
-             (type "vfat"))))
-
-  ;; bootloader configuration
-  (define sss-bootloader-configuration
-    (bootloader-configuration
-      (bootloader grub-efi-bootloader)
-      (targets '("/boot/efi"))))
-
-    ;; packages that should only be installed in the current host
-    ;; or (define sss-per-host-packages '())
-    (define sss-per-host-packages '(
-                                    ;; AMD non-free drivers
-                                    "amd-microcode" "amdgpu-firmware"
-                                    ;; Games
-                                    "prismlauncher" "steam")
-      )
-
-    ;; location where you cloned SSS Git repository
-    (define sss-clone-dir
-      "$HOME/Ontwikkeling/Persoonlijk/sss")
-
-    ;;
-    ;; Define the active palette for all users accounts
-    ;; You should reconfigure and ideally restart the system
-    ;; for all changes to take effect
-    ;;
-    ;; Note: You could choose on a per-user basis to set a fixed palette
-    ;; and not follow system wide, by just redefining this value
-    ;;
-    ;; Possible values are:
-    ;;   - sss-palette-ef-bio
-    ;;   - sss-palette-ef-cyprus
-    ;;   - sss-palette-ef-dream
-    ;;   - sss-palette-heavy-metal
-    ;;   - sss-palette-solarized-light
-    ;;   - sss-palette-ef-autumn
-    ;;   - sss-palette-everforest-dark
-    ;;   - sss-palette-everforest-light
-    ;;
-    (define-public sss-palette
-      'sss-palette-ef-dream)
-
-    ;; Nix packages to install
-    (define-public sss-nixpkgs
-      '("yaml-language-server" "bash-language-server"
-        "monaspace"
-        "jdt-language-server"
-        "nil"
-        "black"
-        "pyright"
-        "marksman"
-        "_1password-gui"
-        "_1password-cli"
-        "stack"
-        "sbt"
-        "scala_2_13"
-        "thunderbird"
-        "postman"
-        "vscode-langservers-extracted"
-        "nwg-look"
-        "krew"
-        "mermaid-cli"
-        "jetbrains.idea-community"))
-
-    ;; Flatpak remotes to add to the user
-    (define sss-flatpak-user-remotes '((flathub . "https://dl.flathub.org/repo/flathub.flatpakrepo")))
-
-    ;; Flatpak packages to install
-    (define sss-flatpak-pkgs '("app.drey.Warp" "com.usebottles.bottles"))
-
-    ;; Additional Labwc startup commands on per-host basis, byt default '() , see example:
-    (define sss-labwc-extra-startups
-    '("wlr-randr --output eDP-1 --scale 1.5  >/dev/null 2>&1 &"))
-
-    ;; Hyprland monitor configurations as a list of strings (lines)
-    ;;
-    ;; you can have a sensible default like "monitor = , preferred, auto, 1"
-    ;; or more detailed config like "monitor=DP-1,1920x1080@144,0x0,1"
-    ;; see https://wiki.hyprland.org/hyprland-wiki/pages/Configuring/Monitors/
-    ;;
-    (define sss-hyprland-monitors
-    '("monitor = , preferred, auto, 1"))
-
-    ;; Additional Hyprland startup commands on per-host basis, by default '() , see example:
-    (define sss-hyprland-extra-startups
-    '("sudo warp-svc" "sudo mkdir -p /usr/share/warp/images"
-      "sleep 1 && warp-taskbar"))
-
-
-#+end_src
-
-
------
-
 * Bootstrapping
 
 It's possible you need to some manual installations, and temporary workarounds, in order to install ~sss~ on a brand-new Guix installation.
@@ -350,7 +222,159 @@ I would recommend to then use a web browser and visit the web version of this ma
 
 Once you have a working Guix base installation on your machine, you are ready to go about installing SSS.
 
+* Per host - per-host.scm
+
+It is *REQUIRED* to include a ~per-host.scm~ in the root of this project, which is excluded from Git, and will determine certain settings for your own machine.
+Find here a reference configuration with what is required.
+
+#+begin_src  scheme
+  (use-modules (gnu)
+               (gnu packages))
+
+  ;; system language
+  (define sss-lang "en_US")
+
+  ;; system timezone
+  (define sss-timezone "Europe/Amsterdam")
+
+  ;; system keyboard layout
+  (define sss-keyboard-layout "us")
+
+  ;; caps to control enabled
+  (define sss-caps-to-ctrl
+    #t)
+
+  ;; system hostname
+  (define sss-hostname "gnusystem")
+
+  ;; disk partitioning
+
+  ;; mapped devices for advanced configs, by default is empty '()
+  ;; check /etc/config.scm after installing Guix and copy, or you know what to do if
+  ;; you are a more advanced user
+  (define sss-mapped-devices
+    (list (mapped-device
+           (source (uuid "e84af212-b13b-4163-9165-57bd6f1b787d"))
+           (target "rootfs")
+           (type luks-device-mapping))))
+
+  ;; using mapped device of encrypted btrfs
+  (define sss-filesystems
+    (list (file-system
+           (mount-point "/")
+           (device "/dev/mapper/rootfs")
+           (type "btrfs")
+           (dependencies sss-mapped-devices))
+          (file-system
+           (device "/dev/nvme0n1p1")
+           (mount-point "/boot/efi")
+           (type "vfat"))))
+
+  ;; alternatively for simple ext4 (legacy configurations)
+  ;;  (define sss-filesystems
+  ;;    (list (file-system
+  ;;           (device "/dev/nvme0n1p3")
+  ;;           (mount-point "/")
+  ;;           (type "ext4"))
+  ;;          (file-system
+  ;;           (device "/dev/nvme0n1p1")
+  ;;           (mount-point "/boot/efi")
+  ;;           (type "vfat"))))
+
+  ;; bootloader configuration
+  (define sss-bootloader-configuration
+    (bootloader-configuration
+     (bootloader grub-efi-bootloader)
+     (targets '("/boot/efi"))))
+
+  ;; packages that should only be installed in the current host
+  ;; or (define sss-per-host-packages '())
+  (define sss-per-host-packages '(
+                                  ;; AMD non-free drivers
+                                  "amd-microcode" "amdgpu-firmware"
+                                  ;; Games
+                                  "prismlauncher" "steam")
+    )
+
+  ;; location where you cloned SSS Git repository
+  (define sss-clone-dir
+    "$HOME/hacking/sss")
+
+  ;;
+  ;; Define the active palette for all users accounts
+  ;; You should reconfigure and ideally restart the system
+  ;; for all changes to take effect
+  ;;
+  ;; Note: You could choose on a per-user basis to set a fixed palette
+  ;; and not follow system wide, by just redefining this value
+  ;;
+  ;; Possible values are:
+  ;;   - sss-palette-ef-bio
+  ;;   - sss-palette-ef-cyprus
+  ;;   - sss-palette-ef-dream
+  ;;   - sss-palette-heavy-metal
+  ;;   - sss-palette-solarized-light
+  ;;   - sss-palette-ef-autumn
+  ;;   - sss-palette-everforest-dark
+  ;;   - sss-palette-everforest-light
+  ;;
+  (define-public sss-palette
+    'sss-palette-ef-dream)
+
+  ;; Nix packages to install
+  (define-public sss-nixpkgs
+    '("yaml-language-server" "bash-language-server"
+      "monaspace"
+      "jdt-language-server"
+      "nil"
+      "black"
+      "pyright"
+      "marksman"
+      "_1password-gui"
+      "_1password-cli"
+      "stack"
+      "sbt"
+      "scala_2_13"
+      "thunderbird"
+      "postman"
+      "vscode-langservers-extracted"
+      "nwg-look"
+      "krew"
+      "mermaid-cli"
+      "jetbrains.idea-community"))
+
+  ;; Flatpak remotes to add to the user
+  (define sss-flatpak-user-remotes '((flathub . "https://dl.flathub.org/repo/flathub.flatpakrepo")))
+
+  ;; Flatpak packages to install
+  (define sss-flatpak-pkgs '("app.drey.Warp" "com.usebottles.bottles"))
+
+  ;; Additional Labwc startup commands on per-host basis, byt default '() , see example:
+  (define sss-labwc-extra-startups
+    '("wlr-randr --output eDP-1 --scale 1.5  >/dev/null 2>&1 &"))
+
+  ;; Hyprland monitor configurations as a list of strings (lines)
+  ;;
+  ;; you can have a sensible default like "monitor = , preferred, auto, 1"
+  ;; or more detailed config like "monitor=DP-1,1920x1080@144,0x0,1"
+  ;; see https://wiki.hyprland.org/hyprland-wiki/pages/Configuring/Monitors/
+  ;;
+  (define sss-hyprland-monitors
+    '("monitor = , preferred, auto, 1"))
+
+  ;; Additional Hyprland startup commands on per-host basis, by default '() , see example:
+  (define sss-hyprland-extra-startups
+    '("sudo warp-svc" "sudo mkdir -p /usr/share/warp/images"
+      "sleep 1 && warp-taskbar"))
+
+
+#+end_src
+
+
 -----
+
+
+
 
 ** User Management
 
@@ -498,152 +522,6 @@ Installing all wanted Nix packages can be done with ~make npi~ for example and u
 
 -----
 
-* For  computer scientists
-
-** Development environments, manifests and flakes
-
-I would encourage that all your software projects have a reproducible build process, and preferably use *Guix* or Nix to declare a ~manifest.scm~ or ~flake.nix~.
-
-This way, and leveraging ~direnv~ and ~.envrc~ we can enter in our editor (Emacs, VSCode, IntelliJ...) in a reproducible build environment and dependencies.
-
-*** Guix and manifests
-
-Using Guix is fantastic , and for me it's my first choice to build software with:
-
-#+begin_src scheme
-  (use-modules (guix packages)
-               (gnu)
-               ;;;
-               ;;; ...
-               ;;;
-               (gnu packages autotools)
-               ((guix licenses)
-                #:prefix license:))
-
-  (define-public guile-uuid
-    (let ((commit "64002d74025f577e1eeea7bc51218a2c7929631f")
-          (revision "0"))
-      (package
-        (name "guile-uuid")
-        (version (git-version "0.0.0" revision commit))
-        (source
-         (origin
-           (method git-fetch)
-           (uri (git-reference
-                 (url "https://codeberg.org/elb/guile-uuid.git")
-                 (commit commit)))
-           (file-name (git-file-name name version))
-           (sha256
-            (base32 "1q6dqm2hzq75aa5mrrwgqdml864pdrxc98j7pyj1y0827phnzjfj"))))
-        (build-system guile-build-system)
-        (native-inputs (list guile-3.0
-                             (specification->package "guile-gcrypt")))
-        (home-page "https://codeberg.org/elb/guile-uuid")
-        (synopsis
-         "Guile-UUID is a UUID generation and manipulation module for GNU Guile.")
-        (description
-         "This package implements RFC 9562 UUIDs, and can generate versions 1 and 3–8 from that specification.
-          It provides parsing for UUIDs in standard hex-and-dash format of any variant and version.
-          It can also query the variant and version of UUIDs from the RFC.
-          Simple routines for converting between binary and hex-and-dash string UUIDs are included.")
-        (license license:gpl3+))))
-
-  (define-public guile-hygguile
-    (let ((commit "4b9989caa65ebacf56c0e48df68f812daf254e71")
-          (base32-sha-signature
-           "1r5i9fcc4syf4p7xr1b7ml5v93pnkmxn2dy0m1qyvd6y2vbbhxjf")
-          (revision "0"))
-      (package
-        (name "guile-hygguile")
-        (version (git-version "0.0.0" revision commit))
-        (source
-         (origin
-           (method git-fetch)
-           (uri (git-reference
-                 (url "https://codeberg.org/jjba23/hygguile.git")
-                 (commit commit)))
-           (file-name (git-file-name name version))
-           (sha256
-            (base32 base32-sha-signature))))
-        (build-system guile-build-system)
-        (native-inputs (list guile-3.0))
-        (arguments
-         (list
-          #:source-directory "src"))
-        (home-page "https://codeberg.org/jjba23/hygguile")
-        (synopsis
-         "SXML and TailwindCSS UI component library for Lisp (Guile Scheme) software projects")
-        (description
-         "Cozy and professional user-interfaces for everyone.
-          SXML and TailwindCSS UI component library for Lisp (Guile Scheme) software projects.
-          hygge + guile = hygguile")
-        (license license:lgpl3+))))
-
-  (packages->manifest (list (specification->package "make")
-                            (specification->package "gettext")
-                            guile-next
-                            guile-uuid
-                            guile-ares-rs
-                            artanis
-                            guile-hygguile
-                            guile-dbi
-                            guile-dbd-sqlite3))
-#+end_src
-
-*** Nix and flakes
-Using Nix (and flakes) allows one to quickly spin up and manage multiple reproducible development environments, as well as development shells.
-
-Read more about Nix here: https://nixos.org/.
-
-In a nutshell you get a "per project" isolated environment, allowing you to for example seamlessly switch between Scala versions for different projects.
-
-You can search for packages (80k+) here: https://search.nixos.org/packages.
-
-With this setup you don't need to install things globally, just on a per project level, allowing more flexibility and reproducibility.
-
-See here how a simple Scala 2.13 development flake looks like.
-#+begin_src nix
-  {
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    systems.url = "github:nix-systems/default";
-  };
-  outputs = { systems, nixpkgs, ... }:
-    let
-      eachSystem = f:
-        nixpkgs.lib.genAttrs (import systems)
-        (system: f nixpkgs.legacyPackages.${system});
-    in {
-      devShells = eachSystem (pkgs: {
-        default = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            scala_2_13
-            jdk21
-            metals
-            sbt
-            scalafmt
-            scalafix
-            scala-cli
-            coursier
-          ];
-        };
-      });
-    };
-}
-#+end_src
-
-In order to use this flake, you can use direnv: https://github.com/direnv/direnv and combine it with a ~.envrc~ to allow your editor to enter this isolated environment.
-
-Assuming you place the Nix flake above at the root of a repo, at ~flake.nix~, you can have a ~.envrc~ file with the contents:
-
-#+begin_src
-  use flake
-#+end_src
-
-You will then just do a one time ~direnv allow~ and now your editor will magically load the right env variables and tools from the environment.
-
-
-
 * Flatpaks
 
 SSS takes care of flatpak origins and installing and maintaining your flatpaks up to date, all programatically and with Lisp.
@@ -718,8 +596,8 @@ Currently this works on a per-directory basis, and is configured by default to m
 TODO: make this more configurable.
 
 My settings are:
-- ~$HOME/Ontwikkeling/Persoonlijk~ is where I keep my personal development projects. These are uploaded to Codeberg, and use their own gitconfig, email address, default git message, GPG key, and SSH keys.
-- ~$HOME/Ontwikkeling/Werk~ is where I keep my work projects. These are uploaded to Github, and use their own gitconfig, email address, default git message, GPG key, and SSH keys.
+- ~$HOME/hacking~ is where I keep my personal development projects. These are uploaded to Codeberg, and use their own gitconfig, email address, default git message, GPG key, and SSH keys.
+- ~$HOME/work~ is where I keep my work projects. These are uploaded to Github, and use their own gitconfig, email address, default git message, GPG key, and SSH keys.
 
 
 ------
@@ -1034,3 +912,149 @@ You should have then booted into a more familiar environment. If the user you lo
 Good luck!
 
 ------
+* Software engineering
+
+** Development environments, manifests and flakes
+
+I would encourage that all your software projects have a reproducible build process, and preferably use *Guix* or Nix to declare a ~manifest.scm~ or ~flake.nix~.
+
+This way, and leveraging ~direnv~ and ~.envrc~ we can enter in our editor (Emacs, VSCode, IntelliJ...) in a reproducible build environment and dependencies.
+
+*** Guix and manifests
+
+Using Guix is fantastic , and for me it's my first choice to build software with:
+
+#+begin_src scheme
+  (use-modules (guix packages)
+               (gnu)
+               ;;;
+               ;;; ...
+               ;;;
+               (gnu packages autotools)
+               ((guix licenses)
+                #:prefix license:))
+
+  (define-public guile-uuid
+    (let ((commit "64002d74025f577e1eeea7bc51218a2c7929631f")
+          (revision "0"))
+      (package
+        (name "guile-uuid")
+        (version (git-version "0.0.0" revision commit))
+        (source
+         (origin
+           (method git-fetch)
+           (uri (git-reference
+                 (url "https://codeberg.org/elb/guile-uuid.git")
+                 (commit commit)))
+           (file-name (git-file-name name version))
+           (sha256
+            (base32 "1q6dqm2hzq75aa5mrrwgqdml864pdrxc98j7pyj1y0827phnzjfj"))))
+        (build-system guile-build-system)
+        (native-inputs (list guile-3.0
+                             (specification->package "guile-gcrypt")))
+        (home-page "https://codeberg.org/elb/guile-uuid")
+        (synopsis
+         "Guile-UUID is a UUID generation and manipulation module for GNU Guile.")
+        (description
+         "This package implements RFC 9562 UUIDs, and can generate versions 1 and 3–8 from that specification.
+          It provides parsing for UUIDs in standard hex-and-dash format of any variant and version.
+          It can also query the variant and version of UUIDs from the RFC.
+          Simple routines for converting between binary and hex-and-dash string UUIDs are included.")
+        (license license:gpl3+))))
+
+  (define-public guile-hygguile
+    (let ((commit "4b9989caa65ebacf56c0e48df68f812daf254e71")
+          (base32-sha-signature
+           "1r5i9fcc4syf4p7xr1b7ml5v93pnkmxn2dy0m1qyvd6y2vbbhxjf")
+          (revision "0"))
+      (package
+        (name "guile-hygguile")
+        (version (git-version "0.0.0" revision commit))
+        (source
+         (origin
+           (method git-fetch)
+           (uri (git-reference
+                 (url "https://codeberg.org/jjba23/hygguile.git")
+                 (commit commit)))
+           (file-name (git-file-name name version))
+           (sha256
+            (base32 base32-sha-signature))))
+        (build-system guile-build-system)
+        (native-inputs (list guile-3.0))
+        (arguments
+         (list
+          #:source-directory "src"))
+        (home-page "https://codeberg.org/jjba23/hygguile")
+        (synopsis
+         "SXML and TailwindCSS UI component library for Lisp (Guile Scheme) software projects")
+        (description
+         "Cozy and professional user-interfaces for everyone.
+          SXML and TailwindCSS UI component library for Lisp (Guile Scheme) software projects.
+          hygge + guile = hygguile")
+        (license license:lgpl3+))))
+
+  (packages->manifest (list (specification->package "make")
+                            (specification->package "gettext")
+                            guile-next
+                            guile-uuid
+                            guile-ares-rs
+                            artanis
+                            guile-hygguile
+                            guile-dbi
+                            guile-dbd-sqlite3))
+#+end_src
+
+*** Nix and flakes
+Using Nix (and flakes) allows one to quickly spin up and manage multiple reproducible development environments, as well as development shells.
+
+Read more about Nix here: https://nixos.org/.
+
+In a nutshell you get a "per project" isolated environment, allowing you to for example seamlessly switch between Scala versions for different projects.
+
+You can search for packages (80k+) here: https://search.nixos.org/packages.
+
+With this setup you don't need to install things globally, just on a per project level, allowing more flexibility and reproducibility.
+
+See here how a simple Scala 2.13 development flake looks like.
+#+begin_src nix
+  {
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    systems.url = "github:nix-systems/default";
+  };
+  outputs = { systems, nixpkgs, ... }:
+    let
+      eachSystem = f:
+        nixpkgs.lib.genAttrs (import systems)
+        (system: f nixpkgs.legacyPackages.${system});
+    in {
+      devShells = eachSystem (pkgs: {
+        default = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            scala_2_13
+            jdk21
+            metals
+            sbt
+            scalafmt
+            scalafix
+            scala-cli
+            coursier
+          ];
+        };
+      });
+    };
+}
+#+end_src
+
+In order to use this flake, you can use direnv: https://github.com/direnv/direnv and combine it with a ~.envrc~ to allow your editor to enter this isolated environment.
+
+Assuming you place the Nix flake above at the root of a repo, at ~flake.nix~, you can have a ~.envrc~ file with the contents:
+
+#+begin_src
+  use flake
+#+end_src
+
+You will then just do a one time ~direnv allow~ and now your editor will magically load the right env variables and tools from the environment.
+
+
+

@@ -1,4 +1,4 @@
-(define-module (polterguix systems core-system)
+(define-module (polterguix systems core-system-fallback)
   #:use-module (gnu)
   #:use-module (gnu system)
   #:use-module (gnu system privilege)
@@ -36,7 +36,7 @@
   #:use-module (polterguix packages hyprland)
   #:use-module (rosenthal packages wm))
 
-(define-public core-operating-system
+(define-public core-operating-system-fallback
   (operating-system
    (host-name "akhetaten")
    (kernel linux)
@@ -211,4 +211,4 @@
      
             %base-services))))
 
-core-operating-system
+core-operating-system-fallback

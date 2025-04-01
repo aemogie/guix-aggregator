@@ -110,13 +110,13 @@
                    (sss-mako-svc #:palette sss-palette)
                    (sss-qutebrowser-svc #:palette sss-palette)
                    (sss-emacs-svc #:palette sss-palette
-                    #:user-name "Joe"
-                    #:user-full-name "Josep Bigorra"
-                    #:user-initials "JJBA"
-                    #:user-email "jjbigorra@gmail.com"
-                    #:clone-dir sss-clone-dir
-                    #:notes-roam-dir
-                    "$HOME/Ontwikkeling/Persoonlijk/private-notes/Roam")
+                                  #:user-name "Joe"
+                                  #:user-full-name "Josep Bigorra"
+                                  #:user-initials "JJBA"
+                                  #:user-email "jjbigorra@gmail.com"
+                                  #:clone-dir sss-clone-dir
+                                  #:notes-roam-dir
+                                  "$HOME/hacking/private-notes/Roam")
                    (sss-nix-svc)
                    (sss-qt6-svc #:palette sss-palette)
                    (sss-containers-svc)

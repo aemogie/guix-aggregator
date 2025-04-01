@@ -48,6 +48,10 @@
 (define sss-hostname
   "gnusystem")
 
+;; mapped devices (file systems)
+(define sss-mapped-devices
+  '())
+
 ;; bootloader configuration
 (define sss-bootloader-configuration
   (bootloader-configuration
@@ -56,7 +60,7 @@
 
 ;; location where you cloned SSS Git repository
 (define sss-clone-dir
-  "$HOME/Ontwikkeling/Persoonlijk/sss")
+  "$HOME/hacking/sss")
 
 ;; packages that should only be installed in the current host
 (define sss-per-host-packages

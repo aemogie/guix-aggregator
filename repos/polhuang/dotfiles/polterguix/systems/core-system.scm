@@ -1,4 +1,4 @@
-(define-module (polterguix systems core-system)
+define-module (polterguix systems core-system)
   #:use-module (gnu)
   #:use-module (gnu system)
   #:use-module (gnu system privilege)
@@ -11,7 +11,7 @@
   ;; #:use-module (gnu services guix)
   #:use-module (gnu services networking)
   #:use-module (gnu services nix)
-  #:use-module (gnu services ssh)
+  ;; #:use-module (gnu services ssh)
   #:use-module (gnu services sound) 
   #:use-module (gnu services xorg)
   
@@ -31,10 +31,12 @@
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages video)
   #:use-module (gnu packages vim)
+  #:use-module (gnu packages wm)
   #:use-module (gnu packages xdisorg)
   
   #:use-module (nongnu packages linux)
-  #:use-module (nongnu system linux-initrd)
+#:use-module (nongnu system linux-initrd)
+  #:use-module (rosenthal packages wm)
 
   
 )
@@ -47,14 +49,15 @@
    (firmware (list linux-firmware))
    (initrd microcode-initrd)
    (timezone "America/Chicago")
-   (keyboard-layout (keyboard-layout "us"))			
    (locale "en_US.utf8")
    
 
    ;; uefi grub with efi
    (bootloader (bootloader-configuration
                 (bootloader grub-efi-bootloader)
-                (targets '("/boot/efi"))))
+                
+                (targets '("/boot/efi"))
+                (keyboard-layout (keyboard-layout "us"))))
 
    (file-systems (cons* (file-system
                          (mount-point "/tmp")
@@ -62,9 +65,6 @@
                          (type "tmpfs")
                          (check? #f))
                         %base-file-systems))
-
-   (swap-devices (list (swap-space
-			(target "/swap/swapfile"))))
 
    ;; users
    (users (append (list (user-account
@@ -105,6 +105,7 @@
                     font-awesome
                     fuse-exfat
                     git
+                    hyprland
                     libva-utils
                     ntfs-3g
                     solaar
@@ -112,90 +113,95 @@
                     vim
                     zsh
                     %base-packages))
-   (services
-    (append (list
+   
+   (services (append (list
+                      ;; screen lockers
+                      (service screen-locker-service-type
+                               (screen-locker-configuration
+                                (name "slock")
+                                (program (file-append slock "/bin/slock"))))
+                      (service screen-locker-service-type
+                               (screen-locker-configuration
+                                (name "xlock")
+                                (program (file-append xlockmore "/bin/xlock"))))
+                      
+                      ;; add udev rules for MTP devices so that non-root users can access
+                      ;; them.
+                      (simple-service 'mtp udev-service-type (list libmtp))
+                      ;; add udev rules for scanners.
+                      (service sane-service-type)
 
-      ;; screen lockers
-      (service screen-locker-service-type
-               (screen-locker-configuration
-                (name "slock")
-                (program (file-append slock "/bin/slock"))))
-      (service screen-locker-service-type
-               (screen-locker-configuration
-                (name "xlock")
-                (program (file-append xlockmore "/bin/xlock"))))
-      
-      ;; add udev rules for MTP devices so that non-root users can access
-      ;; them.
-      (simple-service 'mtp udev-service-type (list libmtp))
-      ;; add udev rules for scanners.
-      (service sane-service-type)
-      ;; add polkit rules so that non-root users in the wheel group can
-      ;; perform admin tasks
-      polkit-wheel-service
-         
-      ;; allow desktop users to also mount NTFS and NFS file systems
-      ;; without root.
-      (simple-service 'mount-setuid-helpers privileged-program-service-type
-                      (map file-like->setuid-program
-                           (list (file-append nfs-utils "/sbin/mount.nfs")
-                                 (file-append ntfs-3g "/sbin/mount.ntfs-3g"))))
-      
-      ;; volatile read-write file system mounted at /var/lib/gdm,
-      ;; to avoid GDM stale cache and permission issues.
-      gdm-file-system-service
-      
-      ;; global fontconfig cache directory can sometimes contain
-      ;; stale entries, possibly referencing fonts that have been GC'd,
-      ;; so mount it read-only.
-      fontconfig-file-system-service
-      
-      ;; networkManager and its applet.
-      (service network-manager-service-type)
-      (service wpa-supplicant-service-type)    ;needed by NetworkManager
-      (simple-service 'network-manager-applet
-                      profile-service-type
-                      (list network-manager-applet))
-      (service modem-manager-service-type)
-      (service usb-modeswitch-service-type)
-      
-      ;; d-Bus clique
-      (service avahi-service-type)
-      (service udisks-service-type)
-      (service upower-service-type)
-      (service accountsservice-service-type)
-      (service cups-pk-helper-service-type)
-      (service colord-service-type)
-      (service geoclue-service-type)
-      (service polkit-service-type)
-      (service elogind-service-type)
-      (service dbus-root-service-type)
 
-      (service bluetooth-service-type
-               (bluetooth-configuration
-                (auto-enable? #t)))      
-      (service ntp-service-type)
-      (service x11-socket-directory-service-type)
-      (service pulseaudio-service-type)
-      (service alsa-service-type)
-      (service gnome-desktop-service-type)
-      (service gnome-keyring-service-type)
-      (service openssh-service-type)
-      (service tor-service-type)
-      (service cups-service-type)
-      (set-xorg-configuration
-       (xorg-configuration (keyboard-layout keyboard-layout)))
-      (service nix-service-type)
-      (simple-service 'add-nonguix-substitutes
-                               guix-service-type
-                               (guix-extension
-                                (substitute-urls
-                                 (append (list "https://substitutes.nonguix.org")
-                                         %default-substitute-urls))
-                                (authorized-keys
-                                 (append (list (plain-file "nonguix.pub"
-                                                           "(public-key (ecc (curve Ed25519) (q #C1FD53E5D4CE971933EC50C9F307AE2171A2D3B52C804642A7A35F84F3A4EA98#)))"))
-                                         %default-authorized-guix-keys)))))
-     
-            %base-services))))
+                      (udev-rules-service 'logitech-unify
+                                          (file->udev-rule
+                                           "42-logitech-unify-permissions.rules"
+                                           (file-append solaar 
+                                                        "/share/solaar/udev-rules.d/42-logitech-unify-permissions.rules")))
+                      
+                      ;; add polkit rules so that non-root users in the wheel group can
+                      ;; perform admin tasks
+                      polkit-wheel-service
+                      
+                      ;; allow desktop users to also mount NTFS and NFS file systems
+                      ;; without root.
+                      (simple-service 'mount-setuid-helpers privileged-program-service-type
+                                      (map file-like->setuid-program
+                                           (list (file-append nfs-utils "/sbin/mount.nfs")
+                                                 (file-append ntfs-3g "/sbin/mount.ntfs-3g"))))
+                      
+                      ;; volatile read-write file system mounted at /var/lib/gdm,
+                      ;; to avoid GDM stale cache and permission issues.
+                      gdm-file-system-service
+                      
+                      ;; global fontconfig cache directory can sometimes contain
+                      ;; stale entries, possibly referencing fonts that have been GC'd,
+                      ;; so mount it read-only.
+                      fontconfig-file-system-service
+                      
+                      ;; network manager and applet.
+                      (service network-manager-service-type)
+                      (service wpa-supplicant-service-type)
+                      (simple-service 'network-manager-applet
+                                      profile-service-type
+                                      (list network-manager-applet))
+                      (service modem-manager-service-type)
+                      (service usb-modeswitch-service-type)
+                      
+                      ;; d-bus clique
+                      (service accountsservice-service-type)
+                      (service avahi-service-type)
+                      (service colord-service-type)
+                      (service cups-pk-helper-service-type)
+                      (service dbus-root-service-type)
+                      (service elogind-service-type)
+                      (service geoclue-service-type)
+                      (service polkit-service-type)
+                      (service udisks-service-type)
+                      (service upower-service-type)
+                      
+                      (service alsa-service-type)
+                      (service bluetooth-service-type
+                               (bluetooth-configuration
+                                (auto-enable? #t)))      
+                      (service cups-service-type)
+                      (service gnome-desktop-service-type)
+                      (service gnome-keyring-service-type)  
+                      (service nix-service-type)
+                      (service ntp-service-type)
+                      (service pulseaudio-service-type)
+                      (service tor-service-type)
+                      (service x11-socket-directory-service-type)
+                      
+                      (simple-service 'add-nonguix-substitutes
+                                      guix-service-type
+                                      (guix-extension
+                                       (substitute-urls
+                                        (append (list "https://substitutes.nonguix.org")
+                                                %default-substitute-urls))
+                                       (authorized-keys
+                                        (append (list (plain-file "nonguix.pub"
+                                                                  "(public-key (ecc (curve Ed25519) (q #C1FD53E5D4CE971933EC50C9F307AE2171A2D3B52C804642A7A35F84F3A4EA98#)))"))
+                                                %default-authorized-guix-keys)))))
+                     
+                     %base-services))))
 

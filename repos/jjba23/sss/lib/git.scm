@@ -57,12 +57,9 @@
     (format (thread . "shallow"))
     (sendemail (thread . "no"))
     (pull (rebase . "false"))
-    ("includeIf \"gitdir:~/Ontwikkeling/Werk/\""
-     ("  path" . "~/.gitconfig-work"))
-    ("includeIf \"gitdir:~/Ontwikkeling/Persoonlijk/\""
-     ("  path" . "~/.gitconfig-personal"))
-    ("includeIf \"gitdir:~/Ontwikkeling/Scratch/\""
-     ("  path" . "~/.gitconfig-personal"))))
+    ("includeIf \"gitdir:~/work/\"" ("  path" . "~/.gitconfig-work"))
+    ("includeIf \"gitdir:~/hacking/\"" ("  path" . "~/.gitconfig-personal"))
+    ("includeIf \"gitdir:~/scratch/\"" ("  path" . "~/.gitconfig-personal"))))
 
 (begin
   (define* (sss-git-svc #:key (gitconfig sss-gitconfig)
