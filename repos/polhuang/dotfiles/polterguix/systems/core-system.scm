@@ -1,20 +1,5 @@
-define-module (polterguix systems core-system)
+(define-module (polterguix systems core-system)
   #:use-module (gnu)
-  #:use-module (gnu system)
-  #:use-module (gnu system privilege)
-  
-  
-  #:use-module (gnu services avahi)
-  #:use-module (gnu services cups)
-  #:use-module (gnu services dbus)
-  #:use-module (gnu services desktop)
-  ;; #:use-module (gnu services guix)
-  #:use-module (gnu services networking)
-  #:use-module (gnu services nix)
-  ;; #:use-module (gnu services ssh)
-  #:use-module (gnu services sound) 
-  #:use-module (gnu services xorg)
-  
   #:use-module (gnu packages admin)
   #:use-module (gnu packages audio)
   #:use-module (gnu packages emacs)  
@@ -33,31 +18,37 @@ define-module (polterguix systems core-system)
   #:use-module (gnu packages vim)
   #:use-module (gnu packages wm)
   #:use-module (gnu packages xdisorg)
-  
-  #:use-module (nongnu packages linux)
-#:use-module (nongnu system linux-initrd)
-  #:use-module (rosenthal packages wm)
-
-  
-)
-
+  #:use-module (gnu services avahi)
+  #:use-module (gnu services cups)
+  #:use-module (gnu services dbus)
+  #:use-module (gnu services desktop)
+  #:use-module (gnu services ssh)
+  #:use-module (gnu services xorg)
+  ;; #:use-module (gnu services guix)
+  #:use-module (gnu services networking)
+  #:use-module (gnu services nix)
+  ;; #:use-module (gnu services ssh)
+  #:use-module (gnu services sound) 
+  #:use-module (gnu services xorg)
+  #:use-module (gnu system)
+  #:use-module (gnu system privilege)  
+  #:use-module (nongnu packages linux))
 
 (define-public core-operating-system
   (operating-system
-   (host-name "akhetaten")
    (kernel linux)
+   ;; (initrd microcode-initrd)
    (firmware (list linux-firmware))
-   (initrd microcode-initrd)
+
+   (host-name "akhetaten")
    (timezone "America/Chicago")
    (locale "en_US.utf8")
+   (keyboard-layout (keyboard-layout "us"))
    
-
    ;; uefi grub with efi
    (bootloader (bootloader-configuration
                 (bootloader grub-efi-bootloader)
-                
-                (targets '("/boot/efi"))
-                (keyboard-layout (keyboard-layout "us"))))
+                (targets '("/boot/efi"))))
 
    (file-systems (cons* (file-system
                          (mount-point "/tmp")
@@ -108,100 +99,29 @@ define-module (polterguix systems core-system)
                     hyprland
                     libva-utils
                     ntfs-3g
-                    solaar
                     stow
                     vim
                     zsh
                     %base-packages))
    
-   (services (append (list
-                      ;; screen lockers
-                      (service screen-locker-service-type
-                               (screen-locker-configuration
-                                (name "slock")
-                                (program (file-append slock "/bin/slock"))))
-                      (service screen-locker-service-type
-                               (screen-locker-configuration
-                                (name "xlock")
-                                (program (file-append xlockmore "/bin/xlock"))))
-                      
-                      ;; add udev rules for MTP devices so that non-root users can access
-                      ;; them.
-                      (simple-service 'mtp udev-service-type (list libmtp))
-                      ;; add udev rules for scanners.
-                      (service sane-service-type)
-
-
-                      (udev-rules-service 'logitech-unify
-                                          (file->udev-rule
-                                           "42-logitech-unify-permissions.rules"
-                                           (file-append solaar 
-                                                        "/share/solaar/udev-rules.d/42-logitech-unify-permissions.rules")))
-                      
-                      ;; add polkit rules so that non-root users in the wheel group can
-                      ;; perform admin tasks
-                      polkit-wheel-service
-                      
-                      ;; allow desktop users to also mount NTFS and NFS file systems
-                      ;; without root.
-                      (simple-service 'mount-setuid-helpers privileged-program-service-type
-                                      (map file-like->setuid-program
-                                           (list (file-append nfs-utils "/sbin/mount.nfs")
-                                                 (file-append ntfs-3g "/sbin/mount.ntfs-3g"))))
-                      
-                      ;; volatile read-write file system mounted at /var/lib/gdm,
-                      ;; to avoid GDM stale cache and permission issues.
-                      gdm-file-system-service
-                      
-                      ;; global fontconfig cache directory can sometimes contain
-                      ;; stale entries, possibly referencing fonts that have been GC'd,
-                      ;; so mount it read-only.
-                      fontconfig-file-system-service
-                      
-                      ;; network manager and applet.
-                      (service network-manager-service-type)
-                      (service wpa-supplicant-service-type)
-                      (simple-service 'network-manager-applet
-                                      profile-service-type
-                                      (list network-manager-applet))
-                      (service modem-manager-service-type)
-                      (service usb-modeswitch-service-type)
-                      
-                      ;; d-bus clique
-                      (service accountsservice-service-type)
-                      (service avahi-service-type)
-                      (service colord-service-type)
-                      (service cups-pk-helper-service-type)
-                      (service dbus-root-service-type)
-                      (service elogind-service-type)
-                      (service geoclue-service-type)
-                      (service polkit-service-type)
-                      (service udisks-service-type)
-                      (service upower-service-type)
-                      
-                      (service alsa-service-type)
-                      (service bluetooth-service-type
-                               (bluetooth-configuration
-                                (auto-enable? #t)))      
-                      (service cups-service-type)
-                      (service gnome-desktop-service-type)
-                      (service gnome-keyring-service-type)  
-                      (service nix-service-type)
-                      (service ntp-service-type)
-                      (service pulseaudio-service-type)
-                      (service tor-service-type)
-                      (service x11-socket-directory-service-type)
-                      
-                      (simple-service 'add-nonguix-substitutes
-                                      guix-service-type
-                                      (guix-extension
-                                       (substitute-urls
-                                        (append (list "https://substitutes.nonguix.org")
-                                                %default-substitute-urls))
-                                       (authorized-keys
-                                        (append (list (plain-file "nonguix.pub"
-                                                                  "(public-key (ecc (curve Ed25519) (q #C1FD53E5D4CE971933EC50C9F307AE2171A2D3B52C804642A7A35F84F3A4EA98#)))"))
-                                                %default-authorized-guix-keys)))))
-                     
-                     %base-services))))
+   (services (append (list (service gnome-desktop-service-type)
+                           (service openssh-service-type)
+                           (service tor-service-type)
+                           (service cups-service-type)
+                           (service bluetooth-service-type
+                                    (bluetooth-configuration
+                                     (auto-enable? #t)))
+                           (simple-service 'add-nonguix-substitutes
+                                           guix-service-type
+                                           (guix-extension
+                                            (substitute-urls
+                                             (append (list "https://substitutes.nonguix.org")
+                                                     %default-substitute-urls))
+                                            (authorized-keys
+                                             (append (list (plain-file "nonguix.pub"
+                                                                       "(public-key (ecc (curve Ed25519) (q #C1FD53E5D4CE971933EC50C9F307AE2171A2D3B52C804642A7A35F84F3A4EA98#)))"))
+                                                     %default-authorized-guix-keys))))
+                           (set-xorg-configuration
+                            (xorg-configuration (keyboard-layout keyboard-layout))))
+                     %desktop-services))))
 

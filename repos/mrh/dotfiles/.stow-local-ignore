@@ -1,0 +1,6 @@
+mrh-guix
+.*\.png
+.*\.md
+^LICENSE.*
+^README.*
+.*\.git.*

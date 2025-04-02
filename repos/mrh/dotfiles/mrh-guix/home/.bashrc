@@ -27,6 +27,3 @@ fi
 # bind "TAB:menu-complete"
 # bind "set show-all-if-ambiguous on"
 # bind "set menu-complete-display-prefix on"
-
-# private aliases
-alias md="monerod --prune-blockchain --detach --non-interactive --hide-my-port --no-igd --no-zmq --rpc-bind-ip 10.0.0.1 --confirm-external-bind"

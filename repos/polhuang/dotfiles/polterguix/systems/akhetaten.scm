@@ -119,10 +119,10 @@
                             (mixed-text-file "zsh-completions"
                                              "fpath=($HOME/.guix-home/share/zsh/site-functions $fpath)")
                             (local-file
-                             "/home/pol/polterguix/files/.zshrc" "zshrc")
+                             "/home/pol/.dotfiles/polterguix/files/.zshrc" "zshrc")
                             ))
                     (zprofile (list (local-file
-                                     "/home/pol/polterguix/files/.zprofile"
+                                     "/home/pol/.dotfiles/polterguix/files/.zprofile"
                                      "zprofile")))))
           (service home-openssh-service-type
                    (home-openssh-configuration
@@ -139,18 +139,7 @@
           (simple-service 'dotfiles
                           home-xdg-configuration-files-service-type
                           `(("hypr/hyprland.conf"  ,(local-file "../files/hypr/hyprland-akhetaten.conf"))
-                            ("hypr/hyprland-base.conf"  ,(local-file "../files/hypr/hyprland-base.conf"))))
-
-          (simple-service 'add-nonguix-substitutes
-                               guix-service-type
-                               (guix-extension
-                                (substitute-urls
-                                 (append (list "https://substitutes.nonguix.org")
-                                         %default-substitute-urls))
-                                (authorized-keys
-                                 (append (list (plain-file "nonguix.pub"
-                                                           "(public-key (ecc (curve Ed25519) (q #C1FD53E5D4CE971933EC50C9F307AE2171A2D3B52C804642A7A35F84F3A4EA98#)))"))
-                                         %default-authorized-guix-keys))))))))
+                            ("hypr/hyprland-base.conf"  ,(local-file "../files/hypr/hyprland-base.conf"))))))))
 
 (if (equal? (getenv "GUIX_TARGET") "home")
     home

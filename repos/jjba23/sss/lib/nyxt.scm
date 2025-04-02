@@ -22,6 +22,5 @@
 (begin
   (define* (sss-nyxt-svc)
     `((".config/nyxt/config.lisp" ,(local-file "./nyxt/config.lisp"))
-      (".config/nyxt/dark-reader.lisp" ,(local-file "./nyxt/dark-reader.lisp"))
       (".config/nyxt/bookmarks.lisp" ,(local-file "./nyxt/bookmarks.lisp"))))
   (export sss-nyxt-svc))

@@ -38,7 +38,7 @@
     :reduce-tracking-mode
     :user-script-mode :bookmarklets-mode)
   "The modes to enable in any web-buffer by default.
-Extension files (like dark-reader.lisp) are to append to this list.")
+Extension files are to append to this list.")
 
 ;;; Loading extensions and third-party-dependent configs. See the
 ;;; matching files for where to find those extensions.
@@ -48,10 +48,9 @@ Loads a newly-generated ASDF system depending on SYSTEM.
 FILE, if provided, is loaded after the generated system successfully
 loads."
   `(define-nyxt-user-system-and-load ,(gensym "NYXT-USER/")
-     :depends-on (,system) ,@(when file
-                               `(:components (,file)))))
+                                     :depends-on (,system) ,@(when file
+                                                               `(:components (,file)))))
 
-(defextsystem :nx-dark-reader "dark-reader")
 
 (defvar *my-search-engines* nil)
 (setf *my-search-engines*

@@ -1,0 +1,2 @@
+#!/bin/sh
+acpi -b | awk -F '[ ,]' '{printf "%s%s", $3, $5}' | sed s/Discharging/\-/ | sed s/Unknown// | sed s/Full// | sed s/Charging/+/

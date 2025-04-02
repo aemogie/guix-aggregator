@@ -37,8 +37,7 @@
                                        "transmission-daemon >/dev/null 2>&1 &"
                                        "waybar >/dev/null 2>&1 &"
                                        "swww-daemon >/dev/null 2>&1 &"
-                                       "sleep 1 && swww img $HOME/hacking/sss/resources/wallpapers/h2mp9dpdlpee1.jpeg --transition-step 10 --transition-fps 30 --transition-type center >/dev/null 2>&1 &"))
-                             "\n")))
+                                       "hyprpaper >/dev/null 2>&1 &")) "\n")))
 
   (export labwc-autostart))
 

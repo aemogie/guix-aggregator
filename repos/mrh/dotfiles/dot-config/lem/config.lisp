@@ -1,0 +1,3 @@
+
+(:SDL2-FONT-SIZE 21 :COLOR-THEME "gruvbox-dark-soft" :ISEARCH-PREVIOUS-STRING
+ "")

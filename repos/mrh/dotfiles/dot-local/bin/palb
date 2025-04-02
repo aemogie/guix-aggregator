@@ -1,0 +1,4 @@
+#!/bin/sh
+
+album=$(echo "$1" | tr -d '/')
+nohup mpv --input-ipc-server=/tmp/mpv-socket --playlist="$album/$album--Album.txt" > /dev/null &

@@ -25,30 +25,37 @@
     (display process-output) process-output))
 
 (define sss-joe-clone-repos
-  (list "private-notes"
-        "jointhefreeworld"
-        "lucidplan"
-        "byggsteg"
-        "wikimusic"
-        "wolk-jjba"
-        "zzspec"
-        "byggsteg"
-        "welkomscherm.el"
-        "free-alacarte"
-        "scala-rank"
-        "cloud-infra"
-        "modusregel"
-        "keuringsdienst"
-        "tekengrootte.el"
-        "git-riddance.el"
-        "iter-vitae"
-        "yak"
-        "social-media-jjba"
-        "carvoeiro-water-fun"))
+  '(byggsteg carvoeiro-water-fun
+             cloud-infra
+             dagboek.el
+             free-alacarte
+             git-riddance.el
+             haskell-rank
+             hygguile
+             iter-vitae
+             jointhefreeworld
+             keuringsdienst
+             lucidplan
+             modusregel
+             neppegesprek
+             pop-server
+             pop-test
+             private-notes
+             rostob
+             scala-rank
+             social-media-jjba
+             static-assets
+             tekengrootte.el
+             web-welkomscherm
+             welkomscherm.el
+             wikimusic
+             wolk-jjba
+             zzspec))
 
 (display "\n>>= cloning personal repos...\n")
 
 (for-each (lambda (x)
             (syscall (format #f
-                      "[ -d $HOME/hacking/~a ] || git clone git@codeberg.org:jjba23/~a.git $HOME/hacking/~a"
-                      x x x))) sss-joe-clone-repos)
+                             (string-join '("[ -d $HOME/hacking/~a ] || "
+                                            "git clone git@codeberg.org:jjba23/~a.git $HOME/hacking/~a"))
+                             x x x))) sss-joe-clone-repos)

@@ -23,7 +23,7 @@
   (define* (sss-portals-svc #:key (portals '((default . hyprland)
                                              (org.freedesktop.impl.portal.Screenshot . hyprland)
                                              (org.freedesktop.impl.portal.ScreenCast . hyprland)
-                                             (org.freedesktop.impl.portal.FileChooser . hyprland))))
+                                             (org.freedesktop.impl.portal.FileChooser . gtk))))
     `((".config/xdg-desktop-portal/portals.conf" ,(plain-file "portals.conf"
                                                               (string-append
                                                                "[preferred]\n"

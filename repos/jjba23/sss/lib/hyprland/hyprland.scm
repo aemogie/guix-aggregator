@@ -29,32 +29,7 @@
            " /run/current-system/profile/share/icons/Yaru/32x32/actions/dialog-yes.png"
            " \"~a\" \"~a\"" " >/dev/null 2>&1") title subtitle))
 
-;; Define diverse wallpapers based on the active color scheme. 
-(begin
-  (define* (hypr-wallpaper #:key clone-dir palette)
-    (cond
-      ((eq? 'sss-palette-ef-cyprus palette)
-       (format #f "~a/resources/wallpapers/some-forest.jpg" clone-dir))
-      ((eq? 'sss-palette-ef-dream palette)
-       (format #f "~a/resources/wallpapers/1362745.png" clone-dir))
-      ((eq? 'sss-palette-heavy-metal palette)
-       (format #f "~a/resources/wallpapers/heavy-wall3.jpg" clone-dir))
-      ((eq? 'sss-palette-solarized-light palette)
-       (format #f "~a/resources/wallpapers/PXL_20250326_193029385.MP.jpg"
-               clone-dir))
-      ((eq? 'sss-palette-ef-autumn palette)
-       (format #f "~a/resources/wallpapers/0mar2ygf59je1.jpeg" clone-dir))
-      ((eq? 'sss-palette-everforest-dark palette)
-       (format #f "~a/resources/wallpapers/a_forest_with_moss_and_trees.jpg"
-               clone-dir))
-      ((eq? 'sss-palette-everforest-light palette)
-       (format #f "~a/resources/wallpapers/PXL_20250326_164100026.jpg"
-               clone-dir))
-      (else (format #f "~a/resources/wallpapers/some-forest.jpg" clone-dir))))
-  (export hypr-wallpaper))
-
 (define* (hypr-startup-programs #:key palette
-                                (wallpaper-setter "")
                                 (extra-startups '()))
   (let* ((gtk-theme-name (cond
                            ((equal? 'sss-palette-ef-cyprus palette)
@@ -67,6 +42,8 @@
                             "Yaru-dark")
                            ((equal? 'sss-palette-solarized-light palette)
                             "Yaru")
+                           ((equal? 'sss-palette-everforest-light palette)
+                            "Yaru-sage")
                            (else "Yaru-sage-dark")))
          (icon-theme-name (cond
                             ((equal? 'sss-palette-ef-cyprus palette)
@@ -79,13 +56,14 @@
                              "Yaru-dark")
                             ((equal? 'sss-palette-solarized-light palette)
                              "Yaru")
+                            ((equal? 'sss-palette-everforest-light palette)
+                             "Yaru-sage")
                             (else "Yaru-sage-dark")))
          (xs (append extra-startups
                      `("lxsession" "mako"
                        "dbus-update-activation-environment --all"
                        "waybar"
-                       ,(format #f "swww-daemon & sleep 1 && ~a"
-                                wallpaper-setter)
+                       "hyprpaper"
                        "alacritty --daemon"
                        "emacs --daemon"
                        "transmission-daemon"
@@ -207,7 +185,7 @@
                            #:bind "mouse-left"
                            #:dispatch 'movewindow))))
 
-(define* (hypr-common-exec-binds #:key wallpaper-setter)
+(define* (hypr-common-exec-binds)
   (map (lambda (kb)
          (serialize-hypr-setting 'bind kb))
        (list (special-bind #:mod "s"
@@ -235,9 +213,6 @@
              (exec-bind #:mod "s"
                         #:bind "slash"
                         #:cmd "rofi -show drun -icon-theme \"Papirus\"")
-             (exec-bind #:mod "s-S"
-                        #:bind "B"
-                        #:cmd wallpaper-setter)
              (exec-bind #:mod "s"
                         #:bind "E"
                         #:cmd "emacsclient -c")
@@ -295,10 +270,9 @@
                         #:dispatch "cyclenext"
                         #:cmd ""))))
 
-(define* (hypr-binds #:key wallpaper-setter)
+(define* (hypr-binds)
   (append hypr-media-binds hypr-workspace-binds hypr-movetoworkspace-binds
-          (hypr-common-exec-binds #:wallpaper-setter wallpaper-setter)
-          hypr-mouse-binds))
+          (hypr-common-exec-binds) hypr-mouse-binds))
 
 (begin
   (define* (sss-hyprland-config #:key clone-dir
@@ -309,21 +283,8 @@
                                 (extra-startups '())
                                 (with-blur #f)
                                 (with-shadow #f)
-
-                                (wallpaper-setter (format #f
-                                                          (string-append
-                                                           "swww img ~a"
-                                                           " --transition-step 12"
-                                                           " --transition-fps 60"
-                                                           " --transition-type center")
-                                                          (hypr-wallpaper
-                                                           #:palette palette
-                                                           #:clone-dir
-                                                           clone-dir)))
                                 (startup-programs (hypr-startup-programs
                                                    #:palette palette
-                                                   #:wallpaper-setter
-                                                   wallpaper-setter
                                                    #:extra-startups
                                                    extra-startups))
                                 (window-rules (list (hypr-window-rule #:action 'float
@@ -351,10 +312,7 @@
            (serialized-animations (serialize-hypr-section #:section 'animations
                                                           #:settings
                                                           hypr-animations))
-           (serialized-key-bindings (string-join (hypr-binds
-                                                             #:wallpaper-setter
-                                                             wallpaper-setter)
-                                                 "\n"))
+           (serialized-key-bindings (string-join (hypr-binds) "\n"))
            (serialized-window-rules (string-join (map (lambda (r)
                                                         (serialize-hypr-setting 'windowrulev2
                                                          r)) window-rules)

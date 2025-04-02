@@ -1,2 +1,8 @@
-mrh-guix/personal.*
-.config/guix/shell-authorized-directories
+mrh-guix/personal*
+mrh-guix/nftables.conf
+home/.config/guix/shell-authorized-directories
+*.iso
+*.gpg
+*.bkp
+cl-scripts
+publish-website

@@ -2,31 +2,46 @@
 #+OPTIONS: toc:nil
 
 #+CAPTION: screenshot
-[[./screenshot.png]]
+[[file:screenshot.png]]
 
 * Dotfiles
 These are the configuration files for my personal guix + emacs setup. Feel free to take anything you find helpful and tell me your thoughts!
 
 ** Free Software
-The most important part of my system is that it uses as much [[https://en.wikipedia.org/wiki/Free_software][free software]] as possible, and I encourage all others to shoot for the same. I also have a fondness for lisp and hackable systems, hence why I control as much of my computing as possible through GNU Guix and Emacs. These are (mostly) distinct computing goals.
+The most important part of my system is that it uses as much [[https://writefreesoftware.org][free software]] as possible, and I encourage all others to shoot for the same.
+I also have a fondness for lisp and hackable systems, hence why I control as much of my computing as possible through GNU Guix and Emacs.
+These are (mostly) distinct computing goals.
 
-My system is not completely free however, as some of my hardware is completely non-functional without proprietary kernel blobs. I hope that hardware manufacturers see the cons of this approach, and those that change would surely have the business of myself and many others.
+My system is not completely free however, as some of my hardware is completely non-functional without proprietary kernel blobs.
+I hope that hardware manufacturers see the cons of this approach, and those that change would surely have the business of myself and many others.
 
 ** Guix
-[[https://guix.gnu.org][GNU Guix]] is a purely functional package manager and distribution of the GNU sytsem. It is committed to dependability (unbreakable), hackability, and software freedom. I run Guix System, but it can also be installed as a standalone package manager on any GNU/Linux distribution.
+[[https://guix.gnu.org][GNU Guix]] is a purely functional package manager and distribution of the GNU sytsem. It is committed to dependability (unbreakable), hackability, and software freedom.
+I run Guix System, but it can also be installed as a standalone package manager on any GNU/Linux distribution.
 
-My system configuration is split up into a base configuration for all machines, and multiple machine-specific configs which inherit that base config.
-They can be found at =mrh-guix/system/=.
+My system configurations are split up into a base configuration for all machines, and multiple machine-specific configs which inherit that base config.
+They can be found at =mrh-guix/system=.
 
-My home configurations are similarly machine specific and can be found at =mrh-guix/home/=.
+My home configurations are similarly machine specific and can be found at =mrh-guix/home=.
 Here is where I setup [[https://guix.gnu.org/manual/en/html_node/Home-Configuration.html][guix home]] to manage all of my user level packages, as well as environment variables and other miscellaneous aspects of my home environment.
 
-Finally my custom packages which are not (as of writing) available in the standard guix repo are available at =mrh-guix/packages/=. These include:
+Finally, my custom packages which are not (as of writing) available in the standard guix repo are available as a [[https://guix.gnu.org/manual/devel/en/html_node/Channels.html][guix channel]] at [[https://git.sr.ht/~mrh/guix-channel][git.sr.ht/~mrh/guix-channel]].
+These include:
 
-- [[https://sr.ht/~novakane/rivercarro/][Rivercarro]]: A layout generator for river which adds monocle mode and smart gaps
-- [[https://github.com/schollz/croc][Croc]]: A cli for sending files quickly and securely from one computer to another
+- [[https://sr.ht/~novakane/rivercarro/][rivercarro]]: A layout generator for river which adds monocle mode and smart gaps
 
-There is also a custom definition for river which uses guix inferiors to pin river and prevent it from updating, so as not to become incompatible with my custom rivercarro.
+These are available under the =(mrh packages ...)= namespace.
+To include my channel in your guix config, add it to your =~/.config/guix/channels.scm= like so:
+
+#+begin_src scheme
+(cons* (channel
+        (name 'mrh-channel)
+        (url "https://git.sr.ht/~mrh/guix-channel")
+        (branch "trunk"))
+       %default-channels)
+#+end_src
+
+Remember to run =guix pull= afterwards to refresh your local package definitions.
 
 ** Emacs
 [[https://www.gnu.org/software/emacs][GNU Emacs]] is a text editor and lisp interpreter designed to maximize hackability and software freedom, in addition to serving as the primary text editor for the GNU system.
@@ -34,18 +49,19 @@ There is also a custom definition for river which uses guix inferiors to pin riv
 I use emacs for just about everything on my computer other than browsing the web and consuming audio/visual media. This of course includes editing source code, but also:
 
 - [[https://www.gnu.org/software/auctex][AUCTeX]] for writing LaTeX documents
-- [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Dired.html][Dired]] as a file browser
-- [[https://www.gnu.org/software/emacs/manual/html_mono/eshell.html][Eshell]] + [[https://codeberg.org/akib/emacs-eat][Eat]] + =M-x &= for my shell/terminal needs
+- [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Dired.html][Dired]] for browsing files
+- [[https://www.gnu.org/software/emacs/manual/html_mono/eshell.html][Eshell]] + [[https://codeberg.org/akib/emacs-eat][Eat]] + =M-&= for shell/terminal
 - [[https://github.com/skeeto/elfeed][Elfeed]] for RSS
 - [[https://www.gnu.org/software/emacs/erc.html][ERC]] for IRC
 - [[https://www.nongnu.org/geiser/][Geiser]] for Guile Scheme hacking
-- [[https://www.gnu.org/software/emacs/manual/html_node/gnus/][Gnus]] for email
 - [[https://magit.vc/][Magit]] for git
 - [[https://orgmode.org/][Org Mode]] for so much (including this readme!)
 - =M-x proced= to manage system processes
-- [[https://joaotavora.github.io/sly/][Sly]] for Common Lisp development
+- [[https://www.djcbsoftware.nl/code/mu/][Mu4e]] for email
+- [[https://joaotavora.github.io/sly][Sly]] for Common Lisp hacking
 - [[https://www.gnu.org/software/tramp/][Tramp]] for remote access
 
-All of my emacs packages are installed and managed via guix home (see =Guix= section).
+All of my emacs packages are installed and managed via guix home (see [[Guix]] section).
 
-My configuration can be found at =.config/emacs/config.org=. Note that my =init.el= merely evaluates all the source code blocks within =config.org=. If you want the raw config code without annotations you can look at =.config/emacs/config.el= (the file generated by =init.el=).
+My configuration can be found at =home/.config/emacs/config.org=.
+Note that my =init.el= merely evaluates all the source code blocks within =config.org=.

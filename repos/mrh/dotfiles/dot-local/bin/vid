@@ -1,0 +1,3 @@
+#!/bin/sh
+
+nohup mpv --profile=1600p --force-window=immediate --pause --hr-seek=default "$1" > /dev/null &

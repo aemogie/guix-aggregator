@@ -1,0 +1,30 @@
+IMAPAccount mrh57
+Host posteo.de
+User mrh57@posteo.net
+PassCmd "gpg --quiet --for-your-eyes-only --no-tty --decrypt ~/.config/emacs/mbsyncpass.gpg"
+Port 993
+TLSType IMAPS
+AuthMechs *
+CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+IMAPStore mrh57-remote
+Account mrh57
+
+MaildirStore mrh57-local
+Path ~/mail/
+Inbox ~/mail/INBOX
+SubFolders Verbatim
+
+Channel mrh57
+Far :mrh57-remote:
+Near :mrh57-local:
+Patterns *
+Create Near
+Sync All
+Expunge Both
+SyncState *
+
+# shell commands to run for init:
+# $ mbsync --config ~/.config/isyncrc mrh57
+# $ mu init --maildir=mail/ --my-address=mrh57@posteo.net
+# $ mu index

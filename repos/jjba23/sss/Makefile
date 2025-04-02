@@ -200,4 +200,5 @@ repl:
 
 # Unit tests
 test:
-	guix shell -m manifest.scm -- guile --fresh-auto-compile test/run-tests.scm
+	guix shell -m manifest.scm -- guile --fresh-auto-compile test/run-tests.scm | \
+		awk -f ./test/colorize.awk

@@ -555,7 +555,7 @@ You will also want to set the ~RTC_USE_PIPEWIRE~ variable to ~true~. This is alr
 
 SSS automatically loads at startup a matching wallpaper for the currently enabled theme.
 
-This uses swww and thus can load animated images as well and do fancy transitions. If you have bugs loading wallpaper at startup, try reloading the wallpaper with ~s-S-b~.
+This is currently done with hyprpaper.
 
 TODO: allow more dynamics and often changing of wallpapers, also random wallpaper script (but within theme)
 

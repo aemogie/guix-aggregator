@@ -1,8 +1,0 @@
-[window]
-opacity = 0.8
-padding.x = 20
-padding.y = 15
-
-[font]
-normal.family = "hack"
-size = 12

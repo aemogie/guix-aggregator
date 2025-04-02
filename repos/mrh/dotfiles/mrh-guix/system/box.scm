@@ -2,22 +2,42 @@
   #:use-module (mrh-guix personal)
   #:use-module (mrh-guix vpn)
   #:use-module (mrh-guix system base)
-
   #:use-module (gnu)
-
   #:use-module (nongnu packages linux) 
   #:use-module (nongnu packages nvidia)
   #:use-module (nongnu services nvidia)
   #:use-module (nongnu system linux-initrd))
 
-(use-package-modules admin compton cryptsetup package-management version-control wm)
-(use-service-modules cups dbus desktop docker networking ssh sddm sysctl vpn xorg)
+(use-package-modules admin
+                     compton
+                     cryptsetup
+                     package-management
+                     tls
+                     version-control
+                     wm)
+
+(use-service-modules cups
+                     dbus
+                     desktop
+                     docker
+                     networking
+                     ssh
+                     sddm
+                     sysctl
+                     vpn
+                     xorg)
+
+(define %local-ipv4 (format #f "~a.155" %local-ipv4-prefix))
+(define %local-ipv6 (format #f "~a:0:5678:d305:9bfe:46d9" %local-ipv6-prefix))
+
+(define %wireguard-ipv4 (format #f "~a.1"  %wireguard-ipv4-prefix))
+(define %wireguard-ipv6 (format #f "~a::1"  %wireguard-ipv6-prefix))
 
 (define-public box-operating-system
   (operating-system
    (inherit base-operating-system)
-   (kernel-arguments (cons* "modprobe.blacklist=nouveau"
-			                %default-kernel-arguments))
+   (kernel-arguments (cons "modprobe.blacklist=nouveau"
+                           %default-kernel-arguments))
    (initrd microcode-initrd)
    (host-name "guix-box")
    (keyboard-layout (keyboard-layout "us" "dvorak"))
@@ -28,26 +48,27 @@
                   (home-directory "/home/mrh")
                   (supplementary-groups
                    '("wheel" "docker" "netdev" "audio" "video" "input" "lp")))
-			     %base-user-accounts))
+                 %base-user-accounts))
 
    (packages (map replace-mesa (cons* btop
-		                              cryptsetup
-		                              git
-		                              i3-wm
-		                              i3lock
-		                              i3blocks
-		                              picom
-		                              %base-packages)))
+                                      cryptsetup
+                                      git
+                                      i3-wm
+                                      i3lock
+                                      i3blocks
+                                      openssl
+                                      picom
+                                      %base-packages)))
 
    (services
-    (cons* 
+    (cons*
      (service cups-service-type
-	          (cups-configuration
-	           (web-interface? #t)))
+              (cups-configuration
+               (web-interface? #t)))
 
      (service bluetooth-service-type
-	          (bluetooth-configuration
-	           (name "guix-box")))
+              (bluetooth-configuration
+               (name "guix-box")))
 
      ;; required for oci-container-service-type
      (service elogind-service-type)
@@ -56,29 +77,51 @@
 
      (service oci-container-service-type
               (list (oci-container-configuration
-				     (image "jellyfin/jellyfin")
-				     (provision "jellyfin")
-				     (network "host")
-				     (ports '(("8096" . "8096")))
-				     (volumes '(("jellyfin-config" . "/config")
+                     (image "jellyfin/jellyfin")
+                     (provision "jellyfin")
+                     (network "host")
+                     (ports (list (format #f "~a:8096:8096"  %wireguard-ipv4)
+                                  (format #f "~a:8920:8920"  %wireguard-ipv4)
+                                  (format #f "~a:8096:8096"  %local-ipv4)
+                                  (format #f "~a:8920:8920"  %local-ipv4)))
+                     (volumes '(("jellyfin-config" . "/config")
                                 ("jellyfin-cache" . "/cache")
                                 ("/home/mrh/media" . "/media"))))
                     (oci-container-configuration
                      (image "linuxserver/sabnzbd")
                      (provision "sabnzbd")
-                     (ports '("10.0.0.1:8081:8080"))
+                     (ports (list (format #f "~a:8081:8081"  %wireguard-ipv4)
+                                  (format #f "~a:8082:8082"  %wireguard-ipv4)))
                      (volumes '(("/home/mrh/media" . "/config")))
                      (environment '(("PUID" . "1000")
                                     ("PGID" . "998")
                                     ("TZ" . "Etc/UTC"))))))
 
+     ;; NOTE: must disable NetworkManager in base config
+     ;; WIP
+     ;; (service static-networking-service-type
+     ;;          (list (static-networking
+     ;;                 (addresses
+     ;;                  (list (network-address
+     ;;                         (device "<wireless-interface-name")
+     ;;                         (value "<custom-ipv6-address-of-choice")
+     ;;                         (ipv6? #t))))
+     ;;                 (routes
+     ;;                  (list (network-route
+     ;;                         (destination "default")
+     ;;                         (device "<wireless-interface-name>")
+     ;;                         (ipv6? #t)
+     ;;                         (gateway "<ipv6-gateway-address>"))))
+     ;;                 (name-servers
+     ;;                  (list "<local-ipv6-dns-address>")))))
+
      (service nftables-service-type
-			  (nftables-configuration
-			   (ruleset (plain-file "nftables.conf" %nftables-config))))
+              (nftables-configuration
+               (ruleset (plain-file "nftables.conf" %nftables-config))))
 
      (service wireguard-service-type
-			  (wireguard-host-config
-			   (list (wireguard-host-peer "guix-lap" 2 %lap-public-key)
+              (wireguard-host-config
+               (list (wireguard-host-peer "guix-lap" 2 %lap-public-key)
                      (wireguard-host-peer "phone" 3 %phone-public-key))))
 
      (service nvidia-service-type)
@@ -86,28 +129,38 @@
       (xorg-configuration
        (keyboard-layout keyboard-layout)
        (modules (cons nvda %default-xorg-modules))
-       (drivers '("nvidia")))     
+       (drivers '("nvidia")))
       sddm-service-type)
 
-     (modify-services
-      (operating-system-user-services base-operating-system)
-      (sysctl-service-type
-	   config => (sysctl-configuration
-	    		  (settings
-	    		   (append '(("net.ipv4.ip_forward" . "1")
-	    					 ("net.ipv6.conf.all.forwarding" . "1"))
-	    				   %default-sysctl-settings)))))))
+     (modify-services (operating-system-user-services base-operating-system)
+                      (openssh-service-type
+                       config => (openssh-configuration
+                                  (password-authentication? #f)
+                                  (port-number 2222)
+                                  (max-connections 10)
+                                  (authorized-keys
+                                   `(("mrh" ,(local-file "/home/mrh/.ssh/id_rsa.pub"))))))
+
+                      (sysctl-service-type
+                       config => (sysctl-configuration
+                                  (settings
+                                   (append
+                                    '(("net.ipv4.ip_forward" . "1")
+                                      ("net.ipv6.conf.all.forwarding" . "1"))
+                                    %default-sysctl-settings)))))))
 
    (swap-devices (list (swap-space
-					    (target (uuid "0d1e3200-3aed-4c35-a376-a839d9e8ccef")))))
+                        (target
+                         (uuid "0d1e3200-3aed-4c35-a376-a839d9e8ccef")))))
 
    (file-systems
     (cons* (file-system (mount-point "/")
-		                (device (uuid "3a7ea0db-cdca-4d6f-ac73-26095aa68178" 'ext4))
-		                (type "ext4"))
+                        (device
+                         (uuid "3a7ea0db-cdca-4d6f-ac73-26095aa68178" 'ext4))
+                        (type "ext4"))
            (file-system (mount-point "/boot/efi")
-		                (device (uuid "2A6C-A323" 'fat32))
-		                (type "vfat"))
-	       %base-file-systems))))
+                        (device (uuid "2A6C-A323" 'fat32))
+                        (type "vfat"))
+           %base-file-systems))))
 
 box-operating-system

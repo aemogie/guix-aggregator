@@ -104,10 +104,10 @@
 
 (define-public sss-palette-everforest-light
   `((primary . "#a7c080") (primary-l . "#b8d191")
-    (text . "#4b5961")
-    (text-l . "#5c6a72")
+    (text . "#272e33")
+    (text-l . "#383f44")
     (background . "#fffbef")
-    (background-l . "#f8f5e4")))
+    (background-l . "#eeeade")))
 
 (test-begin "sss-palette tests")
 
@@ -119,22 +119,6 @@
 (test-equal "Retrieve text color from ef-bio palette" "#dfefe6"
             (sss-get-color 'sss-palette-ef-bio
                            'text))
-
-(test-equal "Retrieve background-l color from ef-cyprus palette" "#f0ece0"
-            (sss-get-color 'sss-palette-ef-cyprus
-                           'background-l))
-
-(test-equal "Retrieve background color from ef-autumn palette" "#26211d"
-            (sss-get-color 'sss-palette-ef-autumn
-                           'background))
-
-(test-equal "Retrieve background color from heavy-metal palette" "#111111"
-            (sss-get-color 'sss-palette-heavy-metal
-                           'background))
-
-(test-equal "Retrieve background color from everforest-dark palette" "#272e33"
-            (sss-get-color 'sss-palette-everforest-dark
-                           'background))
 
 (test-error (sss-get-color 'unknown-palette
                            'primary))

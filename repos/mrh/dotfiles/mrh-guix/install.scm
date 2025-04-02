@@ -1,57 +1,50 @@
-(use-modules (guix channels)
-             (guix gexp)
+(define-module (mrh-guix install)
+  #:use-module (guix channels)
+  #:use-module (guix gexp)
+  #:use-module (gnu)
+  #:use-module (gnu services)
+  #:use-module (gnu services base)
+  #:use-module (gnu system)
+  #:use-module (gnu system install)
+  #:use-module (nongnu packages linux)
+  #:use-module (nongnu system linux-initrd))
 
-             (gnu packages curl)
-             (gnu packages package-management)
-             (gnu packages version-control)
-             (gnu packages text-editors)
-
-             (gnu services)
-             (gnu services base)
-
-             (gnu system)
-             (gnu system install)
-
-             (nongnu packages linux))
-
-(define %signing-key
-  (plain-file "nonguix.pub" "\
-(public-key
- (ecc
-  (curve Ed25519)
-  (q #C1FD53E5D4CE971933EC50C9F307AE2171A2D3B52C804642A7A35F84F3A4EA98#)))"))
+(use-package-modules curl package-management version-control text-editors)
 
 (define %channels
-  (cons* (channel
-          (name 'nonguix)
-          (url "https://gitlab.com/nonguix/nonguix")
-          (introduction
-           (make-channel-introduction
-            "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
-            (openpgp-fingerprint
-             "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))
-         %default-channels))
+  (load "install-channels.scm"))
 
 (operating-system
-  (inherit installation-os)
-  (kernel linux)
-  (firmware (list linux-firmware))
+ (inherit installation-os)
+ (kernel linux)
+ (firmware (list linux-firmware))
 
-  (packages
-   (cons* curl git mg (operating-system-packages installation-os)))
+ (packages
+  (cons* curl
+         git
+         mg
+         (operating-system-packages installation-os)))
 
-  (services
-   (cons* (simple-service 'channels-file etc-service-type
-						  `(("channels" ,(local-file "channels.scm"))))
-		  (modify-services (operating-system-user-services installation-os)
-			(guix-service-type
-			 config => (guix-configuration
-						(inherit config)
-						(guix (guix-for-channels %channels))
-						(authorized-keys
-						 (cons* %signing-key
-								%default-authorized-guix-keys))
-						(substitute-urls
-						 `(,@%default-substitute-urls
-						   "https://substitutes.nonguix.org"))
-						(channels %channels)))))))
+ (services
+  (cons* (simple-service 'nonguix-pub etc-service-type
+                         `(("nonguix-pub" ,(local-file "nonguix.pub"))))
+         (simple-service 'channels-file etc-service-type
+                         `(("channels" ,(local-file "install-channels.scm"))))
+         (simple-service 'basic-config etc-service-type
+                         `(("basic-config" ,(local-file "system/base.scm"))))
+         (simple-service 'advanced-config etc-service-type
+                         `(("advanced-config" ,(local-file "system/lap.scm"))))
+
+         (modify-services
+          (operating-system-user-services installation-os)
+          (guix-service-type
+           config => (guix-configuration
+                      (inherit config)
+                      (guix (guix-for-channels %channels))
+                      (authorized-keys
+                       (cons (local-file "nonguix.pub")
+                             %default-authorized-guix-keys))
+                      (substitute-urls
+                       (cons "https://substitutes.nonguix.org"
+                             %default-substitute-urls))
+                      (channels %channels)))))))

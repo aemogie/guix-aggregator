@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+rsync -Phruv "$1/" "$2"

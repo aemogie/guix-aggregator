@@ -1,0 +1,26 @@
+[Default Applications]
+x-scheme-handler/http=librewolf.desktop
+x-scheme-handler/https=librewolf.desktop
+x-scheme-handler/chrome=librewolf.desktop
+text/html=librewolf.desktop
+application/x-extension-htm=librewolf.desktop
+application/x-extension-html=librewolf.desktop
+application/x-extension-shtml=librewolf.desktop
+application/xhtml+xml=librewolf.desktop
+application/x-extension-xhtml=librewolf.desktop
+application/x-extension-xht=librewolf.desktop
+
+[Added Associations]
+x-scheme-handler/http=librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;
+x-scheme-handler/https=librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;
+x-scheme-handler/chrome=librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;
+text/html=librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;
+application/x-extension-htm=librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;
+application/x-extension-html=librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;
+application/x-extension-shtml=librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;
+application/xhtml+xml=librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;
+application/x-extension-xhtml=librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;
+application/x-extension-xht=librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;librewolf.desktop;
+application/vnd.openxmlformats-officedocument.wordprocessingml.document=libreoffice-writer.desktop;librewolf.desktop;
+binary/octet-stream=emacs.desktop;
+application/gzip=emacs.desktop;

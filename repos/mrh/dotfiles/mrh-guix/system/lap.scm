@@ -1,19 +1,17 @@
 (define-module (mrh-guix system lap)
   #:use-module (mrh-guix vpn)
   #:use-module (mrh-guix system base)
-
   #:use-module (gnu)
-  #:use-module (gnu packages wm)
-
   #:use-module (nongnu packages linux)
+  #:use-module (nongnu packages firmware)
   #:use-module (nongnu system linux-initrd))
 
-(use-service-modules cups desktop vpn xorg)
+(use-package-modules cups wm)
+(use-service-modules cups dbus desktop vpn xorg)
 
 (define-public lap-operating-system
   (operating-system
    (inherit base-operating-system)
-   (initrd microcode-initrd)
    (host-name "guix-lap")
 
    (groups (append (map (lambda (group-name)
@@ -36,12 +34,17 @@
                          "wheel")))
                  %base-user-accounts))
 
+   (packages
+    (cons* fwupd-nonfree
+           (operating-system-packages base-operating-system)))
+
    (services
     (cons*
      (service elogind-service-type)
      (service bluetooth-service-type
               (bluetooth-configuration
-               (name "guix-lap")))
+               (name "guix-lap")
+               (auto-enable? #t)))
 
      (service cups-service-type
               (cups-configuration
@@ -57,17 +60,21 @@
                (name "swaylock")
                (program (file-append swaylock "/bin/swaylock"))))
 
-	 (service wireguard-service-type
+     (service wireguard-service-type
               (wireguard-client-config 2))
+
+     (simple-service 'fwupd-dbus dbus-root-service-type
+                     (list fwupd-nonfree))
 
      (operating-system-user-services base-operating-system)))
 
    (swap-devices (list (swap-space
                         (target
-                         (uuid "85bdc49e-4d97-429e-837f-79d68bc568ef")))))
+                         (uuid "e5f30f68-8021-45bf-9768-5895f5c9eb54")))))
 
    (mapped-devices (list (mapped-device
-                          (source (uuid "2f82db46-4d80-4e91-9ba6-72c3ef78b536"))
+                          (source
+                           (uuid "b7913f43-e874-4862-a40e-823cc136795c"))
                           (target "cryptroot")
                           (type luks-device-mapping))))
 
@@ -78,7 +85,7 @@
                          (dependencies mapped-devices))
                         (file-system
                          (mount-point "/boot/efi")
-                         (device (uuid "1921-C31A" 'fat32))
+                         (device (uuid "F6FD-DB47" 'fat32))
                          (type "vfat"))
                         %base-file-systems))))
 
