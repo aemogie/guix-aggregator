@@ -60,5 +60,5 @@ Dependencies:
 + [[https://guix.gnu.org/manual/devel/en/guix.html][GNU Guix Reference Manual]]: See [[https://guix.gnu.org/manual/devel/en/html_node/Getting-Started.html][Getting Started]] if you want an entry point.
 + [[https://guix.gnu.org/cookbook/en/guix-cookbook.html][GNU Guix Cookbook]]: Tutorials and detailed examples.  Some entries may be outdated, contribution is welcome ;)
 + [[https://guix.gnu.org/en/contact/][Contact — GNU Guix]]: Official communication channels.
-+ [[https://packages.guix.gnu.org/][Packages — GNU Guix]]: Official package index, =guix= channel only (see [[https://guix.gnu.org/manual/devel/en/html_node/Channels.html][Channels - GNU Guix Reference Manual]]).
++ [[https://packages.guix.gnu.org/][Packages — GNU Guix]]: Official package index, =guix= channel only (see [[https://guix.gnu.org/manual/devel/en/html_node/Channels.html][Channels]] in /GNU Guix Reference Manual/).
 + [[https://toys.whereis.social/][Toys / Webring for GNU Guix channels]]: Unofficial package index, including most known Guix channels.

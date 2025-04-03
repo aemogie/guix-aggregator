@@ -59,6 +59,7 @@
   #:use-module (gnu home services shells)
   #:use-module (gnu home services shepherd)
   #:use-module (sops home services sops)
+  #:use-module (rosenthal services keyboard)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages fonts)
   #:use-module (gnu packages gnupg)
@@ -139,6 +140,10 @@
 #+begin_src scheme
   (keyboard-layout "us" "dvorak"
                    #:options '("ctrl:nocaps"))
+#+end_src
+
+#+begin_src scheme :noweb-ref home-service
+  (service home-keyboard-service-type keyboard-layout)
 #+end_src
 
 ** Console Font
@@ -292,10 +297,10 @@ https://github.com/fishinthecalculator/sops-guix
 #+begin_src scheme
   (customize-linux
    #:name "linux-dorphine"
-   #:linux linux-6.13
+   #:linux linux
    #:source
    (origin
-     (inherit (package-source linux-6.13))
+     (inherit (package-source linux))
      (patches
       (list (origin
               (method url-fetch)
@@ -356,10 +361,10 @@ https://github.com/fishinthecalculator/sops-guix
 #+begin_src scheme :noweb-ref service
   (service nftables-service-type
     (nftables-configuration
-      (ruleset (testament-file-object "nftables-dorphine.nft"))))
+      (ruleset (testament-file-object "dorphine-nftables.nft"))))
 #+end_src
 
-[[file:../files/plain/nftables-dorphine.nft][nftables-dorphine.nft]]
+[[file:../files/plain/dorphine-nftables.nft][dorphine-nftables.nft]]
 
 #+begin_src scheme :noweb-ref service
   (simple-service 'transparent-proxy
@@ -725,7 +730,6 @@ To use NVK, mesa should be installed into a profile.
 ** xdg-desktop-portal
 #+begin_src scheme :noweb-ref home-package
   xdg-desktop-portal
-  xdg-desktop-portal-gnome
   xdg-desktop-portal-gtk
 #+end_src
 
@@ -975,7 +979,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
      '((citre-find-definition-backends
         . (eglot arei elisp tags dumb-jump))
        (citre-find-reference-backends
-        .(eglot elisp dumb-jump)))))
+        . (eglot elisp dumb-jump)))))
 
   (emacs-package
     (name 'citre-config)
@@ -1476,13 +1480,11 @@ Required for using Rime in minibuffer.
        (wl-fcc . ".inbox")
        (wl-fcc-force-as-read . #t)
        (wl-local-domain . "ultrarare.space")
-       (wl-plugged . #f)
-       (wl-refile-rule-alist
-        . (("To"
-            ("dmarc@boiledscript.com" . ".archive/dmarc")))))))
+       (wl-plugged . #f))))
 #+end_src
 
 [[file:../files/dotfiles/.config/wanderlust/folders][~/.config/wanderlust/folders]]
+
 * Miscellaneous
 #+begin_src scheme :noweb-ref module
   #:use-module (gnu system hurd)
@@ -1534,10 +1536,10 @@ Required for using Rime in minibuffer.
   (service btrbk-service-type
     (btrbk-configuration
       (config-file
-       (testament-file-object "btrbk-dorphine.conf"))))
+       (testament-file-object "dorphine-btrbk.conf"))))
 #+end_src
 
-[[file:../files/plain/btrbk-dorphine.conf][btrbk-dorphine.conf]]
+[[file:../files/plain/dorphine-btrbk.conf][dorphine-btrbk.conf]]
 
 ** childhurd
 #+begin_src scheme :noweb yes :noweb-ref service
@@ -1765,6 +1767,8 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
 
 #+begin_src scheme :noweb yes :noweb-ref home-xdg-configuration-file
   ("waybar/config.jsonc" ,<<waybar-config>>)
+  ("waybar/colors.css" ,(testament-file-object "dorphine-waybar-colors.css"))
+  ("waybar/style.css" ,(testament-file-object "waybar.css"))
 #+end_src
 
 #+name: waybar-config
@@ -1783,7 +1787,9 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
 
 [[file:../files/plain/waybar.jsonc][waybar.jsonc]]
 
-[[file:../files/dotfiles/.config/waybar/style.css][~/.config/waybar/style.css]]
+[[file:../files/plain/dorphine-waybar-colors.css][dorphine-waybar-colors.css]]
+
+[[file:../files/plain/waybar.css][waybar.css]]
 
 ** zoxide
 #+begin_src scheme :noweb-ref home-fish-config

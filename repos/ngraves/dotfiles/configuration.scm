@@ -5,8 +5,8 @@
 ;; This repository is a resource for cherry-picking code snippets and holds all
 ;; my configs, made clean and compact by RDE and GNU Guix.
 
-;; To develop Guix/RDE rapidly, I use local repositories and tooling in ./make.
-;; The commands are ./make pull/home/system/all, with guix's flags (e.g. -K).
+;; To develop Guix/RDE rapidly, I use local repositories and tooling.
+;; This file uses a dispatch to work with several commands: guix rde/home/system
 ;; See used channels at ./channels.scm
 ;; Tip: to sign commits when broken: `git --no-gpg-sign'
 
@@ -14,6 +14,7 @@
              (ice-9 popen)
              (ice-9 rdelim)
              (srfi srfi-1)
+             (srfi srfi-2)
              (srfi srfi-26)
 
              (guix build utils)
@@ -133,264 +134,27 @@
   (string-append (dirname (current-filename)) "/files/btrbk.conf"))
 
 
-;;; Machine helpers
-(define root-impermanence-btrfs-layout
-  '((store  . "/gnu/store")
-    (guix  . "/var/guix")
-    (log  . "/var/log")
-    (lib  . "/var/lib")
-    (boot . "/boot")
-    (NetworkManager . "/etc/NetworkManager")))
-
-(define home-impermanence-para-btrfs-layout
-  (append-map
-   (lambda (subvol)
-     (list
-      (cons (string->symbol
-             (if (string-prefix? "." subvol)
-                 (string-drop subvol 1)
-                 subvol))
-            (string-append "/home/graves/" subvol))))
-   '("projects" "spheres" "resources" "archives" ".local" ".cache")))
-
-(define %nvidia-services
-  (list ;; Currently not working properly on locking
-   ;; see https://github.com/NVIDIA/open-gpu-kernel-modules/issues/472
-   (service (@ (nongnu services nvidia) nvidia-service-type)
-            ((@ (nongnu services nvidia) nvidia-configuration)
-             (driver (@@ (nongnu packages nvidia) mesa/fake-beta))
-             (firmware (@ (nongnu packages nvidia) nvidia-firmware-beta))
-             (module (@ (nongnu packages nvidia) nvidia-module-beta))))
-   (simple-service 'nvidia-mesa-utils-package
-                   profile-service-type
-                   (list (@ (gnu packages gl) mesa-utils)))))
-
-(define-record-type* <machine> machine make-machine
-  machine?
-  this-machine
-  (name machine-name)                                    ; string
-  (efi machine-efi)                                      ; file-system
-  (encrypted-uuid-mapped machine-encrypted-uuid-mapped   ; maybe-uuid
-                         (default #f))
-  (btrfs-layout machine-btrfs-layout                     ; alist
-                (default root-impermanence-btrfs-layout))
-  (architecture machine-architecture                     ; string
-                (default "x86_64-linux"))
-  (firmware machine-firmware                             ; list of packages
-            (delayed)
-            (default '()))
-  (kernel-build-options machine-kernel-build-options     ; list of options
-                        (default '()))
-  (root-impermanence? machine-root-impermanence?         ; boolean
-                      (thunked)
-                      (default
-                        (not (assoc 'root (machine-btrfs-layout this-machine)))))
-  (home-impermanence? machine-home-impermanence?         ; boolean
-                      (thunked)
-                      (default
-                        (not (assoc 'home (machine-btrfs-layout this-machine)))))
-  (custom-services machine-custom-services               ; list of system-services
-                   (delayed)
-                   (default '())))
-
-(define %machines
-  (list
-   (machine (name "Precision 3571")
-            (efi "/dev/nvme0n1p1")
-            (encrypted-uuid-mapped "92f9af3d-d860-4497-91ea-9e46a1dacf7a")
-            (btrfs-layout (append '(;;(data . "/data")
-                                    (btrbk_snapshots . "/btrbk_snapshots")
-                                    (mozilla . "/home/graves/.mozilla")
-                                    (zoom . "/home/graves/.zoom"))
-                                  root-impermanence-btrfs-layout
-                                  home-impermanence-para-btrfs-layout))
-            (firmware (list linux-firmware))
-            (custom-services %nvidia-services))
-   (machine (name "20AMS6GD00")
-            (efi "/dev/sda1")
-            (encrypted-uuid-mapped "a9319ee9-f216-4cad-bfa5-99a24a576562"))
-   (machine (name "2325K55")
-            (efi "/dev/sda1")
-            (encrypted-uuid-mapped "824f71bd-8709-4b8e-8fd6-deee7ad1e4f0")
-            (btrfs-layout (cons* '(home . "/home") root-impermanence-btrfs-layout))
-            (firmware (list iwlwifi-firmware)))
-   ;; Might use r8169 module but it works fine without, use linux-libre then.
-   (machine (name "OptiPlex 3020M")
-            (efi "/dev/sda1")
-            (encrypted-uuid-mapped "be1f04af-dafe-4e1b-8e8b-a602951eeb35")
-            (btrfs-layout (cons* '(home . "/home") root-impermanence-btrfs-layout)))))
-
-
-(define %current-machine
-  (let ((name (call-with-input-file
-                  "/sys/devices/virtual/dmi/id/product_name"
-                read-line)))
-    (find (lambda (in) (equal? name (machine-name in)))
-          %machines)))
-
-  (define %mapped-device
-    (let ((uuid (bytevector->uuid
-                  (string->uuid (machine-encrypted-uuid-mapped %current-machine)))))
-      (and (uuid? uuid)
-          (mapped-device
-            (source uuid)
-            (targets (list "enc"))
-            (type luks-device-mapping)))))
-
-  (define root-fs
-    (file-system
-      (mount-point "/")
-      (type (if (machine-root-impermanence? %current-machine)
-                "tmpfs"
-                "btrfs"))
-      (device (if (machine-root-impermanence? %current-machine)
-                  "none"
-                  "/dev/mapper/enc"))
-      (needed-for-boot? #t)
-      (check? #f)))
-
-  (define home-fs
-    (if (machine-home-impermanence? %current-machine)
-        (file-system
-          (mount-point "/home/graves")
-          (type "tmpfs")
-          (device "none")
-          ;; User should have dir ownership.
-          (options "uid=1000,gid=998")
-          (dependencies (append (or (and=> %mapped-device list) '())
-                                ;;                            (list root-fs)
-                                )))
-        (file-system
-          (mount-point "/home")
-          (type "btrfs")
-          (device "/dev/mapper/enc")
-          (options "autodefrag,compress=zstd,subvol=home")
-          (dependencies (append (or (and=> %mapped-device list) '())
-                                ;;                            (list root-fs)
-                                )))
-        )
-    )
-
-  (define get-btrfs-file-system
-    (match-lambda
-      ((subvol . mount-point)
-        (file-system
-         (type "btrfs")
-         (device "/dev/mapper/enc")
-         (mount-point mount-point)
-          (options
-          (format #f "~asubvol=~a"
-                  (if (string=? "/swap" mount-point)
-                      "nodatacow,nodatasum,"
-                      "autodefrag,compress=zstd,")
-                  subvol))
-         (needed-for-boot? (member mount-point
-                                   '("/gnu/store" "/boot" "/var/guix")))
-         (dependencies (append (or (and=> %mapped-device list) '())
-                               (if (not (machine-root-impermanence? %current-machine))
-                                   (list root-fs)
-                                   '())
-                               (if (and (not (machine-home-impermanence? %current-machine))
-                                        (string-prefix? "/home/" mount-point))
-                                   (list home-fs)
-                                   '())))))))
-
-  (define btrfs-file-systems
-    (map get-btrfs-file-system
-         (machine-btrfs-layout %current-machine)))
-
-  (define swap-fs (get-btrfs-file-system '(swap . "/swap")))
-
-  (define my-linux
-    (if (null? (machine-firmware %current-machine))
-        linux-libre-6.12
-        linux-6.12))
-
-  (define btrfs-file-systems
-    (append
-     (list root-fs home-fs)
-     btrfs-file-systems
-     (list (file-system
-             (mount-point "/boot/efi")
-             (type "vfat")
-             (device (machine-efi %current-machine))
-             (needed-for-boot? #t))
-           swap-fs)))
-
-(define (get-hardware-features)
-  (let* ((user-file-systems btrfs-file-systems
-                            (partition
-                             (lambda (fs)
-                               ;; Or: has a file-system-dependency on HOME
-                               (string-prefix?
-                                "/home/"
-                                ;; (get-value 'home-directory config)
-                                (file-system-mount-point fs)))
-                             btrfs-file-systems)))
-    (append
-     (list
-      (feature-bootloader)
-      (feature-file-systems
-       #:mapped-devices (list %mapped-device)
-       #:swap-devices
-       (list (swap-space (target "/swap/swapfile")
-                         (dependencies (list swap-fs))))
-       #:file-systems btrfs-file-systems
-       #:user-pam-file-systems user-file-systems
-       #:base-file-systems (list %pseudo-terminal-file-system
-                                 %debug-file-system
-                                 (file-system
-                                   (device "tmpfs")
-                                   (mount-point "/dev/shm")
-                                   (type "tmpfs")
-                                   (check? #f)
-                                   (flags '(no-suid no-dev))
-                                   (options "size=80%")  ; This line has been changed.
-                                   (create-mount-point? #t))
-                                 %efivars-file-system
-                                 %immutable-store))
-      (feature-kernel
-       #:kernel my-linux
-       #:initrd microcode-initrd
-       #:initrd-modules
-       (append (list "vmd") (@(gnu system linux-initrd) %base-initrd-modules))
-       #:kernel-arguments  ; not clear, but these are additional to defaults
-       (list
-        ;; "modprobe.blacklist=pcspkr" "rootfstype=tmpfs"
-        ;; Currently not working properly on locking
-        ;; see https://github.com/NVIDIA/open-gpu-kernel-modules/issues/472
-        "modprobe.blacklist=pcspkr,nouveau" "rootfstype=tmpfs"
-        ;; "nvidia_drm.modeset=1" "nvidia_drm.fbdev=1"
-        )
-       #:firmware (machine-firmware %current-machine)))
-     (if (machine-home-impermanence? %current-machine)
-         (list
-          (feature-user-pam-hooks
-           #:on-login
-           (program-file
-            "guix-home-activate-on-login"
-            #~(let* ((user (getenv "USER"))
-                     (pw (getpw user))
-                     (home (passwd:dir pw))
-                     (profile
-                      (string-append "/var/guix/profiles/per-user/" user)))
-                (chdir home)
-                (unless (file-exists? ".guix-home")
-                  (symlink (string-append profile "/guix-home")
-                           ".guix-home"))
-                (unless (file-exists? ".config/guix/current")
-                  (mkdir ".config")
-                  (mkdir ".config/guix")
-                  (symlink (string-append profile "/current-guix")
-                           ".config/guix/current"))
-                (system ".guix-home/activate")))))
-         '())
-     (let ((services (machine-custom-services %current-machine)))
-       (if (null? services)
-           '()
-           (list (feature-custom-services
-                  #:feature-name-prefix 'machine
-                  #:system-services services)))))))
+;;; Substitutes helpers
+(define %base-services-feature
+  (delay
+    (feature-base-services
+     #:guix-substitute-urls
+     (cons* "https://substitutes.nonguix.org"
+            "https://guix.bordeaux.inria.fr"
+            (@ (guix store) %default-substitute-urls))
+     #:guix-authorized-keys
+     (cons*
+      (origin
+        (method url-fetch)
+        (uri "https://substitutes.nonguix.org/signing-key.pub")
+        (sha256
+         (base32 "0j66nq1bxvbxf5n8q2py14sjbkn57my0mjwq7k1qm9ddghca7177")))
+      (origin
+        (method url-fetch)
+        (uri "https://guix.bordeaux.inria.fr/signing-key.pub")
+        (sha256
+         (base32 "056cv0vlqyacyhbmwr5651fzg1icyxbw61nkap7sd4j2x8qj7ila")))
+      (@ (gnu services base) %default-authorized-guix-keys)))))
 
 
 ;;; Live systems.
@@ -438,36 +202,11 @@
             (service network-manager-service-type)
             (service (@@ (gnu system install) cow-store-service-type) 'mooh!)))
           (feature-shepherd)
-          (feature-base-services
-           #:guix-substitute-urls (list "https://substitutes.nonguix.org")
-           #:guix-authorized-keys (list nonguix-key)))))))))
+          (force %base-services-feature))))))))
 
-
-;;; Substitutes helpers
-(define %base-services-feature
-  (delay
-    (feature-base-services
-     #:guix-substitute-urls
-     (cons* "https://substitutes.nonguix.org"
-            "https://guix.bordeaux.inria.fr"
-            (@ (guix store) %default-substitute-urls))
-     #:guix-authorized-keys
-     (cons*
-      (origin
-        (method url-fetch)
-        (uri "https://substitutes.nonguix.org/signing-key.pub")
-        (sha256
-         (base32 "0j66nq1bxvbxf5n8q2py14sjbkn57my0mjwq7k1qm9ddghca7177")))
-      (origin
-        (method url-fetch)
-        (uri "https://guix.bordeaux.inria.fr/signing-key.pub")
-        (sha256
-         (base32 "056cv0vlqyacyhbmwr5651fzg1icyxbw61nkap7sd4j2x8qj7ila")))
-      (@ (gnu services base) %default-authorized-guix-keys)))))
 
 
 ;;; Hardware/Host file systems
-;; BTRFS + LUKS, see ./make.
 (define %host-features
   (list
    (feature-host-info
@@ -607,8 +346,7 @@
               (file-name "fond_lock_pre.jpg")
               (sha256
                (base32 "1cyvaj0yvy6zvzy9yf1z6i629rwjcq3dni01phb599sp4n2cpa8g"))))))
-   (feature-swaynotificationcenter)
-   (feature-dictation)))
+   (feature-swaynotificationcenter)))
 
 
 ;;; Mail
@@ -918,7 +656,6 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
    (feature-emacs-completion)
    (feature-emacs-corfu)
    (feature-emacs-vertico)
-   (feature-emacs-project)
    (feature-emacs-pdf-tools)
    (feature-emacs-devdocs)
    (feature-emacs-dape)
@@ -1002,11 +739,11 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
    (feature-go)
    (feature-guile)
    (feature-python)
-   (feature-scilab)
 
    (feature-emacs-elisp)
    (feature-emacs-power-menu)
-   (feature-emacs-shell)))
+   (feature-emacs-shell)
+   (feature-emacs-project)))
 
 
 ;;; Main features
@@ -1046,8 +783,6 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
 
     (feature-compile)
     (feature-direnv)
-    (feature-guix-extensions
-     #:extension-packages (strings->packages "guix-stack"))
 
     (feature-git
      #:sign-commits? #t
@@ -1149,9 +884,261 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
        ))
       )))
    %wm-features
-   %emacs-features
-   (force %mail-features)
-   (list (force %ssh-feature))))
+   %emacs-features))
+
+
+;;; Machine helpers
+(define root-impermanence-btrfs-layout
+  '((store  . "/gnu/store")
+    (guix  . "/var/guix")
+    (log  . "/var/log")
+    (lib  . "/var/lib")
+    (boot . "/boot")
+    (NetworkManager . "/etc/NetworkManager")))
+
+(define home-impermanence-para-btrfs-layout
+  (append-map
+   (lambda (subvol)
+     (list
+      (cons (string->symbol
+             (if (string-prefix? "." subvol)
+                 (string-drop subvol 1)
+                 subvol))
+            (string-append "/home/graves/" subvol))))
+   '("projects" "spheres" "resources" "archives" ".local" ".cache")))
+
+(define %nvidia-services
+  (delay
+    (list ;; Currently not working properly on locking
+     ;; see https://github.com/NVIDIA/open-gpu-kernel-modules/issues/472
+     (service (@ (nongnu services nvidia) nvidia-service-type)
+              ((@ (nongnu services nvidia) nvidia-configuration)
+               (driver (@@ (nongnu packages nvidia) mesa/fake-beta))
+               (firmware (@ (nongnu packages nvidia) nvidia-firmware-beta))
+               (module (@ (nongnu packages nvidia) nvidia-module-beta))))
+     (simple-service 'nvidia-mesa-utils-package
+                     profile-service-type
+                     (list (@ (gnu packages gl) mesa-utils))))))
+
+(define-record-type* <machine> machine make-machine
+  machine?
+  this-machine
+  (name machine-name)                                    ; string
+  (efi machine-efi)                                      ; file-system
+  (encrypted-uuid-mapped machine-encrypted-uuid-mapped   ; maybe-uuid
+                         (default #f))
+  (btrfs-layout machine-btrfs-layout                     ; alist
+                (default root-impermanence-btrfs-layout))
+  (architecture machine-architecture                     ; string
+                (default "x86_64-linux"))
+  (firmware machine-firmware                             ; list of packages
+            (delayed)
+            (default '()))
+  (kernel-build-options machine-kernel-build-options     ; list of options
+                        (default '())))
+
+(define (machine-root-impermanence? machine)
+  (not (assoc 'root (machine-btrfs-layout machine))))
+
+(define (machine-home-impermanence? machine)
+  (not (assoc 'home (machine-btrfs-layout machine))))
+
+(define %machines
+  (list
+   (machine (name "Precision 3571")
+            (efi "/dev/nvme0n1p1")
+            (encrypted-uuid-mapped "92f9af3d-d860-4497-91ea-9e46a1dacf7a")
+            (btrfs-layout (append '(;;(data . "/data")
+                                    (btrbk_snapshots . "/btrbk_snapshots")
+                                    (mozilla . "/home/graves/.mozilla")
+                                    (zoom . "/home/graves/.zoom"))
+                                  root-impermanence-btrfs-layout
+                                  home-impermanence-para-btrfs-layout))
+            (firmware (list linux-firmware)))
+   (machine (name "20AMS6GD00")
+            (efi "/dev/sda1")
+            (encrypted-uuid-mapped "a9319ee9-f216-4cad-bfa5-99a24a576562"))
+   (machine (name "2325K55")
+            (efi "/dev/sda1")
+            (encrypted-uuid-mapped "824f71bd-8709-4b8e-8fd6-deee7ad1e4f0")
+            (btrfs-layout root-impermanence-btrfs-layout)
+            (firmware (list iwlwifi-firmware)))
+   ;; Might use r8169 module but it works fine without, use linux-libre then.
+   (machine (name "OptiPlex 3020M")
+            (efi "/dev/sda1")
+            (encrypted-uuid-mapped "be1f04af-dafe-4e1b-8e8b-a602951eeb35")
+            (btrfs-layout root-impermanence-btrfs-layout))))
+
+
+(define %current-machine
+  (let ((name (call-with-input-file
+                  "/sys/devices/virtual/dmi/id/product_name"
+                read-line)))
+    (find (lambda (in) (equal? name (machine-name in)))
+          %machines)))
+
+  (define %mapped-device
+    (let ((uuid (bytevector->uuid
+                  (string->uuid (machine-encrypted-uuid-mapped %current-machine)))))
+      (and (uuid? uuid)
+          (mapped-device
+            (source uuid)
+            (targets (list "enc"))
+            (type luks-device-mapping)))))
+
+  (define root-fs
+    (file-system
+      (mount-point "/")
+      (type (if (machine-root-impermanence? %current-machine)
+                "tmpfs"
+                "btrfs"))
+      (device (if (machine-root-impermanence? %current-machine)
+                  "none"
+                  "/dev/mapper/enc"))
+      (needed-for-boot? #t)
+      (check? #f)))
+
+  (define home-fs
+    (if (machine-home-impermanence? %current-machine)
+        (file-system
+          (mount-point "/home/graves")
+          (type "tmpfs")
+          (device "none")
+          ;; User should have dir ownership.
+          (options "uid=1000,gid=998")
+          (dependencies (or (and=> %mapped-device list) '())))
+        (file-system
+          (mount-point "/home")
+          (type "btrfs")
+          (device "/dev/mapper/enc")
+          (options "autodefrag,compress=zstd,subvol=home")
+          (dependencies (or (and=> %mapped-device list) '())))))
+
+  (define get-btrfs-file-system
+    (match-lambda
+      ((subvol . mount-point)
+        (file-system
+         (type "btrfs")
+         (device "/dev/mapper/enc")
+         (mount-point mount-point)
+          (options
+          (format #f "~asubvol=~a"
+                  (if (string=? "/swap" mount-point)
+                      "nodatacow,nodatasum,"
+                      "autodefrag,compress=zstd,")
+                  subvol))
+         (needed-for-boot? (member mount-point
+                                   '("/gnu/store" "/boot" "/var/guix")))
+         (dependencies (append (or (and=> %mapped-device list) '())
+                               (if (not (machine-root-impermanence? %current-machine))
+                                   (list root-fs)
+                                   '())
+                               (if (and (not (machine-home-impermanence? %current-machine))
+                                        (string-prefix? "/home/" mount-point))
+                                   (list home-fs)
+                                   '())))))))
+
+  (define swap-fs (get-btrfs-file-system '(swap . "/swap")))
+
+  (define my-linux
+    (if (null? (machine-firmware %current-machine))
+        linux-libre-6.12
+        linux-6.12))
+
+  (define btrfs-file-systems
+    (append
+     (list root-fs home-fs)
+     (map get-btrfs-file-system
+          (machine-btrfs-layout %current-machine))
+     (list (file-system
+             (mount-point "/boot/efi")
+             (type "vfat")
+             (device (machine-efi %current-machine))
+             (needed-for-boot? #t))
+           swap-fs)))
+
+(define %machine-features
+  (let* ((user-file-systems btrfs-file-systems
+                            (partition
+                             (lambda (fs)
+                               ;; Or: has a file-system-dependency on HOME
+                               (string-prefix?
+                                "/home/"
+                                ;; (get-value 'home-directory config)
+                                (file-system-mount-point fs)))
+                             btrfs-file-systems)))
+    (append
+     (list
+      (feature-bootloader)
+      (feature-file-systems
+       #:mapped-devices (list %mapped-device)
+       #:swap-devices
+       (list (swap-space (target "/swap/swapfile")
+                         (dependencies (list swap-fs))))
+       #:file-systems btrfs-file-systems
+       #:user-pam-file-systems user-file-systems
+       #:base-file-systems (list %pseudo-terminal-file-system
+                                 %debug-file-system
+                                 (file-system
+                                   (device "tmpfs")
+                                   (mount-point "/dev/shm")
+                                   (type "tmpfs")
+                                   (check? #f)
+                                   (flags '(no-suid no-dev))
+                                   (options "size=80%")  ; This line has been changed.
+                                   (create-mount-point? #t))
+                                 %efivars-file-system
+                                 %immutable-store))
+      (feature-kernel
+       #:kernel my-linux
+       #:initrd microcode-initrd
+       #:initrd-modules
+       (append (list "vmd") (@(gnu system linux-initrd) %base-initrd-modules))
+       #:kernel-arguments  ; not clear, but these are additional to defaults
+       (list
+        ;; "modprobe.blacklist=pcspkr" "rootfstype=tmpfs"
+        ;; Currently not working properly on locking
+        ;; see https://github.com/NVIDIA/open-gpu-kernel-modules/issues/472
+        "modprobe.blacklist=pcspkr,nouveau" "rootfstype=tmpfs"
+        ;; "nvidia_drm.modeset=1" "nvidia_drm.fbdev=1"
+        )
+       #:firmware (machine-firmware %current-machine)))
+     ;; Features that are in development by machine, or machine-specific
+     (match (machine-name %current-machine)
+       ("Precision 3571"
+        (append
+         (list (feature-custom-services
+                #:feature-name-prefix 'machine
+                #:system-services (force %nvidia-services))
+               (feature-dictation)
+               (feature-guix-extensions
+                #:extension-packages (strings->packages "guix-stack"))
+               (feature-scilab)
+               (force %ssh-feature))
+         (force %mail-features)
+         (if (machine-home-impermanence? %current-machine)
+             (list
+              (feature-user-pam-hooks
+               #:on-login
+               (program-file
+                "guix-home-activate-on-login"
+                #~(let* ((user (getenv "USER"))
+                         (pw (getpw user))
+                         (home (passwd:dir pw))
+                         (profile
+                          (string-append "/var/guix/profiles/per-user/" user)))
+                    (chdir home)
+                    (unless (file-exists? ".guix-home")
+                      (symlink (string-append profile "/guix-home")
+                               ".guix-home"))
+                    (unless (file-exists? ".config/guix/current")
+                      (mkdir ".config")
+                      (mkdir ".config/guix")
+                      (symlink (string-append profile "/current-guix")
+                               ".config/guix/current"))
+                    (system ".guix-home/activate")))))
+             '())))
+       (_ '())))))
 
 
 ;;; rde-config and helpers for generating home-environment and
@@ -1170,7 +1157,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
                      %user-features
                      %main-features
                      %host-features
-                     (get-hardware-features))))))  ; defined in make.
+                     %machine-features)))))
     config))
 
 ;; Dispatcher, self explanatory.
@@ -1194,7 +1181,7 @@ rde, home and system subcommands only!"))))
 ;; More info : https://guix.gnu.org/manual/en/html_node/System-Installation.html
 ;;             https://wiki.systemcrafters.cc/guix/nonguix-installation-guide
 
-;; Building the installation image: `guix system image make'
+;; Building the installation image: `guix system image configuration.scm'
 
 ;; Sending to USB stick: `sudo dd if=/gnu/store/{sha256}-disk-image of=/dev/sdX bs=1M status=progress'
 
@@ -1234,7 +1221,7 @@ rde, home and system subcommands only!"))))
 
 ;; Find encrypted partition UUIDs for configuration: `cryptsetup luksUUID /dev/<root partition>'
 
-;; Init installation: `guix system init make /mnt'
+;; Init installation: `guix system init configuration.scm /mnt'
 
 ;; Reboot --> `passwd' --> `passwd <username>'
 
@@ -1257,9 +1244,3 @@ rde, home and system subcommands only!"))))
 
 ;;; Currently abandonned:
 ;; - system-connection services. see commit log.
-
-;; Local Variables:
-;; mode: scheme
-;; fill-column: 80
-;; compilation-arguments: ("./make all -K" t nil nil)
-;; End:

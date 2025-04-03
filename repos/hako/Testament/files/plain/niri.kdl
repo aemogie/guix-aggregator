@@ -4,11 +4,6 @@
 
 input {
     keyboard {
-        xkb {
-            layout "us"
-            variant "dvorak"
-            options "ctrl:nocaps"
-        }
         repeat-delay 300
         repeat-rate 30
     }
@@ -17,11 +12,6 @@ input {
         natural-scroll
     }
     warp-mouse-to-focus
-}
-
-output "eDP-2" {
-    mode "2560x1440@239.999"
-    variable-refresh-rate
 }
 
 layout {

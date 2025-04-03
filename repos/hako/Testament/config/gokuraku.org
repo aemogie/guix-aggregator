@@ -185,10 +185,10 @@ No need to install less used ones, prefer ‘guix shell’.
 #+begin_src scheme :noweb-ref service
   (service nftables-service-type
     (nftables-configuration
-      (ruleset (testament-file-object "nftables-gokuraku.nft"))))
+      (ruleset (testament-file-object "gokuraku-nftables.nft"))))
 #+end_src
 
-[[file:../files/plain/nftables-gokuraku.nft][nftables-gokuraku.nft]]
+[[file:../files/plain/gokuraku-nftables.nft][gokuraku-nftables.nft]]
 
 ** static-networking
 #+begin_src scheme :noweb-ref service
@@ -524,7 +524,7 @@ No need to install less used ones, prefer ‘guix shell’.
   (service btrbk-service-type
     (btrbk-configuration
       (config-file
-       (testament-file-object "btrbk-gokuraku.conf"))))
+       (testament-file-object "gokuraku-btrbk.conf"))))
 #+end_src
 
-[[file:../files/plain/btrbk-gokuraku.conf][btrbk-gokuraku.conf]]
+[[file:../files/plain/gokuraku-btrbk.conf][gokuraku-btrbk.conf]]

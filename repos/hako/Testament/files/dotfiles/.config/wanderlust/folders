@@ -10,7 +10,6 @@ Archive {
         .archive/admin          "Admin"
         .archive/billing        "Billing"
         .archive/support        "Support"
-        .archive/dmarc          "DMARC Reports"
 }
 
 List {

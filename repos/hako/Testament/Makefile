@@ -10,7 +10,6 @@ GUIX  := guix
 
 # Available in guix shell environment, set up direnv to load.
 FIND  := find
-GIT   := git
 GUILD := guild
 
 %.scm: %.org

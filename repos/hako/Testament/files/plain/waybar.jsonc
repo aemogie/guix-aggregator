@@ -12,7 +12,6 @@
         "wlr/taskbar",
         "cpu",
         "memory",
-        "custom/nvidia",
         "temperature",
     ],
     "modules-center": [
@@ -52,12 +51,6 @@
             "full": 98,
         },
         "interval": 2,
-    },
-    "custom/nvidia": {
-        "exec": "nvidia-smi --query-gpu=utilization.gpu --format=csv,nounits,noheader",
-        "format": "{}% \uE163",
-        "interval": 2,
-        "tooltip": false,
     },
     "temperature": {
         "critical-threshold": 80,
