@@ -17,11 +17,13 @@
 
 (load "../palette.scm")
 (load "./hyprlang.scm")
+(load "./hyprpaper.scm")
 
 (define-module (sss hyprland hyprland)
   #:use-module (gnu)
   #:use-module (sss palette)
-  #:use-module (sss hyprland hyprlang))
+  #:use-module (sss hyprland hyprlang)
+  #:use-module (sss hyprland hyprpaper))
 
 (define* (notify-cmd #:key title subtitle)
   (format #f
@@ -185,7 +187,7 @@
                            #:bind "mouse-left"
                            #:dispatch 'movewindow))))
 
-(define* (hypr-common-exec-binds)
+(define* (hypr-common-exec-binds #:key clone-dir palette)
   (map (lambda (kb)
          (serialize-hypr-setting 'bind kb))
        (list (special-bind #:mod "s"
@@ -204,6 +206,12 @@
              (exec-bind #:mod "s"
                         #:bind "L"
                         #:cmd "hyprlock")
+             (exec-bind #:mod "s-S"
+                        #:bind "B"
+                        #:cmd (format #f "hyprctl hyprpaper reload ,~a"
+                                      (sss-hypr-wallpaper #:clone-dir
+                                                          clone-dir
+                                                          #:palette palette)))
              (exec-bind #:mod "s"
                         #:bind "T"
                         #:cmd "alacritty msg create-window || alacritty")
@@ -270,9 +278,10 @@
                         #:dispatch "cyclenext"
                         #:cmd ""))))
 
-(define* (hypr-binds)
+(define* (hypr-binds #:key clone-dir palette)
   (append hypr-media-binds hypr-workspace-binds hypr-movetoworkspace-binds
-          (hypr-common-exec-binds) hypr-mouse-binds))
+          (hypr-common-exec-binds #:clone-dir clone-dir
+                                  #:palette palette) hypr-mouse-binds))
 
 (begin
   (define* (sss-hyprland-config #:key clone-dir
@@ -312,7 +321,10 @@
            (serialized-animations (serialize-hypr-section #:section 'animations
                                                           #:settings
                                                           hypr-animations))
-           (serialized-key-bindings (string-join (hypr-binds) "\n"))
+           (serialized-key-bindings (string-join (hypr-binds #:clone-dir
+                                                             clone-dir
+                                                             #:palette palette)
+                                                 "\n"))
            (serialized-window-rules (string-join (map (lambda (r)
                                                         (serialize-hypr-setting 'windowrulev2
                                                          r)) window-rules)

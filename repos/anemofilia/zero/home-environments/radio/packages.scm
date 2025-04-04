@@ -28,7 +28,8 @@
         #:use-module (gnu packages image-viewers)
         #:use-module (gnu packages imagemagick)
         #:use-module (gnu packages irc)
-  #|L|# #:use-module (gnu packages libcanberra)
+  #|L|# #:use-module (gnu packages lean)
+        #:use-module (gnu packages libcanberra)
         #:use-module (gnu packages linux)
   #|M|# #:use-module (gnu packages mail)
         #:use-module (gnu packages maths)
@@ -94,6 +95,7 @@
             guix-contrib
             haskell
             image
+            mathematics
             messaging
             music
             password
@@ -213,6 +215,9 @@
                 texlive-collection-langenglish
                 texlive-collection-langfrench
                 texlive-collection-mathscience))
+
+(define mathematics
+  (list #|lean|# lean4))
 
 (define sound
   (list #|linux     |# wireplumber-minimal

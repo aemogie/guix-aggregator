@@ -1,42 +1,48 @@
 [user]
-	email = lgcoelho@disroot.org
-	name = Luis Guilherme Coelho
-	signingkey = F164709E5FC7B32BAEC79F371F2E76ACE3F531C8
+    email = lgcoelho@disroot.org
+    name = Luis Guilherme Coelho
+    signingkey = F164709E5FC7B32BAEC79F371F2E76ACE3F531C8
 [color]
-	ui = true
+    ui = true
 [color "diff-highlight"]
-	oldNormal = red bold
-	oldHighlight = red bold 52
-	newNormal = green bold
-	newHighlight = green bold 22
+    oldNormal = red bold
+    oldHighlight = red bold 52
+    newNormal = green bold
+    newHighlight = green bold 22
 [color "diff"]
-	meta = yellow
-	frag = magenta bold
-	commit = yellow bold
-	old = red bold
-	new = green bold
-	whitespace = red reverse
+    meta = yellow
+    frag = magenta bold
+    commit = yellow bold
+    old = red bold
+    new = green bold
+    whitespace = red reverse
 [core]
-	editor = kak
-	pager = diff-so-fancy | less --tabs=4 -RFX
+    editor = kak
+    pager = diff-so-fancy | less --tabs=4 -RFX
 [filter "lfs"]
-	required = true
-	clean = git-lfs clean -- %f
-	smudge = git-lfs smudge -- %f
-	process = git-lfs filter-process
+    required = true
+    clean = git-lfs clean -- %f
+    smudge = git-lfs smudge -- %f
+    process = git-lfs filter-process
 [init]
-	defaultBranch = main
+    defaultBranch = main
 [usern]
-	name = anemofilia
+    name = anemofilia
 [alias]
-	see = log --graph --oneline
-	see-all = log --graph --all --oneline
-	last = log -1 HEAD
-	unstage = reset HEAD
-	root = rev-parse --show-toplevel
+    see = log --graph --oneline
+    see-all = log --graph --all --oneline
+    last = log -1 HEAD
+    unstage = reset HEAD
+    root = rev-parse --show-toplevel
 [credential]
-	helper = cache
+    helper = cache
 [commit]
-	gpgsign = true
+    gpgsign = true
 [interactive]
-	diffFilter = diff-so-fancy --patch
+    diffFilter = diff-so-fancy --patch
+[sendemail]
+    smtpserver = disroot.org
+    smtpuser = lgcoelho@disroot.org
+    smtpencryption = ssl
+    smtpserverport = 465
+    annotate = true

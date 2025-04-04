@@ -72,7 +72,7 @@ binds {
 }
 
 prefer-no-csd
-screenshot-path "~/Library/Pictures/Screenshots/%Y%m%d-%H%M%S.png"
+screenshot-path "/mnt/Mentha/@Library/Pictures/Screenshots/%Y%m%d-%H%M%S.png"
 spawn-at-startup "sh" "-c" "pgrep --uid $USER shepherd > /dev/null || shepherd"
 spawn-at-startup "$$bin/xwayland-satellite$$" ":233"
 

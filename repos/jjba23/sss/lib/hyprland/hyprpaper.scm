@@ -25,7 +25,7 @@
 
 ;; Define diverse wallpapers based on the active color scheme. 
 (begin
-  (define* (hypr-wallpaper #:key clone-dir palette)
+  (define* (sss-hypr-wallpaper #:key clone-dir palette)
     (cond
       ((eq? 'sss-palette-ef-cyprus palette)
        (format #f "~a/resources/wallpapers/some-forest.jpg" clone-dir))
@@ -39,13 +39,12 @@
       ((eq? 'sss-palette-ef-autumn palette)
        (format #f "~a/resources/wallpapers/0mar2ygf59je1.jpeg" clone-dir))
       ((eq? 'sss-palette-everforest-dark palette)
-       (format #f "~a/resources/wallpapers/a_forest_with_moss_and_trees.jpg"
-               clone-dir))
+       (format #f "~a/resources/wallpapers/redwood-forest.jpg" clone-dir))
       ((eq? 'sss-palette-everforest-light palette)
        (format #f "~a/resources/wallpapers/PXL_20250326_164100026.jpg"
                clone-dir))
       (else (format #f "~a/resources/wallpapers/some-forest.jpg" clone-dir))))
-  (export hypr-wallpaper))
+  (export sss-hypr-wallpaper))
 
 (begin
   (define* (sss-hyprpaper-config #:key img)
@@ -61,7 +60,7 @@
 (begin
   (define* (sss-hyprpaper-svc #:key clone-dir palette)
     `((".config/hypr/hyprpaper.conf" ,(plain-file "hyprpaper.conf"
-                                                  (sss-hyprpaper-config #:img (hypr-wallpaper
+                                                  (sss-hyprpaper-config #:img (sss-hypr-wallpaper
                                                                                #:clone-dir
                                                                                clone-dir
                                                                                #:palette

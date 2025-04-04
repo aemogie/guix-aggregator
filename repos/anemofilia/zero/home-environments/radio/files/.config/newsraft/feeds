@@ -57,7 +57,6 @@ https://www.greenpeace.org/international/feed/                            "Green
 https://revistaforum.com.br/rss/feed.html?r=5                             "Revista Fórum - Meio Ambiente"
 
 @ Scheme < reload-period 720
-https://www.blogger.com/feeds/8288194986820249216/posts/default/-/scheme  "Abstract Heresies"
 https://invidious.nerdvpn.de/feed/channel/UCuj_loxODrOPxSsXDfJmpng        "Andrew Tropin"
 https://invidious.nerdvpn.de/feed/channel/UChW6oX-CYk5jWYZKZaMpVKg        "Guix Social"
 https://guix.gnu.org/feeds/blog.atom                                      "Guix System"
@@ -94,6 +93,11 @@ https://static.fsf.org/fsforg/rss/news.xml                                "Free 
 https://hnrss.org/newest                                                  "Hacker News"
 https://theintercept.com/feed/?lang=en                                    "Intercept"
 https://morss.it/https://jornal.usp.br/                                   "Jornal USP"
+https://lobste.rs/t/compsci,distributed,hardware,programming.rss          "Lobsters - Computer Science"
+https://lobste.rs/t/math,formalmethods.rss                                "Lobsters - Mathematics"
+https://lobste.rs/t/cogsci.rss                                            "Lobsters - Natural Sciences"
+https://lobste.rs/t/clojure,lisp,haskell,rust,zig.rss                     "Lobsters - Programming Languages"
+https://lobste.rs/t/emacs,nix.rss                                         "Lobsters - Emacs, Nix and Guix"
 https://nucleo.jor.br/rss/                                                "Núcleo Jornalismo"
 https://www.phoronix.com/rss.php                                          "Phoronix"
 http://rss.slashdot.org/Slashdot/slashdotMain                             "Slashdot"

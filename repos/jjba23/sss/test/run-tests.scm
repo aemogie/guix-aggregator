@@ -15,8 +15,8 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
-(use-modules (ice-9 rdelim))
-(use-modules (srfi srfi-64))
+(use-modules (srfi srfi-64)
+             (ice-9 rdelim))
 
 (define xs
   '("../lib/palette.scm" "../lib/emacs.scm" "../lib/hyprland/hyprlang.scm"))

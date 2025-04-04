@@ -1,13 +1,9 @@
 (define-module (home-environments radio)
-  #|Ice-9|#
-  #|M|# #:use-module (ice-9 match)
-
   #|GNU|#
-  #|•|# #:use-module (gnu)
   #|H|# #:use-module (gnu home)
+  #|S|# #:use-module (gnu services)
 
   #|GNU packages|#
-  #|A|# #:use-module (gnu packages admin)
   #|G|# #:use-module (gnu packages gnome)
         #:use-module (gnu packages gnupg)
   #|L|# #:use-module (gnu packages linux)
@@ -25,10 +21,9 @@
         #:use-module (gnu home services sound)
 
   #|Guix|#
-  #|C|# #:use-module (guix channels)
-  #|P|# #:use-module (guix packages)
+  #|G|# #:use-module (guix gexp)
 
-  #|Home environments radio|#
+  #|home-environments radio|#
   #|C|# #:use-module ((home-environments radio channels)
                       #:prefix channel:)
   #|F|# #:use-module ((home-environments radio files)
@@ -61,7 +56,7 @@
         #:use-module (radix home services shepherd)
   #|X|# #:use-module (radix home services xdg)
 
-  #|SOPS services|#
+  #|SOPS home services|#
   #|S|# #:use-module (sops home services sops)
 
   #:export (radio radio.scm))
@@ -80,7 +75,7 @@
              #|F|# packages:file-managing packages:fonts
              #|G|# packages:guix-contrib
              #|I|# packages:image
-             #|M|# packages:messaging packages:music
+             #|M|# packages:mathematics packages:messaging packages:music
              #|P|# packages:password
              #|R|# packages:reading
              #|S|# packages:scheme packages:sound

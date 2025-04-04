@@ -82,48 +82,75 @@
 #+end_src
 
 ** File Systems
-#+begin_src scheme :noweb-ref file-systems
-  (let ((file-system-base
-         (file-system
-           (type "btrfs")
-           (mount-point "/")
-           (device (uuid "e54ffdf2-8113-4f75-9573-623d6e6b05ce"))
-           (create-mount-point? #t)))
-        (options-for-subvolume
-         (cut string-append "compress=zstd,subvol=" <>)))
-    (cons (file-system
-            (inherit file-system-base)
-            (mount-point "/mnt/Mentha")
-            (options "compress=zstd,subvolid=5")
-            (check? #f)
-            (create-mount-point? #t))
-          (map (match-lambda
-                 ((subvolume . mount-point)
-                  (file-system
-                    (inherit file-system-base)
-                    (mount-point mount-point)
-                    (options (options-for-subvolume subvolume))
-                    (check? (string=? "/" mount-point)))))
-               '(("@System" . "/")
-                 ("@Home"   . "/home")
-                 ("@Swap"   . "/swap")
-                 ("@Data"   . "/var/lib")))))
+#+begin_src scheme :noweb yes :noweb-ref kernel-argument
+  "rootfstype=tmpfs"
 #+end_src
 
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
-          (type "vfat")
-          (mount-point "/efi")
-          (device (uuid "BC2E-A7AA" 'fat))
+          (device "none")                 ;NOTE: Must use "none" for tmpfs root.
+          (mount-point "/")
+          (type "tmpfs")
+          (options "mode=0755,size=25%")
+          (check? #f))
+
+        (file-system
+          (device "tmpfs")
+          (mount-point "/var/lock")
+          (type "tmpfs")
+          (flags '(no-suid no-dev no-exec))
+          (options "mode=0755,size=25%")
+          (check? #f)
           (create-mount-point? #t))
 
         (file-system
-          (type "tmpfs")
-          (mount-point "/tmp")
           (device "tmpfs")
+          (mount-point "/tmp")
+          (type "tmpfs")
           (flags '(no-suid no-dev))
           (options "nr_inodes=1m,size=60%")
-          (check? #f)))
+          (check? #f)
+          (create-mount-point? #t))
+
+        (file-system
+          (device (uuid "BC2E-A7AA" 'fat))
+          (mount-point "/efi")
+          (type "vfat")
+          (create-mount-point? #t)))
+#+end_src
+
+#+begin_src scheme :noweb-ref file-systems
+  (let ((file-system-base
+         (file-system
+           (device (uuid "e54ffdf2-8113-4f75-9573-623d6e6b05ce"))
+           (mount-point "placeholder")
+           (type "btrfs")
+           (create-mount-point? #t)))
+        (options-for-subvolume
+         (cut string-append "compress=zstd,subvol=" <>)))
+    (cons* (file-system
+             (inherit file-system-base)
+             (mount-point "/mnt/Mentha")
+             (options "compress=zstd,subvolid=5")
+             (check? #f)
+             (create-mount-point? #t))
+           (map (match-lambda
+                  ((subvolume . mount-point)
+                   (file-system
+                     (inherit file-system-base)
+                     (mount-point mount-point)
+                     (options (options-for-subvolume subvolume))
+                     (check? (string=? mount-point "/gnu/store"))
+                     (needed-for-boot?
+                      (member mount-point '("/etc" "/gnu/store" "/var/guix"))))))
+                '(("@Boot"   . "/boot")
+                  ("@Config" . "/etc")
+                  ("@Store"  . "/gnu/store")
+                  ("@Home"   . "/home")
+                  ("@Swap"   . "/swap")
+                  ("@Guix"   . "/var/guix")
+                  ("@Data"   . "/var/lib")
+                  ("@Log"    . "/var/log")))))
 #+end_src
 
 #+begin_src scheme :noweb-ref swap-space
@@ -1708,7 +1735,7 @@ Required for using Rime in minibuffer.
 
 #+begin_src scheme :noweb-ref home-environment-variable
   ("GUIX_SANDBOX_HOME" . "/mnt/Mentha/@Sandbox")
-  ("GUIX_SANDBOX_EXTRA_SHARES" . "${HOME}/Downloads:${HOME}/Library/Pictures/Screenshots")
+  ("GUIX_SANDBOX_EXTRA_SHARES" . "$HOME/Downloads:/mnt/Mentha/@Library/Pictures/Screenshots")
 #+end_src
 
 My game controller provides both Xbox and Nintendo interfaces but doesn't offer a toggle.

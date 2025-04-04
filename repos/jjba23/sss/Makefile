@@ -80,7 +80,7 @@ define sss-user-reconfigure
 	@guix home reconfigure ./home/$(1).scm --fallback
 	$(call sss-log-complete,"$(1)-reconfigure")
 	$(call sss-notify-success,"SSS $(1)-reconfigure complete","task was completed successfully!")
-	@-fc-cache -frv
+	@-fc-cache -frv &
 endef
 
 
@@ -201,4 +201,4 @@ repl:
 # Unit tests
 test:
 	guix shell -m manifest.scm -- guile --fresh-auto-compile test/run-tests.scm | \
-		awk -f ./test/colorize.awk
+		guile --fresh-auto-compile test/colorize-tests.scm

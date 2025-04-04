@@ -511,6 +511,16 @@ According to size, color and font family"
   :ensure (:host github :repo "emacs-straight/queue" :branch "master")
   :demand t)
 
+(use-package smudge
+  :ensure t  
+  :after (f)
+  :custom
+  (smudge-oauth2-client-secret (f-read-text "~/secrets/smudge-oauth2-client-secret"))
+  (smudge-oauth2-client-id (f-read-text "~/secrets/smudge-oauth2-client-id"))
+  (smudge-player-use-transient-map t)
+  :config
+  (define-key smudge-mode-map (kbd "C-c .") 'smudge-command-map))
+
 
 (use-package helpful
   :ensure t

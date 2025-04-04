@@ -44,6 +44,8 @@
     (text/html icecat google-chrome emacsclient)
     (text/plain emacsclient geany)
     (text/xml emacsclient geany)
+    (x-scheme-handler/http icecat google-chrome)
+    (x-scheme-handler/https icecat google-chrome)
     (image/png org.gnome.gThumb icecat google-chrome feh)
     (image/jpg org.gnome.gThumb icecat google-chrome feh)
     (image/jpeg org.gnome.gThumb icecat google-chrome feh)))

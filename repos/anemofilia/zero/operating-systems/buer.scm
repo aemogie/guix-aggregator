@@ -22,10 +22,7 @@
   #|GNU services|#
   #|•|# #:use-module (gnu services)
   #|A|# #:use-module (gnu services admin)
-  #|B|# #:use-module ((gnu services base)
-                      #:hide (greetd-service-type
-                              greetd-configuration
-                              greetd-terminal-configuration))
+  #|B|# #:use-module (gnu services base)
   #|D|# #:use-module (gnu services dbus)
         #:use-module (gnu services desktop)
   #|G|# #:use-module (gnu services guix)
@@ -60,7 +57,6 @@
 
   #|Radix services|#
   #|A|# #:use-module (radix services admin)
-  #|G|# #:use-module (radix services greetd)
   #|P|# #:use-module (radix services pm)
   #|S|# #:use-module (radix services shepherd)
 
@@ -178,8 +174,12 @@
                     (terminals
                       (map (lambda (x)
                              (greetd-terminal-configuration
-                              (terminal-vt x)
-                              (terminal-switch (= x 1))))
+                              (terminal-vt (number->string x))
+                              (terminal-switch (= x 1))
+                              (default-session-command
+                               (greetd-agreety-session
+                                (command
+                                 #~(passwd:shell (getpwnam (getenv "USER"))))))))
                            (iota 2 1)))))
 
           #|Home environment services|#
