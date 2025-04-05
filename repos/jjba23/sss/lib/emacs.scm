@@ -76,6 +76,22 @@
   (export sss-bridge-emacs))
 
 (begin
+  (define sss-emacs-modules
+    '(common-lisp go
+                  org
+                  eglot
+                  dashboard
+                  music
+                  theme
+                  sss
+                  erc
+                  consult
+                  dev
+                  emacs-core))
+  (define (serialize-sss-emacs-module mod)
+    `(,(format #f ".emacs.d/modules/~a.el" mod) ,(local-file (format #f
+                                                              "./lib/emacs/modules/~a.el"
+                                                              mod))))
   (define* (sss-emacs-svc #:key palette
                           user-name
                           user-full-name
@@ -83,40 +99,24 @@
                           user-initials
                           clone-dir
                           notes-roam-dir)
-    `((".emacs.d/init.el" ,(local-file "./emacs/init.el"))
-      
-      (".emacs.d/sss-bridge.el" ,(plain-file "sss-bridge.el"
-                                             (sss-bridge-emacs #:palette
-                                                               palette
-                                                               #:user-name
-                                                               user-name
-                                                               #:user-full-name
-                                                               user-full-name
-                                                               #:user-email
-                                                               user-email
-                                                               #:user-initials
-                                                               user-initials
-                                                               #:clone-dir
-                                                               clone-dir
-                                                               #:notes-roam-dir
-                                                               notes-roam-dir)))
+    (append `((".emacs.d/init.el" ,(local-file "./emacs/init.el"))
+              
+              (".emacs.d/sss-bridge.el" ,(plain-file "sss-bridge.el"
+                                                     (sss-bridge-emacs
+                                                      #:palette palette
+                                                      #:user-name user-name
+                                                      #:user-full-name
+                                                      user-full-name
+                                                      #:user-email user-email
+                                                      #:user-initials
+                                                      user-initials
+                                                      #:clone-dir clone-dir
+                                                      #:notes-roam-dir
+                                                      notes-roam-dir)))
 
-      (".emacs.d/early-init.el" ,(local-file "./emacs/early-init.el"))
-      (".emacs.d/modules/common-lisp.el" ,(local-file
-                                           "./emacs/modules/common-lisp.el"))
-      (".emacs.d/modules/go.el" ,(local-file "./emacs/modules/go.el"))
-      (".emacs.d/modules/org.el" ,(local-file "./emacs/modules/org.el"))
-      (".emacs.d/modules/eglot.el" ,(local-file "./emacs/modules/eglot.el"))
-      (".emacs.d/modules/dashboard.el" ,(local-file
-                                         "./emacs/modules/dashboard.el"))
-      (".emacs.d/modules/theme.el" ,(local-file "./emacs/modules/theme.el"))
-      (".emacs.d/modules/sss.el" ,(local-file "./emacs/modules/sss.el"))
-      (".emacs.d/modules/erc.el" ,(local-file "./emacs/modules/erc.el"))
-      (".emacs.d/modules/consult.el" ,(local-file "./emacs/modules/consult.el"))
-      (".emacs.d/modules/emacs-core.el" ,(local-file
-                                          "./emacs/modules/emacs-core.el"))
-      (".emacs.d/modules/dev.el" ,(local-file "./emacs/modules/dev.el"))
-      (".emacs.d/templates" ,(local-file "./emacs/templates"))))
+              (".emacs.d/early-init.el" ,(local-file "./emacs/early-init.el"))
+              (".emacs.d/templates" ,(local-file "./emacs/templates")))
+            (map serialize-sss-emacs-module sss-emacs-modules)))
   (export sss-emacs-svc))
 
 ;; ====== module tests ======

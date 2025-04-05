@@ -26,8 +26,10 @@
     ],
     // left
     "niri/workspaces": {
+        "all-outputs": true,
 	"format": "{icon}",
 	"format-icons": {
+            "focused": "\uF055",
 	    "active": "\uF192",
 	    "default": "\uF111",
 	}

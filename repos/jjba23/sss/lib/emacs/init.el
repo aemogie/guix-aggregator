@@ -100,17 +100,9 @@
 (load-user-file "sss-bridge.el")
 
 ;; Load more user modules
-(load-user-file "modules/dashboard.el")
-(load-user-file "modules/common-lisp.el")
-(load-user-file "modules/go.el")
-(load-user-file "modules/org.el")
-(load-user-file "modules/theme.el")
-(load-user-file "modules/emacs-core.el")
-(load-user-file "modules/erc.el")
-(load-user-file "modules/consult.el")
-(load-user-file "modules/eglot.el")
-(load-user-file "modules/dev.el")
-
+(setq sss-emacs-modules '(dashboard common-lisp go org theme
+                             emacs-core erc consult eglot dev music))
+(mapc (lambda(f) (load-user-file (format "modules/%s.el" f))) sss-emacs-modules)
 
 (use-package git-riddance 
   :ensure (:host codeberg :repo "jjba23/git-riddance.el" :branch "trunk"))
@@ -510,17 +502,6 @@ According to size, color and font family"
 (use-package queue
   :ensure (:host github :repo "emacs-straight/queue" :branch "master")
   :demand t)
-
-(use-package smudge
-  :ensure t  
-  :after (f)
-  :custom
-  (smudge-oauth2-client-secret (f-read-text "~/secrets/smudge-oauth2-client-secret"))
-  (smudge-oauth2-client-id (f-read-text "~/secrets/smudge-oauth2-client-id"))
-  (smudge-player-use-transient-map t)
-  :config
-  (define-key smudge-mode-map (kbd "C-c .") 'smudge-command-map))
-
 
 (use-package helpful
   :ensure t

@@ -10,6 +10,10 @@
         xfuncname = "^(\\(define.*)$"
 [diff "texinfo"]
         xfuncname = "^@node[[:space:]]+([^,]+).*$"
+[github]
+        user = rakino
+[gitlab]
+        user = hakourspace
 [init]
         defaultBranch = trunk
 [pull]
