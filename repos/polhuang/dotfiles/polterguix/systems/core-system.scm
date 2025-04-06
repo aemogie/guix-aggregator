@@ -32,15 +32,16 @@
   #:use-module (gnu services xorg)
   #:use-module (gnu system)
   #:use-module (gnu system privilege)  
-  #:use-module (nongnu packages linux))
+  #:use-module (nongnu packages linux)
+  #:use-module (nongnu system linux-initrd))
 
 (define-public core-operating-system
   (operating-system
    (kernel linux)
-   ;; (initrd microcode-initrd)
+   (initrd microcode-initrd)
    (firmware (list linux-firmware))
 
-   (host-name "akhetaten")
+   (host-name "helios")
    (timezone "America/Chicago")
    (locale "en_US.utf8")
    (keyboard-layout (keyboard-layout "us"))
@@ -98,6 +99,7 @@
                     git
                     hyprland
                     libva-utils
+                    nix
                     ntfs-3g
                     stow
                     vim
@@ -105,13 +107,28 @@
                     %base-packages))
    
    (services (append (list (service gnome-desktop-service-type)
-                           (service openssh-service-type)
                            (service tor-service-type)
                            (service cups-service-type)
                            (service bluetooth-service-type
                                     (bluetooth-configuration
                                      (auto-enable? #t)))
-                           (simple-service 'add-nonguix-substitutes
+                           (service nix-service-type)
+
+                           ;; Configure swaylock as a setuid program
+                           (service screen-locker-service-type
+                                    (screen-locker-configuration
+                                     (name "swaylock")
+                                     (program (file-append swaylock "/bin/swaylock"))
+                                     (using-pam? #t)
+                                     (using-setuid? #f)))
+                           
+                           (service openssh-service-type
+                                    (openssh-configuration
+                                     (port-number 2222)))
+
+                           (udev-rules-service 'pipewire-add-udev-rules pipewire)
+                           (udev-rules-service 'brightnessctl-udev-rules brightnessctl)
+			   (simple-service 'add-nonguix-substitutes
                                            guix-service-type
                                            (guix-extension
                                             (substitute-urls
@@ -120,8 +137,15 @@
                                             (authorized-keys
                                              (append (list (plain-file "nonguix.pub"
                                                                        "(public-key (ecc (curve Ed25519) (q #C1FD53E5D4CE971933EC50C9F307AE2171A2D3B52C804642A7A35F84F3A4EA98#)))"))
-                                                     %default-authorized-guix-keys))))
+                                         %default-authorized-guix-keys))))
                            (set-xorg-configuration
                             (xorg-configuration (keyboard-layout keyboard-layout))))
-                     %desktop-services))))
+                     (modify-services %desktop-services
+				      (network-manager-service-type config => (network-manager-configuration
+									       (vpn-plugins
+										(list network-manager-openvpn))))
+				      (elogind-service-type config => (elogind-configuration
+								       (handle-lid-switch 'hibernate)))
+				      (upower-service-type config => (upower-configuration
+								      (critical-power-action 'hibernate))))))))
 

@@ -1,3 +1,5 @@
+# to reconfigure: home-manager --flake .#pol switch
+
 {
   description = "polternix";
 
@@ -10,10 +12,10 @@
   outputs = { self, nixpkgs, home-manager, ... }:
     let
       system = "x86_64-linux";
-      username = "polhuang";
-      homeDirectory = "/home/$polhuang";
+      username = "pol";
+      homeDirectory = "/home/pol";
     in {
-      homeConfigurations.${username} = home-manager.lib.homeManagerConfiguration {
+      homeConfigurations.pol = home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs {
           inherit system;
           config.allowUnfree = true;

@@ -5,7 +5,6 @@
   "Variable indicating whether system is managed by guix.")
 
 (setq is-guix (not (string-equal (system-name) "nineveh")))
-
 (setq package-enable-at-startup nil)
 
 ;; set gc threshold for startup performance
@@ -39,7 +38,7 @@
     :ensure t))
 
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
- 			 ("elpa" . "https://elpa.gnu.org/packages/")
+                         ("elpa" . "https://elpa.gnu.org/packages/")
   			 ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
 
 ;; enable packages from quelpa
@@ -101,6 +100,13 @@
 ;;;;;;;;;;;;;;;;;
 
 ;; everforest
+(use-package everforest-theme
+  :straight (everforest :type git :host github :repo "Theory-of-Everything/everforest-emacs")
+  :config
+  (load-theme 'everforest-hard-dark t t)
+  (load-theme 'everforest-hard-light t t)
+  (load-theme 'everforest-hard-olddark t t)
+  (load-theme 'everforest-hard-oldlight t t))
 ;; (use-package everforest-hard-dark-theme
 ;;   :load-path "~/.emacs.d/everforest-emacs/"
 ;;   :config
@@ -325,9 +331,8 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
 ;;;;;;;;;;;;;;
 
 (use-package doom-modeline
-  :ensure t
-  :init
-  (doom-modeline-mode t))
+    :ensure t
+    :hook (after-init . doom-modeline-mode))
 
 ;; clean up modeline text
 (defvar mode-line-cleaner-alist
@@ -704,6 +709,7 @@ Use prefix argument ARG for number of lines, otherwise use default."
   
   (use-package org-roam
     :ensure t
+    :after org
     :bind (("C-c n l" . org-roam-buffer-toggle)
 	   ("C-c n f" . org-roam-node-find)
 	   ("C-c n i" . org-roam-node-insert)
@@ -749,8 +755,9 @@ Use prefix argument ARG for number of lines, otherwise use default."
                              (eq major-mode 'org-mode)
                            (org-roam-link-replace-all)))))
   
-  (use-package org-super-agenda
+  (use-package org-super-agenda ;; if there's a problem with loading the package, it could be because of dash conflicts - needs to be installed internally, not externally
     :ensure t
+    :after org-agenda
     :config
     (org-super-agenda-mode))
 
@@ -1813,40 +1820,22 @@ Otherwise, call eat."
   :ensure t
   :hook (after-init . global-flycheck-mode))
 
-;; treesit
-(require 'treesit)
-(setq treesit-language-source-alist
-      '((bash "https://github.com/tree-sitter/tree-sitter-bash")
-        (c "https://github.com/tree-sitter/tree-sitter-c")
-        (css "https://github.com/tree-sitter/tree-sitter-css")
-        (elisp "https://github.com/Wilfred/tree-sitter-elisp")
-        (html "https://github.com/tree-sitter/tree-sitter-html")
-        (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
-        (json "https://gtihub.com/tree-sitter/tree-sitter-json")
-        (lua "https://github.com/MunifTanjim/tree-sitter-lua")
-        (markdown "https://github.com/ikatyang/tree-sitter-markdown")
-        (python "https://github.com/tree-sitter/tree-sitter-python")
-        (rust "https://github.com/tree-sitter/tree-sitter-rust")
-        (toml "https://github.com/tree-sitter/tree-sitter-toml")
-        (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
-        (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
-        (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+;; (setq major-mode-remap-alist
+;;       '((yaml-mode . yaml-ts-mode)
+;;         (bash-mode . bash-ts-mode)
+;;         (c-mode . c-ts-mode)
+;;         (javascript-mode . tsx-ts-mode)
+;;         (js-mode . tsx-ts-mode)
+;;         (js2-mode . tsx-ts-mode)
+;;         (js-jsx-mode . tsx-ts-mode)
+;;         (rjsx-mode . tsx-ts-mode)
+;;         ;; (rust-mode . rust-ts-mode)
+;;         (typescript-mode . tsx-ts-mode)
+;;         (json-mode . json-ts-mode)
+;;         (shell-mode . bash-ts-mode)
+;;         (css-mode . css-ts-mode)
+;;         (python-mode . python-ts-mode)))
 
-(setq major-mode-remap-alist
-      '((yaml-mode . yaml-ts-mode)
-        (bash-mode . bash-ts-mode)
-        (c-mode . c-ts-mode)
-        (javascript-mode . tsx-ts-mode)
-        (js-mode . tsx-ts-mode)
-        (js2-mode . tsx-ts-mode)
-        (js-jsx-mode . tsx-ts-mode)
-        (rjsx-mode . tsx-ts-mode)
-        (rust-mode . rust-ts-mode)
-        (typescript-mode . tsx-ts-mode)
-        (json-mode . json-ts-mode)
-        (shell-mode . bash-ts-mode)
-        (css-mode . css-ts-mode)
-        (python-mode . python-ts-mode)))
 
 ;; treesit-auto
 (use-package treesit-auto
@@ -1892,6 +1881,11 @@ Otherwise, call eat."
 (use-package cargo
   :ensure t
   :hook (rust-mode . cargo-minor-mode))
+
+;; nix
+(use-package nix-ts-mode
+  :ensure t
+  :mode "\\.nix\\'")
 
 ;;;;;;;;;;;
 ;; latex ;;
@@ -2259,7 +2253,8 @@ Otherwise, call eat."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("ed70dedb2c45f8b698c1f7ab04b6a0d8678f6d49cd977e01b35f8546dcbb4aa8"
+   '("9f1c593abc996917c24f563e68f44bb4175d4419925577014757f6ba2dfe2850"
+     "ed70dedb2c45f8b698c1f7ab04b6a0d8678f6d49cd977e01b35f8546dcbb4aa8"
      "d585421c2f1917400daaac0b628ee74e0c2d2960b99680cc75b393601adef535"
      "a53c7ff4570e23d7c5833cd342c461684aa55ddba09b7788d6ae70e7645c12b4"
      "67f6b0de6f60890db4c799b50c0670545c4234f179f03e757db5d95e99bac332"

@@ -73,6 +73,11 @@
                           `(("hypr/hyprland.conf"  ,(local-file "../files/hypr/hyprland-nineveh.conf"))
                             ("hypr/hyprland-base.conf"  ,(local-file "../files/hypr/hyprland-base.conf"))))
 
+         (simple-service 'dotfiles
+                          home-xdg-configuration-files-service-type
+                          `(("hypr/hyprland.conf"  ,(local-file "../files/hypr/hyprland-nineveh.conf"))
+                            ("hypr/hyprland-base.conf"  ,(local-file "../files/hypr/hyprland-base.conf"))))
+
          (simple-service 'guix-substitute-env-vars-service
 		home-environment-variables-service-type
 		`(("GUIX_AUTHORIZED_KEYS" . "$HOME/.config/guix/nonguix.pub")

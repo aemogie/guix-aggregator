@@ -1,0 +1,144 @@
+* {
+    border: none;
+    border-radius: 0px;
+    font-family: "JetBrainsMono NF";
+    font-weight: bold;
+    font-size: 12px;
+    min-height: 10px;
+}
+
+@import "theme.css";
+
+window#waybar {
+    background: none;
+}
+
+tooltip {
+    background: #FFFFF9;
+    border-radius: 7px;
+    border-width: 0px;
+}
+
+tooltip label {
+    color: @main-fg;
+}
+
+.modules-left {
+    margin-left: 10px;
+}
+
+.modules-right {
+    margin-right: 20px;
+    background: none;
+}
+
+#workspaces button {
+    box-shadow: none;
+    text-shadow: none;
+    border-radius: 10px;
+    margin-top: 6px;
+    margin-bottom: 6px;
+    margin-left: 6px;
+    padding-right: 8px;
+    margin-right: 0px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    animation: ws_normal 20s;
+    
+}
+
+#workspaces button.empty {
+    color: @wb-emp-fg;
+    animation: ws_hover 20s ease-in-out 1;
+    transition: all 0.3s cubic-bezier(.55,-0.68,.48,1.682);
+}
+
+#workspaces button.active {
+    background: @wb-act-bg;
+    color: @wb-act-fg;
+    animation: ws_active 20s ease-in-out 1;
+    transition: all 0.4s cubic-bezier(.55,-0.68,.48,1.682);
+}
+
+#workspaces button:hover {
+    background: @wb-hvr-bg;
+    color: @wb-hvr-fg;
+    animation: ws_hover 20s ease-in-out 1;
+    transition: all 0.3s cubic-bezier(.55,-0.68,.48,1.682);
+}
+
+
+#taskbar button {
+    box-shadow: none;
+    text-shadow: none;
+    padding: 0px;
+    border-radius: 9px;
+    margin-top: 1px;
+    margin-bottom: 1px;
+    margin-left: 0px;
+    padding-left: 8px;
+    padding-right: 8px;
+    margin-right: 0px;
+    
+    animation: tb_normal 20s ease-in-out 1;
+}
+
+
+#taskbar button:hover {
+    background: @wb-hvr-bg;
+    color: @wb-hvr-color;
+    animation: tb_hover 20s ease-in-out 1;
+    transition: all 0.3s cubic-bezier(.55,-0.68,.48,1.682);
+}
+
+#tray {
+    margin-left: 225px;
+    margin-right: 8px;
+}
+
+#tray menu * {
+    min-height: 16px;
+}
+
+#tray menu separator {
+    min-height: 10px
+}
+
+#clock {
+    color: @main-fg;
+    background: none;
+}
+
+#backlight,
+#battery,
+#bluetooth,
+#custom-cliphist,
+
+#custom-cpuinfo,
+#cpu,
+#custom-gpuinfo,
+#idle_inhibitor {
+    margin-right: 6px;
+}
+#custom-keybindhint,
+#language,
+#memory,
+#mpris,
+#custom-notifications,
+#custom-power,
+#pulseaudio,
+#custom-spotify,
+#taskbar,
+#temperature,
+#custom-theme,
+#custom-updates,
+#custom-wallchange,
+
+#network,
+#window {
+    color: @main-fg;
+    background: none;
+    margin: 4px 0px 4px 0px;
+    padding-left: 8px;
+    padding-right: 8px;
+}

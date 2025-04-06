@@ -8,4 +8,4 @@ echo
 echo -e "${GREEN}Updating ${BLUE}$(hostname)${GREEN}...${NC}"
 echo
 
-GUIX_TARGET=system guix system reconfigure -L /home/pol/.dotfiles ~/.dotfiles/polterguix/systems/$(hostname).scm
+GUIX_TARGET=system sudo guix system reconfigure -L /home/pol/.dotfiles ~/.dotfiles/polterguix/systems/$(hostname).scm

@@ -5,18 +5,29 @@ conky.config = {
     out_to_x = false,
     out_to_wayland = true,
     alignment = 'top_left',
-    background = false,
     font = 'Adwaita Mono:size=11',
     gap_x = 60,
     gap_y = 60,
     minimum_height = 5,
     minimum_width = 2,
-    no_buffers = true
+    no_buffers = true,
+    own_window = true,
+    own_window_transparent = false,
+    own_window_argb_visual = true,
+    own_window_type = 'dock',
+    background = true,
+    double_buffer = true,
+    use_xft = true,
+    own_window_argb_value = 170,
+    own_window_class = 'Conky',
+    own_window_colour = '222222'
 };
 
 
 -- Variables: https://conky.cc/variables
 conky.text = [[
+${color grey}SSS/GNU - Supreme Sexp System$color
+
 ${color grey}Info:$color ${scroll 32 Conky $conky_version - $sysname $nodename $kernel $machine}
 $hr
 ${color grey}CPU Usage:$color $cpu% ${cpubar 4}

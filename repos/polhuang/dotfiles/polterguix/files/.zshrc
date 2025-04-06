@@ -19,9 +19,8 @@ bindkey -e
 
 # env variables
 export PATH="$PATH:$HOME/.local/bin"
-export PATH="$PATH:$HOME/.nix-profile/bin"
+# export PATH="$PATH:$HOME/.nix-profile/bin"
 export PATH="$PATH:$HOME/.bin"
-export XDG_DATA_DIRS="$HOME/.local/share:$HOME/.nix-profile/share:$HOME/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:$XDG_DATA_DIRS"
 
 
 # on guix systems, go to ~/.config/zsh/ and delete the cache to reconfigure if using a package manager. avoiding here.
