@@ -12,6 +12,7 @@
   #:use-module (gnu system accounts)
   #:use-module (gnu system pam)
   #|GNU Packages|#
+  #:use-module (gnu packages admin)
   #:use-module (gnu packages databases)
   #|GNU Services|#
   #:use-module (gnu services)
@@ -23,6 +24,7 @@
   #:use-module (gnu services docker)
   #:use-module (gnu services guix)
   #:use-module (gnu services networking)
+  #:use-module (gnu services samba)
   #:use-module (gnu services ssh)
   #:use-module (gnu services virtualization)
   #|Non-GNU|#
@@ -48,7 +50,7 @@
 
     (kernel-arguments
       (cons* "nvidia_drm.modeset=1"
-             "modprobe.blacklist=nouveau"
+             "modprobe.blacklist=nouveau,wacom,hid_uclogic"
              (operating-system-user-kernel-arguments base)))
 
     (file-systems %btrfs-ephemeral-file-systems)
@@ -93,6 +95,17 @@
                                     "/podman/registries.conf")))
                  (subgids (list (subid-range (name "look"))))
                  (subuids (list (subid-range (name "look"))))))
+
+             (service samba-service-type
+               (samba-configuration
+                 (enable-smbd? #t)
+                 (config-file (local-file (string-append yumiko-dir "/samba/smb.conf")))))
+
+             (udev-rules-service 'otd
+               (file->udev-rule "70-opentabletdriver.rules"
+                 (local-file
+                   (string-append yumiko-dir "/udev/70-opentabletdriver.rules")))
+               #:groups '("tablet"))
 
              #|SSH services|#
              (service openssh-service-type

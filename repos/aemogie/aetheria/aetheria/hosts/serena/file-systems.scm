@@ -95,6 +95,7 @@
          "/home/aemogie/.config/waybar/style.css"
          "/home/aemogie/.config/foot/foot.ini"
          "/home/aemogie/.config/YouTube Music"
+         "/home/aemogie/.local/share/direnv/allow"
          "/home/aemogie/.emacs"
          "/home/aemogie/dev")))
 

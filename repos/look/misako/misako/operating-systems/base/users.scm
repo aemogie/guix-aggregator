@@ -12,4 +12,4 @@
     (shell (file-append fish "/bin/fish"))
     (uid 1000)
     (group "users")
-    (supplementary-groups '("audio" "input" "video" "wheel" "seat" "kvm" "cgroup"))))
+    (supplementary-groups '("audio" "input" "video" "wheel" "seat" "kvm" "cgroup" "tablet"))))

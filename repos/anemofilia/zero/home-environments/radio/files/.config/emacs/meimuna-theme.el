@@ -137,6 +137,6 @@
  '(orderless-match-face-2 ((t (:inherit orderless-match-face-0))))
  '(orderless-match-face-3 ((t (:inherit orderless-match-face-0))))
  '(vertico-current ((t (:extend t :inherit (highlight)))))
- '(default ((t (:inherit nil :extend nil :stipple nil :background "#101010" :foreground "#f0f0f0" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 90 :width normal :foundry "PfEd" :family "Meslo LG M DZ")))))
+ '(default ((t (:inherit nil :extend nil :stipple nil :background "#101010" :foreground "#f0f0f0" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 90 :width normal :foundry "PfEd" :family "Monospace")))))
 
 (provide-theme 'meimuna)

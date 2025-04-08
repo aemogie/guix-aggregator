@@ -4,6 +4,7 @@
   #|S|# #:use-module (gnu services)
 
   #|GNU packages|#
+  #|F|# #:use-module (gnu packages fonts)
   #|G|# #:use-module (gnu packages gnome)
         #:use-module (gnu packages gnupg)
   #|L|# #:use-module (gnu packages linux)
@@ -14,6 +15,7 @@
   #|A|# #:use-module (gnu home services admin)
   #|D|# #:use-module (gnu home services desktop)
         #:use-module (gnu home services dotfiles)
+  #|F|# #:use-module (gnu home services fontutils)
   #|G|# #:use-module (gnu home services guix)
   #|P|# #:use-module (gnu home services pm)
   #|S|# #:use-module (gnu home services shepherd)
@@ -47,6 +49,7 @@
 
   #|Radix packages|#
   #|F|# #:use-module (radix packages fish-xyz)
+        #:use-module (radix packages fonts)
 
   #|Radix home services|#
   #|•|# #:use-module (radix home services)
@@ -72,7 +75,7 @@
              #|C|# packages:calendar
              #|D|# packages:databases packages:desktop packages:development
                    packages:documentation packages:downloads
-             #|F|# packages:file-managing packages:fonts
+             #|F|# packages:file-managing
              #|G|# packages:guix-contrib
              #|I|# packages:image
              #|M|# packages:mathematics packages:messaging packages:music
@@ -110,6 +113,45 @@
                           (file-append gnome-themes-extra
                                        "/share/themes/Adwaita-dark/gtk-2.0")))
                      `(("gtk-2.0" ,adwaita-theme))))
+
+          #|Font services|#
+          (simple-service 'font-packages
+                          home-profile-service-type
+                          (list `(,font-adobe-source-han-sans "cn")
+                                `(,font-adobe-source-han-sans "jp")
+                                `(,font-adobe-source-han-sans "kr")
+                                `(,font-adobe-source-han-sans "tw")
+                                font-adobe-source-han-sans
+                                font-adobe-source-sans-pro
+                                font-adobe-source-serif-pro
+                                font-openmoji
+                                font-juliamono
+                                font-meslo-lg-dz
+                                font-wqy-zenhei))
+          (simple-service 'default-fonts
+                          home-fontconfig-service-type
+                          `((alias
+                              (family "Monospace")
+                              (prefer
+                                (family "OpenMoji Color")
+                                (family "Meslo LG M DZ")
+                                (family "JuliaMono Regular")))
+                            (alias
+                              (family "Serif")
+                              (prefer
+                                (family "OpenMoji Color")
+                                (family "Source Serif Pro")
+                                (family "JuliaMono Regular")))
+                            (alias
+                              (family "SansSerif")
+                              (prefer
+                                (family "OpenMoji Color")
+                                (family "Source Sans CN Pro")
+                                (family "Source Sans JP Pro")
+                                (family "Source Sans KR Pro")
+                                (family "Source Sans TW Pro")
+                                (family "Source Sans Pro")
+                                (family "JuliaMono Regular")))))
 
           #|File services|#
           (service home-directories-service-type

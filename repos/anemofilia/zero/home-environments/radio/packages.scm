@@ -12,7 +12,6 @@
   #|E|# #:use-module (gnu packages emacs)
         #:use-module (gnu packages emacs-xyz)
   #|F|# #:use-module (gnu packages file)
-        #:use-module (gnu packages fonts)
         #:use-module (gnu packages freedesktop)
   #|G|# #:use-module (gnu packages games)
         #:use-module (gnu packages glib)
@@ -64,7 +63,6 @@
   #|I|# #:use-module (radix packages image-viewers)
   #|E|# #:use-module (radix packages emacs-xyz)
   #|F|# #:use-module (radix packages fish-xyz)
-        #:use-module (radix packages fonts)
         #:use-module (radix packages freedesktop)
   #|G|# #:use-module (radix packages games)
   #|K|# #:use-module (radix packages kak-xyz)
@@ -90,7 +88,6 @@
             downloads
             emacs
             file-managing
-            fonts
             games
             guix-contrib
             haskell
@@ -160,11 +157,6 @@
         #|pdf          |# img2pdf poppler
         #|seninha      |# fmutils
         #|video        |# ffmpegthumbnailer))
-
-(define fonts
-  (list #|fonts|# font-awesome font-google-noto font-google-noto-emoji
-                  font-juliamono font-liberation font-meslo-lg-dz
-                  font-misc-misc font-un font-wqy-zenhei))
 
 (define games
   (list #|games|# minetest red-eclipse srb2 supertuxkart xonotic))

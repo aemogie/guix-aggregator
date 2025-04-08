@@ -95,7 +95,6 @@
   #:use-module (saayix packages browser-extensions)
   #:use-module (saayix packages file-managers)
   #:use-module (saayix packages fonts)
-  #:use-module (saayix packages hyprland)
   #:use-module (saayix packages lsp)
   #:use-module (saayix packages minecraft)
   #:use-module (saayix packages pdf)
@@ -131,7 +130,7 @@
         #|                |# emacs-meow
         #|                |# zen-browser-bin
         #|Games           |# (nvidia?* (steam-for nvda) (heroic-for nvda) mangohud prismlauncher)
-        #|                |# path-of-building-bin
+        #|                |# path-of-building-bin mcpelauncher-ui osu-lazer-bin
         #|File Manager    |# yazi
         #|Image Viewer    |# imv
         #|Sound           |# wireplumber-minimal ncpamixer helvum easyeffects

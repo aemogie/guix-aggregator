@@ -59,8 +59,10 @@
   #:use-module (guix gexp)
   #|Saayix|#
   #:use-module (saayix utils)
-  #:use-module (saayix packages toys)
+  #:use-module (saayix packages binaries)
   #:use-module (saayix packages text-editors)
+  #:use-module (saayix packages toys)
+  #:use-module (saayix packages waydroid)
   #|Radix|#
   #:use-module (radix utils)
   #:use-module (radix services admin)
@@ -77,11 +79,12 @@
       (keyboard-layout "br"
         #:options '("caps:swapescape")))
 
-    (kernel linux-latest)
+    (kernel linux)
     (kernel-arguments
       (list "loglevel=3"
             "quiet"
-            "console=tty3"))
+            "console=tty3"
+            "psi=1"))
 
     ;; We don't use any file-systems for the base operating-system
     (file-systems '())
@@ -101,7 +104,7 @@
     (packages
       (list #|admin       |# htop inetutils opendoas shadow
             #|base        |# coreutils diffutils findutils grep patch sed tar which
-            #|            |# glibc-locales bash-minimal
+            #|            |# glibc-locales bash-minimal waydroid
             #|certs       |# nss-certs
             #|compression |# gzip unzip xz
             #|curl        |# curl
@@ -225,7 +228,9 @@
         (service ntp-service-type)
 
         #|IPC services|#
-        (service dbus-root-service-type)
+        (service dbus-root-service-type
+          (dbus-configuration
+            (services (list waydroid))))
 
         #|Memory management services|#
         ;; TODO: see if /proc/meminfo works on new install

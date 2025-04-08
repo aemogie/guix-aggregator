@@ -179,7 +179,9 @@
                               (default-session-command
                                (greetd-agreety-session
                                 (command
-                                 #~(passwd:shell (getpwnam (getenv "USER"))))))))
+                                 (greetd-user-session
+                                  (command
+                                   #~(passwd:shell (getpwnam (getenv "USER"))))))))))
                            (iota 2 1)))))
 
           #|Home environment services|#

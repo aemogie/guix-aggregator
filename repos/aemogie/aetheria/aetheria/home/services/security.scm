@@ -29,6 +29,8 @@
                                                pinentry
                                                pinentry-tty))
   #:use-module ((gnu packages ssh) #:select (openssh-sans-x))
+  #:use-module ((aetheria records) #:select (define-foldable-record-type
+                                              define-foldable-wrapper-type))
   #:export (home-openssh-service-type
             home-openssh-configuration
             home-openssh-configuration-authorized-keys
@@ -43,57 +45,45 @@
   (let ((xs* (concatenate (map proc xs))))
     (if (pair? xs*) xs* on-empty)))
 
-(define-record-type* <home-openssh-configuration>
-  home-openssh-configuration make-home-openssh-configuration
-  home-openssh-configuration?
-  (authorized-keys   home-openssh-configuration-authorized-keys ;list of file-like
-                     (default '()))
-  (known-hosts       home-openssh-configuration-known-hosts ;list of file-like
-                     (default '()))
-  (hosts             home-openssh-configuration-hosts ;list of <openssh-host>
-                     (default '()))
-  (add-keys-to-agent home-openssh-configuration-add-keys-to-agent ;string with limited values
-                     (default #f)))
+(define-foldable-wrapper-type
+  home-openssh-configuration upstream:home-openssh-configuration
+  (%default (upstream:home-openssh-configuration))
+  (authorized-keys list)
+  (known-hosts list)
+  (hosts list)
+  (add-keys-to-agent conflict))
+
+;; TOOD: make another macro wrapper on top of foldable record type to make
+;; this easier
+;; (define home-openssh-configuration->upstream
+;;   (match-lambda
+;;     (($ <home-openssh-configuration>
+;;         authorized-keys known-hosts hosts add-keys-to-agent)
+;;      (define default (upstream:home-openssh-configuration))
+;;      (upstream:home-openssh-configuration
+;;       (authorized-keys   (if (null? authorized-keys)
+;;                              (upstream:home-openssh-configuration-authorized-keys default)
+;;                              authorized-keys))
+;;       (known-hosts       (if (null? known-hosts)
+;;                              (upstream:home-openssh-configuration-known-hosts default)
+;;                              known-hosts))
+;;       (hosts             (if (null? hosts)
+;;                              (upstream:home-openssh-configuration-hosts default)
+;;                              hosts))
+;;       (add-keys-to-agent (if (unspecified? add-keys-to-agent)
+;;                              (upstream:home-openssh-configuration-add-keys-to-agent default)
+;;                              add-keys-to-agent))))))
+
 
 (define home-openssh-service-type
   (service-type
    (inherit upstream:home-openssh-service-type)
    (compose identity)
    (extend (lambda (config extensions)
-             (define default (upstream:home-openssh-configuration))
-             (upstream:home-openssh-configuration
-              (authorized-keys
-               (flat-map (cons config extensions)
-                         home-openssh-configuration-authorized-keys
-                         (upstream:home-openssh-configuration-authorized-keys
-                          default)))
-              (known-hosts
-               (flat-map (cons config extensions)
-                         home-openssh-configuration-known-hosts
-                         (upstream:home-openssh-configuration-known-hosts
-                          default)))
-              (hosts
-               (flat-map (cons config extensions)
-                         home-openssh-configuration-hosts
-                         (upstream:home-openssh-configuration-hosts
-                          default)))
-              (add-keys-to-agent
-               (or (fold (lambda (curr saved)
-                           (define (conflict)
-                             (error 'home-openssh-service-type
-                                    "multiple conflicting definitions for add-keys-to-agent"
-                                    saved curr))
-                           ;; conflict case
-                           (or (and curr saved (not (equal? curr saved)) (conflict))
-                               ;; else either both are equal or one is false,
-                               ;; pick whichever is truthy it doesnt matter
-                               curr saved))
-                         #f
-                         (map home-openssh-configuration-add-keys-to-agent
-                              (cons config extensions)))
-                   (upstream:home-openssh-configuration-add-keys-to-agent
-                    default))))))
+             (unwrap-home-openssh-configuration
+              (fold-home-openssh-configuration (cons extensions config)))))
    (default-value (home-openssh-configuration))))
+
 
 (define home-security-service-type
   (service-type

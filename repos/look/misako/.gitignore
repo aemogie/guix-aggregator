@@ -7,3 +7,4 @@
 *.scm#*
 .#*.scm
 
+smb.conf
