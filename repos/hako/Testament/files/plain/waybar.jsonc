@@ -34,6 +34,9 @@
 	    "default": "\uF111",
 	}
     },
+    "tray": {
+        "spacing": 10,
+    },
     "wlr/taskbar": {
         "format": "{icon}",
         "tooltip-format": "{title}",

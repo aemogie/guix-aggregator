@@ -12,6 +12,7 @@
   #:use-module (guix build-system emacs)
   #:use-module (gnu packages emacs-xyz)
   #:use-module (gnu packages video)
+  #:use-module (nongnu packages video)
   #:use-module (rosenthal packages rust-apps))
 
 
@@ -124,6 +125,7 @@ counterpart is unavailable.")
     (inherit mpv)
     (propagated-inputs '())
     (inputs
-     (append
-      (package-propagated-inputs mpv)
-      (package-inputs mpv)))))
+     (modify-inputs
+         (append (package-propagated-inputs mpv)
+                 (package-inputs mpv))
+       (prepend nv-codec-headers)))))

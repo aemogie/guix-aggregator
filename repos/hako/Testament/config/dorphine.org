@@ -557,6 +557,7 @@ https://github.com/fishinthecalculator/sops-guix
   #:use-module (gnu home services fontutils)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages fonts)
+  #:use-module (gnu packages gl)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages gnome-xyz)
   #:use-module (gnu packages linux)
@@ -587,6 +588,17 @@ https://github.com/fishinthecalculator/sops-guix
   (service nvidia-service-type)
 #+end_src
 
+#+begin_src scheme :noweb-ref home-fish-config
+  (plain-file
+   "fish-config-nvidia" "\
+  if status is-login
+      if test -d /proc/driver/nvidia
+          set --export __GLX_VENDOR_LIBRARY_NAME nvidia
+          set --export __NV_PRIME_RENDER_OFFLOAD 1
+      end
+  end")
+#+end_src
+
 #+begin_src scheme :noweb-ref transformation
   (lambda (os)
     (operating-system
@@ -594,7 +606,11 @@ https://github.com/fishinthecalculator/sops-guix
       (services
        (modify-services (operating-system-user-services os)
          (guix-home-service-type
-          config => (with-transformation replace-mesa config))))))
+          config => (with-transformation
+                        (package-input-grafting
+                         `((,mesa . ,nvda)
+                           (,nvidia-driver . ,nvda)))
+                      config))))))
 #+end_src
 
 *** nouveau
@@ -1051,14 +1067,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
                                                  "/ccls-cache")))))))))
                  ((zig-mode)
                   . (#$(file-append zig-zls-0.14 "/bin/zls")))))
-              (add-to-list 'eglot-server-programs program))))
-    (hooks
-     (map (cut cons <> 'eglot-ensure)
-          '(                              ;XXX: Indentation.
-            rust-ts-mode rust-mode
-            python-mode python-ts-mode
-            c-mode c-ts-mode c++-mode c++-ts-mode
-            zig-mode))))
+              (add-to-list 'eglot-server-programs program)))))
 #+end_src
 
 *** emacs-macrostep
@@ -1522,6 +1531,7 @@ Required for using Rime in minibuffer.
 
 * Miscellaneous
 #+begin_src scheme :noweb-ref module
+  #:use-module (guix utils)
   #:use-module (gnu system hurd)
   #:use-module (gnu services mcron)
   #:use-module (gnu services ssh)
@@ -1547,6 +1557,7 @@ Required for using Rime in minibuffer.
   #:use-module (gnu packages wm)
   #:use-module (gnu packages xdisorg)
   #:use-module (nongnu packages game-client)
+  #:use-module (nongnu packages video)
   #:use-module (rosenthal packages rust-apps)
 #+end_src
 
@@ -1609,6 +1620,20 @@ Required for using Rime in minibuffer.
   AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2")))
                        `(("root" ,hako.pub)
                          ("hako" ,hako.pub)))))))))
+#+end_src
+
+** ffmpeg
+#+begin_src scheme :noweb-ref transformation
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (services
+       (modify-services (operating-system-user-services os)
+         (guix-home-service-type
+          config => (with-transformation
+                        (package-input-grafting
+                         `((,ffmpeg . ,ffmpeg-nvenc)))
+                      config))))))
 #+end_src
 
 ** gammastep
@@ -1727,6 +1752,12 @@ Required for using Rime in minibuffer.
 #+end_src
 
 [[../files/dotfiles/.config/mpv/mpv.conf][~/.config/mpv/mpv.conf]]
+
+** obs
+#+begin_src scheme :noweb-ref home-package
+  obs
+  obs-wlrobs
+#+end_src
 
 ** qbittorrent
 #+begin_src scheme :noweb-ref home-service

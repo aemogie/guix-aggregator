@@ -1,14 +1,6 @@
 (define-module (home-environments radio)
   #|GNU|#
   #|H|# #:use-module (gnu home)
-  #|S|# #:use-module (gnu services)
-
-  #|GNU packages|#
-  #|F|# #:use-module (gnu packages fonts)
-  #|G|# #:use-module (gnu packages gnome)
-        #:use-module (gnu packages gnupg)
-  #|L|# #:use-module (gnu packages linux)
-  #|S|# #:use-module (gnu packages shells)
 
   #|GNU home services|#
   #|•|# #:use-module (gnu home services)
@@ -22,10 +14,17 @@
         #:use-module (gnu home services ssh)
         #:use-module (gnu home services sound)
 
+  #|GNU packages|#
+  #|F|# #:use-module (gnu packages fonts)
+  #|G|# #:use-module (gnu packages gnome)
+        #:use-module (gnu packages gnupg)
+  #|L|# #:use-module (gnu packages linux)
+  #|S|# #:use-module (gnu packages shells)
+
   #|Guix|#
   #|G|# #:use-module (guix gexp)
 
-  #|home-environments radio|#
+  #|Home-environments radio|#
   #|C|# #:use-module ((home-environments radio channels)
                       #:prefix channel:)
   #|F|# #:use-module ((home-environments radio files)
@@ -44,12 +43,7 @@
                       #:prefix timer:)
 
   #|Radix|#
-  #|C|# #:use-module (radix combinators)
   #|U|# #:use-module (radix utils)
-
-  #|Radix packages|#
-  #|F|# #:use-module (radix packages fish-xyz)
-        #:use-module (radix packages fonts)
 
   #|Radix home services|#
   #|•|# #:use-module (radix home services)
@@ -58,6 +52,10 @@
   #|S|# #:use-module (radix home services shells)
         #:use-module (radix home services shepherd)
   #|X|# #:use-module (radix home services xdg)
+
+  #|Radix packages|#
+  #|F|# #:use-module (radix packages fish-xyz)
+        #:use-module (radix packages fonts)
 
   #|SOPS home services|#
   #|S|# #:use-module (sops home services sops)

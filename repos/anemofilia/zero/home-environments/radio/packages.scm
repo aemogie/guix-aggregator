@@ -194,8 +194,8 @@
 
 (define scheme
   (list #|guile    |# guile-next guile-colorized guile-readline
-        #|guile-xyz|# guile-goblins guile-hoot guile-lib guile-srfi-197
-                      guile-srfi-232))
+        #|guile-xyz|# guile-goblins guile-hoot guile-lib guile-lsp-server
+                      guile-srfi-197 guile-srfi-232))
 
 (define tex
   (list #|tex|# rubber
