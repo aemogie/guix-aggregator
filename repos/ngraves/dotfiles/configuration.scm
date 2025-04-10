@@ -412,7 +412,18 @@
        (lambda (x) (list (string->symbol (user->id x)))) %mail-list)
       #:isync-verbose #t)
      (feature-notmuch)
-     (feature-l2md))))
+     (feature-l2md)
+     (feature-emacs-piem
+      #:piem-inboxes `(("rde-devel"
+                        :url "https://lists.sr.ht/~abcdw/rde-devel"
+                        :address "~abcdw/rde-devel@lists.sr.ht"
+                        :coderepo (,(string-append (getcwd) "/channels/rde/")
+                                   "~/projects/src/emacs-arei/"
+                                   "~/projects/src/guile-ares-rs/"))
+                       ("guix-patches"
+                        :url "https://yhetil.org/guix-patches/"
+                        :address "guix-patches@gnu.org"
+                        :coderepo ,(string-append (getcwd) "/channels/rde/")))))))
 
 
 ;;; SSH
@@ -870,9 +881,10 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
      ;; see https://github.com/NVIDIA/open-gpu-kernel-modules/issues/472
      (service (@ (nongnu services nvidia) nvidia-service-type)
               ((@ (nongnu services nvidia) nvidia-configuration)
-               (driver ((@ (nonguix utils) package-input-grafting)
-                        `((,(@ (gnu packages gl) mesa)
-                           . ,(@ (nongnu packages nvidia) nvdb)))))
+               (driver (hidden-package
+                        (package
+                         (inherit (@ (gnu packages gl) mesa))
+                         (replacement (@ (nongnu packages nvidia) nvdb)))))
                (firmware (@ (nongnu packages nvidia) nvidia-firmware-beta))
                (module (@ (nongnu packages nvidia) nvidia-module-beta))))
      (simple-service 'nvidia-mesa-utils-package
@@ -999,11 +1011,6 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
 
   (define swap-fs (get-btrfs-file-system '(swap . "/swap")))
 
-  (define my-linux
-    (if (null? (machine-firmware %current-machine))
-        linux-libre-6.12
-        linux-6.12))
-
   (define btrfs-file-systems
     (append
      (list root-fs home-fs)
@@ -1049,7 +1056,9 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
                                  %efivars-file-system
                                  %immutable-store))
       (feature-kernel
-       #:kernel my-linux
+       #:kernel (if (null? (machine-firmware %current-machine))
+                    linux-libre-6.13
+                    linux-6.13)
        #:initrd microcode-initrd
        #:initrd-modules
        (append (list "vmd") (@(gnu system linux-initrd) %base-initrd-modules))
@@ -1066,6 +1075,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
      (match (machine-name %current-machine)
        ("Precision 3571"
         (append
+         (list (force %base-services-feature))
          (list (feature-custom-services
                 #:feature-name-prefix 'machine
                 #:system-services (force %nvidia-services))
@@ -1099,21 +1109,17 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
 ;;; rde-config and helpers for generating home-environment and
 ;;; operating-system records.
 
-;; (use-modules (rde system bare-bone))
-
-;; (override-rde-config-with-values
-;; ((@@ (guix-stack build local-build-system) submodules-dir->packages)))
-
 (define %config
   (let ((config
          (rde-config
           (features (append
-                     (list (force %base-services-feature))  ;TODO avoid use when not needed
                      %user-features
                      %main-features
                      %host-features
                      %machine-features)))))
-    config))
+    (override-rde-config-with-values
+     config ((@ (guix-local build local-build-system)
+                submodules-dir->packages) "packages"))))
 
 ;; Dispatcher, self explanatory.
 (match-let ((((? (cut string-suffix? "guix" <>)) str rest ...) (command-line)))
@@ -1124,6 +1130,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
                 (match action
                   ("vm" (force my-installation-os))
                   ("image" (force my-installation-os))
+                  ;; sudo -E guix system CMD configuration.scm
                   (_  (rde-config-operating-system %config)))))
     (_        (error "This configuration is configured for \
 rde, home and system subcommands only!"))))

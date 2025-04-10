@@ -1,3 +1,4 @@
 [filechooser]
-cmd=TERMCMD='foot' $HOME/.guix-home/profile/share/xdg-desktop-portal-termfilechooser/yazi-wrapper.sh
-default_dir=$XDG_DOWNLOAD_DIR
+cmd=$HOME/.guix-home/profile/share/xdg-desktop-portal-termfilechooser/yazi-wrapper.sh
+default_dir=$HOME
+env=TERMCMD=foot
