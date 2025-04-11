@@ -562,6 +562,7 @@ https://github.com/fishinthecalculator/sops-guix
   #:use-module (gnu packages gnome-xyz)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages qt)
+  #:use-module (gnu packages terminals)
   #:use-module (gnu packages wm)
   #:use-module (gnu packages xdisorg)
   #:use-module (nongnu packages fonts)
@@ -574,6 +575,9 @@ https://github.com/fishinthecalculator/sops-guix
 通常用 nvidia-driver，出問題時換 nouveau。
 
 *** nvidia-driver
+:PROPERTIES:
+:ID:       15223ce6-bb6b-427b-b598-30998cdd9bdd
+:END:
 禁用 Linux 內核 nouveau 模塊。
 #+begin_src scheme :noweb-ref disabled-module
   "nouveau"
@@ -586,17 +590,6 @@ https://github.com/fishinthecalculator/sops-guix
 
 #+begin_src scheme :noweb-ref service
   (service nvidia-service-type)
-#+end_src
-
-#+begin_src scheme :noweb-ref home-fish-config
-  (plain-file
-   "fish-config-nvidia" "\
-  if status is-login
-      if test -d /proc/driver/nvidia
-          set --export __GLX_VENDOR_LIBRARY_NAME nvidia
-          set --export __NV_PRIME_RENDER_OFFLOAD 1
-      end
-  end")
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
@@ -674,7 +667,8 @@ To use NVK, mesa should be installed into a profile.
      #~(begin
          (use-modules (guix build utils))
          (let ((inputs
-                '#$(list light
+                '#$(list alacritty
+                         light
                          rofi-wayland
                          swaylock-effects
                          wireplumber
@@ -1414,25 +1408,12 @@ Required for using Rime in minibuffer.
        ;; Improve responsiveness.
        (vterm-timer-delay . 0.05)))
     (extra-init
-     (list #%(defun hako/vterm ()
-               (interactive)
-               (let* ((parent
-                       (if (buffer-file-name)
-                           (file-name-directory (buffer-file-name))
-                           default-directory))
-                      (name (car (last (split-string parent "/" t))))
-                      (vterm-buffer-name (concat "*vterm: " name "*"))
-                      (vterm-buffer (get-buffer vterm-buffer-name)))
-                 (if (and vterm-buffer (not current-prefix-arg))
-                     (pop-to-buffer vterm-buffer)
-                     (vterm t))))
-           #%(defun hako/vterm-project (&optional arg)
+     (list #%(defun hako/vterm-project (&optional arg)
                (interactive "P")
                (require 'project)
                (let* ((default-directory (project-root (project-current t)))
                       (vterm-buffer-name (project-prefixed-buffer-name "vterm")))
                  (vterm arg)))))
-    (keys-global '(("s-t" . hako/vterm)))
     (keys-local
      (list (emacs-keymap
              (name 'vterm-mode-map)
@@ -1570,6 +1551,31 @@ Required for using Rime in minibuffer.
   (udev-rules-service 'android android-udev-rules #:groups '("adbusers"))
 #+end_src
 
+** alacritty
+#+begin_src scheme :noweb yes :noweb-ref home-xdg-configuration-file
+  ("alacritty/alacritty.toml" ,<<alacritty-config>>)
+#+end_src
+
+#+name: alacritty-config
+#+begin_src scheme
+  (let ((theme
+         (origin
+           (method url-fetch)
+           (uri (string-append "https://github.com/catppuccin/alacritty" "/raw/"
+                               "f6cb5a5c2b404cdaceaff193b9c52317f62c62f7"
+                               "/catppuccin-latte.toml"))
+           (sha256
+            (base32 "061lraysrma94md83296166c6cgn29p5yxmv0am8n3ciyq505m5d")))))
+    (with-imported-modules '((guix build utils))
+      (computed-file
+       "alacritty.toml"
+       #~(begin
+           (use-modules (guix build utils))
+           (copy-file #$(testament-file-object "alacritty.toml") #$output)
+           (substitute* #$output
+             (("\\$\\$THEME\\$\\$") #$theme))))))
+#+end_src
+
 ** atuin
 #+begin_src scheme :noweb-ref home-fish-config
   (mixed-text-file
@@ -1623,17 +1629,12 @@ Required for using Rime in minibuffer.
 #+end_src
 
 ** ffmpeg
-#+begin_src scheme :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (services
-       (modify-services (operating-system-user-services os)
-         (guix-home-service-type
-          config => (with-transformation
-                        (package-input-grafting
-                         `((,ffmpeg . ,ffmpeg-nvenc)))
-                      config))))))
+An extra graft is done in [[id:15223ce6-bb6b-427b-b598-30998cdd9bdd][nvidia-driver section]], since =nv-codec-headers= dependents on =nvidia-driver=, which must be grafted to a functional driver bundle.
+
+#+begin_src scheme :noweb-ref definition
+  (define replace-ffmpeg
+    (package-input-grafting
+     `((,ffmpeg . ,ffmpeg-nvenc))))
 #+end_src
 
 ** gammastep
@@ -1748,14 +1749,14 @@ Required for using Rime in minibuffer.
 
 ** mpv
 #+begin_src scheme :noweb-ref home-package
-  mpv/dolly
+  (replace-ffmpeg mpv/dolly)
 #+end_src
 
 [[../files/dotfiles/.config/mpv/mpv.conf][~/.config/mpv/mpv.conf]]
 
 ** obs
 #+begin_src scheme :noweb-ref home-package
-  obs
+  (replace-ffmpeg obs)
   obs-wlrobs
 #+end_src
 

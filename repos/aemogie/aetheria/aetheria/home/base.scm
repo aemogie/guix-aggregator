@@ -34,7 +34,7 @@
                                                font-google-noto-emoji
                                                font-google-noto-sans-cjk
                                                font-google-noto-serif-cjk))
-  #:use-module ((aetheria home services security) #:select (home-security-services))
+  #:use-module ((aetheria home services security) #:select (home-security-service-type))
   #:export (%aetheria-base-home-services
             %aetheria-base-home-packages
             %aetheria-base-home
@@ -44,26 +44,25 @@
 
 ;; TODO: clean this up into individual services
 (define %aetheria-base-home-services
-  (append
-   (list
-    (service home-bash-service-type)
-    ;; started from hyprland config which is being persisted locally for now
-    (service home-shepherd-service-type
-             (home-shepherd-configuration
-              (auto-start? #f)
-              (daemonize? #f)
-              (services (list (shepherd-service
-                               (provision '(repl))
-                               (modules '((shepherd service repl)))
-                               (free-form #~(repl-service)))))))
-    (service home-files-service-type
-             `((".guile" ,%default-dotguile)
-               (".Xdefaults" ,%default-xdefaults)))
+  (list
+   (service home-bash-service-type)
+   (service home-security-service-type)
+   ;; started from hyprland config which is being persisted locally for now
+   (service home-shepherd-service-type
+            (home-shepherd-configuration
+             (auto-start? #f)
+             (daemonize? #f)
+             (services (list (shepherd-service
+                              (provision '(repl))
+                              (modules '((shepherd service repl)))
+                              (free-form #~(repl-service)))))))
+   (service home-files-service-type
+            `((".guile" ,%default-dotguile)
+              (".Xdefaults" ,%default-xdefaults)))
 
-    (service home-xdg-configuration-files-service-type
-             `(("gdb/gdbinit" ,%default-gdbinit)
-               ("nano/nanorc" ,%default-nanorc))))
-   home-security-services))
+   (service home-xdg-configuration-files-service-type
+            `(("gdb/gdbinit" ,%default-gdbinit)
+              ("nano/nanorc" ,%default-nanorc)))))
 
 (define %aetheria-base-home-packages
   ;; just tiny/essential cli stuff. shouldnt require any graphics, all things

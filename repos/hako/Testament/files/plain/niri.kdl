@@ -67,6 +67,7 @@ binds {
 
     Mod+Space   { spawn "$$bin/rofi$$" "-modes" "combi" "-show" "combi"; }
     Mod+L       { spawn "$$bin/swaylock$$" "--clock" "--daemonize" "--ignore-empty-password" "--image" "$$LOCKSCREEN$$"; }
+    Mod+T       { spawn "$$bin/alacritty$$"; }
     Mod+Return  { spawn "emacsclient" "--create-frame" "--no-wait"; }
     Mod+Shift+E { spawn "sh" "-c" "herd stop root && niri msg action quit"; }
 }

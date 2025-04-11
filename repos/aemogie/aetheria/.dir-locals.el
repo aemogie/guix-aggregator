@@ -8,6 +8,7 @@
  (scheme-mode
   .
   ((indent-tabs-mode . nil)
+   (eval . (put 'genlayer 'scheme-indent-function 1))
    (eval . (put 'eval-when 'scheme-indent-function 1))
    (eval . (put 'call-with-prompt 'scheme-indent-function 1))
    (eval . (put 'test-assert 'scheme-indent-function 1))
