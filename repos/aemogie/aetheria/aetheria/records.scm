@@ -1,184 +1,204 @@
 (define-module (aetheria records)
-  #:use-module ((srfi srfi-1) #:select (fold))
+  #:use-module ((srfi srfi-1) #:select (fold
+                                        concatenate))
+  #:use-module ((srfi srfi-11) #:select (let-values))
+  #:use-module ((srfi srfi-34) #:select (raise))
+  #:use-module ((srfi srfi-35) #:select (define-condition-type
+                                          condition))
+  #:use-module ((ice-9 match) #:select (match-let*))
+  #:use-module ((ice-9 exceptions) #:select (&implementation-restriction))
   #:use-module ((guix records) #:select (define-record-type*))
-  #:export (define-foldable-record-type
+  #:export (<fold-strategy>
+            fold-strategy
+            make-fold-strategy
+            fold-strategy-default
+            fold-strategy-reduce
+            &bad-fold-strategy
+
+            conflict-strategy
+            &record-fold-conflict
+            append-strategy
+            lines-strategy
+
+            &foldable-record-error
+            &multiple-fold-strategies-error
+            &default-not-allowed-error
+            &missing-fold-strategy-error
+
+            define-foldable-record-type
              define-foldable-wrapper-type))
+
+(define-condition-type &bad-fold-strategy &implementation-restriction
+  bad-fold-strategy?)
+
+(define-record-type* <fold-strategy>
+  fold-strategy make-fold-strategy
+  fold-strategy?
+  (default fold-strategy-default)       ; any
+  (reduce fold-strategy-reduce          ; procedure (x acc) => acc
+          (sanitize
+           (lambda (proc)
+             (match-let* ((good-proc? (procedure? proc))
+                          ((required optional rest?) (procedure-minimum-arity proc))
+                          (good-arity? (or rest? (<= required 2 (+ required optional)))))
+               (if (and good-proc? good-arity?) proc
+                   (raise (condition (&bad-fold-strategy)))))))))
+
+(define-condition-type &record-fold-conflict &implementation-restriction
+  record-fold-conflict?
+  (first record-fold-conflict-first)
+  (second record-fold-conflict-second))
+
+(define conflict-strategy
+  (fold-strategy
+   (default *unspecified*)
+   (reduce (lambda (x acc)
+             (cond ((and (not (unspecified? acc))
+                         (not (unspecified? x))
+                         (not (equal? x acc)))
+                    (raise (condition (&record-fold-conflict
+                                       (first acc)
+                                       (second x)))))
+                   ;; order doesnt matter, since we have concluded that either
+                   ;; only one is unspecified or both are equal
+                   ((unspecified? acc) x)
+                   ((unspecified? x) acc))))))
+
+(define append-strategy
+  (fold-strategy
+   (default '())
+   (reduce append)))
+
+(define lines-strategy
+  (fold-strategy
+   (default "")
+   (reduce (lambda (x acc)
+             (cond ((string-null? x) acc)
+                   ((string-null? acc) (string-append x "\n"))
+                   (else (string-append acc x "\n")))))))
+
+;; top-level supertype of any errors from this macro
+(define-condition-type &foldable-record-error &implementation-restriction
+  foldadble-record-error?)
+
+(define-record-type* <processed-properties>
+  processed-properties make-processed-properties
+  processed-properties?
+  (strategy processed-properties-strategy ; syntax object of <fold-strategy>
+            (default *unspecified*))
+  (forwarded processed-properties-forwarded ; list of syntax objects
+             (default '())))
+
+(define (merge-processed-properties a b)
+  (processed-properties
+   (strategy (cond ((and (not (unspecified? (processed-properties-strategy a)))
+                         (not (unspecified? (processed-properties-strategy b))))
+                    (raise (condition (&multiple-fold-strategies-error
+                                       (first (syntax->datum
+                                               (processed-properties-strategy a)))
+                                       (second (syntax->datum
+                                                (processed-properties-strategy b)))))))
+                   ((not (unspecified? (processed-properties-strategy a)))
+                    (processed-properties-strategy a))
+                   ((not (unspecified? (processed-properties-strategy b)))
+                    (processed-properties-strategy b))))
+   (forwarded (append (processed-properties-forwarded a)
+                      (processed-properties-forwarded b)))))
+
+(define-condition-type &multiple-fold-strategies-error &foldable-record-error
+  multiple-fold-strategies-error?
+  (first multiple-fold-strategies-error-first)
+  (second multiple-fold-strategies-error-second))
+
+(define-condition-type &default-not-allowed-error &foldable-record-error
+  default-not-allowed-error?
+  (property default-not-allowed-error-property))
+
+(define-condition-type &missing-fold-strategy-error &foldable-record-error
+  missing-fold-strategy-error?)
+
+(define (process-properties properties acc)
+  (syntax-case properties (fold default)
+    (((fold strategy*) rest ...)        ; (fold)
+     (process-properties #'(rest ...)
+                         (merge-processed-properties
+                          (processed-properties
+                           (strategy #'strategy*)
+                           (forwarded #'((default (fold-strategy-default strategy*)))))
+                          acc)))
+    (((default value) rest ...)         ; (default)
+     (raise (condition (&default-not-allowed-error
+                        (property (syntax->datum #'(default value)))))))
+    ((next rest ...)                    ; (*)
+     (process-properties #'(rest ...)
+                         (merge-processed-properties
+                          (processed-properties
+                           (forwarded #'(next)))
+                          acc)))
+                                        ; done
+    (() (unspecified? (processed-properties-strategy acc))
+     (raise (condition (&missing-fold-strategy-error))))
+    (() acc)))
+
+(define-record-type* <processed-fields>
+  processed-fields make-processed-fields
+  processed-fields?
+  (strategies processed-fields-strategies
+              (default '())) ; partial syntax object for the body of a syntactict-ctor
+  (forwarded processed-fields-forwarded
+             (default '()))) ; list of syntax objects
+
+(define (merge-processed-fields a b)
+  (processed-fields
+   (strategies (append (processed-fields-strategies a)
+                       (processed-fields-strategies b)))
+   (forwarded (append (processed-fields-forwarded a)
+                      (processed-fields-forwarded b)))))
+
+(define (process-fields fields x-id acc-id acc)
+  (with-syntax ((x-id x-id)
+                (acc-id acc-id))
+    (syntax-case fields ()
+      (((field get properties ...) rest ...)
+       (let ((processed (process-properties #'(properties ...) (processed-properties))))
+         (with-syntax ((strategy (processed-properties-strategy processed))
+                       ((props ...) (processed-properties-forwarded processed)))
+           (process-fields #'(rest ...) #'x-id #'acc-id
+                           (merge-processed-fields
+                            (processed-fields
+                             (strategies #'((field ((fold-strategy-reduce strategy)
+                                                    (get x-id) (get acc-id)))))
+                             (forwarded #'((field get props ...))))
+                            acc)))))
+      (() acc))))
 
 (define-syntax define-foldable-record-type
   (lambda (syn)
-    (define (process-properties err properties processed fold-variant default-found?)
-      (syntax-case properties (fold default
-                                    conflict
-                                    list
-                                    lines
-                                    custom)
-        ((rest ... (fold _)) (and fold-variant)
-         (err "multiple duplicate fold variants"))
-
-        ;; default handling. should be disallowed on conflict/list variants
-        ((rest ... (default value)) (member fold-variant '(conflict list))
-         (err "cannot set default value on ~a variant" fold-variant))
-        ((rest ... (fold conflict)) default-found?
-         (err "cannot set default value on coflict variant"))
-        ((rest ... (fold list)) default-found?
-         (err "cannot set default value on list variant"))
-        ((rest ... (fold lines)) default-found?
-         (err "cannot set default value on lines variant"))
-        ((rest ... (default default-found?))
-         (process-properties err #'(rest ...) (cons #'(default default-found?) processed)
-                             fold-variant #'default-found?))
-
-        ;; conflict/list
-        ((rest ... (fold conflict))
-         (process-properties err #'(rest ...) (cons #'(default *unspecified*) processed)
-                             'conflict (datum->syntax syn #'*unspecified*)))
-        ((rest ... (fold list))
-         (process-properties err #'(rest ...) (cons #'(default '()) processed)
-                             'list (datum->syntax syn #''())))
-        ((rest ... (fold lines))
-         (process-properties err #'(rest ...) (cons #'(default *unspecified*) processed)
-                             'lines (datum->syntax syn #'*unspecified*)))
-
-        ;; custom fold, remember to validate
-        ((rest ... (fold custom proc-unchecked))
-         (process-properties err #'(rest ...) processed
-                             #'proc-unchecked default-found?))
-
-        ((rest ... (fold _ ...))
-         (err "invalid fold variant"))
-
-        ((rest ... next)
-         (begin
-           (process-properties err #'(rest ...) (cons #'next processed)
-                               fold-variant default-found?)))
-        (() (not fold-variant)
-         (err "missing (fold <variant>)"))
-        (() (not default-found?)
-         (err "missing (default <value>)"))
-        (()
-         (values fold-variant processed))))
-    (define (process-fields err fields fold-parts processed)
-      (syntax-case fields ()
-        ((rest ... (field get properties ...))
-         (call-with-values (lambda () (process-properties err #'(properties ...) #'() #f #f))
-           (lambda (variant cleaned-properties)
-             (process-fields err #'(rest ...)
-                             (cons (lambda (record x acc)
-                                     (make-fold-part record x acc #'field #'get variant))
-                                   fold-parts)
-                             (cons #`(field get #,@cleaned-properties) processed)))))
-        (()
-         (values fold-parts processed))))
-    (define (make-fold-part record x acc field get variant)
-      (syntax-case (list record x acc field get variant)
-          (conflict list lines)
-        ((record x acc field get list)
-         #'(field (append (get acc) (get x))))
-        ((record x acc field get conflict)
-         (let* ((msg (format #f "multiple conflicting definitions for ~a"
-                             (syntax->datum #'field)))
-                (conflict-case #`(and (not (unspecified? (get acc)))
-                                      (not (equal? (get x) (get acc))))))
-           #`(field (cond
-                     (#,conflict-case (error 'record #,msg acc x))
-                     ((not (unspecified? (get acc))) (get acc))
-                     ((not (unspecified? (get x))) (get x))))))
-        ((record x acc field get lines)
-         #`(field (cond
-                   ((unspecified? (get acc)) (get x))
-                   ((unspecified? (get x)) (get acc))
-                   (else (string-append (get acc) "\n" (get x))))))
-        ((record x acc field get custom)
-         #'(field (let* ((custom* custom)
-                         (arity (procedure-minimum-arity custom*)))
-                    (unless (procedure? custom*)
-                      (error 'record "custom fold wasn't a valid procedure"))
-                    (unless (<= (car arity) 2 (+ (car arity) (cadr arity)))
-                      (error 'record "custom fold has invalid arity"))
-                    (custom* (get x) (get acc)))))))
     (syntax-case syn ()
-      ((me type syntactic-ctor ctor pred fold-proc
-           (field get properties ...) ...)
-       #'(me type syntactic-ctor ctor pred fold-proc
-             this-record
-             (field get properties ...) ...))
-      ((me type syntactic-ctor ctor pred fold-proc
-           this-identifier
-           (field get properties ...) ...)
-       (call-with-values
-           (lambda ()
-             (define (err fmt . args)
-               (syntax-violation (syntax->datum #'me) (apply format #f fmt args) syn))
-             (process-fields err #'((field get properties ...) ...) '() #'()))
-         (lambda (fold-parts fields)
-           #`(begin
-               (define-record-type* type syntactic-ctor ctor pred
-                 this-identifier
-                 #,@fields)
-               (define (fold-proc lst default)
-                 (fold #,(with-syntax
-                             ((x (datum->syntax #'fold-proc 'x))
-                              (acc (datum->syntax #'fold-proc 'acc)))
-                           #`(lambda (x acc)
-                               (syntactic-ctor #,@(map (lambda (fn) (fn #'type #'x #'acc))
-                                                       fold-parts))))
-                       default
-                       lst)))))))))
-
-(define-syntax define-foldable-wrapper-type
-  (lambda (syn)
-    (define (id . parts)
-      (datum->syntax syn (apply symbol-append (map syntax->datum parts))))
-    (define (process-fields name in out)
-      (syntax-case in (fold list conflict lines custom)
-        ((rest ... (field list))
-         (with-syntax ((get (id name #'- #'field)))
-           (process-fields name #'(rest ...)
-                           (cons #'(field get (fold list)) out))))
-        ((rest ... (field conflict))
-         (with-syntax ((get (id name #'- #'field)))
-           (process-fields name #'(rest ...)
-                           (cons #'(field get (fold conflict)) out))))
-        ((rest ... (field lines))
-         (with-syntax ((get (id name #'- #'field)))
-           (process-fields name #'(rest ...)
-                           (cons #'(field get (fold lines)) out))))
-        ((rest ... (field custom proc default*))
-         (with-syntax ((get (id name #'- #'field)))
-           (process-fields name #'(rest ...)
-                           (cons #'(field get (fold custom proc) (default default*)) out))))
-        (() out)))
-    (syntax-case syn ()
-      ((me name
-           #:wraps wrapped
-           #:wrapped-default default
-           (field-name rest ...) ...)
-       (let ((processed-fields (process-fields #'name #'((field-name rest ...) ...) #'())))
-         (with-syntax ((type (id #'< #'name #'>))
-                       (syntactic-ctor (id #'name))
-                       (ctor (id #'make- #'name))
-                       (pred (id #'name #'?))
-                       (fold-proc (id #'fold- #'name))
-                       (unwrap (id #'unwrap- #'name))
-                       ((processed-field ...) processed-fields)
-                       (unwrap:self (id #'self))
-                       (unwrap:our-default (id #'our-default))
-                       (unwrap:their-default (id #'their-default)))
-           #`(begin
-               (define-foldable-record-type
-                 type syntactic-ctor ctor pred fold-proc
-                 processed-field ...)
-               (define (unwrap unwrap:self)
-                 (define unwrap:our-default (syntactic-ctor))
-                 (define unwrap:their-default default)
-                 (wrapped
-                  #,@(map
-                      (lambda (field-name)
-                        (with-syntax ((field field-name)
-                                      (get:our (id #'name #'- field-name))
-                                      (get:their (id #'wrapped #'- field-name)))
-                          #`(field (if (equal? (get:our unwrap:self)
-                                               (get:our unwrap:our-default))
-                                       (get:their unwrap:their-default)
-                                       (get:our unwrap:self)))))
-                      #'(field-name ...)))))))))))
+      ((_ type syntactic-ctor ctor pred
+          merge-proc fold-proc
+          (field get properties ...) ...)
+       #'(define-foldable-record-type type syntactic-ctor ctor pred
+           merge-proc fold-proc
+           this-record
+           (field get properties ...) ...))
+      ((_ type syntactic-ctor ctor pred
+          merge-proc fold-proc
+          this-identifier
+          (field get properties ...) ...)
+       (with-syntax ((x-id (datum->syntax syn 'x))
+                     (acc-id (datum->syntax syn 'acc)))
+         (let ((new-fields (process-fields #'((field get properties ...) ...)
+                                           #'x-id #'acc-id
+                                           (processed-fields))))
+           (with-syntax (((strategies ...) (processed-fields-strategies new-fields))
+                         ((forwarded-fields ...) (processed-fields-forwarded new-fields)))
+             #'(begin
+                 (define-record-type* type syntactic-ctor ctor pred
+                   this-identifier
+                   forwarded-fields ...)
+                 (define (merge-proc x-id acc-id)
+                   (syntactic-ctor
+                    strategies ...))
+                 (define (fold-proc lst)
+                   (fold merge-proc (syntactic-ctor) lst))))))))))

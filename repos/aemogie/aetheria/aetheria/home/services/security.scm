@@ -1,11 +1,11 @@
 (define-module (aetheria home services security)
   #:use-module ((srfi srfi-1) #:select (concatenate
                                         fold))
-  #:use-module ((ice-9 match) #:select (match-lambda))
   #:use-module ((guix gexp) #:select (plain-file
                                       file-append
                                       file-like?))
-  #:use-module ((guix records) #:select (define-record-type*))
+  #:use-module ((guix records) #:select (define-record-type*
+                                          match-record-lambda))
   #:use-module ((gnu services) #:select (service
                                          service-type
                                          service-extension))
@@ -39,7 +39,11 @@
                                                pinentry
                                                pinentry-tty))
   #:use-module ((gnu packages ssh) #:select (openssh-sans-x))
-  #:use-module ((aetheria records) #:select (define-foldable-wrapper-type))
+  #:use-module ((aetheria records) #:select (fold-strategy-default
+                                             conflict-strategy
+                                             append-strategy
+                                             lines-strategy
+                                             define-foldable-record-type))
   #:export (home-openssh-configuration
             home-openssh-configuration-authorized-keys
             home-openssh-configuration-known-hosts
@@ -56,6 +60,7 @@
             home-gpg-agent-configuration-ssh-support?
             home-gpg-agent-configuration-default-cache-ttl
             home-gpg-agent-configuration-max-cache-ttl
+            home-gpg-agent-configuration-default-cache-ttl-ssh
             home-gpg-agent-configuration-max-cache-ttl-ssh
             home-gpg-agent-configuration-extra-content
 
@@ -63,17 +68,46 @@
 
             home-security-service-type))
 
+;; not exported
 (define upstream:home-gpg-agent-configuration-default-cache-ttl-ssh
   (module-ref (resolve-module '(gnu home services gnupg))
               'home-gpg-agent-configuration-default-cache-ttl-ssh))
 
-(define-foldable-wrapper-type home-openssh-configuration
-  #:wraps upstream:home-openssh-configuration
-  #:wrapped-default (upstream:home-openssh-configuration)
-  (authorized-keys list)                ;list of file-like
-  (known-hosts list)                    ;list of file-like
-  (hosts list)                          ;list of <openssh-host>
-  (add-keys-to-agent conflict)) ;string with limited values
+(define-macro (unwrap name value . fields)
+  (define upstream (symbol-append 'upstream: name))
+  (define (upstream:field field-name)
+    `(,(symbol-append upstream '- field-name) %upstream-default))
+  (define (downstream:field field-name)
+    `(,(symbol-append name '- field-name) ,value))
+  `(begin
+     (define %upstream-default (,upstream))
+     (,upstream
+      ,@(map (lambda (field)
+               `(,(car field) (if (equal? (fold-strategy-default ,(cadr field))
+                                          ,(downstream:field (car field)))
+                                  ,(upstream:field (car field))
+                                  ,(downstream:field (car field)))))
+             fields))))
+
+(define-foldable-record-type <home-openssh-configuration>
+  home-openssh-configuration make-home-openssh-configuration
+  home-openssh-configuration?
+  merge-home-openssh-configuration fold-home-openssh-configuration
+  (authorized-keys   home-openssh-configuration-authorized-keys
+                     (fold append-strategy)) ;list of file-like
+  (known-hosts       home-openssh-configuration-known-hosts
+                     (fold append-strategy)) ;list of file-like
+  (hosts             home-openssh-configuration-hosts
+                     (fold append-strategy)) ;list of <openssh-host>
+  (add-keys-to-agent home-openssh-configuration-add-keys-to-agent
+                     (fold conflict-strategy))) ;string with limited values
+
+(define (unwrap-home-openssh-configuration config)
+  (unwrap home-openssh-configuration config
+          (authorized-keys append-strategy)
+          (known-hosts append-strategy)
+          (hosts append-strategy)
+          (add-keys-to-agent conflict-strategy)))
 
 (define home-openssh-service-type
   (service-type
@@ -81,20 +115,40 @@
    (compose identity)
    (extend (lambda (config extensions)
              (unwrap-home-openssh-configuration
-              (fold-home-openssh-configuration extensions config))))
+              (fold-home-openssh-configuration (cons config extensions)))))
    (default-value (home-openssh-configuration))))
 
-(define-foldable-wrapper-type home-gpg-agent-configuration
-  #:wraps upstream:home-gpg-agent-configuration
-  #:wrapped-default (upstream:home-gpg-agent-configuration)
-  (gnupg conflict)                      ; file-like
-  (pinentry-program conflict)           ; file-like
-  (ssh-support? conflict)               ; boolean
-  (default-cache-ttl conflict)          ; integer
-  (max-cache-ttl conflict)              ; integer
-  (default-cache-ttl-ssh conflict)      ; integer
-  (max-cache-ttl-ssh conflict)          ; integer
-  (extra-content lines)) ; raw-configuration-string
+(define-foldable-record-type <home-gpg-agent-configuration>
+  home-gpg-agent-configuration make-home-gpg-agent-configuration
+  home-gpg-agent-configuration?
+  merge-home-gpg-agent-configuration fold-home-gpg-agent-configuration
+  (gnupg                 home-gpg-agent-configuration-gnupg
+                         (fold conflict-strategy)) ; file-like
+  (pinentry-program      home-gpg-agent-configuration-pinentry-program
+                         (fold conflict-strategy)) ; file-like
+  (ssh-support?          home-gpg-agent-configuration-ssh-support?
+                         (fold conflict-strategy)) ; boolean
+  (default-cache-ttl     home-gpg-agent-configuration-default-cache-ttl
+    (fold conflict-strategy))           ; integer
+  (max-cache-ttl         home-gpg-agent-configuration-max-cache-ttl
+                         (fold conflict-strategy)) ; integer
+  (default-cache-ttl-ssh home-gpg-agent-configuration-default-cache-ttl-ssh
+    (fold conflict-strategy))           ; integer
+  (max-cache-ttl-ssh     home-gpg-agent-configuration-max-cache-ttl-ssh
+                         (fold conflict-strategy)) ; integer
+  (extra-content         home-gpg-agent-configuration-extra-content
+                         (fold lines-strategy))) ; raw-configuration-string
+
+(define (unwrap-home-gpg-agent-configuration config)
+  (unwrap home-gpg-agent-configuration config
+          (gnupg                 conflict-strategy)
+          (pinentry-program      conflict-strategy)
+          (ssh-support?          conflict-strategy)
+          (default-cache-ttl     conflict-strategy)
+          (max-cache-ttl         conflict-strategy)
+          (default-cache-ttl-ssh conflict-strategy)
+          (max-cache-ttl-ssh     conflict-strategy)
+          (extra-content         lines-strategy)))
 
 (define home-gpg-agent-service-type
   (service-type
@@ -102,7 +156,7 @@
    (compose identity)
    (extend (lambda (config extensions)
              (unwrap-home-gpg-agent-configuration
-              (fold-home-gpg-agent-configuration extensions config))))
+              (fold-home-gpg-agent-configuration (cons config extensions)))))
    (default-value (home-gpg-agent-configuration))))
 
 (define home-security-service-type
