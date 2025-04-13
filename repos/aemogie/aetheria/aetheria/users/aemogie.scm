@@ -3,14 +3,14 @@
                                          match))
   #:use-module ((guix gexp) #:select (plain-file))
   #:use-module ((gnu services) #:select (simple-service))
-  #:use-module ((gnu home) #:select (home-environment))
+  #:use-module ((gnu home) #:select (home-environment
+                                     home-environment-packages
+                                     home-environment-user-services))
   #:use-module ((gnu home services) #:select (home-xdg-configuration-files-service-type))
   #:use-module ((guix-science packages typst) #:select (typst))
   #:use-module ((aetheria services kmonad) #:select (kmonad-keyboard-service))
   #:use-module ((aetheria home services kmonad) #:select (home-kmonad-service-type))
-  #:use-module ((aetheria home base) #:select (%aetheria-desktop-home
-                                               %aetheria-desktop-home-packages
-                                               %aetheria-desktop-home-services))
+  #:use-module ((aetheria home services desktop) #:select (%aetheria-desktop-home-services))
   #:use-module ((aetheria users aemogie serena) #:select (serena-nivea-emacs-script
                                                           serena-keyboard))
   #:export (make-aemogie-home))
@@ -75,12 +75,10 @@ gpgSign = true")))))
 
 (define* (make-aemogie-home hostname)
   (home-environment
-   (inherit %aetheria-desktop-home)
    (packages (append (match hostname
                        ("serena" (list serena-nivea-emacs-script))
                        (_ '()))
-                     (list typst)
-                     %aetheria-desktop-home-packages))
+                     (list typst)))
    (services (append (match hostname
                        ("serena" (list
                                   (kmonad-keyboard-service

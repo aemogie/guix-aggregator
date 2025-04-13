@@ -50,14 +50,14 @@ the ~<operating-system>~ and ~<home-environment>~ record fields are fed back
 into the services mechanism to be folded. services are generally more modular,
 albeit less readable than record fields. but for my usage services might make
 things cleaner, as everything would be a service.
-*** TODO ~profile-service-type~
+*** DONE ~profile-service-type~
 services can add packages to the profile by extending the
 ~profile-service-type~ service with a list of them. standalone packages can
 also use propogated-inputs to pull in runtime dependencies. some of the
 services might not do anything but instead merely be a semantic categorization
 mechanism.
-+ ~%aetheria-desktop-home-packages~ from ~(aetheria home base)~
-+ ~%aetheria-base-home-packages~ from ~(aetheria home base)~
++ [X] ~%aetheria-desktop-home-packages~ from ~(aetheria home base)~
++ [X] ~%aetheria-base-home-packages~ from ~(aetheria home base)~
 *** TODO ~account-service-type~
 The extension type is mentioned to be "<user-account>, <user-group>, and
 skeleton lists."

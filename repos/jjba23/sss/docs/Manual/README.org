@@ -20,7 +20,9 @@ This custom GNU + Linux setup lets you customize everything endlessly, inspires 
 
 SSS strives to have all things configured via Lisp dialects when possible and convenient, staying accessible to all kinds of users, and allowing for magical things to happen 🪄.
 
-⚠️ Installing and managing SSS is not meant for people new to GNU/Linux systems. You should already have some experience with software development. Knowing Lisp dialects, or functional programming techniquest is also a big help and is something you will learn further.
+⚠️ Installing and managing SSS is not meant for people new to GNU/Linux systems. You should already have some experience with software development. Knowing Lisp dialects, or functional programming techniques is also a big help and is something you will learn further.
+
+Refer to the project's code of conduct here: [[https://jointhefreeworld.org/blog/articles/personal/jointhefreeworld-code-of-conduct/index.html][jointhefreeworld code of conduct]]
 
 [[https://jointhefreeworld.org/static-assets/sss/dall-e-3-thumb.png]]
 
@@ -530,14 +532,6 @@ You can find these scripts and the list file at ~system/scripts~ in this repo an
 
 Installing all wanted Flatpak packages can be done with ~make fpi~ for example and updating them with ~make fpu~.
 
-* SSS Project
-
-
-Contributing to free software is a uniquely beautiful act because it embodies principles of generosity, collaboration, and empowerment.
-
-We welcome everyone to feel invited to the SSS Project, and feel free to contribute, improve it and/or suggest improvements, brainstorm with me, make it more modular/flexible.
-
-Find the backlog and [[file:../project-management.org][project management of SSS here]].
 
 -----
 * System audio

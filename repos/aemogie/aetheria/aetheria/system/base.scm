@@ -19,6 +19,7 @@
   #:use-module ((gnu system) #:select (operating-system-default-essential-services
                                        operating-system
                                        this-operating-system))
+  #:use-module ((gnu home) #:select (home-environment))
   #:use-module ((gnu bootloader) #:select (bootloader-configuration))
   #:use-module ((gnu bootloader grub) #:select (grub-efi-bootloader))
   #:use-module ((gnu system file-systems) #:select (%base-file-systems))
@@ -30,7 +31,7 @@
   #:use-module ((aetheria services kmonad) #:select (kmonad-service-type))
   #:use-module ((aetheria packages package-management) #:select (guix-for-cached-channels))
   #:use-module ((aetheria packages admin) #:select (shepherd-with-propagated-fibers))
-  #:use-module ((aetheria home base) #:select (%aetheria-base-home))
+  #:use-module ((aetheria home services base) #:select (home-base-service-type))
   #:export (%aetheria-base-system
             %aetheria-base-services
             %aetheria-user-template))
@@ -61,7 +62,9 @@
 
 (define %aetheria-base-services
   (cons*
-   (service guix-home-service-type (list (list "root" %aetheria-base-home)))
+   (service guix-home-service-type
+            `(("root" ,(home-environment
+                        (services (list (service home-base-service-type)))))))
    nonguix-substitute-service
    guix-science-substitute-service
    (service kmonad-service-type) ;; for udev rules

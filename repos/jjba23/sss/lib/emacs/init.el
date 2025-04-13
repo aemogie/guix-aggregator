@@ -101,7 +101,7 @@
 
 ;; Load more user modules
 (setq sss-emacs-modules '(dashboard common-lisp go org theme
-                             emacs-core erc consult eglot dev music))
+                                    emacs-core erc consult eglot dev music ui maps))
 (mapc (lambda(f) (load-user-file (format "modules/%s.el" f))) sss-emacs-modules)
 
 (use-package git-riddance 
