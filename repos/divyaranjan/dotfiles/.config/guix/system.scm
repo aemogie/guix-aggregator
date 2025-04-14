@@ -10,8 +10,8 @@
 	     (gnu services cups)
 	     (gnu services mcron)
 	     (gnu services shepherd)
-	     (gnu services xorg))
-(use-modules (gnu packages haskell-apps)
+	     (gnu services xorg)
+	     (gnu packages haskell-apps)
 	     (gnu packages cups)
 	     (gnu packages linux)
 	     (gnu packages bash)
@@ -21,6 +21,7 @@
 	     (divya-lambda emacs)
 	     (divya-lambda fonts)
 	     (gnu packages version-control))
+
 (use-modules (guix))
 (use-service-modules cups desktop networking ssh xorg sddm)
 (use-package-modules ssh)
@@ -86,8 +87,8 @@
  ;; (initrd microcode-initrd)
  (firmware (list linux-firmware))
  ;; To enable module for USB Wifi/BT Adapter: Swiztek BT+WIFI
- (kernel-arguments '("modprobe.blacklist=rtw88_8821cu"))
- (kernel-loadable-modules (list rtl8821cu-linux-module))
+ ;; (kernel-arguments '("modprobe.blacklist=rtw88_8821cu"))
+ ;; (kernel-loadable-modules (list rtl8821cu-linux-module))
 
 ;;; User Groups
  (groups (cons*
@@ -110,21 +111,16 @@
  ;; for packages and 'guix install PACKAGE' to install a package.
  (packages
   (append (map (compose list specification->package+output)
-	       `( ;;; Wayland
-		 ;; "wayland"
-		 ;; "sway"
-
+	       `(
 ;;; Window Managers
-		 ;; "awesome"
 		 "stumpwm"
-		 ;; "xmonad"
 
 ;;; Text Editors
 		 ;; "emacs-next"
 		 ;; "emacs-master-xwidgets"
 		 ;; "emacs-master-lucid"
-		 ;; "emacs-master-igc"
-		 "emacs-master-no-x-toolkit"
+		 "emacs-master-igc"
+		 ;;"emacs-master-no-x-toolkit"
 		 "vim"
 
 ;;; Audio/Video/Streaming
@@ -167,6 +163,9 @@
 		 "font-spline-sans-mono"
 		 "font-inconsolata"
 		 "font-ibm-plex"
+		 "font-victor-mono"
+		 "font-juliamono"
+		 "font-anonymous-pro"
 
 ;;; Mathematics/Computational Software
 		 ;; "sage"
@@ -183,6 +182,7 @@
 		 "mit-scheme"
 		 "racket"
 		 "gcc-toolchain"
+		 "clang"
 		 "gdb"
 		 "ghc"
 		 "cabal-install"
@@ -217,6 +217,10 @@
 		 "cutter"
 		 "binutils"
 		 "binwalk"
+		 "imhex"
+
+		 ;;; Virtualization
+		 "qemu"
 
 ;;; Terminals
 		 "alacritty"
@@ -301,7 +305,7 @@
 		 "xprop"
 
 		 ;; Kernel/Drivers
-		 "rtl8821cu-linux-module" ;; The driver module for the BT/WIFI adapter needs to be installed (from nongnu)
+		 ;;		 "rtl8821cu-linux-module" ;; The driver module for the BT/WIFI adapter needs to be installed (from nongnu)
 		 ))
 	  %base-packages))
 

@@ -2,7 +2,7 @@
 
 [window]
 
-opacity = 0.93
+opacity = 0.90
 padding.x = 10
 padding.y = 10
 
@@ -10,12 +10,9 @@ decorations = "Full"
 decorations_theme_variant = "Dark"
 
 [font]
-normal.family = "IBM Plex Mono"
-bold.family = "IBM Plex Mono"
-italic.family = "IBM Plex Mono"
-bold_italic.family= "IBM Plex Mono"
+normal.family = "Victor Mono Medium"
 
-size = 12.0
+size = 13.0
 
 [[hints.enabled]]
 regex = "[^ ]+\\.rs:\\d+:\\d+"
@@ -34,3 +31,6 @@ multiplier = 3
 import = ["~/.config/alacritty/themes/themes/monokai_charcoal.toml"]
 
 [terminal]
+
+# [bell]
+# command = "<string>" | { program = "<string>", args = ["<string>",] }

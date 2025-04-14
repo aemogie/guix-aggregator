@@ -9,15 +9,14 @@ alias cd-phy='cd "/mnt/LDisk-E/Albert Einstein/Books & Resources/MIT OCW/Physics
 alias cd-einstein='cd "/mnt/LDisk-E/Albert Einstein/"'
 alias cd-phil='cd "/mnt/LDisk-E/Albert Einstein/Books & Resources/Philosophy/"'
 alias cd-psych='cd "/mnt/LDisk-E/Albert Einstein/Books & Resources/Psychology/"'
-alias cd-list='cd "/mnt/LDisk-E/Albert Einstein/Books & Resources/Literature"'
+alias cd-lit='cd "/mnt/LDisk-E/Albert Einstein/Books & Resources/Literature"'
 alias cd-books='cd "/mnt/LDisk-E/Albert Einstein/Books & Resources/"'
 alias cd-gm='cd "/mnt/LDisk-E/Albert Einstein/Books & Resources/Sociology/Gender Mainstreaming/Megha"'
 
 
-alias z="zathura"
 alias g="git"
 alias v=$EDITOR
-alias p="sudo pacman"
+alias ec="emacsclient -ct"
 alias ka="killall"
 alias cp="cp -iv"
 alias mv="mv -iv"

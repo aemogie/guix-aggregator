@@ -126,9 +126,9 @@
 	 (forth-mode . symbol-overlay-mode)))
 
 ;; Semantic Color Highlighting
-(use-package color-identifiers-mode
-  :straight t
-  :init (global-color-identifiers-mode))
+;; (use-package color-identifiers-mode
+;;   :straight t
+;;   :init (global-color-identifiers-mode))
 
 ;; Compiler Explorer
 (use-package rmsbolt
@@ -174,6 +174,7 @@
 (use-package go-mode
   :straight t
   :hook (go-mode-hook . eglot-ensure))
+(add-hook 'before-save-hook #'gofmt-before-save)
 
 ;;; Haskell
 (require 'ob-haskell)
@@ -182,12 +183,19 @@
   :defer t
   :hook (haskell-mode . eglot-ensure)
   :bind
-  (("C-c h" . haskell-hoogle))
+  (:map haskell-mode-map
+   ("C-c h" . haskell-hoogle))
   :config
 
   (let ((my-ghcup-path (expand-file-name "/home/divya/.ghcup/bin")))
     (setenv "PATH" (concat my-ghcup-path ":" (getenv "PATH")))
     (add-to-list 'exec-path my-ghcup-path)))
+
+(use-package ormolu
+  :straight t
+  :bind
+  (:map haskell-mode-map
+   ("C-c C-f" . ormolu-format-buffer)))
 
 ;; Hlint
 (require 'hs-lint)
@@ -220,6 +228,9 @@
   :defer t
   :hook (rust-ts-mode . eglot-ensure)
   :hook (rust-ts-mode . subword-mode))
+
+(use-package rust-playground
+  :straight t)
 
 ;;; Forth
 (use-package forth-mode
@@ -259,18 +270,23 @@
 
 ;; (add-to-list 'flycheck-checkers 'racket-review)
 
+;;; Clojure
+
+(use-package cider
+  :straight t)
+
 ;;; Pollen
 (use-package pollen-mode
   :straight t
   :defer t)
 
-;;; For Lisps in general
+;;; For All Lisps
 (use-package paredit
   :straight t
-  :hook ((paredit-mode . lisp-mode)
-	 (paredit-mode . racket-mode)
-	 (paredit-mode . scheme-mode)
-	 (paredit-mode . emacs-lisp-mode)))
+  :hook ((lisp-mode . paredit-mode)
+	 (racket-mode . paredit-mode)
+	 (scheme-mode . paredit-mode)
+	 (emacs-lisp-mode . paredit-mode)))
 
 ;;; For semantic highlighting in Lisps
 (use-package paren-face
@@ -287,10 +303,10 @@
 ;;; For colorful paranthesis
 (use-package rainbow-delimiters
   :straight t
-  :hook ((rainbow-delimiters-mode . lisp-mode)
-	 (rainbow-delimiters-mode . scheme-mode)
-	 (rainbow-delimiters-mode . racket-mode)
-	 (rainbow-delimiters-mode . emacs-lisp-mode)))
+  :hook ((lisp-mode . rainbow-delimiters-mode)
+	 (scheme-mode . rainbow-delimiters-mode)
+	 (racket-mode . rainbow-delimiters-mode)
+	 (emacs-lisp-mode . rainbow-delimiters-mode)))
 
 ;; For scheme completion
 (use-package scheme-complete
@@ -604,12 +620,12 @@
      "/home/divya/notes/org/org-roam/ref/stanford_231n.org"
      "/home/divya/notes/org/org-roam/ref/kaggle_introduction_to_machine_learning.org"
      "/home/divya/notes/org/org-roam/ref/18_905_algebraic_topology_i.org"
-     "/home/divya/notes/org/org-roam/projects/symhask.org"
      "/home/divya/notes/org/org-roam/projects/umbra.org"
      "/home/divya/notes/org/org-roam/projects/reader_el.org"
-     "/home/divya/notes/org/journal/20250303.org.gpg"))
+     "/home/divya/notes/org/journal/20250407.org.gpg"))
  '(safe-local-variable-values
-   '((geiser-guile-binary "guix" "repl") (geiser-insert-actual-lambda)
+   '((buffer-file-coding-system . utf-8-unix)
+     (geiser-guile-binary "guix" "repl") (geiser-insert-actual-lambda)
      (eval with-eval-after-load 'git-commit
 	   (add-to-list 'git-commit-trailers "Change-Id"))
      (eval font-lock-add-keywords nil
@@ -692,3 +708,4 @@
  )
 (put 'list-threads 'disabled nil)
 (put 'magit-clean 'disabled nil)
+(put 'erase-buffer 'disabled nil)

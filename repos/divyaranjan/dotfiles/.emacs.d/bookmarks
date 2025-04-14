@@ -3,15 +3,80 @@
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
 (#1=
- (#("OS Dev " 0 7 (bmkp-full-record #1#)) (filename . "   - no file -")
-  (location . "https://wiki.osdev.org/")
-  (handler . bmkp-jump-url-browse))
+(#("RISC Zero Education Database" 0 28 (bmkp-full-record #1#))
+ (filename . "   - no file -")
+ (location
+  . "https://risczero.notion.site/5a335a1d29b44cb48c44b36ae66f366f?v=95cda72e39d3403fbfb59884afb0045d")
+ (handler . bmkp-jump-url-browse))
+#1=
+(#("ZKP Learning" 0 12 (bmkp-full-record #1#))
+ (filename . "   - no file -")
+ (location . "https://rdi.berkeley.edu/zk-learning/")
+ (handler . bmkp-jump-url-browse))
+#1=
+(#("Haskell Learning Resources" 0 26 (bmkp-full-record #1#))
+ (filename . "   - no file -")
+ (location . "http://jackkelly.name/wiki/haskell/learning.html")
+ (handler . bmkp-jump-url-browse))
+#1=
+(#("Gitabitan Tagore" 0 16 (bmkp-full-record #1#))
+ (filename . "   - no file -")
+ (location . "http://www.gitabitan.net/")
+ (handler . bmkp-jump-url-browse))
+#1=
+(#("History of Western Science Reading List" 0 39
+   (bmkp-full-record #1#))
+ (filename . "   - no file -")
+ (location . "https://depts.washington.edu/hssexec/library_list.html")
+ (handler . bmkp-jump-url-browse))
+#1=
+(#("Michel Foucalt" 0 14 (bmkp-full-record #1#))
+ (buffer-name . "Michel Foucalt")
+ (front-context-string . "Foucault, Michel")
+ (rear-context-string . "92 Feb 19  2024 ")
+ (front-context-region-string) (rear-context-region-string)
+ (visits . 0) (time . #2=(26604 11312 914011 136000)) (created . #2#)
+ (position . 241)
+ (filename . #3=
+	   "/mnt/LDisk-E/Albert Einstein/Books & Resources/Philosophy/French Philosophy/Michel Foucalt/")
+ (dired-directory . #3#) (dired-marked) (dired-switches . "-al")
+ (dired-subdirs) (dired-hidden-dirs) (handler . bmkp-jump-dired))
+#1=
+(#("Whole Wide World Poems" 0 22 (bmkp-full-record #1#))
+ (filename . "   - no file -") (location . "https://example.com")
+ (handler . bmkp-jump-url-browse))
+#1=
+(#("Emacs Lisp Animations" 0 21 (bmkp-full-record #1#))
+ (filename . "   - no file -")
+ (location . "https://dantorop.info/project/emacs-animation/")
+ (handler . bmkp-jump-url-browse))
+#1=
+(#("Niklaus Wirth" 0 13 (bmkp-full-record #1#))
+ (buffer-name . "Niklaus Wirth")
+ (front-context-string . "niklas-wirth-ste")
+ (rear-context-string . "00 Nov  8 14:48 ")
+ (front-context-region-string) (rear-context-region-string)
+ (visits . 0) (time . #2=(26586 34930 780833 445000)) (created . #2#)
+ (position . 519)
+ (filename . #3=
+	   "/mnt/LDisk-E/Albert Einstein/Books & Resources/Computer Science and Programming/Niklaus Wirth/")
+ (dired-directory . #3#) (dired-marked) (dired-switches . "-al")
+ (dired-subdirs) (dired-hidden-dirs) (handler . bmkp-jump-dired))
+#1=
+(#("Sedgewick Courses" 0 17 (bmkp-full-record #1#))
+ (filename . "   - no file -")
+ (location . "https://www.coursera.org/instructor/~250165")
+ (handler . bmkp-jump-url-browse))
+#1=
+(#("OS Dev " 0 7 (bmkp-full-record #1#)) (filename . "   - no file -")
+ (location . "https://wiki.osdev.org/")
+ (handler . bmkp-jump-url-browse))
 #1=
 (#("Competitive Programming" 0 23 (bmkp-full-record #1#))
  (buffer-name . "Competitive Programming") (front-context-string)
  (rear-context-string . "80 Mar  3 02:31 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 1) (time 26570 18116 396266 878000)
+ (visits . 8) (time 26608 37309 264538 85000)
  (created 26565 5302 997726 592000) (position . 501)
  (filename . #2=
 	   "/mnt/LDisk-E/Albert Einstein/Books & Resources/Computer Science and Programming/Competitive Programming/")
@@ -33,7 +98,7 @@
  (front-context-string . "gcc-rs-manifest.")
  (rear-context-string . "63 Feb 20 14:00 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 1) (time 26565 10290 42338 973000)
+ (visits . 2) (time 26604 44677 790284 842000)
  (created 26560 27281 367204 227000) (position . 442)
  (filename . #2="/mnt/code/guix-manifests/") (dired-directory . #2#)
  (dired-marked) (dired-switches . "-al") (dired-subdirs)
@@ -60,7 +125,7 @@
  (front-context-string . "org-roam\n  drwxr")
  (rear-context-string . "96 Feb 14 14:35 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 27) (time 26569 14660 927871 577000)
+ (visits . 44) (time 26612 8486 385272 990000)
  (created 26544 50152 802729 308000) (position . 846)
  (filename . #2="/mnt/code/src/") (dired-directory . #2#)
  (dired-marked) (dired-switches . "-al") (dired-subdirs)
@@ -78,6 +143,7 @@
  (handler . bmkp-jump-url-browse))
 #1=
 (#("Scratch A Pixel" 0 15 (bmkp-full-record #1#))
+ (time 26589 31293 672741 928000) (visits . 0)
  (filename . "   - no file -")
  (location . "https://www.scratchapixel.com/index.html")
  (handler . bmkp-jump-url-browse))
@@ -130,7 +196,7 @@
  (buffer-name . "Symbolic Computation") (front-context-string)
  (rear-context-string . "96 Jan 29 00:31 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 2) (time 26532 43273 583197 91000)
+ (visits . 4) (time 26597 15646 829812 85000)
  (created 26521 30421 647502 280000) (position . 206)
  (filename . #2=
 	   "/mnt/LDisk-E/Albert Einstein/Books & Resources/MIT OCW/Mathematics/Mathematics & Computation/Symbolic Computation/")
@@ -141,7 +207,7 @@
  (front-context-string . "binder\n  drwxr-x")
  (rear-context-string . "96 Jan  1 19:54 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 1) (time 26562 28659 358357 940000)
+ (visits . 2) (time 26601 54986 219870 943000)
  (created 26510 20274 909855 205000) (position . 216)
  (filename . #2="/mnt/code/projects/") (dired-directory . #2#)
  (dired-marked) (dired-switches . "-al") (dired-subdirs)
@@ -151,7 +217,7 @@
  (buffer-name . "scratch") (front-context-string)
  (rear-context-string . "96 Jan 20 12:54 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 18) (time 26571 60010 67540 492000)
+ (visits . 47) (time 26619 26314 899649 302000)
  (created 26510 18924 946887 200000) (position . 165)
  (filename . #2="/mnt/code/scratch/") (dired-directory . #2#)
  (dired-marked) (dired-switches . "-al") (dired-subdirs)
@@ -172,7 +238,7 @@
  (front-context-string . "admin\n  -rwxr-xr")
  (rear-context-string . "96 Feb 27 15:58 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 1) (time 26567 16719 243399 857000)
+ (visits . 15) (time 26619 25000 438746 997000)
  (created 26563 49592 246399 561000) (position . 187)
  (filename . #2="/mnt/code/big-src/emacs-master/")
  (dired-directory . #2#) (dired-marked) (dired-switches . "-al")
@@ -244,7 +310,7 @@
  (front-context-string . "..\n  drwxrwxrwx ")
  (rear-context-string . "96 Nov 12 13:02 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 9) (time 26568 51051 215466 110000)
+ (visits . 11) (time 26608 55841 341205 899000)
  (created 26445 62185 497515 808000) (position . 113)
  (filename . "/mnt/code/patches/")
  (dired-directory . "/mnt/code/patches/") (dired-marked)
@@ -399,7 +465,7 @@
  (front-context-string . "manifest.scm\n  d")
  (rear-context-string . "73 Sep 23 22:08 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 85) (time 26570 13026 533617 102000)
+ (visits . 103) (time 26613 49338 756989 598000)
  (created 26353 59239 885784 859000) (position . 1544)
  (filename . "/mnt/code/big-src/guix/")
  (dired-directory . "/mnt/code/big-src/guix/") (dired-marked)
@@ -433,7 +499,7 @@
  (buffer-name . "system.scm")
  (front-context-string . ";; Divya's GNU G") (rear-context-string)
  (front-context-region-string) (rear-context-region-string)
- (visits . 63) (time 26571 60221 945744 27000)
+ (visits . 74) (time 26619 36945 352745 537000)
  (created 26345 23460 981723 65000) (position . 1))
 #1=
 (#("guix home" 0 9 (bmkp-full-record #1#))
@@ -441,7 +507,7 @@
  (buffer-name . "home-divya.scm")
  (front-context-string . ";;; Divya's home") (rear-context-string)
  (front-context-region-string) (rear-context-region-string)
- (visits . 36) (time 26554 24764 932907 455000)
+ (visits . 40) (time 26582 59532 61939 221000)
  (created 26345 23202 707958 798000) (position . 1))
 #1=
 (#("Principles of Programming Languages" 0 35 (bmkp-full-record #1#))
@@ -546,8 +612,8 @@
  (handler . bmkp-jump-url-browse))
 #1=
 (#("emacs-configure" 0 15 (bmkp-full-record #1#))
- (buffer-name . "*eshell-1*") (visits . 4)
- (time 26560 28037 233604 599000) (created 26323 62240 663084 229000)
+ (buffer-name . "*eshell-1*") (visits . 5)
+ (time 26587 56002 781286 381000) (created 26323 62240 663084 229000)
  (position . 19826) (end-position . 19961)
  (text
   . "./configure --with-sound=alsa --with-x-toolkit=gtk --with-imagemagick --with-tree-sitter --with-native-compilation=aot --with-xwidgets --with-pop")
@@ -826,7 +892,7 @@
 (#("big-src" 0 7 (bmkp-full-record #1#)) (buffer-name . "big-src")
  (front-context-string) (rear-context-string . "44 Jul 24 06:43 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 57) (time 26565 9960 23301 734000)
+ (visits . 69) (time 26615 49387 413146 42000)
  (created 26272 43169 37554 238000) (position . 216)
  (filename . "/mnt/code/big-src/")
  (dired-directory . "/mnt/code/big-src/") (dired-marked)
@@ -875,6 +941,7 @@
 #1=
 (#("List of Conferences in Theoretical Computer Science" 0 51
    (bmkp-full-record #1#))
+ (time 26579 56646 145897 654000) (visits . 0)
  (filename . "   - no file -")
  (location . "https://www.lix.polytechnique.fr/~hermann/conf.php")
  (handler . bmkp-jump-url-browse))
@@ -1232,7 +1299,7 @@
  (front-context-string . "R. G. Dromey - H")
  (rear-context-string . "07 May 13 11:19 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 9) (time 26570 28399 725585 253000)
+ (visits . 13) (time 26597 15402 860722 739000)
  (created 26212 32149 255738 337000) (position . 1520)
  (filename
   . "/mnt/LDisk-E/Albert Einstein/Books & Resources/Computer Science and Programming/Theoretical/Data Structures & Algorithms/")
@@ -1258,7 +1325,7 @@
  (front-context-string . "Computational Ma")
  (rear-context-string . "92 Jan 19 12:37 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 3) (time 26320 15410 633341 392000)
+ (visits . 5) (time 26611 63218 984259 275000)
  (created 26212 32131 102780 220000) (position . 268)
  (filename . #2=
 	   "/mnt/LDisk-E/Albert Einstein/Books & Resources/Computer Science and Programming/Theoretical/Foundations of Computer Science/")
@@ -1937,6 +2004,7 @@
  (handler . pdf-view-bookmark-jump-handler))
 #1=
 (#("Emacs Modules" 0 13 (bmkp-full-record #1#))
+ (time 26582 34073 345502 465000) (visits . 0)
  (tags "elisp" "cs" "links" "emacs") (filename . "   - no file -")
  (location . "https://phst.eu/emacs-modules")
  (handler . bmkp-jump-url-browse))
@@ -1986,7 +2054,7 @@
  (front-context-string . "(Bloomsbury Reve")
  (rear-context-string . "71 Jan 13  2021 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 21) (time 26542 19788 626786 626000)
+ (visits . 23) (time 26614 31631 975485 491000)
  (created 26108 19998 500314 536000) (position . 161)
  (filename . #2=
 	   "/mnt/LDisk-E/Albert Einstein/Books & Resources/Politics/Political Philosophy/Communism/Marxism/Slavoj Zizek/")
@@ -2057,7 +2125,7 @@
  (front-context-string . "Foundations of A")
  (rear-context-string . "50 Mar 18 10:10 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 3) (time 26320 17592 914860 124000)
+ (visits . 4) (time 26609 23961 81267 435000)
  (created 26104 4989 288743 252000) (position . 255)
  (filename . #2=
 	   "/mnt/LDisk-E/Albert Einstein/Books & Resources/Computer Science and Programming/History of Computer Science/")
@@ -2361,7 +2429,7 @@
 #1=
 (#("17th Century Maths" 0 18 (bmkp-full-record #1#))
  (tags "links" "classics" "history" "math" "books")
- (time 26312 5081 153425 893000) (visits . 2)
+ (time 26616 35715 781460 312000) (visits . 3)
  (filename . "   - no file -")
  (location . "http://www.17centurymaths.com/")
  (handler . bmkp-jump-url-browse))
@@ -2424,7 +2492,7 @@
  (front-context-string . "Mozart\n  -rwxrw-")
  (rear-context-string . "96 Nov 17  2022 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 23) (time 26469 35779 186817 363000)
+ (visits . 24) (time 26578 17559 229239 363000)
  (created 26051 14252 126596 773000) (position . 3316)
  (filename . #2="/mnt/LDisk-E/Albert Einstein/Music/Classical Music/")
  (dired-directory . #2#) (dired-marked) (dired-switches . "-al")
@@ -2481,7 +2549,7 @@
  (front-context-string . "Automata Theory\n")
  (rear-context-string . "96 Jan 22 19:07 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 1) (time 26281 4786 615391 856000)
+ (visits . 4) (time 26616 31735 621041 945000)
  (created 26049 3488 966137 350000) (position . 268)
  (filename . #2=
 	   "/mnt/LDisk-E/Albert Einstein/Books & Resources/Computer Science and Programming/Theoretical/Computational Mathematics/")
@@ -2664,7 +2732,7 @@
  (front-context-string . "(Algebra, Logic,")
  (rear-context-string . "00 Jan 18 15:06 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 9) (time 26405 8391 607864 47000)
+ (visits . 11) (time 26603 61508 268720 810000)
  (created 26030 43206 789349 182000) (position . 156)
  (filename . #2=
 	   "/mnt/LDisk-E/Albert Einstein/Books & Resources/Computer Science and Programming/Functional Programming/")
@@ -2743,13 +2811,18 @@
  (location . "http://www.brendanfong.com/programmingcats.html")
  (handler . bmkp-jump-url-browse))
 #1=
-(#("Functional Pearls" 0 17 (bmkp-full-record #1#))
- (time 26043 19217 276184 176000) (visits . 1)
+(#("Functional Pearls" 0 17 (bmkp-full-record #1#)) (annotation)
  (tags "cs" "papers" "functional programming")
- (filename . "   - no file -")
- (location
-  . "https://wiki.haskell.org/Research_papers/Functional_pearls")
- (handler . bmkp-jump-url-browse))
+ (buffer-name . "Functional Pearls")
+ (front-context-string . "hinze-paper.pdf\n")
+ (rear-context-string . "54 Jan 22  2024 ")
+ (front-context-region-string) (rear-context-region-string)
+ (visits . 0) (time . #2=(26603 61547 459982 467000)) (created . #2#)
+ (position . 332)
+ (filename . #3=
+	   "/mnt/LDisk-E/Albert Einstein/Books & Resources/Computer Science and Programming/Functional Programming/Functional Pearls/")
+ (dired-directory . #3#) (dired-marked) (dired-switches . "-al")
+ (dired-subdirs) (dired-hidden-dirs) (handler . bmkp-jump-dired))
 #1=
 (#("A Gentle Introduction to Haskell" 0 32 (bmkp-full-record #1#))
  (tags "functional programming" "cs" "haskell" "papers" "links")
@@ -2781,7 +2854,7 @@
  (front-context-string . "docs\n  -rwxrw-rw")
  (rear-context-string . "96 Jan  9 20:18 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 286) (time 26561 45932 481584 379000)
+ (visits . 292) (time 26616 51991 594675 234000)
  (created 26019 43822 533971 931000) (position . 504)
  (filename . #2=
 	   "/mnt/LDisk-E/Albert Einstein/Books & Resources/Sociology/Gender Mainstreaming/Megha/")
@@ -2872,7 +2945,7 @@
  (front-context-string . "(MIT Electrical ")
  (rear-context-string . "29 Mar  6 05:18 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 6) (time 26536 40362 533003 141000)
+ (visits . 7) (time 26607 48447 497905 387000)
  (created 26318 43340 529634 151000) (position . 138)
  (filename . #2=
 	   "/mnt/LDisk-E/Albert Einstein/Books & Resources/Computer Science and Programming/LISP/")
@@ -2968,11 +3041,11 @@
  (front-context-string . "The Haskell Scho")
  (rear-context-string . "26 Jul 30  2024 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 0) (time . #2=(26546 61336 999899 699000)) (created . #2#)
- (position . 2169)
- (filename . #3=
+ (visits . 4) (time 26605 43024 650664 282000)
+ (created 26546 61336 999899 699000) (position . 2169)
+ (filename . #2=
 	   "/mnt/LDisk-E/Albert Einstein/Books & Resources/Computer Science and Programming/Haskell/")
- (dired-directory . #3#) (dired-marked) (dired-switches . "-al")
+ (dired-directory . #2#) (dired-marked) (dired-switches . "-al")
  (dired-subdirs) (dired-hidden-dirs) (handler . bmkp-jump-dired))
 #1=
 (#("Emacs Wiki" 0 10 (bmkp-full-record #1#)) (tags "emacs" "links")
@@ -2999,7 +3072,7 @@
  (front-context-string . "(Advances in Rel")
  (rear-context-string . "98 Feb 13  2023 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 15) (time 26445 52518 587045 780000)
+ (visits . 16) (time 26617 307 338848 927000)
  (created 25995 48284 463022 303000) (position . 131)
  (filename . #2=
 	   "/mnt/LDisk-E/Albert Einstein/Books & Resources/Sociology/Gender Mainstreaming/")
@@ -3011,7 +3084,7 @@
  (front-context-string . "Aa Gale Lag Jaa ")
  (rear-context-string . "91 Oct 17  2020 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 4) (time 26510 20430 636357 791000)
+ (visits . 5) (time 26582 38539 182827 205000)
  (created 25973 49324 767541 72000) (position . 221)
  (filename . #2=
 	   "/mnt/LDisk-E/Albert Einstein/Movies & Series/Golden Movies/")
@@ -3047,7 +3120,7 @@
  (buffer-name . "~/notes/org/org-agenda/tasks.org")
  (front-context-string . "TITLE: Divya's T") (rear-context-string)
  (front-context-region-string) (rear-context-region-string)
- (visits . 28) (time 26487 30610 746485 478000)
+ (visits . 29) (time 26615 58563 729372 650000)
  (created 25938 13017 77180 267000) (position . 3))
 #1=
 (#("org-roam" 0 8 (bmkp-full-record #1#)) (tags "roam" "dirs" "org")
@@ -3099,7 +3172,7 @@
  (tags "dirs" "emacs" "dots") (buffer-name . "config")
  (front-context-string) (rear-context-string . "57 Nov 11 18:20 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 201) (time 26562 52475 426446 344000)
+ (visits . 208) (time 26611 22111 462157 684000)
  (created 25937 46480 550571 831000) (position . 1132)
  (filename . "/home/divya/.emacs.d/config/")
  (dired-directory . "~/.emacs.d/config/") (dired-marked)
@@ -3108,14 +3181,12 @@
 #1=
 (#("org-capture-last-stored" 0 23 (bmkp-full-record #1#)) (annotation)
  (tags)
- (filename
-  . "~/notes/org/org-roam/writeups/20250303-divingdeepintothedynamicmodulesystemofgnuemacs.org")
- (buffer-name
-  . "20250303-divingdeepintothedynamicmodulesystemofgnuemacs.org")
- (front-context-string) (rear-context-string . "25-03-03>\n:END:\n")
+ (filename . "~/notes/org/org-roam/main/zero_knowledge_proofs.org")
+ (buffer-name . "zero_knowledge_proofs.org") (front-context-string)
+ (rear-context-string . "nowledge Proofs\n")
  (front-context-region-string) (rear-context-region-string)
- (visits . 0) (time . #2=(26565 46562 89091 165000)) (created . #2#)
- (position . 201))
+ (visits . 0) (time . #2=(26618 21564 716582 595000)) (created . #2#)
+ (position . 99))
 #1=
 (#("Sourcehut Dots" 0 14 (bmkp-full-record #1#))
  (time 25935 44218 9881 262000) (visits . 0) (tags "links" "dots")
@@ -3149,7 +3220,7 @@
  (front-context-string . "Edward Glover\n  ")
  (rear-context-string . "96 Nov  7 14:57 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 7) (time 26420 38176 933738 838000)
+ (visits . 8) (time 26600 1247 863196 207000)
  (created 25932 38143 7011 387000) (position . 1753)
  (filename . "/home/divya/psychoanalysis/The Freudian School/")
  (dired-directory . "~/psychoanalysis/The Freudian School/")
@@ -3183,11 +3254,11 @@
  (last-modified 25922 13745 673028 275000))
 #1=
 (#("Books & Resources" 0 17 (bmkp-full-record #1#))
- (end-position . 1001) (time 26036 40882 531784 643000) (visits . 2)
+ (end-position . 1143) (time 26595 46718 325152 279000) (visits . 3)
  (tags "dirs")
  (filename . "/mnt/LDisk-E/Albert Einstein/Books & Resources/")
  (front-context-string . "Cultural Theory\n")
- (rear-context-string . " 0 Oct 16 02:13 ") (position . 1001)
+ (rear-context-string . " 0 Oct 16 02:13 ") (position . 1143)
  (last-modified 25905 23207 245791 357000))
 #1=
 (#("Lacanian Psychoanalysis" 0 23 (bmkp-full-record #1#)) (annotation)
@@ -3196,7 +3267,7 @@
  (front-context-string . "Shoshana Felman ")
  (rear-context-string . "81 Jun  5  2023 ")
  (front-context-region-string) (rear-context-region-string)
- (visits . 13) (time 26557 39996 959423 3000)
+ (visits . 19) (time 26617 17918 139137 107000)
  (created 26315 57830 173762 954000) (position . 13647)
  (filename . #2=
 	   "/mnt/LDisk-E/Albert Einstein/Books & Resources/Psychology/Psychoanalysis/Lacanian Psychoanalysis/")

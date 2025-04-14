@@ -103,9 +103,19 @@
   :config
   (setq fancy-compilation-override-colors nil))
 
+(use-package diff-hl
+  :ensure t
+  :config
+  (global-diff-hl-mode)
+  (diff-hl-dired-mode)
+  (diff-hl-margin-mode)
+  (ignore-errors
+    (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)))
+
 (with-eval-after-load 'compile
   (fancy-compilation-mode))
 
 (provide 'sss/dev)
 
 ;;; dev.el ends here
+

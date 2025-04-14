@@ -147,6 +147,11 @@ if [ -d "$HOME/Applications" ] ;
 then PATH="$HOME/Applications:$PATH"
 fi
 
+if [ -d "$HOME/.cabal/bin" ];
+then PATH="$HOME/.cabal/bin:$PATH"
+fi
+
+
 ##ALIASES##
 
 alias yta='ytfzf -t -m'

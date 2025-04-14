@@ -121,3 +121,7 @@ fi
 if [ -d "/home/divya/.radicle/bin/" ] ;
 then PATH="/home/divya/.radicle/bin/:$PATH"
 fi
+
+if [ -d "$HOME/.cabal/bin" ];
+then PATH="$HOME/.cabal/bin:$PATH"
+fi

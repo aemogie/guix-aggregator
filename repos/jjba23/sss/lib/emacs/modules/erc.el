@@ -48,5 +48,6 @@
   (erc-services-mode 1)
   (erc-update-modules))
 
+(provide 'sss/erc)
 
 ;;; erc.el ends here

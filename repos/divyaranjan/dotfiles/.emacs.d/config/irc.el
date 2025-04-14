@@ -31,6 +31,12 @@
       erc-user-full-name "Divya Ranjan"
       erc-track-shorten-start 8)
 
+(setq rcirc-server "oracle.vivekkadre.com:1025"
+      rcirc-default-nick "divya"
+      rcirc-default-full-name "Divya Ranjan")
+
+(setq rcirc-server-alist '(("oracle.vivekkadre.com" :port 1025 :encryption tls)))
+
 ;; (add-hook 'erc-mode-hook 'erc-nickbar-mode)
 
 (provide 'irc)

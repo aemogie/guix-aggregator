@@ -135,6 +135,7 @@
 		term-mode-hook
 		eat-mode-hook
 		pdf-view-mode-hook
+		pdf-outline-buffer-mode-hook
 		doc-view-mode-hook
 		image-dired-mode-hook
 		dired-mode-hook
@@ -169,8 +170,8 @@
 		magit-popup-mode-hook
 		olivetti-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
-;; Disabling blinking cursor when reading things.
 
+;; Disabling blinking cursor when reading things.
 (dolist (mode '(pdf-view-mode-hook
 		doc-view-mode-hook))
   (add-hook mode (lambda () (blink-cursor-mode -1))))
@@ -185,7 +186,7 @@
  )
 
 (defun fontify-frame (frame)
-  (set-frame-parameter frame 'font "Iosevka-12"))
+  (set-frame-parameter frame 'font "Victor Mono Medium-13"))
 
 ;; Fontify current frame
 (fontify-frame nil)

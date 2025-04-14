@@ -38,3 +38,6 @@
   :config
   (define-key smudge-mode-map (kbd "C-c .") 'smudge-command-map))
 
+(provide 'sss/music)
+
+;;; music.el ends here

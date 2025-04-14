@@ -94,7 +94,9 @@
 			  ;; Messaging
 			  "gnunet"
 			  ;; "qtox"
+			  "dino"
 			  "jami"
+			  "element-desktop"
 ;			  "telegram-desktop"
 
 			  ;; Torrenting
@@ -106,8 +108,9 @@
 
 			  ;; Graphics
 			  "blender"
-			  "luminance-hdr"
+			  ;; "luminance-hdr"
 			  "pqiv"
+			  "inkscape"
 
 			  ;; Security
 			  "gnupg" ; Installed here and not in system.scm because the service is in home

@@ -31,3 +31,7 @@
   :custom
   (osm-server 'default)
   (osm-copyright t))
+
+(provide 'sss/maps)
+
+;;; maps.el ends here

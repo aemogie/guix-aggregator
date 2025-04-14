@@ -44,3 +44,7 @@
 
 (use-package olivetti
   :ensure t)
+
+(provide 'sss/ui)
+
+;;; ui.el ends here

@@ -117,13 +117,19 @@ and ending with the extension of the requested TYPE."
 ; Show the time elapsed in mode-line
 (setq timeclock-use-elapsed t)
 (timeclock-mode-line-display)
-
 (define-key global-map (kbd "C-c C-t i") 'timeclock-in)
 (define-key global-map (kbd "C-c C-t o") 'timeclock-out)
 (define-key global-map (kbd "C-c C-t c") 'timeclock-change)
 (define-key global-map (kbd "C-c C-t r") 'timeclock-reread-log)
 (define-key global-map (kbd "C-c C-t u") 'timeclock-update-mode-line)
 (define-key global-map (kbd "C-c C-t w") 'timeclock-when-to-leave-string)
+
+
+;; World Clock
+(setq world-clock-list '(("Etc/UTC" "UTC")
+			 ("America/New_York" "New York")
+			 ("Europe/London" "London")))
+
 
 ;; Emacs Tip of the Day
 
@@ -227,6 +233,10 @@ and ending with the extension of the requested TYPE."
 
 (use-package tmsu
   :straight t)
+
+;; Set word list
+(setq ispell-alternate-dictionary "/home/divya/.dotfiles/.emacs.d/words.txt")
+
 
 (provide 'extras)
 

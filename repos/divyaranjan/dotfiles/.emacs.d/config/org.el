@@ -182,7 +182,7 @@
 
   ;; Define variable-pitch and fixed-pitch
   (set-face-attribute 'variable-pitch nil :font "ETbb" :height 210)
-  (set-face-attribute 'fixed-pitch nil :font "Iosevka" :height 160)
+  (set-face-attribute 'fixed-pitch nil :font "Victor Mono" :height 160)
 
   ;; Ensure that anything that should be fixed-pitch in Org files appears that way
   (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
