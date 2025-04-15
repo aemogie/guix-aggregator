@@ -390,6 +390,7 @@
           #|SSH service|#
           (service home-openssh-service-type
                    (home-openssh-configuration
+                    (authorized-keys #f)
                     (hosts (list (openssh-host
                                   (name "codeberg.org")
                                   (host-name "codeberg.org")
@@ -404,8 +405,7 @@
                                   (name "git.sr.ht")
                                   (host-name "git.sr.ht")
                                   (user "git")
-                                  (identity-file "~/.ssh/srht"))))
-                    (authorized-keys #f)))
+                                  (identity-file "~/.ssh/srht"))))))
 
           #|GPG agent service|#
           (service home-gpg-agent-service-type

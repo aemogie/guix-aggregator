@@ -26,6 +26,7 @@
     "text/x-clojure"
     "text/x-diff"
     "text/x-lisp"
+    "text/x-patch"
     "text/x-scheme"
     "text/x-script.python"
     "text/x-shellscript"

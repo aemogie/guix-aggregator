@@ -217,7 +217,7 @@
         #|rust-apps |# helvum))
 
 (define video
-  (list #|video|# ffmpeg mpv-minimal/wayland))
+  (list #|video|# ani-cli ffmpeg mpv-minimal/wayland))
 
 (define web
   (list #|binaries|# zen-browser-bin
