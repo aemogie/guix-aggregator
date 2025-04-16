@@ -1,4 +1,4 @@
-;;; maps.el --- Music configuration for Emacs -*- lexical-binding: t -*-
+;;; shell.el --- Shell configuration for Emacs -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2025 Josep Bigorra
 
@@ -17,17 +17,12 @@
 
 ;;; Commentary:
 
-;; Maps configuration for Emacs
+;; Shell configuration for Emacs
 
 ;;; Code:
 
-(use-package osm
-  :ensure t
-  :bind ("C-c m" . osm-prefix-map)
-  :custom
-  (osm-server 'default)
-  (osm-copyright t))
 
-(provide 'sss/maps)
+(provide 'sss/shell)
 
-;;; maps.el ends here
+;;; shell.el ends here
+

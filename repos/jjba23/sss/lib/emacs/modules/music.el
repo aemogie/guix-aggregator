@@ -2,10 +2,6 @@
 
 ;; Copyright (C) 2025 Josep Bigorra
 
-;; Author: Josep Bigorra <jjbigorra@gmail.com>
-;; Maintainer: Josep Bigorra <jjbigorra@gmail.com>
-;; URL: https://codeberg.org/jjba23/sss
-
 ;; sss is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
 ;; the Free Software Foundation, either version 3 of the License, or
@@ -37,6 +33,24 @@
   (smudge-player-use-transient-map t)
   :config
   (define-key smudge-mode-map (kbd "C-c .") 'smudge-command-map))
+
+(use-package emms
+  :ensure t
+  :init
+  (require 'emms-setup)
+  (require 'emms-mpris)
+  (emms-all)
+  (emms-default-players)
+  (emms-mpris-enable)
+  :custom
+  (emms-source-file-default-directory sss-ews-music-directory)
+  (emms-browser-covers #'emms-browser-cache-thumbnail-async)
+  :bind
+  (("<f5>"   . emms-browser)
+   ("M-<f5>" . emms)
+   ("<XF86AudioPrev>" . emms-previous)
+   ("<XF86AudioNext>" . emms-next)
+   ("<XF86AudioPlay>" . emms-pause)))
 
 (provide 'sss/music)
 

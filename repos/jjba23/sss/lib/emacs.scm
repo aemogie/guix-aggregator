@@ -86,6 +86,7 @@
                   sss
                   erc
                   consult
+                  shell
                   dev
                   ui
                   maps

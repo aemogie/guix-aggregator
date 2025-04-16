@@ -40,7 +40,7 @@
                      sdl
                      statistics
                      terminals
-                     ;; texlive
+                     texlive
                      version-control
                      video
                      wm
@@ -55,7 +55,6 @@
    fnott
    fuzzel
    gtk+
-   guile-swayer
    libnotify
    libreoffice
    librewolf
@@ -99,10 +98,12 @@
    emacs-diredfl
    emacs-doom-modeline
    emacs-eat
+   emacs-elfeed
    emacs-geiser
    emacs-geiser-guile
    emacs-gruvbox-theme
-   emacs-ligature
+   emacs-htmlize
+   emacs-jack
    emacs-magit
    emacs-marginalia
    emacs-markdown-mode
@@ -118,6 +119,7 @@
    emacs-tldr
    emacs-vertico
    emacs-wgrep
+   emacs-writeroom
 
    ;; programming
    git
@@ -129,17 +131,31 @@
    ccls
 
    ;; lisp
-   cl-alexandria
-   cl-csv
-   cl-dexador
-   cl-jzon
-   cl-ppcre
-   cl-quri
-   cl-serapeum
-   cl-taglib
-   lem-next
-   mrh-coleslaw
    sbcl
+   sbcl-alexandria
+   sbcl-anaphora
+   sbcl-arrow-macros
+   sbcl-clack
+   sbcl-ciel
+   sbcl-ciel-repl
+   sbcl-clingon
+   sbcl-cl-csv
+   sbcl-dexador
+   sbcl-easy-routes
+   sbcl-fset
+   sbcl-jzon
+   sbcl-local-time
+   sbcl-plump
+   sbcl-cl-ppcre
+   sbcl-quri
+   sbcl-serapeum
+   sbcl-spinneret
+   sbcl-cl-str
+   sbcl-trivia
+   mrh-cl-taglib
+   mrh-sbcl-clog-no-tools
+   mrh-sbcl-coleslaw
+   mrh-lem
 
    ;; communication
    signal-desktop
@@ -166,6 +182,6 @@
    rsync
    socat
    stow
-   ;; texlive
+   texlive
    unzip
    ))

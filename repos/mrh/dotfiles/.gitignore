@@ -1,8 +1,10 @@
 mrh-guix/personal*
-mrh-guix/nftables.conf
+nftables.conf
 home/.config/guix/shell-authorized-directories
 *.iso
 *.gpg
 *.bkp
+feeds.el
+wumpus.pizza
 cl-scripts
 publish-website

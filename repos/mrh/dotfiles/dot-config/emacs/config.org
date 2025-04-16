@@ -11,7 +11,8 @@ Most here is agnostic of that but some is not, such as smooth scrolling and tran
 (setf default-directory (format "%s/" (getenv "HOME")))
 (setf custom-file (expand-file-name "custom.el" user-emacs-directory))
 
-(defvar authentication-file (expand-file-name "authentication.el" user-emacs-directory))
+(defvar authentication-file
+  (expand-file-name "authentication.el" user-emacs-directory))
 
 (load custom-file)
 (load authentication-file)
@@ -32,13 +33,15 @@ Create function which can set keybinds either globally or locally. Use =global-s
                         ("M-]" . next-window-any-frame)
                         ("M-[" . previous-window-any-frame)
                         ("C-x b" . consult-buffer)
+                        ("C-c k" . kill-buffer-and-window)
                         ("C-c m v" . my/mpv)
                         ("C-c m a" . my/play-album)
                         ("C-c w c" . my/clip-random-password)
                         ("C-c w t" . my/get-temp-pass)
                         ("C-c g t" . my/switch-theme)
                         ("C-c b h" . my/hide-buffer)
-                        ("C-c b u" . my/unhide-buffer)))
+                        ("C-c b u" . my/unhide-buffer)
+                        ("C-c r y" . my/add-youtube-feed)))
 
 (defun set-keys-with (setter-function)
   (interactive)
@@ -56,9 +59,11 @@ Create function which can set keybinds either globally or locally. Use =global-s
 
 (use-package gruvbox-theme
   :config
-  (load-theme 'gruvbox-light-hard)
-  (load-theme 'gruvbox-dark-hard)
-  (enable-theme 'gruvbox-dark-hard))
+  (load-theme 'gruvbox-light-medium t t)
+  (load-theme 'gruvbox-dark-hard t))
+
+(defvar *my/light-theme* 'gruvbox-light-medium)
+(defvar *my/dark-theme* 'gruvbox-dark-hard)
 
 #+end_src
 
@@ -93,8 +98,10 @@ WARNING: must run =nerd-icons-install-fonts=, or else there will be perfomance i
 ** Pinentry
 #+begin_src emacs-lisp
 
-(setf epg-pinentry-mode 'loopback)
-(pinentry-start)
+(use-package pinentry
+  :config
+  (setf epg-pinentry-mode 'loopback)
+  (pinentry-start))
 
 #+end_src
 
@@ -128,7 +135,6 @@ WARNING: must run =nerd-icons-install-fonts=, or else there will be perfomance i
 
 (use-package rainbow-delimiters
   :hook
-  ((lisp-mode emacs-lisp-mode scheme-mode) . rainbow-delimiters-mode)
   ((lisp-mode emacs-lisp-mode scheme-mode sly-mrepl-mode) . rainbow-delimiters-mode))
 
 #+end_src
@@ -180,25 +186,11 @@ Cause eshell buffers to run inside =eat= terminals, allowing full use of eshell 
 
 #+end_src
 
-** Ligatures
-Necessary for =Julia Mono= ligatures
-
-#+begin_src emacs-lisp
-
-;; (use-package ligature
-;;   :config
-;;   (let ((ligs '("<|" "|>" "<-" "<--" "->" "-->" "=>" "<-->" "::")))
-;;     (ligature-set-ligatures 'prog-mode ligs)
-;;     (ligature-set-ligatures 'org-mode ligs))
-
-;;   (global-ligature-mode 1))
-
-#+end_src
-
 ** Common Lisp
 #+begin_src emacs-lisp
 
 (use-package sly
+  :defer t
   :init
   (setf inferior-lisp-program "sbcl")
   (setf sly-mrepl-history-file-name "~/.config/emacs/sly/sly-mrepl-history"))
@@ -220,6 +212,7 @@ Override some magit mode keybinds
 #+begin_src emacs-lisp
 
 (use-package magit
+  :defer t
   :hook (magit-mode . (lambda ()
                         (set-keys-with 'keymap-local-set))))
 
@@ -242,7 +235,6 @@ On wayland emacs must be pure GTK (=emacs-pgtk= on Guix until it's upstreamed)
 #+begin_src emacs-lisp
 
 (add-to-list 'default-frame-alist '(alpha-background . 85))
-;; (set-frame-parameter nil 'alpha-background 85)
 
 #+end_src
 
@@ -261,9 +253,9 @@ Toggle light and dark theme
   (interactive)
   (let ((current-theme (car custom-enabled-themes)))
     (disable-theme current-theme)
-    (if (eq current-theme 'gruvbox-dark-hard)
-        (my/enable-theme 'gruvbox-light-hard 100)
-      (my/enable-theme 'gruvbox-dark-hard 80))))
+    (if (eq current-theme *my/dark-theme*)
+        (my/enable-theme *my/light-theme* 100)
+      (my/enable-theme *my/dark-theme* 80))))
 
 #+end_src
 
@@ -300,7 +292,7 @@ Font for unicode and ligatures (see =Installed Packages=), as well as prettify s
 
 (custom-set-faces
  '(default
-   ((t (:slant normal :height 120 :width normal :family "JuliaMono"))))
+   ((t (:slant normal :height 120 :width normal :family "Hack"))))
  '(italic
    ((t (:slant italic)))))
 
@@ -539,25 +531,39 @@ Create a list of "hidden" buffers which are ignored by =next-buffer= and =previo
 #+begin_src emacs-lisp
 
 (unless (boundp '*hidden-buffers*)
-    (defvar *hidden-buffers* '()))
+  (defvar *hidden-buffers* ()
+    "List of buffer names to be ignored by `next-buffer' and `previous-buffer'.
+See also `my/hide-buffer' and `hidden-buffer-p'."))
 
-(setf savehist-additional-variables '(*hidden-buffers*))
+(add-to-list 'savehist-additional-variables '*hidden-buffers*)
 
 (defun hidden-buffer-p (window buffer bury-or-kill)
+  "Hide buffers with name in `*hidden-buffers*'.
+See also `switch-to-prev-buffer-skip'."
   (cl-find (buffer-name buffer) *hidden-buffers* :test #'string=))
 
 (customize-set-variable 'switch-to-prev-buffer-skip 'hidden-buffer-p)
 
-(defun my/hide-buffer ()
-  "Adds buffer to \"hidden\" buffers list by name to be ignored by next-buffer and previous-buffer. See also *hidden-buffers* variable and \"unhide-buffer\" function."
+(defun my/hide-buffer (&optional buffer-name)
+  "Adds BUFFER-NAME to `*hidden-buffers*'.
+If BUFFER-NAME is NIL then the current buffer name is used via `buffer-name'.
+See also `my/unhide-buffer'."
   (interactive)
-  (cl-pushnew (buffer-name) *hidden-buffers* :test #'string=))
+  (cl-pushnew (if buffer-name
+                  buffer-name
+                (buffer-name))
+              ,*hidden-buffers*
+              :test #'string=))
 
-(defun my/unhide-buffer ()
-  "Removes buffer from \"hidden\" buffers list by name, so as to be seen by next-buffer and previous-buffer. See also *hidden-buffers* variable and \"hide-buffer\" function."
+(defun my/unhide-buffer (&optional buffer-name)
+  "Removes BUFFER-NAME from `*hidden-buffers*'.
+If BUFFER-NAME is NIL then the current buffer name is used via `buffer-name'.
+See also `my/hide-buffer'."
   (interactive)
-  (setf *hidden-buffers* (remove (buffer-name) *hidden-buffers*)))
-
+  (setf *hidden-buffers* (remove (if buffer-name
+                                     buffer-name
+                                   (buffer-name))
+                                 ,*hidden-buffers*)))
 #+end_src
 
 * MPV
@@ -652,11 +658,11 @@ Enable select languages and prevent automatic indentation.
 
 #+begin_src emacs-lisp
 
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((scheme . t)
-   (python . t)
-   (R . t)))
+;; (org-babel-do-load-languages
+;;  'org-babel-load-languages
+;;  '((scheme . t)
+;;    (python . t)
+;;    (R . t)))
 
 (setf org-edit-src-content-indentation 0)
 
@@ -672,92 +678,54 @@ Set [[https://dthompson.us/projects/haunt.html][Haunt]] metadata tags so that e.
 (setf ox-haunt-recognized-metadata '(:author :date :tags :title))
 #+end_src
 
+* LaTeX
+Compile with =pdflatex= on current buffer's file
+
+#+begin_src emacs-lisp
+
+(defun my/compile ()
+  (interactive)
+  (save-window-excursion (compile compile-command)))
+
+(add-hook 'LaTeX-mode-hook
+          (lambda ()
+            (set (make-local-variable 'compile-command)
+                 (format "pdflatex %s" (buffer-file-name)))
+            (keymap-local-set "C-c c" 'my/compile)))
+#+end_src
+
 * Blogging
 Setup org static site generator.
 
 #+begin_src emacs-lisp
 
 (use-package org-static-blog
-  :config
-  (setq org-static-blog-publish-title "The Wumpus Warehouse"
-        org-static-blog-publish-url "https://wumpus.pizza/"
-        org-static-blog-publish-directory "~/src/sites/wumpus/"
-        org-static-blog-posts-directory "~/src/sites/wumpus/posts"
-        org-static-blog-drafts-directory "~/src/sites/wumpus/drafts"
-        org-static-blog-enable-tags t
-        org-export-with-toc t
-        org-export-with-section-numbers t
-        org-static-blog-use-preview t)
+  :config (load (expand-file-name "blog-config.el" user-emacs-directory)))
 
-  ;; This header is inserted into the <head> section of every page:
-  ;;   (you will need to create the style sheet at
-  ;;    ~/projects/blog/static/style.css
-  ;;    and the favicon at
-  ;;    ~/projects/blog/static/favicon.ico)
-  (setq org-static-blog-page-header
-        "<meta name=\"author\" content=\"Alec Barreto\">
-<meta name=\"referrer\" content=\"no-referrer\">
-<meta name=\"viewport\" content=\"initial-scale=1,width=device-width,minimum-scale=1\">
-<link href= \"static/style.css\" rel=\"stylesheet\" type=\"text/css\" />
-<link rel=\"icon\" href=\"static/favicon.ico\">")
+#+end_src
 
-  ;; This preamble is inserted at the beginning of the <body> of every page:
-  ;;   This particular HTML creates a <div> with a simple linked headline
-  (setq org-static-blog-page-preamble
-        "<div class=\"header\">
-  <a href=\"https://wumpus.pizza\">The Wumpus Warehouse</a>
-</div>")
+* RSS
 
-  ;; This postamble is inserted at the end of the <body> of every page:
-  ;;   This particular HTML creates a <div> with a link to the archive page
-  ;;   and a licensing stub.
-  (setq org-static-blog-page-postamble
-        "<div id=\"archive\">
-  <a href=\"https://wumpus.pizza/archive.html\">Other posts</a>
-</div>
-<center><a rel=\"license\" href=\"https://creativecommons.org/licenses/by-sa/3.0/\"><img alt=\"Creative Commons License\" style=\"border-width:0\" src=\"https://i.creativecommons.org/l/by-sa/3.0/88x31.png\" /></a><br /><span xmlns:dct=\"https://purl.org/dc/terms/\" href=\"https://purl.org/dc/dcmitype/Text\" property=\"dct:title\" rel=\"dct:type\">wumpus.pizza</span> by <a xmlns:cc=\"https://creativecommons.org/ns#\" href=\"https://wumpus.pizza\" property=\"cc:attributionName\" rel=\"cc:attributionURL\">Alec Barreto</a> is licensed under a <a rel=\"license\" href=\"https://creativecommons.org/licenses/by-sa/3.0/\">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>.</center>")
+#+begin_src emacs-lisp
 
-  ;; This HTML code is inserted into the index page between the preamble and
-  ;;   the blog posts
-  (setq org-static-blog-index-front-matter
-        "<h1> Welcome Friend! </h1>\n")
-
-  ;; redefine to customize page layout of index
-  (defun org-static-blog-get-preview (post-filename)
-    "Get title, date, tags from POST-FILENAME and get the first paragraph from the rendered HTML.
-If the HTML body contains multiple paragraphs, include only the first paragraph,
-and display an ellipsis.
-Preamble and Postamble are excluded, too."
+(defun my/make-youtube-feed (channel-url)
+  (interactive "Mchannel url: ")
+  (let ((channel-id (car (last (string-split channel-url "/")))))
     (with-temp-buffer
-      (insert-file-contents (org-static-blog-matching-publish-filename post-filename))
-      (let ((post-title (org-static-blog-get-title post-filename))
-            (post-date (org-static-blog-get-date post-filename))
-            (post-taglist (org-static-blog-post-taglist post-filename))
-            (post-ellipsis "")
-            (preview-region (org-static-blog--preview-region)))
-        (when (and preview-region (search-forward "<p>" nil t))
-          (setq post-ellipsis
-                (concat (when org-static-blog-preview-link-p
-                          (format "<a href=\"%s\">"
-                                  (org-static-blog-get-post-url post-filename)))
-                        org-static-blog-preview-ellipsis
-                        (when org-static-blog-preview-link-p "</a>\n"))))
-        ;; Put the substrings together.
-        (let ((title-link
-               (format "<h2 class=\"post-title\"><a href=\"%s\">%s</a></h2>"
-                       (org-static-blog-get-post-url post-filename) post-title))
-              (date-link
-               (format-time-string (concat "<div class=\"post-date\">"
-                                           (org-static-blog-gettext 'date-format)
-                                           "</div>")
-                                   post-date)))
-          (concat
-           (if org-static-blog-preview-date-first-p
-               (concat date-link title-link)
-             (concat title-link date-link))
-           preview-region
-           post-ellipsis
-           (format "<br></br><div class=\"taglist\">%s</div><br></br>" post-taglist)))))))
+      (print  (list (format "https://www.youtube.com/feeds/videos.xml?channel_id=%s"
+                            channel-id)
+                    'video)
+              (current-buffer))
+      (backward-kill-sexp))))
+
+(use-package elfeed
+  :defer t
+  :config
+  (setf elfeed-db-directory
+        (expand-file-name "elfeed-db" user-emacs-directory))
+  (setf elfeed-search-filter "@3-months-ago")
+  (load (expand-file-name "feeds.el" user-emacs-directory)))
+
 #+end_src
 
 * Proced
@@ -794,6 +762,17 @@ Preamble and Postamble are excluded, too."
 #+begin_src emacs-lisp
 
 (fset 'epg-wait-for-status 'ignore)
+
+#+end_src
+** Advising Functions
+
+#+begin_src emacs-lisp
+
+(defun my/remove-all-advice (sym)
+  (interactive)
+  (advice-mapc (lambda (advice _props)
+                 (advice-remove sym advice))
+               sym))
 
 #+end_src
 
@@ -856,3 +835,4 @@ Preamble and Postamble are excluded, too."
 (setf large-file-warning-threshold 10000000)
 
 #+end_src
+

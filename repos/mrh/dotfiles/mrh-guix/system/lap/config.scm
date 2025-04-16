@@ -1,4 +1,4 @@
-(define-module (mrh-guix system lap)
+(define-module (mrh-guix system lap config)
   #:use-module (mrh-guix vpn)
   #:use-module (mrh-guix system base)
   #:use-module (gnu)
@@ -14,33 +14,32 @@
    (inherit base-operating-system)
    (host-name "guix-lap")
 
-   (groups (append (map (lambda (group-name)
-                          (user-group (name group-name)))
-                        (list "realtime" "docker"))
-                   %base-groups))
+   (groups (cons* (user-group (name "docker"))
+                  (user-group (name "realtime"))
+                  %base-groups))
 
-   (users (cons* (user-account
-                  (name "mrh")
-                  (group "users")
-                  (home-directory "/home/mrh")
-                  (supplementary-groups
-                   (list "audio"
-                         "docker"
-                         "input"
-                         "lp"
-                         "netdev"
-                         "realtime"
-                         "video"
-                         "wheel")))
-                 %base-user-accounts))
+   (users (cons (user-account
+                 (name "mrh")
+                 (group "users")
+                 (home-directory "/home/mrh")
+                 (supplementary-groups '("audio"
+                                         "docker"
+                                         "input"
+                                         "lp"
+                                         "netdev"
+                                         "realtime"
+                                         "video"
+                                         "wheel")))
+                %base-user-accounts))
 
    (packages
-    (cons* fwupd-nonfree
-           (operating-system-packages base-operating-system)))
+    (cons fwupd-nonfree
+          (operating-system-packages base-operating-system)))
 
    (services
     (cons*
      (service elogind-service-type)
+     
      (service bluetooth-service-type
               (bluetooth-configuration
                (name "guix-lap")
@@ -63,8 +62,9 @@
      (service wireguard-service-type
               (wireguard-client-config 2))
 
-     (simple-service 'fwupd-dbus dbus-root-service-type
-                     (list fwupd-nonfree))
+     ;; doesn't work
+     ;; (simple-service 'fwupd-dbus dbus-root-service-type
+     ;;                 (list fwupd-nonfree))
 
      (operating-system-user-services base-operating-system)))
 
@@ -73,8 +73,7 @@
                          (uuid "e5f30f68-8021-45bf-9768-5895f5c9eb54")))))
 
    (mapped-devices (list (mapped-device
-                          (source
-                           (uuid "b7913f43-e874-4862-a40e-823cc136795c"))
+                          (source (uuid "b7913f43-e874-4862-a40e-823cc136795c"))
                           (target "cryptroot")
                           (type luks-device-mapping))))
 

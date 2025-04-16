@@ -2,10 +2,6 @@
 
 ;; Copyright (C) 2025 Josep Bigorra
 
-;; Author: Josep Bigorra <jjbigorra@gmail.com>
-;; Maintainer: Josep Bigorra <jjbigorra@gmail.com>
-;; URL: https://codeberg.org/jjba23/sss
-
 ;; sss is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
 ;; the Free Software Foundation, either version 3 of the License, or
@@ -35,14 +31,22 @@
   (which-key-setup-minibuffer)
   (which-key-mode))
 
+(setq sss-emacs-is-first-frame t)
+
 (defun new-frame-setup (frame)
   (if (display-graphic-p frame)
       (progn
 	(message "window system")
-	(tekengrootte-set-scale-small)
-
-	)
-    (message "not a window system")
+	(if sss-emacs-is-first-frame
+            (progn
+              (message "initializing SSS UI scaling for first frame")
+              (tekengrootte-set-scale-small)
+              (setq sss-emacs-is-first-frame nil)))
+        (sss-set-base-faces))
+    (progn
+      (message "not a window system")
+      (setq sss-emacs-is-first-frame nil)
+      (sss-set-base-faces))
     ))
 
 (use-package emacs 

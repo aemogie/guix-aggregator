@@ -187,6 +187,46 @@
                            #:bind "mouse-left"
                            #:dispatch 'movewindow))))
 
+(define* hypr-swap-binds
+  (map (lambda (kb)
+         (serialize-hypr-setting 'bind kb))
+       (list (hypr-bind #:mod "s-S"
+                        #:bind "Left"
+                        #:cmd 'l
+                        #:dispatch 'swapwindow)
+             (hypr-bind #:mod "s-S"
+                        #:bind "Right"
+                        #:cmd 'r
+                        #:dispatch 'swapwindow)
+             (hypr-bind #:mod "s-S"
+                        #:bind "Down"
+                        #:cmd 'd
+                        #:dispatch 'swapwindow)
+             (hypr-bind #:mod "s-S"
+                        #:bind "Up"
+                        #:cmd 'u
+                        #:dispatch 'swapwindow))))
+
+(define* hypr-focus-binds
+  (map (lambda (kb)
+         (serialize-hypr-setting 'bind kb))
+       (list (hypr-bind #:mod "s"
+                        #:bind "Left"
+                        #:cmd 'l
+                        #:dispatch 'movefocus)
+             (hypr-bind #:mod "s"
+                        #:bind "Right"
+                        #:cmd 'r
+                        #:dispatch 'movefocus)
+             (hypr-bind #:mod "s"
+                        #:bind "Down"
+                        #:cmd 'd
+                        #:dispatch 'movefocus)
+             (hypr-bind #:mod "s"
+                        #:bind "Up"
+                        #:cmd 'u
+                        #:dispatch 'movefocus))))
+
 (define* (hypr-common-exec-binds #:key clone-dir palette)
   (map (lambda (kb)
          (serialize-hypr-setting 'bind kb))
@@ -199,7 +239,6 @@
              (special-bind #:mod "s-S"
                            #:bind "Q"
                            #:dispatch 'exit)
-
              (special-bind #:mod "s-S"
                            #:bind "L"
                            #:dispatch 'forcerendererreload)
@@ -279,9 +318,14 @@
                         #:cmd ""))))
 
 (define* (hypr-binds #:key clone-dir palette)
-  (append hypr-media-binds hypr-workspace-binds hypr-movetoworkspace-binds
+  (append hypr-media-binds
+          hypr-workspace-binds
+          hypr-movetoworkspace-binds
+          hypr-swap-binds
+          hypr-focus-binds
           (hypr-common-exec-binds #:clone-dir clone-dir
-                                  #:palette palette) hypr-mouse-binds))
+                                  #:palette palette)
+          hypr-mouse-binds))
 
 (begin
   (define* (sss-hyprland-config #:key clone-dir

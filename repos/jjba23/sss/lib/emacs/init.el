@@ -1,4 +1,4 @@
-;;; init.el --- Custom editor configuration for SSS -*- lexical-binding: t -*-
+;;; init.el --- Custom Emacs configuration for SSS -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2025 Josep Bigorra
 
@@ -100,20 +100,12 @@
 (load-user-file "sss-bridge.el")
 
 ;; Load more user modules
-(setq sss-emacs-modules '(dashboard common-lisp go org theme
+(setq sss-emacs-modules '(dashboard common-lisp go org theme shell
                                     emacs-core erc consult eglot dev music ui maps))
 (mapc (lambda(f) (load-user-file (format "modules/%s.el" f))) sss-emacs-modules)
 
 (use-package git-riddance 
   :ensure (:host codeberg :repo "jjba23/git-riddance.el" :branch "trunk"))
-
-(use-package modusregel
-  :ensure (:host codeberg :repo "jjba23/modusregel" :branch "trunk")
-  :demand t
-  :after (keycast)
-  :config
-  (add-to-list 'modusregel-format '("" keycast-mode-line) t)
-  (setq-default mode-line-format modusregel-format))
 
 (use-package dagboek
   :ensure (:host codeberg :repo "jjba23/dagboek.el" :branch "trunk")
@@ -133,156 +125,8 @@
       (remove-hook 'pre-command-hook 'keycast--update)))
   (ignore-errors (keycast-mode)))
 
-
-(use-package tekengrootte 
-  :ensure (:host codeberg :repo "jjba23/tekengrootte.el" :branch "trunk")
-  :demand t
-  :bind (("C-c f c" . tekengrootte-set-scale-colossal) 
-         ("C-c f j" . tekengrootte-set-scale-jumbo) 
-         ("C-c f x" . tekengrootte-set-scale-larger) 
-         ("C-c f l" . tekengrootte-set-scale-large) 
-         ("C-c f r" . tekengrootte-set-scale-regular) 
-         ("C-c f s" . tekengrootte-set-scale-small) 
-         ("C-c f t" . tekengrootte-set-scale-tiny)
-	 ("C-c f n" . tekengrootte-set-scale-nano)) 
-  :hook ((tekengrootte-set-scale . (lambda () 
-                                     (sss-set-base-faces)))) 
-  :after (ef-themes solarized-theme)
-  :config
-  (defun sss-set-base-faces ()
-    "Adjust the base Emacs faces to my preferences.
-According to size, color and font family"
-    (interactive)
-
-    (set-face-attribute 'window-divider nil
-                        :foreground (ef-themes-get-color-value 'bg-alt)
-                        :background (ef-themes-get-color-value 'bg-alt))
-    (set-face-attribute 'default nil 
-		        :height (round (tekengrootte-mk-font-size 114)) 
-		        :font sss-font-mono)
-    (set-face-attribute 'mode-line nil 
-		        :height (tekengrootte-mk-font-size 0.7)
-		        :font sss-font-mono) 
-    (set-face-attribute 'mode-line-active nil 
-		        :height (tekengrootte-mk-font-size 0.7) 
-		        :font sss-font-mono) 
-    (set-face-attribute 'mode-line-inactive nil 
-		        :height (tekengrootte-mk-font-size 0.7) 
-		        :font sss-font-mono)
-    (set-face-attribute 'variable-pitch nil 
-		        :font sss-font-sans
-                        :height (tekengrootte-mk-font-size 1.05))
-
-    (set-face-attribute 'org-default nil 
-		        :height (tekengrootte-mk-font-size 1.05)
-		        :font sss-font-mono)
-    (set-face-attribute 'button nil :background 'unspecified
-                        :weight 'bold)
-    (set-face-attribute 'org-block nil
-		        :font sss-font-mono
-                        :height (tekengrootte-mk-font-size 1.05))
-    (set-face-attribute 'font-lock-doc-face nil
-                        :foreground (ef-themes-get-color-value 'yellow-faint))
-    (set-face-attribute 'org-code nil                       
-		        :font sss-font-mono
-                        :height (tekengrootte-mk-font-size 1.05))
-    (set-face-attribute 'org-verbatim nil                       
-		        :font sss-font-mono
-                        :height (tekengrootte-mk-font-size 1.05))
-    (set-face-attribute 'org-document-title nil 
-		        :height (tekengrootte-mk-font-size 1.2))
-    (set-face-attribute 'org-level-1 nil
-                        :font sss-font-sans
-		        :height (tekengrootte-mk-font-size 1.2))
-    (set-face-attribute 'org-level-2 nil
-                        :font sss-font-sans
-		        :height (tekengrootte-mk-font-size 1.2))
-    (set-face-attribute 'org-level-3 nil
-                        :font sss-font-sans
-		        :height (tekengrootte-mk-font-size 1.1))
-    (set-face-attribute 'org-level-4 nil
-                        :font sss-font-sans
-		        :height (tekengrootte-mk-font-size 1.1))
-    (set-face-attribute 'org-level-5 nil
-                        :font sss-font-sans
-		        :height (tekengrootte-mk-font-size 1.0))
-    (ignore-errors
-      (set-face-attribute 'keycast-key nil                       
-		          :font sss-font-mono
-                          :background 'unspecified
-                          :box nil
-                          :height (tekengrootte-mk-font-size 0.9)))
-    (ignore-errors
-      (set-face-attribute 'keycast-command nil                       
-		          :font sss-font-mono
-                          :height (tekengrootte-mk-font-size 0.8)))
-
-    ;; ====== Theme specific tweaks ======
-    ;; ====== Everforest dark specific tweaks ======
-    (ignore-errors
-      (cond ((equal sss-emacs-theme 'everforest-hard-dark)
-             (progn
-               (set-face-attribute 'mode-line nil
-                                   :box 'unspecified
-                                   :foreground "#2b3339"
-                                   :background "#96b070")
-               (set-face-attribute 'mode-line-active nil
-                                   :box 'unspecified
-                                   :foreground "#2b3339"
-                                   :background "#96b070")
-               (set-face-attribute 'dired-directory nil
-                                   :inherit '(font-lock-string-face))))))
-
-    ;; ====== Everforest light specific tweaks ======
-    (ignore-errors
-      (cond ((equal sss-emacs-theme 'everforest-hard-light)
-             (progn
-               (set-face-attribute 'mode-line nil
-                                   :box 'unspecified
-                                   :foreground "#2b3339"
-                                   :background "#96b070")
-               (set-face-attribute 'mode-line-active nil
-                                   :box 'unspecified
-                                   :foreground "#2b3339"
-                                   :background "#96b070")
-               (set-face-attribute 'dired-directory nil
-                                   :inherit '(font-lock-string-face))))))
-
-
-    ;; ====== Final tweaks ======
-    (ignore-errors
-      (set-face-attribute 'mode-line-active nil
-                          :box `(:line-width 3 :color ,(face-attribute 'mode-line-active :background))))
-    (ignore-errors
-      (set-face-attribute 'mode-line-inactive nil
-                          :box `(:line-width 3 :color ,(face-attribute 'mode-line-inactive :background))))
-    )
-  
-  (sss-set-base-faces))
-
-
-(use-package markdown-mode 
-  :ensure t 
-  :mode "\\.md\\'"
-  :hook ((markdown-mode . sss-markdown-mode))
-  :config
-  (defun sss-markdown-mode ()
-    (variable-pitch-mode 0)
-    (auto-fill-mode 0)
-    (visual-line-mode 1)
-    (set-face-attribute 'markdown-code-face nil                       
-		        :font sss-font-mono
-                        :height (tekengrootte-mk-font-size 1.05))
-    (set-face-attribute 'markdown-pre-face nil                       
-		        :font sss-font-mono
-                        :height (tekengrootte-mk-font-size 1.15))
-    ))
-
-
 (use-package compat
   :ensure (:host github :repo "emacs-compat/compat" :branch "main"))
-
-
 
 (use-package vertico 
   :ensure t 
@@ -300,14 +144,6 @@ According to size, color and font family"
   :ensure t 
   :after (vertico) 
   :config (marginalia-mode))
-
-(use-package nerd-icons :ensure t)
-
-(use-package nerd-icons-completion 
-  :ensure t  
-  :after (nerd-icons marginalia) 
-  :hook ((marginalia-mode . nerd-icons-completion-marginalia-setup)) 
-  :config (nerd-icons-completion-mode))
 
 (use-package flymake-collection 
   :ensure t 
@@ -347,7 +183,6 @@ According to size, color and font family"
   (add-hook 'prog-mode-hook 'tempel-setup-capf)
   (add-hook 'text-mode-hook 'tempel-setup-capf))
 
-
 (use-package gptel
   :ensure t
   :after (f)
@@ -363,22 +198,6 @@ According to size, color and font family"
   :init (setq super-save-auto-save-when-idle t auto-save-default nil make-backup-files nil) 
   :config (super-save-mode +1) 
   (add-to-list 'super-save-hook-triggers 'find-file-hook))
-
-(use-package spacious-padding 
-  :ensure (:host github :repo "protesilaos/spacious-padding" :branch "main")
-  :init
-  (setq spacious-padding-widths
-        '( :internal-border-width 18 
-           :header-line-width 2 
-           :mode-line-width 2 
-           :tab-width 4 
-           :right-divider-width 2 
-           :scroll-bar-width 8 
-           :left-fringe-width 16 
-           :right-fringe-width 16)) 
-  (setq spacious-padding-subtle-mode-line nil) 
-  :config
-  (spacious-padding-mode))
 
 (use-package rainbow-mode
   :ensure (:host github :repo "emacsmirror/rainbow-mode" :branch "master"))
@@ -480,18 +299,8 @@ According to size, color and font family"
   (corfu-history-mode)
   (corfu-popupinfo-mode 1))
 
-(use-package svg-lib
-  :ensure (:host github :repo "rougier/svg-lib" :branch "master"))
-
-(use-package kind-icon
-  :ensure (:host github :repo "jdtsmith/kind-icon" :branch "main")
-  :after corfu
-  :config
-  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
-
 (use-package guix
   :ensure t)
-
 
 (use-package pandoc-mode :ensure t)
 
@@ -576,29 +385,8 @@ According to size, color and font family"
 ;;     (add-hook hook #'jinx-mode)))
 
 
-;; ====== emacs Multimedia System ======
-
-(use-package emms
-  :ensure t
-  :init
-  (require 'emms-setup)
-  (require 'emms-mpris)
-  (emms-all)
-  (emms-default-players)
-  (emms-mpris-enable)
-  :custom
-  (emms-source-file-default-directory sss-ews-music-directory)
-  (emms-browser-covers #'emms-browser-cache-thumbnail-async)
-  :bind
-  (("<f5>"   . emms-browser)
-   ("M-<f5>" . emms)
-   ("<XF86AudioPrev>" . emms-previous)
-   ("<XF86AudioNext>" . emms-next)
-   ("<XF86AudioPlay>" . emms-pause)))
-
 (use-package prodigy
   :ensure t)
-
 
 ;; ====== SSS Emacs-Lisp functions ======
 
