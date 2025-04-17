@@ -63,5 +63,5 @@ I use emacs for just about everything on my computer other than browsing the web
 
 All of my emacs packages are installed and managed via guix home (see [[Guix]] section).
 
-My configuration can be found at =home/.config/emacs/config.org=.
-Note that my =init.el= merely evaluates all the source code blocks within =config.org=.
+My configuration can be found at =home/dot-config/emacs/init.org=.
+Note that my =init.el= is simply the tangled elisp codeblocks from =init.org=.

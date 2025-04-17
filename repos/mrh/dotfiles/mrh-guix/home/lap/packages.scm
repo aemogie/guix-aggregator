@@ -111,7 +111,6 @@
    emacs-orderless
    emacs-org-bullets
    emacs-org-static-blog
-   emacs-ox-haunt
    emacs-paredit
    emacs-pinentry
    emacs-rainbow-delimiters

@@ -155,8 +155,11 @@
 (use-package magit :ensure t :after (transient))
 
 (use-package ripgrep
+  :ensure t)
+
+(use-package deadgrep
   :ensure t
-  :bind (("C-c z r" . ripgrep-regexp)))
+  :bind (("C-c z g" . deadgrep)))
 
 
 (use-package tempel

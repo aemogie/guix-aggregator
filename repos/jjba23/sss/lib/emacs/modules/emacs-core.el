@@ -100,7 +100,8 @@
     (windmove-default-keybindings))
   (defalias 'yes-or-no-p 'y-or-n-p)
   (setq dired-listing-switches "-lAh --group-directories-first" dired-kill-when-opening-new-dired-buffer t)
-  (add-hook 'dired-mode-hook (lambda () (dired-hide-details-mode 1)))
+  (add-hook 'dired-mode-hook
+            (lambda () (dired-hide-details-mode 1)))
   (setq-default indent-tabs-mode nil)
   (global-prettify-symbols-mode +1)
 

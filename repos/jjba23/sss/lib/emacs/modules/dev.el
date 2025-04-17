@@ -103,12 +103,20 @@
   :ensure t
   :config
   (global-diff-hl-mode)
-  (diff-hl-dired-mode)
   (setopt diff-hl-margin-symbols-alist '((insert . "+") (delete . "-") (change . "~")
                                          (unknown . "?") (ignored . "i")))
   (diff-hl-margin-mode)
   (ignore-errors
-    (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)))
+    (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)
+    (add-hook 'dired-mode-hook
+              (lambda () (diff-hl-dired-mode))))
+  (ignore-errors
+    (set-face-attribute 'diff-hl-change nil
+                        :background 'unspecified)
+    (set-face-attribute 'diff-hl-insert nil
+                        :background 'unspecified)
+    (set-face-attribute 'diff-hl-delete nil
+                        :background 'unspecified)))
 
 (with-eval-after-load 'compile
   (fancy-compilation-mode))

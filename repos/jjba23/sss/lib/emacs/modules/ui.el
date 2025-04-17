@@ -80,6 +80,10 @@ According to size, color and font family"
 		        :font sss-font-sans
                         :height (tekengrootte-mk-font-size 1.05))
 
+    (set-face-attribute 'org-table nil 
+		        :height (tekengrootte-mk-font-size 1.05)
+		        :font sss-font-mono)
+    
     (set-face-attribute 'org-default nil 
 		        :height (tekengrootte-mk-font-size 1.05)
 		        :font sss-font-mono)

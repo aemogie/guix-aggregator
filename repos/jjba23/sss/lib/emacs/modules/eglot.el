@@ -50,7 +50,9 @@
         eglot-extend-to-xref t
         eglot-autoreconnect t)
   :config
-  (add-to-list 'eglot-server-programs '(scala-ts-mode . ("metals")))
+  (setq eglot-server-programs (assq-delete-all 'scala-mode eglot-server-programs))
+  (add-to-list 'eglot-server-programs '(scala-mode . ("metals" "-Dmetals.http=on")))
+  (add-to-list 'eglot-server-programs '(scala-ts-mode . ("metals" "-Dmetals.http=on")))
   (add-to-list 'eglot-server-programs '(nix-ts-mode . ("nil")))
   (add-to-list 'eglot-server-programs '(markdown-mode . ("marksman")))
   

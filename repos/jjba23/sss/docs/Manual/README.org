@@ -646,8 +646,8 @@ Refer to the ~sss mime~ module at ~lib/~ and the ~sss-mimeapps-list-file~ functi
 
 #+begin_src scheme
   (define-public sss-mime-default-applications
-  '((application/pdf org.gnome.Evince icecat)
-    (text/html icecat emacsclient)))
+    '((application/pdf org.gnome.Evince icecat)
+      (text/html icecat emacsclient)))
 #+end_src
 
 The XDG MIME Applications specification builds upon the shared MIME database and desktop entries to provide default applications.
