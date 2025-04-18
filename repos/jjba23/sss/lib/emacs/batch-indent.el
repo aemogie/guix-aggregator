@@ -1,10 +1,6 @@
 ;;; batch-indent.el --- Custom editor configuration for SSS -*- lexical-binding: t -*-
 
-;; Copyright (C) 2024 Josep Bigorra
-
-;; Author: Josep Bigorra <jjbigorra@gmail.com>
-;; Maintainer: Josep Bigorra <jjbigorra@gmail.com>
-;; URL: https://codeberg.org/jjba23/sss
+;; Copyright (C) 2025 Josep Bigorra
 
 ;; sss is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by

@@ -2,11 +2,6 @@
 
 # Copyright (C) 2024 Josep Bigorra
 
-# Version: 0.1.0
-# Author: Josep Bigorra <jjbigorra@gmail.com>
-# Maintainer: Josep Bigorra <jjbigorra@gmail.com>
-# URL: https://codeberg.org/jjba23/sss
-
 # sss is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or

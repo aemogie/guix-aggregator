@@ -387,6 +387,7 @@
         bluez
         blueman
         hplip
+        desktop-file-utils
 
         libltdl
         libtool

@@ -3,7 +3,7 @@ alias ip="ip -color=auto"
 alias ls="ls -halp --color=auto"
 alias mw="monero-wallet-cli --daemon-address=10.0.0.1:18081 --trusted-daemon"
 alias md="monerod --prune-blockchain --detach --non-interactive --hide-my-port --no-igd --no-zmq --rpc-bind-ip 10.0.0.1 --confirm-external-bind"
-alias hr="rm $HOME/.config/emacs/config.el & guix home reconfigure -L $HOME/src/dotfiles $HOME/src/dotfiles/mrh-guix/home/$MACHINE_ROLE/config.scm"
+alias hr="guix home reconfigure -L $HOME/src/dotfiles $HOME/src/dotfiles/mrh-guix/home/$MACHINE_ROLE/config.scm"
 alias sr="sudo guix system reconfigure -L $HOME/src/dotfiles $HOME/src/dotfiles/mrh-guix/system/$MACHINE_ROLE/config.scm"
 alias dots="stow --dotfiles -t $HOME -d $HOME/src dotfiles"
 # Bash initialization for interactive non-login shells and

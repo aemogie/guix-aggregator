@@ -19,6 +19,8 @@
                         ("M-]" . next-window-any-frame)
                         ("M-[" . previous-window-any-frame)
                         ("C-x b" . consult-buffer)
+                        ("C-c r s" . consult-register-store)
+                        ("C-c r l" . consult-register-load)
                         ("C-c k" . kill-buffer-and-window)
                         ("C-c m v" . my/mpv)
                         ("C-c m a" . my/play-album)
@@ -39,6 +41,8 @@ Otherwise set locally with `keymap-local-set'."
       (funcall setter-function (car key-and-function) (cdr key-and-function)))))
 
 (my/activate-keybinds)
+
+;; (use-package which-key :config (which-key-mode 1))
 
 (add-to-list 'default-frame-alist '(alpha-background . 85))
 
@@ -105,30 +109,33 @@ Otherwise set locally with `keymap-local-set'."
   (defvar *my/dark-theme* 'gruvbox-dark-hard))
 
 (use-package orderless 
-  :init (setf completion-styles '(orderless basic)))
+  :config
+  (setf completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides nil))
 
 (use-package corfu 
   :init
   (setq-default pgtk-wait-for-event-timeout 0)
+  :config
   (setf corfu-auto t
         corfu-auto-delay 0.2
         corfu-auto-prefix 2
-        corfu-count 8)
-  :config (global-corfu-mode 1))
-
-(use-package marginalia :config (marginalia-mode 1))
+        corfu-count 8
+        corfu-popupinfo-delay '(1.5 . 0.5))
+  
+  (add-to-list 'corfu--frame-parameters '(alpha-background . 100))
+  (global-corfu-mode 1)
+  (corfu-popupinfo-mode 1)
+  
+  (with-eval-after-load 'savehist
+    (corfu-history-mode 1)
+    (add-to-list 'savehist-additional-variables 'corfu-history)))
 
 (use-package consult)
+(use-package vertico :config (vertico-mode 1))
 
-(use-package vertico
-  :init (setf completion-in-region-function
-              (lambda (&rest args)
-                (apply (if vertico-mode
-                           #'consult-completion-in-region
-                         #'completion-in-region)
-                       args)))
-  :config (vertico-mode 1)
-  :after (consult))
+(use-package marginalia :config (marginalia-mode 1))
 
 (pixel-scroll-precision-mode 1)
 
@@ -137,10 +144,8 @@ Otherwise set locally with `keymap-local-set'."
     "List of buffer names to be ignored by `next-buffer' and `previous-buffer'.
 See also `my/hide-buffer' and `hidden-buffer-p'."))
 
-(unless (boundp 'savehist-additional-variables)
-  (defvar savehist-additional-variables ()))
-
-(add-to-list 'savehist-additional-variables '*hidden-buffers*)
+(with-eval-after-load 'savehist
+  (add-to-list 'savehist-additional-variables '*hidden-buffers*))
 
 (defun hidden-buffer-p (window buffer bury-or-kill)
   "Hide buffers with name in `*hidden-buffers*'.
@@ -226,15 +231,16 @@ See also `my/hide-buffer'."
 
 (fset #'jsonrpc--log-event #'ignore)
 
-(use-package diredfl :config (diredfl-global-mode t))
+(use-package dired
+  :commands (dired)
+  :hook (dired-mode . dired-hide-details-mode)
+  :config (setf dired-listing-switches "-Ahl --group-directories-first"
+                dired-kill-when-opening-new-dired-buffer t
+                dired-dwim-target t))
 
-(setf dired-listing-switches "-Ahl --group-directories-first")
-
-(setf dired-kill-when-opening-new-dired-buffer t)
-
-(add-hook 'dired-mode-hook #'dired-hide-details-mode)
-
-(setf dired-dwim-target t)
+(use-package diredfl
+  :after dired
+  :config (diredfl-global-mode t))
 
 (defun my/get-open-file-buffers ()
   (with-temp-buffer
@@ -268,6 +274,15 @@ If a there is no open buffer containing the file the changes will be written."
 
 (fset 'epg-wait-for-status 'ignore)
 
+(setf delete-by-moving-to-trash t)
+
+(use-package trashed
+  :commands (trashed)
+  :config
+  (setf trashed-sort-key '("Date deleted" . t)
+        trashed-date-format "%Y-%m-%d %H:%M:%S"
+        trashed-use-header-line t))
+
 (setf eshell-prompt-function
       (lambda ()
         (concat
@@ -283,8 +298,6 @@ If a there is no open buffer containing the file the changes will be written."
   (with-temp-buffer
     (cd "/sudo::/")
     (async-shell-command command)))
-
-(use-package eat :hook (eshell-load . eat-eshell-mode))
 
 (use-package magit
   :defer t
@@ -390,3 +403,10 @@ If a there is no open buffer containing the file the changes will be written."
 (save-place-mode 1)
 (savehist-mode 1)
 (recentf-mode 1)
+
+(defun my/clear-all-registers ()
+  (interactive)
+  (dolist (register-pair register-alist)
+    (let ((register-name (car register-pair)))
+      (when (get-register register-name)
+        (set-register register-name nil)))))

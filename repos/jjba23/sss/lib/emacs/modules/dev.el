@@ -137,6 +137,9 @@
 		        :font sss-font-mono
                         :height (tekengrootte-mk-font-size 1.15))))
 
+(use-package request
+  :ensure t)
+
 (provide 'sss/dev)
 
 ;;; dev.el ends here

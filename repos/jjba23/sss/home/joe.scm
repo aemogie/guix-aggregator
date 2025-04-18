@@ -119,7 +119,7 @@
                                   #:user-email "jjbigorra@gmail.com"
                                   #:clone-dir sss-clone-dir
                                   #:notes-roam-dir
-                                  "$HOME/hacking/private-notes/Roam")
+                                  "$HOME/hacking/private-notes/roam")
                    (sss-nix-svc)
                    (sss-qt6-svc #:palette sss-palette)
                    (sss-containers-svc)

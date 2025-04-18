@@ -17,6 +17,7 @@
 
 (define-module (sss emacs)
   #:use-module (gnu)
+  #:use-module (ice-9 string-fun)
   #:use-module (srfi srfi-64))
 
 (begin
@@ -91,9 +92,13 @@
                   ui
                   maps
                   emacs-core))
-  (define (serialize-sss-emacs-module mod)
+  (define* (serialize-sss-emacs-module #:key clone-dir mod)
     `(,(format #f ".emacs.d/modules/~a.el" mod) ,(local-file (format #f
-                                                              "./lib/emacs/modules/~a.el"
+                                                              "~a/lib/emacs/modules/~a.el"
+                                                              (string-replace-substring
+                                                               clone-dir
+                                                               "$HOME"
+                                                               (getenv "HOME"))
                                                               mod))))
   (define* (sss-emacs-svc #:key palette
                           user-name
@@ -119,7 +124,10 @@
 
               (".emacs.d/early-init.el" ,(local-file "./emacs/early-init.el"))
               (".emacs.d/templates" ,(local-file "./emacs/templates")))
-            (map serialize-sss-emacs-module sss-emacs-modules)))
+            (map (lambda (m)
+                   (serialize-sss-emacs-module #:mod m
+                                               #:clone-dir clone-dir))
+                 sss-emacs-modules)))
   (export sss-emacs-svc))
 
 ;; ====== module tests ======

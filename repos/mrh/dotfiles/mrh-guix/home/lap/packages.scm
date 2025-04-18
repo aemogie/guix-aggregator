@@ -97,7 +97,6 @@
    emacs-debbugs
    emacs-diredfl
    emacs-doom-modeline
-   emacs-eat
    emacs-elfeed
    emacs-geiser
    emacs-geiser-guile
@@ -116,6 +115,7 @@
    emacs-rainbow-delimiters
    emacs-sly
    emacs-tldr
+   emacs-trashed
    emacs-vertico
    emacs-wgrep
    emacs-writeroom

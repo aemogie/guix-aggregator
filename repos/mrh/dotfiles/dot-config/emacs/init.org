@@ -3,10 +3,10 @@
 #+options: toc:1
 #+property: header-args :tangle yes
 
-Note that this is for Emacs 29 with pgtk, and is tested on Wayland.
+Note that this is for emacs 29.x with pgtk and is tested on wayland.
 Most here is agnostic of that but some is not, such as smooth scrolling and transparency.
 
-* File/Directory Paths
+* File / Directory Paths
 Setup custom and authentication files
 
 #+begin_src emacs-lisp
@@ -29,7 +29,8 @@ Prevent emacs from littering your directories with backup files everywhere
 #+end_src
 
 * Keybindings
-Define personal keybinds.
+** Personal Bindings
+Define personal bindings
 
 #+begin_src emacs-lisp
 (defvar *my/keybinds* '(("M-<tab>" . next-buffer)
@@ -41,6 +42,8 @@ Define personal keybinds.
                         ("M-]" . next-window-any-frame)
                         ("M-[" . previous-window-any-frame)
                         ("C-x b" . consult-buffer)
+                        ("C-c r s" . consult-register-store)
+                        ("C-c r l" . consult-register-load)
                         ("C-c k" . kill-buffer-and-window)
                         ("C-c m v" . my/mpv)
                         ("C-c m a" . my/play-album)
@@ -52,7 +55,7 @@ Define personal keybinds.
                         ("C-c r y" . my/add-youtube-feed)))
 #+end_src
 
-Function to activate personal keybinds.
+Function to activate personal bindings
 
 #+begin_src emacs-lisp
 (defun my/activate-keybinds (&optional local)
@@ -65,6 +68,12 @@ Otherwise set locally with `keymap-local-set'."
       (funcall setter-function (car key-and-function) (cdr key-and-function)))))
 
 (my/activate-keybinds)
+#+end_src
+
+** Discover Bindings
+
+#+begin_src emacs-lisp
+;; (use-package which-key :config (which-key-mode 1))
 #+end_src
 
 * UI
@@ -186,7 +195,10 @@ WARNING: You must run =nerd-icons-install-fonts=, or else there will be perfoman
 
 #+begin_src emacs-lisp
 (use-package orderless 
-  :init (setf completion-styles '(orderless basic)))
+  :config
+  (setf completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides nil))
 #+end_src
 
 *** Main Buffer
@@ -195,33 +207,37 @@ WARNING: You must run =nerd-icons-install-fonts=, or else there will be perfoman
 (use-package corfu 
   :init
   (setq-default pgtk-wait-for-event-timeout 0)
+  :config
   (setf corfu-auto t
         corfu-auto-delay 0.2
         corfu-auto-prefix 2
-        corfu-count 8)
-  :config (global-corfu-mode 1))
+        corfu-count 8
+        corfu-popupinfo-delay '(1.5 . 0.5))
+  
+  (add-to-list 'corfu--frame-parameters '(alpha-background . 100))
+  (global-corfu-mode 1)
+  (corfu-popupinfo-mode 1)
+  
+  (with-eval-after-load 'savehist
+    (corfu-history-mode 1)
+    (add-to-list 'savehist-additional-variables 'corfu-history)))
 #+end_src
 
 *** Minibuffer
-Annotate minibuffer and allow =vertico= to work in it (requires =consult=)
+Add many useful =consult= commands and vertical completion
+
+#+begin_src emacs-lisp
+(use-package consult)
+(use-package vertico :config (vertico-mode 1))
+#+end_src
+
+*** Annotations
 
 #+begin_src emacs-lisp
 (use-package marginalia :config (marginalia-mode 1))
-
-(use-package consult)
-
-(use-package vertico
-  :init (setf completion-in-region-function
-              (lambda (&rest args)
-                (apply (if vertico-mode
-                           #'consult-completion-in-region
-                         #'completion-in-region)
-                       args)))
-  :config (vertico-mode 1)
-  :after (consult))
 #+end_src
 
-** Smooth Scrolling
+** Smooth(er) Scrolling
 
 #+begin_src emacs-lisp
 (pixel-scroll-precision-mode 1)
@@ -238,10 +254,8 @@ See also the [[*Keybindings][Keybindings]] section.
     "List of buffer names to be ignored by `next-buffer' and `previous-buffer'.
 See also `my/hide-buffer' and `hidden-buffer-p'."))
 
-(unless (boundp 'savehist-additional-variables)
-  (defvar savehist-additional-variables ()))
-
-(add-to-list 'savehist-additional-variables '*hidden-buffers*)
+(with-eval-after-load 'savehist
+  (add-to-list 'savehist-additional-variables '*hidden-buffers*))
 
 (defun hidden-buffer-p (window buffer bury-or-kill)
   "Hide buffers with name in `*hidden-buffers*'.
@@ -383,34 +397,22 @@ Speed up performance (bug?)
 
 ** File Management
 *** Dired
+
+#+begin_src emacs-lisp
+(use-package dired
+  :commands (dired)
+  :hook (dired-mode . dired-hide-details-mode)
+  :config (setf dired-listing-switches "-Ahl --group-directories-first"
+                dired-kill-when-opening-new-dired-buffer t
+                dired-dwim-target t))
+#+end_src
+
 **** Extra Colors
 
 #+begin_src emacs-lisp
-(use-package diredfl :config (diredfl-global-mode t))
-#+end_src
-
-**** Switches for =ls=
-
-#+begin_src emacs-lisp
-(setf dired-listing-switches "-Ahl --group-directories-first")
-#+end_src
-
-**** Automatically Kill Buffer when Switching Directories
-
-#+begin_src emacs-lisp
-(setf dired-kill-when-opening-new-dired-buffer t)
-#+end_src
-
-**** Only Show File/Directory Names by Default
-
-#+begin_src emacs-lisp
-(add-hook 'dired-mode-hook #'dired-hide-details-mode)
-#+end_src
-
-**** Copy files between splits
-
-#+begin_src elisp
-(setf dired-dwim-target t)
+(use-package diredfl
+  :after dired
+  :config (diredfl-global-mode t))
 #+end_src
 
 **** Run Command on Marks
@@ -454,6 +456,19 @@ Fix bug causing hangups upon re-encryption of files
 (fset 'epg-wait-for-status 'ignore)
 #+end_src
 
+*** Use Trash For Deletion
+
+#+begin_src emacs-lisp
+(setf delete-by-moving-to-trash t)
+
+(use-package trashed
+  :commands (trashed)
+  :config
+  (setf trashed-sort-key '("Date deleted" . t)
+        trashed-date-format "%Y-%m-%d %H:%M:%S"
+        trashed-use-header-line t))
+#+end_src
+
 ** Shell/Terminal Emulator
 *** Shell
 **** Eshell
@@ -483,13 +498,6 @@ Set delimiter to avoid improper "read only" eshell buffer regions
   (with-temp-buffer
     (cd "/sudo::/")
     (async-shell-command command)))
-#+end_src
-
-*** Terminal Emulator (eat)
-Cause eshell buffers to run inside =eat= terminals, allowing full use of eshell and terminal functionality together
-
-#+begin_src emacs-lisp
-(use-package eat :hook (eshell-load . eat-eshell-mode))
 #+end_src
 
 ** Version Control
@@ -680,7 +688,7 @@ Run custom mpv command on file or url at point.
 (global-auto-revert-mode 1)
 #+end_src
 
-** Don't have to type full "yes" or "no" when emacs prompts
+** Need Not Type Full "yes" Or "no" When Emacs Prompts
 
 #+begin_src emacs-lisp
 (setf use-short-answers t)
@@ -709,4 +717,15 @@ Have emacs remember both what files you recently visited and your position in th
 (save-place-mode 1)
 (savehist-mode 1)
 (recentf-mode 1)
+#+end_src
+
+** Registers
+
+#+begin_src emacs-lisp
+(defun my/clear-all-registers ()
+  (interactive)
+  (dolist (register-pair register-alist)
+    (let ((register-name (car register-pair)))
+      (when (get-register register-name)
+        (set-register register-name nil)))))
 #+end_src

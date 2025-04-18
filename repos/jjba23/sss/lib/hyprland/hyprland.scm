@@ -257,6 +257,14 @@
              (exec-bind #:mod "s"
                         #:bind "return"
                         #:cmd "alacritty msg create-window || alacritty")
+             (exec-bind #:mod "s-S"
+              #:bind "T"
+              #:cmd
+              "emacsclient -ce '(eshell \"new\")(rename-buffer (concat \"*eshell: \" (float-time) \"*\"))'")
+             (exec-bind #:mod "s-S"
+              #:bind "return"
+              #:cmd
+              "emacsclient -ce '(eshell \"new\")(rename-buffer (concat \"*eshell: \" (float-time) \"*\"))'")
              (exec-bind #:mod "s"
                         #:bind "slash"
                         #:cmd "rofi -show drun -icon-theme \"Papirus\"")

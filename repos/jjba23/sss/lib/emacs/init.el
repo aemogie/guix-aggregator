@@ -2,10 +2,6 @@
 
 ;; Copyright (C) 2025 Josep Bigorra
 
-;; Author: Josep Bigorra <jjbigorra@gmail.com>
-;; Maintainer: Josep Bigorra <jjbigorra@gmail.com>
-;; URL: https://codeberg.org/jjba23/sss
-
 ;; sss is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
 ;; the Free Software Foundation, either version 3 of the License, or
@@ -110,7 +106,9 @@
 (use-package dagboek
   :ensure (:host codeberg :repo "jjba23/dagboek.el" :branch "trunk")
   :bind (("C-c ; v" . dagboek-today-entry)
-         ("C-c ; g" . dagboek-yesterday-entry)))
+         ("C-c ; g" . dagboek-yesterday-entry))
+  :custom
+  (dagboek-entry-location "~/hacking/private-notes/diary"))
 
 (use-package keycast
   :ensure t

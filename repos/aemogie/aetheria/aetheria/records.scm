@@ -28,6 +28,100 @@
             define-foldable-record-type
              define-foldable-wrapper-type))
 
+(define-syntax define-record-type2
+  (lambda (syn)
+    (syntax-case syn ()
+      ((_ name* args ...)
+       (let ((name (syntax->datum #'name*)))
+         (define (field-loop fields-syn forward fields)
+           (syntax-case fields-syn ()
+             ((rest ... (field (attr ...) ...))
+              (let* ((get (symbol-append name '- (syntax->datum #'field))))
+                (with-syntax ((get (datum->syntax #'field get)))
+                  (field-loop
+                   #'(rest ...)
+                   (cons #'(field get (attr ...) ...) forward)
+                   (cons #'(cons 'field get) fields)))))
+             ((rest ... (field get (attr ...) ...))
+              (field-loop
+               #'(rest ...)
+               (cons #'(field get (attr ...) ...) forward)
+               (cons #'(cons 'field get) fields)))
+             (() (cons forward fields))))
+         (let loop ((args #'(args ...))
+                    (type (datum->syntax #'name* (symbol-append '< name '>)))
+                    (syntactic-ctor (datum->syntax #'name* name))
+                    (ctor (datum->syntax #'name* (symbol-append 'make- name)))
+                    (pred (datum->syntax #'name* (symbol-append name '?)))
+                    (this-identifier (datum->syntax #'name* 'this-record))
+                    (fields-list (datum->syntax #'name* (symbol-append 'fields- name))))
+           (syntax-case args ()
+             ((#:type type* rest ...)
+              (loop #'(rest ...)
+                    #'type*
+                    syntactic-ctor
+                    ctor
+                    pred
+                    this-identifier
+                    fields-list))
+             ((#:syntactic-ctor syntactic-ctor* rest ...)
+              (loop #'(rest ...)
+                    type
+                    #'syntactic-ctor*
+                    ctor
+                    pred
+                    this-identifier
+                    fields-list))
+             ((#:ctor ctor* rest ...)
+              (loop #'(rest ...)
+                    type
+                    syntactic-ctor
+                    #'ctor*
+                    pred
+                    this-identifier
+                    fields-list))
+             ((#:pred pred* rest ...)
+              (loop #'(rest ...)
+                    type
+                    syntactic-ctor
+                    ctor
+                    #'pred*
+                    this-identifier
+                    fields-list))
+             ((#:this-identifier this-identifier* rest ...)
+              (loop #'(rest ...)
+                    type
+                    syntactic-ctor
+                    ctor
+                    pred
+                    #'this-identifier*
+                    fields-list))
+             ((#:fields-list fields-list* rest ...)
+              (loop #'(rest ...)
+                    type
+                    syntactic-ctor
+                    ctor
+                    pred
+                    this-identifier
+                    #'fields-list*))
+             (((fields* ...) ...)
+              (let ((fields (field-loop #'((fields* ...) ...) '() '())))
+                (with-syntax
+                    ((type type)
+                     (syntactic-ctor syntactic-ctor)
+                     (ctor ctor)
+                     (pred pred)
+                     (this-identifier this-identifier)
+                     (fields-list fields-list)
+                     ((fields-forward ...) (car fields))
+                     ((fields ...) (cdr fields)))
+                  #'(begin
+                      (define-record-type* type
+                        syntactic-ctor ctor pred
+                        this-identifier
+                        fields-forward ...)
+                      (define fields-list (list fields ...)))))))))))))
+
 (define-condition-type &bad-fold-strategy &implementation-restriction
   bad-fold-strategy?)
 
@@ -81,13 +175,9 @@
 (define-condition-type &foldable-record-error &implementation-restriction
   foldadble-record-error?)
 
-(define-record-type* <processed-properties>
-  processed-properties make-processed-properties
-  processed-properties?
-  (strategy processed-properties-strategy ; syntax object of <fold-strategy>
-            (default *unspecified*))
-  (forwarded processed-properties-forwarded ; list of syntax objects
-             (default '())))
+(define-record-type2 processed-properties
+  (strategy (default *unspecified*))    ; syntax object of <fold-strategy>
+  (forwarded (default '())))            ; list of syntax objects
 
 (define (merge-processed-properties a b)
   (processed-properties
