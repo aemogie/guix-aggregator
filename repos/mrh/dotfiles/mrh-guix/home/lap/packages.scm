@@ -96,6 +96,7 @@
    emacs-corfu
    emacs-debbugs
    emacs-diredfl
+   emacs-disable-mouse
    emacs-doom-modeline
    emacs-elfeed
    emacs-geiser

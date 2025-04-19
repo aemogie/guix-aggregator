@@ -39,11 +39,11 @@
                                                pinentry
                                                pinentry-tty))
   #:use-module ((gnu packages ssh) #:select (openssh-sans-x))
-  #:use-module ((aetheria records) #:select (fold-strategy-default
+  #:use-module ((aetheria records) #:select (merge-strategy-default
                                              conflict-strategy
                                              append-strategy
                                              lines-strategy
-                                             define-foldable-record-type))
+                                             define-record-type2))
   #:export (home-openssh-configuration
             home-openssh-configuration-authorized-keys
             home-openssh-configuration-known-hosts
@@ -73,6 +73,7 @@
   (module-ref (resolve-module '(gnu home services gnupg))
               'home-gpg-agent-configuration-default-cache-ttl-ssh))
 
+;; TODO: move to define-record-type2
 (define-macro (unwrap name value . fields)
   (define upstream (symbol-append 'upstream: name))
   (define (upstream:field field-name)
@@ -83,24 +84,17 @@
      (define %upstream-default (,upstream))
      (,upstream
       ,@(map (lambda (field)
-               `(,(car field) (if (equal? (fold-strategy-default ,(cadr field))
+               `(,(car field) (if (equal? (merge-strategy-default ,(cadr field))
                                           ,(downstream:field (car field)))
                                   ,(upstream:field (car field))
                                   ,(downstream:field (car field)))))
              fields))))
 
-(define-foldable-record-type <home-openssh-configuration>
-  home-openssh-configuration make-home-openssh-configuration
-  home-openssh-configuration?
-  merge-home-openssh-configuration fold-home-openssh-configuration
-  (authorized-keys   home-openssh-configuration-authorized-keys
-                     (fold append-strategy)) ;list of file-like
-  (known-hosts       home-openssh-configuration-known-hosts
-                     (fold append-strategy)) ;list of file-like
-  (hosts             home-openssh-configuration-hosts
-                     (fold append-strategy)) ;list of <openssh-host>
-  (add-keys-to-agent home-openssh-configuration-add-keys-to-agent
-                     (fold conflict-strategy))) ;string with limited values
+(define-record-type2 home-openssh-configuration #:fold
+  (authorized-keys   (merge append-strategy))    ;list of file-like
+  (known-hosts       (merge append-strategy))    ;list of file-like
+  (hosts             (merge append-strategy))    ;list of <openssh-host>
+  (add-keys-to-agent (merge conflict-strategy))) ;string with limited values
 
 (define (unwrap-home-openssh-configuration config)
   (unwrap home-openssh-configuration config
@@ -118,26 +112,15 @@
               (fold-home-openssh-configuration (cons config extensions)))))
    (default-value (home-openssh-configuration))))
 
-(define-foldable-record-type <home-gpg-agent-configuration>
-  home-gpg-agent-configuration make-home-gpg-agent-configuration
-  home-gpg-agent-configuration?
-  merge-home-gpg-agent-configuration fold-home-gpg-agent-configuration
-  (gnupg                 home-gpg-agent-configuration-gnupg
-                         (fold conflict-strategy)) ; file-like
-  (pinentry-program      home-gpg-agent-configuration-pinentry-program
-                         (fold conflict-strategy)) ; file-like
-  (ssh-support?          home-gpg-agent-configuration-ssh-support?
-                         (fold conflict-strategy)) ; boolean
-  (default-cache-ttl     home-gpg-agent-configuration-default-cache-ttl
-    (fold conflict-strategy))           ; integer
-  (max-cache-ttl         home-gpg-agent-configuration-max-cache-ttl
-                         (fold conflict-strategy)) ; integer
-  (default-cache-ttl-ssh home-gpg-agent-configuration-default-cache-ttl-ssh
-    (fold conflict-strategy))           ; integer
-  (max-cache-ttl-ssh     home-gpg-agent-configuration-max-cache-ttl-ssh
-                         (fold conflict-strategy)) ; integer
-  (extra-content         home-gpg-agent-configuration-extra-content
-                         (fold lines-strategy))) ; raw-configuration-string
+(define-record-type2 home-gpg-agent-configuration #:fold
+  (gnupg                 (merge conflict-strategy)) ; file-like
+  (pinentry-program      (merge conflict-strategy)) ; file-like
+  (ssh-support?          (merge conflict-strategy)) ; boolean
+  (default-cache-ttl     (merge conflict-strategy)) ; integer
+  (max-cache-ttl         (merge conflict-strategy)) ; integer
+  (default-cache-ttl-ssh (merge conflict-strategy)) ; integer
+  (max-cache-ttl-ssh     (merge conflict-strategy)) ; integer
+  (extra-content         (merge lines-strategy))) ; raw-configuration-string
 
 (define (unwrap-home-gpg-agent-configuration config)
   (unwrap home-gpg-agent-configuration config

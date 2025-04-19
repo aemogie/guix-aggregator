@@ -141,9 +141,9 @@ WARNING: You must run =nerd-icons-install-fonts=, or else there will be perfoman
 
 #+begin_src emacs-lisp
 (setf display-line-numbers-type t)
-(add-hook 'prog-mode-hook 'display-line-numbers-mode)
-(add-hook 'org-mode-hook 'display-line-numbers-mode)
-(add-hook 'conf-mode-hook 'display-line-numbers-mode)
+
+(dolist (hook '(conf-mode-hook org-mode-hook prog-mode-hook))
+  (add-hook hook 'display-line-numbers-mode))
 
 (column-number-mode 1)
 #+end_src
@@ -228,13 +228,23 @@ Add many useful =consult= commands and vertical completion
 
 #+begin_src emacs-lisp
 (use-package consult)
-(use-package vertico :config (vertico-mode 1))
+(use-package vertico
+  :config (vertico-mode 1))
 #+end_src
 
 *** Annotations
 
 #+begin_src emacs-lisp
-(use-package marginalia :config (marginalia-mode 1))
+(use-package marginalia
+  :config (marginalia-mode 1))
+#+end_src
+
+** Mouse
+Disable the mouse
+
+#+begin_src emacs-lisp
+(use-package disable-mouse
+  :config (global-disable-mouse-mode))
 #+end_src
 
 ** Smooth(er) Scrolling
@@ -286,8 +296,53 @@ See also `my/hide-buffer'."
                                  ,*hidden-buffers*)))
 #+end_src
 
-* Programming / SysAdmin
+* Writing
+** Selection
+Replace text in active region on insert
+
+#+begin_src emacs-lisp
+(use-package delsel
+  :config (delete-selection-mode 1))
+#+end_src
+
 ** Programming
+*** Indentation
+**** Only Spaces (no tabs)
+
+#+begin_src emacs-lisp
+(setq-default indent-tabs-mode nil
+              electric-indent-mode nil
+              tab-width 4)
+;; (setf indent-line-function 'insert-tab)
+#+end_src
+
+**** Automatically Indent
+
+#+begin_src emacs-lisp
+(add-hook 'prog-mode-hook 'electric-indent-local-mode)
+#+end_src
+
+**** (un)Tabify Multiple Files
+
+#+begin_src emacs-lisp
+(defun my/dired-tabify-files (&optional untabify)
+  "Run eitheir `tabify' or `untabify' on marked files in dired.
+See `my/dired-run-command'."
+  (interactive "P")
+  (let ((tab-function (if untabify #'untabify #'tabify)))
+    (my/dired-run-command
+     (lambda ()
+       (funcall tab-function (point-min) (point-max))))))
+#+end_src
+
+*** LSP
+**** Eglot
+Speed up performance (bug?)
+
+#+begin_src emacs-lisp
+(fset #'jsonrpc--log-event #'ignore)
+#+end_src
+
 *** Compiling
 Compile without showing compile buffer
 
@@ -327,10 +382,10 @@ Compile without showing compile buffer
 
 #+begin_src emacs-lisp
 (use-package sly
-  :defer t
+  :commands (sly)
   :init
-  (setf inferior-lisp-program "sbcl")
-  (setf sly-mrepl-history-file-name "~/.config/emacs/sly/sly-mrepl-history")
+  (setf inferior-lisp-program "sbcl"
+        sly-mrepl-history-file-name "~/.config/emacs/sly/sly-mrepl-history")
   :hook (sly-mrepl-mode . rainbow-delimiters-mode)
   :after (rainbow-delimiters))
 #+end_src
@@ -382,19 +437,49 @@ Set guile binary used by geiser to be the system wide guile that comes with guix
 Also load =.guile= on geiser startup.
 
 #+begin_src emacs-lisp
-(setf geiser-guile-binary "/run/current-system/profile/bin/guile")
-(setf geiser-guile-load-init-file t)
-(setf geiser-repl-add-project-paths nil)
+(setf geiser-guile-binary "/run/current-system/profile/bin/guile"
+      geiser-guile-load-init-file t
+      geiser-repl-add-project-paths nil)
 #+end_src
 
-*** LSP
-**** Eglot
-Speed up performance (bug?)
+** Org Mode
 
 #+begin_src emacs-lisp
-(fset #'jsonrpc--log-event #'ignore)
+(use-package org
+  :hook (org-mode . org-indent-mode)
+  :config (setf org-startup-folded t
+                org-edit-src-content-indentation 0))
 #+end_src
 
+*** Aesthetic Bullets
+
+#+begin_src emacs-lisp
+(use-package org-bullets
+  :hook (org-mode . org-bullets-mode))
+#+end_src
+
+*** Export
+**** Beamer
+Export to pdf presentations via LaTeX beamer
+
+#+begin_src emacs-lisp
+(use-package ox-beamer :defer t)
+#+end_src
+
+** LaTeX
+*** Compilation
+Compile with =pdflatex= on current buffer's file.
+See also [[*Programming / SysAdmin][Programming / SysAdmin]] section.
+
+#+begin_src emacs-lisp
+(add-hook 'LaTeX-mode-hook
+          (lambda ()
+            (set (make-local-variable 'compile-command)
+                 (format "pdflatex %s" (buffer-file-name)))
+            (keymap-local-set "C-c c" 'my/compile)))
+#+end_src
+
+* System Administration
 ** File Management
 *** Dired
 
@@ -442,7 +527,7 @@ If a there is no open buffer containing the file the changes will be written."
     (save-window-excursion
       (mapc (lambda (filepath)
               (find-file filepath)
-              (call-interactively command)
+              (funcall command)
               (unless (member (buffer-name) open-file-buffers)
                 (save-buffer)
                 (kill-buffer)))
@@ -475,18 +560,16 @@ Fix bug causing hangups upon re-encryption of files
 Set custom prompt
 
 #+begin_src emacs-lisp
-(setf eshell-prompt-function
-      (lambda ()
-        (concat
-         (propertize (concat "\n " (eshell/pwd) "\n"))
-         (propertize (if (= (user-uid) 0) " #" " λ"))
-         (propertize " "))))
-#+end_src
-
-Set delimiter to avoid improper "read only" eshell buffer regions
-
-#+begin_src emacs-lisp
-(setf eshell-prompt-regexp ".* λ ")
+(use-package eshell
+  :commands (eshell)
+  :config
+  (setf eshell-prompt-function
+        (lambda ()
+          (concat
+           (propertize (concat "\n " (eshell/pwd) "\n"))
+           (propertize (if (= (user-uid) 0) " #" " λ"))
+           (propertize " "))))
+  (setf eshell-prompt-regexp ".* λ "))
 #+end_src
 
 **** Sudo Shell Command
@@ -505,9 +588,8 @@ Magic git frontend
 
 #+begin_src emacs-lisp
 (use-package magit
-  :defer t
-  :hook (magit-mode . (lambda ()
-                        (my/activate-keybinds t))))
+  :commands (magit)
+  :hook (magit-mode . (lambda () (my/activate-keybinds t))))
 #+end_src
 
 ** Pinentry
@@ -517,50 +599,6 @@ Magic git frontend
   :config
   (setf epg-pinentry-mode 'loopback)
   (pinentry-start))
-#+end_src
-
-* Writing
-** Org Mode
-*** Initially Fold Headers
-#+begin_src emacs-lisp
-(setf org-startup-folded t)
-#+end_src
-
-*** Indent bullets by level.
-#+begin_src emacs-lisp
-(add-hook 'org-mode-hook (lambda () (org-indent-mode 1)))
-#+end_src
-
-*** Source Code Blocks (babel)
-#+begin_src emacs-lisp
-(setf org-edit-src-content-indentation 0)
-#+end_src
-
-*** Aesthetic Bullets
-
-#+begin_src emacs-lisp
-(use-package org-bullets :hook (org-mode . org-bullets-mode))
-#+end_src
-
-*** Org Export
-**** Beamer
-Export to pdf presentations via LaTeX beamer
-
-#+begin_src emacs-lisp
-(use-package ox-beamer :defer t)
-#+end_src
-
-** LaTeX
-*** Compilation
-Compile with =pdflatex= on current buffer's file.
-See also [[*Programming / SysAdmin][Programming / SysAdmin]] section.
-
-#+begin_src emacs-lisp
-(add-hook 'LaTeX-mode-hook
-          (lambda ()
-            (set (make-local-variable 'compile-command)
-                 (format "pdflatex %s" (buffer-file-name)))
-            (keymap-local-set "C-c c" 'my/compile)))
 #+end_src
 
 * Website
@@ -580,7 +618,7 @@ Setup vars for =mu4e=
 
 #+begin_src emacs-lisp
 (use-package mu4e
-  :defer t
+  :commands (mu4e)
   :config (setf mu4e-drafts-folder "/Drafts"
                 mu4e-sent-folder "/Sent"
                 mu4e-trash-folder "/Trash"
@@ -616,7 +654,7 @@ Set DB path, default view filter, and advice to kill elfeed search buffer on qui
 
 #+begin_src emacs-lisp
 (use-package elfeed
-  :defer t
+  :commands (elfeed)
   :config
   (setf elfeed-db-directory
         (expand-file-name "elfeed-db" user-emacs-directory))
@@ -676,12 +714,6 @@ Run custom mpv command on file or url at point.
 (setf large-file-warning-threshold 10000000)
 #+end_src
 
-** Right Click for Menu
-
-#+begin_src emacs-lisp
-(context-menu-mode 1)
-#+end_src
-
 ** Revert File-Buffers on File Change
 
 #+begin_src emacs-lisp
@@ -692,22 +724,6 @@ Run custom mpv command on file or url at point.
 
 #+begin_src emacs-lisp
 (setf use-short-answers t)
-#+end_src
-
-** Indentation
-*** Only Spaces (no tabs)
-
-#+begin_src emacs-lisp
-(setq-default indent-tabs-mode nil
-              electric-indent-mode nil
-              tab-width 4)
-;; (setf indent-line-function 'insert-tab)
-#+end_src
-
-*** Automatically Indent
-
-#+begin_src emacs-lisp
-(add-hook 'prog-mode-hook 'electric-indent-local-mode)
 #+end_src
 
 ** Revisiting Files

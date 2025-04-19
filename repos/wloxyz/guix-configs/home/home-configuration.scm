@@ -39,6 +39,7 @@
 	    (specifications->packages
 	     (list
 	      ;; ui
+              "gammastep"
 	      "swayidle"
 	      "swaylock-effects"
 	      "mako"
@@ -50,9 +51,9 @@
               "adwaita-icon-theme"
               "pcmanfm"  ; for anything that might need a file manager
 	      ;; screensharing and other wlroots stuff
-	      "xdg-desktop-portal"
+	      ;; "xdg-desktop-portal"
 	      "xdg-desktop-portal-wlr"
-	      ;; "xdg-desktop-portal-gtk"
+	      "xdg-desktop-portal-gtk"
 	      "slurp"
 	      "grimshot"                ; for screenshots
 	      "wl-clipboard"
@@ -77,6 +78,7 @@
 	      ;; social
 	      "mumble"
 	      "senpai"
+              "dino"
 	      ;; gaming
 	      "steam"
 	      ;; multimedia
@@ -97,7 +99,7 @@
 	      "zathura-pdf-mupdf"
 	      "imv"
 	      ;; music
-	      ;; "carla"
+	      "carla"
 	      "reaper"                  ; nonguix
 	      "lsp-plugins"
 	      "lsp-plugins:lv2"
@@ -107,16 +109,15 @@
               "x42-plugins"
               "zynaddsubfx"
               "lv2-speech-denoiser"
+              "surge-synth"
 	      ;; fonts
-	      "font-go"                 ; needed for my emacs config
 	      "font-liberation"
 	      "font-linuxlibertine"
-	      "font-iosevka"
-	      "font-iosevka-slab"
-	      "font-iosevka-etoile"
 	      "font-jigmo"              ; cjk
-	      "font-sarasa-gothic"      ; cjk mono
-              "font-new-heterodox-mono" ; in testing currently
+	      "font-sarasa-gothic"      ; cjk mono, based on iosevka
+              "font-gnu-freefont"       ; for every other unicode character
+              "font-new-heterodox-mono" ; satisfies my sophisticated monospace desires
+              "font-cormorant"          ; a nice regal variable typeface
 	      ;; Dev tools
 	      "guile-next"
 	      "readline"
@@ -152,7 +153,10 @@
 	      "sicp"                  ; a fun lil textbook :)
 	      "clhs"                  ; common lisp hyperspec, nonfree
 	      ;; showoff tools
-	      "hyfetch"))))
+	      "hyfetch"
+              ;; from saayix channel
+              "prism-launcher"
+              "zen-browser-bin"))))
 
  ;; Below is the list of Home services.  To search for available
  ;; services, run 'guix home search KEYWORD' in a terminal.

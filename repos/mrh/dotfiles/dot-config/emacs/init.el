@@ -73,9 +73,9 @@ Otherwise set locally with `keymap-local-set'."
 (display-time-mode 1)
 
 (setf display-line-numbers-type t)
-(add-hook 'prog-mode-hook 'display-line-numbers-mode)
-(add-hook 'org-mode-hook 'display-line-numbers-mode)
-(add-hook 'conf-mode-hook 'display-line-numbers-mode)
+
+(dolist (hook '(conf-mode-hook org-mode-hook prog-mode-hook))
+  (add-hook hook 'display-line-numbers-mode))
 
 (column-number-mode 1)
 
@@ -133,9 +133,14 @@ Otherwise set locally with `keymap-local-set'."
     (add-to-list 'savehist-additional-variables 'corfu-history)))
 
 (use-package consult)
-(use-package vertico :config (vertico-mode 1))
+(use-package vertico 
+  :config (vertico-mode 1))
 
-(use-package marginalia :config (marginalia-mode 1))
+(use-package marginalia
+  :config (marginalia-mode 1))
+
+(use-package disable-mouse
+  :config (global-disable-mouse-mode))
 
 (pixel-scroll-precision-mode 1)
 
@@ -175,6 +180,27 @@ See also `my/hide-buffer'."
                                    (buffer-name))
                                  *hidden-buffers*)))
 
+(use-package delsel
+  :config (delete-selection-mode 1))
+
+(setq-default indent-tabs-mode nil
+              electric-indent-mode nil
+              tab-width 4)
+;; (setf indent-line-function 'insert-tab)
+
+(add-hook 'prog-mode-hook 'electric-indent-local-mode)
+
+(defun my/dired-tabify-files (&optional untabify)
+  "Run eitheir `tabify' or `untabify' on marked files in dired.
+See `my/dired-run-command'."
+  (interactive "P")
+  (let ((tab-function (if untabify #'untabify #'tabify)))
+    (my/dired-run-command
+     (lambda ()
+       (funcall tab-function (point-min) (point-max))))))
+
+(fset #'jsonrpc--log-event #'ignore)
+
 (defun my/compile ()
   (interactive)
   (save-window-excursion (compile compile-command)))
@@ -191,10 +217,10 @@ See also `my/hide-buffer'."
   ((lisp-mode emacs-lisp-mode scheme-mode) . aggressive-indent-mode))
 
 (use-package sly
-  :defer t
+  :commands (sly)
   :init
-  (setf inferior-lisp-program "sbcl")
-  (setf sly-mrepl-history-file-name "~/.config/emacs/sly/sly-mrepl-history")
+  (setf inferior-lisp-program "sbcl"
+        sly-mrepl-history-file-name "~/.config/emacs/sly/sly-mrepl-history")
   :hook (sly-mrepl-mode . rainbow-delimiters-mode)
   :after (rainbow-delimiters))
 
@@ -225,11 +251,25 @@ See also `my/hide-buffer'."
          (kbd "C-c C-r")
          (my/go-macro "run"))))
 
-(setf geiser-guile-binary "/run/current-system/profile/bin/guile")
-(setf geiser-guile-load-init-file t)
-(setf geiser-repl-add-project-paths nil)
+(setf geiser-guile-binary "/run/current-system/profile/bin/guile"
+      geiser-guile-load-init-file t
+      geiser-repl-add-project-paths nil)
 
-(fset #'jsonrpc--log-event #'ignore)
+(use-package org
+  :hook (org-mode . org-indent-mode)
+  :config (setf org-startup-folded t
+                org-edit-src-content-indentation 0))
+
+(use-package org-bullets
+  :hook (org-mode . org-bullets-mode))
+
+(use-package ox-beamer :defer t)
+
+(add-hook 'LaTeX-mode-hook
+          (lambda ()
+            (set (make-local-variable 'compile-command)
+                 (format "pdflatex %s" (buffer-file-name)))
+            (keymap-local-set "C-c c" 'my/compile)))
 
 (use-package dired
   :commands (dired)
@@ -266,7 +306,7 @@ If a there is no open buffer containing the file the changes will be written."
     (save-window-excursion
       (mapc (lambda (filepath)
               (find-file filepath)
-              (call-interactively command)
+              (funcall command)
               (unless (member (buffer-name) open-file-buffers)
                 (save-buffer)
                 (kill-buffer)))
@@ -283,14 +323,16 @@ If a there is no open buffer containing the file the changes will be written."
         trashed-date-format "%Y-%m-%d %H:%M:%S"
         trashed-use-header-line t))
 
-(setf eshell-prompt-function
-      (lambda ()
-        (concat
-         (propertize (concat "\n " (eshell/pwd) "\n"))
-         (propertize (if (= (user-uid) 0) " #" " λ"))
-         (propertize " "))))
-
-(setf eshell-prompt-regexp ".* λ ")
+(use-package eshell
+  :commands (eshell)
+  :config
+  (setf eshell-prompt-function
+        (lambda ()
+          (concat
+           (propertize (concat "\n " (eshell/pwd) "\n"))
+           (propertize (if (= (user-uid) 0) " #" " λ"))
+           (propertize " "))))
+  (setf eshell-prompt-regexp ".* λ "))
 
 (defun my/sudo-shell-command (command)
   "Run COMMAND as root via Tramp."
@@ -300,37 +342,20 @@ If a there is no open buffer containing the file the changes will be written."
     (async-shell-command command)))
 
 (use-package magit
-  :defer t
-  :hook (magit-mode . (lambda ()
-                        (my/activate-keybinds t))))
+  :commands (magit)
+  :hook (magit-mode . (lambda () (my/activate-keybinds t))))
 
 (use-package pinentry
   :config
   (setf epg-pinentry-mode 'loopback)
   (pinentry-start))
 
-(setf org-startup-folded t)
-
-(add-hook 'org-mode-hook (lambda () (org-indent-mode 1)))
-
-(setf org-edit-src-content-indentation 0)
-
-(use-package org-bullets :hook (org-mode . org-bullets-mode))
-
-(use-package ox-beamer :defer t)
-
-(add-hook 'LaTeX-mode-hook
-          (lambda ()
-            (set (make-local-variable 'compile-command)
-                 (format "pdflatex %s" (buffer-file-name)))
-            (keymap-local-set "C-c c" 'my/compile)))
-
 (use-package org-static-blog
   :defer t
   :config (load (expand-file-name "blog-config.el" user-emacs-directory)))
 
 (use-package mu4e
-  :defer t
+  :commands (mu4e)
   :config (setf mu4e-drafts-folder "/Drafts"
                 mu4e-sent-folder "/Sent"
                 mu4e-trash-folder "/Trash"
@@ -352,7 +377,7 @@ If a there is no open buffer containing the file the changes will be written."
   (kill-buffer "*elfeed-search*"))
 
 (use-package elfeed
-  :defer t
+  :commands (elfeed)
   :config
   (setf elfeed-db-directory
         (expand-file-name "elfeed-db" user-emacs-directory))
@@ -387,18 +412,9 @@ If a there is no open buffer containing the file the changes will be written."
 
 (setf large-file-warning-threshold 10000000)
 
-(context-menu-mode 1)
-
 (global-auto-revert-mode 1)
 
 (setf use-short-answers t)
-
-(setq-default indent-tabs-mode nil
-              electric-indent-mode nil
-              tab-width 4)
-;; (setf indent-line-function 'insert-tab)
-
-(add-hook 'prog-mode-hook 'electric-indent-local-mode)
 
 (save-place-mode 1)
 (savehist-mode 1)

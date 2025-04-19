@@ -39,12 +39,12 @@
    emacs-guix
    emacs-debbugs                       ; tracking for guix bugs
    emacs-envrc                         ; direnv integration
-   ;; emacs-geiser
-   ;; emacs-geiser-guile
-   ;; emacs-flycheck-guile
+   emacs-geiser
+   emacs-geiser-guile
+   emacs-flycheck-guile
    ;; allegedly this offers a better guile ide experience
-   emacs-arei
-   guile-ares-rs
+   ;; emacs-arei
+   ;; guile-ares-rs
    emacs-yasnippet
    emacs-yasnippet-snippets
    ;; emacs-yasnippet-capf

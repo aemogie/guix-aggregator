@@ -3,7 +3,7 @@
 ;; options used in multiple locations throughout this config
 (setq guixp (fboundp 'guix-emacs-autoload-packages))
 (setq guix-src-dir "~/Documents/code/guix/")
-(setq user-font "New Heterodox Mono-14")
+(setq user-font "New Heterodox Mono-12")
 
 ;; handle non-guix systems by installing a nice lil package manager
 (unless guixp
@@ -459,22 +459,23 @@
 
 ;;; lisp dev
 ;; scheme (guile)
-;; (use-package geiser
-;;   :custom
-;;   (geiser-repl-per-project-p t))
-;; (use-package geiser-guile
-;;   :after geiser
-;;   :config
-;;   (add-to-list 'geiser-guile-load-path "."))
-;; (use-package flycheck-geiser
-;;   :after geiser
-;;   :hook (scheme-mode . flycheck-mode))
-(use-package arei
+(use-package geiser
   :custom
-  (geiser-mode-auto-p nil)
-  :bind (:map arei-mode-map
-         ("C-c  m" . mu4e)
-         ("C-c M M" . mu4e)))
+  (geiser-repl-per-project-p t))
+(use-package geiser-guile
+  :after geiser
+  :config
+  (add-to-list 'geiser-guile-load-path "."))
+(use-package flycheck-geiser
+  :after geiser
+  :hook (scheme-mode . flycheck-mode))
+
+;; (use-package arei
+;;   :custom
+;;   (geiser-mode-auto-p nil)
+;;   :bind (:map arei-mode-map
+;;          ("C-c  m" . mu4e)
+;;          ("C-c M M" . mu4e)))
 
 ;; common lisp
 (use-package sly

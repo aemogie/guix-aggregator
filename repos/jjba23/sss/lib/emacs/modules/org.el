@@ -1,6 +1,6 @@
 ;;; org.el --- Org configuration for Emacs -*- lexical-binding: t -*-
 
-;; Copyright (C) 2025 Josep Bigorra
+;; Copyright © Josep Bigorra <jjbigorra@gmail.com>
 
 ;; sss is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -84,6 +84,9 @@
   (org-roam-db-autosync-mode)
   (org-roam-setup))
 
+(use-package ob-http :ensure t)
+
+(use-package ob-mermaid :ensure t)
 
 (provide 'sss/org)
 

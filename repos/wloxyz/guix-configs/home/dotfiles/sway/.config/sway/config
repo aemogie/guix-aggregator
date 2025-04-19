@@ -18,6 +18,7 @@ set $term foot
 # Your preferred application launcher
 # Note: pass the final command to swaymsg so that the resulting window can be opened
 # on the original workspace that the command was run on.
+set $wallpaper "~/Pictures/wallpaper.png"
 set $menu emacsclient -e '(emacs-run-launcher)' | xargs swaymsg exec --
 set $passmenu emacsclient -e '(emacs-run-pass)' | xargs swaymsg exec --
 set $font "New Heterodox Mono"
@@ -29,16 +30,17 @@ set $gnome-sound     org.gnome.desktop.sound
 set $gnome-interface org.gnome.desktop.interface
 
 exec_always {
-  gsettings set $gnome-interface cursor-theme        'cz-Hickson-White'
-  gsettings set $gnome-interface cursor-size         24
-  gsettings set $gnome-interface document-font-name  "$font $font-size"
-  gsettings set $gnome-interface font-name           "$font $font-size"
-  # gsettings set $gnome-interface gtk-theme           'Gruvbox-Dark'
-  # gsettings set $gnome-interface gtk-color-theme     'Gruvbox-Dark'
-  gsettings set $gnome-interface icon-theme          'Qogir'
-  gsettings set $gnome-interface monospace-font-name "$font $font-size"
-  gsettings set $gnome-interface text-scaling-factor 1.0
-  # gsettings set $gnome-sound     theme-name          'deepin'
+  gsettings set $gnome-interface cursor-theme           'cz-Hickson-White'
+  gsettings set $gnome-interface cursor-size            24
+  gsettings set $gnome-interface document-font-name     "$font $font-size"
+  gsettings set $gnome-interface font-name              "$font $font-size"
+  gsettings set $gnome-interface gtk-theme              'Adwaita'
+  gsettings set $gnome-interface gtk-color-theme        'Adwaita'
+  gsettings set $gnome-interface color-scheme           'prefer-dark'
+  gsettings set $gnome-interface icon-theme             'Qogir'
+  gsettings set $gnome-interface monospace-font-name    "$font $font-size"
+  gsettings set $gnome-interface text-scaling-factor    1.0
+  # gsettings set $gnome-sound     theme-name             'deepin'
 }
 
 ### Appearance
@@ -68,7 +70,7 @@ scratchpad_minimize disable
 #
 # set the wallpaper
 # output * bg ~/Pictures/Wallpapers/witchbridge-exp.png fill
-output * bg "~/Pictures/Wallpapers/Konachan.com - 72141 blame cibo killy monochrome.jpg" fill
+output * bg $wallpaper fill
 #
 # Example configuration:
 #
@@ -104,7 +106,7 @@ output 'VIZIO, Inc M55Q7-J01 0x00000101' {
 # Example configuration:
 #
 exec swayidle -w \
-         timeout 300 'swaylock -f' \
+         timeout 300 "swaylock -f --image $wallpaper" \
          timeout 600 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' \
          before-sleep 'swaylock -f'
 #

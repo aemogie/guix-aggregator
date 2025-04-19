@@ -1,6 +1,6 @@
 ;;; sss.el --- SSS configuration for Emacs -*- lexical-binding: t -*-
 
-;; Copyright (C) 2025 Josep Bigorra
+;; Copyright © Josep Bigorra <jjbigorra@gmail.com>
 
 ;; sss is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -48,6 +48,63 @@
 (defcustom sss-emacs-theme nil
   "The name of the Emacs theme to use, acording to SSS palette."
   :type 'symbol)
+
+(defun sss-joe-reconfigure ()
+  "Rebuild GNU Guix Joe's configs."
+  (interactive)
+  (let ((default-directory (string-replace "$HOME" "~" sss-clone-dir)))
+    (async-shell-command "make jr")))
+
+(defun sss-publish-manual ()
+  "Rebuild GNU Guix Joe's config manual."
+  (interactive)
+  (let ((default-directory (string-replace "$HOME" "~" sss-clone-dir)))
+    (async-shell-command "make publish-manual")))
+
+(defun sss-full-reconfigure ()
+  "Fully Rebuild GNU Guix Joe's configs and Joe's user."
+  (interactive)
+  (let ((default-directory (string-replace "$HOME" "~" sss-clone-dir)))
+    (async-shell-command "make fr")))
+
+(defun sss-sys-reconfigure ()
+  "Rebuild GNU Guix Joe's configs."
+  (interactive)
+  (let ((default-directory (string-replace "$HOME" "~" sss-clone-dir)))
+    (async-shell-command "make sr")))
+
+(defun sss-sys-update ()
+  "Update GNU Guix packages."
+  (interactive)
+  (let ((default-directory (string-replace "$HOME" "~" sss-clone-dir)))
+    (async-shell-command "make update")))
+
+(defun sss-uuidgen ()
+  (interactive)
+  (let ((uid (string-replace "\n" "" (shell-command-to-string "uuidgen"))))
+    (message (format "generated UUID: %s" uid))
+    (kill-new uid)))
+
+(defun sss-uuidgen-string ()
+  (string-replace "\n" "" (shell-command-to-string "uuidgen")))
+
+(defun sss-guix-fmt ()
+  (interactive)
+  (let ((path (file-truename buffer-file-name)))
+    (message "formatting current buffer with Guix style")
+    (shell-command (format "guix style -f %s" path))
+    (revert-buffer :ignore-auto :noconfirm)
+    (message "formatted current buffer with Guix style")))
+
+(defun sss-new-buffer-with-json (buffer-name data)
+  (get-buffer-create buffer-name)
+  (with-current-buffer buffer-name
+    (insert data)
+    (ignore-errors
+      (js-json-mode)
+      (json-pretty-print-buffer-ordered)))
+  (switch-to-buffer buffer-name)
+  (scroll-down 10000))
 
 (provide 'sss/sss)
 

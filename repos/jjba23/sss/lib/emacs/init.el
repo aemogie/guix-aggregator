@@ -1,6 +1,6 @@
 ;;; init.el --- Custom Emacs configuration for SSS -*- lexical-binding: t -*-
 
-;; Copyright (C) 2025 Josep Bigorra
+;; Copyright © Josep Bigorra <jjbigorra@gmail.com>
 
 ;; sss is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -96,69 +96,30 @@
 (load-user-file "sss-bridge.el")
 
 ;; Load more user modules
-(setq sss-emacs-modules '(dashboard common-lisp go org theme shell
-                                    emacs-core erc consult eglot dev music ui maps))
+(setq sss-emacs-modules '(
+                          common-lisp
+                          consult
+                          dashboard
+                          dev
+                          dired
+                          eglot
+                          emacs-core
+                          erc
+                          go
+                          libs
+                          maps
+                          misc
+                          music
+                          org
+                          search
+                          shell
+                          theme
+                          ui
+                          ))
 (mapc (lambda(f) (load-user-file (format "modules/%s.el" f))) sss-emacs-modules)
 
-(use-package git-riddance 
-  :ensure (:host codeberg :repo "jjba23/git-riddance.el" :branch "trunk"))
-
-(use-package dagboek
-  :ensure (:host codeberg :repo "jjba23/dagboek.el" :branch "trunk")
-  :bind (("C-c ; v" . dagboek-today-entry)
-         ("C-c ; g" . dagboek-yesterday-entry))
-  :custom
-  (dagboek-entry-location "~/hacking/private-notes/diary"))
-
-(use-package keycast
-  :ensure t
-  :demand t
-  :after (tekengrootte)
-  :config
-  (define-minor-mode keycast-mode
-    "Show current command and its key binding in the mode line."
-    :global t
-    (if keycast-mode
-	(add-hook 'pre-command-hook 'keycast--update t)
-      (remove-hook 'pre-command-hook 'keycast--update)))
-  (ignore-errors (keycast-mode)))
-
-(use-package compat
-  :ensure (:host github :repo "emacs-compat/compat" :branch "main"))
-
-(use-package vertico 
-  :ensure t 
-  :init
-  (setq vertico-cycle t
-        vertico-resize t)
-  :config
-  (require 'vertico-multiform)
-  (add-to-list 'vertico-multiform-categories
-               '(jinx grid (vertico-grid-annotate . 20)))
-  (vertico-mode)
-  (vertico-multiform-mode 1))
-
-(use-package marginalia 
-  :ensure t 
-  :after (vertico) 
-  :config (marginalia-mode))
-
-(use-package flymake-collection 
-  :ensure t 
-  :hook ((after-init . flymake-collection-hook-setup) 
-         (emacs-lisp-mode . flymake-mode)))
-
-(use-package transient :ensure t)
 
 (use-package magit :ensure t :after (transient))
-
-(use-package ripgrep
-  :ensure t)
-
-(use-package deadgrep
-  :ensure t
-  :bind (("C-c z g" . deadgrep)))
-
 
 (use-package tempel
   :ensure (:host github :repo "minad/tempel" :branch "main")
@@ -184,15 +145,6 @@
   (add-hook 'prog-mode-hook 'tempel-setup-capf)
   (add-hook 'text-mode-hook 'tempel-setup-capf))
 
-(use-package gptel
-  :ensure t
-  :after (f)
-  :config
-  (setq
-   gptel-model 'gemini-pro
-   gptel-backend (gptel-make-gemini "Gemini"
-                   :key (lambda() (f-read-text "~/.secrets/gemini"))
-                   :stream t)))
 
 (use-package super-save 
   :ensure t  
@@ -202,10 +154,6 @@
 
 (use-package rainbow-mode
   :ensure (:host github :repo "emacsmirror/rainbow-mode" :branch "master"))
-
-(use-package ob-http :ensure t)
-
-(use-package ob-mermaid :ensure t)
 
 (use-package mermaid-mode
   :ensure t
@@ -229,58 +177,20 @@
           (define-key map (kbd "C-c C-d d") 'mermaid-open-doc)
           map)))
 
-(use-package page-break-lines :ensure t)
-
 (use-package orderless
   :ensure t
   :custom
   (completion-styles '(orderless basic))
   (completion-category-overrides '((file (styles basic partial-completion)))))
 
-(use-package f :ensure t)
-
-(use-package speed-type :ensure t)
-
 ;; TODO work on debugger support (use GUD? Realgud? DAPE?)
 ;; (use-package dape 
 ;;   :ensure t  
 ;;   :init (setq dape-buffer-window-arrangement 'gud))
 
-(use-package dired-hacks-utils :ensure t)
-
-(use-package dired-subtree 
-  :ensure t
-  :config
-  (set-face-attribute 'dired-subtree-depth-1-face nil                       
-		      :background 'unspecified)
-  (set-face-attribute 'dired-subtree-depth-2-face nil                       
-		      :background 'unspecified)
-  (set-face-attribute 'dired-subtree-depth-3-face nil                       
-		      :background 'unspecified)
-  (set-face-attribute 'dired-subtree-depth-4-face nil                       
-		      :background 'unspecified)
-  (set-face-attribute 'dired-subtree-depth-5-face nil                       
-		      :background 'unspecified)
-  (set-face-attribute 'dired-subtree-depth-6-face nil
-		      :background 'unspecified)
-  :bind (:map dired-mode-map (("<mouse-1>" . dired-subtree-toggle)
-                              ("<TAB>" . dired-subtree-toggle) 
-                              ("C-<tab>" . dired-subtree-toggle) 
-                              ("C-<TAB>" . dired-subtree-toggle))))
-
-(use-package dired-open-with :ensure t)
-
 (use-package move-text 
   :ensure t  
   :config (move-text-default-bindings))
-
-(use-package ultra-scroll
-  :ensure (:host github :repo "jdtsmith/ultra-scroll" :branch "main")
-  :init
-  (setq scroll-conservatively 101 ; important!
-        scroll-margin 0) 
-  :config
-  (ultra-scroll-mode 1))
 
 (use-package corfu
   :ensure t 
@@ -300,18 +210,6 @@
   (corfu-history-mode)
   (corfu-popupinfo-mode 1))
 
-(use-package guix
-  :ensure t)
-
-(use-package pandoc-mode :ensure t)
-
-(use-package nerd-icons-dired 
-  :ensure t  
-  :hook ((dired-mode . nerd-icons-dired-mode)))
-
-(use-package queue
-  :ensure (:host github :repo "emacs-straight/queue" :branch "master")
-  :demand t)
 
 (use-package helpful
   :ensure t
@@ -332,79 +230,12 @@
   (add-hook 'completion-at-point-functions #'cape-history)
   (add-hook 'completion-at-point-functions #'cape-elisp-block))
 
-(defun sss-joe-reconfigure ()
-  "Rebuild GNU Guix Joe's configs."
-  (interactive)
-  (let ((default-directory (string-replace "$HOME" "~" sss-clone-dir)))
-    (async-shell-command "make jr")))
+;; tramp remote guix systems (wolk-jjba)
+;;
+;; (add-to-list 'tramp-remote-path "/run/current-system/profile/bin/")
+;; (setq shell-prompt-pattern "^[^λω#$%>]*[#λω$%>] *")
+;; /ssh:wolk-jjba:/home/joe/.bash_history
+;;
 
-(defun sss-publish-manual ()
-  "Rebuild GNU Guix Joe's config manual."
-  (interactive)
-  (let ((default-directory (string-replace "$HOME" "~" sss-clone-dir)))
-    (async-shell-command "make publish-manual")))
-
-(defun sss-full-reconfigure ()
-  "Fully Rebuild GNU Guix Joe's configs and Joe's user."
-  (interactive)
-  (let ((default-directory (string-replace "$HOME" "~" sss-clone-dir)))
-    (async-shell-command "make fr")))
-
-(defun sss-sys-reconfigure ()
-  "Rebuild GNU Guix Joe's configs."
-  (interactive)
-  (let ((default-directory (string-replace "$HOME" "~" sss-clone-dir)))
-    (async-shell-command "make sr")))
-
-(defun sss-sys-update ()
-  "Update GNU Guix packages."
-  (interactive)
-  (let ((default-directory (string-replace "$HOME" "~" sss-clone-dir)))
-    (async-shell-command "make update")))
-
-(use-package flymake
-  :ensure nil
-  :bind(("C-c ! b" . flymake-show-buffer-diagnostics)
-	("C-c ! n" . flymake-goto-next-error)
-	("C-c ! p" . flymake-show-project-diagnostics)
-	("C-c ! f" . flymake-mode)))
-
-;; TODO enable jinx
-;; (use-package jinx
-;;   :ensure (:host github :repo "minad/jinx" :branch "main")
-;;   :bind (("M-$" . jinx-correct)
-;;          ([remap ispell-word] . #'jinx-correct)
-;;          ("C-M-$" . jinx-languages))
-;;   :init
-;;   (setq jinx-languages "en_US nl_NL")
-;;   :config
-;;   (dolist (hook '(text-mode-hook
-;;                   prog-mode-hook
-;;                   conf-mode-hook
-;;                   org-mode-hook
-;;                   markdown-mode-hook))
-;;     (add-hook hook #'jinx-mode)))
-
-
-(use-package prodigy
-  :ensure t)
-
-;; ====== SSS Emacs-Lisp functions ======
-
-(defun sss-uuidgen ()
-  (interactive)
-  (let ((uid (string-replace "\n" "" (shell-command-to-string "uuidgen"))))
-    (message (format "generated UUID: %s" uid))
-    (kill-new uid)
-    ))
-
-(defun sss-guix-fmt ()
-  (interactive)
-  (let ((path (file-truename buffer-file-name)))
-    (message "formatting current buffer with Guix style")
-    (shell-command (format "guix style -f %s" path))
-    (revert-buffer :ignore-auto :noconfirm)
-    (message "formatted current buffer with Guix style")
-    ))
 
 ;;; init.el ends here

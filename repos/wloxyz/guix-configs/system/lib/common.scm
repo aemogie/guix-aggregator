@@ -46,6 +46,13 @@
          (udev-rules-service 'qmk qmk-udev-rules)
          ;; allow non-root users to adjust brightness
          (udev-rules-service 'light light)
+         ;; weylus (and probably ydotool)
+         (udev-rules-service 'weylus
+                             (udev-rule
+                              "60-weylus.rules"
+                              (string-append "KERNEL==\"uinput\", MODE==\"0660\", "
+                                             "GROUP==\"uinput\", "
+                                             "OPTIONS+=\"static_node=uinput\"")))
 
          (service libvirt-service-type
                   (libvirt-configuration
@@ -117,6 +124,7 @@
   (cons* (user-group (name "plugdev")) ;; for qmk firmware access
 	 (user-group (name "seat"))
 	 (user-group (name "realtime"))
+	 (user-group (name "uinput")) ;; for use with weylus
 	 ;; (user-group (name "cgroup"))
          %base-groups))
 

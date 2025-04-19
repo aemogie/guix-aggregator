@@ -1,6 +1,6 @@
 ;;; emacs-core.el --- Configuring Emacs core -*- lexical-binding: t -*-
 
-;; Copyright (C) 2025 Josep Bigorra
+;; Copyright © Josep Bigorra <jjbigorra@gmail.com>
 
 ;; sss is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -21,6 +21,12 @@
 
 ;;; Code:
 
+(use-package flymake
+  :ensure nil
+  :bind(("C-c ! b" . flymake-show-buffer-diagnostics)
+	("C-c ! n" . flymake-goto-next-error)
+	("C-c ! p" . flymake-show-project-diagnostics)
+	("C-c ! f" . flymake-mode)))
 
 (use-package which-key
   :ensure nil

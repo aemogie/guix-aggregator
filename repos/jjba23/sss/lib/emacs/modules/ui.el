@@ -1,6 +1,6 @@
 ;;; ui.el --- SSS configuration for Emacs -*- lexical-binding: t -*-
 
-;; Copyright (C) 2025 Josep Bigorra
+;; Copyright © Josep Bigorra <jjbigorra@gmail.com>
 
 ;; sss is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -216,6 +216,46 @@ According to size, color and font family"
   :config
   (add-to-list 'modusregel-format '("" keycast-mode-line) t)
   (setq-default mode-line-format modusregel-format))
+
+(use-package keycast
+  :ensure t
+  :demand t
+  :after (tekengrootte)
+  :config
+  (define-minor-mode keycast-mode
+    "Show current command and its key binding in the mode line."
+    :global t
+    (if keycast-mode
+	(add-hook 'pre-command-hook 'keycast--update t)
+      (remove-hook 'pre-command-hook 'keycast--update)))
+  (ignore-errors (keycast-mode)))
+
+
+(use-package vertico 
+  :ensure t 
+  :init
+  (setq vertico-cycle t
+        vertico-resize t)
+  :config
+  (require 'vertico-multiform)
+  (add-to-list 'vertico-multiform-categories
+               '(jinx grid (vertico-grid-annotate . 20)))
+  (vertico-mode)
+  (vertico-multiform-mode 1))
+
+(use-package marginalia 
+  :ensure t 
+  :after (vertico) 
+  :config (marginalia-mode))
+
+
+(use-package ultra-scroll
+  :ensure (:host github :repo "jdtsmith/ultra-scroll" :branch "main")
+  :init
+  (setq scroll-conservatively 101 ; important!
+        scroll-margin 0) 
+  :config
+  (ultra-scroll-mode 1))
 
 (provide 'sss/ui)
 

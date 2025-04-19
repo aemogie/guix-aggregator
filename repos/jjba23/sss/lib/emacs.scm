@@ -1,6 +1,6 @@
 ;;; SSS - Supreme Sexp System
 
-;; Copyright (C) 2025 - Josep Bigorra, jjba23 <jjbigorra@gmail.com>
+;; Copyright © Josep Bigorra <jjbigorra@gmail.com>
 
 ;; sss is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -78,20 +78,24 @@
 
 (begin
   (define sss-emacs-modules
-    '(common-lisp go
-                  org
-                  eglot
+    '(common-lisp consult
                   dashboard
-                  music
-                  theme
-                  sss
-                  erc
-                  consult
-                  shell
                   dev
-                  ui
+                  dired
+                  eglot
+                  emacs-core
+                  erc
+                  go
+                  libs
                   maps
-                  emacs-core))
+                  misc
+                  music
+                  org
+                  search
+                  shell
+                  sss
+                  theme
+                  ui))
   (define* (serialize-sss-emacs-module #:key clone-dir mod)
     `(,(format #f ".emacs.d/modules/~a.el" mod) ,(local-file (format #f
                                                               "~a/lib/emacs/modules/~a.el"
