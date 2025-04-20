@@ -67,6 +67,7 @@
         "rewrite": {
             ".*\\| hx.*": "Helix",
             "^foot.*": "Terminal",
+            "^ghostty.*": "Terminal",
             "(.*) \\| (.*) — Zen Browser": "$2 — Zen",
             ".*\\| yazi.*": "Yazi",
             "^steam.*": "Steam"
@@ -77,7 +78,7 @@
         "interval": 10,
         "format": " {usage}%",
         "max-length": 10,
-        "on-click": "foot -e htop",
+        "on-click": "ghostty -e htop",
         "states": {
             "warning": 70,
             "critical": 90
@@ -176,7 +177,7 @@
         "format-bluetooth": "{icon} {volume}%",
         "format-muted": " ",
         "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
-        "on-click-right": "foot -e ncpamixer",
+        "on-click-right": "ghostty -e ncpamixer",
         "on-scroll-up": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+",
         "on-scroll-down": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%-",
         "scroll-step": 5,

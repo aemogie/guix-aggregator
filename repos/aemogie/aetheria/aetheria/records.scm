@@ -279,7 +279,7 @@
                                               (fold #,merge-proc (syntactic-ctor) (reverse ls))))
                                          '())))
 
-                    #`'(begin
+                    #`(begin
                         (define-record-type* type
                           syntactic-ctor ctor pred
                           this-identifier

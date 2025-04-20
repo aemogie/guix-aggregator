@@ -4,7 +4,7 @@ padding.x = 20
 padding.y = 15
 
 [font]
-normal.family = "Hack"
+normal.family = "DejaVu Sans Mono"
 size = 12
 
 # Colors (Gruvbox dark)

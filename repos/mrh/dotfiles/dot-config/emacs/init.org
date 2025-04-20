@@ -18,6 +18,9 @@ Setup custom and authentication files
 
 (load custom-file)
 (load authentication-file)
+
+(defvar user-first-name (car (split-string user-full-name)))
+(defvar user-first-name (cadr (split-string user-full-name)))
 #+end_src
 
 ** Backups
@@ -47,8 +50,6 @@ Define personal bindings
                         ("C-c k" . kill-buffer-and-window)
                         ("C-c m v" . my/mpv)
                         ("C-c m a" . my/play-album)
-                        ("C-c w c" . my/clip-random-password)
-                        ("C-c w t" . my/get-temp-pass)
                         ("C-c g t" . my/switch-theme)
                         ("C-c b h" . my/hide-buffer)
                         ("C-c b u" . my/unhide-buffer)
@@ -73,7 +74,9 @@ Otherwise set locally with `keymap-local-set'."
 ** Discover Bindings
 
 #+begin_src emacs-lisp
-;; (use-package which-key :config (which-key-mode 1))
+(use-package which-key
+  :if (>= emacs-major-version 30)
+  :config (which-key-mode 1))
 #+end_src
 
 * UI
@@ -151,11 +154,16 @@ WARNING: You must run =nerd-icons-install-fonts=, or else there will be perfoman
 ** Fonts
 
 #+begin_src emacs-lisp
-(custom-set-faces
- '(default
-   ((t (:slant normal :height 120 :width normal :family "Hack"))))
- '(italic
-   ((t (:slant italic)))))
+(defvar *my/font* "DejaVu Sans Mono")
+
+(set-face-attribute 'default nil
+                    :font *my/font*
+                    :slant 'normal
+                    :height 120)
+
+(set-face-attribute 'italic nil
+                    :slant 'italic
+                    :underline nil)
 #+end_src
 
 ** Theme
@@ -227,7 +235,9 @@ WARNING: You must run =nerd-icons-install-fonts=, or else there will be perfoman
 Add many useful =consult= commands and vertical completion
 
 #+begin_src emacs-lisp
-(use-package consult)
+(use-package consult
+  :config (delete 'consult--source-recent-file consult-buffer-sources))
+
 (use-package vertico
   :config (vertico-mode 1))
 #+end_src
@@ -313,7 +323,6 @@ Replace text in active region on insert
 (setq-default indent-tabs-mode nil
               electric-indent-mode nil
               tab-width 4)
-;; (setf indent-line-function 'insert-tab)
 #+end_src
 
 **** Automatically Indent
@@ -350,6 +359,10 @@ Compile without showing compile buffer
 (defun my/compile ()
   (interactive)
   (save-window-excursion (compile compile-command)))
+
+(defun my/set-compile-command (command)
+  (set (make-local-variable 'compile-command)
+       command))
 #+end_src
 
 *** Lisp
@@ -383,10 +396,10 @@ Compile without showing compile buffer
 #+begin_src emacs-lisp
 (use-package sly
   :commands (sly)
-  :init
+  :hook (sly-mrepl-mode . rainbow-delimiters-mode)
+  :config
   (setf inferior-lisp-program "sbcl"
         sly-mrepl-history-file-name "~/.config/emacs/sly/sly-mrepl-history")
-  :hook (sly-mrepl-mode . rainbow-delimiters-mode)
   :after (rainbow-delimiters))
 #+end_src
 
@@ -415,21 +428,18 @@ See [[https://unimath.github.io/agda-unimath/HOWTO-INSTALL.html#editor-setup][ag
 Helper macro for calling Go cli commands (probably dumb)
 
 #+begin_src emacs-lisp
-(defmacro my/go-macro (command)
-  `(lambda ()
-     (interactive)
-     (shell-command
-      (format "go %s %s" ,command (buffer-file-name (current-buffer))))))
+(defun my/set-go-compile ()
+  (my/set-compile-command "go build"))
 
-(add-hook 'go-mode-hook
-      (lambda ()
-        (setf tab-width 4)
-        (local-set-key
-         (kbd "C-c C-c")
-         (my/go-macro "build"))
-        (local-set-key
-         (kbd "C-c C-r")
-         (my/go-macro "run"))))
+(defun my/go-run ()
+  (interactive)
+  (shell-command "go run"))
+
+(use-package go-mode
+  :hook (go-mode . my/set-go-compile)
+  :bind (:map go-mode-map
+              ("C-c C-c" . my/compile)
+              ("C-c C-r" . my/go-run)))
 #+end_src
 
 *** Guile
@@ -463,7 +473,8 @@ Also load =.guile= on geiser startup.
 Export to pdf presentations via LaTeX beamer
 
 #+begin_src emacs-lisp
-(use-package ox-beamer :defer t)
+(use-package ox-beamer
+  :after (org))
 #+end_src
 
 ** LaTeX
@@ -472,11 +483,14 @@ Compile with =pdflatex= on current buffer's file.
 See also [[*Programming / SysAdmin][Programming / SysAdmin]] section.
 
 #+begin_src emacs-lisp
-(add-hook 'LaTeX-mode-hook
-          (lambda ()
-            (set (make-local-variable 'compile-command)
-                 (format "pdflatex %s" (buffer-file-name)))
-            (keymap-local-set "C-c c" 'my/compile)))
+(defun my/set-latex-compile ()
+  (my/set-compile-command (format "pdflatex %s" (buffer-file-name))))
+
+(use-package latex
+  :defer t
+  :hook (LaTeX-mode . my/set-latex-compile)
+  :bind (:map LaTeX-mode-map
+              ("C-c C-c" . my/compile)))
 #+end_src
 
 * System Administration
@@ -614,7 +628,7 @@ See [[file:./blog-config.el][blog-config.el]]
 
 * Messaging
 ** Mail
-Setup vars for =mu4e=
+*** Mu4e
 
 #+begin_src emacs-lisp
 (use-package mu4e
@@ -623,6 +637,7 @@ Setup vars for =mu4e=
                 mu4e-sent-folder "/Sent"
                 mu4e-trash-folder "/Trash"
 
+                mail-user-agent 'mu4e-user-agent
                 mu4e-get-mail-command (format "INSIDE_EMACS=%s mbsync -a"
                                               emacs-version)))
 #+end_src
@@ -643,16 +658,12 @@ Create youtube channel RSS feed link
 #+end_src
 
 *** Elfeed
-Function to kill elfeed search buffer (see below)
+Set DB path, default view filter, and advice to kill elfeed search buffer on quit
 
 #+begin_src emacs-lisp
 (defun my/kill-elfeed-search-buffer ()
   (kill-buffer "*elfeed-search*"))
-#+end_src
 
-Set DB path, default view filter, and advice to kill elfeed search buffer on quit
-
-#+begin_src emacs-lisp
 (use-package elfeed
   :commands (elfeed)
   :config
@@ -675,7 +686,7 @@ Prevent creation of dribble files
 Play album in directory at point via mpv.
 Opens a socket at =/tmp/mpv-socket= to which mpv commands can be sent (such as pause, play, next, etc.).
 Directory name must be the name of the album, contain the song files, and contain a file =<album-name>--Album.txt= which lists the song files in desired playing order, separated by newlines.
-See [[https://git.sr.ht/~mrh/cl-scripts][cl-scripts]] for more info.
+See [[https://codeberg.org/mrh/cl-scripts][cl-scripts]] for more info.
 
 #+begin_src emacs-lisp
 (defun my/play-album ()

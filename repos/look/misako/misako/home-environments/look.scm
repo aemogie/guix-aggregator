@@ -70,6 +70,7 @@
   #|Guix|#
   #:use-module (guix channels)
   #:use-module (guix gexp)
+  #:use-module (guix transformations)
   #|NonGNU|#
   #:use-module (nongnu packages game-client)
   #:use-module (nongnu packages nvidia)
@@ -112,16 +113,22 @@
   #:use-module (sops home services sops)
   #:export (look))
 
+(define ghostty-tip
+  ((options->transformation
+     '((with-commit . "ghostty=9d9d781a0b7142ddc176167ef5e889618d295ef5")))
+   ghostty))
+
 (define look
-  (nvidia-home-environment
+  (nvidia-beta-home-environment
     (packages
       (plist
         #|Utils           |# hyfetch xdg-utils gnupg pinentry-bemenu aria2
         #|                |# light ncurses git sops kexec-tools pciutils
-        #|                |# gtk gtk+ p7zip
+        #|                |# gtk gtk+ gsettings-desktop-schemas
+        #|                |# p7zip
         #|Productivity    |# wayneko newsraft
         #|Shell           |# fish
-        #|Terminal        |# foot
+        #|Terminal        |# foot ghostty-tip
         #|Guile           |# guile-next guile-readline guile-colorized guile-gcrypt
         #|Text Editor     |# helix #|optional|# guile-lsp-server parinfer-rust
         #|Emacs           |# emacs-next emacs-geiser emacs-geiser-guile emacs-magit
@@ -129,8 +136,13 @@
         #|                |# emacs-vertico emacs-modus-themes emacs-debbugs
         #|                |# emacs-meow
         #|                |# zen-browser-bin
-        #|Games           |# (nvidia?* (steam-for nvda) (heroic-for nvda) mangohud prismlauncher)
-        #|                |# path-of-building-bin mcpelauncher-ui osu-lazer-bin
+        #|Games           |# (nvidia?* (steam-for nvdb)
+                                       (heroic-for nvdb)
+                                       mangohud
+                                       prismlauncher
+                                       path-of-building-bin
+                                       mcpelauncher-ui
+                                       osu-lazer-bin)
         #|File Manager    |# yazi
         #|Image Viewer    |# imv
         #|Sound           |# wireplumber-minimal ncpamixer helvum easyeffects
@@ -140,19 +152,22 @@
         #|                |# hyprland-qtutils
         #|                |# mako waybar-sans-elogind grim slurp bemenu
         #|                |# wl-clipboard wlsunset dbus qtwayland cursor-mcmojave
+        #|                |# hyprcursor-mcmojave
         #|Messaging       |# senpai vesktop telegram-desktop
         #|E-mail          |# aerc #|required|# sound-theme-freedesktop
         #|                |# libnotify
         #|SSH             |# openssh
         #|Video           |# mpv-minimal/wayland yt-dlp ffmpeg-nvenc obs
         #|Fonts           |# font-adobe-source-han-sans
-                             font-adobe-source-sans-pro
-                             font-adobe-source-serif-pro
-                             font-ipa-mj-mincho
-                             font-jetbrains-mono
-                             font-nerd-symbols
-                             font-openmoji
-        #|XDG Portals     |# xdg-desktop-portal xdg-desktop-portal-hyprland xdg-desktop-portal-termfilechooser))
+        #|                |# font-adobe-source-sans-pro
+        #|                |# font-adobe-source-serif-pro
+        #|                |# font-ipa-mj-mincho
+        #|                |# font-jetbrains-mono
+        #|                |# font-nerd-symbols
+        #|                |# font-google-noto-emoji
+        #|XDG Portals     |# xdg-desktop-portal xdg-desktop-portal-hyprland
+        #|                |# xdg-desktop-portal-termfilechooser
+        #|                |# xdg-desktop-portal-gtk))
 
     (services
       (list
@@ -219,23 +234,23 @@
           (list '(alias
                    (family "monospace")
                    (prefer
-                     (family "OpenMoji Color")
-                     (family "JetBrains Mono NL")
-                     (family "Symbols Nerd Font")))
+                     (family "Symbols Nerd Font")
+                     (family "Noto Color Emoji")
+                     (family "JetBrains Mono NL")))
                 '(alias
                    (family "serif")
                    (prefer
-                     (family "OpenMoji Color")
+                     (family "Symbols Nerd Font")
+                     (family "Noto Color Emoji")
                      (family "Source Serif Pro")
-                     (family "IPAmjMincho")
-                     (family "Symbols Nerd Font")))
+                     (family "IPAmjMincho")))
                 '(alias
                    (family "sans-serif")
                    (prefer
-                     (family "OpenMoji Color")
+                     (family "Symbols Nerd Font")
+                     (family "Noto Color Emoji")
                      (family "Source Sans Pro")
-                     (family "Source Han Sans")
-                     (family "Symbols Nerd Font")))))
+                     (family "Source Han Sans")))))
 
         (service home-sops-secrets-service-type
           (home-sops-service-configuration
@@ -333,7 +348,7 @@
             ("EDITOR"   . "hx")
             ("READER"   . "sioyek")
             ("VISUAL"   . "hx")
-            ("TERMINAL" . "foot")
+            ("TERMINAL" . "ghostty")
             ("BROWSER"  . "zen")
             ("PAGER"    . "less")
             ("WM"       . "hyprland")))

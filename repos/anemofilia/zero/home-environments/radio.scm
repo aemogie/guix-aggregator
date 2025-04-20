@@ -390,7 +390,6 @@
           #|SSH service|#
           (service home-openssh-service-type
                    (home-openssh-configuration
-                    (authorized-keys #f)
                     (hosts (list (openssh-host
                                   (name "codeberg.org")
                                   (host-name "codeberg.org")
@@ -428,8 +427,11 @@
                     (poll-delay (* 5 60))
                     (full-level 90)
                     (warning-level 70)
-                    (critical-level 10)
+                    (critical-level 20)
+                    (danger-level 10)
+                    (danger-command "doas zzz")
                     (full-message "Unplug the cable")
                     (warning-message "You may want to plug the cable")
-                    (critical-message "Plug the cable")))))))
+                    (critical-message "Plug the cable")
+                    (notifications-expire? #t)))))))
 radio

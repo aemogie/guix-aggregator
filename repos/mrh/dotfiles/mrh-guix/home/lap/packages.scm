@@ -76,7 +76,6 @@
    font-google-noto-emoji
    font-google-noto-sans-cjk
    font-google-noto-serif-cjk
-   font-hack
 
    ;; media
    ffmpeg

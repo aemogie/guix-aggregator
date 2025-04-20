@@ -1,14 +1,15 @@
 #+AUTHOR: Alec Barreto
 #+OPTIONS: toc:nil
 
-#+CAPTION: screenshot
-[[file:screenshot.png]]
-
 * Dotfiles
 These are the configuration files for my personal guix + emacs setup. Feel free to take anything you find helpful and tell me your thoughts!
 
+#+CAPTION: desktop screenshot
+[[file:screenshot.png]]
+
+
 ** Free Software
-The most important part of my system is that it uses as much [[https://writefreesoftware.org][free software]] as possible, and I encourage all others to shoot for the same.
+The most important part of my system is that it uses as much [[https://www.gnu.org/philosophy/free-sw.en.html][free software]] as possible, and I encourage all others to shoot for the same.
 I also have a fondness for lisp and hackable systems, hence why I control as much of my computing as possible through GNU Guix and Emacs.
 These are (mostly) distinct computing goals.
 
@@ -25,23 +26,7 @@ They can be found at =mrh-guix/system=.
 My home configurations are similarly machine specific and can be found at =mrh-guix/home=.
 Here is where I setup [[https://guix.gnu.org/manual/en/html_node/Home-Configuration.html][guix home]] to manage all of my user level packages, as well as environment variables and other miscellaneous aspects of my home environment.
 
-Finally, my custom packages which are not (as of writing) available in the standard guix repo are available as a [[https://guix.gnu.org/manual/devel/en/html_node/Channels.html][guix channel]] at [[https://git.sr.ht/~mrh/guix-channel][git.sr.ht/~mrh/guix-channel]].
-These include:
-
-- [[https://sr.ht/~novakane/rivercarro/][rivercarro]]: A layout generator for river which adds monocle mode and smart gaps
-
-These are available under the =(mrh packages ...)= namespace.
-To include my channel in your guix config, add it to your =~/.config/guix/channels.scm= like so:
-
-#+begin_src scheme
-(cons* (channel
-        (name 'mrh-channel)
-        (url "https://git.sr.ht/~mrh/guix-channel")
-        (branch "trunk"))
-       %default-channels)
-#+end_src
-
-Remember to run =guix pull= afterwards to refresh your local package definitions.
+Finally, my custom packages which are either not available or more up to date than those in the standard guix repo are available as a [[https://guix.gnu.org/manual/devel/en/html_node/Channels.html][guix channel]] at [[https://codeberg.org/mrh/guix-channel][codeberg.org/mrh/guix-channel]].
 
 ** Emacs
 [[https://www.gnu.org/software/emacs][GNU Emacs]] is a text editor and lisp interpreter designed to maximize hackability and software freedom, in addition to serving as the primary text editor for the GNU system.
@@ -61,7 +46,7 @@ I use emacs for just about everything on my computer other than browsing the web
 - [[https://joaotavora.github.io/sly][Sly]] for Common Lisp hacking
 - [[https://www.gnu.org/software/tramp/][Tramp]] for remote access
 
-All of my emacs packages are installed and managed via guix home (see [[Guix]] section).
+All of my emacs packages are installed and managed via guix home (see =Guix= section).
 
-My configuration can be found at =home/dot-config/emacs/init.org=.
+My configuration can be found at =dot-config/emacs/init.org=.
 Note that my =init.el= is simply the tangled elisp codeblocks from =init.org=.

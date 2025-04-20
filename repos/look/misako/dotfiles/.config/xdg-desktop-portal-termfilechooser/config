@@ -1,4 +1,4 @@
 [filechooser]
 cmd=$HOME/.guix-home/profile/share/xdg-desktop-portal-termfilechooser/yazi-wrapper.sh
 default_dir=$HOME
-env=TERMCMD=foot
+env=TERMCMD=ghostty -e

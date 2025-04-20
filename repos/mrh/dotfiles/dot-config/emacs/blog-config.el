@@ -150,7 +150,7 @@ choose."
               (:a (@ :href ,org-static-blog-publish-url)
                   ,org-static-blog-publish-title)
               " | "
-              (:a (@ :href "https://git.sr.ht/~mrh")
+              (:a (@ :href "https://codeberg.org/mrh")
                   (:img (@ :style "border-width:0" :src "static/images/icons/git-icon.png"))
                   " Code")
               " | "

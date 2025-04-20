@@ -41,7 +41,7 @@
 
 #|Operating system definition|#
 (define yumiko
-  (nvidia-operating-system
+  (nvidia-beta-operating-system
     (inherit base)
     (host-name "yumiko")
 
@@ -64,9 +64,9 @@
              #|NVIDIA|#
              (service nvidia-service-type
                (nvidia-configuration
-                 (driver nvda)
-                 (module nvidia-module)
-                 (firmware nvidia-firmware)))
+                 (driver nvdb)
+                 (module nvidia-module-beta)
+                 (firmware nvidia-firmware-beta)))
 
              (service pam-limits-service-type
                (list
@@ -84,17 +84,6 @@
              ;     (interval 60)
              ;     (fallback? #f)
              ;     (specifications %cuirass-specs)))
-
-             (service iptables-service-type)
-             (service rootless-podman-service-type
-               (rootless-podman-configuration
-                 (containers-registries
-                   (local-file
-                     (string-append misako-dir
-                                    "/misako/operating-systems/yumiko"
-                                    "/podman/registries.conf")))
-                 (subgids (list (subid-range (name "look"))))
-                 (subuids (list (subid-range (name "look"))))))
 
              (service samba-service-type
                (samba-configuration

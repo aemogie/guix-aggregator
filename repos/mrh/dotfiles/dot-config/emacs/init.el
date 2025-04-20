@@ -7,6 +7,9 @@
 (load custom-file)
 (load authentication-file)
 
+(defvar user-first-name (car (split-string user-full-name)))
+(defvar user-first-name (cadr (split-string user-full-name)))
+
 (setf backup-directory-alist '(("." . "~/.config/emacs/backups"))
       backup-by-copying t)
 
@@ -24,8 +27,6 @@
                         ("C-c k" . kill-buffer-and-window)
                         ("C-c m v" . my/mpv)
                         ("C-c m a" . my/play-album)
-                        ("C-c w c" . my/clip-random-password)
-                        ("C-c w t" . my/get-temp-pass)
                         ("C-c g t" . my/switch-theme)
                         ("C-c b h" . my/hide-buffer)
                         ("C-c b u" . my/unhide-buffer)
@@ -42,7 +43,9 @@ Otherwise set locally with `keymap-local-set'."
 
 (my/activate-keybinds)
 
-;; (use-package which-key :config (which-key-mode 1))
+(use-package which-key
+  :if (>= emacs-major-version 30)
+  :config (which-key-mode 1))
 
 (add-to-list 'default-frame-alist '(alpha-background . 85))
 
@@ -79,11 +82,16 @@ Otherwise set locally with `keymap-local-set'."
 
 (column-number-mode 1)
 
-(custom-set-faces
- '(default
-   ((t (:slant normal :height 120 :width normal :family "Hack"))))
- '(italic
-   ((t (:slant italic)))))
+(defvar *my/font* "DejaVu Sans Mono")
+
+(set-face-attribute 'default nil
+                    :font *my/font*
+                    :slant 'normal
+                    :height 120)
+
+(set-face-attribute 'italic nil
+                    :slant 'italic
+                    :underline nil)
 
 (defun my/enable-theme (theme opacity)
   (enable-theme theme)
@@ -132,8 +140,10 @@ Otherwise set locally with `keymap-local-set'."
     (corfu-history-mode 1)
     (add-to-list 'savehist-additional-variables 'corfu-history)))
 
-(use-package consult)
-(use-package vertico 
+(use-package consult
+  :config (delete 'consult--source-recent-file consult-buffer-sources))
+
+(use-package vertico
   :config (vertico-mode 1))
 
 (use-package marginalia
@@ -186,7 +196,6 @@ See also `my/hide-buffer'."
 (setq-default indent-tabs-mode nil
               electric-indent-mode nil
               tab-width 4)
-;; (setf indent-line-function 'insert-tab)
 
 (add-hook 'prog-mode-hook 'electric-indent-local-mode)
 
@@ -205,6 +214,10 @@ See `my/dired-run-command'."
   (interactive)
   (save-window-excursion (compile compile-command)))
 
+(defun my/set-compile-command (command)
+  (set (make-local-variable 'compile-command)
+       command))
+
 (use-package paredit
   :hook ((lisp-mode emacs-lisp-mode scheme-mode) . paredit-mode))
 
@@ -218,10 +231,10 @@ See `my/dired-run-command'."
 
 (use-package sly
   :commands (sly)
-  :init
+  :hook (sly-mrepl-mode . rainbow-delimiters-mode)
+  :config
   (setf inferior-lisp-program "sbcl"
         sly-mrepl-history-file-name "~/.config/emacs/sly/sly-mrepl-history")
-  :hook (sly-mrepl-mode . rainbow-delimiters-mode)
   :after (rainbow-delimiters))
 
 (defun my/remove-all-advice (sym)
@@ -235,21 +248,18 @@ See `my/dired-run-command'."
                (shell-command-to-string "agda-mode locate")))
   (setf auto-mode-alist (cons '("\\.lagda.md$" . agda2-mode) auto-mode-alist)))
 
-(defmacro my/go-macro (command)
-  `(lambda ()
-     (interactive)
-     (shell-command
-      (format "go %s %s" ,command (buffer-file-name (current-buffer))))))
+(defun my/set-go-compile ()
+  (my/set-compile-command "go build"))
 
-(add-hook 'go-mode-hook
-      (lambda ()
-        (setf tab-width 4)
-        (local-set-key
-         (kbd "C-c C-c")
-         (my/go-macro "build"))
-        (local-set-key
-         (kbd "C-c C-r")
-         (my/go-macro "run"))))
+(defun my/go-run ()
+  (interactive)
+  (shell-command "go run"))
+
+(use-package go-mode
+  :hook (go-mode . my/set-go-compile)
+  :bind (:map go-mode-map
+              ("C-c C-c" . my/compile)
+              ("C-c C-r" . my/go-run)))
 
 (setf geiser-guile-binary "/run/current-system/profile/bin/guile"
       geiser-guile-load-init-file t
@@ -263,13 +273,17 @@ See `my/dired-run-command'."
 (use-package org-bullets
   :hook (org-mode . org-bullets-mode))
 
-(use-package ox-beamer :defer t)
+(use-package ox-beamer
+  :after (org))
 
-(add-hook 'LaTeX-mode-hook
-          (lambda ()
-            (set (make-local-variable 'compile-command)
-                 (format "pdflatex %s" (buffer-file-name)))
-            (keymap-local-set "C-c c" 'my/compile)))
+(defun my/set-latex-compile ()
+  (my/set-compile-command (format "pdflatex %s" (buffer-file-name))))
+
+(use-package latex
+  :defer t
+  :hook (LaTeX-mode . my/set-latex-compile)
+  :bind (:map LaTeX-mode-map
+              ("C-c C-c" . my/compile)))
 
 (use-package dired
   :commands (dired)
@@ -360,6 +374,7 @@ If a there is no open buffer containing the file the changes will be written."
                 mu4e-sent-folder "/Sent"
                 mu4e-trash-folder "/Trash"
 
+                mail-user-agent 'mu4e-user-agent
                 mu4e-get-mail-command (format "INSIDE_EMACS=%s mbsync -a"
                                               emacs-version)))
 
