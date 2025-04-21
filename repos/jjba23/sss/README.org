@@ -69,10 +69,8 @@ An operating system unto itself 🐂.
 
 I strive to provide proper and extensive documentation on the Supreme Sexp System (SSS), in several formats, available at your convenience.
 
-- Org format [[file:docs/Manual/README.org]]
+- Org format [[file:docs/manual/en-GB.org]]
 - Online HTML: [[https://jointhefreeworld.org/manuals/sss/index.html]] 
-- HTML format [[file:docs/Manual/README.html]]
-- Markdown format [[file:docs/Manual/README.md]]  
 
 
 

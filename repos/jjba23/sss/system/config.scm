@@ -19,6 +19,7 @@
              (guix)
              (gnu system privilege)
              (gnu services)
+             (gnu system accounts)
              (guix packages))
 
 (use-modules (nongnu packages linux)
@@ -36,7 +37,7 @@
 
 (load "../lib/process.scm")
 (load "../lib/sudoers.scm")
-(load "../lib/nftables.scm")
+(load "../lib/iptables.scm")
 
 ;; load system packages and definitions
 (load "./packages/conky.scm")
@@ -47,7 +48,7 @@
 (load "./users.scm")
 
 (use-modules (sss packages)
-             (sss nftables))
+             (sss iptables))
 
 (use-service-modules networking
                      desktop
@@ -60,6 +61,7 @@
                      configuration
                      avahi
                      nix
+                     containers
                      xorg
                      networking
                      sound
@@ -94,30 +96,10 @@
                      base
                      idutils)
 
-;; Cron job destined to fetch WikiMusic backups from my production server to my local machines
-(define wikimusic-fetch-backups-job
-  '(job "0 0 * * *"
-        (string-append "mkdir -p $HOME/Documenten/wikimusic-backups &&"
-                       " scp -r joe@wolk-jjba:/wolk-jjba-backups/wikimusic/*"
-                       " $HOME/Documenten/wikimusic-backups/")))
-
 ;; Setup system cron jobs
 (define sss-cron-jobs-service
   (simple-service 'sss-cron-jobs mcron-service-type
-                  (list wikimusic-fetch-backups-job)))
-
-;; Setup subuid and subgid for the system
-(define sss-subuid
-  (simple-service 'podman-subuid-subgid
-                  ;; If subuid/subgid will be needed somewhere else, the service must be
-                  ;; created to handle it.
-                  etc-service-type
-                  `(("subuid" ,(plain-file "subuid"
-                                           (string-append "joe"
-                                                          ":100000:65536\n")))
-                    ("subgid" ,(plain-file "subgid"
-                                           (string-append "joe"
-                                                          ":100000:65536\n"))))))
+                  '()))
 
 (define* (sss-desktop-services-for-system #:optional (system (or (%current-target-system)
                                                                  (%current-system))))
@@ -207,8 +189,16 @@
   (services
    (cons* (service nix-service-type)
           (service power-profiles-daemon-service-type)
-          (sss-nftables-svc)
-          sss-subuid
+          sss-iptables-service
+          (service rootless-podman-service-type
+                   (rootless-podman-configuration (subgids (list (subid-range (name
+                                                                               "joe"))
+                                                                 (subid-range (name
+                                                                               "manon"))))
+                                                  (subuids (list (subid-range (name
+                                                                               "joe"))
+                                                                 (subid-range (name
+                                                                               "manon"))))))
           (service screen-locker-service-type
                    (screen-locker-configuration (name "hyprlock")
                                                 (program (file-append hyprlock

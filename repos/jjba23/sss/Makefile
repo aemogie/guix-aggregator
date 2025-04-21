@@ -115,7 +115,7 @@ format:
 
 # publish-manual: Generates and publishes the manual from Org files using Emacs.
 publish-manual:
-	cd docs/Manual/ && emacs -Q --batch \
+	cd docs/manual/ && emacs -Q --batch \
 		-l $(shell realpath ./lib/sss-manual.el) \
 		--funcall sss/publish-manual && cd ../../
 	$(call sss-notify-success,"SSS publish-manual complete","task was completed successfully!")
@@ -186,7 +186,7 @@ fpu:  # Updates Flatpak packages
 deploy:
 	mkdir -pv $(DEPLOY_WWW)/manuals/sss
 	rm -rfv $(DEPLOY_WWW)/manuals/sss/index.html
-	cp -rfv docs/Manual/README.html $(DEPLOY_WWW)/manuals/sss/index.html
+	cp -rfv docs/manual/en-GB.html $(DEPLOY_WWW)/manuals/sss/index.html
 
 # repl: Start a Guile Scheme development REPL
 # Development REPL
@@ -197,3 +197,15 @@ repl:
 test:
 	guix shell -m manifest.scm -- guile --fresh-auto-compile test/run-tests.scm | \
 		guile --fresh-auto-compile test/colorize-tests.scm
+
+full-reset-emacs:
+	-pkill emacs
+	-pkill emacsclient
+	-rm -rf ~/.emacs.d/auto-save-list
+	-rm -rf ~/.emacs.d/elpa
+	-rm -rf ~/.emacs.d/elpaca
+	-rm -rf ~/.emacs.d/history
+	-rm -rf ~/.emacs.d/org-roam.db
+	-rm -rf ~/.emacs.d/tramp
+	-rm -rf ~/.emacs.d/recentf
+	-emacs --daemon

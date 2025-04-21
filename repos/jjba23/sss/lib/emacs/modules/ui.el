@@ -237,11 +237,12 @@ According to size, color and font family"
   (setq vertico-cycle t
         vertico-resize t)
   :config
-  (require 'vertico-multiform)
-  (add-to-list 'vertico-multiform-categories
-               '(jinx grid (vertico-grid-annotate . 20)))
-  (vertico-mode)
-  (vertico-multiform-mode 1))
+  ;; (ignore-errors
+  ;;   (require 'vertico-multiform)
+  ;;   (add-to-list 'vertico-multiform-categories
+  ;;                '(jinx grid (vertico-grid-annotate . 20)))
+  ;;   (vertico-multiform-mode 1))
+  (vertico-mode))
 
 (use-package marginalia 
   :ensure t 

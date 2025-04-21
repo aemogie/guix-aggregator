@@ -17,6 +17,7 @@
 
 (load "./palette.scm")
 (load "./process.scm")
+
 (define-module (sss gtk)
   #:use-module (gnu)
   #:use-module (sss palette)

@@ -28,7 +28,12 @@
   (user-account
     (name "joe")
     (group "users")
-    (supplementary-groups '("wheel" "netdev" "audio" "video" "input" "libvirt"))
+    (supplementary-groups '("wheel" "netdev"
+                            "audio"
+                            "video"
+                            "input"
+                            "libvirt"
+                            "cgroup"))
     (comment "Josep Bigorra's account")
     (home-directory "/home/joe")))
 
@@ -37,7 +42,12 @@
   (user-account
     (name "manon")
     (group "users")
-    (supplementary-groups '("wheel" "netdev" "audio" "video" "input" "libvirt"))
+    (supplementary-groups '("wheel" "netdev"
+                            "audio"
+                            "video"
+                            "input"
+                            "libvirt"
+                            "cgroup"))
     (comment "Manon van den Bout's account")
     (home-directory "/home/manon")))
 

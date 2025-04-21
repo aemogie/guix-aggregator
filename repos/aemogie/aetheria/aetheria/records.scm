@@ -56,7 +56,7 @@
                                        (second b)))))
                    ;; order doesnt matter, since we have concluded that either
                    ;; only one is unspecified or both are equal
-                   ((not (unspecified? a)) b)
+                   ((not (unspecified? a)) a)
                    ((not (unspecified? b)) b))))))
 
 (define append-strategy

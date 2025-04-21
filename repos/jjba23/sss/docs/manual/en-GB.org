@@ -584,15 +584,26 @@ You are then ready to start the Nyxt browser, all configuration should work well
 -----
 
 * Git
+**** TODO: make this more configurable.
 
 Joe's account is automatically configured with a multi-user Git setup. See ~lib/git.scm~.
 Currently this works on a per-directory basis, and is configured by default to my preferred settings.
-TODO: make this more configurable.
+
 
 My settings are:
 - ~$HOME/hacking~ is where I keep my personal development projects. These are uploaded to Codeberg, and use their own gitconfig, email address, default git message, GPG key, and SSH keys.
 - ~$HOME/work~ is where I keep my work projects. These are uploaded to Github, and use their own gitconfig, email address, default git message, GPG key, and SSH keys.
 
+
+------
+
+* 🔥 Firewall
+
+By default, the Supreme Sexp System (SSS) chooses the sane default firewall settings for a "desktop" or "laptop" computer.
+
+This means rejecting any incoming network calls by default, only accepting ~ping~ requests and calls that originate from the machine itself (loopback device). This allows security, and developing software in the same machine as well (test local ports, expose services, etc.)
+
+Adding SSH access or other network capabilities is done by tweaking the ~iptables~ of SSS (in Scheme code).
 
 ------
 
@@ -624,7 +635,8 @@ du -ah / | sort -rh | head -n 20
 
 The real best way to manage your bluetooth is using the bluetoothctl shell. That being said SSS comes with a GUI graphical interface to manage Bluetooth. You can also go low-level, and programatically connect to your devices, setup shortcuts for "favourite" connections, and much more with ~bluetoothctl~.
 
-------
+-----
+
 
 * Virtualization
 

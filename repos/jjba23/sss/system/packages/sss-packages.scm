@@ -425,7 +425,7 @@
         xxd))
 
 (define sss-container-packages
-  (list podman-compose podman passt slirp4netns))
+  (list podman-compose passt))
 
 (define sss-net-packages
   (list openvpn
