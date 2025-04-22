@@ -42,6 +42,12 @@
 		  (zram-device-configuration
 		   (size "6G")
 		   (compression-algorithm 'zstd)))
+         
+         (service rootless-podman-service-type
+                  (rootless-podman-configuration
+                   (subuids (list (subid-range (name "willow"))))
+                   (subgids (list (subid-range (name "willow"))))))
+
 	 ;; teh firewallz0rz
 	 (service nftables-service-type
 		  (nftables-configuration
