@@ -18,6 +18,8 @@
              ;; Import nonfree linux module.
              (nongnu packages linux)
              (nongnu system linux-initrd)
+             (gnu system accounts)
+             (gnu services containers)
 	     ;; unified configuration for all machines
 	     (lib common))
 
@@ -29,7 +31,7 @@
  (timezone "America/New_York")
  (keyboard-layout (keyboard-layout "us" "colemak-dh"
                                    #:options '("ctrl:nocaps")))
- (host-name "tower")
+ (host-name "tome")
 
  (groups wlo-common-groups)
           
@@ -42,11 +44,11 @@
 		  (zram-device-configuration
 		   (size "6G")
 		   (compression-algorithm 'zstd)))
-         
          (service rootless-podman-service-type
                   (rootless-podman-configuration
                    (subuids (list (subid-range (name "willow"))))
                    (subgids (list (subid-range (name "willow"))))))
+
 
 	 ;; teh firewallz0rz
 	 (service nftables-service-type

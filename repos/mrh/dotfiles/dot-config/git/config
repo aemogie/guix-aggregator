@@ -10,3 +10,5 @@
     smtpUser = mrh57@posteo.net
     smtServerPort = 465
     smtpEncryption = tls
+[pull]
+    rebase = true

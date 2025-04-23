@@ -5,11 +5,11 @@
 (setf default-frame-alist '((background-color . "#000000")
                             (ns-appearance . dark)
                             (ns-transparent-titlebar . t)
-                            (alpha-background . 85)))
+                            (alpha-background . 80)))
 
 ;; speed up startup
 (defun restore-gc-cons-threshold ()
-  (setq gc-cons-threshold 800000
+  (setq gc-cons-threshold 32000000
         gc-cons-percentage 0.1))
 
 (setq gc-cons-threshold most-positive-fixnum

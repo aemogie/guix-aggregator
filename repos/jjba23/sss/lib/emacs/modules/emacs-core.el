@@ -67,7 +67,11 @@
          ("C-c # s" . sss-sys-reconfigure)
          ("C-c # u" . sss-sys-update)
          ("C-c # m" . sss-publish-manual)
-         ("C-c # f" . sss-full-reconfigure))
+         ("C-c # f" . sss-full-reconfigure)
+         ("C-c w r" . sss-project-start-repl-process)
+         ("C-c w f" . sss-project-fmt)
+         ("C-c w t" . sss-project-start-test)
+         ("C-c w d" . sss-project-start-dev))
   :hook ((text-mode . visual-line-mode))
   :config  
   (setq-default line-spacing 6
@@ -113,8 +117,8 @@
 
   (setq initial-buffer-choice
         (lambda () (ignore-errors
-                (welkomscherm)
-                (get-buffer welkomscherm-buffer-name))))
+                     (welkomscherm)
+                     (get-buffer welkomscherm-buffer-name))))
   
   (recentf-mode 1)
   (setq recentf-max-menu-items 100

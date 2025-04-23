@@ -15,7 +15,6 @@
              (gnu packages gnupg)
              (gnu packages mpd)
              (gnu packages shellutils)
-             (wlo packages node-xyz)    ; for node-arrpc
              (gnu services)
              (gnu home services)
              (gnu home services shepherd)
@@ -109,7 +108,6 @@
               "x42-plugins"
               "zynaddsubfx"
               "lv2-speech-denoiser"
-              "surge-synth"
 	      ;; fonts
 	      "font-liberation"
 	      "font-linuxlibertine"
@@ -155,7 +153,7 @@
 	      ;; showoff tools
 	      "hyfetch"
               ;; from saayix channel
-              "prism-launcher"
+              "prismlauncher"
               "zen-browser-bin"))))
 
  ;; Below is the list of Home services.  To search for available
@@ -234,12 +232,5 @@
                 (provision '(mpd))
                 (start #~(make-system-constructor (string-append #$mpd "/bin/mpd")))
                 (stop #~(make-system-destructor (string-append #$mpd "/bin/mpd") "--kill"))
-                (documentation "The Music Player Daemon"))
-               (shepherd-service
-                (provision '(arrpc))
-                (start #~(make-forkexec-constructor
-                          ;; for some reason i can't just supply no args to the command
-                          (list (string-append #$node-arrpc "/bin/arrpc") "")))
-                (stop #~(make-kill-destructor))
-                (documentation "Rich-presence for Discord")))))))))
+                (documentation "The Music Player Daemon")))))))))
 

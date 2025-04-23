@@ -17,9 +17,11 @@
             &bad-merge-strategy
 
             conflict-strategy
-            &record-fold-conflict
+            &record-merge-conflict
             append-strategy
             lines-strategy
+            source-location-strategy
+            &record-source-location-merge
 
             define-record-type2))
 
@@ -39,10 +41,10 @@
                (if (and good-proc? good-arity?) proc
                    (raise (condition (&bad-merge-strategy)))))))))
 
-(define-condition-type &record-fold-conflict &implementation-restriction
-  record-fold-conflict?
-  (first record-fold-conflict-first)
-  (second record-fold-conflict-second))
+(define-condition-type &record-merge-conflict &implementation-restriction
+  record-merge-conflict?
+  (first record-merge-conflict-first)
+  (second record-merge-conflict-second))
 
 (define conflict-strategy
   (merge-strategy
@@ -51,7 +53,7 @@
              (cond ((and (not (unspecified? a))
                          (not (unspecified? b))
                          (not (equal? a b)))
-                    (raise (condition (&record-fold-conflict
+                    (raise (condition (&record-merge-conflict
                                        (first a)
                                        (second b)))))
                    ;; order doesnt matter, since we have concluded that either
@@ -75,55 +77,79 @@
                             (if (string-suffix? "\n" b) b (string-append b "\n"))))
              (string-append a* b*)))))
 
+(define-condition-type &record-source-location-merge &implementation-restriction
+  record-source-location-merge?)
+
+(define source-location-strategy
+  (merge-strategy
+   (default #f)
+   (merge (lambda (a b)
+            (and (or a b)
+                 (raise (condition (&record-source-location-merge))))))))
+
 (define-syntax define-record-type2
   (lambda (syn)
-    (define (attrs-loop merges? attrs-syn forward strategy)
+    (define (attrs-loop merges? attrs-syn forward strategy default-value)
       (syntax-case attrs-syn (merge default)
         ((rest ... (merge strategy)) merges?
          (attrs-loop merges? #'(rest ...)
                      (cons #'(default (merge-strategy-default strategy)) forward)
-                     #'strategy))
+                     #'strategy
+                     #'(merge-strategy-default strategy)))
         ((rest ... (default value)) merges?
          (syntax-violation #f "default not allowed" syn #'(default value)))
+        ((rest ... (default value))
+         (attrs-loop merges? #'(rest ...)
+                     (cons #'(default value) forward)
+                     strategy
+                     #'value))
         ((rest ... next)
          (attrs-loop merges? #'(rest ...)
                      (cons #'next forward)
-                     strategy))
+                     strategy
+                     default-value))
         (() (and merges? (not strategy))
          (syntax-violation #f "no merge strategy" syn))
-        (() (cons forward strategy))))
+        (() (list forward strategy default-value))))
 
     (define (field-loop name a-id b-id merges? fields-syn forward fields strategies)
       ;; (field ((merge-strategy-merge strategy) (get a-id) (get b-id)))
       (syntax-case fields-syn ()
         ((rest ... (field (attr ...) ...))
          (let* ((get (symbol-append name '- (syntax->datum #'field)))
-                (attrs (attrs-loop merges? #'((attr ...) ...) '() #f)))
+                (attrs (attrs-loop merges? #'((attr ...) ...) '() #f #f)))
            (with-syntax ((get (datum->syntax #'field get))
-                         (((attr ...) ...) (car attrs))
-                         (strategy (cdr attrs))
+                         (((attr ...) ...) (list-ref attrs 0))
+                         (strategy (list-ref attrs 1))
+                         (default (list-ref attrs 2))
                          (a-id a-id)
                          (b-id b-id))
              (field-loop name #'a-id #'b-id merges?
                          #'(rest ...)
                          (cons #'(field get (attr ...) ...) forward)
-                         (cons #'(cons 'field get) fields)
+                         (cons (if #'default
+                                   #'(list 'field get default)
+                                   #'(list 'field get))
+                               fields)
                          (cons #'(field ((merge-strategy-merge strategy) (get a-id) (get b-id)))
                                strategies)))))
         ((rest ... (field get (attr ...) ...))
-         (let* ((attrs (attrs-loop merges? #'((attr ...) ...) '() #f)))
-           (with-syntax ((((attr ...) ...) (car attrs))
-                         (strategy (cdr attrs))
+         (let* ((attrs (attrs-loop merges? #'((attr ...) ...) '() #f #f)))
+           (with-syntax ((((attr ...) ...) (list-ref attrs 0))
+                         (strategy (list-ref attrs 1))
+                         (default (list-ref attrs 2))
                          (a-id a-id)
                          (b-id b-id))
              (field-loop name #'a-id #'b-id merges?
                          #'(rest ...)
                          (cons #'(field get (attr ...) ...) forward)
-                         (cons #'(cons 'field get) fields)
+                         (cons (if #'default
+                                   #'(list 'field get default)
+                                   #'(list 'field get))
+                               fields)
                          (cons #'(field ((merge-strategy-merge strategy) (get a-id) (get b-id)))
                                strategies)))))
-        ;; (cons car (cons cadr cddr))
-        (() (cons forward (cons fields strategies)))))
+        (() (list forward fields strategies))))
     (syntax-case syn ()
       ((_ name* args ...)
        (let ((name (syntax->datum #'name*)))
@@ -135,7 +161,8 @@
                     (this-identifier #f)
                     (fields-list #f)
                     (merge-proc #f)
-                    (fold-proc #f))
+                    (fold-proc #f)
+                    (unwrap #f))
            (syntax-case args ()
              ((#:type type* rest ...)
               (loop #'(rest ...)
@@ -146,7 +173,8 @@
                     this-identifier
                     fields-list
                     merge-proc
-                    fold-proc))
+                    fold-proc
+                    unwrap))
              ((#:syntactic-ctor syntactic-ctor* rest ...)
               (loop #'(rest ...)
                     type
@@ -156,7 +184,8 @@
                     this-identifier
                     fields-list
                     merge-proc
-                    fold-proc))
+                    fold-proc
+                    unwrap))
              ((#:ctor ctor* rest ...)
               (loop #'(rest ...)
                     type
@@ -166,7 +195,8 @@
                     this-identifier
                     fields-list
                     merge-proc
-                    fold-proc))
+                    fold-proc
+                    unwrap))
              ((#:pred pred* rest ...)
               (loop #'(rest ...)
                     type
@@ -176,7 +206,8 @@
                     this-identifier
                     fields-list
                     merge-proc
-                    fold-proc))
+                    fold-proc
+                    unwrap))
              ((#:this-identifier this-identifier* rest ...)
               (loop #'(rest ...)
                     type
@@ -186,7 +217,8 @@
                     #'this-identifier*
                     fields-list
                     merge-proc
-                    fold-proc))
+                    fold-proc
+                    unwrap))
              ((#:fields-list fields-list* rest ...) (symbol? (syntax->datum #'fields-list*))
               (loop #'(rest ...)
                     type
@@ -196,7 +228,8 @@
                     this-identifier
                     #'fields-list*
                     merge-proc
-                    fold-proc))
+                    fold-proc
+                    unwrap))
              ((#:fields-list rest ...)
               (loop #'(rest ...)
                     type
@@ -206,7 +239,8 @@
                     this-identifier
                     (datum->syntax #'name* (symbol-append 'fields- name))
                     merge-proc
-                    fold-proc))
+                    fold-proc
+                    unwrap))
              ((#:merge merge-proc* rest ...) (symbol? (syntax->datum #'merge-proc*))
               (loop #'(rest ...)
                     type
@@ -216,7 +250,8 @@
                     this-identifier
                     fields-list
                     #'merge-proc*
-                    fold-proc))
+                    fold-proc
+                    unwrap))
              ((#:merge rest ...)
               (loop #'(rest ...)
                     type
@@ -226,7 +261,8 @@
                     this-identifier
                     fields-list
                     (datum->syntax #'name* (symbol-append 'merge- name))
-                    fold-proc))
+                    fold-proc
+                    unwrap))
              ((#:fold fold-proc* rest ...) (symbol? (syntax->datum #'fold-proc*))
               (loop #'(rest ...)
                     type
@@ -235,8 +271,9 @@
                     pred
                     this-identifier
                     fields-list
-                    (if merge-proc merge-proc (datum->syntax #'name* (gensym)))
-                    #'fold-proc*))
+                    merge-proc
+                    #'fold-proc*
+                    unwrap))
              ((#:fold rest ...)
               (loop #'(rest ...)
                     type
@@ -245,12 +282,29 @@
                     pred
                     this-identifier
                     fields-list
-                    (if merge-proc merge-proc (datum->syntax #'name* (gensym)))
-                    (datum->syntax #'name* (symbol-append 'fold- name))))
+                    merge-proc
+                    (datum->syntax #'name* (symbol-append 'fold- name))
+                    unwrap))
+             ((#:unwrap (config ...) rest ...)
+              (loop #'(rest ...)
+                    type
+                    syntactic-ctor
+                    ctor
+                    pred
+                    this-identifier
+                    fields-list
+                    merge-proc
+                    fold-proc
+                    (syntax-case #'(config ...) ()
+                      ((type default)
+                       (list (datum->syntax #'name* (symbol-append 'unwrap- name))
+                             #'type #'default))
+                      ((name type default)
+                       (list #'name #'type #'default)))))
              (((fields* ...) ...)
               (let* ((a-id (datum->syntax syn (gensym)))
                      (b-id (datum->syntax syn (gensym)))
-                     (fields (field-loop name a-id b-id merge-proc
+                     (fields (field-loop name a-id b-id (or merge-proc fold-proc)
                                          #'((fields* ...) ...) '() '() '())))
                 (with-syntax
                     ((type            (if type type
@@ -262,9 +316,11 @@
                      (pred            (if pred pred
                                           (datum->syntax #'name* (symbol-append name '?))))
                      (this-identifier #'this-record)
-                     ((fields-forward ...) (car fields))
-                     ((fields ...) (cadr fields))
-                     ((fields-merge ...) (cddr fields))
+                     (source-location-get (datum->syntax #'name*
+                                                         (symbol-append name '-source-location)))
+                     ((fields-forward ...) (list-ref fields 0))
+                     ((fields ...) (list-ref fields 1))
+                     ((fields-merge ...) (list-ref fields 2))
                      (a-id a-id)
                      (b-id b-id))
                   (let ((fields-list (if fields-list
@@ -276,8 +332,35 @@
                                           '()))
                         (fold-fields (if fold-proc
                                          #`((define (#,fold-proc ls)
-                                              (fold #,merge-proc (syntactic-ctor) (reverse ls))))
-                                         '())))
+                                              (fold (lambda (b-id a-id) ;; reverse
+                                                      (syntactic-ctor fields-merge ...))
+                                                    (syntactic-ctor)
+                                                    ls)))
+                                         '()))
+                        (unwrap-fields
+                         (if unwrap
+                             (with-syntax ((unwrap-proc (list-ref unwrap 0))
+                                           (wrapped-type (list-ref unwrap 1))
+                                           (wrapped-base (list-ref unwrap 2)))
+                               #'((define (unwrap-proc self)
+                                    ;; to not depend on `#:fields-list`
+                                    (define fields-list (list fields ...))
+                                    (define rtd wrapped-type)
+                                    (define rtd-base wrapped-base)
+                                    (apply (record-type-constructor rtd)
+                                           (map (lambda (field-name)
+                                                  (let* ((field (assoc-ref fields-list
+                                                                           field-name))
+                                                         (get (list-ref field 0))
+                                                         (value (get self))
+                                                         (unset? (and (= 2 (length field))
+                                                                      (eq? value
+                                                                           (list-ref field 1)))))
+                                                    (if unset?
+                                                        ((record-accessor rtd field-name) rtd-base)
+                                                        value)))
+                                                (record-type-fields rtd))))))
+                             '())))
 
                     #`(begin
                         (define-record-type* type
@@ -286,4 +369,5 @@
                           fields-forward ...)
                         #,@fields-list
                         #,@merge-fields
-                        #,@fold-fields))))))))))))
+                        #,@fold-fields
+                        #,@unwrap-fields))))))))))))

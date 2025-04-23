@@ -1,4 +1,5 @@
 (define-module (aetheria home services security)
+  #:use-module ((ice-9 pretty-print) #:select (pretty-print))
   #:use-module ((srfi srfi-1) #:select (concatenate
                                         fold))
   #:use-module ((guix gexp) #:select (plain-file
@@ -13,24 +14,11 @@
                                               home-files-service-type))
   #:use-module ((gnu home services gnupg)
                 #:select (home-gpg-agent-configuration
-                          home-gpg-agent-configuration?
-                          home-gpg-agent-configuration-gnupg
-                          home-gpg-agent-configuration-pinentry-program
-                          home-gpg-agent-configuration-ssh-support?
-                          home-gpg-agent-configuration-default-cache-ttl
-                          home-gpg-agent-configuration-max-cache-ttl
-                          home-gpg-agent-configuration-max-cache-ttl-ssh
-                          home-gpg-agent-configuration-extra-content
-
                           home-gpg-agent-service-type)
                 #:prefix upstream:)
   #:use-module ((gnu home services ssh)
                 #:select (home-openssh-service-type
-                          home-openssh-configuration
-                          home-openssh-configuration-authorized-keys
-                          home-openssh-configuration-known-hosts
-                          home-openssh-configuration-hosts
-                          home-openssh-configuration-add-keys-to-agent)
+                          home-openssh-configuration)
                 #:prefix upstream:)
   #:use-module ((gnu home services ssh) #:select (openssh-host))
   #:use-module ((gnu home services shells) #:select (home-bash-service-type
@@ -43,6 +31,7 @@
                                              conflict-strategy
                                              append-strategy
                                              lines-strategy
+                                             source-location-strategy
                                              define-record-type2))
   #:export (home-openssh-configuration
             home-openssh-configuration-authorized-keys
@@ -63,45 +52,24 @@
             home-gpg-agent-configuration-default-cache-ttl-ssh
             home-gpg-agent-configuration-max-cache-ttl-ssh
             home-gpg-agent-configuration-extra-content
+            home-gpg-agent-configuration-source-location
 
             home-gpg-agent-service-type
 
             home-security-service-type))
 
 ;; not exported
-(define upstream:home-gpg-agent-configuration-default-cache-ttl-ssh
-  (module-ref (resolve-module '(gnu home services gnupg))
-              'home-gpg-agent-configuration-default-cache-ttl-ssh))
-
-;; TODO: move to define-record-type2
-(define-macro (unwrap name value . fields)
-  (define upstream (symbol-append 'upstream: name))
-  (define (upstream:field field-name)
-    `(,(symbol-append upstream '- field-name) %upstream-default))
-  (define (downstream:field field-name)
-    `(,(symbol-append name '- field-name) ,value))
-  `(begin
-     (define %upstream-default (,upstream))
-     (,upstream
-      ,@(map (lambda (field)
-               `(,(car field) (if (equal? (merge-strategy-default ,(cadr field))
-                                          ,(downstream:field (car field)))
-                                  ,(upstream:field (car field))
-                                  ,(downstream:field (car field)))))
-             fields))))
+(define upstream:<home-openssh-configuration>
+  (module-ref (resolve-module '(gnu home services ssh))
+              '<home-openssh-configuration>))
 
 (define-record-type2 home-openssh-configuration #:fold
+  #:unwrap (upstream:<home-openssh-configuration>
+            (upstream:home-openssh-configuration))
   (authorized-keys   (merge append-strategy))    ;list of file-like
   (known-hosts       (merge append-strategy))    ;list of file-like
   (hosts             (merge append-strategy))    ;list of <openssh-host>
   (add-keys-to-agent (merge conflict-strategy))) ;string with limited values
-
-(define (unwrap-home-openssh-configuration config)
-  (unwrap home-openssh-configuration config
-          (authorized-keys append-strategy)
-          (known-hosts append-strategy)
-          (hosts append-strategy)
-          (add-keys-to-agent conflict-strategy)))
 
 (define home-openssh-service-type
   (service-type
@@ -112,7 +80,15 @@
               (fold-home-openssh-configuration (cons config extensions)))))
    (default-value (home-openssh-configuration))))
 
+(define upstream:<home-gpg-agent-configuration>
+  (module-ref (resolve-module '(gnu home services gnupg))
+              ;; <home-openssh-configuration> works but not this?  both are
+              ;; <syntax-transformers> but it only complains about this??
+              '#{% <home-gpg-agent-configuration> rtd}#))
+
 (define-record-type2 home-gpg-agent-configuration #:fold
+  #:unwrap (upstream:<home-gpg-agent-configuration>
+            (upstream:home-gpg-agent-configuration))
   (gnupg                 (merge conflict-strategy)) ; file-like
   (pinentry-program      (merge conflict-strategy)) ; file-like
   (ssh-support?          (merge conflict-strategy)) ; boolean
@@ -120,18 +96,9 @@
   (max-cache-ttl         (merge conflict-strategy)) ; integer
   (default-cache-ttl-ssh (merge conflict-strategy)) ; integer
   (max-cache-ttl-ssh     (merge conflict-strategy)) ; integer
-  (extra-content         (merge lines-strategy))) ; raw-configuration-string
-
-(define (unwrap-home-gpg-agent-configuration config)
-  (unwrap home-gpg-agent-configuration config
-          (gnupg                 conflict-strategy)
-          (pinentry-program      conflict-strategy)
-          (ssh-support?          conflict-strategy)
-          (default-cache-ttl     conflict-strategy)
-          (max-cache-ttl         conflict-strategy)
-          (default-cache-ttl-ssh conflict-strategy)
-          (max-cache-ttl-ssh     conflict-strategy)
-          (extra-content         lines-strategy)))
+  (extra-content         (merge lines-strategy))    ; raw-configuration-string
+  (%location             home-gpg-agent-configuration-source-location
+                         (merge source-location-strategy)))
 
 (define home-gpg-agent-service-type
   (service-type

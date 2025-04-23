@@ -18,6 +18,7 @@
                      gnome
                      gnupg
                      gtk
+                     guile
                      guile-xyz
                      haskell-xyz
                      imagemagick
@@ -96,7 +97,6 @@
    emacs-debbugs
    emacs-diredfl
    emacs-disable-mouse
-   emacs-doom-modeline
    emacs-elfeed
    emacs-geiser
    emacs-geiser-guile
@@ -106,7 +106,7 @@
    emacs-magit
    emacs-marginalia
    emacs-markdown-mode
-   emacs-nerd-icons
+   emacs-moody
    emacs-orderless
    emacs-org-bullets
    emacs-org-static-blog
@@ -119,42 +119,17 @@
    emacs-vertico
    emacs-wgrep
    emacs-writeroom
+   mrh-emacs-nerd-icons-dired
 
    ;; programming
    git
    (list git "send-email")
    gnu-make
-   hut
 
-   ;; C
-   ccls
-
-   ;; lisp
-   sbcl
-   sbcl-alexandria
-   sbcl-anaphora
-   sbcl-arrow-macros
-   sbcl-clack
-   sbcl-ciel
-   sbcl-ciel-repl
-   sbcl-clingon
-   sbcl-cl-csv
-   sbcl-dexador
-   sbcl-easy-routes
-   sbcl-fset
-   sbcl-jzon
-   sbcl-local-time
-   sbcl-plump
-   sbcl-cl-ppcre
-   sbcl-quri
-   sbcl-serapeum
-   sbcl-spinneret
-   sbcl-cl-str
-   sbcl-trivia
-   mrh-cl-taglib
-   mrh-sbcl-clog-no-tools
-   mrh-sbcl-coleslaw
-   mrh-lem
+   ;; guile
+   guile-next
+   guile-swayer
+   guile-taglib
 
    ;; communication
    signal-desktop

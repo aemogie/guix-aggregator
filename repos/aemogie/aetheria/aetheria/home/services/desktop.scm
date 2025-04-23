@@ -62,8 +62,7 @@
 
 (define %aetheria-desktop-home-services
   (list
-   ;; started from hyprland config which is being persisted locally
-   ;; for now. dont know how to move this to a service
+   ;; started from wayland session. dont know how to move this to a service
    (service home-shepherd-service-type
             (home-shepherd-configuration
              (auto-start? #f)

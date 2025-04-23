@@ -108,6 +108,7 @@
                                       (authorized-keys
                                        (append (list (local-file "./nonguix-signing-key.pub")
                                                      (local-file "./guix-hpc-signing-key.pub")
+                                                     (local-file "./wlo-tower-signing-key.pub")
                                                      (local-file "./na-substitute-genenetwork-signing-key.pub"))
                                                %default-authorized-guix-keys)))))))
 

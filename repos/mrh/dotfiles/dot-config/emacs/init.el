@@ -63,11 +63,11 @@ Otherwise set locally with `keymap-local-set'."
 (setf frame-title-format "%b")
 (add-to-list 'default-frame-alist '(undecorated . t))
 
-(use-package nerd-icons)
-
-(use-package doom-modeline
-  :config (doom-modeline-mode 1)
-  :after (nerd-icons))
+(use-package moody
+  :config
+  (moody-replace-mode-line-front-space)
+  (moody-replace-mode-line-buffer-identification)
+  (moody-replace-vc-mode))
 
 (setf mode-line-compact 'long)
 
@@ -93,6 +93,11 @@ Otherwise set locally with `keymap-local-set'."
                     :slant 'italic
                     :underline nil)
 
+(use-package nerd-icons-dired
+  :hook (dired-mode . nerd-icons-dired-mode))
+
+(global-prettify-symbols-mode 1)
+
 (defun my/enable-theme (theme opacity)
   (enable-theme theme)
   (set-frame-parameter nil 'alpha-background opacity)
@@ -111,9 +116,9 @@ Otherwise set locally with `keymap-local-set'."
 
 (use-package gruvbox-theme
   :config
-  (load-theme 'gruvbox-light-medium t t)
+  (load-theme 'gruvbox-light-soft t t)
   (load-theme 'gruvbox-dark-hard t)
-  (defvar *my/light-theme* 'gruvbox-light-medium)
+  (defvar *my/light-theme* 'gruvbox-light-soft)
   (defvar *my/dark-theme* 'gruvbox-dark-hard))
 
 (use-package orderless 
@@ -150,8 +155,10 @@ Otherwise set locally with `keymap-local-set'."
   :config (marginalia-mode 1))
 
 (use-package disable-mouse
-  :config (global-disable-mouse-mode))
+  :config (global-disable-mouse-mode 1))
 
+(setf scroll-conservatively 10000
+      auto-window-vscroll nil)
 (pixel-scroll-precision-mode 1)
 
 (unless (boundp '*hidden-buffers*)
@@ -367,6 +374,8 @@ If a there is no open buffer containing the file the changes will be written."
 (use-package org-static-blog
   :defer t
   :config (load (expand-file-name "blog-config.el" user-emacs-directory)))
+
+(setf eww-default-download-directory "~/downloads")
 
 (use-package mu4e
   :commands (mu4e)

@@ -119,15 +119,13 @@ NOTE: On wayland emacs must be pure GTK (=emacs-pgtk= on guix)
 #+end_src
 
 ** Mode Line
-*** Replace default modeline with doom modeline
-WARNING: You must run =nerd-icons-install-fonts=, or else there will be perfomance issues (and no icons)
 
 #+begin_src emacs-lisp
-(use-package nerd-icons)
-
-(use-package doom-modeline
-  :config (doom-modeline-mode 1)
-  :after (nerd-icons))
+(use-package moody
+  :config
+  (moody-replace-mode-line-front-space)
+  (moody-replace-mode-line-buffer-identification)
+  (moody-replace-vc-mode))
 #+end_src
 
 *** Display Time and Compactify Text
@@ -166,6 +164,20 @@ WARNING: You must run =nerd-icons-install-fonts=, or else there will be perfoman
                     :underline nil)
 #+end_src
 
+*** Icons
+You may need to call =(nerd-icons-install-fonts)=
+
+#+begin_src emacs-lisp
+(use-package nerd-icons-dired
+  :hook (dired-mode . nerd-icons-dired-mode))
+#+end_src
+
+*** Prettify Symbols
+
+#+begin_src emacs-lisp
+(global-prettify-symbols-mode 1)
+#+end_src
+
 ** Theme
 *** Toggle between light and dark themes
 
@@ -192,9 +204,9 @@ WARNING: You must run =nerd-icons-install-fonts=, or else there will be perfoman
 #+begin_src emacs-lisp
 (use-package gruvbox-theme
   :config
-  (load-theme 'gruvbox-light-medium t t)
+  (load-theme 'gruvbox-light-soft t t)
   (load-theme 'gruvbox-dark-hard t)
-  (defvar *my/light-theme* 'gruvbox-light-medium)
+  (defvar *my/light-theme* 'gruvbox-light-soft)
   (defvar *my/dark-theme* 'gruvbox-dark-hard))
 #+end_src
 
@@ -254,12 +266,14 @@ Disable the mouse
 
 #+begin_src emacs-lisp
 (use-package disable-mouse
-  :config (global-disable-mouse-mode))
+  :config (global-disable-mouse-mode 1))
 #+end_src
 
-** Smooth(er) Scrolling
+** Scrolling
 
 #+begin_src emacs-lisp
+(setf scroll-conservatively 10000
+      auto-window-vscroll nil)
 (pixel-scroll-precision-mode 1)
 #+end_src
 
@@ -615,8 +629,9 @@ Magic git frontend
   (pinentry-start))
 #+end_src
 
-* Website
-** Blog
+* Websites
+** Personal
+*** Blog
 Setup org static site generator.
 See [[file:./blog-config.el][blog-config.el]]
 
@@ -624,6 +639,12 @@ See [[file:./blog-config.el][blog-config.el]]
 (use-package org-static-blog
   :defer t
   :config (load (expand-file-name "blog-config.el" user-emacs-directory)))
+#+end_src
+
+** EWW
+
+#+begin_src emacs-lisp
+(setf eww-default-download-directory "~/downloads")
 #+end_src
 
 * Messaging

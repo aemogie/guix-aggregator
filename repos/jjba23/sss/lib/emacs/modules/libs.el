@@ -31,8 +31,8 @@
   :ensure (:host github :repo "emacs-straight/queue" :branch "master")
   :demand t)
 
-(use-package compat
-  :ensure (:host github :repo "emacs-compat/compat" :branch "main"))
+;; (use-package compat
+;;   :ensure (:host github :repo "emacs-compat/compat" :branch "main"))
 
 (provide 'sss/libs)
 
