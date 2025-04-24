@@ -631,8 +631,7 @@ Magic git frontend
 
 * Websites
 ** Personal
-*** Blog
-Setup org static site generator.
+*** Org Blog
 See [[file:./blog-config.el][blog-config.el]]
 
 #+begin_src emacs-lisp

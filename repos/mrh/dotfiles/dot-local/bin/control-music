@@ -1,1 +1,21 @@
-cl-scripts
+#!/usr/bin/env guile
+!#
+
+(use-modules (ice-9 match)
+             (ice-9 format))
+
+(let* ((commands-alist '(("toggle-play" . "p")
+                         ("prev" . "<")
+                         ("next" . ">")
+                         ("track" . "N")))
+       (commands (map car commands-alist))
+       (usage (format #f "USAGE: ~a <~{~a~^|~}>" (current-filename) commands)))
+  (match (command-line)
+    ((_ command)
+     (if (member command commands)
+         (system (format #f
+                         "echo '{\"command\": [\"keypress\", \"~a\"]}' | socat - /tmp/mpv-socket"
+                         (assoc-ref commands-alist command)))
+         (display usage)))
+    (else
+     (display usage))))

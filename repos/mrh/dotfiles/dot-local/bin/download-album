@@ -1,1 +1,52 @@
-cl-scripts
+#!/usr/bin/env -S guile -e main -s
+!#
+
+(eval-when (expand load)
+  (load (format #f "~a/.guile" (getenv "HOME"))))
+
+(use-modules (ice-9 ftw)
+             (ice-9 match)
+             (taglib))
+
+(define (download-songs! url album-path)
+  (system* "yt-dlp"
+           "--embed-thumbnail"
+           "--add-metadata"
+           "--extract-audio"
+           "--output"
+           (format #f "~a/%(title).100s.%(ext)s" album-path)
+           url))
+
+(define (audio-file? filename)
+  (let ((file-extension (car (reverse (string-split filename #\.))))
+        (audio-extensions '("mp3" "mp4" "opus" "flac" "aac" "wav" "aif" "ogg")))
+    (member file-extension audio-extensions)))
+
+(define (sorted-songs album-path)
+  (scandir album-path
+           audio-file?
+           (lambda (filename-1 filename-2)
+             (< (track (taglib-open (format #f "~a/~a"
+                                            album-path filename-1)))
+                (track (taglib-open (format #f "~a/~a"
+                                            album-path filename-2)))))))
+
+(define (make-song-list! album-path)
+  (call-with-output-file (format #f "~a/~a--Album.txt"
+                                 album-path (basename album-path))
+    (lambda (port)
+      (for-each (lambda (song)
+                  (format port "~a~%" song))
+                (sorted-songs album-path)))))
+
+(define (main args)
+  (match args
+    ((_ url dir)
+     (let ((album-path (canonicalize-path dir)))
+       (format #t "downloading songs.....~%")
+       (download-songs! url album-path)
+       (format #t "making album list.....~%")
+       (make-song-list! album-path)
+       (format #t "done!~%")))
+    ((bin _ ...)
+     (format #t "USAGE: ~a <url> <album-dir>~%" bin))))

@@ -26,11 +26,11 @@
   :group 'tools)
 
 (defcustom sss-font-mono "Adwaita Mono"
-  "My personal choice for monospaced font family." 
+  "My personal choice for monospaced font family."
   :type 'string)
 
 (defcustom sss-font-sans "Inter"
-  "My personal choice for sans font family." 
+  "My personal choice for sans font family."
   :type 'string)
 
 (defcustom sss-ews-music-directory "~/Muziek"
@@ -80,6 +80,7 @@
     (async-shell-command "make update")))
 
 (defun sss-uuidgen ()
+  "Generate a UUID (Universally Unique Identifier) and yank it to kill ring."
   (interactive)
   (let ((uid (string-replace "\n" "" (shell-command-to-string "uuidgen"))))
     (message (format "generated UUID: %s" uid))
@@ -90,21 +91,21 @@
 
 This function executes the `uuidgen` command-line utility and returns
 the generated UUID as a string, removing any trailing newline character
-that the command might produce. It relies on the `uuidgen` program
+that the command might produce.  It relies on the `uuidgen` program
 being available in your system's `exec-path`."
   (string-replace "\n" "" (shell-command-to-string "uuidgen")))
 
 (defun sss-do-in-project (f)
-  "Execute a function F with the root directory of the current project as its argument.
+  "Execute a function F with the root directory of a project as its argument.
 
 F: A function that accepts a single argument, which will be the root
    directory of the current version control project (a string).
 
 This function uses `vc-root-dir` to determine the root directory of the
 version control system (like Git, Mercurial, etc.) associated with the
-currently visited file or the current directory. If a project root is
+currently visited file or the current directory.  If a project root is
 found, it then calls the provided function F, passing the root directory
-as the sole argument. If no version control root directory is found, F
+as the sole argument.  If no version control root directory is found, F
 will be called with `nil`.
 
 This function is useful for performing actions that need to be executed
@@ -119,10 +120,10 @@ CMD: The shell command to execute (a string).
 BUF-NAME: The name of the buffer to display the output in (a string).
 
 This function creates a new buffer with the given BUF-NAME and then
-executes the CMD using `async-shell-command`. The standard output and
+executes the CMD using `async-shell-command`.  The standard output and
 standard error of the command are redirected to the newly created
 buffer, allowing the user to continue working in Emacs while the
-command runs in the background. The buffer will be displayed when the
+command runs in the background.  The buffer will be displayed when the
 command starts producing output."
   (let ((output-buffer (generate-new-buffer buf-name)))
     (async-shell-command cmd output-buffer output-buffer)))
@@ -132,7 +133,7 @@ command starts producing output."
 
 This command attempts to locate the root directory of the current project
 and then executes `make repl` within that directory in an asynchronous
-shell process. The output and interaction will be
+shell process.  The output and interaction will be
 available in a dedicated buffer named \"repl:PROJECT-ROOT\", where
 PROJECT-ROOT is the name of the project's root directory.
 
@@ -163,7 +164,7 @@ interactive development and testing."
 
 This command attempts to find the root directory of the current project
 and then executes `make fmt` within that directory in an asynchronous
-shell process. The output of the formatting process will be displayed
+shell process.  The output of the formatting process will be displayed
 in a dedicated buffer named \"fmt:PROJECT-ROOT\", where PROJECT-ROOT is
 the name of the project's root directory.
 
@@ -194,7 +195,7 @@ helping to maintain consistent code style across the project."
 
 This command attempts to locate the root directory of the current project
 and then executes `make dev` within that directory in an asynchronous
-shell process. The output and interaction will be
+shell process.  The output and interaction will be
 available in a dedicated buffer named \"dev:PROJECT-ROOT\", where
 PROJECT-ROOT is the name of the project's root directory.
 
@@ -225,7 +226,7 @@ interactive development and testing."
 
 This command attempts to locate the root directory of the current project
 and then executes `make test` within that directory in an asynchronous
-shell process. The output of the test execution will be displayed in a
+shell process.  The output of the test execution will be displayed in a
 dedicated buffer named \"test:PROJECT-ROOT\", where PROJECT-ROOT is the
 name of the project's root directory.
 
@@ -276,9 +277,9 @@ installed and accessible in your system's `exec-path`."
   "Create a new buffer with JSON data, format it, and switch to it.
 
 Creates a new buffer with the specified BUFFER-NAME and inserts the
-JSON string DATA into it. It then attempts to set the major mode to
+JSON string DATA into it.  It then attempts to set the major mode to
 `js-json-mode` and pretty-print the JSON data with ordered keys.
-Finally, it switches to the newly created buffer and scrolls down.
+Finally, it switches to the newly created buffer and scrolls to the top.
 
 BUFFER-NAME: The name of the new buffer (a string).
 DATA: A string containing JSON data."

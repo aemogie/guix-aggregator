@@ -7,7 +7,6 @@
                      aspell
                      base
                      compression
-                     cpp
                      cups
                      emacs
                      emacs-xyz
@@ -24,22 +23,15 @@
                      imagemagick
                      image-viewers
                      kde-plasma
-                     libreoffice
                      librewolf
                      linux
-                     lisp
-                     lisp-xyz
                      mail
                      mp3
                      networking
                      package-management
                      password-utils
-                     python
-                     pdf
                      readline
                      rsync
-                     sdl
-                     statistics
                      terminals
                      texlive
                      version-control
@@ -51,13 +43,11 @@
   (list
    ;; graphical-env
    alacritty
-   blueman
    brightnessctl
    fnott
    fuzzel
    gtk+
    libnotify
-   libreoffice
    librewolf
    sway
    swaybg
@@ -67,7 +57,6 @@
    wf-recorder
    wl-clipboard
    xdg-utils
-   zoom
 
    ;; fonts
    ;; might need to  run "fc-cache -vfr" to reubild font cache
@@ -79,6 +68,7 @@
    font-google-noto-serif-cjk
 
    ;; media
+   blueman
    ffmpeg
    grimshot
    imagemagick
@@ -132,11 +122,9 @@
    guile-taglib
 
    ;; communication
-   signal-desktop
-
-   ;; mail
    isync
    mu
+   signal-desktop
 
    ;; security
    gnupg
@@ -147,7 +135,6 @@
    cups
    fastfetch
    (list glib "bin")
-   haunt
    ispell
    keepassxc
    monero
