@@ -87,10 +87,11 @@
    emacs-debbugs
    emacs-diredfl
    emacs-disable-mouse
+   emacs-eat
+   emacs-ef-themes
    emacs-elfeed
    emacs-geiser
    emacs-geiser-guile
-   emacs-gruvbox-theme
    emacs-htmlize
    emacs-jack
    emacs-magit

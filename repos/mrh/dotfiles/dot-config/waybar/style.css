@@ -6,8 +6,9 @@
 }
 
 window#waybar {
-    background: rgba(28, 28, 28, 1.0);
-    color: #ebdbb2;
+    /* background: rgba(28, 28, 28, 1.0); */
+    background: #0f0e06;
+    color: #cfbcba;
 }
 
 tooltip {
@@ -20,7 +21,7 @@ tooltip label {
 }
 
 #workspaces button {
-    color: #fabd2f;
+    color: #c48702;
 }
 
 #workspaces button.persistent {
@@ -28,14 +29,14 @@ tooltip label {
 }
 
 #workspaces button.focused {
-	border-top: 3px solid #fabd2f;
+	border-top: 3px solid #c48702;
 }
 
 #workspaces button:hover {
 	box-shadow: inherit;
 	text-shadow: inherit;
-	background: #928374;
-	color: #282828;
+	background: #a6a6a6;
+	color: #0f0e06;
 }
 
 #window {
@@ -50,57 +51,57 @@ tooltip label {
 }
 
 #wireplumber {
-    border-top: 3px solid #d65d0e;
-    color: #ebdbb2;
+    border-top: 3px solid #d0730f;
+    color:  #cfbcba;
 }
 
 #wireplumber.muted {
-    color: #928374;
+    color: #887c8a;
 }
 
 #network.wifi {
-	border-top: 3px solid #98971a;
-    color: #ebdbb2;
+	border-top: 3px solid #2fa526;
+    color: #cfbcba;
 }
 
 #network.disconnected {
-	border-top: 3px solid #cc241d;
-    color: #ebdbb2;
+	border-top: 3px solid #b02930;
+    color: #cfbcba;
 }
 
 #cpu {
-    border-top: 3px solid #83a598;
-    color: #ebdbb2;
+    border-top: 3px solid #6a88ff;
+    color: #cfbcba;
 }
 
 #memory {
-    border-top: 3px solid #928374;
-    color: #ebdbb2;
+    border-top: 3px solid #a6a6a6;
+    color: #cfbcba;
 }
 
 #backlight {
-    border-top: 3px solid #8ec07c;
-    color: #ebdbb2;
+    border-top: 3px solid #4fb0cf;
+    color: #cfbcba;
 }
 
 #battery.full {
-    border-top: 3px solid #b8bb26;
-    color: #ebdbb2;
+    border-top: 3px solid #64aa0f;
+    color: #cfbcba;
 }
 
 #battery.good {
-    border-top: 3px solid #d79921;
-    color: #ebdbb2;
+    border-top: 3px solid #c48702;
+    color: #cfbcba;
 }
 
 #battery.critical {
-    border-top: 3px solid #cc241d;
-    color: #ebdbb2;
+    border-top: 3px solid #b02930;
+    color: #cfbcba;
 }
 
 #clock {
-    border-top: 3px solid #d3869b;
-    color: #ebdbb2;
+    border-top: 3px solid #d570af;
+    color: #cfbcba;
 }
 
 @keyframes blink {

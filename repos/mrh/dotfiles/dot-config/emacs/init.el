@@ -7,9 +7,6 @@
 (load custom-file)
 (load authentication-file)
 
-(defvar user-first-name (car (split-string user-full-name)))
-(defvar user-first-name (cadr (split-string user-full-name)))
-
 (setf backup-directory-alist '(("." . "~/.config/emacs/backups"))
       backup-by-copying t)
 
@@ -25,9 +22,9 @@
                         ("C-c r s" . consult-register-store)
                         ("C-c r l" . consult-register-load)
                         ("C-c k" . kill-buffer-and-window)
+                        ("C-c g t" . ef-themes-toggle)
                         ("C-c m v" . my/mpv)
                         ("C-c m a" . my/play-album)
-                        ("C-c g t" . my/switch-theme)
                         ("C-c b h" . my/hide-buffer)
                         ("C-c b u" . my/unhide-buffer)
                         ("C-c r y" . my/add-youtube-feed)))
@@ -108,18 +105,24 @@ Otherwise set locally with `keymap-local-set'."
   (interactive)
   (let ((current-theme (car custom-enabled-themes)))
     (if (cl-every #'boundp '(*my/dark-theme* *my/light-theme*))
-        (progn (disable-theme current-theme)
-               (if (eq current-theme *my/dark-theme*)
-                   (my/enable-theme *my/light-theme* 100)
-                 (my/enable-theme *my/dark-theme* 80)))
+        (if (eq current-theme *my/dark-theme*)
+            (my/enable-theme *my/light-theme* 100)
+          (my/enable-theme *my/dark-theme* 75))
       (message "must define both *my/dark-theme* and *my/light-theme*"))))
 
-(use-package gruvbox-theme
+(defun my/adjust-opacity ()
+  (interactive)
+  (set-frame-parameter nil 'alpha-background
+                       (if (member (ef-themes--current-theme)
+                                   ef-themes-light-themes)
+                           100
+                         80)))
+
+(use-package ef-themes
   :config
-  (load-theme 'gruvbox-light-soft t t)
-  (load-theme 'gruvbox-dark-hard t)
-  (defvar *my/light-theme* 'gruvbox-light-soft)
-  (defvar *my/dark-theme* 'gruvbox-dark-hard))
+  (advice-add 'ef-themes-toggle :after #'my/adjust-opacity)
+  (setf ef-themes-to-toggle '(ef-autumn ef-eagle))
+  (ef-themes-select-dark 'ef-autumn))
 
 (use-package orderless 
   :config
@@ -268,12 +271,15 @@ See `my/dired-run-command'."
               ("C-c C-c" . my/compile)
               ("C-c C-r" . my/go-run)))
 
-(setf geiser-guile-binary "/run/current-system/profile/bin/guile"
-      geiser-guile-load-init-file t
-      geiser-repl-add-project-paths nil)
+(use-package geiser)
+
+(use-package geiser-guile
+  :config
+  (setf geiser-guile-load-init-file t)
+  :after (geiser))
 
 (use-package org
-  :hook (org-mode . org-indent-mode)
+  :defer t
   :config (setf org-startup-folded t
                 org-edit-src-content-indentation 0))
 
@@ -344,8 +350,14 @@ If a there is no open buffer containing the file the changes will be written."
         trashed-date-format "%Y-%m-%d %H:%M:%S"
         trashed-use-header-line t))
 
+(defun my/eshell-clear ()
+  (interactive)
+  (eshell/clear-scrollback))
+
 (use-package eshell
   :commands (eshell)
+  :bind (:map eshell-mode-map
+              ("C-c M-o" . my/eshell-clear))
   :config
   (setf eshell-prompt-function
         (lambda ()
@@ -361,6 +373,9 @@ If a there is no open buffer containing the file the changes will be written."
   (with-temp-buffer
     (cd "/sudo::/")
     (async-shell-command command)))
+
+(use-package eat
+  :hook (eshell-load . eat-eshell-mode))
 
 (use-package magit
   :commands (magit)
@@ -405,7 +420,7 @@ If a there is no open buffer containing the file the changes will be written."
   :config
   (setf elfeed-db-directory
         (expand-file-name "elfeed-db" user-emacs-directory))
-  (setf elfeed-search-filter "@3-months-ago")
+  (setf elfeed-search-filter "@6-months-ago +unread")
   (load (expand-file-name "feeds.el" user-emacs-directory))
   (advice-add 'elfeed-search-quit-window :after #'my/kill-elfeed-search-buffer))
 

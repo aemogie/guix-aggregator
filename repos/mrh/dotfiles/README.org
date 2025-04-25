@@ -1,20 +1,19 @@
-#+AUTHOR: Alec Barreto
-#+OPTIONS: toc:nil
+#+author: Alec Barreto
+#+options: toc:nil
 
 * Dotfiles
 These are the configuration files for my personal guix + emacs setup. Feel free to take anything you find helpful and tell me your thoughts!
 
-#+CAPTION: desktop screenshot
+#+caption: desktop screenshot
 [[file:screenshot.png]]
 
-
 ** Free Software
-The most important part of my system is that it uses as much [[https://www.gnu.org/philosophy/free-sw.en.html][free software]] as possible, and I encourage all others to shoot for the same.
+The most important part of my system is that it uses as much [[https://www.gnu.org/philosophy/free-sw.en.html][free software]] as possible.
 I also have a fondness for lisp and hackable systems, hence why I control as much of my computing as possible through GNU Guix and Emacs.
-These are (mostly) distinct computing goals.
 
 My system is not completely free however, as some of my hardware is completely non-functional without proprietary kernel blobs.
-I hope that hardware manufacturers see the cons of this approach, and those that change would surely have the business of myself and many others.
+I hope hardware manufacturers turn away from this practice.
+Those that do would surely have the business of myself and many others.
 
 ** Guix
 [[https://guix.gnu.org][GNU Guix]] is a purely functional package manager and distribution of the GNU sytsem. It is committed to dependability (unbreakable), hackability, and software freedom.
@@ -34,17 +33,16 @@ Finally, my custom packages which are either not available or more up to date th
 I use emacs for just about everything on my computer other than browsing the web and consuming audio/visual media. This of course includes editing source code, but also:
 
 - [[https://www.gnu.org/software/auctex][AUCTeX]] for writing LaTeX documents
-- [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Dired.html][Dired]] for browsing files
+- [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Dired.html][Dired]] for managing files
 - [[https://www.gnu.org/software/emacs/manual/html_mono/eshell.html][Eshell]] + [[https://codeberg.org/akib/emacs-eat][Eat]] + =M-&= for shell/terminal
 - [[https://github.com/skeeto/elfeed][Elfeed]] for RSS
 - [[https://www.gnu.org/software/emacs/erc.html][ERC]] for IRC
 - [[https://www.nongnu.org/geiser/][Geiser]] for Guile Scheme hacking
 - [[https://magit.vc/][Magit]] for git
 - [[https://orgmode.org/][Org Mode]] for so much (including this readme!)
-- =M-x proced= to manage system processes
 - [[https://www.djcbsoftware.nl/code/mu/][Mu4e]] for email
 - [[https://joaotavora.github.io/sly][Sly]] for Common Lisp hacking
-- [[https://www.gnu.org/software/tramp/][Tramp]] for remote access
+- [[https://www.gnu.org/software/tramp/][Tramp]] for remotely accessing machines
 
 All of my emacs packages are installed and managed via guix home (see =Guix= section).
 

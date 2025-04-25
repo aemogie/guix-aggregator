@@ -9,7 +9,7 @@
                          ("next" . ">")
                          ("track" . "N")))
        (commands (map car commands-alist))
-       (usage (format #f "USAGE: ~a <~{~a~^|~}>" (current-filename) commands)))
+       (usage (format #f "USAGE: ~a <~{~a~^|~}>~%" (current-filename) commands)))
   (match (command-line)
     ((_ command)
      (if (member command commands)

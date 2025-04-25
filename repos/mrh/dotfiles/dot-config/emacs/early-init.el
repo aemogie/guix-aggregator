@@ -1,13 +1,10 @@
-;; suppress warning about following symlinks to vc-controlled dir
 (setf vc-follow-symlinks t)
 
-;; workaround initial white flashing (bug?)
 (setf default-frame-alist '((background-color . "#000000")
                             (ns-appearance . dark)
                             (ns-transparent-titlebar . t)
                             (alpha-background . 80)))
 
-;; speed up startup
 (defun restore-gc-cons-threshold ()
   (setq gc-cons-threshold 32000000
         gc-cons-percentage 0.1))
