@@ -46,14 +46,14 @@
     "cpu": {
         "format": "{usage}% \uF2DB",
         "states": {
-            "full": 98,
+            "full": 90,
         },
         "interval": 2,
     },
     "memory": {
         "format": "{percentage}% \uF538",
         "states": {
-            "full": 98,
+            "full": 90,
         },
         "interval": 2,
     },

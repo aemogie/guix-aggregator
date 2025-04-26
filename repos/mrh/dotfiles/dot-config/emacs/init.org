@@ -147,16 +147,22 @@ NOTE: On wayland emacs must be pure GTK (=emacs-pgtk= on guix)
 ** Mode Line
 
 #+begin_src emacs-lisp
-(use-package moody
-  :config
-  (moody-replace-mode-line-front-space)
-  (moody-replace-mode-line-buffer-identification)
-  (moody-replace-vc-mode))
-#+end_src
+(setq-default mode-line-format
+              '("%e"
+                mode-line-front-space
+                mode-line-modified
+                "    "
+                mode-line-buffer-identification
+                "  "
+                mode-line-position-column-line-format
+                "  "
+                (vc-mode vc-mode)
+                "  "
+                mode-name
+                "  "
+                mode-line-misc-info
+                mode-line-end-spaces))
 
-*** Display Time and Compactify Text
-
-#+begin_src emacs-lisp
 (setf mode-line-compact 'long)
 
 (setf display-time-format "%R"
@@ -306,7 +312,6 @@ Disable the mouse
 #+begin_src emacs-lisp
 (setf scroll-conservatively 10000
       auto-window-vscroll nil)
-(pixel-scroll-precision-mode 1)
 #+end_src
 
 * Navigation
@@ -505,8 +510,17 @@ Set up =Geiser=
 #+begin_src emacs-lisp
 (use-package org
   :defer t
-  :config (setf org-startup-folded t
-                org-edit-src-content-indentation 0))
+  :config
+  (setf org-startup-folded t
+        org-edit-src-content-indentation 0
+        org-babel-python-command "python3")
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (scheme . t)
+     (python . t)
+     (shell . t)
+     (eshell . t))))
 #+end_src
 
 *** Aesthetic Bullets
@@ -528,7 +542,6 @@ Export to pdf presentations via LaTeX beamer
 ** LaTeX
 *** Compilation
 Compile with =pdflatex= on current buffer's file.
-See also [[*Writing][Writing]] section.
 
 #+begin_src emacs-lisp
 (defun my/set-latex-compile ()
@@ -700,13 +713,15 @@ See [[file:./blog-config.el][blog-config.el]]
 #+begin_src emacs-lisp
 (use-package mu4e
   :commands (mu4e)
-  :config (setf mu4e-drafts-folder "/Drafts"
-                mu4e-sent-folder "/Sent"
-                mu4e-trash-folder "/Trash"
+  :config
+  (setf mu4e-drafts-folder "/Drafts"
+        mu4e-sent-folder "/Sent"
+        mu4e-trash-folder "/Trash"
 
-                mail-user-agent 'mu4e-user-agent
-                mu4e-get-mail-command (format "INSIDE_EMACS=%s mbsync -a"
-                                              emacs-version)))
+        mail-user-agent 'mu4e-user-agent
+        mu4e-get-mail-command (format "INSIDE_EMACS=%s mbsync -a"
+                                      emacs-version))
+  (mu4e-modeline-mode -1))
 #+end_src
 
 ** RSS
@@ -822,4 +837,10 @@ Have emacs remember both what files you recently visited and your position in th
     (let ((register-name (car register-pair)))
       (when (get-register register-name)
         (set-register register-name nil)))))
+#+end_src
+
+** File Encoding
+
+#+begin_src emacs-lisp
+(setq-default buffer-file-coding-system 'utf-8-unix)
 #+end_src

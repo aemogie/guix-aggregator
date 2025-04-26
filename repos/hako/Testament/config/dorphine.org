@@ -82,7 +82,7 @@
 #+end_src
 
 ** File Systems
-#+begin_src scheme :noweb yes :noweb-ref kernel-argument
+#+begin_src scheme :noweb-ref kernel-argument
   "rootfstype=tmpfs"
 #+end_src
 
@@ -262,7 +262,6 @@ No need to install less used ones, prefer ‘guix shell’.
                              %default-authorized-guix-keys))
                      (substitute-urls
                       `(,@%default-substitute-urls
-                        "https://substitute.boiledscript.com"
                         "https://substitutes.nonguix.org"))))))))
 #+end_src
 
@@ -471,12 +470,6 @@ https://github.com/fishinthecalculator/sops-guix
   (service tailscale-service-type)
 #+end_src
 
-#+begin_src scheme :noweb-ref service
-  (simple-service 'extra-hosts hosts-service-type
-    (list (host "100.126.99.80" "crustum")
-          (host "100.87.158.84" "gokuraku")))
-#+end_src
-
 ** mihomo
 #+begin_src scheme :noweb-ref service
   (service clash-service-type
@@ -545,6 +538,69 @@ https://github.com/fishinthecalculator/sops-guix
                         (append (pam-service-session pam)
                                 (list uaccess-pam-entry))))
                      pam)))))))
+#+end_src
+
+* Containers
+#+begin_src scheme :noweb-ref module
+  #:use-module (gnu services docker)
+#+end_src
+
+** containerd
+#+begin_src scheme :noweb-ref service
+  (service containerd-service-type)
+#+end_src
+
+** docker
+#+begin_src scheme :noweb-ref service
+  (service docker-service-type
+    (docker-configuration
+      (enable-iptables? #f)))
+#+end_src
+
+* Web Servers
+#+begin_src scheme :noweb-ref module
+  #:use-module (rosenthal services child-error)
+#+end_src
+
+** cloudflared
+#+begin_src scheme :noweb-ref service
+  (service cloudflare-tunnel-service-type
+    (cloudflare-tunnel-configuration
+      (log-level "error")
+      (token (sops-str '("cloudflared")))))
+#+end_src
+
+* Web Services
+#+begin_src scheme :noweb-ref module
+  #:use-module (rosenthal services child-error)
+  #:use-module (rosenthal services web)
+  #:use-module (gnu packages fonts)
+#+end_src
+
+** jellyfin
+#+begin_src scheme :noweb-ref service
+  (service jellyfin-service-type
+    (jellyfin-configuration
+      (extra-options
+       `("--volume" "/mnt/Mentha/@Library/Movies:/media/Movies"
+         "--volume" "/mnt/Mentha/@Library/Shows:/media/Shows"
+         "--volume"
+         ,(let ((path "/share/fonts/truetype/NotoSansCJK-VF.otf.ttc"))
+            (file-append font-google-noto-sans-cjk path ":/usr" path))))))
+#+end_src
+
+** komga
+#+begin_src scheme :noweb-ref service
+  (service komga-service-type
+    (komga-configuration
+      (port 44293)))
+#+end_src
+
+** navidrome
+#+begin_src scheme :noweb-ref service
+  (service navidrome-service-type
+    (navidrome-configuration
+      (extra-config (testament-file-content "navidrome.toml"))))
 #+end_src
 
 * Graphical Session
@@ -695,7 +751,7 @@ To use NVK, mesa should be installed into a profile.
 ** fontconfig
 #+begin_src scheme :noweb-ref home-package
   font-awesome-nonfree
-  font-adobe-source-serif-pro
+  font-adobe-source-serif
   font-apple-new-york
   font-apple-sf-pro
   font-chiron-hei-hk
@@ -1096,7 +1152,10 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'ox-hugo)
-    (package emacs-ox-hugo)
+    (package
+      ((package-input-rewriting
+        `((,emacs-minimal . ,emacs-next-minimal)))
+       emacs-ox-hugo))
     (load-after-packages '(ox))
     (load-force? #t))
 #+end_src
@@ -1167,15 +1226,6 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
        (isearch-wrap-pause . no-ding)
        (regexp-search-ring-max . 200)
        (search-ring-max . 200))))
-#+end_src
-
-*** emacs-isearch-mb
-Required for using Rime in minibuffer.
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'isearch-mb)
-    (package emacs-isearch-mb)
-    (hooks '((after-init . isearch-mb-mode))))
 #+end_src
 
 *** emacs-modus-themes
@@ -1382,20 +1432,6 @@ Required for using Rime in minibuffer.
     (hooks '((after-init . pinentry-start))))
 #+end_src
 
-*** emacs-rime
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'rime)
-    (package emacs-rime)
-    (options
-     '((default-input-method . "rime")
-       (rime-show-candidate . posframe)
-       (rime-show-preedit . #t)
-       (rime-title . "Rime")
-       (rime-posframe-properties . (:internal-border-width 1))
-       (rime-posframe-style . simple))))
-#+end_src
-
 *** emacs-vterm
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
@@ -1454,7 +1490,7 @@ Required for using Rime in minibuffer.
        (wl-smtp-authenticate-type . "plain")
        (wl-smtp-connection-type . ssl)
        (wl-smtp-posting-port . 465)
-       (wl-smtp-posting-server . "mx.boiledscript.com")
+       (wl-smtp-posting-server . "mail.boiledscript.com")
        (wl-smtp-posting-user . "hako@ultrarare.space")
        (wl-summary-auto-refile-skip-marks . #f)
        (wl-summary-line-format . "%n%T%P %Y-%M-%D(%W)%h:%m %t%[%17(%c %f%) %] %#%~%s")
@@ -1526,6 +1562,7 @@ Required for using Rime in minibuffer.
   #:use-module (gnu packages bash)
   #:use-module (gnu packages bittorrent)
   #:use-module (gnu packages browser-extensions)
+  #:use-module (gnu packages fcitx5)
   #:use-module (gnu packages games)
   #:use-module (gnu packages librewolf)
   #:use-module (gnu packages linux)
@@ -1593,39 +1630,30 @@ Required for using Rime in minibuffer.
 
 [[file:../files/plain/dorphine-btrbk.conf][dorphine-btrbk.conf]]
 
-** childhurd
-#+begin_src scheme :noweb yes :noweb-ref service
-  (service hurd-vm-service-type
-    (hurd-vm-configuration
-      (os <<childhurd>>)
-      (memory-size 4096)))
+** fcitx5
+#+begin_src scheme :noweb-ref home-package
+  fcitx5
+  fcitx5-configtool
+  fcitx5-material-color-theme
+  fcitx5-anthy
+  fcitx5-rime
 #+end_src
 
-#+name: childhurd
-#+begin_src scheme :noweb yes
-  (operating-system
-    (inherit %hurd-vm-operating-system)
+#+begin_src scheme :noweb-ref home-environment-variable
+  ("GUIX_GTK2_IM_MODULE_FILE" . "$HOME/.guix-home/profile/lib/gtk-2.0/2.10.0/immodules-gtk2.cache")
+  ("GUIX_GTK3_IM_MODULE_FILE" . "$HOME/.guix-home/profile/lib/gtk-3.0/3.0.0/immodules-gtk3.cache")
+#+end_src
 
-    (users
-     (cons (user-account
-             (name "hako")
-             (group "users")
-             (supplementary-groups '("wheel")))
-           %base-user-accounts))
-
-    (packages %base-packages/hurd)
-    (timezone <<timezone>>)
-
-    (services
-     (modify-services (operating-system-user-services %hurd-vm-operating-system)
-       (openssh-service-type
-        config => (openssh-configuration
-                    (inherit config)
-                    (authorized-keys
-                     (let ((hako.pub (plain-file "hako.pub" "ssh-ed25519 \
-  AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2")))
-                       `(("root" ,hako.pub)
-                         ("hako" ,hako.pub)))))))))
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'fcitx5
+      home-shepherd-service-type
+    (list (shepherd-service
+            (provision '(fcitx5))
+            (requirement '(dbus))
+            (start
+             #~(make-forkexec-constructor
+                (list #$(file-append fcitx5 "/bin/fcitx5"))))
+            (stop #~(make-kill-destructor)))))
 #+end_src
 
 ** ffmpeg
@@ -1701,6 +1729,10 @@ An extra graft is done in [[id:15223ce6-bb6b-427b-b598-30998cdd9bdd][nvidia-driv
   miniflux-injector/icecat
   privacy-redirect/icecat
   ublock-origin/icecat
+#+end_src
+
+#+begin_src scheme :noweb-ref home-environment-variable
+  ("MOZ_DISABLE_RDD_SANDBOX" . "1")
 #+end_src
 
 ** l2md

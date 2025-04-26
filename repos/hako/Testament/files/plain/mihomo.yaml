@@ -106,6 +106,7 @@ rules:
   - "GEOIP,cn,DIRECT"
   - "GEOSITE,cn,DIRECT"
   - "PROCESS-NAME,.qbittorrent-nox-real,DIRECT"
+  - "PROCESS-NAME,cloudflared,DIRECT"
   - "PROCESS-NAME,cs2,DIRECT"
   - "PROCESS-NAME,rclone,DIRECT"
   - "PROCESS-NAME,steam,DIRECT"

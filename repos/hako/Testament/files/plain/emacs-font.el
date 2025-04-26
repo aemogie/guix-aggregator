@@ -12,7 +12,7 @@
                      (serif    . "serif")
                      (cjk      . "Chiron Sung HK VF")
                      (symbol   . "Noto Color Emoji")
-                     (modeline . "Source Serif Pro"))
+                     (modeline . "Source Serif 4"))
   "Fonts to use.")
 
 (defun nema//get-font-family (key)

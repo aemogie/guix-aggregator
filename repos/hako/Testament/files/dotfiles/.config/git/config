@@ -22,7 +22,7 @@
         enabled = true
 [sendemail]
         smtpEncryption = ssl
-        smtpServer = mx.boiledscript.com
+        smtpServer = mail.boiledscript.com
         smtpUser = hako@ultrarare.space
 [user]
         name = Hilton Chain

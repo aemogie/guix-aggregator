@@ -20,42 +20,6 @@
 ;;; Packages
 ;;;
 
-(define-public emacs-eshell-atuin
-  (let ((commit "1ac4895529546839985c7f57c9858644f7be1e6a")
-        (revision "0"))
-    (package
-      (name "emacs-eshell-atuin")
-      (version (git-version "0.2.0" revision commit))
-      (source (origin
-                (method git-fetch)
-                (uri (git-reference
-                      (url "https://github.com/SqrtMinusOne/eshell-atuin")
-                      (commit commit)))
-                (file-name (git-file-name name version))
-                (sha256
-                 (base32
-                  "0zf62qdmqw7y7s1dg3d35abr9jaymyqfbrv4bplkrry2wwk0m4gx"))))
-      (build-system emacs-build-system)
-      (arguments
-       (list #:phases
-             #~(modify-phases %standard-phases
-                 (add-after 'unpack 'fix-paths
-                   (lambda* (#:key inputs #:allow-other-keys)
-                     (substitute* "eshell-atuin.el"
-                       (("\\(executable-find \"atuin\"\\)")
-                        (format #f "\"~a\""
-                                (search-input-file inputs "bin/atuin")))))))))
-      (propagated-inputs (list emacs-compat))
-      (inputs (list atuin))
-      (home-page "https://github.com/SqrtMinusOne/eshell-atuin")
-      (synopsis "Integrate @code{eshell} with @command{atuin}")
-      (description
-       "This package provides functionality to store and browse @code{eshell}
-history in @command{atuin}.  @code{atuin} stores shell history in a database,
-which allows for having the same history across multiple shells, sessions, and
-optionally across different machines.")
-      (license license:gpl3+))))
-
 (define-public emacs-isearch-mb
   (package
     (name "emacs-isearch-mb")

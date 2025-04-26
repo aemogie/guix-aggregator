@@ -1,0 +1,9 @@
+alias ls ls -1A
+
+alias dots stow --dotfiles -t $HOME -d $HOME/src dotfiles
+
+alias hr guix home reconfigure -L $HOME/src/dotfiles $HOME/src/dotfiles/mrh-guix/home/$MACHINE_ROLE/config.scm
+
+alias sr sudo guix system reconfigure -L $HOME/src/dotfiles $HOME/src/dotfiles/mrh-guix/system/$MACHINE_ROLE/config.scm
+
+alias mw monero-wallet-cli --daemon-address=10.0.0.1:18081 --trusted-daemon

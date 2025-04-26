@@ -393,6 +393,8 @@
         libtool
         zlib
         ovmf-x86-64
+        stress
+        stress-ng
 
         (sss/x86-only-pkg architecture "nyxt")
 

@@ -60,11 +60,21 @@ Otherwise set locally with `keymap-local-set'."
 (setf frame-title-format "%b")
 (add-to-list 'default-frame-alist '(undecorated . t))
 
-(use-package moody
-  :config
-  (moody-replace-mode-line-front-space)
-  (moody-replace-mode-line-buffer-identification)
-  (moody-replace-vc-mode))
+(setq-default mode-line-format
+              '("%e"
+                mode-line-front-space
+                mode-line-modified
+                "    "
+                mode-line-buffer-identification
+                "  "
+                mode-line-position-column-line-format
+                "  "
+                (vc-mode vc-mode)
+                "  "
+                mode-name
+                "  "
+                mode-line-misc-info
+                mode-line-end-spaces))
 
 (setf mode-line-compact 'long)
 
@@ -162,7 +172,6 @@ Otherwise set locally with `keymap-local-set'."
 
 (setf scroll-conservatively 10000
       auto-window-vscroll nil)
-(pixel-scroll-precision-mode 1)
 
 (unless (boundp '*hidden-buffers*)
   (defvar *hidden-buffers* ()
@@ -280,8 +289,17 @@ See `my/dired-run-command'."
 
 (use-package org
   :defer t
-  :config (setf org-startup-folded t
-                org-edit-src-content-indentation 0))
+  :config
+  (setf org-startup-folded t
+        org-edit-src-content-indentation 0
+        org-babel-python-command "python3")
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (scheme . t)
+     (python . t)
+     (shell . t)
+     (eshell . t))))
 
 (use-package org-bullets
   :hook (org-mode . org-bullets-mode))
@@ -394,13 +412,15 @@ If a there is no open buffer containing the file the changes will be written."
 
 (use-package mu4e
   :commands (mu4e)
-  :config (setf mu4e-drafts-folder "/Drafts"
-                mu4e-sent-folder "/Sent"
-                mu4e-trash-folder "/Trash"
+  :config
+  (setf mu4e-drafts-folder "/Drafts"
+        mu4e-sent-folder "/Sent"
+        mu4e-trash-folder "/Trash"
 
-                mail-user-agent 'mu4e-user-agent
-                mu4e-get-mail-command (format "INSIDE_EMACS=%s mbsync -a"
-                                              emacs-version)))
+        mail-user-agent 'mu4e-user-agent
+        mu4e-get-mail-command (format "INSIDE_EMACS=%s mbsync -a"
+                                      emacs-version))
+  (mu4e-modeline-mode -1))
 
 (defun my/make-youtube-feed (channel-url)
   (interactive "Mchannel url: ")
@@ -465,3 +485,5 @@ If a there is no open buffer containing the file the changes will be written."
     (let ((register-name (car register-pair)))
       (when (get-register register-name)
         (set-register register-name nil)))))
+
+(setq-default buffer-file-coding-system 'utf-8-unix)

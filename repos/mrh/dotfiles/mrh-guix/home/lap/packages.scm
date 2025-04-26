@@ -44,6 +44,7 @@
    ;; graphical-env
    alacritty
    brightnessctl
+   evince
    fnott
    fuzzel
    gtk+
@@ -56,7 +57,6 @@
    waybar
    wf-recorder
    wl-clipboard
-   xdg-utils
 
    ;; fonts
    ;; might need to  run "fc-cache -vfr" to reubild font cache
@@ -97,7 +97,6 @@
    emacs-magit
    emacs-marginalia
    emacs-markdown-mode
-   emacs-moody
    emacs-orderless
    emacs-org-bullets
    emacs-org-static-blog
@@ -129,21 +128,23 @@
 
    ;; security
    gnupg
+   keepassxc
    ksshaskpass
    pinentry-tty
 
-   ;; misc
-   cups
+   ;; sysadmin
    fastfetch
-   (list glib "bin")
-   ispell
-   keepassxc
-   monero
-   pandoc
-   rlwrap
    rsync
    socat
    stow
+
+   ;; misc
+   cups
+   (list glib "bin")
+   ispell
+   monero
+   pandoc
    texlive
    unzip
+   xdg-utils
    ))
