@@ -35,13 +35,14 @@ Most here is agnostic of that but some is not, such as smooth scrolling and tran
 (add-hook 'emacs-startup-hook #'restore-gc-cons-threshold 105)
 #+end_src
 
-* File / Directory Paths
-Setup custom and authentication files
+* Files / Directories
+** Paths
 
 #+begin_src emacs-lisp
 (setf default-directory (format "%s/" (getenv "HOME")))
-(setf custom-file (expand-file-name "custom.el" user-emacs-directory))
 
+(setf custom-file
+      (expand-file-name "custom.el" user-emacs-directory))
 (defvar authentication-file
   (expand-file-name "authentication.el" user-emacs-directory))
 
@@ -49,512 +50,44 @@ Setup custom and authentication files
 (load authentication-file)
 #+end_src
 
+** File Options
+*** Large File Threshold
+
+#+begin_src emacs-lisp
+(setf large-file-warning-threshold 10000000)
+#+end_src
+
+*** Revert File-Buffers on Change
+
+#+begin_src emacs-lisp
+(global-auto-revert-mode 1)
+#+end_src
+
+*** Revisiting Files
+Have emacs remember both what files you recently visited and your position in them
+
+#+begin_src emacs-lisp
+(save-place-mode 1)
+(savehist-mode 1)
+(recentf-mode 1)
+#+end_src
+
+*** File Encoding
+
+#+begin_src emacs-lisp
+(setq-default buffer-file-coding-system 'utf-8-unix)
+#+end_src
+
 ** Backups
 Prevent emacs from littering your directories with backup files everywhere
 
 #+begin_src emacs-lisp
-(setf backup-directory-alist '(("." . "~/.config/emacs/backups"))
-      backup-by-copying t)
+(setf backup-directory-alist
+      `(("." . ,(expand-file-name "backups" user-emacs-directory))))
+
+(setf backup-by-copying t)
 #+end_src
 
-* Keybindings
-** Personal Bindings
-Define personal bindings
-
-#+begin_src emacs-lisp
-(defvar *my/keybinds* '(("M-<tab>" . next-buffer)
-                        ("M-<iso-lefttab>" . previous-buffer)
-                        ("M-0" . delete-window)
-                        ("M-1" . delete-other-windows)
-                        ("M-2" . split-window-right)
-                        ("M-3" . split-window-below)
-                        ("M-]" . next-window-any-frame)
-                        ("M-[" . previous-window-any-frame)
-                        ("C-x b" . consult-buffer)
-                        ("C-c r s" . consult-register-store)
-                        ("C-c r l" . consult-register-load)
-                        ("C-c k" . kill-buffer-and-window)
-                        ("C-c g t" . ef-themes-toggle)
-                        ("C-c m v" . my/mpv)
-                        ("C-c m a" . my/play-album)
-                        ("C-c b h" . my/hide-buffer)
-                        ("C-c b u" . my/unhide-buffer)
-                        ("C-c r y" . my/add-youtube-feed)))
-#+end_src
-
-Function to activate personal bindings
-
-#+begin_src emacs-lisp
-(defun my/activate-keybinds (&optional local)
-  "Activate personal keybinds stored in `*my/keybinds*'.
-If LOCAL is NIL set globally with `keymap-global-set'.
-Otherwise set locally with `keymap-local-set'."
-  (interactive "P")
-  (let ((setter-function (if local 'keymap-local-set 'keymap-global-set)))
-    (dolist (key-and-function *my/keybinds*)
-      (funcall setter-function (car key-and-function) (cdr key-and-function)))))
-
-(my/activate-keybinds)
-#+end_src
-
-** Discover Bindings
-
-#+begin_src emacs-lisp
-(use-package which-key
-  :if (>= emacs-major-version 30)
-  :config (which-key-mode 1))
-#+end_src
-
-* UI
-** Opacity/Transparency
-NOTE: On wayland emacs must be pure GTK (=emacs-pgtk= on guix)
-
-#+begin_src emacs-lisp
-(add-to-list 'default-frame-alist '(alpha-background . 85))
-#+end_src
-
-** General Cleanup
-*** Startup Buffers
-
-#+begin_src emacs-lisp
-(setf initial-scratch-message nil
-      inhibit-startup-screen t)
-#+end_src
-
-*** Toolbars
-
-#+begin_src emacs-lisp
-(scroll-bar-mode -1)
-(tool-bar-mode -1)
-(menu-bar-mode -1)
-#+end_src
-
-*** Lines
-
-#+begin_src emacs-lisp
-(blink-cursor-mode -1)
-(global-hl-line-mode 1)
-(global-visual-line-mode 1)
-#+end_src
-
-** X/Wayland Window Properties
-
-#+begin_src emacs-lisp
-(setf frame-title-format "%b")
-(add-to-list 'default-frame-alist '(undecorated . t))
-#+end_src
-
-** Mode Line
-
-#+begin_src emacs-lisp
-(setq-default mode-line-format
-              '("%e"
-                mode-line-front-space
-                mode-line-modified
-                "    "
-                mode-line-buffer-identification
-                "  "
-                mode-line-position-column-line-format
-                "  "
-                (vc-mode vc-mode)
-                "  "
-                mode-name
-                "  "
-                mode-line-misc-info
-                mode-line-end-spaces))
-
-(setf mode-line-compact 'long)
-
-(setf display-time-format "%R"
-      display-time-default-load-average nil)
-(display-time-mode 1)
-#+end_src
-
-** Line/Column Numbers
-
-#+begin_src emacs-lisp
-(setf display-line-numbers-type t)
-
-(dolist (hook '(conf-mode-hook org-mode-hook prog-mode-hook))
-  (add-hook hook 'display-line-numbers-mode))
-
-(column-number-mode 1)
-#+end_src
-
-** Fonts
-
-#+begin_src emacs-lisp
-(defvar *my/font* "DejaVu Sans Mono")
-
-(set-face-attribute 'default nil
-                    :font *my/font*
-                    :slant 'normal
-                    :height 120)
-
-(set-face-attribute 'italic nil
-                    :slant 'italic
-                    :underline nil)
-#+end_src
-
-*** Icons
-You may need to call =(nerd-icons-install-fonts)=
-
-#+begin_src emacs-lisp
-(use-package nerd-icons-dired
-  :hook (dired-mode . nerd-icons-dired-mode))
-#+end_src
-
-*** Prettify Symbols
-
-#+begin_src emacs-lisp
-(global-prettify-symbols-mode 1)
-#+end_src
-
-** Theme
-*** Toggle between light and dark themes
-
-#+begin_src emacs-lisp
-(defun my/enable-theme (theme opacity)
-  (enable-theme theme)
-  (set-frame-parameter nil 'alpha-background opacity)
-  (setf (cdr (assoc 'alpha-background default-frame-alist)) opacity))
-
-(defun my/switch-theme ()
-  "cycle between loaded themes"
-  (interactive)
-  (let ((current-theme (car custom-enabled-themes)))
-    (if (cl-every #'boundp '(*my/dark-theme* *my/light-theme*))
-        (if (eq current-theme *my/dark-theme*)
-            (my/enable-theme *my/light-theme* 100)
-          (my/enable-theme *my/dark-theme* 75))
-      (message "must define both *my/dark-theme* and *my/light-theme*"))))
-#+end_src
-
-*** Ef Themes
-
-#+begin_src emacs-lisp
-(defun my/adjust-opacity ()
-  (interactive)
-  (set-frame-parameter nil 'alpha-background
-                       (if (member (ef-themes--current-theme)
-                                   ef-themes-light-themes)
-                           100
-                         80)))
-
-(use-package ef-themes
-  :config
-  (advice-add 'ef-themes-toggle :after #'my/adjust-opacity)
-  (setf ef-themes-to-toggle '(ef-autumn ef-eagle))
-  (ef-themes-select-dark 'ef-autumn))
-#+end_src
-
-** Completion
-*** Fuzzy Finding
-
-#+begin_src emacs-lisp
-(use-package orderless 
-  :config
-  (setf completion-styles '(orderless basic)
-        completion-category-defaults nil
-        completion-category-overrides nil))
-#+end_src
-
-*** Main Buffer
-
-#+begin_src emacs-lisp
-(use-package corfu 
-  :init
-  (setq-default pgtk-wait-for-event-timeout 0)
-  :config
-  (setf corfu-auto t
-        corfu-auto-delay 0.2
-        corfu-auto-prefix 2
-        corfu-count 8
-        corfu-popupinfo-delay '(1.5 . 0.5))
-  
-  (add-to-list 'corfu--frame-parameters '(alpha-background . 100))
-  (global-corfu-mode 1)
-  (corfu-popupinfo-mode 1)
-  
-  (with-eval-after-load 'savehist
-    (corfu-history-mode 1)
-    (add-to-list 'savehist-additional-variables 'corfu-history)))
-#+end_src
-
-*** Minibuffer
-Add many useful =consult= commands and vertical completion
-
-#+begin_src emacs-lisp
-(use-package consult
-  :config (delete 'consult--source-recent-file consult-buffer-sources))
-
-(use-package vertico
-  :config (vertico-mode 1))
-#+end_src
-
-*** Annotations
-
-#+begin_src emacs-lisp
-(use-package marginalia
-  :config (marginalia-mode 1))
-#+end_src
-
-** Mouse
-Disable the mouse
-
-#+begin_src emacs-lisp
-(use-package disable-mouse
-  :config (global-disable-mouse-mode 1))
-#+end_src
-
-** Scrolling
-
-#+begin_src emacs-lisp
-(setf scroll-conservatively 10000
-      auto-window-vscroll nil)
-#+end_src
-
-* Navigation
-** Buffers
-Create a list of "hidden" buffers which are ignored by =next-buffer= and =previous-buffer=, but not ignored by e.g. =switch-to-buffer=.
-See also the [[*Keybindings][Keybindings]] section.
-
-#+begin_src emacs-lisp
-(unless (boundp '*hidden-buffers*)
-  (defvar *hidden-buffers* ()
-    "List of buffer names to be ignored by `next-buffer' and `previous-buffer'.
-See also `my/hide-buffer' and `hidden-buffer-p'."))
-
-(with-eval-after-load 'savehist
-  (add-to-list 'savehist-additional-variables '*hidden-buffers*))
-
-(defun hidden-buffer-p (window buffer bury-or-kill)
-  "Hide buffers with name in `*hidden-buffers*'.
-See also `switch-to-prev-buffer-skip'."
-  (cl-find (buffer-name buffer) *hidden-buffers* :test #'string=))
-
-(customize-set-variable 'switch-to-prev-buffer-skip 'hidden-buffer-p)
-
-(defun my/hide-buffer (&optional buffer-name)
-  "Adds BUFFER-NAME to `*hidden-buffers*'.
-If BUFFER-NAME is NIL then the current buffer name is used via `buffer-name'.
-See also `my/unhide-buffer'."
-  (interactive)
-  (cl-pushnew (if buffer-name
-                  buffer-name
-                (buffer-name))
-              ,*hidden-buffers*
-              :test #'string=))
-
-(defun my/unhide-buffer (&optional buffer-name)
-  "Removes BUFFER-NAME from `*hidden-buffers*'.
-If BUFFER-NAME is NIL then the current buffer name is used via `buffer-name'.
-See also `my/hide-buffer'."
-  (interactive)
-  (setf *hidden-buffers* (remove (if buffer-name
-                                     buffer-name
-                                   (buffer-name))
-                                 ,*hidden-buffers*)))
-#+end_src
-
-* Writing
-** Selection
-Replace text in active region on insert
-
-#+begin_src emacs-lisp
-(use-package delsel
-  :config (delete-selection-mode 1))
-#+end_src
-
-** Programming
-*** Indentation
-**** Only Spaces (no tabs)
-
-#+begin_src emacs-lisp
-(setq-default indent-tabs-mode nil
-              electric-indent-mode nil
-              tab-width 4)
-#+end_src
-
-**** Automatically Indent
-
-#+begin_src emacs-lisp
-(add-hook 'prog-mode-hook 'electric-indent-local-mode)
-#+end_src
-
-**** (un)Tabify Multiple Files
-
-#+begin_src emacs-lisp
-(defun my/dired-tabify-files (&optional untabify)
-  "Run eitheir `tabify' or `untabify' on marked files in dired.
-See `my/dired-run-command'."
-  (interactive "P")
-  (let ((tab-function (if untabify #'untabify #'tabify)))
-    (my/dired-run-command
-     (lambda ()
-       (funcall tab-function (point-min) (point-max))))))
-#+end_src
-
-*** LSP
-**** Eglot
-Speed up performance (bug?)
-
-#+begin_src emacs-lisp
-(fset #'jsonrpc--log-event #'ignore)
-#+end_src
-
-*** Compiling
-Compile without showing compile buffer
-
-#+begin_src emacs-lisp
-(defun my/compile ()
-  (interactive)
-  (save-window-excursion (compile compile-command)))
-
-(defun my/set-compile-command (command)
-  (set (make-local-variable 'compile-command)
-       command))
-#+end_src
-
-*** Lisp
-**** Parenthesis
-***** Balance
-
-#+begin_src emacs-lisp
-(use-package paredit
-  :hook ((lisp-mode emacs-lisp-mode scheme-mode) . paredit-mode))
-#+end_src
-
-***** Rainbow Coloring
-
-#+begin_src emacs-lisp
-(use-package rainbow-delimiters
-  :hook
-  ((lisp-mode emacs-lisp-mode scheme-mode) . rainbow-delimiters-mode))
-#+end_src
-
-***** Indentation
-#+begin_src emacs-lisp
-(use-package aggressive-indent
-  :hook
-  ((lisp-mode emacs-lisp-mode scheme-mode) . aggressive-indent-mode))
-#+end_src
-
-**** Common Lisp
-***** REPL/IDE
-****** Sly
-
-#+begin_src emacs-lisp
-(use-package sly
-  :commands (sly)
-  :hook (sly-mrepl-mode . rainbow-delimiters-mode)
-  :config
-  (setf inferior-lisp-program "sbcl"
-        sly-mrepl-history-file-name "~/.config/emacs/sly/sly-mrepl-history")
-  :after (rainbow-delimiters))
-#+end_src
-
-**** Emacs Lisp
-***** Remove all advice from function
-
-#+begin_src emacs-lisp
-(defun my/remove-all-advice (sym)
-  (interactive)
-  (advice-mapc (lambda (advice _props)
-                 (advice-remove sym advice))
-               sym))
-#+end_src
-
-*** Agda
-See [[https://unimath.github.io/agda-unimath/HOWTO-INSTALL.html#editor-setup][agda-unimath]] for more details.
-
-#+begin_src emacs-lisp
-(when (executable-find "agda-mode")
-  (load-file (let ((coding-system-for-read 'utf-8))
-               (shell-command-to-string "agda-mode locate")))
-  (setf auto-mode-alist (cons '("\\.lagda.md$" . agda2-mode) auto-mode-alist)))
-#+end_src
-
-*** Go
-Helper macro for calling Go cli commands (probably dumb)
-
-#+begin_src emacs-lisp
-(defun my/set-go-compile ()
-  (my/set-compile-command "go build"))
-
-(defun my/go-run ()
-  (interactive)
-  (shell-command "go run"))
-
-(use-package go-mode
-  :hook (go-mode . my/set-go-compile)
-  :bind (:map go-mode-map
-              ("C-c C-c" . my/compile)
-              ("C-c C-r" . my/go-run)))
-#+end_src
-
-*** Guile
-Set up =Geiser=
-
-#+begin_src emacs-lisp
-(use-package geiser)
-
-(use-package geiser-guile
-  :config
-  (setf geiser-guile-load-init-file t)
-  :after (geiser))
-#+end_src
-
-** Org Mode
-
-#+begin_src emacs-lisp
-(use-package org
-  :defer t
-  :config
-  (setf org-startup-folded t
-        org-edit-src-content-indentation 0
-        org-babel-python-command "python3")
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((emacs-lisp . t)
-     (scheme . t)
-     (python . t)
-     (shell . t)
-     (eshell . t))))
-#+end_src
-
-*** Aesthetic Bullets
-
-#+begin_src emacs-lisp
-(use-package org-bullets
-  :hook (org-mode . org-bullets-mode))
-#+end_src
-
-*** Export
-**** Beamer
-Export to pdf presentations via LaTeX beamer
-
-#+begin_src emacs-lisp
-(use-package ox-beamer
-  :after (org))
-#+end_src
-
-** LaTeX
-*** Compilation
-Compile with =pdflatex= on current buffer's file.
-
-#+begin_src emacs-lisp
-(defun my/set-latex-compile ()
-  (my/set-compile-command (format "pdflatex %s" (buffer-file-name))))
-
-(use-package latex
-  :defer t
-  :hook (LaTeX-mode . my/set-latex-compile)
-  :bind (:map LaTeX-mode-map
-              ("C-c C-c" . my/compile)))
-#+end_src
-
-* System Administration
 ** File Management
 *** Dired
 
@@ -616,7 +149,7 @@ Fix bug causing hangups upon re-encryption of files
 (fset 'epg-wait-for-status 'ignore)
 #+end_src
 
-*** Use Trash For Deletion
+*** Trash For Deletion
 
 #+begin_src emacs-lisp
 (setf delete-by-moving-to-trash t)
@@ -629,6 +162,506 @@ Fix bug causing hangups upon re-encryption of files
         trashed-use-header-line t))
 #+end_src
 
+* Keybindings
+** Personal Bindings
+Define personal bindings
+
+#+begin_src emacs-lisp
+(defvar *my/keybinds* '(("M-<tab>" . next-buffer)
+                        ("M-<iso-lefttab>" . previous-buffer)
+                        ("M-0" . delete-window)
+                        ("M-1" . delete-other-windows)
+                        ("M-2" . split-window-right)
+                        ("M-3" . split-window-below)
+                        ("M-]" . next-window-any-frame)
+                        ("M-[" . previous-window-any-frame)
+                        ("C-x b" . consult-buffer)
+                        ("M-g M-g" . consult-goto-line)
+                        ("C-c y" . consult-yank-from-kill-ring)
+                        ("C-c r s" . consult-register-store)
+                        ("C-c r l" . consult-register-load)
+                        ("C-c t" . ef-themes-toggle)
+                        ("C-c b k" . kill-buffer-and-window)
+                        ("C-c b h" . my/hide-buffer)
+                        ("C-c b u" . my/unhide-buffer)
+                        ("C-c m v" . my/mpv)
+                        ("C-c m a" . my/play-album)))
+#+end_src
+
+Function to activate personal bindings
+
+#+begin_src emacs-lisp
+(defun my/activate-keybinds (&optional local)
+  "Activate personal keybinds stored in `*my/keybinds*'.
+If LOCAL is NIL set globally with `keymap-global-set'.
+Otherwise set locally with `keymap-local-set'."
+  (interactive "P")
+  (let ((setter-function (if local 'keymap-local-set 'keymap-global-set)))
+    (dolist (key-and-function *my/keybinds*)
+      (funcall setter-function (car key-and-function) (cdr key-and-function)))))
+
+(my/activate-keybinds)
+#+end_src
+
+** Discover Bindings
+
+#+begin_src emacs-lisp
+(use-package which-key
+  :if (>= emacs-major-version 30)
+  :config (which-key-mode 1))
+#+end_src
+
+* UI
+** Opacity/Transparency
+NOTE: On wayland emacs must be pure GTK (=emacs-pgtk= on guix)
+
+#+begin_src emacs-lisp
+(add-to-list 'default-frame-alist '(alpha-background . 80))
+#+end_src
+
+** General Cleanup
+*** Startup Buffers
+
+#+begin_src emacs-lisp
+(setf initial-scratch-message nil
+      inhibit-startup-screen t)
+#+end_src
+
+*** Toolbars
+
+#+begin_src emacs-lisp
+(scroll-bar-mode -1)
+(tool-bar-mode -1)
+(menu-bar-mode -1)
+#+end_src
+
+*** Cursor
+
+#+begin_src emacs-lisp
+(blink-cursor-mode -1)
+#+end_src
+
+** X/Wayland Window Properties
+
+#+begin_src emacs-lisp
+(setf frame-title-format "%b")
+(add-to-list 'default-frame-alist '(undecorated . t))
+#+end_src
+
+** Mode Line
+
+#+begin_src emacs-lisp
+(setq-default mode-line-format
+              '("%e"
+                mode-line-front-space
+                mode-line-modified
+                "  "
+                mode-line-buffer-identification
+                "  "
+                mode-line-position-column-line-format
+                "  "
+                (vc-mode vc-mode)
+                "  "
+                mode-name
+                "  "
+                (:eval (unless (zerop text-scale-mode-amount)
+                         text-scale-mode-lighter))
+                "  "
+                mode-line-misc-info
+                mode-line-end-spaces))
+
+(setf mode-line-compact 'long)
+
+(setf display-time-format "%R"
+      display-time-default-load-average nil)
+(display-time-mode 1)
+#+end_src
+
+** Lines
+
+#+begin_src emacs-lisp
+(global-hl-line-mode 1)
+(global-visual-line-mode 1)
+
+(setf display-line-numbers-type t)
+
+(dolist (hook '(conf-mode-hook org-mode-hook prog-mode-hook))
+  (add-hook hook 'display-line-numbers-mode))
+#+end_src
+
+** Fonts
+
+#+begin_src emacs-lisp
+(defvar *my/font* "DejaVu Sans Mono")
+
+(set-face-attribute 'default nil
+                    :font *my/font*
+                    :slant 'normal
+                    :height 125)
+
+(set-face-attribute 'italic nil
+                    :slant 'italic
+                    :underline nil)
+#+end_src
+
+*** Icons
+You may need to call =(nerd-icons-install-fonts)=
+
+#+begin_src emacs-lisp
+(use-package nerd-icons-dired
+  :hook (dired-mode . nerd-icons-dired-mode))
+#+end_src
+
+*** Prettify Symbols
+
+#+begin_src emacs-lisp
+(global-prettify-symbols-mode 1)
+#+end_src
+
+** Themes
+
+#+begin_src emacs-lisp
+(defun my/adjust-opacity ()
+  (set-frame-parameter nil 'alpha-background
+                       (if (member (ef-themes--current-theme)
+                                   ef-themes-light-themes)
+                           100
+                         80)))
+
+(use-package ef-themes
+  :config
+  (advice-add 'ef-themes-toggle :after #'my/adjust-opacity)
+  (setf ef-themes-to-toggle '(ef-autumn ef-eagle))
+  (ef-themes-select-dark 'ef-autumn))
+#+end_src
+
+** Completion
+*** Fuzzy Finding
+
+#+begin_src emacs-lisp
+(use-package orderless 
+  :config
+  (setf completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides nil))
+#+end_src
+
+*** Main Buffer
+
+#+begin_src emacs-lisp
+(use-package corfu 
+  :init
+  (setq-default pgtk-wait-for-event-timeout 0)
+  :config
+  (setf corfu-auto t
+        corfu-auto-delay 0.2
+        corfu-auto-prefix 2
+        corfu-count 8
+        corfu-popupinfo-delay '(1.5 . 0.5))
+  
+  (add-to-list 'corfu--frame-parameters '(alpha-background . 100))
+  (global-corfu-mode 1)
+  (corfu-popupinfo-mode 1)
+  
+  (with-eval-after-load 'savehist
+    (corfu-history-mode 1)
+    (add-to-list 'savehist-additional-variables 'corfu-history)))
+#+end_src
+
+*** Minibuffer
+Add vertical completion
+
+#+begin_src emacs-lisp
+(use-package vertico
+  :config (vertico-mode 1))
+#+end_src
+
+*** Annotations
+
+#+begin_src emacs-lisp
+(use-package marginalia
+  :config (marginalia-mode 1))
+#+end_src
+
+** Mouse
+Disable the mouse
+
+#+begin_src emacs-lisp
+(use-package disable-mouse
+  :config (global-disable-mouse-mode 1))
+#+end_src
+
+** Scrolling
+
+#+begin_src emacs-lisp
+(setf scroll-conservatively 10000
+      auto-window-vscroll nil)
+#+end_src
+
+* Navigation
+** Consult
+#+begin_src emacs-lisp
+(use-package consult
+  :config (setf consult-buffer-sources
+                '(consult--source-hidden-buffer
+                  consult--source-modified-buffer
+                  consult--source-buffer
+                  consult--source-bookmark
+                  consult--source-recent-file
+                  consult--source-file-register
+                  consult--source-project-buffer-hidden
+                  consult--source-project-recent-file-hidden
+                  consult--source-project-root-hidden)))
+#+end_src
+
+** Buffers
+Create a list of "hidden" buffers which are ignored by =next-buffer= and =previous-buffer=, but not ignored by e.g. =switch-to-buffer=.
+
+#+begin_src emacs-lisp
+(unless (boundp '*hidden-buffers*)
+  (defvar *hidden-buffers* ()
+    "List of buffer names to be ignored by `next-buffer' and `previous-buffer'.
+See also `my/hide-buffer' and `hidden-buffer-p'."))
+
+(with-eval-after-load 'savehist
+  (add-to-list 'savehist-additional-variables '*hidden-buffers*))
+
+(defun hidden-buffer-p (window buffer bury-or-kill)
+  "Hide buffers with name in `*hidden-buffers*'.
+See also `switch-to-prev-buffer-skip'."
+  (cl-find (buffer-name buffer) *hidden-buffers* :test #'string=))
+
+(customize-set-variable 'switch-to-prev-buffer-skip 'hidden-buffer-p)
+
+(defun my/hide-buffer (&optional buffer-name)
+  "Adds BUFFER-NAME to `*hidden-buffers*'.
+If BUFFER-NAME is NIL then the current buffer name is used via `buffer-name'.
+See also `my/unhide-buffer'."
+  (interactive)
+  (cl-pushnew (if buffer-name
+                  buffer-name
+                (buffer-name))
+              ,*hidden-buffers*
+              :test #'string=))
+
+(defun my/unhide-buffer (&optional buffer-name)
+  "Removes BUFFER-NAME from `*hidden-buffers*'.
+If BUFFER-NAME is NIL then the current buffer name is used via `buffer-name'.
+See also `my/hide-buffer'."
+  (interactive)
+  (setf *hidden-buffers* (remove (if buffer-name
+                                     buffer-name
+                                   (buffer-name))
+                                 ,*hidden-buffers*)))
+#+end_src
+
+* Writing
+** Selection
+Replace text in active region on insert
+
+#+begin_src emacs-lisp
+(use-package delsel
+  :config (delete-selection-mode 1))
+#+end_src
+
+** Programming
+*** Tabs
+
+#+begin_src emacs-lisp
+(setq-default indent-tabs-mode nil
+              tab-width 4)
+#+end_src
+
+**** (un)Tabify Multiple Files
+
+#+begin_src emacs-lisp
+(defun my/dired-tabify-files (&optional untabify)
+  "Run eitheir `tabify' or `untabify' on marked files in dired.
+See `my/dired-run-command'."
+  (interactive "P")
+  (let ((tab-function (if untabify #'untabify #'tabify)))
+    (my/dired-run-command
+     (lambda ()
+       (funcall tab-function (point-min) (point-max))))))
+#+end_src
+
+*** LSP
+**** Eglot
+Speed up performance (bug?)
+
+#+begin_src emacs-lisp
+(fset #'jsonrpc--log-event #'ignore)
+#+end_src
+
+*** Compiling
+Compile without showing compile buffer
+
+#+begin_src emacs-lisp
+(defun my/compile ()
+  (interactive)
+  (save-window-excursion (compile compile-command)))
+
+(defun my/set-compile-command (command)
+  (set (make-local-variable 'compile-command)
+       command))
+#+end_src
+
+*** Lisp
+**** Parenthesis
+***** Balance
+
+#+begin_src emacs-lisp
+(use-package paredit
+  :hook
+  ((lisp-mode emacs-lisp-mode scheme-mode) . paredit-mode))
+#+end_src
+
+***** Rainbow Coloring
+
+#+begin_src emacs-lisp
+(use-package rainbow-delimiters
+  :hook
+  ((lisp-mode emacs-lisp-mode scheme-mode) . rainbow-delimiters-mode))
+#+end_src
+
+***** Indentation
+#+begin_src emacs-lisp
+(use-package aggressive-indent
+  :hook
+  ((lisp-mode emacs-lisp-mode scheme-mode) . aggressive-indent-mode))
+#+end_src
+
+**** Common Lisp
+***** REPL/IDE
+****** Sly
+
+#+begin_src emacs-lisp
+(use-package sly
+  :commands (sly)
+  :hook (sly-mrepl-mode . rainbow-delimiters-mode)
+  :config
+  (setf inferior-lisp-program "sbcl")
+  (setf sly-mrepl-history-file-name
+        (expand-file-name "sly/sly-mrepl-history" user-emacs-directory))
+  :after (rainbow-delimiters))
+#+end_src
+
+**** Emacs Lisp
+***** Remove all advice from function
+
+#+begin_src emacs-lisp
+(defun my/remove-all-advice (sym)
+  (interactive)
+  (advice-mapc (lambda (advice _props)
+                 (advice-remove sym advice))
+               sym))
+#+end_src
+
+*** Agda
+See [[https://unimath.github.io/agda-unimath/HOWTO-INSTALL.html#editor-setup][agda-unimath]] for more details.
+
+#+begin_src emacs-lisp
+(when (executable-find "agda-mode")
+  (load-file (let ((coding-system-for-read 'utf-8))
+               (shell-command-to-string "agda-mode locate")))
+  (setf auto-mode-alist (cons '("\\.lagda.md$" . agda2-mode) auto-mode-alist)))
+#+end_src
+
+*** Go
+Helper macro for calling Go cli commands (probably dumb)
+
+#+begin_src emacs-lisp
+(defun my/set-go-compile ()
+  (my/set-compile-command "go build"))
+
+(defun my/go-run ()
+  (interactive)
+  (shell-command "go run"))
+
+(use-package go-mode
+  :hook (go-mode . my/set-go-compile)
+  :bind (:map go-mode-map
+              ("C-c C-c" . my/compile)
+              ("C-c C-r" . my/go-run)))
+#+end_src
+
+*** Guile
+Set up =Geiser=
+
+#+begin_src emacs-lisp
+(use-package geiser)
+
+(use-package geiser-guile
+  :config
+  (setf geiser-guile-load-init-file t)
+  :after (geiser))
+#+end_src
+
+** Org Mode
+
+#+begin_src emacs-lisp
+(use-package org
+  :defer t
+  :config
+  (setf org-directory (expand-file-name "documents/org/" (getenv "HOME"))
+        org-agenda-files (list (expand-file-name "agenda/" org-directory))
+        
+        org-startup-folded t
+        org-M-RET-may-split-line '((default . nil))
+        org-insert-heading-respect-content t
+
+        org-log-done 'time
+        org-log-into-drawer t
+        org-todo-keywords
+        '((sequence "TODO(t)" "BLOCKED(b)" "|" "CANCELED(c)" "DONE(d)"))
+        
+        org-edit-src-content-indentation 0
+        org-babel-python-command "python3")
+  
+  (add-to-list 'org-agenda-files
+               (expand-file-name "agenda/" org-directory))
+  
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (scheme . t)
+     (python . t)
+     (shell . t)
+     (eshell . t))))
+#+end_src
+
+*** Aesthetic Bullets
+
+#+begin_src emacs-lisp
+(use-package org-bullets
+  :hook (org-mode . org-bullets-mode))
+#+end_src
+
+*** Export
+**** Beamer
+Export to pdf presentations via LaTeX beamer
+
+#+begin_src emacs-lisp
+(use-package ox-beamer
+  :after (org))
+#+end_src
+
+** LaTeX
+*** Compilation
+Compile with =pdflatex= on current buffer's file.
+
+#+begin_src emacs-lisp
+(defun my/set-latex-compile ()
+  (my/set-compile-command (format "pdflatex %s" (buffer-file-name))))
+
+(use-package latex
+  :defer t
+  :hook (LaTeX-mode . my/set-latex-compile)
+  :bind (:map LaTeX-mode-map
+              ("C-c C-c" . my/compile)))
+#+end_src
+
+* System Administration
 ** Shell / Terminal
 *** Shell
 **** Eshell
@@ -645,10 +678,14 @@ Fix bug causing hangups upon re-encryption of files
   :config
   (setf eshell-prompt-function
         (lambda ()
-          (concat
-           (propertize (concat "\n " (eshell/pwd) "\n"))
-           (propertize (if (= (user-uid) 0) " #" " λ"))
-           (propertize " "))))
+          (let* ((palette (ef-themes--current-theme-palette))
+                 (orange (cadr (assoc 'red-warmer palette)))
+                 (green (cadr (assoc 'green-warmer palette))))
+            (format "\n %s\n %s "
+                    (propertize (eshell/pwd)
+                                'face `(:foreground ,orange))
+                    (propertize (if (zerop (user-uid)) "#" "λ")
+                                'face `(:foreground ,green))))))
   (setf eshell-prompt-regexp ".* λ "))
 #+end_src
 
@@ -801,46 +838,8 @@ Run custom mpv command on file or url at point.
 #+end_src
 
 * Misc
-** Large File Threshold
-
-#+begin_src emacs-lisp
-(setf large-file-warning-threshold 10000000)
-#+end_src
-
-** Revert File-Buffers on File Change
-
-#+begin_src emacs-lisp
-(global-auto-revert-mode 1)
-#+end_src
-
-** Need Not Type Full "yes" Or "no" When Emacs Prompts
+Need Not Type Full "yes" Or "no" When Emacs Prompts
 
 #+begin_src emacs-lisp
 (setf use-short-answers t)
-#+end_src
-
-** Revisiting Files
-Have emacs remember both what files you recently visited and your position in them
-
-#+begin_src emacs-lisp
-(save-place-mode 1)
-(savehist-mode 1)
-(recentf-mode 1)
-#+end_src
-
-** Registers
-
-#+begin_src emacs-lisp
-(defun my/clear-all-registers ()
-  (interactive)
-  (dolist (register-pair register-alist)
-    (let ((register-name (car register-pair)))
-      (when (get-register register-name)
-        (set-register register-name nil)))))
-#+end_src
-
-** File Encoding
-
-#+begin_src emacs-lisp
-(setq-default buffer-file-coding-system 'utf-8-unix)
 #+end_src

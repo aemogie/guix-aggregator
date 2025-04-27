@@ -25,6 +25,7 @@
                      kde-plasma
                      librewolf
                      linux
+                     lisp
                      mail
                      mp3
                      networking
@@ -68,7 +69,7 @@
    font-google-noto-serif-cjk
 
    ;; media
-   blueman
+   ;; blueman
    ffmpeg
    grimshot
    imagemagick
@@ -116,10 +117,11 @@
    (list git "send-email")
    gnu-make
 
-   ;; guile
+   ;; lisp
    guile-next
    guile-swayer
    guile-taglib
+   sbcl
 
    ;; communication
    isync
@@ -144,6 +146,7 @@
    ispell
    monero
    pandoc
+   rlwrap
    texlive
    unzip
    xdg-utils
