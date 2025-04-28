@@ -13,7 +13,7 @@ Most here is agnostic of that but some is not, such as smooth scrolling and tran
 (setf vc-follow-symlinks t)
 #+end_src
 
-** Workaround White Flash
+** Workaround White Flash On Startup
 
 #+begin_src emacs-lisp :tangle early-init.el
 (setf default-frame-alist '((background-color . "#000000")
@@ -22,7 +22,7 @@ Most here is agnostic of that but some is not, such as smooth scrolling and tran
                             (alpha-background . 80)))
 #+end_src
 
-** Optimizations
+** GC Optimizations
 
 #+begin_src emacs-lisp :tangle early-init.el
 (defun restore-gc-cons-threshold ()
@@ -82,8 +82,8 @@ Have emacs remember both what files you recently visited and your position in th
 Prevent emacs from littering your directories with backup files everywhere
 
 #+begin_src emacs-lisp
-(setf backup-directory-alist
-      `(("." . ,(expand-file-name "backups" user-emacs-directory))))
+(add-to-list 'backup-directory-alist
+             `("." . ,(expand-file-name "backups" user-emacs-directory)))
 
 (setf backup-by-copying t)
 #+end_src
@@ -133,13 +133,12 @@ If a there is no open buffer containing the file the changes will be written."
   (interactive "CRun on marked files: ")
   (let ((open-file-buffers (my/get-open-file-buffers)))
     (save-window-excursion
-      (mapc (lambda (filepath)
-              (find-file filepath)
-              (funcall command)
-              (unless (member (buffer-name) open-file-buffers)
-                (save-buffer)
-                (kill-buffer)))
-            (dired-get-marked-files)))))
+      (dolist (filepath (dired-get-marked-files))
+        (find-file filepath)
+        (funcall command)
+        (unless (member (buffer-name) open-file-buffers)
+          (save-buffer)
+          (kill-buffer))))))
 #+end_src
 
 *** GPG
@@ -175,6 +174,7 @@ Define personal bindings
                         ("M-3" . split-window-below)
                         ("M-]" . next-window-any-frame)
                         ("M-[" . previous-window-any-frame)
+                        ("M-#" . dictionary-lookup-definition)
                         ("C-x b" . consult-buffer)
                         ("M-g M-g" . consult-goto-line)
                         ("C-c y" . consult-yank-from-kill-ring)
@@ -193,7 +193,7 @@ Function to activate personal bindings
 #+begin_src emacs-lisp
 (defun my/activate-keybinds (&optional local)
   "Activate personal keybinds stored in `*my/keybinds*'.
-If LOCAL is NIL set globally with `keymap-global-set'.
+If LOCAL is nil set globally with `keymap-global-set'.
 Otherwise set locally with `keymap-local-set'."
   (interactive "P")
   (let ((setter-function (if local 'keymap-local-set 'keymap-global-set)))
@@ -209,6 +209,12 @@ Otherwise set locally with `keymap-local-set'."
 (use-package which-key
   :if (>= emacs-major-version 30)
   :config (which-key-mode 1))
+#+end_src
+
+** Sticky Keys
+
+#+begin_src emacs-lisp
+(repeat-mode 1)
 #+end_src
 
 * UI
@@ -369,18 +375,20 @@ You may need to call =(nerd-icons-install-fonts)=
 #+end_src
 
 *** Minibuffer
-Add vertical completion
 
 #+begin_src emacs-lisp
 (use-package vertico
   :config (vertico-mode 1))
+
+(setf use-short-answers t)
 #+end_src
 
 *** Annotations
 
 #+begin_src emacs-lisp
 (use-package marginalia
-  :config (marginalia-mode 1))
+  :config (marginalia-mode 1)
+  :after (vertico))
 #+end_src
 
 ** Mouse
@@ -426,33 +434,30 @@ See also `my/hide-buffer' and `hidden-buffer-p'."))
 (with-eval-after-load 'savehist
   (add-to-list 'savehist-additional-variables '*hidden-buffers*))
 
-(defun hidden-buffer-p (window buffer bury-or-kill)
+(defun hidden-buffer-p (_window buffer _bury-or-kill)
   "Hide buffers with name in `*hidden-buffers*'.
 See also `switch-to-prev-buffer-skip'."
   (cl-find (buffer-name buffer) *hidden-buffers* :test #'string=))
 
-(customize-set-variable 'switch-to-prev-buffer-skip 'hidden-buffer-p)
+(setf switch-to-prev-buffer-skip 'hidden-buffer-p)
 
 (defun my/hide-buffer (&optional buffer-name)
   "Adds BUFFER-NAME to `*hidden-buffers*'.
-If BUFFER-NAME is NIL then the current buffer name is used via `buffer-name'.
+If BUFFER-NAME is nil then the current buffer name is used via `buffer-name'.
 See also `my/unhide-buffer'."
   (interactive)
-  (cl-pushnew (if buffer-name
-                  buffer-name
-                (buffer-name))
+  (cl-pushnew (if buffer-name buffer-name (buffer-name))
               ,*hidden-buffers*
               :test #'string=))
 
 (defun my/unhide-buffer (&optional buffer-name)
   "Removes BUFFER-NAME from `*hidden-buffers*'.
-If BUFFER-NAME is NIL then the current buffer name is used via `buffer-name'.
+If BUFFER-NAME is nil then the current buffer name is used via `buffer-name'.
 See also `my/hide-buffer'."
   (interactive)
-  (setf *hidden-buffers* (remove (if buffer-name
-                                     buffer-name
-                                   (buffer-name))
-                                 ,*hidden-buffers*)))
+  (setf *hidden-buffers*
+        (remove (if buffer-name buffer-name (buffer-name))
+                ,*hidden-buffers*)))
 #+end_src
 
 * Writing
@@ -462,6 +467,22 @@ Replace text in active region on insert
 #+begin_src emacs-lisp
 (use-package delsel
   :config (delete-selection-mode 1))
+#+end_src
+
+** Dictionary
+
+#+begin_src emacs-lisp
+(setf ispell-personal-dictionary (format "%s/documents/personal-dictionary"
+                                         (getenv "HOME")))
+#+end_src
+
+** Writeroom
+
+#+begin_src emacs-lisp
+(use-package writeroom-mode
+  :commands (writeroom-mode)
+  :config (setf writeroom-width 100
+                writeroom-fullscreen-effect 'maximized))
 #+end_src
 
 ** Programming
@@ -531,44 +552,52 @@ Compile without showing compile buffer
   ((lisp-mode emacs-lisp-mode scheme-mode) . aggressive-indent-mode))
 #+end_src
 
-**** Common Lisp
-***** REPL/IDE
-****** Sly
-
-#+begin_src emacs-lisp
-(use-package sly
-  :commands (sly)
-  :hook (sly-mrepl-mode . rainbow-delimiters-mode)
-  :config
-  (setf inferior-lisp-program "sbcl")
-  (setf sly-mrepl-history-file-name
-        (expand-file-name "sly/sly-mrepl-history" user-emacs-directory))
-  :after (rainbow-delimiters))
-#+end_src
-
 **** Emacs Lisp
-***** Remove all advice from function
 
 #+begin_src emacs-lisp
 (defun my/remove-all-advice (sym)
+  "Remove all advice from function designated by symbol SYM."
   (interactive)
   (advice-mapc (lambda (advice _props)
                  (advice-remove sym advice))
                sym))
 #+end_src
 
-*** Agda
-See [[https://unimath.github.io/agda-unimath/HOWTO-INSTALL.html#editor-setup][agda-unimath]] for more details.
+**** Guile
 
 #+begin_src emacs-lisp
-(when (executable-find "agda-mode")
-  (load-file (let ((coding-system-for-read 'utf-8))
-               (shell-command-to-string "agda-mode locate")))
-  (setf auto-mode-alist (cons '("\\.lagda.md$" . agda2-mode) auto-mode-alist)))
+(use-package geiser)
+
+(use-package geiser-guile
+  :commands (geiser-guile)
+  :config
+  (setf geiser-guile-load-init-file t)
+  :after (geiser))
+#+end_src
+
+**** Common Lisp
+
+#+begin_src emacs-lisp
+(use-package sly
+  :commands (sly)
+  :config
+  (setf inferior-lisp-program "sbcl")
+  (setf sly-mrepl-history-file-name
+        (expand-file-name "sly/sly-mrepl-history" user-emacs-directory))
+  (when (featurep 'rainbow-delimiters)
+    (add-hook 'sly-mrepl-mode-hook 'rainbow-delimiters-mode)))
+#+end_src
+
+*** Agda
+See [[https://unimath.github.io/agda-unimath/HOWTO-INSTALL.html#emacs][agda-unimath]] for more details.
+
+#+begin_src emacs-lisp
+(use-package agda2-mode
+  :defer t
+  :init (add-to-list 'auto-mode-alist '("\\.lagda.md$" . agda2-mode)))
 #+end_src
 
 *** Go
-Helper macro for calling Go cli commands (probably dumb)
 
 #+begin_src emacs-lisp
 (defun my/set-go-compile ()
@@ -585,26 +614,16 @@ Helper macro for calling Go cli commands (probably dumb)
               ("C-c C-r" . my/go-run)))
 #+end_src
 
-*** Guile
-Set up =Geiser=
-
-#+begin_src emacs-lisp
-(use-package geiser)
-
-(use-package geiser-guile
-  :config
-  (setf geiser-guile-load-init-file t)
-  :after (geiser))
-#+end_src
-
 ** Org Mode
 
 #+begin_src emacs-lisp
 (use-package org
   :defer t
+  :bind (:map org-mode-map
+              ("C-c l" . org-cycle-list-bullet))
   :config
-  (setf org-directory (expand-file-name "documents/org/" (getenv "HOME"))
-        org-agenda-files (list (expand-file-name "agenda/" org-directory))
+  (setf org-directory (expand-file-name "documents/org/" (getenv "HOME")))
+  (setf org-agenda-files (list (expand-file-name "agenda/" org-directory))
         
         org-startup-folded t
         org-M-RET-may-split-line '((default . nil))
@@ -618,16 +637,19 @@ Set up =Geiser=
         org-edit-src-content-indentation 0
         org-babel-python-command "python3")
   
-  (add-to-list 'org-agenda-files
-               (expand-file-name "agenda/" org-directory))
-  
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)
      (scheme . t)
      (python . t)
      (shell . t)
-     (eshell . t))))
+     (eshell . t)))
+
+  (defvar my/org-cycle-list-bullet-repeat-keymap
+    (define-keymap "l" #'org-cycle-list-bullet))
+
+  (put #'org-cycle-list-bullet 'repeat-map
+       'my/org-cycle-list-bullet-repeat-keymap))
 #+end_src
 
 *** Aesthetic Bullets
@@ -646,9 +668,15 @@ Export to pdf presentations via LaTeX beamer
   :after (org))
 #+end_src
 
+** Markdown
+
+#+begin_src emacs-lisp
+(use-package markdown-mode
+  :defer t)
+#+end_src
+
 ** LaTeX
 *** Compilation
-Compile with =pdflatex= on current buffer's file.
 
 #+begin_src emacs-lisp
 (defun my/set-latex-compile ()
@@ -664,6 +692,12 @@ Compile with =pdflatex= on current buffer's file.
 * System Administration
 ** Shell / Terminal
 *** Shell
+
+#+begin_src emacs-lisp
+(dolist (hook '(comint-mode-hook eshell-mode-hook))
+  (add-hook hook (lambda () (setq-local global-hl-line-mode nil))))
+#+end_src
+
 **** Eshell
 
 #+begin_src emacs-lisp
@@ -677,15 +711,20 @@ Compile with =pdflatex= on current buffer's file.
               ("C-c M-o" . my/eshell-clear))
   :config
   (setf eshell-prompt-function
-        (lambda ()
-          (let* ((palette (ef-themes--current-theme-palette))
-                 (orange (cadr (assoc 'red-warmer palette)))
-                 (green (cadr (assoc 'green-warmer palette))))
-            (format "\n %s\n %s "
-                    (propertize (eshell/pwd)
-                                'face `(:foreground ,orange))
-                    (propertize (if (zerop (user-uid)) "#" "λ")
-                                'face `(:foreground ,green))))))
+        (if (featurep 'ef-themes)
+            (lambda ()
+              (let* ((palette (ef-themes--current-theme-palette))
+                     (orange (cadr (assoc 'yellow-warmer palette)))
+                     (green (cadr (assoc 'green-warmer palette))))
+                (format "\n %s\n %s "
+                        (propertize
+                         (eshell/pwd)
+                         'face `(:foreground ,orange :weight bold))
+                        (propertize
+                         (if (zerop (user-uid)) "#" "λ")
+                         'face `(:foreground ,green :weight bold)))))
+          (lambda ()
+            (format "\n %s\n λ " (eshell/pwd)))))
   (setf eshell-prompt-regexp ".* λ "))
 #+end_src
 
@@ -698,6 +737,13 @@ Compile with =pdflatex= on current buffer's file.
   (with-temp-buffer
     (cd "/sudo::/")
     (async-shell-command command)))
+#+end_src
+
+**** Environment
+
+#+begin_src emacs-lisp
+(use-package buffer-env
+  :commands (buffer-env-update buffer-env-reset))
 #+end_src
 
 *** Terminal
@@ -726,7 +772,34 @@ Magic git frontend
   (pinentry-start))
 #+end_src
 
+** Bluetooth
+
+#+begin_src emacs-lisp
+(use-package bluetooth
+  :commands (bluetooth-list-devices))
+#+end_src
+
+** Documentation
+
+#+begin_src emacs-lisp
+(use-package tldr
+  :commands (tldr tldr-update-docs))
+#+end_src
+
+** Grep
+
+#+begin_src emacs-lisp
+(use-package wgrep)
+#+end_src
+
 * Websites
+** HTML Generation
+
+#+begin_src emacs-lisp
+(use-package htmlize)
+(use-package jack)
+#+end_src
+
 ** Personal
 *** Org Blog
 See [[file:./blog-config.el][blog-config.el]]
@@ -734,7 +807,8 @@ See [[file:./blog-config.el][blog-config.el]]
 #+begin_src emacs-lisp
 (use-package org-static-blog
   :defer t
-  :config (load (expand-file-name "blog-config.el" user-emacs-directory)))
+  :config (load (expand-file-name "blog-config.el" user-emacs-directory))
+  :requires (jack))
 #+end_src
 
 ** EWW
@@ -762,10 +836,11 @@ See [[file:./blog-config.el][blog-config.el]]
 #+end_src
 
 ** RSS
-Create youtube channel RSS feed link
 
 #+begin_src emacs-lisp
 (defun my/make-youtube-feed (channel-url)
+  "Create RSS feed url from youtube channel url CHANNEL-URL
+and save an appropriate entry for `elfeed-feeds' to the kill ring."
   (interactive "Mchannel url: ")
   (let ((channel-id (car (last (string-split channel-url "/")))))
     (with-temp-buffer
@@ -777,7 +852,6 @@ Create youtube channel RSS feed link
 #+end_src
 
 *** Elfeed
-Set DB path, default view filter, and advice to kill elfeed search buffer on quit
 
 #+begin_src emacs-lisp
 (defun my/kill-elfeed-search-buffer ()
@@ -794,7 +868,6 @@ Set DB path, default view filter, and advice to kill elfeed search buffer on qui
 #+end_src
 
 ** Gnus
-Prevent creation of dribble files
 
 #+begin_src emacs-lisp
 (setf gnus-use-dribble-file nil)
@@ -802,13 +875,20 @@ Prevent creation of dribble files
 
 * Media
 ** Albums
-Play album in directory at point via mpv.
-Opens a socket at =/tmp/mpv-socket= to which mpv commands can be sent (such as pause, play, next, etc.).
-Directory name must be the name of the album, contain the song files, and contain a file =<album-name>--Album.txt= which lists the song files in desired playing order, separated by newlines.
-See [[https://codeberg.org/mrh/cl-scripts][cl-scripts]] for more info.
+See [[https://codeberg.org/mrh/dotfiles/dot-local/bin][mrh dotfiles]] for more info.
 
 #+begin_src emacs-lisp
 (defun my/play-album ()
+  "Play album in directory at point via mpv.
+
+Opens a socket at =/tmp/mpv-socket= to which mpv commands can be sent
+(such as pause, play, next, etc.).
+
+Directory name must be the name of the album, contain the song files,
+and contain a file =<album-name>--Album.txt= which lists the song files
+in desired playing order, separated by newlines.
+
+See https://codeberg.org/mrh/dotfiles/dot-local/bin for more info."
   (interactive)
   (let ((album-name (shell-quote-argument
                      (file-name-nondirectory (dired-get-filename)))))
@@ -820,10 +900,10 @@ See [[https://codeberg.org/mrh/cl-scripts][cl-scripts]] for more info.
 #+end_src
 
 ** Videos
-Run custom mpv command on file or url at point.
 
 #+begin_src emacs-lisp
 (defun my/mpv (&optional mpv-command)
+  "Run custom mpv command on file or url at point."
   (interactive)
   (let ((audio (if (eq major-mode 'dired-mode)
                    (dired-get-filename)
@@ -837,9 +917,3 @@ Run custom mpv command on file or url at point.
      0)))
 #+end_src
 
-* Misc
-Need Not Type Full "yes" Or "no" When Emacs Prompts
-
-#+begin_src emacs-lisp
-(setf use-short-answers t)
-#+end_src

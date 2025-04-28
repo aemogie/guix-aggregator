@@ -1,0 +1,11 @@
+daemonize
+ignore-empty-password
+show-failed-attempts
+show-keyboard-layout
+indicator-caps-lock
+
+image=$HOME/media/pictures/wallpapers/lockscreen
+scaling=fill
+font=DejaVu Sans Mono
+indicator-radius=100
+indicator-thickness=20

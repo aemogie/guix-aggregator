@@ -85,7 +85,6 @@
    emacs-buffer-env
    emacs-consult
    emacs-corfu
-   emacs-debbugs
    emacs-diredfl
    emacs-disable-mouse
    emacs-eat
@@ -143,7 +142,8 @@
    ;; misc
    cups
    (list glib "bin")
-   ispell
+   aspell
+   aspell-dict-en
    monero
    pandoc
    rlwrap

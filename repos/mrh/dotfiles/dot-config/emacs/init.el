@@ -18,8 +18,8 @@
 
 (setq-default buffer-file-coding-system 'utf-8-unix)
 
-(setf backup-directory-alist
-      `(("." . ,(expand-file-name "backups" user-emacs-directory))))
+(add-to-list 'backup-directory-alist
+             `("." . ,(expand-file-name "backups" user-emacs-directory)))
 
 (setf backup-by-copying t)
 
@@ -56,13 +56,12 @@ If a there is no open buffer containing the file the changes will be written."
   (interactive "CRun on marked files: ")
   (let ((open-file-buffers (my/get-open-file-buffers)))
     (save-window-excursion
-      (mapc (lambda (filepath)
-              (find-file filepath)
-              (funcall command)
-              (unless (member (buffer-name) open-file-buffers)
-                (save-buffer)
-                (kill-buffer)))
-            (dired-get-marked-files)))))
+      (dolist (filepath (dired-get-marked-files))
+        (find-file filepath)
+        (funcall command)
+        (unless (member (buffer-name) open-file-buffers)
+          (save-buffer)
+          (kill-buffer))))))
 
 (fset 'epg-wait-for-status 'ignore)
 
@@ -83,6 +82,7 @@ If a there is no open buffer containing the file the changes will be written."
                         ("M-3" . split-window-below)
                         ("M-]" . next-window-any-frame)
                         ("M-[" . previous-window-any-frame)
+                        ("M-#" . dictionary-lookup-definition)
                         ("C-x b" . consult-buffer)
                         ("M-g M-g" . consult-goto-line)
                         ("C-c y" . consult-yank-from-kill-ring)
@@ -97,7 +97,7 @@ If a there is no open buffer containing the file the changes will be written."
 
 (defun my/activate-keybinds (&optional local)
   "Activate personal keybinds stored in `*my/keybinds*'.
-If LOCAL is NIL set globally with `keymap-global-set'.
+If LOCAL is nil set globally with `keymap-global-set'.
 Otherwise set locally with `keymap-local-set'."
   (interactive "P")
   (let ((setter-function (if local 'keymap-local-set 'keymap-global-set)))
@@ -109,6 +109,8 @@ Otherwise set locally with `keymap-local-set'."
 (use-package which-key
   :if (>= emacs-major-version 30)
   :config (which-key-mode 1))
+
+(repeat-mode 1)
 
 (add-to-list 'default-frame-alist '(alpha-background . 80))
 
@@ -213,8 +215,11 @@ Otherwise set locally with `keymap-local-set'."
 (use-package vertico
   :config (vertico-mode 1))
 
+(setf use-short-answers t)
+
 (use-package marginalia
-  :config (marginalia-mode 1))
+  :config (marginalia-mode 1)
+  :after (vertico))
 
 (use-package disable-mouse
   :config (global-disable-mouse-mode 1))
@@ -242,36 +247,41 @@ See also `my/hide-buffer' and `hidden-buffer-p'."))
 (with-eval-after-load 'savehist
   (add-to-list 'savehist-additional-variables '*hidden-buffers*))
 
-(defun hidden-buffer-p (window buffer bury-or-kill)
+(defun hidden-buffer-p (_window buffer _bury-or-kill)
   "Hide buffers with name in `*hidden-buffers*'.
 See also `switch-to-prev-buffer-skip'."
   (cl-find (buffer-name buffer) *hidden-buffers* :test #'string=))
 
-(customize-set-variable 'switch-to-prev-buffer-skip 'hidden-buffer-p)
+(setf switch-to-prev-buffer-skip 'hidden-buffer-p)
 
 (defun my/hide-buffer (&optional buffer-name)
   "Adds BUFFER-NAME to `*hidden-buffers*'.
-If BUFFER-NAME is NIL then the current buffer name is used via `buffer-name'.
+If BUFFER-NAME is nil then the current buffer name is used via `buffer-name'.
 See also `my/unhide-buffer'."
   (interactive)
-  (cl-pushnew (if buffer-name
-                  buffer-name
-                (buffer-name))
+  (cl-pushnew (if buffer-name buffer-name (buffer-name))
               *hidden-buffers*
               :test #'string=))
 
 (defun my/unhide-buffer (&optional buffer-name)
   "Removes BUFFER-NAME from `*hidden-buffers*'.
-If BUFFER-NAME is NIL then the current buffer name is used via `buffer-name'.
+If BUFFER-NAME is nil then the current buffer name is used via `buffer-name'.
 See also `my/hide-buffer'."
   (interactive)
-  (setf *hidden-buffers* (remove (if buffer-name
-                                     buffer-name
-                                   (buffer-name))
-                                 *hidden-buffers*)))
+  (setf *hidden-buffers*
+        (remove (if buffer-name buffer-name (buffer-name))
+                *hidden-buffers*)))
 
 (use-package delsel
   :config (delete-selection-mode 1))
+
+(setf ispell-personal-dictionary (format "%s/documents/personal-dictionary"
+                                         (getenv "HOME")))
+
+(use-package writeroom-mode
+  :commands (writeroom-mode)
+  :config (setf writeroom-width 100
+                writeroom-fullscreen-effect 'maximized))
 
 (setq-default indent-tabs-mode nil
               tab-width 4)
@@ -296,7 +306,7 @@ See `my/dired-run-command'."
        command))
 
 (use-package paredit
-  :hook 
+  :hook
   ((lisp-mode emacs-lisp-mode scheme-mode) . paredit-mode))
 
 (use-package rainbow-delimiters
@@ -307,25 +317,33 @@ See `my/dired-run-command'."
   :hook
   ((lisp-mode emacs-lisp-mode scheme-mode) . aggressive-indent-mode))
 
-(use-package sly
-  :commands (sly)
-  :hook (sly-mrepl-mode . rainbow-delimiters-mode)
-  :config
-  (setf inferior-lisp-program "sbcl")
-  (setf sly-mrepl-history-file-name
-        (expand-file-name "sly/sly-mrepl-history" user-emacs-directory))
-  :after (rainbow-delimiters))
-
 (defun my/remove-all-advice (sym)
+  "Remove all advice from function designated by symbol SYM."
   (interactive)
   (advice-mapc (lambda (advice _props)
                  (advice-remove sym advice))
                sym))
 
-(when (executable-find "agda-mode")
-  (load-file (let ((coding-system-for-read 'utf-8))
-               (shell-command-to-string "agda-mode locate")))
-  (setf auto-mode-alist (cons '("\\.lagda.md$" . agda2-mode) auto-mode-alist)))
+(use-package geiser)
+
+(use-package geiser-guile
+  :commands (geiser-guile)
+  :config
+  (setf geiser-guile-load-init-file t)
+  :after (geiser))
+
+(use-package sly
+  :commands (sly)
+  :config
+  (setf inferior-lisp-program "sbcl")
+  (setf sly-mrepl-history-file-name
+        (expand-file-name "sly/sly-mrepl-history" user-emacs-directory))
+  (when (featurep 'rainbow-delimiters)
+    (add-hook 'sly-mrepl-mode-hook 'rainbow-delimiters-mode)))
+
+(use-package agda2-mode
+  :defer t
+  :init (add-to-list 'auto-mode-alist '("\\.lagda.md$" . agda2-mode)))
 
 (defun my/set-go-compile ()
   (my/set-compile-command "go build"))
@@ -340,18 +358,13 @@ See `my/dired-run-command'."
               ("C-c C-c" . my/compile)
               ("C-c C-r" . my/go-run)))
 
-(use-package geiser)
-
-(use-package geiser-guile
-  :config
-  (setf geiser-guile-load-init-file t)
-  :after (geiser))
-
 (use-package org
   :defer t
+  :bind (:map org-mode-map
+              ("C-c l" . org-cycle-list-bullet))
   :config
-  (setf org-directory (expand-file-name "documents/org/" (getenv "HOME"))
-        org-agenda-files (list (expand-file-name "agenda/" org-directory))
+  (setf org-directory (expand-file-name "documents/org/" (getenv "HOME")))
+  (setf org-agenda-files (list (expand-file-name "agenda/" org-directory))
         
         org-startup-folded t
         org-M-RET-may-split-line '((default . nil))
@@ -365,22 +378,28 @@ See `my/dired-run-command'."
         org-edit-src-content-indentation 0
         org-babel-python-command "python3")
   
-  (add-to-list 'org-agenda-files
-               (expand-file-name "agenda/" org-directory))
-  
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)
      (scheme . t)
      (python . t)
      (shell . t)
-     (eshell . t))))
+     (eshell . t)))
+
+  (defvar my/org-cycle-list-bullet-repeat-keymap
+    (define-keymap "l" #'org-cycle-list-bullet))
+
+  (put #'org-cycle-list-bullet 'repeat-map
+       'my/org-cycle-list-bullet-repeat-keymap))
 
 (use-package org-bullets
   :hook (org-mode . org-bullets-mode))
 
 (use-package ox-beamer
   :after (org))
+
+(use-package markdown-mode
+  :defer t)
 
 (defun my/set-latex-compile ()
   (my/set-compile-command (format "pdflatex %s" (buffer-file-name))))
@@ -390,6 +409,9 @@ See `my/dired-run-command'."
   :hook (LaTeX-mode . my/set-latex-compile)
   :bind (:map LaTeX-mode-map
               ("C-c C-c" . my/compile)))
+
+(dolist (hook '(comint-mode-hook eshell-mode-hook))
+  (add-hook hook (lambda () (setq-local global-hl-line-mode nil))))
 
 (defun my/eshell-clear ()
   (interactive)
@@ -401,15 +423,20 @@ See `my/dired-run-command'."
               ("C-c M-o" . my/eshell-clear))
   :config
   (setf eshell-prompt-function
-        (lambda ()
-          (let* ((palette (ef-themes--current-theme-palette))
-                 (orange (cadr (assoc 'red-warmer palette)))
-                 (green (cadr (assoc 'green-warmer palette))))
-            (format "\n %s\n %s "
-                    (propertize (eshell/pwd)
-                                'face `(:foreground ,orange))
-                    (propertize (if (zerop (user-uid)) "#" "λ")
-                                'face `(:foreground ,green))))))
+        (if (featurep 'ef-themes)
+            (lambda ()
+              (let* ((palette (ef-themes--current-theme-palette))
+                     (orange (cadr (assoc 'yellow-warmer palette)))
+                     (green (cadr (assoc 'green-warmer palette))))
+                (format "\n %s\n %s "
+                        (propertize
+                         (eshell/pwd)
+                         'face `(:foreground ,orange :weight bold))
+                        (propertize
+                         (if (zerop (user-uid)) "#" "λ")
+                         'face `(:foreground ,green :weight bold)))))
+          (lambda ()
+            (format "\n %s\n λ " (eshell/pwd)))))
   (setf eshell-prompt-regexp ".* λ "))
 
 (defun my/sudo-shell-command (command)
@@ -418,6 +445,9 @@ See `my/dired-run-command'."
   (with-temp-buffer
     (cd "/sudo::/")
     (async-shell-command command)))
+
+(use-package buffer-env
+  :commands (buffer-env-update buffer-env-reset))
 
 (use-package eat
   :hook (eshell-load . eat-eshell-mode))
@@ -431,9 +461,21 @@ See `my/dired-run-command'."
   (setf epg-pinentry-mode 'loopback)
   (pinentry-start))
 
+(use-package bluetooth
+  :commands (bluetooth-list-devices))
+
+(use-package tldr
+  :commands (tldr tldr-update-docs))
+
+(use-package wgrep)
+
+(use-package htmlize)
+(use-package jack)
+
 (use-package org-static-blog
   :defer t
-  :config (load (expand-file-name "blog-config.el" user-emacs-directory)))
+  :config (load (expand-file-name "blog-config.el" user-emacs-directory))
+  :requires (jack))
 
 (setf eww-default-download-directory "~/downloads")
 
@@ -450,6 +492,8 @@ See `my/dired-run-command'."
   (mu4e-modeline-mode -1))
 
 (defun my/make-youtube-feed (channel-url)
+  "Create RSS feed url from youtube channel url CHANNEL-URL
+and save an appropriate entry for `elfeed-feeds' to the kill ring."
   (interactive "Mchannel url: ")
   (let ((channel-id (car (last (string-split channel-url "/")))))
     (with-temp-buffer
@@ -474,6 +518,16 @@ See `my/dired-run-command'."
 (setf gnus-use-dribble-file nil)
 
 (defun my/play-album ()
+  "Play album in directory at point via mpv.
+
+Opens a socket at =/tmp/mpv-socket= to which mpv commands can be sent
+(such as pause, play, next, etc.).
+
+Directory name must be the name of the album, contain the song files,
+and contain a file =<album-name>--Album.txt= which lists the song files
+in desired playing order, separated by newlines.
+
+See https://codeberg.org/mrh/dotfiles/dot-local/bin for more info."
   (interactive)
   (let ((album-name (shell-quote-argument
                      (file-name-nondirectory (dired-get-filename)))))
@@ -484,6 +538,7 @@ See `my/dired-run-command'."
      0)))
 
 (defun my/mpv (&optional mpv-command)
+  "Run custom mpv command on file or url at point."
   (interactive)
   (let ((audio (if (eq major-mode 'dired-mode)
                    (dired-get-filename)
@@ -495,5 +550,3 @@ See `my/dired-run-command'."
                (shell-quote-argument audio)))
      nil
      0)))
-
-(setf use-short-answers t)
