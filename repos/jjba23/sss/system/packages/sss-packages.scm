@@ -341,6 +341,7 @@
         parallel
 
         thunar
+        sysstat
 
         pinentry
         pinentry-tty
