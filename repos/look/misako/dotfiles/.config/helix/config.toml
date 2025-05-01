@@ -2,86 +2,24 @@
 theme = "catppuccin_mocha"
 
 [editor]
-scrolloff = 5
-mouse = true
-middle-click-paste = true
-scroll-lines = 3
-shell = ["sh", "-c"]
 line-number = "relative"
-cursorline = false
-cursorcolumn = false
-auto-completion = true
-auto-format = true
-idle-timeout = 250
-completion-timeout = 250
-preview-completion-insert = true
+continue-comments = false
 completion-trigger-len = 1
 completion-replace = true
-auto-info = true
-true-color = false
-undercurl = false
-rulers = []
-bufferline = "multiple"
-color-modes = false
-text-width = 80
-workspace-lsp-roots = []
-default-line-ending = "native"
-insert-final-newline = true
-popup-border = "none"
+bufferline = "always"
 indent-heuristic = "hybrid"
-jump-label-alphabet = "abcdefghijklmnopqrstuvwxyz"
 end-of-line-diagnostics = "hint"
-
-[editor.auto-save]
-focus-lost = false
-after-delay.enable = false
-after-delay.timeout = 1000
+clipboard-provider = "wayland"
 
 [editor.statusline]
-left = ["mode", "spinner", "file-name", "read-only-indicator", "file-modification-indicator"]
-center = []
 right = ["file-encoding", "file-line-ending", "diagnostics", "selections", "register", "file-type", "total-line-numbers", "position-percentage", "position"]
 separator = "│"
-mode.normal = "NORMAL"
-mode.insert = "INSERT"
-mode.select = "SELECT"
 
 [editor.lsp]
-enable = true
 display-messages = false
-auto-signature-help = true
-display-inlay-hints = false
-display-signature-help-docs = true
-snippets = true
-goto-reference-include-declaration = true
-
-[editor.cursor-shape]
-normal = "block"
-insert = "block"
-select = "block"
 
 [editor.file-picker]
 hidden = false
-follow-symlinks = true
-deduplicate-links = true
-parents = true
-ignore = true
-git-ignore = true
-git-global = true
-git-exclude = true
-# max-depth = 3
-
-[editor.auto-pairs]
-'(' = ')'
-'{' = '}'
-'[' = ']'
-'"' = '"'
-'`' = '`'
-'<' = '>'
-
-[editor.search]
-smart-case = true
-wrap-around = true
 
 [editor.whitespace.render]
 space = "all"
@@ -98,11 +36,6 @@ tab = "→"
 newline = "⏎"
 tabpad = "·" # Tabs will look like "→···" (depending on tab width)
 
-[editor.indent-guides]
-render = false
-character = "│" # Some characters that work well: "▏", "┆", "┊", "⸽"
-skip-levels = 0
-
 [editor.gutters]
 layout = ["diagnostics", "spacer", "line-numbers", "spacer", "diff"]
 
@@ -111,21 +44,9 @@ min-width = 1
 
 [editor.soft-wrap]
 enable = true
-max-wrap = 20
-max-indent-retain = 40
-wrap-indicator = "↪"
-wrap-at-text-width = false
-
-[editor.smart-tab]
-enable = true
-supersede-menu = false
 
 [editor.inline-diagnostics]
 cursor-line = "warning"
-other-lines = "disable"
-prefix-len = 1
-max-wrap = 20
-max-diagnostics = 10
 
 #
 # Keybinds

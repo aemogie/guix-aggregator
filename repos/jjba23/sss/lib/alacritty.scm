@@ -30,7 +30,7 @@
 
 (define sss-alacritty-window
   `((padding . "{ x = 14, y = 14}") (decorations . None)
-    (opacity . 0.8)
+    (opacity . 0.9)
     (blur . false) ;let WM take care of it
     ))
 

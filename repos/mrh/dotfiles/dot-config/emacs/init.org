@@ -1,10 +1,12 @@
-#+title: My Emacs Config
+#+title: Emacs Config
 #+author: Alec Barreto
-#+options: toc:1
+#+date: [2025-04-30 Wed]
+#+export_file_name: emacs-config
+#+options: toc:1 num:2
 #+property: header-args :tangle yes
 
 Note that this is for emacs 29.x with pgtk and is tested on wayland.
-Most here is agnostic of that but some is not, such as smooth scrolling and transparency.
+Most here is agnostic of that but some is not.
 
 * Early Init
 ** Suprress Symlink Warning
@@ -43,11 +45,11 @@ Most here is agnostic of that but some is not, such as smooth scrolling and tran
 
 (setf custom-file
       (expand-file-name "custom.el" user-emacs-directory))
-(defvar authentication-file
-  (expand-file-name "authentication.el" user-emacs-directory))
+(defvar personal-data
+  (expand-file-name "personal.el" user-emacs-directory))
 
 (load custom-file)
-(load authentication-file)
+(load personal-data)
 #+end_src
 
 ** File Options
@@ -176,7 +178,6 @@ Define personal bindings
                         ("M-[" . previous-window-any-frame)
                         ("M-#" . dictionary-lookup-definition)
                         ("C-x b" . consult-buffer)
-                        ("M-g M-g" . consult-goto-line)
                         ("C-c y" . consult-yank-from-kill-ring)
                         ("C-c r s" . consult-register-store)
                         ("C-c r l" . consult-register-load)
@@ -291,7 +292,7 @@ NOTE: On wayland emacs must be pure GTK (=emacs-pgtk= on guix)
 
 (setf display-line-numbers-type t)
 
-(dolist (hook '(conf-mode-hook org-mode-hook prog-mode-hook))
+(dolist (hook '(conf-mode-hook org-mode-hook prog-mode-hook nxml-mode-hook))
   (add-hook hook 'display-line-numbers-mode))
 #+end_src
 
@@ -619,6 +620,7 @@ See [[https://unimath.github.io/agda-unimath/HOWTO-INSTALL.html#emacs][agda-unim
 #+begin_src emacs-lisp
 (use-package org
   :defer t
+  :hook (org-mode . org-indent-mode)
   :bind (:map org-mode-map
               ("C-c l" . org-cycle-list-bullet))
   :config
@@ -668,6 +670,19 @@ Export to pdf presentations via LaTeX beamer
   :after (org))
 #+end_src
 
+**** Publish
+
+#+begin_src emacs-lisp
+(use-package org-publish-rss
+  :config
+  (setf org-publish-rss-publish-immediately t))
+
+(use-package ox-publish
+  :config
+  (load (expand-file-name "org-publish.el" user-emacs-directory))
+  :after (jack org-publish-rss))
+#+end_src
+
 ** Markdown
 
 #+begin_src emacs-lisp
@@ -707,8 +722,9 @@ Export to pdf presentations via LaTeX beamer
 
 (use-package eshell
   :commands (eshell)
-  :bind (:map eshell-mode-map
-              ("C-c M-o" . my/eshell-clear))
+  :hook (eshell-mode . (lambda () (keymap-set eshell-mode-map
+                                         "C-c M-o"
+                                         'my/eshell-clear)))
   :config
   (setf eshell-prompt-function
         (if (featurep 'ef-themes)
@@ -801,15 +817,7 @@ Magic git frontend
 #+end_src
 
 ** Personal
-*** Org Blog
-See [[file:./blog-config.el][blog-config.el]]
-
-#+begin_src emacs-lisp
-(use-package org-static-blog
-  :defer t
-  :config (load (expand-file-name "blog-config.el" user-emacs-directory))
-  :requires (jack))
-#+end_src
+See [[*Publish][Org Publish]] section and [[file:org-publish.el][org-publish.el]].
 
 ** EWW
 

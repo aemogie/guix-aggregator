@@ -7,5 +7,5 @@ indicator-caps-lock
 image=$HOME/media/pictures/wallpapers/lockscreen
 scaling=fill
 font=DejaVu Sans Mono
-indicator-radius=100
-indicator-thickness=20
+indicator-radius=80
+indicator-thickness=15

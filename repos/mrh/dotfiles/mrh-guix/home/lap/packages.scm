@@ -99,7 +99,6 @@
    emacs-markdown-mode
    emacs-orderless
    emacs-org-bullets
-   emacs-org-static-blog
    emacs-paredit
    emacs-pinentry
    emacs-rainbow-delimiters
@@ -110,6 +109,7 @@
    emacs-wgrep
    emacs-writeroom
    mrh-emacs-nerd-icons-dired
+   mrh-emacs-org-publish-rss
 
    ;; programming
    git

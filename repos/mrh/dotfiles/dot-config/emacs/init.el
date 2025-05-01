@@ -2,11 +2,11 @@
 
 (setf custom-file
       (expand-file-name "custom.el" user-emacs-directory))
-(defvar authentication-file
-  (expand-file-name "authentication.el" user-emacs-directory))
+(defvar personal-data
+  (expand-file-name "personal.el" user-emacs-directory))
 
 (load custom-file)
-(load authentication-file)
+(load personal-data)
 
 (setf large-file-warning-threshold 10000000)
 
@@ -84,7 +84,6 @@ If a there is no open buffer containing the file the changes will be written."
                         ("M-[" . previous-window-any-frame)
                         ("M-#" . dictionary-lookup-definition)
                         ("C-x b" . consult-buffer)
-                        ("M-g M-g" . consult-goto-line)
                         ("C-c y" . consult-yank-from-kill-ring)
                         ("C-c r s" . consult-register-store)
                         ("C-c r l" . consult-register-load)
@@ -156,7 +155,7 @@ Otherwise set locally with `keymap-local-set'."
 
 (setf display-line-numbers-type t)
 
-(dolist (hook '(conf-mode-hook org-mode-hook prog-mode-hook))
+(dolist (hook '(conf-mode-hook org-mode-hook prog-mode-hook nxml-mode-hook))
   (add-hook hook 'display-line-numbers-mode))
 
 (defvar *my/font* "DejaVu Sans Mono")
@@ -360,6 +359,7 @@ See `my/dired-run-command'."
 
 (use-package org
   :defer t
+  :hook (org-mode . org-indent-mode)
   :bind (:map org-mode-map
               ("C-c l" . org-cycle-list-bullet))
   :config
@@ -398,6 +398,15 @@ See `my/dired-run-command'."
 (use-package ox-beamer
   :after (org))
 
+(use-package org-publish-rss
+  :config
+  (setf org-publish-rss-publish-immediately t))
+
+(use-package ox-publish
+  :config
+  (load (expand-file-name "org-publish.el" user-emacs-directory))
+  :after (jack org-publish-rss))
+
 (use-package markdown-mode
   :defer t)
 
@@ -419,8 +428,9 @@ See `my/dired-run-command'."
 
 (use-package eshell
   :commands (eshell)
-  :bind (:map eshell-mode-map
-              ("C-c M-o" . my/eshell-clear))
+  :hook (eshell-mode . (lambda () (keymap-set eshell-mode-map
+                                         "C-c M-o"
+                                         'my/eshell-clear)))
   :config
   (setf eshell-prompt-function
         (if (featurep 'ef-themes)
@@ -471,11 +481,6 @@ See `my/dired-run-command'."
 
 (use-package htmlize)
 (use-package jack)
-
-(use-package org-static-blog
-  :defer t
-  :config (load (expand-file-name "blog-config.el" user-emacs-directory))
-  :requires (jack))
 
 (setf eww-default-download-directory "~/downloads")
 

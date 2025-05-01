@@ -2,9 +2,7 @@
   #:use-module (sops secrets)
   #:use-module (guix gexp)
   #:use-module (misako utils)
-  #:export (gimai
-            gimai-keys
-            aerc
+  #:export (aerc
             aerc-keys
             senpai
             senpai-keys))
@@ -19,11 +17,6 @@
            (file (local-file common))
            (permissions #o400)))
        keys))
-
-(define gimai-keys
-  (list '("ssh" "gimai" "name")
-        '("ssh" "gimai" "host-name")
-        '("ssh" "gimai" "user")))
 
 (define aerc-keys
   (list '("aerc" "primary"   "name")
@@ -40,6 +33,5 @@
 (define senpai-keys
   (list '("senpai" "sourcehut" "password")))
 
-(define gimai (common-sops-secret gimai-keys))
 (define aerc (common-sops-secret aerc-keys))
 (define senpai (common-sops-secret senpai-keys))

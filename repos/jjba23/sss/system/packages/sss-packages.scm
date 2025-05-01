@@ -397,8 +397,8 @@
         stress
         stress-ng
 
-        (sss/x86-only-pkg architecture "nyxt")
-
+        ;; (sss/x86-only-pkg architecture "nyxt")
+        
         autoconf
         automake
 

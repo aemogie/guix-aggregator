@@ -8,19 +8,17 @@ conky.config = {
     font = 'Adwaita Mono:size=11',
     gap_x = 60,
     gap_y = 60,
-    minimum_height = 5,
+    minimum_height = 500,
     minimum_width = 2,
     no_buffers = true,
     own_window = true,
-    own_window_transparent = false,
-    own_window_argb_visual = true,
-    own_window_type = 'dock',
+    own_window_transparent = true,
+    own_window_type = 'desktop',
     background = true,
+    draw_shades = false,
     double_buffer = true,
     use_xft = true,
-    own_window_argb_value = 170,
-    own_window_class = 'Conky',
-    own_window_colour = '222222'
+    own_window_class = 'Conky'
 };
 
 

@@ -14,6 +14,7 @@
   #|GNU Packages|#
   #:use-module (gnu packages admin)
   #:use-module (gnu packages databases)
+  #:use-module (gnu packages linux)
   #|GNU Services|#
   #:use-module (gnu services)
   #:use-module (gnu services avahi)
@@ -23,6 +24,7 @@
   #:use-module (gnu services databases)
   #:use-module (gnu services docker)
   #:use-module (gnu services guix)
+  #:use-module (gnu services linux)
   #:use-module (gnu services networking)
   #:use-module (gnu services samba)
   #:use-module (gnu services ssh)
@@ -41,7 +43,7 @@
 
 #|Operating system definition|#
 (define yumiko
-  (nvidia-beta-operating-system
+  (nvidia-operating-system
     (inherit base)
     (host-name "yumiko")
 
@@ -52,6 +54,9 @@
       (cons* "nvidia_drm.modeset=1"
              "modprobe.blacklist=nouveau,wacom,hid_uclogic"
              (operating-system-user-kernel-arguments base)))
+
+    (kernel-loadable-modules
+      (list v4l2loopback-linux-module))
 
     (file-systems %btrfs-ephemeral-file-systems)
 
@@ -64,9 +69,9 @@
              #|NVIDIA|#
              (service nvidia-service-type
                (nvidia-configuration
-                 (driver nvdb)
-                 (module nvidia-module-beta)
-                 (firmware nvidia-firmware-beta)))
+                 (driver nvda)
+                 (module nvidia-module)
+                 (firmware nvidia-firmware)))
 
              (service pam-limits-service-type
                (list
@@ -120,6 +125,13 @@
                      ;   (user "root")
                      ;   (group "root")
                      ;   (permissions #o400))))))
+
+             (service kernel-module-loader-service-type
+               '("v4l2loopback"))
+             (simple-service 'v4l2loopback-config etc-service-type
+               (list `("modprobe.d/v4l2loopback.conf"
+                       ,(plain-file "v4l2loopback.conf"
+                          "options v4l2loopback devices=1 exclusive_caps=1 card_label=\"VirtualCam\""))))
 
              #|Persistent Files|#
              (extra-special-file "/etc/system.scm"

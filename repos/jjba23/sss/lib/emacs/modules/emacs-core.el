@@ -103,8 +103,8 @@
   (delete-selection-mode +1)
 
   (ignore-errors
-    (set-frame-parameter nil 'alpha-background 85) 
-    (add-to-list 'default-frame-alist '(alpha-background . 85)))
+    (set-frame-parameter nil 'alpha-background 90) 
+    (add-to-list 'default-frame-alist '(alpha-background . 90)))
   
   (when (fboundp 'windmove-default-keybindings) 
     (windmove-default-keybindings))
@@ -117,8 +117,8 @@
 
   (setq initial-buffer-choice
         (lambda () (ignore-errors
-                     (welkomscherm)
-                     (get-buffer welkomscherm-buffer-name))))
+                (welkomscherm)
+                (get-buffer welkomscherm-buffer-name))))
   
   (recentf-mode 1)
   (setq recentf-max-menu-items 100

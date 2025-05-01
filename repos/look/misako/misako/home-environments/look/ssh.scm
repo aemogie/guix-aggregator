@@ -7,8 +7,7 @@
             sourcehut
             gitlab
             forgejo
-            yumiko
-            gimai))
+            yumiko))
 
 (define aur
   (openssh-host
@@ -58,10 +57,3 @@
     (host-name "yumiko.local")
     (user "look")
     (identity-file "~/.ssh/look")))
-
-(define gimai
-  (openssh-host
-    (name (secret '("ssh" "gimai" "name")))
-    (host-name (secret '("ssh" "gimai" "host-name")))
-    (user (secret '("ssh" "gimai" "user")))
-    (identity-file "~/.ssh/gimai")))

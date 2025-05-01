@@ -41,8 +41,7 @@
       ((eq? 'sss-palette-everforest-dark palette)
        (format #f "~a/resources/wallpapers/redwood-forest.jpg" clone-dir))
       ((eq? 'sss-palette-everforest-light palette)
-       (format #f "~a/resources/wallpapers/PXL_20250326_164100026.jpg"
-               clone-dir))
+       (format #f "~a/resources/wallpapers/joshua.jpg" clone-dir))
       (else (format #f "~a/resources/wallpapers/some-forest.jpg" clone-dir))))
   (export sss-hypr-wallpaper))
 

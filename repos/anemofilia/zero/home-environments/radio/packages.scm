@@ -123,7 +123,7 @@
         #|toys       |# wayneko
         #|wm         |# eww/wayland fnott lswt river-bedload rivercarro wbg
         #|web        |# jq
-        #|xdisorg    |# fuzzel-lowercase wl-clipboard wlrctl wlsunset
+        #|xdisorg    |# fuzzel-lowercase gammastep wl-clipboard wlrctl
         #|zig-xyz    |# river))
 
 (define development

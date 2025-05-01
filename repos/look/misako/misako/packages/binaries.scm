@@ -234,15 +234,19 @@ well.")
                      (list v
                            "${WAYLAND_DISPLAY:+"
                            "--enable-features=UseOzonePlatform"
-                           "--ozone-platform-hint=auto"
-                           ; "--ozone-platform=wayland"
+                           "--ozone-platform=wayland"
                            "--enable-features=WebRTCPipeWireCapturer"
                            "--enable-features=VaapiVideoDecoder"
-                           "--use-angle=vulkan"
+                           "--enable-features=VaapiIgnoreDriverChecks"
+                           "--enable-features=VaapiVideoEncoder"
+                           "--enable-features=UseMultiPlaneFormatForHardwareVideo"
+                           "--enable-features=VaapiVideoDecodeLinuxGL"
                            "--ignore-gpu-blocklist"
                            "--enable-zero-copy"
-                           "--disable-gpu-compositing"
-                           "--enable-gpu-rasterization"
+                           ; "--enable-features=WaylandLinuxDrmSyncobj"
+                           ; "--use-angle=vulkan"
+                           ; "--disable-gpu-compositing"
+                           ; "--enable-gpu-rasterization"
                            "}")))))))))
     (inputs
       (list ffmpeg

@@ -23,7 +23,7 @@ spawn ~/.guix-home/profile/libexec/xdg-desktop-portal
 spawn fnott
 
 eww open bar
-wlsunset -t 3600K -T 5800K -s 18:30 -S 06:30 -d 1800 &
+spawn gammastep
 wayneko --background-colour 0x606060 --layer overlay --follow-pointer false &
 
 # Decorations _________________________________________________________________

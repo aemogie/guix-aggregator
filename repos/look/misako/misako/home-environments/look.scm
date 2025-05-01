@@ -63,6 +63,7 @@
   #:use-module (gnu packages text-editors)
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages video)
+  #:use-module (gnu packages music)
   #:use-module (gnu packages vim)
   #:use-module (gnu packages web-browsers)
   #:use-module (gnu packages wm)
@@ -105,6 +106,7 @@
   #:use-module (saayix packages wm)
   #|Misako Packages|#
   #:use-module (misako packages binaries)
+  #:use-module (misako packages cuda)
   #|SOPS-Guix Secrets|#
   #:use-module (sops secrets)
   #|SOPS-Guix Packages|#
@@ -119,16 +121,16 @@
    ghostty))
 
 (define look
-  (nvidia-beta-home-environment
+  (nvidia-home-environment
     (packages
       (plist
         #|Utils           |# hyfetch xdg-utils gnupg pinentry-bemenu aria2
         #|                |# light ncurses git sops kexec-tools pciutils
         #|                |# gtk gtk+ gsettings-desktop-schemas
-        #|                |# p7zip
-        #|Productivity    |# wayneko newsraft
+        #|                |# p7zip 
+        #|Productivity    |# wayneko newsraft playerctl ;kew
         #|Shell           |# fish
-        #|Terminal        |# foot ghostty-tip
+        #|Terminal        |# foot ghostty-tip ydotool
         #|Guile           |# guile-next guile-readline guile-colorized guile-gcrypt
         #|Text Editor     |# helix #|optional|# guile-lsp-server parinfer-rust
         #|Emacs           |# emacs-next emacs-geiser emacs-geiser-guile emacs-magit
@@ -136,8 +138,8 @@
         #|                |# emacs-vertico emacs-modus-themes emacs-debbugs
         #|                |# emacs-meow
         #|                |# zen-browser-bin
-        #|Games           |# (nvidia?* (steam-for nvdb)
-                                       (heroic-for nvdb)
+        #|Games           |# (nvidia?* (steam-for nvda)
+                                       (heroic-for nvda)
                                        mangohud
                                        prismlauncher
                                        path-of-building-bin
@@ -152,12 +154,13 @@
         #|                |# hyprland-qtutils
         #|                |# mako waybar-sans-elogind grim slurp bemenu
         #|                |# wl-clipboard wlsunset dbus qtwayland cursor-mcmojave
-        #|                |# hyprcursor-mcmojave
-        #|Messaging       |# senpai vesktop telegram-desktop
+        #|                |# hyprcursor-mcmojave nvidia-vaapi-driver
+        #|Messaging       |# senpai vesktop ;telegram-desktop
         #|E-mail          |# aerc #|required|# sound-theme-freedesktop
         #|                |# libnotify
         #|SSH             |# openssh
-        #|Video           |# mpv-minimal/wayland yt-dlp ffmpeg-nvenc obs
+        #|Video           |# mpv-minimal/wayland yt-dlp ffmpeg-nvenc obs-nvenc
+        #|                |# cuda
         #|Fonts           |# font-adobe-source-han-sans
         #|                |# font-adobe-source-sans-pro
         #|                |# font-adobe-source-serif-pro
@@ -192,12 +195,7 @@
                     ssh-host:sourcehut
                     ssh-host:gitlab
                     ssh-host:forgejo
-                    ssh-host:yumiko
-                    ;; When reconfiguring for the first time, remember to
-                    ;; remove all getters from sops-guix. Then, after the
-                    ;; reconfigure, add it back and reconfigure again.
-                    ;; HERE!
-                    ssh-host:gimai))))
+                    ssh-host:yumiko))))
 
         (service home-gpg-agent-service-type
           (home-gpg-agent-configuration
@@ -261,8 +259,7 @@
                 (string-append secrets-dir "/.sops.yaml")
                 "sops.yaml"))
             (secrets
-              (append sops-secrets:gimai
-                      sops-secrets:aerc
+              (append sops-secrets:aerc
                       sops-secrets:senpai))))
 
         (service home-xdg-user-directories-service-type
@@ -329,16 +326,19 @@
             ("QT_QPA_PLATFORM"     . "wayland")
             #|NVIDIA|#
             ,@(if (not nvidia?) '()
-                '(("QT_X11_NO_MITSHM"                    . "1")
+                `(("QT_X11_NO_MITSHM"                    . "1")
                   ("QT_WAYLAND_DISABLE_WINDOWDECORATION" . "1")
                   ; ("QT_OPENGL_NO_SANITY_CHECK"           . "1") ;; Bad flag
                   ("__GLX_VENDOR_LIBRARY_NAME"           . "nvidia")
+                  ("__EGL_VENDOR_LIBRARY_FILENAMES"      . ,(file-append nvidia-driver "/share/glvnd/egl_vendor.d/10_nvidia.x86_64.json"))
                   ; ("__NV_PRIME_RENDER_OFFLOAD"           . "1")
                   ("__GL_GSYNC_ALLOWED"                  . "1")
                   ("__GL_VRR_ALLOWED"                    . "1")
                   ;; This flag below solves prismlauncher problems
                   ; ("__GL_THREADED_OPTIMIZATIONS"         . "0")
                   ("GBM_BACKEND"                         . "nvidia-drm")
+                  ("NVD_BACKEND"                         . "direct")
+                  ("MOZ_DISABLE_RDD_SANDBOX"             . "1")
                   ("XDG_SESSION_TYPE"                    . "wayland")
                   ("GUIX_SANDBOX_EXTRA_SHARES"           . "/home/look/games")
                   ("LIBVA_DRIVER_NAME"                   . "nvidia")))

@@ -1,4 +1,4 @@
-mrh-guix/personal*
+personal.*
 nftables.conf
 home/.config/guix/shell-authorized-directories
 *.iso

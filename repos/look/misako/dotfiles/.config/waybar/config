@@ -197,7 +197,7 @@
         "format-source": " {volume}%",
         "format-source-muted": "",
         "on-click": "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle",
-        "on-click-right": "ncpamixer",
+        "on-click-right": "ghostty -e ncpamixer",
         "on-scroll-up": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SOURCE@ 5%+",
         "on-scroll-down": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SOURCE@ 5%-",
         "scroll-step": 5

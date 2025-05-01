@@ -25,6 +25,7 @@
             nvidia-operating-system
             nvidia-beta-operating-system
             ffmpeg-nvenc-beta
+            obs-nvenc
             plist
             misako-dir
             yumiko-dir
@@ -103,10 +104,21 @@
       (modify-inputs (package-inputs ffmpeg-nvenc)
         (replace "nv-codec-headers" nv-codec-headers-beta)))))
 
+(define ffmpeg-nvenc/patched
+  (package/inherit ffmpeg-nvenc
+    (name "ffnveg")))
+
+(define obs-nvenc
+  (package/inherit obs
+    (name "obs-nvenc")
+    (inputs
+      (modify-inputs (package-inputs obs)
+        (replace "ffmpeg" ffmpeg-nvenc)))))
+
 (define replace-all-nvidia
   (package-input-grafting
     `((,mesa   . ,nvda)
-      (,ffmpeg . ,ffmpeg-nvenc))))
+      (,ffmpeg . ,ffmpeg-nvenc/patched))))
 
 (define replace-all-nvidia-beta
   (package-input-grafting
