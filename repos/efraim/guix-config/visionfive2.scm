@@ -39,6 +39,14 @@
   ;(initrd-modules '())
   ;(kernel linux-libre-riscv64-generic)
   (firmware '())
+  ;; Taken from Z572's jh7110 system config.
+  (initrd-modules (cons* "mmc_block"
+                         "clk-starfive-jh7110-aon"
+                         "clk-starfive-jh7110-stg"
+                         "phy-jh7110-dphy-tx"
+                         "pcie_starfive"
+                         "nvme"
+                         %base-initrd-modules))
 
   (file-systems
     (cons* (file-system
@@ -71,7 +79,14 @@
       (delete (specification->package "guix-icons") %base-packages)))
 
   (services
-    (cons* (service openssh-service-type
+    (cons* (service agetty-service-type
+                    (agetty-configuration
+                      (extra-options '("-L"))
+                      (baud-rate "115200")
+                      (term "vt100")
+                      (tty "ttyS0")))
+
+           (service openssh-service-type
                     (openssh-configuration
                       (openssh (specification->package "openssh-sans-x"))
                       (authorized-keys

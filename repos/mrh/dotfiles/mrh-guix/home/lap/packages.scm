@@ -31,6 +31,7 @@
                      networking
                      package-management
                      password-utils
+                     pdf
                      readline
                      rsync
                      terminals
@@ -45,7 +46,6 @@
    ;; graphical-env
    alacritty
    brightnessctl
-   evince
    fnott
    fuzzel
    gtk+
@@ -58,6 +58,10 @@
    waybar
    wf-recorder
    wl-clipboard
+   zathura
+   zathura-djvu
+   zathura-pdf-mupdf
+   zathura-ps
 
    ;; fonts
    ;; might need to  run "fc-cache -vfr" to reubild font cache

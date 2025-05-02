@@ -1,20 +1,19 @@
 (define-module (mrh-guix system vps config)
   #:use-module (gnu)
   #:use-module (gnu services certbot)
+  #:use-module (gnu services networking)
   #:use-module (beaver system)
   #:use-module (beaver functional-services)
   #:use-module (mrh-guix personal))
 
-(use-package-modules admin
-                     lisp
-                     lisp-xyz
-                     rsync)
+(use-package-modules admin rsync)
 
 (let ((certs-path "/etc/certs/wumpus.pizza"))
   (-> (minimal-ovh %ssh-key)
 
       (add-service nftables
-                   (ruleset (local-file "nftables.conf")))
+                   (ruleset (plain-file "nftables.conf"
+                                        (local-file "nftables.conf"))))
 
       (add-service certbot
                    (email "mrh57@posteo.net")
@@ -37,6 +36,6 @@
       (http-static-content
        #:from-host "localhost"
        #:from-port 8081
-       #:to-dir "/var/www/main")
+       #:to-dir "/var/www/wumpus.pizza")
 
-      (packages btop cl-clog sbcl rsync)))
+      (packages btop rsync)))

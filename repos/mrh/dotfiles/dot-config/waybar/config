@@ -1,8 +1,6 @@
 {
-    // "layer": "top", // Waybar at top layer
-    // "position": "top", // Waybar position (top|bottom|left|right)
-    // "height": 30, // Waybar height (to be removed for auto height)
-    // "width": 1280, // Waybar width
+    "layer": "top", // Waybar at top layer
+    "position": "top", // Waybar position (top|bottom|left|right)
     "spacing": 4, // Gaps between modules (4px)
     "fixed-center": false,
     "modules-left": ["sway/workspaces", "sway/window"],
@@ -41,17 +39,29 @@
     "sway/window": {
         "format": " {}",
         "max-length": 40
-    },    
+    },
     "tray": {
         // "icon-size": 21,
         "spacing": 10
     },
+    "wireplumber": {
+        "format": "{icon} {volume}%",
+        "format-muted": " {volume}%",
+        // "format-muted": "🔇 {volume}%",
+	    // "format-source": "🎙️ {volume}%",
+	    "format-icons": {
+            // "default": ["🔈", "🔉", "🔊"]
+            "default": ["", "", ""]
+        }
+    },
     "clock": {
-        // "timezone": "America/New_York",
-	"format": " {:%r}",
-	"interval": 1,
+        "timezone": "America/New_York",
+	    "format": " {:%r}",
+        // "format": "🕰️ {:%r}",
+	    "interval": 1,
         "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
         "format-alt": " {:%a, %b %d}"
+        // "format-alt": "📅 {:%a, %b %d}"
     },
     "cpu": {
         "format": " {usage}%",
@@ -88,51 +98,13 @@
         "format-icons": ["", "", "", "", ""]
     },
     "network": {
-        // "interface": "wlp2*", // (Optional) To force the use of this interface
+        // "interface": "wlp2*", // (Optional)
         "format-wifi": " {ifname}",
         "format-ethernet": "{ipaddr}/{cidr} ",
         "tooltip-format": "{essid} via {gwaddr}",
         "format-linked": "{essid} (No IP) ",
         "format-disconnected": "Disconnected ⚠",
         "format-alt": "{essid}: {ipaddr}/{cidr}"
-    },
-    "pulseaudio": {
-        // "scroll-step": 1, // %, can be a float
-        "format": "{icon} {volume}%",
-        "format-bluetooth": "{volume}% {icon} {format_source}",
-        "format-bluetooth-muted": " {icon} {format_source}",
-        "format-muted": " {volume}%",
-        "format-source": "{volume}%",
-        "format-source-muted": "",
-        "format-icons": {
-            "headphone": "",
-            "default": ["", "", ""]
-        },
-        "on-click": "pavucontrol"
-    },
-    "wireplumber": {
-        "format": "{icon} {volume}%",
-        "format-muted": " {volume}%",
-	"format-source": "{volume}%",
-	"format-icons": {
-            "headphone": "",
-            "default": ["", "", ""]
-        }
-    },
-    "keyboard-state": {
-        "capslock": true,
-        "format": "{name} {icon}",
-        "format-icons": {
-            "locked": "",
-            "unlocked": ""
-        }
-    },
-    "idle_inhibitor": {
-        "format": "{icon}",
-        "format-icons": {
-            "activated": "",
-            "deactivated": ""
-        }
     },
     "custom/media": {
         "format": "{icon} {}",
@@ -147,4 +119,3 @@
         // "exec": "$HOME/.config/waybar/mediaplayer.py --player spotify 2> /dev/null" // Filter player based on name
     }
 }
-

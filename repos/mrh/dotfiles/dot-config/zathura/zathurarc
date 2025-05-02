@@ -1,26 +1,39 @@
 set adjust-open width
+set selection-clipboard clipboard
+set scroll-full-overlap 0.2
+set zoom-step 10
+set synctex true
+set vertical-center true
+set statusbar-home-tilde true
+set window-title-basename true
+set scroll-page-aware true
 
+map n scroll down
+map N scroll full-down
+map p scroll up
+map P scroll full-up
+map b scroll left
+mab B scroll full-left
+map f scroll right
+map F scroll full right
+
+map <M-g> goto
 map \< goto top
 map \> goto bottom
-map b navigate previous
-map e follow
-map f navigate next
-map p goto top
+map <C-p> navigate previous
+map <C-n> navigate next
 
-map <C-+> zoom in
-map <C--> zoom out
-map <C-=> zoom in
-map <C-)> adjust_window best-fit
-map <C-0> adjust_window width
-map <C-a> scroll full-left
-map <C-b> scroll left
-map <C-e> scroll full-right
-map <C-f> scroll right
+map = adjust_window width
+map <A-1> adjust_window best-fit
+
+map <C-f> follow
+map <A-w> copy_link
+map <C-s> search forward
+map <C-r> search backward
+
+map t recolor
+
+map r rotate rotate_cw
+map R rotate rotate_ccw
+
 map <C-g> abort
-map <C-n> scroll down
-map <C-p> scroll up
-map <C-v> scroll full-down
-
-map <A-\<> goto top
-map <A-\>> goto bottom
-map <A-v> scroll full-up

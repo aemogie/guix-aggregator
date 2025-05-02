@@ -100,6 +100,7 @@
             scheme
             sound
             tex
+            typst
             video
             web))
 
@@ -197,6 +198,14 @@
         #|guile-xyz|# guile-goblins guile-hoot guile-lib guile-lsp-server
                       guile-srfi-197 guile-srfi-232))
 
+(define mathematics
+  (list #|lean|# lean4))
+
+(define sound
+  (list #|linux     |# wireplumber-minimal
+        #|pulseaudio|# ncpamixer
+        #|rust-apps |# helvum))
+
 (define tex
   (list #|tex|# rubber
                 texlive-collection-fontsextra
@@ -208,13 +217,8 @@
                 texlive-collection-langfrench
                 texlive-collection-mathscience))
 
-(define mathematics
-  (list #|lean|# lean4))
-
-(define sound
-  (list #|linux     |# wireplumber-minimal
-        #|pulseaudio|# ncpamixer
-        #|rust-apps |# helvum))
+(define typst
+  (list #|typst|# (@ (radix packages typst) typst)))
 
 (define video
   (list #|video|# ani-cli ffmpeg mpv-minimal/wayland))

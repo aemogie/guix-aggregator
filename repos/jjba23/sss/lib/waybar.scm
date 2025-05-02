@@ -97,8 +97,8 @@
                     (critical . 15))
             (format . "{capacity}% {icon}")
             (format-full . "{capacity}% {icon}")
-            (format-charging . "{capacity}% \uf5e7")
-            (format-plugged . "{capacity}% \uf1e6")
+            (format-charging . "{capacity}% \uf0e7")
+            (format-plugged . "{capacity}% \uf0e7")
             (format-alt . "{time} {icon}")
             (format-icons . #("\uf244" "\uf243" "\uf242" "\uf241" "\uf240"))))
 
@@ -202,7 +202,7 @@
     (margin-bottom . "4px")
     (margin-left . "4px")
     (margin-right . "4px")
-    (font-size . "10pt")
+    (font-size . "11pt")
     (padding-left . "10px")
     (padding-right . "10px")
     (border-radius . "16px")))
@@ -227,7 +227,7 @@
                                     'text)))
       ("#workspaces" unquote
        (button-css #:palette palette))
-      ("#workspaces button" (font-size . "9pt"))
+      ("#workspaces button" (font-size . "11pt"))
       ("#power-profiles-daemon" unquote
        (button-css #:palette palette))
       ("#custom-power" unquote
@@ -286,7 +286,7 @@
       ("#tray" unquote
        (append (button-css #:palette palette)
                '((transition . "all .3s ease"))))
-      ("#keyboard-state" (font-size . "9pt"))
+      ("#keyboard-state" (font-size . "11pt"))
       ("#pulseaudio" unquote
        (button-css #:palette palette))
       ("#cpu" unquote

@@ -32,8 +32,8 @@ Assumes \"tags.html\" file exists in same directory after export."
   (if-let ((filetags (plist-get html-info :filetags)))
       (jack-html
        `(:div (@ :id "filetags")
-              (:a (@ :href ,(if-let ((tags-file (plist-get
-                                                 html-info :tags-file)))
+              (:a (@ :href ,(if-let ((tags-file
+                                      (plist-get html-info :tags-file)))
                                 (concat (file-name-sans-extension tags-file)
                                         ".html")
                               "tags.html"))
@@ -121,6 +121,7 @@ Adds link to tags file before postamble (for blog posts)."
    ;; Filetags
    (my/publish-html-build-filetags info)
    ;; Postamble.
+   "<br />"
    (org-html--build-pre/postamble 'postamble info)
    ;; Possibly use the Klipse library live code blocks.
    (when (plist-get info :html-klipsify-src)
@@ -257,7 +258,7 @@ time in `current-time' format."
 	       org-publish-project-alist)))
   (let ((project
 	     (cond ((stringp project) (assoc project org-publish-project-alist))
-	           ((not (stringp (car project))) (push "project" project))
+	           ((not (stringp (car project))) (push "dummy-project" project))
 	           (t project))))
     (when (and (not (null project))
 	           (org-publish-property :auto-tags project))
@@ -273,56 +274,53 @@ time in `current-time' format."
 	      (insert tags)
 	      (write-file filename))))))
 
-(defun directory-level-prefix (level directory)
+(defun my/get-up-directory (level directory)
   (let ((result ""))
-    (dotimes (__ level)
+    (dotimes (_ level)
       (setf result (concat result "../")))
     (concat result directory)))
 
 (defun my/publish-html-head (level)
   (jack-html
-   `((:link (@ :rel "stylesheet" :type "text/css" :href ,(directory-level-prefix level "static/css/stylesheet.css")))
-     (:link (@ :rel "icon" :href ,(directory-level-prefix level "static/images/icons/favicon.ico"))))))
+   `((:link (@ :rel "stylesheet" :type "text/css" :href ,(my/get-up-directory level "static/css/stylesheet.css")))
+     (:link (@ :rel "icon" :href ,(my/get-up-directory level "static/images/icons/favicon.ico"))))))
 
 (defun my/publish-html-preamble (level)
   (jack-html
    `(:div (@ :class "navigation")
-          (:a (@ :href ,(directory-level-prefix level "index.html"))
+          (:a (@ :href ,(my/get-up-directory level "index.html"))
               "The Wumpus Warehouse")
           " | "
-          (:a (@ :href ,(directory-level-prefix level "blog/index.html"))
-              (:img (@ :style "border-width:0" :src (directory-level-prefix level "static/images/icons/blog.png")))
+          (:a (@ :href ,(my/get-up-directory level "blog/index.html"))
+              (:img (@ :style "border-width:0" :src (my/get-up-directory level "static/images/icons/blog.png")))
               " Blog")
           " | "
-          (:a (@ :href ,(directory-level-prefix level "blog/rss.xml"))
-              (:img (@ :style "border-width:0" :src (directory-level-prefix level "static/images/icons/rss.png")))
+          (:a (@ :href ,(my/get-up-directory level "blog/rss.xml"))
+              (:img (@ :style "border-width:0" :src (my/get-up-directory level "static/images/icons/rss.png")))
               " RSS")
           " | "
           (:a (@ :href ,my/code-repo)
-              (:img (@ :style "border-width:0" :src ,(directory-level-prefix level "static/images/icons/git.png")))
+              (:img (@ :style "border-width:0" :src ,(my/get-up-directory level "static/images/icons/git.png")))
               " Code")
           " | "
-          (:a (@ :href ,(directory-level-prefix level "about.html"))
-              (:img (@ :style "border-width:0" :src ,(directory-level-prefix level "static/images/icons/lisp-circle.png")))
+          (:a (@ :href ,(my/get-up-directory level "about.html"))
+              (:img (@ :style "border-width:0" :src ,(my/get-up-directory level "static/images/icons/lisp-circle.png")))
               " About"))))
 
 (defun my/publish-html-postamble (html-info)
   (jack-html
-   `((:br)
-     (:center
-      (:div (@ :id "fineprint")
-            (:a (@ :rel "license" :href "https://creativecommons.org/licenses/by-sa/4.0/")
-                (:img (@ :alt "Creative Commons License" :style "border-width:0" :src "https://i.creativecommons.org/l/by-sa/4.0/88x31.png")))
-            (:br)
-            (:span (@ :xmlns:dct "https://purl.org/dc/terms/" :href "https://purl.org/dc/dcmitype/Text" :property "dct:title" :rel "dct:type")
-                   ,my/website-domain)
-            " by "
-            (:a (@ :xmlns:cc "https://creativecommons.org/ns#" :href (format "https://%s/" my/website-domain) :property "cc:attributionName" :rel "cc:attributionURL")
-                ,user-full-name)
-            " is licensed under a "
-            (:a (@ :rel "license" :href "https://creativecommons.org/licenses/by-sa/4.0/")
-                "Creative Commons Attribution-ShareAlike 4.0 License")
-            ".")))))
+   `((:center
+      (:a (@ :rel "license" :href "https://creativecommons.org/licenses/by-sa/4.0/")
+          (:img (@ :alt "Creative Commons License" :style "border-width:0" :src "https://i.creativecommons.org/l/by-sa/4.0/88x31.png")))
+      (:br)
+      (:a (@ :xmlns:cc "https://creativecommons.org/ns" :href ,(format "https://%s/" my/website-domain) :property "cc:attributionName" :rel "cc:attributionURL")
+          ,my/website-domain)
+      " by "
+      ,user-full-name
+      " is licensed under a "
+      (:a (@ :rel "license" :href "https://creativecommons.org/licenses/by-sa/4.0/")
+          "Creative Commons Attribution-ShareAlike 4.0 License")
+      "."))))
 
 (defun my/publish-rss-filter (filename)
   (not (string-match "tags.org" filename)))
@@ -358,10 +356,10 @@ time in `current-time' format."
            :exclude "blog/.*"
            :recursive t
            
-           :section-numbers nil
            :author ""
            :email ""
            :with-toc nil
+           :section-numbers nil
 
            :html-metadata-timestamp-format "%Y-%m-%d"           
            :html-head ,(my/publish-html-head 0)
@@ -375,10 +373,10 @@ time in `current-time' format."
            :base-extension "org"
            :recursive nil
 
-           :section-numbers nil
            :author ""
            :email ""
            :with-toc 2
+           :section-numbers nil
 
            :auto-tags t
            

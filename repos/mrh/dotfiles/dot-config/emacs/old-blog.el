@@ -1,10 +1,8 @@
-(require 'jack)
-
-(setf org-static-blog-publish-title "The Wumpus Warehouse"
-      org-static-blog-publish-url "https://wumpus.pizza"
-      org-static-blog-publish-directory "~/src/sites/wumpus-org/"
-      org-static-blog-posts-directory "~/src/sites/wumpus-org/posts"
-      org-static-blog-drafts-directory "~/src/sites/wumpus-org/drafts"
+(setf org-static-blog-publish-title my/website-title
+      org-static-blog-publish-url (format "https://%s/" my/website-domain)
+      org-static-blog-publish-directory my/website-local-directory
+      org-static-blog-posts-directory (concat my/website-local-directory "posts/")
+      org-static-blog-drafts-directory (concat my/website-local-directory "drafts/")
       org-static-blog-preview-ellipsis "( . . . )"
       org-static-blog-preview-link-p t
       org-static-blog-enable-tags t
@@ -135,7 +133,7 @@ choose."
 
 (setf org-static-blog-page-header
       (jack-html
-       '((:meta (@ :name "author" :content "Alec Barreto"))
+       '((:meta (@ :name "author" :content ,user-full-name))
          (:meta (@ :name "referrer" :content "no-referrer"))
          (:meta (@ :name "viewport" :content "initial-scale=1,width=device-width,minimum-scale=1"))
          (:link (@ :rel "stylesheet" :href "static/css/style.css" :type "text/css"))
@@ -150,7 +148,7 @@ choose."
               (:a (@ :href ,org-static-blog-publish-url)
                   ,org-static-blog-publish-title)
               " | "
-              (:a (@ :href "https://codeberg.org/mrh")
+              (:a (@ :href ,my/code-repo)
                   (:img (@ :style "border-width:0" :src "static/images/icons/git-icon.png"))
                   " Code")
               " | "
@@ -171,10 +169,10 @@ choose."
                     (:img (@ :alt "Creative Commons License" :style "border-width:0" :src "https://i.creativecommons.org/l/by-sa/4.0/88x31.png")))
                 (:br)
                 (:span (@ :xmlns:dct "https://purl.org/dc/terms/" :href "https://purl.org/dc/dcmitype/Text" :property "dct:title" :rel "dct:type")
-                       "wumpus.pizza")
+                       ,my/website-domain)
                 " by "
                 (:a (@ :xmlns:cc "https://creativecommons.org/ns#" :href ,org-static-blog-publish-url :property "cc:attributionName" :rel "cc:attributionURL")
-                    "Alec Barreto")
+                    ,user-full-name)
                 " is licensed under a "
                 (:a (@ :rel "license" :href "https://creativecommons.org/licenses/by-sa/4.0/")
                     "Creative Commons Attribution-ShareAlike 4.0 License")

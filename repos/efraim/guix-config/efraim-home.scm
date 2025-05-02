@@ -396,6 +396,7 @@
     ;"    fetch = +refs/pull/*/head:refs/remotes/gitlab/pr/*\n"
     "[url \"ssh://git.savannah.gnu.org:/srv/\"]\n"
     "    pushInsteadOf = https://git.savannah.gnu.org/\n"
+    "    pushInsteadOf = https://https.git.savannah.gnu.org/\n"
     "[url \"git@git.sr.ht:\"]\n"
     "    pushInsteadOf = https://git.sr.ht/\n"
     "[web]\n"
@@ -487,6 +488,8 @@
             ;; Upscaling from 720 causes fewer dropped frames.
             "ytdl-format='bv*[height<=720]+ba/b[height<=720]/bv*[height<=1080]+ba/b[height<1080]/bv+ba/b'"
             "gpu-context=wayland"
+            "[youtube]"
+            "ytdl-raw-options='ignore-config=,sub-langs=\"^en.*\",write-subs=,write-auto-subs='"
             "[twitch]"
             "profile-cond=get('path', ''):find('^https?://[wm]w?w?.twitch.tv/') ~= nil"
             "profile-restore=copy-equal"

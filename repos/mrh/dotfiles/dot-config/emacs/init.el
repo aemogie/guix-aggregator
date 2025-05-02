@@ -155,19 +155,29 @@ Otherwise set locally with `keymap-local-set'."
 
 (setf display-line-numbers-type t)
 
-(dolist (hook '(conf-mode-hook org-mode-hook prog-mode-hook nxml-mode-hook))
+(dolist (hook '(conf-mode-hook nxml-mode-hook prog-mode-hook))
   (add-hook hook 'display-line-numbers-mode))
 
-(defvar *my/font* "DejaVu Sans Mono")
-
 (set-face-attribute 'default nil
-                    :font *my/font*
+                    :family "DejaVu Sans Mono"
                     :slant 'normal
                     :height 125)
+
+(set-face-attribute 'fixed-pitch nil
+                    :family "DejaVu Sans Mono"
+                    :slant 'normal
+                    :height 125)
+
+(set-face-attribute 'variable-pitch nil
+                    :family "DejaVu Serif"
+                    :slant 'normal
+                    :height 160)
 
 (set-face-attribute 'italic nil
                     :slant 'italic
                     :underline nil)
+
+(add-hook 'text-mode-hook #'variable-pitch-mode)
 
 (use-package nerd-icons-dired
   :hook (dired-mode . nerd-icons-dired-mode))
@@ -175,15 +185,28 @@ Otherwise set locally with `keymap-local-set'."
 (global-prettify-symbols-mode 1)
 
 (defun my/adjust-opacity ()
+  "Make sure opacity is correct for given theme."
   (set-frame-parameter nil 'alpha-background
                        (if (member (ef-themes--current-theme)
                                    ef-themes-light-themes)
                            100
                          80)))
 
+(defun my/fontify-org-buffers ()
+  "Fontify all org buffers.
+Helpful advice for face changing functions."
+  (interactive)
+  (save-current-buffer
+    (dolist (buffer (buffer-list))
+      (set-buffer buffer)
+      (when (eq major-mode 'org-mode)
+        (font-lock-fontify-buffer)))))
+
 (use-package ef-themes
   :config
   (advice-add 'ef-themes-toggle :after #'my/adjust-opacity)
+  (advice-add 'ef-themes-toggle :after #'my/fontify-org-buffers)
+  (setf ef-themes-mixed-fonts t)
   (setf ef-themes-to-toggle '(ef-autumn ef-eagle))
   (ef-themes-select-dark 'ef-autumn))
 
@@ -274,13 +297,19 @@ See also `my/hide-buffer'."
 (use-package delsel
   :config (delete-selection-mode 1))
 
+(put 'narrow-to-defun  'disabled nil)
+(put 'narrow-to-page   'disabled nil)
+(put 'narrow-to-region 'disabled nil)
+
 (setf ispell-personal-dictionary (format "%s/documents/personal-dictionary"
                                          (getenv "HOME")))
 
 (use-package writeroom-mode
-  :commands (writeroom-mode)
-  :config (setf writeroom-width 100
-                writeroom-fullscreen-effect 'maximized))
+  :config
+  (setf writeroom-width 80
+        writeroom-fullscreen-effect 'maximized
+        writeroom-major-modes '(text-mode))
+  (global-writeroom-mode))
 
 (setq-default indent-tabs-mode nil
               tab-width 4)
@@ -298,6 +327,7 @@ See `my/dired-run-command'."
 
 (defun my/compile ()
   (interactive)
+  (save-buffer)
   (save-window-excursion (compile compile-command)))
 
 (defun my/set-compile-command (command)
@@ -315,6 +345,8 @@ See `my/dired-run-command'."
 (use-package aggressive-indent
   :hook
   ((lisp-mode emacs-lisp-mode scheme-mode) . aggressive-indent-mode))
+
+(keymap-set lisp-interaction-mode-map "C-c C-c" 'eval-print-last-sexp)
 
 (defun my/remove-all-advice (sym)
   "Remove all advice from function designated by symbol SYM."
@@ -364,7 +396,8 @@ See `my/dired-run-command'."
               ("C-c l" . org-cycle-list-bullet))
   :config
   (setf org-directory (expand-file-name "documents/org/" (getenv "HOME")))
-  (setf org-agenda-files (list (expand-file-name "agenda/" org-directory))
+  (setf org-default-notes-file (expand-file-name "notes.org" org-directory)
+        org-agenda-files (list (expand-file-name "agenda/" org-directory))
         
         org-startup-folded t
         org-M-RET-may-split-line '((default . nil))
@@ -399,6 +432,7 @@ See `my/dired-run-command'."
   :after (org))
 
 (use-package org-publish-rss
+  :defer t
   :config
   (setf org-publish-rss-publish-immediately t))
 
@@ -493,8 +527,9 @@ See `my/dired-run-command'."
 
         mail-user-agent 'mu4e-user-agent
         mu4e-get-mail-command (format "INSIDE_EMACS=%s mbsync -a"
-                                      emacs-version))
-  (mu4e-modeline-mode -1))
+                                      emacs-version)
+
+        mu4e-modeline-support nil))
 
 (defun my/make-youtube-feed (channel-url)
   "Create RSS feed url from youtube channel url CHANNEL-URL

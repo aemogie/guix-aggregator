@@ -51,6 +51,7 @@
         eglot-autoreconnect t)
   :config
   (setq eglot-server-programs (assq-delete-all 'scala-mode eglot-server-programs))
+  (setq eglot-server-programs (assq-delete-all 'scala-ts-mode eglot-server-programs))
   (add-to-list 'eglot-server-programs '(scala-mode . ("metals" "-Dmetals.http=on")))
   (add-to-list 'eglot-server-programs '(scala-ts-mode . ("metals" "-Dmetals.http=on")))
   (add-to-list 'eglot-server-programs '(nix-ts-mode . ("nil")))
@@ -58,7 +59,7 @@
   
   (setq-default eglot-workspace-configuration
                 '(
-                  :metals ( :autoImportBuild t
+                  :metals ( :autoImportBuild "all"
                             :superMethodLensesEnabled t
                             :showInferredType t
                             :enableSemanticHighlighting t
@@ -66,7 +67,8 @@
                                           :implicitArguments (:enable nil)
                                           :implicitConversions (:enable nil )
                                           :typeParameters (:enable t )
-                                          :hintsInPatternMatch (:enable nil )))
+                                          :hintsInPatternMatch (:enable nil ))
+                            :bloopJvmProperties ["-Xmx2G"])
                   :haskell (:formattingProvider "ormolu")
                   :rust-analyzer (:cargo (:sysroot "discover"
                                                    :features "all"
