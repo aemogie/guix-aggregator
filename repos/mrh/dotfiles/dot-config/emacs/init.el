@@ -34,32 +34,15 @@
   :after dired
   :config (diredfl-global-mode t))
 
-(defun my/get-open-file-buffers ()
-  (with-temp-buffer
-    (list-buffers t)
-    (insert-buffer "*Buffer List*")
-    (kill-buffer "*Buffer List*")
-    (mapcar (lambda (line)
-              (let ((parts (string-split (string-trim-left line))))
-                (if (string= "*" (car parts))
-                    (cadr parts)
-                  (car parts))))
-            (butlast
-             (split-string
-              (buffer-substring-no-properties (point-min) (point-max))
-              "\n")))))
-
 (defun my/dired-run-command (command)
-  "Run COMMAND on marked files.
-If a buffer containing the file is open it will be affected but the changes will not be written.
-If a there is no open buffer containing the file the changes will be written."
-  (interactive "CRun on marked files: ")
-  (let ((open-file-buffers (my/get-open-file-buffers)))
-    (save-window-excursion
-      (dolist (filepath (dired-get-marked-files))
-        (find-file filepath)
+  "Run COMMAND on files marked in `dired'."
+  (interactive "Crun on marked files: ")
+  (let ((file-buffers (cl-remove-if-not #'buffer-file-name (buffer-list))))
+    (save-excursion
+      (dolist (marked-file (dired-get-marked-files))
+        (find-file marked-file)
         (funcall command)
-        (unless (member (buffer-name) open-file-buffers)
+        (unless (member (current-buffer) file-buffers)
           (save-buffer)
           (kill-buffer))))))
 
@@ -138,7 +121,8 @@ Otherwise set locally with `keymap-local-set'."
                 "  "
                 mode-name
                 "  "
-                (:eval (unless (zerop text-scale-mode-amount)
+                (:eval (unless (zerop
+                                (bound-and-true-p text-scale-mode-amount))
                          text-scale-mode-lighter))
                 "  "
                 mode-line-misc-info
@@ -160,24 +144,33 @@ Otherwise set locally with `keymap-local-set'."
 
 (set-face-attribute 'default nil
                     :family "DejaVu Sans Mono"
-                    :slant 'normal
-                    :height 125)
+                    :height 125
+                    :slant 'normal)
 
 (set-face-attribute 'fixed-pitch nil
                     :family "DejaVu Sans Mono"
-                    :slant 'normal
-                    :height 125)
+                    :height 125
+                    :slant 'normal)
 
 (set-face-attribute 'variable-pitch nil
                     :family "DejaVu Serif"
-                    :slant 'normal
-                    :height 160)
+                    :height 150
+                    :slant 'normal)
 
 (set-face-attribute 'italic nil
                     :slant 'italic
                     :underline nil)
 
-(add-hook 'text-mode-hook #'variable-pitch-mode)
+(defun my/enable-variable-pitch-mode ()
+  (unless (derived-mode-p 'html-mode 'nxml-mode)
+    (variable-pitch-mode 1)))
+
+(add-hook 'text-mode-hook #'my/enable-variable-pitch-mode)
+
+(defun my/remap-fixed-pitch-face (_enable)
+  (face-remap--remap-face 'fixed-pitch))
+
+(advice-add 'text-scale-mode :after #'my/remap-fixed-pitch-face)
 
 (use-package nerd-icons-dired
   :hook (dired-mode . nerd-icons-dired-mode))
@@ -207,6 +200,7 @@ Helpful advice for face changing functions."
   (advice-add 'ef-themes-toggle :after #'my/adjust-opacity)
   (advice-add 'ef-themes-toggle :after #'my/fontify-org-buffers)
   (setf ef-themes-mixed-fonts t)
+  (setf ef-themes-variable-pitch-ui nil)
   (setf ef-themes-to-toggle '(ef-autumn ef-eagle))
   (ef-themes-select-dark 'ef-autumn))
 
@@ -308,8 +302,9 @@ See also `my/hide-buffer'."
   :config
   (setf writeroom-width 80
         writeroom-fullscreen-effect 'maximized
-        writeroom-major-modes '(text-mode))
-  (global-writeroom-mode))
+        writeroom-major-modes '(text-mode)
+        writeroom-major-modes-exceptions '(mhtml-mode nxml-mode))
+  (global-writeroom-mode 1))
 
 (setq-default indent-tabs-mode nil
               tab-width 4)
@@ -432,7 +427,7 @@ See `my/dired-run-command'."
   :after (org))
 
 (use-package org-publish-rss
-  :defer t
+  :defer 0.1
   :config
   (setf org-publish-rss-publish-immediately t))
 
@@ -458,7 +453,9 @@ See `my/dired-run-command'."
 
 (defun my/eshell-clear ()
   (interactive)
-  (eshell/clear-scrollback))
+  (eshell/clear-scrollback)
+  (insert "fastfetch")
+  (eshell-send-input))
 
 (use-package eshell
   :commands (eshell)
@@ -569,11 +566,11 @@ in desired playing order, separated by newlines.
 
 See https://codeberg.org/mrh/dotfiles/dot-local/bin for more info."
   (interactive)
-  (let ((album-name (shell-quote-argument
-                     (file-name-nondirectory (dired-get-filename)))))
+  (let* ((album-path (dired-get-filename))
+         (album-name (shell-quote-argument (file-name-nondirectory album-path))))
     (call-process-shell-command
-     (format "mpv --input-ipc-server=/tmp/mpv-socket --playlist=%s/%s--Album.txt"
-             album-name album-name)
+     (format "exec mpv --wayland-app-id=mpv-album --input-ipc-server=/tmp/mpv-socket --playlist=%s/%s--Album.txt"
+             album-path album-name)
      nil
      0)))
 

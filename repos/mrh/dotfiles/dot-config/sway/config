@@ -33,6 +33,17 @@ input * {
     repeat_rate 40
 }
 
+# default workspaces for apps
+assign [app_id="LibreWolf"] 2
+assign [app_id="org.keepassxc.KeePassXC"] 2
+assign [app_id="mpv-album"] 9
+assign [app_id="mpv"] 3
+assign [app_id="org.pwmt.zathura"] 8
+assign [app_id="signal"] 10
+
+# default layout
+workspace_layout tabbed
+
 # Keybindings.
 ##############
 bindsym $mod+Shift+c reload
@@ -83,9 +94,9 @@ bindsym XF86MonBrightnessUp exec $brightnessctl set +5%
 bindsym XF86MonBrightnessDown exec $brightnessctl set 5%-
 bindsym Shift+XF86MonBrightnessUp exec $brightnessctl set +10%
 bindsym Shift+XF86MonBrightnessDown exec $brightnessctl set 10%-
-bindsym $mod+s layout stacking
+bindsym $mod+s layout toggle split
 bindsym $mod+t layout tabbed
-bindsym $mod+Shift+e layout toggle split
+bindsym $mod+Shift+e layout stacking
 bindsym $mod+f fullscreen
 bindsym $mod+Shift+space floating toggle
 bindsym $mod+space focus mode_toggle
@@ -111,7 +122,7 @@ exec_always fnott
 ###############
 
 floating_modifier $mod normal
-font pango:monospace 1
+font pango:DejaVu Sans Mono 0.5
 titlebar_border_thickness 0
 titlebar_padding 0
 client.focused "ebdbb2" "fabd2f" "282828"

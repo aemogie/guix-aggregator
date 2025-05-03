@@ -257,6 +257,7 @@
           (service thinkfan-service-type
                    (thinkfan-configuration
                     (thinkfan thinkfan-next)
+                    (auto-start? #f)
                     (config-file file:thinkfan-config)))
 
           #|Memory management services|#
