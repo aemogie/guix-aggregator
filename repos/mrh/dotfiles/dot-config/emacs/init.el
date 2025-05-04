@@ -1,63 +1,85 @@
-(setf default-directory (format "%s/" (getenv "HOME")))
+(setopt default-directory (format "%s/" (getenv "HOME")))
 
-(setf custom-file
-      (expand-file-name "custom.el" user-emacs-directory))
-(defvar personal-data
-  (expand-file-name "personal.el" user-emacs-directory))
-
-(load custom-file)
+(defvar personal-data (expand-file-name "personal.el" user-emacs-directory))
 (load personal-data)
 
-(setf large-file-warning-threshold 10000000)
+(use-package cus-edit
+  :defer
+  t
+  :custom
+  (custom-file (expand-file-name "custom.el" user-emacs-directory)))
 
-(global-auto-revert-mode 1)
+(use-package files
+  :custom
+  (large-file-warning-threshold 10000000)
+  (backup-by-copying t)
+  :config
+  (add-to-list 'backup-directory-alist
+               `("." . ,(expand-file-name "backups" user-emacs-directory))))
 
-(save-place-mode 1)
-(savehist-mode 1)
-(recentf-mode 1)
+(use-package autorevert
+  :config
+  (global-auto-revert-mode 1))
+
+(use-package saveplace
+  :config
+  (save-place-mode 1))
+
+(use-package savehist
+  :config
+  (savehist-mode 1))
+
+(use-package recentf
+  :config
+  (recentf-mode 1))
 
 (setq-default buffer-file-coding-system 'utf-8-unix)
 
-(add-to-list 'backup-directory-alist
-             `("." . ,(expand-file-name "backups" user-emacs-directory)))
-
-(setf backup-by-copying t)
-
 (use-package dired
-  :commands (dired)
-  :hook (dired-mode . dired-hide-details-mode)
-  :config (setf dired-listing-switches "-Ahl --group-directories-first"
-                dired-kill-when-opening-new-dired-buffer t
-                dired-dwim-target t))
+  :commands
+  (dired)
+  :hook
+  (dired-mode . dired-hide-details-mode)
+  :custom
+  (dired-listing-switches "-Ahl --group-directories-first")
+  (dired-kill-when-opening-new-dired-buffer t)
+  (dired-dwim-target t)
+  :config
+  (defun my/dired-run-command (command)
+    "Run COMMAND on files marked in `dired'."
+    (interactive "Crun on marked files: ")
+    (let ((file-buffers (cl-remove-if-not #'buffer-file-name (buffer-list))))
+      (save-excursion
+        (dolist (marked-file (dired-get-marked-files))
+          (find-file marked-file)
+          (funcall command)
+          (unless (member (current-buffer) file-buffers)
+            (save-buffer)
+            (kill-buffer)))))))
 
 (use-package diredfl
-  :after dired
-  :config (diredfl-global-mode t))
+  :after
+  (dired)
+  :config
+  (diredfl-global-mode 1))
 
-(defun my/dired-run-command (command)
-  "Run COMMAND on files marked in `dired'."
-  (interactive "Crun on marked files: ")
-  (let ((file-buffers (cl-remove-if-not #'buffer-file-name (buffer-list))))
-    (save-excursion
-      (dolist (marked-file (dired-get-marked-files))
-        (find-file marked-file)
-        (funcall command)
-        (unless (member (current-buffer) file-buffers)
-          (save-buffer)
-          (kill-buffer))))))
+(use-package epg
+  :config
+  (fset 'epg-wait-for-status 'ignore))
 
-(fset 'epg-wait-for-status 'ignore)
-
-(setf delete-by-moving-to-trash t)
+(setopt delete-by-moving-to-trash t)
 
 (use-package trashed
-  :commands (trashed)
-  :config
-  (setf trashed-sort-key '("Date deleted" . t)
-        trashed-date-format "%Y-%m-%d %H:%M:%S"
-        trashed-use-header-line t))
+  :commands
+  (trashed)
+  :custom
+  (trashed-sort-key '("Date deleted" . t))
+  (trashed-date-format "%Y-%m-%d %H:%M:%S")
+  (trashed-use-header-line t))
 
-(defvar *my/keybinds* '(("M-<tab>" . next-buffer)
+(use-package keymap
+  :config
+  (defvar my/keybinds '(("M-<tab>" . next-buffer)
                         ("M-<iso-lefttab>" . previous-buffer)
                         ("M-0" . delete-window)
                         ("M-1" . delete-other-windows)
@@ -77,35 +99,49 @@
                         ("C-c m v" . my/mpv)
                         ("C-c m a" . my/play-album)))
 
-(defun my/activate-keybinds (&optional local)
-  "Activate personal keybinds stored in `*my/keybinds*'.
+  (defun my/activate-keybinds (&optional local)
+    "Activate personal keybinds stored in `my/keybinds'.
 If LOCAL is nil set globally with `keymap-global-set'.
 Otherwise set locally with `keymap-local-set'."
-  (interactive "P")
-  (let ((setter-function (if local 'keymap-local-set 'keymap-global-set)))
-    (dolist (key-and-function *my/keybinds*)
-      (funcall setter-function (car key-and-function) (cdr key-and-function)))))
+    (interactive "P")
+    (let ((setter-function (if local 'keymap-local-set 'keymap-global-set)))
+      (dolist (key-and-function my/keybinds)
+        (funcall setter-function (car key-and-function) (cdr key-and-function)))))
 
-(my/activate-keybinds)
+  (my/activate-keybinds))
 
 (use-package which-key
-  :if (>= emacs-major-version 30)
-  :config (which-key-mode 1))
+  :if
+  (>= emacs-major-version 30)
+  :config
+  (which-key-mode 1))
 
-(repeat-mode 1)
+(use-package repeat
+  :config
+  (repeat-mode 1))
 
 (add-to-list 'default-frame-alist '(alpha-background . 80))
 
-(setf initial-scratch-message nil
-      inhibit-startup-screen t)
+(setopt initial-scratch-message nil
+        inhibit-startup-screen t)
 
-(scroll-bar-mode -1)
-(tool-bar-mode -1)
-(menu-bar-mode -1)
+(use-package scroll-bar
+  :config
+  (scroll-bar-mode -1))
 
-(blink-cursor-mode -1)
+(use-package tool-bar
+  :config
+  (tool-bar-mode -1))
 
-(setf frame-title-format "%b")
+(use-package menu-bar
+  :config
+  (menu-bar-mode -1))
+
+(use-package frame
+  :config
+  (blink-cursor-mode -1))
+
+(setopt frame-title-format "%b")
 (add-to-list 'default-frame-alist '(undecorated . t))
 
 (setq-default mode-line-format
@@ -128,98 +164,125 @@ Otherwise set locally with `keymap-local-set'."
                 mode-line-misc-info
                 mode-line-end-spaces))
 
-(setf mode-line-compact 'long)
+(setopt mode-line-compact 'long)
 
-(setf display-time-format "%R"
-      display-time-default-load-average nil)
-(display-time-mode 1)
+(use-package time
+  :custom
+  (display-time-format "%R")
+  (display-time-default-load-average nil)
+  :config
+  (display-time-mode 1))
 
-(global-hl-line-mode 1)
 (global-visual-line-mode 1)
 
-(setf display-line-numbers-type t)
+(use-package hl-line
+  :config
+  (global-hl-line-mode 1)
+  (dolist (hook '(comint-mode-hook eshell-mode-hook))
+    (add-hook hook (lambda () (setq-local global-hl-line-mode nil)))))
 
-(dolist (hook '(conf-mode-hook nxml-mode-hook prog-mode-hook))
-  (add-hook hook 'display-line-numbers-mode))
+(use-package display-line-numbers
+  :custom
+  (display-line-numbers-type t)
+  :config
+  (dolist (hook '(conf-mode-hook nxml-mode-hook prog-mode-hook))
+    (add-hook hook 'display-line-numbers-mode)))
 
-(set-face-attribute 'default nil
-                    :family "DejaVu Sans Mono"
-                    :height 125
-                    :slant 'normal)
+(use-package font-lock)
 
-(set-face-attribute 'fixed-pitch nil
-                    :family "DejaVu Sans Mono"
-                    :height 125
-                    :slant 'normal)
+(use-package faces
+  :config
+  (set-face-attribute 'default nil
+                      :family "DejaVu Sans Mono"
+                      :height 125
+                      :slant 'normal)
 
-(set-face-attribute 'variable-pitch nil
-                    :family "DejaVu Serif"
-                    :height 150
-                    :slant 'normal)
+  (set-face-attribute 'fixed-pitch nil
+                      :family "DejaVu Sans Mono"
+                      :height 125
+                      :slant 'normal)
 
-(set-face-attribute 'italic nil
-                    :slant 'italic
-                    :underline nil)
+  (set-face-attribute 'variable-pitch nil
+                      :family "DejaVu Serif"
+                      :height 150
+                      :slant 'normal)
 
-(defun my/enable-variable-pitch-mode ()
-  (unless (derived-mode-p 'html-mode 'nxml-mode)
-    (variable-pitch-mode 1)))
+  (set-face-attribute 'italic nil
+                      :slant 'italic
+                      :underline nil))
 
-(add-hook 'text-mode-hook #'my/enable-variable-pitch-mode)
+(use-package face-remap
+  :config
+  (defun my/enable-variable-pitch-mode ()
+    (unless (derived-mode-p 'html-mode 'nxml-mode)
+      (variable-pitch-mode 1)))
+  
+  (defun my/remap-pitch-faces (_enable)
+    (face-remap--remap-face 'fixed-pitch)
+    (face-remap--remap-face 'variable-pitch))
+  
+  (advice-add 'text-scale-mode :after #'my/remap-pitch-faces))
 
-(defun my/remap-fixed-pitch-face (_enable)
-  (face-remap--remap-face 'fixed-pitch))
-
-(advice-add 'text-scale-mode :after #'my/remap-fixed-pitch-face)
+(use-package text-mode
+  :config
+  (when (featurep 'face-remap)
+    (add-hook 'text-mode-hook #'my/enable-variable-pitch-mode)))
 
 (use-package nerd-icons-dired
-  :hook (dired-mode . nerd-icons-dired-mode))
-
-(global-prettify-symbols-mode 1)
-
-(defun my/adjust-opacity ()
-  "Make sure opacity is correct for given theme."
-  (set-frame-parameter nil 'alpha-background
-                       (if (member (ef-themes--current-theme)
-                                   ef-themes-light-themes)
-                           100
-                         80)))
-
-(defun my/fontify-org-buffers ()
-  "Fontify all org buffers.
-Helpful advice for face changing functions."
-  (interactive)
-  (save-current-buffer
-    (dolist (buffer (buffer-list))
-      (set-buffer buffer)
-      (when (eq major-mode 'org-mode)
-        (font-lock-fontify-buffer)))))
+  :hook
+  (dired-mode . nerd-icons-dired-mode))
 
 (use-package ef-themes
+  :custom
+  (ef-themes-mixed-fonts t)
+  (ef-themes-to-toggle '(ef-autumn ef-eagle))
   :config
-  (advice-add 'ef-themes-toggle :after #'my/adjust-opacity)
-  (advice-add 'ef-themes-toggle :after #'my/fontify-org-buffers)
-  (setf ef-themes-mixed-fonts t)
-  (setf ef-themes-variable-pitch-ui nil)
-  (setf ef-themes-to-toggle '(ef-autumn ef-eagle))
-  (ef-themes-select-dark 'ef-autumn))
+  (defun my/adjust-opacity (&optional theme)
+    "Make sure opacity is correct for given theme."
+    (interactive)
+    (let ((theme (if theme theme (ef-themes--current-theme))))
+      (set-frame-parameter nil 'alpha-background
+                           (if (member theme ef-themes-light-themes)
+                               100
+                             80))))
+
+  (defun my/fontify-org-buffers (_theme)
+    "Fontify all org buffers.
+Helpful advice for face changing functions."
+    (interactive)
+    (save-current-buffer
+      (dolist (buffer (buffer-list))
+        (set-buffer buffer)
+        (when (eq major-mode 'org-mode)
+          (font-lock-fontify-buffer)))))
+
+  (advice-add 'ef-themes-load-theme :after #'my/adjust-opacity)
+  (advice-add 'ef-themes-load-theme :after #'my/fontify-org-buffers)
+
+  (add-hook 'server-after-make-frame-hook
+            (lambda ()
+              (ef-themes-load-theme (ef-themes--current-theme))))
+  
+  (ef-themes-select-dark 'ef-autumn)
+  :after
+  (frame font-lock))
 
 (use-package orderless 
-  :config
-  (setf completion-styles '(orderless basic)
-        completion-category-defaults nil
-        completion-category-overrides nil))
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
+  (completion-category-overrides nil))
 
 (use-package corfu 
   :init
   (setq-default pgtk-wait-for-event-timeout 0)
+  :custom
+  (corfu-auto t)
+  (corfu-auto-delay 0.2)
+  (corfu-auto-prefix 2)
+  (corfu-count 8)
+  (corfu-popupinfo-delay '(1.5 . 0.5))
   :config
-  (setf corfu-auto t
-        corfu-auto-delay 0.2
-        corfu-auto-prefix 2
-        corfu-count 8
-        corfu-popupinfo-delay '(1.5 . 0.5))
-  
   (add-to-list 'corfu--frame-parameters '(alpha-background . 100))
   (global-corfu-mode 1)
   (corfu-popupinfo-mode 1)
@@ -229,31 +292,35 @@ Helpful advice for face changing functions."
     (add-to-list 'savehist-additional-variables 'corfu-history)))
 
 (use-package vertico
-  :config (vertico-mode 1))
+  :config
+  (vertico-mode 1))
 
-(setf use-short-answers t)
+(setopt use-short-answers t)
 
 (use-package marginalia
-  :config (marginalia-mode 1)
-  :after (vertico))
+  :config
+  (marginalia-mode 1)
+  :after
+  (vertico))
 
 (use-package disable-mouse
-  :config (global-disable-mouse-mode 1))
+  :config
+  (global-disable-mouse-mode 1))
 
-(setf scroll-conservatively 10000
-      auto-window-vscroll nil)
+(setopt scroll-conservatively 10000
+        auto-window-vscroll nil)
 
 (use-package consult
-  :config (setf consult-buffer-sources
-                '(consult--source-hidden-buffer
-                  consult--source-modified-buffer
-                  consult--source-buffer
-                  consult--source-bookmark
-                  consult--source-recent-file
-                  consult--source-file-register
-                  consult--source-project-buffer-hidden
-                  consult--source-project-recent-file-hidden
-                  consult--source-project-root-hidden)))
+  :custom
+  (consult-buffer-sources '(consult--source-hidden-buffer
+                            consult--source-modified-buffer
+                            consult--source-buffer
+                            consult--source-bookmark
+                            consult--source-recent-file
+                            consult--source-file-register
+                            consult--source-project-buffer-hidden
+                            consult--source-project-recent-file-hidden
+                            consult--source-project-root-hidden)))
 
 (unless (boundp '*hidden-buffers*)
   (defvar *hidden-buffers* ()
@@ -268,7 +335,7 @@ See also `my/hide-buffer' and `hidden-buffer-p'."))
 See also `switch-to-prev-buffer-skip'."
   (cl-find (buffer-name buffer) *hidden-buffers* :test #'string=))
 
-(setf switch-to-prev-buffer-skip 'hidden-buffer-p)
+(setopt switch-to-prev-buffer-skip 'hidden-buffer-p)
 
 (defun my/hide-buffer (&optional buffer-name)
   "Adds BUFFER-NAME to `*hidden-buffers*'.
@@ -289,36 +356,52 @@ See also `my/hide-buffer'."
                 *hidden-buffers*)))
 
 (use-package delsel
-  :config (delete-selection-mode 1))
+  :config
+  (delete-selection-mode 1))
 
 (put 'narrow-to-defun  'disabled nil)
-(put 'narrow-to-page   'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 
-(setf ispell-personal-dictionary (format "%s/documents/personal-dictionary"
-                                         (getenv "HOME")))
+(use-package page
+  :config
+  (put 'narrow-to-page 'disabled nil))
+
+(use-package ispell
+  :custom
+  (ispell-personal-dictionary
+   (format "%s/documents/personal-dictionary" (getenv "HOME"))))
 
 (use-package writeroom-mode
+  :custom
+  (writeroom-width 80)
+  (writeroom-fullscreen-effect 'maximized)
+  (writeroom-major-modes '(text-mode))
+  (writeroom-major-modes-exceptions '(mhtml-mode nxml-mode))
   :config
-  (setf writeroom-width 80
-        writeroom-fullscreen-effect 'maximized
-        writeroom-major-modes '(text-mode)
-        writeroom-major-modes-exceptions '(mhtml-mode nxml-mode))
   (global-writeroom-mode 1))
+
+(use-package prog-mode
+  :config
+  (global-prettify-symbols-mode 1))
 
 (setq-default indent-tabs-mode nil
               tab-width 4)
 
-(defun my/dired-tabify-files (&optional untabify)
-  "Run eitheir `tabify' or `untabify' on marked files in dired.
+(use-package tabify
+  :commands (tabify untabify)
+  :config
+  (defun my/dired-tabify-files (&optional untabify)
+    "Run eitheir `tabify' or `untabify' on marked files in dired.
 See `my/dired-run-command'."
-  (interactive "P")
-  (let ((tab-function (if untabify #'untabify #'tabify)))
-    (my/dired-run-command
-     (lambda ()
-       (funcall tab-function (point-min) (point-max))))))
+    (interactive "P")
+    (let ((tab-function (if untabify #'untabify #'tabify)))
+      (my/dired-run-command
+       (lambda ()
+         (funcall tab-function (point-min) (point-max)))))))
 
-(fset #'jsonrpc--log-event #'ignore)
+(use-package jsonrpc
+  :config
+  (fset #'jsonrpc--log-event #'ignore))
 
 (defun my/compile ()
   (interactive)
@@ -341,71 +424,86 @@ See `my/dired-run-command'."
   :hook
   ((lisp-mode emacs-lisp-mode scheme-mode) . aggressive-indent-mode))
 
-(keymap-set lisp-interaction-mode-map "C-c C-c" 'eval-print-last-sexp)
+(use-package elisp-mode
+  :bind
+  (:map lisp-interaction-mode-map
+        ("C-c C-c" . eval-print-last-sexp)))
 
-(defun my/remove-all-advice (sym)
-  "Remove all advice from function designated by symbol SYM."
-  (interactive)
-  (advice-mapc (lambda (advice _props)
-                 (advice-remove sym advice))
-               sym))
+(use-package nadvice
+  :config
+  (defun my/remove-all-advice (sym)
+    "Remove all advice from function designated by symbol SYM."
+    (interactive)
+    (advice-mapc (lambda (advice _props)
+                   (advice-remove sym advice))
+                 sym)))
 
 (use-package geiser)
 
 (use-package geiser-guile
-  :commands (geiser-guile)
-  :config
-  (setf geiser-guile-load-init-file t)
+  :commands
+  (geiser-guile)
+  :custom
+  (geiser-guile-load-init-file t)
   :after (geiser))
 
 (use-package sly
-  :commands (sly)
+  :commands
+  (sly)
+  :custom
+  (inferior-lisp-program "sbcl")
+  (sly-mrepl-history-file-
+   (expand-file-name "sly/sly-mrepl-history" user-emacs-directory))
   :config
-  (setf inferior-lisp-program "sbcl")
-  (setf sly-mrepl-history-file-name
-        (expand-file-name "sly/sly-mrepl-history" user-emacs-directory))
   (when (featurep 'rainbow-delimiters)
     (add-hook 'sly-mrepl-mode-hook 'rainbow-delimiters-mode)))
 
 (use-package agda2-mode
-  :defer t
-  :init (add-to-list 'auto-mode-alist '("\\.lagda.md$" . agda2-mode)))
-
-(defun my/set-go-compile ()
-  (my/set-compile-command "go build"))
-
-(defun my/go-run ()
-  (interactive)
-  (shell-command "go run"))
+  :defer
+  t
+  :init
+  (add-to-list 'auto-mode-alist '("\\.lagda.md$" . agda2-mode)))
 
 (use-package go-mode
-  :hook (go-mode . my/set-go-compile)
-  :bind (:map go-mode-map
-              ("C-c C-c" . my/compile)
-              ("C-c C-r" . my/go-run)))
+  :hook
+  (go-mode . my/set-go-compile)
+  :bind
+  (:map go-mode-map
+        ("C-c C-c" . my/compile)
+        ("C-c C-r" . my/go-run))
+  :config
+  (defun my/set-go-compile ()
+    (my/set-compile-command "go build"))
+  
+  (defun my/go-run ()
+    (interactive)
+    (shell-command "go run")))
 
 (use-package org
-  :defer t
-  :hook (org-mode . org-indent-mode)
-  :bind (:map org-mode-map
-              ("C-c l" . org-cycle-list-bullet))
-  :config
-  (setf org-directory (expand-file-name "documents/org/" (getenv "HOME")))
-  (setf org-default-notes-file (expand-file-name "notes.org" org-directory)
-        org-agenda-files (list (expand-file-name "agenda/" org-directory))
-        
-        org-startup-folded t
-        org-M-RET-may-split-line '((default . nil))
-        org-insert-heading-respect-content t
-
-        org-log-done 'time
-        org-log-into-drawer t
-        org-todo-keywords
-        '((sequence "TODO(t)" "BLOCKED(b)" "|" "CANCELED(c)" "DONE(d)"))
-        
-        org-edit-src-content-indentation 0
-        org-babel-python-command "python3")
+  :defer
+  t
+  :hook
+  (org-mode . org-indent-mode)
+  :bind
+  (:map org-mode-map
+        ("C-c l" . org-cycle-list-bullet))
+  :custom
+  (org-directory (expand-file-name "documents/org/" (getenv "HOME")))
+  (org-default-notes-file (expand-file-name "notes.org" org-directory))
+  (org-agenda-files (list (expand-file-name "agenda/" org-directory)))
   
+  (org-startup-folded t)
+  (org-M-RET-may-split-line '((default . nil)))
+  (org-insert-heading-respect-content t)
+
+  (org-log-done 'time)
+  (org-log-into-drawer t)
+  (org-todo-keywords
+   '((sequence "TODO(t)" "BLOCKED(b)" "|" "CANCELED(c)" "DONE(d)")))
+  
+  (org-edit-src-content-indentation 0)
+  (org-babel-python-command "python3")
+  :config
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)
@@ -421,64 +519,68 @@ See `my/dired-run-command'."
        'my/org-cycle-list-bullet-repeat-keymap))
 
 (use-package org-bullets
-  :hook (org-mode . org-bullets-mode))
+  :hook
+  (org-mode . org-bullets-mode))
 
 (use-package ox-beamer
-  :after (org))
+  :after
+  (org))
 
 (use-package org-publish-rss
-  :defer 0.1
-  :config
-  (setf org-publish-rss-publish-immediately t))
+  :defer
+  0.1
+  :custom
+  (org-publish-rss-publish-immediately t))
 
 (use-package ox-publish
   :config
   (load (expand-file-name "org-publish.el" user-emacs-directory))
-  :after (jack org-publish-rss))
+  :after
+  (jack org-publish-rss))
 
 (use-package markdown-mode
-  :defer t)
-
-(defun my/set-latex-compile ()
-  (my/set-compile-command (format "pdflatex %s" (buffer-file-name))))
+  :defer
+  t)
 
 (use-package latex
-  :defer t
-  :hook (LaTeX-mode . my/set-latex-compile)
-  :bind (:map LaTeX-mode-map
-              ("C-c C-c" . my/compile)))
-
-(dolist (hook '(comint-mode-hook eshell-mode-hook))
-  (add-hook hook (lambda () (setq-local global-hl-line-mode nil))))
-
-(defun my/eshell-clear ()
-  (interactive)
-  (eshell/clear-scrollback)
-  (insert "fastfetch")
-  (eshell-send-input))
+  :defer
+  t
+  :hook
+  (LaTeX-mode . my/set-latex-compile)
+  :bind
+  (:map LaTeX-mode-map
+        ("C-c C-c" . my/compile))
+  :config
+  (defun my/set-latex-compile ()
+    (my/set-compile-command (format "pdflatex %s" (buffer-file-name)))))
 
 (use-package eshell
-  :commands (eshell)
-  :hook (eshell-mode . (lambda () (keymap-set eshell-mode-map
-                                         "C-c M-o"
-                                         'my/eshell-clear)))
+  :commands
+  (eshell)
+  :hook
+  (eshell-mode . (lambda () (keymap-set eshell-mode-map
+                                   "C-c M-o"
+                                   'my/eshell-clear)))
+  :custom
+  (eshell-prompt-function
+   (lambda ()
+     (if (featurep 'ef-themes)
+         (let* ((palette (ef-themes--current-theme-palette))
+                (orange (cadr (assoc 'yellow-warmer palette)))
+                (green (cadr (assoc 'green-warmer palette))))
+           (format "\n %s\n %s "
+                   (propertize (eshell/pwd)
+                               'face `(:foreground ,orange :weight bold))
+                   (propertize (if (zerop (user-uid)) "#" "λ")
+                               'face `(:foreground ,green :weight bold))))
+       (format "\n %s\n λ " (eshell/pwd)))))
+  (eshell-prompt-regexp ".* λ ")
   :config
-  (setf eshell-prompt-function
-        (if (featurep 'ef-themes)
-            (lambda ()
-              (let* ((palette (ef-themes--current-theme-palette))
-                     (orange (cadr (assoc 'yellow-warmer palette)))
-                     (green (cadr (assoc 'green-warmer palette))))
-                (format "\n %s\n %s "
-                        (propertize
-                         (eshell/pwd)
-                         'face `(:foreground ,orange :weight bold))
-                        (propertize
-                         (if (zerop (user-uid)) "#" "λ")
-                         'face `(:foreground ,green :weight bold)))))
-          (lambda ()
-            (format "\n %s\n λ " (eshell/pwd)))))
-  (setf eshell-prompt-regexp ".* λ "))
+  (defun my/eshell-clear ()
+    (interactive)
+    (eshell/clear-scrollback)
+    (insert "fastfetch")
+    (eshell-send-input)))
 
 (defun my/sudo-shell-command (command)
   "Run COMMAND as root via Tramp."
@@ -488,45 +590,57 @@ See `my/dired-run-command'."
     (async-shell-command command)))
 
 (use-package buffer-env
-  :commands (buffer-env-update buffer-env-reset))
+  :commands
+  (buffer-env-update buffer-env-reset))
 
 (use-package eat
-  :hook (eshell-load . eat-eshell-mode))
+  :hook
+  (eshell-load . eat-eshell-mode))
 
 (use-package magit
-  :commands (magit)
-  :hook (magit-mode . (lambda () (my/activate-keybinds t))))
+  :commands
+  (magit)
+  :hook
+  (magit-mode . (lambda () (my/activate-keybinds t))))
 
 (use-package pinentry
+  :custom
+  (epg-pinentry-mode 'loopback)
   :config
-  (setf epg-pinentry-mode 'loopback)
   (pinentry-start))
 
 (use-package bluetooth
-  :commands (bluetooth-list-devices))
+  :commands
+  (bluetooth-list-devices))
 
 (use-package tldr
-  :commands (tldr tldr-update-docs))
+  :commands
+  (tldr tldr-update-docs))
 
-(use-package wgrep)
+(use-package wgrep
+  :commands (wgrep))
 
 (use-package htmlize)
 (use-package jack)
 
-(setf eww-default-download-directory "~/downloads")
+(use-package eww
+  :defer t
+  :custom
+  (eww-default-download-directory "~/downloads"))
 
 (use-package mu4e
-  :commands (mu4e)
-  :config
-  (setf mu4e-drafts-folder "/Drafts"
-        mu4e-sent-folder "/Sent"
-        mu4e-trash-folder "/Trash"
+  :commands
+  (mu4e)
+  :custom
+  (mu4e-drafts-folder "/Drafts")
+  (mu4e-sent-folder "/Sent")
+  (mu4e-trash-folder "/Trash")
 
-        mail-user-agent 'mu4e-user-agent
-        mu4e-get-mail-command (format "INSIDE_EMACS=%s mbsync -a"
-                                      emacs-version)
+  (mail-user-agent 'mu4e-user-agent)
+  (mu4e-get-mail-command (format "INSIDE_EMACS=%s mbsync -a"
+                                 emacs-version))
 
-        mu4e-modeline-support nil))
+  (mu4e-modeline-support nil))
 
 (defun my/make-youtube-feed (channel-url)
   "Create RSS feed url from youtube channel url CHANNEL-URL
@@ -540,19 +654,28 @@ and save an appropriate entry for `elfeed-feeds' to the kill ring."
               (current-buffer))
       (backward-kill-sexp))))
 
-(defun my/kill-elfeed-search-buffer ()
-  (kill-buffer "*elfeed-search*"))
-
 (use-package elfeed
-  :commands (elfeed)
+  :commands
+  (elfeed)
+  :custom
+  (elfeed-db-directory (expand-file-name "elfeed-db" user-emacs-directory))
+  (elfeed-search-filter "@6-months-ago +unread")
   :config
-  (setf elfeed-db-directory
-        (expand-file-name "elfeed-db" user-emacs-directory))
-  (setf elfeed-search-filter "@6-months-ago +unread")
+  (defun my/kill-elfeed-search-buffer ()
+    (kill-buffer "*elfeed-search*"))
+  
   (load (expand-file-name "feeds.el" user-emacs-directory))
   (advice-add 'elfeed-search-quit-window :after #'my/kill-elfeed-search-buffer))
 
-(setf gnus-use-dribble-file nil)
+(use-package gnus
+  :defer t)
+
+(use-package gnus-start
+  :defer t
+  :custom
+  (gnus-use-dribble-file nil)
+  :after
+  (gnus))
 
 (defun my/play-album ()
   "Play album in directory at point via mpv.

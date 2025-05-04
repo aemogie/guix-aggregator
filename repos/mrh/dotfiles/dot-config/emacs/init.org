@@ -12,13 +12,13 @@ Most here is agnostic of that but some is not.
 ** Suprress Symlink Warning
 
 #+begin_src emacs-lisp :tangle early-init.el
-(setf vc-follow-symlinks t)
+(setq vc-follow-symlinks t)
 #+end_src
 
 ** Workaround White Flash On Startup
 
 #+begin_src emacs-lisp :tangle early-init.el
-(setf default-frame-alist '((background-color . "#000000")
+(setq default-frame-alist '((background-color . "#000000")
                             (ns-appearance . dark)
                             (ns-transparent-titlebar . t)
                             (alpha-background . 80)))
@@ -41,37 +41,57 @@ Most here is agnostic of that but some is not.
 ** Paths
 
 #+begin_src emacs-lisp
-(setf default-directory (format "%s/" (getenv "HOME")))
+(setopt default-directory (format "%s/" (getenv "HOME")))
 
-(setf custom-file
-      (expand-file-name "custom.el" user-emacs-directory))
-(defvar personal-data
-  (expand-file-name "personal.el" user-emacs-directory))
-
-(load custom-file)
+(defvar personal-data (expand-file-name "personal.el" user-emacs-directory))
 (load personal-data)
 #+end_src
 
-** File Options
-*** Large File Threshold
+** Custom File
 
 #+begin_src emacs-lisp
-(setf large-file-warning-threshold 10000000)
+(use-package cus-edit
+  :defer
+  t
+  :custom
+  (custom-file (expand-file-name "custom.el" user-emacs-directory)))
+#+end_src
+
+** File Options
+
+#+begin_src emacs-lisp
+(use-package files
+  :custom
+  (large-file-warning-threshold 10000000)
+  (backup-by-copying t)
+  :config
+  (add-to-list 'backup-directory-alist
+               `("." . ,(expand-file-name "backups" user-emacs-directory))))
 #+end_src
 
 *** Revert File-Buffers on Change
 
 #+begin_src emacs-lisp
-(global-auto-revert-mode 1)
+(use-package autorevert
+  :config
+  (global-auto-revert-mode 1))
 #+end_src
 
 *** Revisiting Files
 Have emacs remember both what files you recently visited and your position in them
 
 #+begin_src emacs-lisp
-(save-place-mode 1)
-(savehist-mode 1)
-(recentf-mode 1)
+(use-package saveplace
+  :config
+  (save-place-mode 1))
+
+(use-package savehist
+  :config
+  (savehist-mode 1))
+
+(use-package recentf
+  :config
+  (recentf-mode 1))
 #+end_src
 
 *** File Encoding
@@ -80,78 +100,72 @@ Have emacs remember both what files you recently visited and your position in th
 (setq-default buffer-file-coding-system 'utf-8-unix)
 #+end_src
 
-** Backups
-Prevent emacs from littering your directories with backup files everywhere
-
-#+begin_src emacs-lisp
-(add-to-list 'backup-directory-alist
-             `("." . ,(expand-file-name "backups" user-emacs-directory)))
-
-(setf backup-by-copying t)
-#+end_src
-
 ** File Management
 *** Dired
 
 #+begin_src emacs-lisp
 (use-package dired
-  :commands (dired)
-  :hook (dired-mode . dired-hide-details-mode)
-  :config (setf dired-listing-switches "-Ahl --group-directories-first"
-                dired-kill-when-opening-new-dired-buffer t
-                dired-dwim-target t))
+  :commands
+  (dired)
+  :hook
+  (dired-mode . dired-hide-details-mode)
+  :custom
+  (dired-listing-switches "-Ahl --group-directories-first")
+  (dired-kill-when-opening-new-dired-buffer t)
+  (dired-dwim-target t)
+  :config
+  (defun my/dired-run-command (command)
+    "Run COMMAND on files marked in `dired'."
+    (interactive "Crun on marked files: ")
+    (let ((file-buffers (cl-remove-if-not #'buffer-file-name (buffer-list))))
+      (save-excursion
+        (dolist (marked-file (dired-get-marked-files))
+          (find-file marked-file)
+          (funcall command)
+          (unless (member (current-buffer) file-buffers)
+            (save-buffer)
+            (kill-buffer)))))))
 #+end_src
 
 **** Extra Colors
 
 #+begin_src emacs-lisp
 (use-package diredfl
-  :after dired
-  :config (diredfl-global-mode t))
-#+end_src
-
-**** Run Command on Marks
-
-#+begin_src emacs-lisp
-(defun my/dired-run-command (command)
-  "Run COMMAND on files marked in `dired'."
-  (interactive "Crun on marked files: ")
-  (let ((file-buffers (cl-remove-if-not #'buffer-file-name (buffer-list))))
-    (save-excursion
-      (dolist (marked-file (dired-get-marked-files))
-        (find-file marked-file)
-        (funcall command)
-        (unless (member (current-buffer) file-buffers)
-          (save-buffer)
-          (kill-buffer))))))
+  :after
+  (dired)
+  :config
+  (diredfl-global-mode 1))
 #+end_src
 
 *** GPG
 Fix bug causing hangups upon re-encryption of files
 
 #+begin_src emacs-lisp
-(fset 'epg-wait-for-status 'ignore)
+(use-package epg
+  :config
+  (fset 'epg-wait-for-status 'ignore))
 #+end_src
 
 *** Trash For Deletion
 
 #+begin_src emacs-lisp
-(setf delete-by-moving-to-trash t)
+(setopt delete-by-moving-to-trash t)
 
 (use-package trashed
-  :commands (trashed)
-  :config
-  (setf trashed-sort-key '("Date deleted" . t)
-        trashed-date-format "%Y-%m-%d %H:%M:%S"
-        trashed-use-header-line t))
+  :commands
+  (trashed)
+  :custom
+  (trashed-sort-key '("Date deleted" . t))
+  (trashed-date-format "%Y-%m-%d %H:%M:%S")
+  (trashed-use-header-line t))
 #+end_src
 
 * Keybindings
-** Personal Bindings
-Define global bindings
 
 #+begin_src emacs-lisp
-(defvar *my/keybinds* '(("M-<tab>" . next-buffer)
+(use-package keymap
+  :config
+  (defvar my/keybinds '(("M-<tab>" . next-buffer)
                         ("M-<iso-lefttab>" . previous-buffer)
                         ("M-0" . delete-window)
                         ("M-1" . delete-other-windows)
@@ -170,35 +184,35 @@ Define global bindings
                         ("C-c b u" . my/unhide-buffer)
                         ("C-c m v" . my/mpv)
                         ("C-c m a" . my/play-album)))
-#+end_src
 
-Function to activate personal bindings
-
-#+begin_src emacs-lisp
-(defun my/activate-keybinds (&optional local)
-  "Activate personal keybinds stored in `*my/keybinds*'.
+  (defun my/activate-keybinds (&optional local)
+    "Activate personal keybinds stored in `my/keybinds'.
 If LOCAL is nil set globally with `keymap-global-set'.
 Otherwise set locally with `keymap-local-set'."
-  (interactive "P")
-  (let ((setter-function (if local 'keymap-local-set 'keymap-global-set)))
-    (dolist (key-and-function *my/keybinds*)
-      (funcall setter-function (car key-and-function) (cdr key-and-function)))))
+    (interactive "P")
+    (let ((setter-function (if local 'keymap-local-set 'keymap-global-set)))
+      (dolist (key-and-function my/keybinds)
+        (funcall setter-function (car key-and-function) (cdr key-and-function)))))
 
-(my/activate-keybinds)
+  (my/activate-keybinds))
 #+end_src
 
 ** Discover Bindings
 
 #+begin_src emacs-lisp
 (use-package which-key
-  :if (>= emacs-major-version 30)
-  :config (which-key-mode 1))
+  :if
+  (>= emacs-major-version 30)
+  :config
+  (which-key-mode 1))
 #+end_src
 
 ** Sticky Keys
 
 #+begin_src emacs-lisp
-(repeat-mode 1)
+(use-package repeat
+  :config
+  (repeat-mode 1))
 #+end_src
 
 * UI
@@ -213,28 +227,38 @@ NOTE: On wayland emacs must be pure GTK (=emacs-pgtk= on guix)
 *** Startup Buffers
 
 #+begin_src emacs-lisp
-(setf initial-scratch-message nil
-      inhibit-startup-screen t)
+(setopt initial-scratch-message nil
+        inhibit-startup-screen t)
 #+end_src
 
 *** Toolbars
 
 #+begin_src emacs-lisp
-(scroll-bar-mode -1)
-(tool-bar-mode -1)
-(menu-bar-mode -1)
+(use-package scroll-bar
+  :config
+  (scroll-bar-mode -1))
+
+(use-package tool-bar
+  :config
+  (tool-bar-mode -1))
+
+(use-package menu-bar
+  :config
+  (menu-bar-mode -1))
 #+end_src
 
 *** Cursor
 
 #+begin_src emacs-lisp
-(blink-cursor-mode -1)
+(use-package frame
+  :config
+  (blink-cursor-mode -1))
 #+end_src
 
 ** X/Wayland Window Properties
 
 #+begin_src emacs-lisp
-(setf frame-title-format "%b")
+(setopt frame-title-format "%b")
 (add-to-list 'default-frame-alist '(undecorated . t))
 #+end_src
 
@@ -261,57 +285,77 @@ NOTE: On wayland emacs must be pure GTK (=emacs-pgtk= on guix)
                 mode-line-misc-info
                 mode-line-end-spaces))
 
-(setf mode-line-compact 'long)
+(setopt mode-line-compact 'long)
 
-(setf display-time-format "%R"
-      display-time-default-load-average nil)
-(display-time-mode 1)
+(use-package time
+  :custom
+  (display-time-format "%R")
+  (display-time-default-load-average nil)
+  :config
+  (display-time-mode 1))
 #+end_src
 
 ** Lines
 
 #+begin_src emacs-lisp
-(global-hl-line-mode 1)
 (global-visual-line-mode 1)
 
-(setf display-line-numbers-type t)
+(use-package hl-line
+  :config
+  (global-hl-line-mode 1)
+  (dolist (hook '(comint-mode-hook eshell-mode-hook))
+    (add-hook hook (lambda () (setq-local global-hl-line-mode nil)))))
 
-(dolist (hook '(conf-mode-hook nxml-mode-hook prog-mode-hook))
-  (add-hook hook 'display-line-numbers-mode))
+(use-package display-line-numbers
+  :custom
+  (display-line-numbers-type t)
+  :config
+  (dolist (hook '(conf-mode-hook nxml-mode-hook prog-mode-hook))
+    (add-hook hook 'display-line-numbers-mode)))
 #+end_src
 
 ** Fonts
 
 #+begin_src emacs-lisp
-(set-face-attribute 'default nil
-                    :family "DejaVu Sans Mono"
-                    :height 125
-                    :slant 'normal)
+(use-package font-lock)
 
-(set-face-attribute 'fixed-pitch nil
-                    :family "DejaVu Sans Mono"
-                    :height 125
-                    :slant 'normal)
+(use-package faces
+  :config
+  (set-face-attribute 'default nil
+                      :family "DejaVu Sans Mono"
+                      :height 125
+                      :slant 'normal)
 
-(set-face-attribute 'variable-pitch nil
-                    :family "DejaVu Serif"
-                    :height 150
-                    :slant 'normal)
+  (set-face-attribute 'fixed-pitch nil
+                      :family "DejaVu Sans Mono"
+                      :height 125
+                      :slant 'normal)
 
-(set-face-attribute 'italic nil
-                    :slant 'italic
-                    :underline nil)
+  (set-face-attribute 'variable-pitch nil
+                      :family "DejaVu Serif"
+                      :height 150
+                      :slant 'normal)
 
-(defun my/enable-variable-pitch-mode ()
-  (unless (derived-mode-p 'html-mode 'nxml-mode)
-    (variable-pitch-mode 1)))
+  (set-face-attribute 'italic nil
+                      :slant 'italic
+                      :underline nil))
 
-(add-hook 'text-mode-hook #'my/enable-variable-pitch-mode)
+(use-package face-remap
+  :config
+  (defun my/enable-variable-pitch-mode ()
+    (unless (derived-mode-p 'html-mode 'nxml-mode)
+      (variable-pitch-mode 1)))
+  
+  (defun my/remap-pitch-faces (_enable)
+    (face-remap--remap-face 'fixed-pitch)
+    (face-remap--remap-face 'variable-pitch))
+  
+  (advice-add 'text-scale-mode :after #'my/remap-pitch-faces))
 
-(defun my/remap-fixed-pitch-face (_enable)
-  (face-remap--remap-face 'fixed-pitch))
-
-(advice-add 'text-scale-mode :after #'my/remap-fixed-pitch-face)
+(use-package text-mode
+  :config
+  (when (featurep 'face-remap)
+    (add-hook 'text-mode-hook #'my/enable-variable-pitch-mode)))
 #+end_src
 
 *** Icons
@@ -319,44 +363,47 @@ You may need to call =(nerd-icons-install-fonts)=
 
 #+begin_src emacs-lisp
 (use-package nerd-icons-dired
-  :hook (dired-mode . nerd-icons-dired-mode))
-#+end_src
-
-*** Prettify Symbols
-
-#+begin_src emacs-lisp
-(global-prettify-symbols-mode 1)
+  :hook
+  (dired-mode . nerd-icons-dired-mode))
 #+end_src
 
 ** Themes
 
 #+begin_src emacs-lisp
-(defun my/adjust-opacity ()
-  "Make sure opacity is correct for given theme."
-  (set-frame-parameter nil 'alpha-background
-                       (if (member (ef-themes--current-theme)
-                                   ef-themes-light-themes)
-                           100
-                         80)))
-
-(defun my/fontify-org-buffers ()
-  "Fontify all org buffers.
-Helpful advice for face changing functions."
-  (interactive)
-  (save-current-buffer
-    (dolist (buffer (buffer-list))
-      (set-buffer buffer)
-      (when (eq major-mode 'org-mode)
-        (font-lock-fontify-buffer)))))
-
 (use-package ef-themes
+  :custom
+  (ef-themes-mixed-fonts t)
+  (ef-themes-to-toggle '(ef-autumn ef-eagle))
   :config
-  (advice-add 'ef-themes-toggle :after #'my/adjust-opacity)
-  (advice-add 'ef-themes-toggle :after #'my/fontify-org-buffers)
-  (setf ef-themes-mixed-fonts t)
-  (setf ef-themes-variable-pitch-ui nil)
-  (setf ef-themes-to-toggle '(ef-autumn ef-eagle))
-  (ef-themes-select-dark 'ef-autumn))
+  (defun my/adjust-opacity (&optional theme)
+    "Make sure opacity is correct for given theme."
+    (interactive)
+    (let ((theme (if theme theme (ef-themes--current-theme))))
+      (set-frame-parameter nil 'alpha-background
+                           (if (member theme ef-themes-light-themes)
+                               100
+                             80))))
+
+  (defun my/fontify-org-buffers (_theme)
+    "Fontify all org buffers.
+Helpful advice for face changing functions."
+    (interactive)
+    (save-current-buffer
+      (dolist (buffer (buffer-list))
+        (set-buffer buffer)
+        (when (eq major-mode 'org-mode)
+          (font-lock-fontify-buffer)))))
+
+  (advice-add 'ef-themes-load-theme :after #'my/adjust-opacity)
+  (advice-add 'ef-themes-load-theme :after #'my/fontify-org-buffers)
+
+  (add-hook 'server-after-make-frame-hook
+            (lambda ()
+              (ef-themes-load-theme (ef-themes--current-theme))))
+  
+  (ef-themes-select-dark 'ef-autumn)
+  :after
+  (frame font-lock))
 #+end_src
 
 ** Completion
@@ -364,10 +411,10 @@ Helpful advice for face changing functions."
 
 #+begin_src emacs-lisp
 (use-package orderless 
-  :config
-  (setf completion-styles '(orderless basic)
-        completion-category-defaults nil
-        completion-category-overrides nil))
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
+  (completion-category-overrides nil))
 #+end_src
 
 *** Main Buffer
@@ -376,13 +423,13 @@ Helpful advice for face changing functions."
 (use-package corfu 
   :init
   (setq-default pgtk-wait-for-event-timeout 0)
+  :custom
+  (corfu-auto t)
+  (corfu-auto-delay 0.2)
+  (corfu-auto-prefix 2)
+  (corfu-count 8)
+  (corfu-popupinfo-delay '(1.5 . 0.5))
   :config
-  (setf corfu-auto t
-        corfu-auto-delay 0.2
-        corfu-auto-prefix 2
-        corfu-count 8
-        corfu-popupinfo-delay '(1.5 . 0.5))
-  
   (add-to-list 'corfu--frame-parameters '(alpha-background . 100))
   (global-corfu-mode 1)
   (corfu-popupinfo-mode 1)
@@ -396,17 +443,20 @@ Helpful advice for face changing functions."
 
 #+begin_src emacs-lisp
 (use-package vertico
-  :config (vertico-mode 1))
+  :config
+  (vertico-mode 1))
 
-(setf use-short-answers t)
+(setopt use-short-answers t)
 #+end_src
 
 *** Annotations
 
 #+begin_src emacs-lisp
 (use-package marginalia
-  :config (marginalia-mode 1)
-  :after (vertico))
+  :config
+  (marginalia-mode 1)
+  :after
+  (vertico))
 #+end_src
 
 ** Mouse
@@ -414,30 +464,31 @@ Disable the mouse
 
 #+begin_src emacs-lisp
 (use-package disable-mouse
-  :config (global-disable-mouse-mode 1))
+  :config
+  (global-disable-mouse-mode 1))
 #+end_src
 
 ** Scrolling
 
 #+begin_src emacs-lisp
-(setf scroll-conservatively 10000
-      auto-window-vscroll nil)
+(setopt scroll-conservatively 10000
+        auto-window-vscroll nil)
 #+end_src
 
 * Navigation
 ** Consult
 #+begin_src emacs-lisp
 (use-package consult
-  :config (setf consult-buffer-sources
-                '(consult--source-hidden-buffer
-                  consult--source-modified-buffer
-                  consult--source-buffer
-                  consult--source-bookmark
-                  consult--source-recent-file
-                  consult--source-file-register
-                  consult--source-project-buffer-hidden
-                  consult--source-project-recent-file-hidden
-                  consult--source-project-root-hidden)))
+  :custom
+  (consult-buffer-sources '(consult--source-hidden-buffer
+                            consult--source-modified-buffer
+                            consult--source-buffer
+                            consult--source-bookmark
+                            consult--source-recent-file
+                            consult--source-file-register
+                            consult--source-project-buffer-hidden
+                            consult--source-project-recent-file-hidden
+                            consult--source-project-root-hidden)))
 #+end_src
 
 ** Buffers
@@ -457,7 +508,7 @@ See also `my/hide-buffer' and `hidden-buffer-p'."))
 See also `switch-to-prev-buffer-skip'."
   (cl-find (buffer-name buffer) *hidden-buffers* :test #'string=))
 
-(setf switch-to-prev-buffer-skip 'hidden-buffer-p)
+(setopt switch-to-prev-buffer-skip 'hidden-buffer-p)
 
 (defun my/hide-buffer (&optional buffer-name)
   "Adds BUFFER-NAME to `*hidden-buffers*'.
@@ -484,7 +535,8 @@ Replace text in active region on insert
 
 #+begin_src emacs-lisp
 (use-package delsel
-  :config (delete-selection-mode 1))
+  :config
+  (delete-selection-mode 1))
 #+end_src
 
 *** Narrowing
@@ -492,30 +544,43 @@ Enable narrowing commands
 
 #+begin_src emacs-lisp
 (put 'narrow-to-defun  'disabled nil)
-(put 'narrow-to-page   'disabled nil)
 (put 'narrow-to-region 'disabled nil)
+
+(use-package page
+  :config
+  (put 'narrow-to-page 'disabled nil))
 #+end_src
 
 ** Dictionary
 
 #+begin_src emacs-lisp
-(setf ispell-personal-dictionary (format "%s/documents/personal-dictionary"
-                                         (getenv "HOME")))
+(use-package ispell
+  :custom
+  (ispell-personal-dictionary
+   (format "%s/documents/personal-dictionary" (getenv "HOME"))))
 #+end_src
 
 ** Writeroom
 
 #+begin_src emacs-lisp
 (use-package writeroom-mode
+  :custom
+  (writeroom-width 80)
+  (writeroom-fullscreen-effect 'maximized)
+  (writeroom-major-modes '(text-mode))
+  (writeroom-major-modes-exceptions '(mhtml-mode nxml-mode))
   :config
-  (setf writeroom-width 80
-        writeroom-fullscreen-effect 'maximized
-        writeroom-major-modes '(text-mode)
-        writeroom-major-modes-exceptions '(mhtml-mode nxml-mode))
   (global-writeroom-mode 1))
 #+end_src
 
 ** Programming
+
+#+begin_src emacs-lisp
+(use-package prog-mode
+  :config
+  (global-prettify-symbols-mode 1))
+#+end_src
+
 *** Tabs
 
 #+begin_src emacs-lisp
@@ -526,14 +591,17 @@ Enable narrowing commands
 **** (un)Tabify Multiple Files
 
 #+begin_src emacs-lisp
-(defun my/dired-tabify-files (&optional untabify)
-  "Run eitheir `tabify' or `untabify' on marked files in dired.
+(use-package tabify
+  :commands (tabify untabify)
+  :config
+  (defun my/dired-tabify-files (&optional untabify)
+    "Run eitheir `tabify' or `untabify' on marked files in dired.
 See `my/dired-run-command'."
-  (interactive "P")
-  (let ((tab-function (if untabify #'untabify #'tabify)))
-    (my/dired-run-command
-     (lambda ()
-       (funcall tab-function (point-min) (point-max))))))
+    (interactive "P")
+    (let ((tab-function (if untabify #'untabify #'tabify)))
+      (my/dired-run-command
+       (lambda ()
+         (funcall tab-function (point-min) (point-max)))))))
 #+end_src
 
 *** LSP
@@ -541,7 +609,9 @@ See `my/dired-run-command'."
 Speed up performance (bug?)
 
 #+begin_src emacs-lisp
-(fset #'jsonrpc--log-event #'ignore)
+(use-package jsonrpc
+  :config
+  (fset #'jsonrpc--log-event #'ignore))
 #+end_src
 
 *** Compiling
@@ -586,14 +656,19 @@ Compile without showing compile buffer
 **** Emacs Lisp
 
 #+begin_src emacs-lisp
-(keymap-set lisp-interaction-mode-map "C-c C-c" 'eval-print-last-sexp)
+(use-package elisp-mode
+  :bind
+  (:map lisp-interaction-mode-map
+        ("C-c C-c" . eval-print-last-sexp)))
 
-(defun my/remove-all-advice (sym)
-  "Remove all advice from function designated by symbol SYM."
-  (interactive)
-  (advice-mapc (lambda (advice _props)
-                 (advice-remove sym advice))
-               sym))
+(use-package nadvice
+  :config
+  (defun my/remove-all-advice (sym)
+    "Remove all advice from function designated by symbol SYM."
+    (interactive)
+    (advice-mapc (lambda (advice _props)
+                   (advice-remove sym advice))
+                 sym)))
 #+end_src
 
 **** Guile
@@ -602,9 +677,10 @@ Compile without showing compile buffer
 (use-package geiser)
 
 (use-package geiser-guile
-  :commands (geiser-guile)
-  :config
-  (setf geiser-guile-load-init-file t)
+  :commands
+  (geiser-guile)
+  :custom
+  (geiser-guile-load-init-file t)
   :after (geiser))
 #+end_src
 
@@ -612,11 +688,13 @@ Compile without showing compile buffer
 
 #+begin_src emacs-lisp
 (use-package sly
-  :commands (sly)
+  :commands
+  (sly)
+  :custom
+  (inferior-lisp-program "sbcl")
+  (sly-mrepl-history-file-
+   (expand-file-name "sly/sly-mrepl-history" user-emacs-directory))
   :config
-  (setf inferior-lisp-program "sbcl")
-  (setf sly-mrepl-history-file-name
-        (expand-file-name "sly/sly-mrepl-history" user-emacs-directory))
   (when (featurep 'rainbow-delimiters)
     (add-hook 'sly-mrepl-mode-hook 'rainbow-delimiters-mode)))
 #+end_src
@@ -626,52 +704,59 @@ See [[https://unimath.github.io/agda-unimath/HOWTO-INSTALL.html#emacs][agda-unim
 
 #+begin_src emacs-lisp
 (use-package agda2-mode
-  :defer t
-  :init (add-to-list 'auto-mode-alist '("\\.lagda.md$" . agda2-mode)))
+  :defer
+  t
+  :init
+  (add-to-list 'auto-mode-alist '("\\.lagda.md$" . agda2-mode)))
 #+end_src
 
 *** Go
 
 #+begin_src emacs-lisp
-(defun my/set-go-compile ()
-  (my/set-compile-command "go build"))
-
-(defun my/go-run ()
-  (interactive)
-  (shell-command "go run"))
-
 (use-package go-mode
-  :hook (go-mode . my/set-go-compile)
-  :bind (:map go-mode-map
-              ("C-c C-c" . my/compile)
-              ("C-c C-r" . my/go-run)))
+  :hook
+  (go-mode . my/set-go-compile)
+  :bind
+  (:map go-mode-map
+        ("C-c C-c" . my/compile)
+        ("C-c C-r" . my/go-run))
+  :config
+  (defun my/set-go-compile ()
+    (my/set-compile-command "go build"))
+  
+  (defun my/go-run ()
+    (interactive)
+    (shell-command "go run")))
 #+end_src
 
 ** Org Mode
 
 #+begin_src emacs-lisp
 (use-package org
-  :defer t
-  :hook (org-mode . org-indent-mode)
-  :bind (:map org-mode-map
-              ("C-c l" . org-cycle-list-bullet))
-  :config
-  (setf org-directory (expand-file-name "documents/org/" (getenv "HOME")))
-  (setf org-default-notes-file (expand-file-name "notes.org" org-directory)
-        org-agenda-files (list (expand-file-name "agenda/" org-directory))
-        
-        org-startup-folded t
-        org-M-RET-may-split-line '((default . nil))
-        org-insert-heading-respect-content t
-
-        org-log-done 'time
-        org-log-into-drawer t
-        org-todo-keywords
-        '((sequence "TODO(t)" "BLOCKED(b)" "|" "CANCELED(c)" "DONE(d)"))
-        
-        org-edit-src-content-indentation 0
-        org-babel-python-command "python3")
+  :defer
+  t
+  :hook
+  (org-mode . org-indent-mode)
+  :bind
+  (:map org-mode-map
+        ("C-c l" . org-cycle-list-bullet))
+  :custom
+  (org-directory (expand-file-name "documents/org/" (getenv "HOME")))
+  (org-default-notes-file (expand-file-name "notes.org" org-directory))
+  (org-agenda-files (list (expand-file-name "agenda/" org-directory)))
   
+  (org-startup-folded t)
+  (org-M-RET-may-split-line '((default . nil)))
+  (org-insert-heading-respect-content t)
+
+  (org-log-done 'time)
+  (org-log-into-drawer t)
+  (org-todo-keywords
+   '((sequence "TODO(t)" "BLOCKED(b)" "|" "CANCELED(c)" "DONE(d)")))
+  
+  (org-edit-src-content-indentation 0)
+  (org-babel-python-command "python3")
+  :config
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)
@@ -691,7 +776,8 @@ See [[https://unimath.github.io/agda-unimath/HOWTO-INSTALL.html#emacs][agda-unim
 
 #+begin_src emacs-lisp
 (use-package org-bullets
-  :hook (org-mode . org-bullets-mode))
+  :hook
+  (org-mode . org-bullets-mode))
 #+end_src
 
 *** Export
@@ -700,84 +786,85 @@ Export to pdf presentations via LaTeX beamer
 
 #+begin_src emacs-lisp
 (use-package ox-beamer
-  :after (org))
+  :after
+  (org))
 #+end_src
 
 **** Publish
 
 #+begin_src emacs-lisp
 (use-package org-publish-rss
-  :defer 0.1
-  :config
-  (setf org-publish-rss-publish-immediately t))
+  :defer
+  0.1
+  :custom
+  (org-publish-rss-publish-immediately t))
 
 (use-package ox-publish
   :config
   (load (expand-file-name "org-publish.el" user-emacs-directory))
-  :after (jack org-publish-rss))
+  :after
+  (jack org-publish-rss))
 #+end_src
 
 ** Markdown
 
 #+begin_src emacs-lisp
 (use-package markdown-mode
-  :defer t)
+  :defer
+  t)
 #+end_src
 
 ** LaTeX
 *** Compilation
 
 #+begin_src emacs-lisp
-(defun my/set-latex-compile ()
-  (my/set-compile-command (format "pdflatex %s" (buffer-file-name))))
-
 (use-package latex
-  :defer t
-  :hook (LaTeX-mode . my/set-latex-compile)
-  :bind (:map LaTeX-mode-map
-              ("C-c C-c" . my/compile)))
+  :defer
+  t
+  :hook
+  (LaTeX-mode . my/set-latex-compile)
+  :bind
+  (:map LaTeX-mode-map
+        ("C-c C-c" . my/compile))
+  :config
+  (defun my/set-latex-compile ()
+    (my/set-compile-command (format "pdflatex %s" (buffer-file-name)))))
 #+end_src
 
 * System Administration
 ** Shell / Terminal
 *** Shell
 
-#+begin_src emacs-lisp
-(dolist (hook '(comint-mode-hook eshell-mode-hook))
-  (add-hook hook (lambda () (setq-local global-hl-line-mode nil))))
-#+end_src
-
 **** Eshell
 
 #+begin_src emacs-lisp
-(defun my/eshell-clear ()
-  (interactive)
-  (eshell/clear-scrollback)
-  (insert "fastfetch")
-  (eshell-send-input))
-
 (use-package eshell
-  :commands (eshell)
-  :hook (eshell-mode . (lambda () (keymap-set eshell-mode-map
-                                         "C-c M-o"
-                                         'my/eshell-clear)))
+  :commands
+  (eshell)
+  :hook
+  (eshell-mode . (lambda () (keymap-set eshell-mode-map
+                                   "C-c M-o"
+                                   'my/eshell-clear)))
+  :custom
+  (eshell-prompt-function
+   (lambda ()
+     (if (featurep 'ef-themes)
+         (let* ((palette (ef-themes--current-theme-palette))
+                (orange (cadr (assoc 'yellow-warmer palette)))
+                (green (cadr (assoc 'green-warmer palette))))
+           (format "\n %s\n %s "
+                   (propertize (eshell/pwd)
+                               'face `(:foreground ,orange :weight bold))
+                   (propertize (if (zerop (user-uid)) "#" "λ")
+                               'face `(:foreground ,green :weight bold))))
+       (format "\n %s\n λ " (eshell/pwd)))))
+  (eshell-prompt-regexp ".* λ ")
   :config
-  (setf eshell-prompt-function
-        (if (featurep 'ef-themes)
-            (lambda ()
-              (let* ((palette (ef-themes--current-theme-palette))
-                     (orange (cadr (assoc 'yellow-warmer palette)))
-                     (green (cadr (assoc 'green-warmer palette))))
-                (format "\n %s\n %s "
-                        (propertize
-                         (eshell/pwd)
-                         'face `(:foreground ,orange :weight bold))
-                        (propertize
-                         (if (zerop (user-uid)) "#" "λ")
-                         'face `(:foreground ,green :weight bold)))))
-          (lambda ()
-            (format "\n %s\n λ " (eshell/pwd)))))
-  (setf eshell-prompt-regexp ".* λ "))
+  (defun my/eshell-clear ()
+    (interactive)
+    (eshell/clear-scrollback)
+    (insert "fastfetch")
+    (eshell-send-input)))
 #+end_src
 
 **** Sudo Shell Command
@@ -795,7 +882,8 @@ Export to pdf presentations via LaTeX beamer
 
 #+begin_src emacs-lisp
 (use-package buffer-env
-  :commands (buffer-env-update buffer-env-reset))
+  :commands
+  (buffer-env-update buffer-env-reset))
 #+end_src
 
 *** Terminal
@@ -803,7 +891,8 @@ Allow =eshell= to run within =eat= terminals.
 
 #+begin_src emacs-lisp
 (use-package eat
-  :hook (eshell-load . eat-eshell-mode))
+  :hook
+  (eshell-load . eat-eshell-mode))
 #+end_src
 
 ** Version Control
@@ -811,16 +900,19 @@ Magic git frontend
 
 #+begin_src emacs-lisp
 (use-package magit
-  :commands (magit)
-  :hook (magit-mode . (lambda () (my/activate-keybinds t))))
+  :commands
+  (magit)
+  :hook
+  (magit-mode . (lambda () (my/activate-keybinds t))))
 #+end_src
 
 ** Pinentry
 
 #+begin_src emacs-lisp
 (use-package pinentry
+  :custom
+  (epg-pinentry-mode 'loopback)
   :config
-  (setf epg-pinentry-mode 'loopback)
   (pinentry-start))
 #+end_src
 
@@ -828,20 +920,23 @@ Magic git frontend
 
 #+begin_src emacs-lisp
 (use-package bluetooth
-  :commands (bluetooth-list-devices))
+  :commands
+  (bluetooth-list-devices))
 #+end_src
 
 ** Documentation
 
 #+begin_src emacs-lisp
 (use-package tldr
-  :commands (tldr tldr-update-docs))
+  :commands
+  (tldr tldr-update-docs))
 #+end_src
 
 ** Grep
 
 #+begin_src emacs-lisp
-(use-package wgrep)
+(use-package wgrep
+  :commands (wgrep))
 #+end_src
 
 * Websites
@@ -858,7 +953,10 @@ See [[*Publish][Org Publish]] section and [[https://codeberg.org/mrh/dotfiles/sr
 ** EWW
 
 #+begin_src emacs-lisp
-(setf eww-default-download-directory "~/downloads")
+(use-package eww
+  :defer t
+  :custom
+  (eww-default-download-directory "~/downloads"))
 #+end_src
 
 * Messaging
@@ -867,17 +965,18 @@ See [[*Publish][Org Publish]] section and [[https://codeberg.org/mrh/dotfiles/sr
 
 #+begin_src emacs-lisp
 (use-package mu4e
-  :commands (mu4e)
-  :config
-  (setf mu4e-drafts-folder "/Drafts"
-        mu4e-sent-folder "/Sent"
-        mu4e-trash-folder "/Trash"
+  :commands
+  (mu4e)
+  :custom
+  (mu4e-drafts-folder "/Drafts")
+  (mu4e-sent-folder "/Sent")
+  (mu4e-trash-folder "/Trash")
 
-        mail-user-agent 'mu4e-user-agent
-        mu4e-get-mail-command (format "INSIDE_EMACS=%s mbsync -a"
-                                      emacs-version)
+  (mail-user-agent 'mu4e-user-agent)
+  (mu4e-get-mail-command (format "INSIDE_EMACS=%s mbsync -a"
+                                 emacs-version))
 
-        mu4e-modeline-support nil))
+  (mu4e-modeline-support nil))
 #+end_src
 
 ** RSS
@@ -899,15 +998,16 @@ and save an appropriate entry for `elfeed-feeds' to the kill ring."
 *** Elfeed
 
 #+begin_src emacs-lisp
-(defun my/kill-elfeed-search-buffer ()
-  (kill-buffer "*elfeed-search*"))
-
 (use-package elfeed
-  :commands (elfeed)
+  :commands
+  (elfeed)
+  :custom
+  (elfeed-db-directory (expand-file-name "elfeed-db" user-emacs-directory))
+  (elfeed-search-filter "@6-months-ago +unread")
   :config
-  (setf elfeed-db-directory
-        (expand-file-name "elfeed-db" user-emacs-directory))
-  (setf elfeed-search-filter "@6-months-ago +unread")
+  (defun my/kill-elfeed-search-buffer ()
+    (kill-buffer "*elfeed-search*"))
+  
   (load (expand-file-name "feeds.el" user-emacs-directory))
   (advice-add 'elfeed-search-quit-window :after #'my/kill-elfeed-search-buffer))
 #+end_src
@@ -915,7 +1015,15 @@ and save an appropriate entry for `elfeed-feeds' to the kill ring."
 ** Gnus
 
 #+begin_src emacs-lisp
-(setf gnus-use-dribble-file nil)
+(use-package gnus
+  :defer t)
+
+(use-package gnus-start
+  :defer t
+  :custom
+  (gnus-use-dribble-file nil)
+  :after
+  (gnus))
 #+end_src
 
 * Media

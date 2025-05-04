@@ -7,16 +7,17 @@ set $term foot
 set $screenshot grim
 set $menu fuzzel
 
-output * scale 1 mode 2880x1800@120Hz bg $HOME/.bg-white-room.jpg fill
+output * scale 1 mode 2880x1800@60Hz bg $HOME/.bg-white-room.jpg fill
 exec swayidle -w \
          timeout 300 'swaylock -f --image "/home/lynn/.bg-white-room.jpg"' \
          timeout 600 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' \
          before-sleep 'swaylock -f --image "/home/lynn/.bg-white-room.jpg"' \
 
 input type:keyboard {
-      xkb_layout us,de
-      xkb_options ctrl:nocaps
+      #xkb_options ctrl:swapcaps,compose:lctrl
+      xkb_options ctrl:nocaps,compose:grave
 }
+
     bindsym $mod+space+t exec swaymsg input type:touchpad events toggle enabled disabled
     bindsym $mod+Return exec $term
     bindsym $mod+Shift+c kill
@@ -78,7 +79,8 @@ bar {
   swaybar_command waybar
 }
 
-exec pipewire
+Exec pipewire
 exec emacs --fg-daemon
 exec light -U 90
 exec dbus-update-activation-environment --all
+exec fcitx5

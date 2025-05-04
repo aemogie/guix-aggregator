@@ -5,55 +5,21 @@
 
 This repository contains my dotfiles and Guix System literate configurations (with Guix Home configured via ~guix-home-service-type~).
 
-I'm also managing Guix channels manually, which makes it easier to maintain a temporary Guix fork and avoids recompiling all Guix modules for trivial updates.  See =Usage= below and take a look at [[file:.envrc][.envrc]] and [[file:Makefile][Makefile]] if you are interested in my approach.
-
 ** Screenshot
 [[file:files/plain/screenshot.png]]
 
 ** Structure
 + [[file:config][config]]: Guix System configurations.
-+ [[file:external][external]]: External dependencies (Guix channels) saved as Git submodules.
-+ [[file:modules][modules]]: Scheme modules.
++ [[file:modules][modules]]: Guile modules.
 + [[file:files/blobs][files/blobs]]: Private files.
 + [[file:files/dotfiles][files/dotfiles]]: Dotfiles for ~home-dotfiles-service-type~.
 + [[file:files/plain][files/plain]]: Files to be referenced in Guix configurations.
 + [[file:.envrc][.envrc]]: direnv configuration to manage environment variables.
 + [[file:.sops.yaml][.sops.yaml]] -> [[file:files/plain/sops.yaml][files/plain/sops.yaml]]: SOPS configuration for secrets management.
 
-** Usage
-This section is for demonstration purpose only, as some submodules are private.
+See [[file:Makefile][Makefile]] for usage.
 
-Dependencies:
-+ direnv
-+ emacs
-+ guix
-+ sops (invoked by ~get-sops-secret~ in [[file:modules/testament/common.scm][~(testament common)~]])
-
-1. Clone repository and set up direnv, external channels (except =guix=, which will be compiled later) will be available to system =guix= command.
-  #+begin_src shell
-  git clone --recursive https://git.boiledscript.com/hako/Testament.git
-  cd Testament
-  direnv allow
-  #+end_src
-
-2. Authenticate commits.
-  #+begin_src shell
-  make authenticate
-  #+end_src
-
-3. Compile Guix and reload direnv, =guix= command and channel will be replaced to ours.
-  #+begin_src shell
-  make compile-guix
-  direnv reload
-  #+end_src
-
-4. See [[file:Makefile][Makefile]] for all available phony targets.
-
-5. In case of ABI incompatibility from updates, remove compiled object files and follow step 3 to compile Guix again.
-  #+begin_src shell
-  make clean
-  direnv reload
-  #+end_src
+Dependencies: direnv, guix.
 
 ** Resources
 + [[https://files.spritely.institute/papers/scheme-primer.html][A Scheme Primer]]: Nice short guide to get you started with Scheme.

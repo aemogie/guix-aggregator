@@ -3,54 +3,34 @@
 # SPDX-License-Identifier: CC0-1.0
 
 ARGS  := --verbosity=1
-
-# Required from host environment.
-EMACS := emacs
 GUIX  := guix
-
-# Available in guix shell environment, set up direnv to load.
-FIND  := find
-GUILD := guild
+EMACS := $(GUIX) shell emacs-next-minimal -- emacs
 
 %.scm: %.org
 	@$(EMACS) -Q --batch \
 	--eval "(require 'ob-tangle)" \
 	--eval "(org-babel-tangle-file \"$<\")"
 
-%.go: %.scm
-	$(GUILD) compile --output=$@ $<
-
-load_dirs = \
-	external/nonguix \
-	external/rosenthal \
-	external/sops-guix/modules \
-	modules
-
-objects = $(subst .scm,.go,$(shell $(FIND) $(load_dirs) -name '*.scm'))
-
-.PHONY: compile compile-guix
-compile: compile-guix $(objects)
-compile-guix:
-	@[ -x external/guix/scripts/guix ] || \
-		(cd external/guix && ./bootstrap && ./configure)
-	$(MAKE) -C external/guix --no-print-directory make-go
+.PHONY: pull
+pull:
+	$(GUIX) pull --disable-authentication --channels=channels.scm $(ARGS)
 
 .PHONY: build
 build: build-dorphine build-gokuraku
-build-%: config/%.scm compile
+build-%: config/%.scm
 	$(GUIX) system build $< $(ARGS)
 
 .PHONY: reconfigure
-reconfigure: config/dorphine.scm compile
+reconfigure: config/dorphine.scm
 	$(GUIX) system reconfigure $< $(ARGS)
 
 .PHONY: deploy
-deploy: config/gokuraku.scm compile
+deploy: config/gokuraku.scm
 	$(GUIX) deploy files/blobs/deploy $(ARGS)
 
 .PHONY: ares
 # Load reader extensions before starting nREPL server.
-ares: compile
+ares:
 	@$(GUIX) shell guile-next guile-ares-rs -- guile -c \
 	"(begin \
 	   (use-modules (guix gexp) \
@@ -64,5 +44,4 @@ authenticate:
 
 .PHONY: clean
 clean:
-	-$(RM) --recursive config/*.scm $(objects)
-	$(MAKE) -C external/guix clean
+	-$(RM) config/*.scm

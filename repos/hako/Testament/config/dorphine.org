@@ -321,23 +321,7 @@ https://github.com/fishinthecalculator/sops-guix
 
 #+name: kernel
 #+begin_src scheme
-  (customize-linux
-   #:name "linux-dorphine"
-   #:linux linux
-   #:source
-   (origin
-     (inherit (package-source linux))
-     (patches
-      (list (origin
-              (method url-fetch)
-              (uri (string-append
-                    "https://patchwork.kernel.org/project/bluetooth/patch/"
-                    "20241121180742.156230-1-greyxor@protonmail.com"
-                    "/raw/"))
-              (file-name "btusb-wcn785x.patch")
-              (sha256
-               (base32
-                "13mx0skz9sv0lijzhqsg0ysan4yghrdbwwrs0047rm69h2q0fkn7")))))))
+  linux-6.14
 #+end_src
 
 #+name: firmware

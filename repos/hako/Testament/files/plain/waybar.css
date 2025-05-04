@@ -29,7 +29,6 @@ tooltip label {
     margin: 10px 0 0 10px;
 }
 
-#taskbar,
 #tray,
 #cpu,
 #memory,
@@ -61,16 +60,7 @@ tooltip label {
     -gtk-icon-effect: highlight;
 }
 
-#taskbar.empty {
-    background: transparent;
-    padding: 0;
-}
-
-#taskbar button {
-    padding: 0 5px;
-}
-
-#tray, #taskbar {
+#tray {
     background-color: @bg2;
 }
 
@@ -86,10 +76,6 @@ tooltip label {
 
 #battery.charging, #battery.plugged {
     background-color: @green;
-}
-
-#taskbar button.active {
-    background-color: @blue;
 }
 
 #workspaces {

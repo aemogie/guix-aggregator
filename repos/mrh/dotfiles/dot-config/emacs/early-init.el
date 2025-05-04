@@ -1,6 +1,6 @@
-(setf vc-follow-symlinks t)
+(setq vc-follow-symlinks t)
 
-(setf default-frame-alist '((background-color . "#000000")
+(setq default-frame-alist '((background-color . "#000000")
                             (ns-appearance . dark)
                             (ns-transparent-titlebar . t)
                             (alpha-background . 80)))

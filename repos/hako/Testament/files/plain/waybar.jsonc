@@ -9,7 +9,6 @@
     "modules-left": [
         "niri/workspaces",
         "tray",
-        "wlr/taskbar",
         "cpu",
         "memory",
         "temperature",
@@ -36,12 +35,6 @@
     },
     "tray": {
         "spacing": 10,
-    },
-    "wlr/taskbar": {
-        "format": "{icon}",
-        "tooltip-format": "{title}",
-        "on-click": "activate",
-        "on-click-middle": "close",
     },
     "cpu": {
         "format": "{usage}% \uF2DB",

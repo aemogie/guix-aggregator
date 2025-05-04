@@ -24,10 +24,10 @@
   :config
   ;; Enable all Iosevka ligatures in programming modes
   (ligature-set-ligatures 'prog-mode '("<---" "<--"  "<<-" "<-" "->" "-->" "--->" "<->" "<-->" "<--->" "<---->"
-					 "<!--" "<==" "<===" "<=" "=>" "=>>" "==>" "===>" ">=" "<=>" "<==>"
-					 "<===>" "<====>" "<!---" "<~~" "<~" "~>" "~~>" "::" ":::" "==" "!="
-					 "===" "!==" ":=" ":-" ":+" "<*" "<*>" "*>" "<|" "<|>" "|>" "+:" "-:"
-					 "=:" "<******>" "++" "+++"))
+				       "<!--" "<==" "<===" "<=" "=>" "=>>" "==>" "===>" ">=" "<=>" "<==>"
+				       "<===>" "<====>" "<!---" "<~~" "<~" "~>" "~~>" "::" ":::" "==" "!="
+				       "===" "!==" ":=" ":-" ":+" "<*" "<*>" "*>" "<|" "<|>" "|>" "+:" "-:"
+				       "=:" "<******>" "++" "+++"))
 ;; Enables ligature checks globally in all buffers. You can also do it
 ;; per mode with `ligature-mode'.
 (global-ligature-mode t))
@@ -35,10 +35,10 @@
 (use-package swiper)
 (use-package counsel
   :bind (("M-x" . counsel-M-x)
-	   ("C-x b" . counsel-ibuffer)
-	   ("C-x C-f" . counsel-find-file)
-	   :map minibuffer-local-map
-	   ("C-r" . counsel-minibuffer-history)))
+	 ("C-x b" . counsel-ibuffer)
+	 ("C-x C-f" . counsel-find-file)
+	 :map minibuffer-local-map
+	 ("C-r" . counsel-minibuffer-history)))
 (use-package ivy
   :diminish
   :bind (("C-s" . swiper-isearch))
@@ -54,9 +54,9 @@
 (use-package dired-subtree
   :bind
   (:map dired-mode-map
-	("<enter>" . lynn/dwim-toggle-or-open)
-	("<return>" . lynn/dwim-toggle-or-open)
-	("<tab>" . lynn/dwim-toggle-or-open))
+      ("<enter>" . lynn/dwim-toggle-or-open)
+      ("<return>" . lynn/dwim-toggle-or-open)
+      ("<tab>" . lynn/dwim-toggle-or-open))
   :config
     (setq dired-subtree-use-backgrounds nil))
 
@@ -65,9 +65,9 @@
   (interactive)
   (let ((file (dired-get-file-for-visit)))
     (if (and (file-directory-p file)
-	     (not (or (string= file ".")
-		      (string= file ".."))))
-	(dired-subtree-toggle)
+  	   (not (or (string= file ".")
+  		    (string= file ".."))))
+      (dired-subtree-toggle)
       (dired-find-file))))
 
 (use-package pinentry
@@ -83,10 +83,10 @@
   :custom
   (org-roam-directory "~/docs/roam/")
   :bind (("C-c n l" . org-roam-buffer-toggle)
-	 ("C-c n f" . org-roam-node-find)
-	 ("C-c n i" . org-roam-node-insert)
-	 :map org-mode-map
-	 ("C-M-i"    . completion-at-point))
+       ("C-c n f" . org-roam-node-find)
+       ("C-c n i" . org-roam-node-insert)
+       :map org-mode-map
+       ("C-M-i"    . completion-at-point))
   :config
   (org-roam-setup))
 
@@ -108,90 +108,90 @@
 
 (use-package meow)
     (defun meow-setup ()
-	(setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
-	(meow-motion-overwrite-define-key
-	 '("j" . meow-next)
-	 '("k" . meow-prev)
-	 '("<escape>" . ignore))
-	(meow-leader-define-key
-	 ;; SPC j/k will run the original command in MOTION state.
-	 '("j" . "H-j")
-	 '("k" . "H-k")
-	 ;; Use SPC (0-9) for digit arguments.
-	 '("1" . meow-digit-argument)
-	 '("2" . meow-digit-argument)
-	 '("3" . meow-digit-argument)
-	 '("4" . meow-digit-argument)
-	 '("5" . meow-digit-argument)
-	 '("6" . meow-digit-argument)
-	 '("7" . meow-digit-argument)
-	 '("8" . meow-digit-argument)
-	 '("9" . meow-digit-argument)
-	 '("0" . meow-digit-argument)
-	 '("/" . meow-keypad-describe-key)
-	 '("?" . meow-cheatsheet))
-	(meow-normal-define-key
-	 '("0" . meow-expand-0)
-	 '("9" . meow-expand-9)
-	 '("8" . meow-expand-8)
-	 '("7" . meow-expand-7)
-	 '("6" . meow-expand-6)
-	 '("5" . meow-expand-5)
-	 '("4" . meow-expand-4)
-	 '("3" . meow-expand-3)
-	 '("2" . meow-expand-2)
-	 '("1" . meow-expand-1)
-	 '("-" . negative-argument)
-	 '(";" . meow-reverse)
-	 '("," . meow-inner-of-thing)
-	 '("." . meow-bounds-of-thing)
-	 '("[" . meow-beginning-of-thing)
-	 '("]" . meow-end-of-thing)
-	 '("a" . meow-append)
-	 '("A" . meow-open-below)
-	 '("b" . meow-back-word)
-	 '("B" . meow-back-symbol)
-	 '("c" . meow-change)
-	 '("d" . meow-delete)
-	 '("D" . meow-backward-delete)
-	 '("e" . meow-next-word)
-	 '("E" . meow-next-symbol)
-	 '("f" . meow-find)
-	 '("g" . meow-cancel-selection)
-	 '("G" . meow-grab)
-	 '("h" . meow-left)
-	 '("H" . meow-left-expand)
-	 '("i" . meow-insert)
-	 '("I" . meow-open-above)
-	 '("j" . meow-next)
-	 '("J" . meow-next-expand)
-	 '("k" . meow-prev)
-	 '("K" . meow-prev-expand)
-	 '("l" . meow-right)
-	 '("L" . meow-right-expand)
-	 '("m" . meow-join)
-	 '("n" . meow-search)
-	 '("o" . meow-block)
-	 '("O" . meow-to-block)
-	 '("p" . meow-yank)
-	 '("q" . meow-quit)
-	 '("Q" . meow-goto-line)
-	 '("r" . meow-replace)
-	 '("R" . meow-swap-grab)
-	 '("s" . meow-kill)
-	 '("t" . meow-till)
-	 '("u" . meow-undo)
-	 '("U" . meow-undo-in-selection)
-	 '("v" . meow-visit)
-	 '("w" . meow-mark-word)
-	 '("W" . meow-mark-symbol)
-	 '("x" . meow-line)
-	 '("X" . meow-goto-line)
-	 '("y" . meow-save)
-	 '("Y" . meow-sync-grab)
-	 '("z" . meow-pop-selection)
-	 '("'" . repeat)
-	 '("<escape>" . ignore)))
+      (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
+      (meow-motion-overwrite-define-key
+       '("j" . meow-next)
+       '("k" . meow-prev)
+       '("<escape>" . ignore))
+      (meow-leader-define-key
+       ;; SPC j/k will run the original command in MOTION state.
+       '("j" . "H-j")
+       '("k" . "H-k")
+       ;; Use SPC (0-9) for digit arguments.
+       '("1" . meow-digit-argument)
+       '("2" . meow-digit-argument)
+       '("3" . meow-digit-argument)
+       '("4" . meow-digit-argument)
+       '("5" . meow-digit-argument)
+       '("6" . meow-digit-argument)
+       '("7" . meow-digit-argument)
+       '("8" . meow-digit-argument)
+       '("9" . meow-digit-argument)
+       '("0" . meow-digit-argument)
+       '("/" . meow-keypad-describe-key)
+       '("?" . meow-cheatsheet))
+      (meow-normal-define-key
+       '("0" . meow-expand-0)
+       '("9" . meow-expand-9)
+       '("8" . meow-expand-8)
+       '("7" . meow-expand-7)
+       '("6" . meow-expand-6)
+       '("5" . meow-expand-5)
+       '("4" . meow-expand-4)
+       '("3" . meow-expand-3)
+       '("2" . meow-expand-2)
+       '("1" . meow-expand-1)
+       '("-" . negative-argument)
+       '(";" . meow-reverse)
+       '("," . meow-inner-of-thing)
+       '("." . meow-bounds-of-thing)
+       '("[" . meow-beginning-of-thing)
+       '("]" . meow-end-of-thing)
+       '("a" . meow-append)
+       '("A" . meow-open-below)
+       '("b" . meow-back-word)
+       '("B" . meow-back-symbol)
+       '("c" . meow-change)
+       '("d" . meow-delete)
+       '("D" . meow-backward-delete)
+       '("e" . meow-next-word)
+       '("E" . meow-next-symbol)
+       '("f" . meow-find)
+       '("g" . meow-cancel-selection)
+       '("G" . meow-grab)
+       '("h" . meow-left)
+       '("H" . meow-left-expand)
+       '("i" . meow-insert)
+       '("I" . meow-open-above)
+       '("j" . meow-next)
+       '("J" . meow-next-expand)
+       '("k" . meow-prev)
+       '("K" . meow-prev-expand)
+       '("l" . meow-right)
+       '("L" . meow-right-expand)
+       '("m" . meow-join)
+       '("n" . meow-search)
+       '("o" . meow-block)
+       '("O" . meow-to-block)
+       '("p" . meow-yank)
+       '("q" . meow-quit)
+       '("Q" . meow-goto-line)
+       '("r" . meow-replace)
+       '("R" . meow-swap-grab)
+       '("s" . meow-kill)
+       '("t" . meow-till)
+       '("u" . meow-undo)
+       '("U" . meow-undo-in-selection)
+       '("v" . meow-visit)
+       '("w" . meow-mark-word)
+       '("W" . meow-mark-symbol)
+       '("x" . meow-line)
+       '("X" . meow-goto-line)
+       '("y" . meow-clipboard-save)
+       '("Y" . meow-sync-grab)
+       '("z" . meow-pop-selection)
+       '("'" . repeat)
+       '("<escape>" . ignore)))
 (require 'meow)
 (meow-setup)
 (meow-global-mode 1)
@@ -208,6 +208,58 @@
 
 (use-package aggressive-indent
   :hook ((lisp-mode emacs-lisp-mode scheme-mode) . aggressive-indent-mode))
+
+(use-package bqn-mode)
+(defvar-local bqn--idle-timer nil
+  "Idle timer to run `bqn-send-buffer` after user stops typing.")
+
+(defcustom bqn-idle-send-delay 1.0
+  "Seconds to wait after last input before sending buffer."
+  :type 'number
+  :group 'bqn)
+
+(defun bqn--reset-idle-timer ()
+  "Reset the idle timer to call `bqn-comint-eval-buffer`."
+  (when bqn--idle-timer
+    (cancel-timer bqn--idle-timer))
+  (setq bqn--idle-timer
+        (run-with-idle-timer bqn-idle-send-delay nil
+                             (lambda ()
+                               (when (derived-mode-p 'bqn-mode)
+                                 (bqn-comint-eval-buffer))))))
+
+(defun bqn-auto-eval-comint-buffer-on-idle ()
+  "Enable automatic `bqn-eval-comint-buffer` after idle delay."
+  (add-hook 'after-change-functions
+            (lambda (&rest _) (bqn--reset-idle-timer))
+            nil t))
+
+(add-hook 'bqn-mode-hook #'bqn-auto-eval-comint-buffer-on-idle)
+
+(defun run-apl ()
+  (interactive)
+  (let ((buf (get-buffer-create "*APL*")))
+    (unless (comint-check-proc buf)
+      (apply #'make-comint-in-buffer "APL" buf "apl" nil))
+    (display-buffer buf
+                    '((display-buffer-reuse-window display-buffer-at-bottom)
+                      (window-height . 5)))))
+(defun apl-process ()
+  (let ((proc (get-buffer-process "*APL*")))
+    (unless (and proc (process-live-p proc))
+      (error "No active GNU APL process"))
+    proc))
+(defun apl-send-region (start end)
+  (interactive "r")
+  (let ((code (buffer-substring-no-properties start end)))
+    (comint-send-string (apl-process) (concat code "\n"))))
+(define-minor-mode apl-comint-mode
+"Minor mode to send APL code to a comint interpreter."
+:lighter " APL-REPL"
+:keymap (let ((map (make-sparse-keymap)))
+          (define-key map (kbd "C-c C-r") 'apl-send-region)
+          (define-key map (kbd "C-c C-l") 'apl-send-line)
+          map))
 
 (use-package treesit
 :commands (treesit-install-language-grammar treesit-install-all-languages)
@@ -252,6 +304,12 @@
   (add-to-list 'eglot-server-programs '(zig-mode . ("~/zls"))))
 
 (use-package zig-mode)
+
+(use-package yaml-mode)
+(use-package outline-indent
+  :commands outline-indent-minor-mode
+  :custom
+  (outline-indnet-ellipsis" ▼ "))
 
 (use-package buffer-env
   :config
@@ -324,13 +382,13 @@
 
 (with-eval-after-load 'ox-latex
   (add-to-list 'org-latex-classes
-		 '("fiction" "
+	       '("fiction" "
 \\documentclass[submission,latterpaper,courier]{sffms}
 [NO-DEFAULT-PACKAGES]
 [PACKAGES]
 [EXTRA]
 "
-		   ("\\chapter*{%s" . "\\chapter*{%s}"))))
+		 ("\\chapter*{%s" . "\\chapter*{%s}"))))
 (setq org-latex-hyperref-template "")
 
 

@@ -64,6 +64,7 @@
 		(name "lynn")
 		(group "users")
 		(home-directory "/home/lynn")
+		(shell (file-append zsh "/bin/zsh"))
 		(supplementary-groups '("wheel" "netdev" "audio" "video")))
 	       %base-user-accounts))
  (packages %arc-packages)

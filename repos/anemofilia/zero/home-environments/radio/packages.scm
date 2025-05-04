@@ -43,8 +43,7 @@
         #:use-module (gnu packages ssh)
         #:use-module (gnu packages suckless)
         #:use-module (gnu packages syndication)
-  #|T|# #:use-module (gnu packages telegram)
-        #:use-module (gnu packages terminals)
+  #|T|# #:use-module (gnu packages terminals)
         #:use-module (gnu packages tex)
         #:use-module (gnu packages text-editors)
         #:use-module (gnu packages tmux)
@@ -122,6 +121,7 @@
         #|libcanberra|# sound-theme-freedesktop
         #|terminals  |# foot
         #|toys       |# wayneko
+        #|video      |# wf-recorder
         #|wm         |# eww/wayland fnott lswt river-bedload rivercarro wbg
         #|web        |# jq
         #|xdisorg    |# fuzzel-lowercase gammastep wl-clipboard wlrctl
@@ -178,8 +178,7 @@
         #|ocr          |# tesseract-ocr))
 
 (define messaging
-  (list #|telegram |# telegram-desktop
-        #|mail     |# aerc
+  (list #|mail     |# aerc
         #|messaging|# senpai))
 
 (define music
