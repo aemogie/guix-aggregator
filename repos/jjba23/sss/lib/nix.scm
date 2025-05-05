@@ -25,5 +25,6 @@
                                            (mk-rec-kv-conf-lines `((experimental-features . "nix-command flakes"))
                                             #:template spaced-equal-conf-pair)))
       
-      (".config/nixpkgs/config.nix" ,(local-file "../lib/nix/nixpkgs.nix"))))
+      (".config/nixpkgs/config.nix" ,(plain-file "nixpkgs.nix"
+                                                 "\n{\nallowUnfree = true;\n}\n"))))
   (export sss-nix-svc))

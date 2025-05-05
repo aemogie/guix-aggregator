@@ -58,7 +58,6 @@
              (sss mako)
              (sss channels)
              (sss fastfetch)
-             (sss conky)
              (sss enchant)
              (sss nix)
              (sss fontconfig)
@@ -79,8 +78,7 @@
              (sss waybar)
              (sss rofi)
              (sss ssh)
-             (sss emacs)
-             (sss qutebrowser))
+             (sss emacs))
 
 (define sss-home-files-service
   (service home-files-service-type
@@ -111,7 +109,6 @@
                    (sss-fish-svc #:clone-dir sss-clone-dir
                                  #:palette sss-palette)
                    (sss-mako-svc #:palette sss-palette)
-                   (sss-qutebrowser-svc #:palette sss-palette)
                    (sss-emacs-svc #:palette sss-palette
                                   #:user-name "Joe"
                                   #:user-full-name "Josep Bigorra"
@@ -123,7 +120,6 @@
                    (sss-nix-svc)
                    (sss-qt6-svc #:palette sss-palette)
                    (sss-containers-svc)
-                   (sss-conky-svc)
                    (sss-portals-svc)
                    (sss-enchant-svc))))
 

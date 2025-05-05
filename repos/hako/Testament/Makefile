@@ -21,8 +21,19 @@ build-%: config/%.scm
 	$(GUIX) system build $< $(ARGS)
 
 .PHONY: reconfigure
-reconfigure: config/dorphine.scm
+reconfigure: reconfigure-dorphine
+reconfigure-%: config/%.scm
 	$(GUIX) system reconfigure $< $(ARGS)
+
+.PHONY: home-build
+home-build: home-build-dorphine
+home-build-%: config/%.scm
+	$(GUIX) home build $< $(ARGS)
+
+.PHONY: home-reconfigure
+home-reconfigure: home-reconfigure-dorphine
+home-reconfigure-%: config/%.scm
+	$(GUIX) home reconfigure $< $(ARGS)
 
 .PHONY: deploy
 deploy: config/gokuraku.scm

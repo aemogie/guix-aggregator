@@ -1459,76 +1459,49 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
   end")
 #+end_src
 
-*** emacs-wanderlust
+*** mu4e
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
-    (name 'wl)
-    (package emacs-wanderlust)
-    (options
-     '((elmo-localdir-folder-path . "~/.local/share/mail")
-       (elmo-maildir-folder-path . "~/.local/share/mail")
-       (elmo-passwd-storage-type . auth-source)
-       (mime-edit-pgp-signers . ("F4C2D1DF3FDEEA63D1D30776ACC66D09CA528292"))
-       (mime-header-accept-quoted-encoded-words . #t)
-       (wl-quicksearch-folder . "[]~/.local/share/mail!rgrep")
-       (wl-smtp-authenticate-type . "plain")
-       (wl-smtp-connection-type . ssl)
-       (wl-smtp-posting-port . 465)
-       (wl-smtp-posting-server . "mail.boiledscript.com")
-       (wl-smtp-posting-user . "hako@ultrarare.space")
-       (wl-summary-auto-refile-skip-marks . #f)
-       (wl-summary-line-format . "%n%T%P %Y-%M-%D(%W)%h:%m %t%[%17(%c %f%) %] %#%~%s")
-       (wl-summary-width . #f)))
-    (autoloads-interactive '(wl)))
+   (name 'mu4e)
+   (package mu)
+   (extra-packages (list emacs-message-view-patch))
+   (options
+    `((mu4e-sent-folder   . "/Sent")
+      (mu4e-drafts-folder . "/Drafts")
+      (mu4e-trash-folder  . "/Trash")
+      (mu4e-refile-folder . "/Archive")
+      (mu4e-change-filenames-when-moving . #t)
+      ;; Search.
+      (mu4e-query-rewrite-function
+       . (lambda (expr)
+           (if (string-match "maildir:\"/\\(Junk\\|Trash\\)\"" expr)
+               expr
+               (concat expr " AND NOT (maildir:/Junk OR maildir:/Trash)"))))
+      (mu4e-search-full . #t)
+      ;; Compose.
+      (message-dont-reply-to-names . mu4e-personal-or-alternative-address-p)
+      ;; Send.
+      (smtpmail-default-smtp-server . "mail.boiledscript.com")
+      (smtpmail-smtp-service . 465)
+      (smtpmail-stream-type . ssl)
+      (smtpmail-queue-mail . #t)
+      (smtpmail-queue-dir . "~/.local/share/queued-mail")
+      ;; Receive.
+      (mu4e-get-mail-command
+       . ,#~(concat #$isync "/bin/mbsync -a --config "
+                    #$(testament-file-object "mbsync.conf")))
+      (mu4e-update-interval . ,(* 10 60))))
+   (hooks '((gnus-part-display-hook . message-view-patch-highlight))))
 
+  ;; Prefer text/plain.
   (emacs-package
-    (name 'wl-draft)
-    (options '((mail-user-agent . wl-user-agent)))
-    (autoloads '(wl-user-agent-compose))
-    (extra-init
-     (list #%(define-mail-user-agent 'wl-user-agent
-               'wl-user-agent-compose
-               'wl-draft-send
-               'wl-draft-kill))))
-
-  (emacs-package
-    (name 'wl-highlight)
-    (load-after-packages '(modus-themes))
-    (extra-init
-     (list #%(modus-themes-with-colors
-              (custom-set-faces
-               `(wl-highlight-message-headers ((,c :inherit message-header-name)))
-               `(wl-highlight-message-header-contents ((,c :inherit message-header-other)))
-               `(wl-highlight-message-important-header-contents ((,c :inherit message-header-subject)))
-               `(wl-highlight-message-important-header-contents2 ((,c :inherit message-header-to)))
-               `(wl-highlight-message-citation-header ((,c :inherit italic)))
-               `(wl-highlight-message-unimportant-header-contents (( )))
-               `(wl-highlight-message-signature ((,c :inherit modus-themes-bold :foreground ,string)))
-               `(wl-highlight-header-separator-face ((,c :inherit message-separator)))
-               `(wl-highlight-message-cited-text-1 ((,c :inherit message-cited-text-1)))
-               `(wl-highlight-message-cited-text-2 ((,c :inherit message-cited-text-2)))
-               `(wl-highlight-message-cited-text-3 ((,c :inherit message-cited-text-3)))
-               `(wl-highlight-message-cited-text-4 ((,c :inherit message-cited-text-4)))
-               `(wl-highlight-message-cited-text-5 ((,c :inherit message-cited-text-1)))
-               `(wl-highlight-message-cited-text-6 ((,c :inherit message-cited-text-2)))
-               `(wl-highlight-message-cited-text-7 ((,c :inherit message-cited-text-3)))
-               `(wl-highlight-message-cited-text-8 ((,c :inherit message-cited-text-4)))
-               `(wl-highlight-message-cited-text-9 ((,c :inherit message-cited-text-1)))
-               `(wl-highlight-message-cited-text-10 ((,c :inherit message-cited-text-2))))))))
-
-  (emacs-package
-    (name 'wl-vars)
-    (options
-     '((wl-default-folder . ".inbox")
-       (wl-default-spec . ".")
-       (wl-draft-always-delete-myself . #t)
-       (wl-fcc . ".inbox")
-       (wl-fcc-force-as-read . #t)
-       (wl-local-domain . "ultrarare.space")
-       (wl-plugged . #f))))
+   (name 'mm-decode)
+   (extra-after-load
+    (list #%(add-to-list 'mm-discouraged-alternatives "text/html")
+          #%(add-to-list 'mm-discouraged-alternatives "text/richtext"))))
 #+end_src
 
-[[file:../files/dotfiles/.config/wanderlust/folders][~/.config/wanderlust/folders]]
+[[file:../files/plain/mbsync.conf][mbsync.conf]]
 
 * Miscellaneous
 #+begin_src scheme :noweb-ref module
@@ -1672,15 +1645,6 @@ An extra graft is done in [[id:15223ce6-bb6b-427b-b598-30998cdd9bdd][nvidia-driv
 #+end_src
 
 [[file:../files/dotfiles/.config/git/config][~/.config/git/config]]
-
-** isync
-#+begin_src scheme :noweb-ref home-mcron-job
-  #~(job '(next-minute (range 0 60 15))
-         (string-append #$isync "/bin/mbsync -a --config "
-                        #$(testament-file-object "mbsync.conf")))
-#+end_src
-
-[[file:../files/plain/mbsync.conf][mbsync.conf]]
 
 ** jellyfin-mpv-shim
 #+begin_src scheme :noweb-ref home-service

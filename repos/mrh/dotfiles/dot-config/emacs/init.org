@@ -41,7 +41,7 @@ Most here is agnostic of that but some is not.
 ** Paths
 
 #+begin_src emacs-lisp
-(setopt default-directory (format "%s/" (getenv "HOME")))
+(setopt default-directory "~/")
 
 (defvar personal-data (expand-file-name "personal.el" user-emacs-directory))
 (load personal-data)
@@ -51,8 +51,7 @@ Most here is agnostic of that but some is not.
 
 #+begin_src emacs-lisp
 (use-package cus-edit
-  :defer
-  t
+  :defer t
   :custom
   (custom-file (expand-file-name "custom.el" user-emacs-directory)))
 #+end_src
@@ -97,7 +96,7 @@ Have emacs remember both what files you recently visited and your position in th
 *** File Encoding
 
 #+begin_src emacs-lisp
-(setq-default buffer-file-coding-system 'utf-8-unix)
+(setopt buffer-file-coding-system 'utf-8-unix)
 #+end_src
 
 ** File Management
@@ -105,8 +104,7 @@ Have emacs remember both what files you recently visited and your position in th
 
 #+begin_src emacs-lisp
 (use-package dired
-  :commands
-  (dired)
+  :commands dired
   :hook
   (dired-mode . dired-hide-details-mode)
   :custom
@@ -131,8 +129,7 @@ Have emacs remember both what files you recently visited and your position in th
 
 #+begin_src emacs-lisp
 (use-package diredfl
-  :after
-  (dired)
+  :after dired
   :config
   (diredfl-global-mode 1))
 #+end_src
@@ -152,8 +149,7 @@ Fix bug causing hangups upon re-encryption of files
 (setopt delete-by-moving-to-trash t)
 
 (use-package trashed
-  :commands
-  (trashed)
+  :commands trashed
   :custom
   (trashed-sort-key '("Date deleted" . t))
   (trashed-date-format "%Y-%m-%d %H:%M:%S")
@@ -265,10 +261,13 @@ NOTE: On wayland emacs must be pure GTK (=emacs-pgtk= on guix)
 ** Mode Line
 
 #+begin_src emacs-lisp
-(setq-default mode-line-format
+(setopt mode-line-format
               '("%e"
                 mode-line-front-space
+                mode-line-mule-info
+                mode-line-client
                 mode-line-modified
+                mode-line-remote
                 "  "
                 mode-line-buffer-identification
                 "  "
@@ -384,7 +383,7 @@ You may need to call =(nerd-icons-install-fonts)=
                                100
                              80))))
 
-  (defun my/fontify-org-buffers (_theme)
+  (defun my/fontify-org-buffers (&optional _theme)
     "Fontify all org buffers.
 Helpful advice for face changing functions."
     (interactive)
@@ -422,7 +421,7 @@ Helpful advice for face changing functions."
 #+begin_src emacs-lisp
 (use-package corfu 
   :init
-  (setq-default pgtk-wait-for-event-timeout 0)
+  (setopt pgtk-wait-for-event-timeout 0)
   :custom
   (corfu-auto t)
   (corfu-auto-delay 0.2)
@@ -455,8 +454,7 @@ Helpful advice for face changing functions."
 (use-package marginalia
   :config
   (marginalia-mode 1)
-  :after
-  (vertico))
+  :after vertico)
 #+end_src
 
 ** Mouse
@@ -529,6 +527,12 @@ See also `my/hide-buffer'."
                 ,*hidden-buffers*)))
 #+end_src
 
+** Windows
+
+#+begin_src emacs-lisp
+(setopt split-width-threshold 90)
+#+end_src
+
 * Writing
 ** Selection
 Replace text in active region on insert
@@ -556,8 +560,7 @@ Enable narrowing commands
 #+begin_src emacs-lisp
 (use-package ispell
   :custom
-  (ispell-personal-dictionary
-   (format "%s/documents/personal-dictionary" (getenv "HOME"))))
+  (ispell-personal-dictionary "~/documents/personal-dictionary"))
 #+end_src
 
 ** Writeroom
@@ -584,8 +587,8 @@ Enable narrowing commands
 *** Tabs
 
 #+begin_src emacs-lisp
-(setq-default indent-tabs-mode nil
-              tab-width 4)
+(setopt indent-tabs-mode nil
+        tab-width 4)
 #+end_src
 
 **** (un)Tabify Multiple Files
@@ -677,19 +680,17 @@ Compile without showing compile buffer
 (use-package geiser)
 
 (use-package geiser-guile
-  :commands
-  (geiser-guile)
+  :commands geiser-guile
   :custom
   (geiser-guile-load-init-file t)
-  :after (geiser))
+  :after geiser)
 #+end_src
 
 **** Common Lisp
 
 #+begin_src emacs-lisp
 (use-package sly
-  :commands
-  (sly)
+  :commands sly
   :custom
   (inferior-lisp-program "sbcl")
   (sly-mrepl-history-file-
@@ -704,8 +705,7 @@ See [[https://unimath.github.io/agda-unimath/HOWTO-INSTALL.html#emacs][agda-unim
 
 #+begin_src emacs-lisp
 (use-package agda2-mode
-  :defer
-  t
+  :defer t
   :init
   (add-to-list 'auto-mode-alist '("\\.lagda.md$" . agda2-mode)))
 #+end_src
@@ -733,15 +733,14 @@ See [[https://unimath.github.io/agda-unimath/HOWTO-INSTALL.html#emacs][agda-unim
 
 #+begin_src emacs-lisp
 (use-package org
-  :defer
-  t
+  :defer t
   :hook
   (org-mode . org-indent-mode)
   :bind
   (:map org-mode-map
         ("C-c l" . org-cycle-list-bullet))
   :custom
-  (org-directory (expand-file-name "documents/org/" (getenv "HOME")))
+  (org-directory "~/documents/org/")
   (org-default-notes-file (expand-file-name "notes.org" org-directory))
   (org-agenda-files (list (expand-file-name "agenda/" org-directory)))
   
@@ -786,32 +785,28 @@ Export to pdf presentations via LaTeX beamer
 
 #+begin_src emacs-lisp
 (use-package ox-beamer
-  :after
-  (org))
+  :after org)
 #+end_src
 
 **** Publish
 
 #+begin_src emacs-lisp
-(use-package org-publish-rss
-  :defer
-  0.1
-  :custom
-  (org-publish-rss-publish-immediately t))
-
 (use-package ox-publish
+  :commands org-publish
   :config
+  (use-package org-publish-rss
+    :custom
+    (org-publish-rss-publish-immediately t))
+
   (load (expand-file-name "org-publish.el" user-emacs-directory))
-  :after
-  (jack org-publish-rss))
+  :after jack)
 #+end_src
 
 ** Markdown
 
 #+begin_src emacs-lisp
 (use-package markdown-mode
-  :defer
-  t)
+  :defer t)
 #+end_src
 
 ** LaTeX
@@ -819,8 +814,7 @@ Export to pdf presentations via LaTeX beamer
 
 #+begin_src emacs-lisp
 (use-package latex
-  :defer
-  t
+  :defer t
   :hook
   (LaTeX-mode . my/set-latex-compile)
   :bind
@@ -839,12 +833,10 @@ Export to pdf presentations via LaTeX beamer
 
 #+begin_src emacs-lisp
 (use-package eshell
-  :commands
-  (eshell)
+  :commands eshell
   :hook
-  (eshell-mode . (lambda () (keymap-set eshell-mode-map
-                                   "C-c M-o"
-                                   'my/eshell-clear)))
+  (eshell-mode . (lambda ()
+                   (keymap-set eshell-mode-map "C-c M-o" 'my/eshell-clear)))
   :custom
   (eshell-prompt-function
    (lambda ()
@@ -900,8 +892,7 @@ Magic git frontend
 
 #+begin_src emacs-lisp
 (use-package magit
-  :commands
-  (magit)
+  :commands magit
   :hook
   (magit-mode . (lambda () (my/activate-keybinds t))))
 #+end_src
@@ -920,8 +911,7 @@ Magic git frontend
 
 #+begin_src emacs-lisp
 (use-package bluetooth
-  :commands
-  (bluetooth-list-devices))
+  :commands bluetooth-list-devices)
 #+end_src
 
 ** Documentation
@@ -936,7 +926,7 @@ Magic git frontend
 
 #+begin_src emacs-lisp
 (use-package wgrep
-  :commands (wgrep))
+  :commands wgrep)
 #+end_src
 
 * Websites
@@ -999,8 +989,7 @@ and save an appropriate entry for `elfeed-feeds' to the kill ring."
 
 #+begin_src emacs-lisp
 (use-package elfeed
-  :commands
-  (elfeed)
+  :commands elfeed
   :custom
   (elfeed-db-directory (expand-file-name "elfeed-db" user-emacs-directory))
   (elfeed-search-filter "@6-months-ago +unread")
@@ -1022,8 +1011,7 @@ and save an appropriate entry for `elfeed-feeds' to the kill ring."
   :defer t
   :custom
   (gnus-use-dribble-file nil)
-  :after
-  (gnus))
+  :after gnus)
 #+end_src
 
 * Media

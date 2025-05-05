@@ -69,13 +69,13 @@ According to size, color and font family"
 		        :font sss-font-mono)
     (set-face-attribute 'mode-line nil 
 		        :height (tekengrootte-mk-font-size 0.7)
-		        :font sss-font-mono) 
+		        :font sss-font-sans)
     (set-face-attribute 'mode-line-active nil 
 		        :height (tekengrootte-mk-font-size 0.7) 
-		        :font sss-font-mono) 
+		        :font sss-font-sans) 
     (set-face-attribute 'mode-line-inactive nil 
 		        :height (tekengrootte-mk-font-size 0.7) 
-		        :font sss-font-mono)
+		        :font sss-font-sans)
     (set-face-attribute 'variable-pitch nil 
 		        :font sss-font-sans
                         :height (tekengrootte-mk-font-size 1.05))
@@ -127,10 +127,10 @@ According to size, color and font family"
 		          :font sss-font-mono
                           :background 'unspecified
                           :box nil
-                          :height (tekengrootte-mk-font-size 0.9)))
+                          :height (tekengrootte-mk-font-size 0.8)))
     (ignore-errors
       (set-face-attribute 'keycast-command nil                       
-		          :font sss-font-mono
+		          :font sss-font-sans
                           :height (tekengrootte-mk-font-size 0.8)))
 
     ;; ====== Theme specific tweaks ======

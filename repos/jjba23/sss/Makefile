@@ -113,12 +113,6 @@ format:
 		-l $(shell realpath ./lib/emacs/batch-indent.el) -f indent-file \;
 	$(call sss-log-complete,"format")
 
-# publish-manual: Generates and publishes the manual from Org files using Emacs.
-publish-manual:
-	cd docs/manual/ && emacs -Q --batch \
-		-l $(shell realpath ./lib/sss-manual.el) \
-		--funcall sss/publish-manual && cd ../../
-	$(call sss-notify-success,"SSS publish-manual complete","task was completed successfully!")
 
 # Cleans up unused objects in the Guix store.
 store-gc:  
@@ -184,9 +178,12 @@ fpu:  # Updates Flatpak packages
 
 # deploy: Deploys the manual HTML to a web server directory.
 deploy:
+	guix shell -m manifest.scm -- emacs -Q --batch \
+		-l $(shell realpath ./lib/sss-manual.el) \
+		--funcall sss/publish-manual
 	mkdir -pv $(DEPLOY_WWW)/manuals/sss
 	rm -rfv $(DEPLOY_WWW)/manuals/sss/index.html
-	cp -rfv docs/manual/en-GB.html $(DEPLOY_WWW)/manuals/sss/index.html
+	mv -v docs/manual/en-GB.html $(DEPLOY_WWW)/manuals/sss/index.html
 
 # repl: Start a Guile Scheme development REPL
 # Development REPL

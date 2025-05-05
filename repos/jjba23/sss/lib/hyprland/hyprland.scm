@@ -69,8 +69,8 @@
                        "alacritty --daemon"
                        "emacs --daemon"
                        "transmission-daemon"
-                       "conky -d"
                        "podman system service --time=0 unix:///tmp/podman.sock"
+                       "gsettings set org.gnome.desktop.interface gtk-key-theme \"Emacs\""
                        ,(format #f
                          "gsettings set org.gnome.desktop.interface gtk-theme '~a'"
                          gtk-theme-name)
@@ -79,7 +79,7 @@
                          icon-theme-name)
                        "gsettings set org.gnome.desktop.interface cursor-theme 'Yaru'"
                        "gsettings set org.gnome.desktop.interface cursor-size 24"
-                       "gsettings set org.gnome.desktop.interface font-name 'Inter'"))))
+                       "gsettings set org.gnome.desktop.interface font-name 'Adwaita Sans'"))))
     xs))
 
 (define* (hypr-input #:key keyboard-layout caps-to-ctrl)

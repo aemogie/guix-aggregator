@@ -29,7 +29,7 @@
   "My personal choice for monospaced font family."
   :type 'string)
 
-(defcustom sss-font-sans "Inter"
+(defcustom sss-font-sans "Adwaita Sans"
   "My personal choice for sans font family."
   :type 'string)
 

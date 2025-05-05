@@ -38,31 +38,31 @@
     <keepBorder>yes</keepBorder>
     <dropShadows>no</dropShadows>
     <font place="ActiveWindow">
-      <name>Inter</name>
+      <name>Adwaita Sans</name>
       <size>12</size>
       <slant>normal</slant>
       <weight>normal</weight>
     </font>
     <font place="InactiveWindow">
-      <name>Inter</name>
+      <name>Adwaita Sans</name>
       <size>12</size>
       <slant>normal</slant>
       <weight>normal</weight>
     </font>
     <font place="MenuHeader">
-      <name>Inter</name>
+      <name>Adwaita Sans</name>
       <size>12</size>
       <slant>normal</slant>
       <weight>normal</weight>
     </font>
     <font place="MenuItem">
-      <name>Inter</name>
+      <name>Adwaita Sans</name>
       <size>12</size>
       <slant>normal</slant>
       <weight>normal</weight>
     </font>
     <font place="OnScreenDisplay">
-      <name>Inter</name>
+      <name>Adwaita Sans</name>
       <size>12</size>
       <slant>normal</slant>
       <weight>normal</weight>
@@ -680,10 +680,6 @@
         <fixedPosition>yes</fixedPosition>
         <action name="MoveTo" x="0" y="0" />
         <action name="ToggleAlwaysOnBottom"/>
-      </windowRule>
-      <windowRule identifier="org.qutebrowser.qutebrowser">
-        <action name="ResizeTo" width="1024" height="800" />
-        <action name="AutoPlace"/>
       </windowRule>
     </windowRules>
   -->

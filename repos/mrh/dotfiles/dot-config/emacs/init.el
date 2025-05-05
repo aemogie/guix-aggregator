@@ -1,11 +1,10 @@
-(setopt default-directory (format "%s/" (getenv "HOME")))
+(setopt default-directory "~/")
 
 (defvar personal-data (expand-file-name "personal.el" user-emacs-directory))
 (load personal-data)
 
 (use-package cus-edit
-  :defer
-  t
+  :defer t
   :custom
   (custom-file (expand-file-name "custom.el" user-emacs-directory)))
 
@@ -33,11 +32,10 @@
   :config
   (recentf-mode 1))
 
-(setq-default buffer-file-coding-system 'utf-8-unix)
+(setopt buffer-file-coding-system 'utf-8-unix)
 
 (use-package dired
-  :commands
-  (dired)
+  :commands dired
   :hook
   (dired-mode . dired-hide-details-mode)
   :custom
@@ -58,8 +56,7 @@
             (kill-buffer)))))))
 
 (use-package diredfl
-  :after
-  (dired)
+  :after dired
   :config
   (diredfl-global-mode 1))
 
@@ -70,8 +67,7 @@
 (setopt delete-by-moving-to-trash t)
 
 (use-package trashed
-  :commands
-  (trashed)
+  :commands trashed
   :custom
   (trashed-sort-key '("Date deleted" . t))
   (trashed-date-format "%Y-%m-%d %H:%M:%S")
@@ -144,10 +140,13 @@ Otherwise set locally with `keymap-local-set'."
 (setopt frame-title-format "%b")
 (add-to-list 'default-frame-alist '(undecorated . t))
 
-(setq-default mode-line-format
+(setopt mode-line-format
               '("%e"
                 mode-line-front-space
+                mode-line-mule-info
+                mode-line-client
                 mode-line-modified
+                mode-line-remote
                 "  "
                 mode-line-buffer-identification
                 "  "
@@ -246,7 +245,7 @@ Otherwise set locally with `keymap-local-set'."
                                100
                              80))))
 
-  (defun my/fontify-org-buffers (_theme)
+  (defun my/fontify-org-buffers (&optional _theme)
     "Fontify all org buffers.
 Helpful advice for face changing functions."
     (interactive)
@@ -275,7 +274,7 @@ Helpful advice for face changing functions."
 
 (use-package corfu 
   :init
-  (setq-default pgtk-wait-for-event-timeout 0)
+  (setopt pgtk-wait-for-event-timeout 0)
   :custom
   (corfu-auto t)
   (corfu-auto-delay 0.2)
@@ -300,8 +299,7 @@ Helpful advice for face changing functions."
 (use-package marginalia
   :config
   (marginalia-mode 1)
-  :after
-  (vertico))
+  :after vertico)
 
 (use-package disable-mouse
   :config
@@ -355,6 +353,8 @@ See also `my/hide-buffer'."
         (remove (if buffer-name buffer-name (buffer-name))
                 *hidden-buffers*)))
 
+(setopt split-width-threshold 90)
+
 (use-package delsel
   :config
   (delete-selection-mode 1))
@@ -368,8 +368,7 @@ See also `my/hide-buffer'."
 
 (use-package ispell
   :custom
-  (ispell-personal-dictionary
-   (format "%s/documents/personal-dictionary" (getenv "HOME"))))
+  (ispell-personal-dictionary "~/documents/personal-dictionary"))
 
 (use-package writeroom-mode
   :custom
@@ -384,8 +383,8 @@ See also `my/hide-buffer'."
   :config
   (global-prettify-symbols-mode 1))
 
-(setq-default indent-tabs-mode nil
-              tab-width 4)
+(setopt indent-tabs-mode nil
+        tab-width 4)
 
 (use-package tabify
   :commands (tabify untabify)
@@ -441,15 +440,13 @@ See `my/dired-run-command'."
 (use-package geiser)
 
 (use-package geiser-guile
-  :commands
-  (geiser-guile)
+  :commands geiser-guile
   :custom
   (geiser-guile-load-init-file t)
-  :after (geiser))
+  :after geiser)
 
 (use-package sly
-  :commands
-  (sly)
+  :commands sly
   :custom
   (inferior-lisp-program "sbcl")
   (sly-mrepl-history-file-
@@ -459,8 +456,7 @@ See `my/dired-run-command'."
     (add-hook 'sly-mrepl-mode-hook 'rainbow-delimiters-mode)))
 
 (use-package agda2-mode
-  :defer
-  t
+  :defer t
   :init
   (add-to-list 'auto-mode-alist '("\\.lagda.md$" . agda2-mode)))
 
@@ -480,15 +476,14 @@ See `my/dired-run-command'."
     (shell-command "go run")))
 
 (use-package org
-  :defer
-  t
+  :defer t
   :hook
   (org-mode . org-indent-mode)
   :bind
   (:map org-mode-map
         ("C-c l" . org-cycle-list-bullet))
   :custom
-  (org-directory (expand-file-name "documents/org/" (getenv "HOME")))
+  (org-directory "~/documents/org/")
   (org-default-notes-file (expand-file-name "notes.org" org-directory))
   (org-agenda-files (list (expand-file-name "agenda/" org-directory)))
   
@@ -523,28 +518,23 @@ See `my/dired-run-command'."
   (org-mode . org-bullets-mode))
 
 (use-package ox-beamer
-  :after
-  (org))
-
-(use-package org-publish-rss
-  :defer
-  0.1
-  :custom
-  (org-publish-rss-publish-immediately t))
+  :after org)
 
 (use-package ox-publish
+  :commands org-publish
   :config
+  (use-package org-publish-rss
+    :custom
+    (org-publish-rss-publish-immediately t))
+
   (load (expand-file-name "org-publish.el" user-emacs-directory))
-  :after
-  (jack org-publish-rss))
+  :after jack)
 
 (use-package markdown-mode
-  :defer
-  t)
+  :defer t)
 
 (use-package latex
-  :defer
-  t
+  :defer t
   :hook
   (LaTeX-mode . my/set-latex-compile)
   :bind
@@ -555,12 +545,10 @@ See `my/dired-run-command'."
     (my/set-compile-command (format "pdflatex %s" (buffer-file-name)))))
 
 (use-package eshell
-  :commands
-  (eshell)
+  :commands eshell
   :hook
-  (eshell-mode . (lambda () (keymap-set eshell-mode-map
-                                   "C-c M-o"
-                                   'my/eshell-clear)))
+  (eshell-mode . (lambda ()
+                   (keymap-set eshell-mode-map "C-c M-o" 'my/eshell-clear)))
   :custom
   (eshell-prompt-function
    (lambda ()
@@ -598,8 +586,7 @@ See `my/dired-run-command'."
   (eshell-load . eat-eshell-mode))
 
 (use-package magit
-  :commands
-  (magit)
+  :commands magit
   :hook
   (magit-mode . (lambda () (my/activate-keybinds t))))
 
@@ -610,15 +597,14 @@ See `my/dired-run-command'."
   (pinentry-start))
 
 (use-package bluetooth
-  :commands
-  (bluetooth-list-devices))
+  :commands bluetooth-list-devices)
 
 (use-package tldr
   :commands
   (tldr tldr-update-docs))
 
 (use-package wgrep
-  :commands (wgrep))
+  :commands wgrep)
 
 (use-package htmlize)
 (use-package jack)
@@ -655,8 +641,7 @@ and save an appropriate entry for `elfeed-feeds' to the kill ring."
       (backward-kill-sexp))))
 
 (use-package elfeed
-  :commands
-  (elfeed)
+  :commands elfeed
   :custom
   (elfeed-db-directory (expand-file-name "elfeed-db" user-emacs-directory))
   (elfeed-search-filter "@6-months-ago +unread")
@@ -674,8 +659,7 @@ and save an appropriate entry for `elfeed-feeds' to the kill ring."
   :defer t
   :custom
   (gnus-use-dribble-file nil)
-  :after
-  (gnus))
+  :after gnus)
 
 (defun my/play-album ()
   "Play album in directory at point via mpv.

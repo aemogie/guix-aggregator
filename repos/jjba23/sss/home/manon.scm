@@ -72,8 +72,7 @@
              (sss waybar)
              (sss rofi)
              (sss ssh)
-             (sss labwc)
-             (sss qutebrowser))
+             (sss labwc))
 
 (define sss-home-files-service
   (service home-files-service-type

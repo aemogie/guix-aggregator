@@ -18,6 +18,7 @@
 (use-modules (guix)
              (guix packages)
              (gnu packages guile)
+             (gnu packages emacs)
              (gnu packages guile-xyz))
 
-(packages->manifest (list guile-next guile-ares-rs))
+(packages->manifest (list guile-next guile-ares-rs emacs coreutils))

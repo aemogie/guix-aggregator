@@ -43,7 +43,6 @@ It is recommended to use tagged releases of SSS, as those are considered as stab
 - 🎨 Theme palettes that affect the entire system (ef-themes, solarized-light, everforest dark and light)
 - Labwc configuration (work-in progress)
 - Fish shell configuration
-- Conky configuration
 - Alacritty terminal emulator  
 - Foot terminal emulator
 - Waybar configuration and style
@@ -51,7 +50,6 @@ It is recommended to use tagged releases of SSS, as those are considered as stab
 - Mako configuration and style
 - multi-user Git configuration setup (work/personal)
 - Nyxt browser configuration  
-- Qutebrowser configuration
 - Fastfetch configuration
 - Multi user configuration
 

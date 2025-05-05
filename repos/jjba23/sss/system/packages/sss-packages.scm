@@ -22,8 +22,6 @@
   #:use-module (nongnu packages chrome)
   #:use-module (nongnu packages music)
   #:use-module (gnu services nix)
-  #:use-module (sss packages conky)
-  #:use-module (sss packages fonts)
   #:use-module (guix git-download)
   #:use-module (guix build-system font)
   #:use-module (guix build-system copy)
@@ -42,6 +40,7 @@
 (use-package-modules freedesktop
                      base
                      lxqt
+                     chromium
                      package-management
                      parallel
                      web
@@ -58,6 +57,7 @@
                      mpd
                      android
                      xfce
+                     engineering
                      cpp
                      python-xyz
                      commencement
@@ -155,19 +155,12 @@
   (list fontconfig
         font-google-roboto
         font-google-noto-emoji
-        font-recursive
-        font-microsoft-cascadia
-        font-victor-mono
-        font-jetbrains-mono
-        font-intel-one-mono
         font-adwaita
-        font-inter
         font-liberation
         font-dejavu
         font-microsoft-web-core-fonts
         font-awesome
         font-fira-code
-        font-monaspace
         font-google-noto))
 
 (define sss-normie-packages
@@ -176,7 +169,6 @@
 (define sss-wm-packages
   (list rofi-wayland
         fzf
-        sss-conky
 
         slurp
 
@@ -196,7 +188,6 @@
 
         ;; Wayland portals
         xdg-desktop-portal
-        ;; xdg-desktop-portal-wlr
         xdg-desktop-portal-hyprland
         xdg-desktop-portal-gtk
 
@@ -270,12 +261,7 @@
         xorg-server))
 
 (define sss-theme-packages
-  (list papirus-icon-theme
-        yaru-theme
-        numix-gtk-theme
-        delft-icon-theme
-        gnome-themes-standard
-        gnome-themes-extra
+  (list papirus-icon-theme yaru-theme numix-gtk-theme gnome-themes-standard
         adwaita-icon-theme))
 
 (define sss-latex-packages
@@ -309,8 +295,6 @@
         xz
 
         gtk
-
-        qutebrowser
 
         binutils
 
@@ -397,8 +381,8 @@
         stress
         stress-ng
 
-        ;; (sss/x86-only-pkg architecture "nyxt")
-        
+        (sss/x86-only-pkg architecture "nyxt")
+
         autoconf
         automake
 
@@ -415,9 +399,10 @@
 
         drill
         android-file-transfer
+        freecad
 
         (specification->package "gettext")
-
+        (specification->package "ungoogled-chromium-wayland")
         (sss/x86-only-pkg architecture "google-chrome-stable")
         (sss/x86-only-pkg architecture "reaper")
         (sss/x86-only-pkg architecture "stellarium")
@@ -452,46 +437,6 @@
 
 (define sss-emacs-packages
   (list emacs-jinx))
-
-(define-public hyprlock
-  (package
-    (name "hyprlock")
-    (version "0.7.0")
-    (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/hyprwm/hyprlock")
-             (commit (string-append "v" version))))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32 "03ivr5nsjwiwvpdxpjnldwawy8sx8qgwhs57242xkb0zz0w0gvsk"))))
-    (build-system cmake-build-system)
-    (arguments
-     (list
-      #:tests? #f
-      #:cmake cmake-3.30)) ;No tests.
-    (native-inputs (list gcc-14 pkg-config))
-    (inputs (list hyprlang
-                  hyprutils
-                  hyprgraphics
-                  sdbus-c++
-                  wayland
-                  wayland-protocols
-                  mesa
-                  libwebp
-                  (specification->package "libjpeg")
-                  libxkbcommon
-                  hyprwayland-scanner
-                  egl-wayland
-                  cairo
-                  linux-pam
-                  pango))
-    (home-page "https://github.com/hyprwm/hyprlock")
-    (synopsis "Hyprland's lock screen")
-    (description
-     "Hyprland's simple, yet multi-threaded and GPU-accelerated screen locking utility.")
-    (license license:bsd-3)))
 
 (define sss-hypr-packages
   (list hyprland hypridle grimblast hyprcursor hyprlock))
