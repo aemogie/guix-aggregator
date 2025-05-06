@@ -49,7 +49,6 @@ It is recommended to use tagged releases of SSS, as those are considered as stab
 - Rofi application launcher
 - Mako configuration and style
 - multi-user Git configuration setup (work/personal)
-- Nyxt browser configuration  
 - Fastfetch configuration
 - Multi user configuration
 

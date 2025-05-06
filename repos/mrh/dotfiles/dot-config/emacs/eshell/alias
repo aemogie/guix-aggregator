@@ -1,9 +1,11 @@
-alias ls ls -1A
+alias profile-emacs guix shell emacs-pgtk emacs-esup -- emacs --eval '(progn (setopt esup-depth 0) (esup))'
 
-alias dots stow --dotfiles -t $HOME -d $HOME/src dotfiles
-
-alias hr guix home reconfigure -L $HOME/src/dotfiles $HOME/src/dotfiles/mrh-guix/home/$MACHINE_ROLE/config.scm
+alias mw monero-wallet-cli --daemon-address=10.0.0.1:18081 --trusted-daemon
 
 alias sr sudo guix system reconfigure -L $HOME/src/dotfiles $HOME/src/dotfiles/mrh-guix/system/$MACHINE_ROLE/config.scm
 
-alias mw monero-wallet-cli --daemon-address=10.0.0.1:18081 --trusted-daemon
+alias hr guix home reconfigure -L $HOME/src/dotfiles $HOME/src/dotfiles/mrh-guix/home/$MACHINE_ROLE/config.scm
+
+alias dots stow --dotfiles -t $HOME -d $HOME/src dotfiles
+
+alias ls ls -1Ah

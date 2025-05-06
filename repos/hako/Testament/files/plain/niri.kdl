@@ -69,7 +69,7 @@ binds {
     Mod+L       { spawn "$$bin/swaylock$$" "--clock" "--daemonize" "--ignore-empty-password" "--image" "$$LOCKSCREEN$$"; }
     Mod+T       { spawn "$$bin/alacritty$$"; }
     Mod+Return  { spawn "emacsclient" "--create-frame" "--no-wait"; }
-    Mod+Shift+E { spawn "sh" "-c" "herd stop root && niri msg action quit"; }
+    Mod+Shift+E { spawn "sh" "-c" "herd stop root 2> /dev/null && niri msg action quit || niri msg action quit"; }
 }
 
 prefer-no-csd

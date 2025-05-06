@@ -1,5 +1,0 @@
-((:url "https://jointhefreeworld.org" :title "Join the Free World")
- (:url "https://byggsteg.jointhefreeworld.org" :title "Byggsteg")
- (:url "https://lucidplan.jointhefreeworld.org" :title "Lucidplan")
- (:url "https://wikimusic.jointhefreeworld.org" :title "Wikimusic")
- (:url "https://codeberg.org/jjba23" :title "Codeberg"))

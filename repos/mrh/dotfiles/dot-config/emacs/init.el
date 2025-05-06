@@ -6,7 +6,7 @@
 (use-package cus-edit
   :defer t
   :custom
-  (custom-file (expand-file-name "custom.el" user-emacs-directory)))
+  (custom-file null-device))
 
 (use-package files
   :custom
@@ -193,51 +193,46 @@ Otherwise set locally with `keymap-local-set'."
   :config
   (set-face-attribute 'default nil
                       :family "DejaVu Sans Mono"
-                      :height 125
-                      :slant 'normal)
+                      :height 125)
 
   (set-face-attribute 'fixed-pitch nil
                       :family "DejaVu Sans Mono"
-                      :height 125
-                      :slant 'normal)
+                      :height 125)
 
   (set-face-attribute 'variable-pitch nil
                       :family "DejaVu Serif"
-                      :height 150
-                      :slant 'normal)
-
-  (set-face-attribute 'italic nil
-                      :slant 'italic
-                      :underline nil))
+                      :height 150))
 
 (use-package face-remap
   :config
-  (defun my/enable-variable-pitch-mode ()
-    (unless (derived-mode-p 'html-mode 'nxml-mode)
-      (variable-pitch-mode 1)))
-  
   (defun my/remap-pitch-faces (_enable)
     (face-remap--remap-face 'fixed-pitch)
     (face-remap--remap-face 'variable-pitch))
   
   (advice-add 'text-scale-mode :after #'my/remap-pitch-faces))
 
+(defun my/enable-variable-pitch-mode (&optional exceptions)
+  "Enable `variable-pitch-mode' only in sensible major modes."
+  (unless (derived-mode-p 'html-mode 'nxml-mode 'org-mode 'markdown-mode)
+    (variable-pitch-mode 1)))
+
 (use-package text-mode
+  :defer t
   :config
-  (when (featurep 'face-remap)
-    (add-hook 'text-mode-hook #'my/enable-variable-pitch-mode)))
+  (add-hook 'text-mode-hook #'my/enable-variable-pitch-mode))
 
 (use-package nerd-icons-dired
   :hook
-  (dired-mode . nerd-icons-dired-mode))
+  (dired-mode . nerd-icons-dired-mode)
+  :after dired)
 
 (use-package ef-themes
   :custom
   (ef-themes-mixed-fonts t)
-  (ef-themes-to-toggle '(ef-autumn ef-eagle))
+  (ef-themes-to-toggle '(ef-eagle ef-autumn))
   :config
   (defun my/adjust-opacity (&optional theme)
-    "Make sure opacity is correct for given theme."
+    "Make sure opacity is correct for a given theme."
     (interactive)
     (let ((theme (if theme theme (ef-themes--current-theme))))
       (set-frame-parameter nil 'alpha-background
@@ -245,26 +240,24 @@ Otherwise set locally with `keymap-local-set'."
                                100
                              80))))
 
-  (defun my/fontify-org-buffers (&optional _theme)
-    "Fontify all org buffers.
-Helpful advice for face changing functions."
-    (interactive)
-    (save-current-buffer
-      (dolist (buffer (buffer-list))
-        (set-buffer buffer)
-        (when (eq major-mode 'org-mode)
-          (font-lock-fontify-buffer)))))
-
   (advice-add 'ef-themes-load-theme :after #'my/adjust-opacity)
-  (advice-add 'ef-themes-load-theme :after #'my/fontify-org-buffers)
 
-  (add-hook 'server-after-make-frame-hook
-            (lambda ()
-              (ef-themes-load-theme (ef-themes--current-theme))))
+  (with-eval-after-load 'server
+    (add-hook 'server-after-make-frame-hook
+              (lambda ()
+                (ef-themes-load-theme (ef-themes--current-theme)))))
+
+  (with-eval-after-load 'markdown-mode
+    (add-hook 'markdown-mode-hook #'variable-pitch-mode))
+
+  (with-eval-after-load 'elfeed
+    (add-hook 'elfeed-show-mode-hook #'variable-pitch-mode))
+
+  (with-eval-after-load 'org
+    (advice-add 'ef-themes-load-theme :after #'my/fontify-org-buffers)
+    (add-hook 'org-mode-hook #'variable-pitch-mode))
   
-  (ef-themes-select-dark 'ef-autumn)
-  :after
-  (frame font-lock))
+  (ef-themes-select-dark 'ef-autumn))
 
 (use-package orderless 
   :custom
@@ -302,8 +295,8 @@ Helpful advice for face changing functions."
   :after vertico)
 
 (use-package disable-mouse
-  :config
-  (global-disable-mouse-mode 1))
+  :hook
+  (after-init . global-disable-mouse-mode))
 
 (setopt scroll-conservatively 10000
         auto-window-vscroll nil)
@@ -355,16 +348,16 @@ See also `my/hide-buffer'."
 
 (setopt split-width-threshold 90)
 
+(use-package server
+  :commands server-start)
+
 (use-package delsel
   :config
   (delete-selection-mode 1))
 
 (put 'narrow-to-defun  'disabled nil)
 (put 'narrow-to-region 'disabled nil)
-
-(use-package page
-  :config
-  (put 'narrow-to-page 'disabled nil))
+(put 'narrow-to-page 'disabled nil)
 
 (use-package ispell
   :custom
@@ -377,7 +370,9 @@ See also `my/hide-buffer'."
   (writeroom-major-modes '(text-mode))
   (writeroom-major-modes-exceptions '(mhtml-mode nxml-mode))
   :config
-  (global-writeroom-mode 1))
+  (global-writeroom-mode 1)
+  (with-eval-after-load 'elfeed
+    (add-to-list 'writeroom-major-modes 'elfeed-show-mode)))
 
 (use-package prog-mode
   :config
@@ -389,27 +384,30 @@ See also `my/hide-buffer'."
 (use-package tabify
   :commands (tabify untabify)
   :config
-  (defun my/dired-tabify-files (&optional untabify)
-    "Run eitheir `tabify' or `untabify' on marked files in dired.
+  (with-eval-after-load 'dired
+    (defun my/dired-tabify-files (&optional untabify)
+      "Run eitheir `tabify' or `untabify' on marked files in dired.
 See `my/dired-run-command'."
-    (interactive "P")
-    (let ((tab-function (if untabify #'untabify #'tabify)))
-      (my/dired-run-command
-       (lambda ()
-         (funcall tab-function (point-min) (point-max)))))))
+      (interactive "P")
+      (let ((tab-function (if untabify #'untabify #'tabify)))
+        (my/dired-run-command
+         (lambda ()
+           (funcall tab-function (point-min) (point-max))))))))
 
 (use-package jsonrpc
   :config
   (fset #'jsonrpc--log-event #'ignore))
 
-(defun my/compile ()
-  (interactive)
-  (save-buffer)
-  (save-window-excursion (compile compile-command)))
+(use-package compile
+  :config
+  (defun my/compile ()
+    (interactive)
+    (save-buffer)
+    (save-window-excursion (compile compile-command)))
 
-(defun my/set-compile-command (command)
-  (set (make-local-variable 'compile-command)
-       command))
+  (defun my/set-compile-command (command)
+    (set (make-local-variable 'compile-command)
+         command)))
 
 (use-package paredit
   :hook
@@ -452,7 +450,7 @@ See `my/dired-run-command'."
   (sly-mrepl-history-file-
    (expand-file-name "sly/sly-mrepl-history" user-emacs-directory))
   :config
-  (when (featurep 'rainbow-delimiters)
+  (with-eval-after-load 'rainbow-delimiters
     (add-hook 'sly-mrepl-mode-hook 'rainbow-delimiters-mode)))
 
 (use-package agda2-mode
@@ -461,19 +459,21 @@ See `my/dired-run-command'."
   (add-to-list 'auto-mode-alist '("\\.lagda.md$" . agda2-mode)))
 
 (use-package go-mode
-  :hook
-  (go-mode . my/set-go-compile)
+  :defer t
   :bind
   (:map go-mode-map
-        ("C-c C-c" . my/compile)
         ("C-c C-r" . my/go-run))
   :config
-  (defun my/set-go-compile ()
-    (my/set-compile-command "go build"))
-  
   (defun my/go-run ()
     (interactive)
-    (shell-command "go run")))
+    (shell-command "go run"))
+  
+  (with-eval-after-load 'compile
+    (defun my/set-go-compile ()
+      (my/set-compile-command "go build"))
+
+    (add-hook 'go-mode-hook #'my/set-go-compile)
+    (keymap-set 'go-mode-map "C-c C-c" #'my/compile))  )
 
 (use-package org
   :defer t
@@ -499,6 +499,17 @@ See `my/dired-run-command'."
   (org-edit-src-content-indentation 0)
   (org-babel-python-command "python3")
   :config
+  (with-eval-after-load 'font-lock
+    (defun my/fontify-org-buffers (&optional _theme)
+      "Fontify all org buffers.
+Helpful advice for face changing functions."
+      (interactive)
+      (save-current-buffer
+        (dolist (buffer (buffer-list))
+          (set-buffer buffer)
+          (when (eq major-mode 'org-mode)
+            (font-lock-fontify-buffer))))))
+  
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)
@@ -515,7 +526,8 @@ See `my/dired-run-command'."
 
 (use-package org-bullets
   :hook
-  (org-mode . org-bullets-mode))
+  (org-mode . org-bullets-mode)
+  :after org)
 
 (use-package ox-beamer
   :after org)
@@ -582,13 +594,14 @@ See `my/dired-run-command'."
   (buffer-env-update buffer-env-reset))
 
 (use-package eat
+  :commands eat
   :hook
   (eshell-load . eat-eshell-mode))
 
 (use-package magit
   :commands magit
   :hook
-  (magit-mode . (lambda () (my/activate-keybinds t))))
+  (magit-mode . (lambda () (my/activate-keybinds :local))))
 
 (use-package pinentry
   :custom
@@ -611,12 +624,12 @@ See `my/dired-run-command'."
 
 (use-package eww
   :defer t
+  :commands eww
   :custom
   (eww-default-download-directory "~/downloads"))
 
 (use-package mu4e
-  :commands
-  (mu4e)
+  :commands mu4e
   :custom
   (mu4e-drafts-folder "/Drafts")
   (mu4e-sent-folder "/Sent")

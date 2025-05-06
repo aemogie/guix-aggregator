@@ -18,16 +18,9 @@
 
   (define %os
     (operating-system
-      (keyboard-layout <<keyboard-layout>>)
       (bootloader <<bootloader>>)
-      (kernel <<kernel>>)
-      (kernel-arguments (cons* <<kernel-argument>> %default-kernel-arguments))
-      (initrd <<initrd>>)
-      (firmware (list <<firmware>>))
       (file-systems (append <<file-systems>> %base-file-systems))
-      (swap-devices (list <<swap-space>>))
       (host-name "dorphine")
-      (timezone <<timezone>>)
       (users (cons* <<user>> %base-user-accounts))
       (packages (cons* <<package>> %base-packages))
       (services (cons* <<service>> %base-services))))
@@ -82,8 +75,13 @@
 #+end_src
 
 ** File Systems
-#+begin_src scheme :noweb-ref kernel-argument
-  "rootfstype=tmpfs"
+#+begin_src scheme :noweb-ref transformation
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (kernel-arguments
+       (cons "rootfstype=tmpfs"
+             (operating-system-user-kernel-arguments os)))))
 #+end_src
 
 #+begin_src scheme :noweb-ref file-systems
@@ -153,13 +151,17 @@
                   ("@Log"    . "/var/log")))))
 #+end_src
 
-#+begin_src scheme :noweb-ref swap-space
-  (swap-space
-    (target "/swap/swapfile")
-    (dependencies
-     (filter (file-system-mount-point-predicate "/swap")
-             file-systems))
-    (discard? #t))
+#+begin_src scheme :noweb-ref transformation
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (swap-devices
+       (list (swap-space
+               (target "/swap/swapfile")
+               (dependencies
+                (filter (file-system-mount-point-predicate "/swap")
+                        (operating-system-file-systems os)))
+               (discard? #t))))))
 #+end_src
 
 ** Keyboard Layout
@@ -169,8 +171,15 @@
                    #:options '("ctrl:nocaps"))
 #+end_src
 
-#+begin_src scheme :noweb-ref home-service
-  (service home-keyboard-service-type keyboard-layout)
+#+begin_src scheme :noweb yes :noweb-ref transformation
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (keyboard-layout <<keyboard-layout>>)))
+#+end_src
+
+#+begin_src scheme :noweb yes :noweb-ref home-service
+  (service home-keyboard-service-type <<keyboard-layout>>)
 #+end_src
 
 ** Console Font
@@ -193,6 +202,13 @@
 #+name: timezone
 #+begin_src scheme
   "Asia/Hong_Kong"
+#+end_src
+
+#+begin_src scheme :noweb yes :noweb-ref transformation
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (timezone <<timezone>>)))
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref home-environment-variable
@@ -311,7 +327,6 @@ https://github.com/fishinthecalculator/sops-guix
 
 * Kernel
 #+begin_src scheme :noweb-ref module
-  #:use-module (ice-9 format)
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (gnu packages linux)
@@ -319,29 +334,23 @@ https://github.com/fishinthecalculator/sops-guix
   #:use-module (nongnu packages linux)
 #+end_src
 
-#+name: kernel
-#+begin_src scheme
-  linux-6.14
-#+end_src
-
-#+name: firmware
-#+begin_src scheme
-  linux-firmware
-#+end_src
-
-#+name: initrd
-#+begin_src scheme
-  (lambda (file-systems . rest)
-    (apply microcode-initrd file-systems
-           #:microcode-packages (list amd-microcode)
-           rest))
-#+end_src
-
-#+begin_src scheme :noweb yes :noweb-ref kernel-argument
-  "kernel.sysrq=1"
-  "zswap.enabled=1"
-  "zswap.max_pool_percent=90"
-  (format #f "modprobe.blacklist=~@{~a,~}pcspkr,snd_pcsp" <<disabled-module>>)
+#+begin_src scheme :noweb-ref transformation
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (kernel linux-6.14)
+      (kernel-arguments
+       (cons* "kernel.sysrq=1"
+              "zswap.enabled=1"
+              "zswap.max_pool_percent=90"
+              "modprobe.blacklist=pcspkr,snd_pcsp"
+              (operating-system-user-kernel-arguments os)))
+      (firmware (list linux-firmware))
+      (initrd
+       (lambda (file-systems . rest)
+         (apply microcode-initrd file-systems
+                #:microcode-packages (list amd-microcode)
+                rest)))))
 #+end_src
 
 * Power Management
@@ -603,10 +612,12 @@ https://github.com/fishinthecalculator/sops-guix
   #:use-module (gnu packages linux)
   #:use-module (gnu packages qt)
   #:use-module (gnu packages terminals)
+  #:use-module (gnu packages video)
   #:use-module (gnu packages wm)
   #:use-module (gnu packages xdisorg)
   #:use-module (nongnu packages fonts)
   #:use-module (nongnu packages nvidia)
+  #:use-module (nongnu packages video)
   #:use-module (rosenthal packages wm)
   #:use-module (rosenthal packages xorg)
 #+end_src
@@ -615,41 +626,32 @@ https://github.com/fishinthecalculator/sops-guix
 通常用 nvidia-driver，出問題時換 nouveau。
 
 *** nvidia-driver
-:PROPERTIES:
-:ID:       15223ce6-bb6b-427b-b598-30998cdd9bdd
-:END:
-禁用 Linux 內核 nouveau 模塊。
-#+begin_src scheme :noweb-ref disabled-module
-  "nouveau"
-#+end_src
-
-啓用 DRM KMS，Wayland 環境必要，詳見驅動自述文檔。
-#+begin_src scheme :noweb-ref kernel-argument
-  "nvidia_drm.modeset=1"
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (service nvidia-service-type)
-#+end_src
-
 #+begin_src scheme :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (services
-       (modify-services (operating-system-user-services os)
-         (guix-home-service-type
-          config => (with-transformation
-                        (package-input-grafting
-                         `((,mesa . ,nvda)
-                           (,nvidia-driver . ,nvda)))
-                      config))))))
+  (let ((driver nvda))
+    (lambda (os)
+      (operating-system
+        (inherit os)
+        (kernel-arguments
+         (cons* "modprobe.blacklist=nouveau"
+                ;; 啓用 DRM KMS，Wayland 環境必要，詳見驅動自述文檔。
+                "nvidia_drm.modeset=1"
+                (operating-system-user-kernel-arguments os)))
+        (services
+         (cons (service nvidia-service-type)
+               (modify-services (operating-system-user-services os)
+                 (guix-home-service-type
+                  config => (with-transformation
+                                (package-input-grafting
+                                 `((,ffmpeg . ,ffmpeg-nvenc)
+                                   (,mesa . ,driver)
+                                   (,nvidia-driver . ,driver)))
+                              config))))))))
 #+end_src
 
 *** nouveau
 To use NVK, mesa should be installed into a profile.
-#+begin_src scheme #noweb-ref home-package
-  mesa
+#+begin_src scheme :noweb-ref home-package
+  #;mesa
 #+end_src
 
 ** Wayland
@@ -856,7 +858,6 @@ To use NVK, mesa should be installed into a profile.
 * Emacs
 #+begin_src scheme :noweb-ref module
   #:use-module (gnu home services emacs)
-  #:use-module (gnu packages base)
   #:use-module (gnu packages cpp)
   #:use-module (gnu packages emacs)
   #:use-module (gnu packages emacs-xyz)
@@ -1506,10 +1507,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 * Miscellaneous
 #+begin_src scheme :noweb-ref module
   #:use-module (guix utils)
-  #:use-module (gnu system hurd)
   #:use-module (gnu services mcron)
-  #:use-module (gnu services ssh)
-  #:use-module (gnu services virtualization)
   #:use-module (rosenthal services bittorrent)
   #:use-module (rosenthal services file-systems)
   #:use-module (gnu home services mcron)
@@ -1528,11 +1526,9 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
   #:use-module (gnu packages rust-apps)
   #:use-module (gnu packages security-token)
   #:use-module (gnu packages version-control)
-  #:use-module (gnu packages video)
   #:use-module (gnu packages wm)
   #:use-module (gnu packages xdisorg)
   #:use-module (nongnu packages game-client)
-  #:use-module (nongnu packages video)
   #:use-module (rosenthal packages rust-apps)
 #+end_src
 
@@ -1611,15 +1607,6 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
              #~(make-forkexec-constructor
                 (list #$(file-append fcitx5 "/bin/fcitx5"))))
             (stop #~(make-kill-destructor)))))
-#+end_src
-
-** ffmpeg
-An extra graft is done in [[id:15223ce6-bb6b-427b-b598-30998cdd9bdd][nvidia-driver section]], since =nv-codec-headers= dependents on =nvidia-driver=, which must be grafted to a functional driver bundle.
-
-#+begin_src scheme :noweb-ref definition
-  (define replace-ffmpeg
-    (package-input-grafting
-     `((,ffmpeg . ,ffmpeg-nvenc))))
 #+end_src
 
 ** gammastep
@@ -1729,14 +1716,14 @@ An extra graft is done in [[id:15223ce6-bb6b-427b-b598-30998cdd9bdd][nvidia-driv
 
 ** mpv
 #+begin_src scheme :noweb-ref home-package
-  (replace-ffmpeg mpv/dolly)
+  mpv/dolly
 #+end_src
 
 [[../files/dotfiles/.config/mpv/mpv.conf][~/.config/mpv/mpv.conf]]
 
 ** obs
 #+begin_src scheme :noweb-ref home-package
-  (replace-ffmpeg obs)
+  obs
   obs-wlrobs
 #+end_src
 

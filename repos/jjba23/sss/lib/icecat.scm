@@ -15,12 +15,12 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
-(define-module (sss nyxt)
+(define-module (sss icecat)
   #:use-module (gnu)
-  #:use-module (sss palette))
+  #:use-module (sss process))
 
 (begin
-  (define* (sss-nyxt-svc)
-    `((".config/nyxt/config.lisp" ,(local-file "./nyxt/config.lisp"))
-      (".config/nyxt/bookmarks.lisp" ,(local-file "./nyxt/bookmarks.lisp"))))
-  (export sss-nyxt-svc))
+  (define* (sss-icecat-svc)
+    `((".mozilla/icecat/profiles.ini" ,(local-file "icecat/profiles.ini"))
+      (".mozilla/icecat/sss/user.js" ,(local-file "icecat/user.js"))))
+  (export sss-icecat-svc))

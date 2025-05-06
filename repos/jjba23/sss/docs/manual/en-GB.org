@@ -48,7 +48,6 @@ It is recommended to use tagged releases of SSS, as those are considered as stab
 - Rofi application launcher
 - Mako configuration and style
 - multi-user Git configuration setup (work/personal)
-- Nyxt browser configuration
 - Fastfetch configuration
 - Multi user configuration
 
@@ -562,9 +561,9 @@ This is currently done with hyprpaper.
 
 TODO: allow more dynamics and often changing of wallpapers, also random wallpaper script (but within theme)
 
-* Nyxt browser
+* Nyxt browser (experimental)
 
-Nyxt is a fantastic web browser, infinitely extensible, and in Emacs-spirit. It is a great fit for SSS.
+Nyxt is a fantastic web browser, infinitely extensible, and in Emacs-spirit. It is a great fit for SSS. I am currently experimenting with it, since it's not production-ready yet. I for now am content with GNU IceCat and Ungoogle Chromium.
 
 Find more about Nyxt here: https://nyxt.atlas.engineer/
 
@@ -727,7 +726,52 @@ A: Try with ~gpg --pinentry-mode loopback --full-gen-key~. Otherwise try other o
 
 -----
 
-* WM keybindings
+* SSS project
+
+Contributing to free software is a uniquely beautiful act because it embodies principles of generosity, collaboration, and empowerment.
+
+We welcome everyone to feel invited to the SSS Project, and encourage active contribution in all forms, to improve it and/or suggest improvements, brainstorm with me, make it more modular/flexible, etc, feel free to contact me <jjbigorra@gmail.com> to chat, discuss or report feedback.
+
+Find here the Backlog and Kanban boards for SSS: https://lucidplan.jointhefreeworld.org/tickets/sss
+
+------
+
+* Postume: Inheriting an SSS/GNU system
+
+While we may not like thinking about these situations, life has an expiry date for us all, and as such we should prepare for a day when we are no more.
+
+
+Instructions are crucial in this case because the computer systems we posess might hold valuable or sentimental information.
+
+Without guidance, it could be difficult to figure out how to access these computers, specially a somewhat niche setup like SSS.
+
+Our loved ones can hopefully thanks to this section of the manual understand how to use the computer, retrieve important files, or preserve their work.
+
+Firstly, get a hold of as many passwords as you can and account information, before turning on the device.
+
+Proceed to turn on the device. If immediately a password prompt appears, this is likely a system-wide BIOS password, which you will need to unlock to even use the computer.
+
+Choose the boot option for Guix/GNU/Linux if the choice is presented. If multiple options are shown, just press ENTER to choose the default option or use the arrow keys to move around the GRUB boot menu. If the machine struggles to boot, something like Universal Rescue Disk could come in handy.
+
+Once you boot into SSS (Guix + GNU + Linux), you will see a fast succession of letters in a black screen, wait a bit until you see appear something like:
+
+This is the GNU system!
+login:
+
+At this point you should type the username of the session you want to log into (generally this is short and all lowercase letters), followed by ENTER.
+
+Then you will get a password prompt. Type the password and press ENTER. Don't worry if you don't see any * characters for the password, your typing worked, this is just a security measure.
+
+If the details were not correct, you will get prompted to login again.
+
+If they were correct, then you will enter the user's shell, at which point you could type ~gui~ followed by ENTER to start a graphical user interface. If it doesn't work, try ~hyprland~ or ~labwc~.
+
+You should have then booted into a more familiar environment. If the user you logged into has the Hyprland session, the keyboard bindings are documented in sections above. You could for example use ~Super+/~ to open the fuzzy application finder (Super is often the "Windows" or "command" key).
+
+Good luck!
+
+------
+* Window Manager keybindings
 
 Find here the Hyprland keybindings. I usually use these bindings in other WMs too.
 Labwc session has a a more windows-like style of bindings.
@@ -752,10 +796,10 @@ Labwc session has a a more windows-like style of bindings.
 | keybind | command                                     |
 |---------+---------------------------------------------|
 | ~s-/~     | Launch application fuzzy finder menu (Rofi) |
-| ~s-i~     | Open a Web Browser (Nyxt)                   |
-| ~s-S-i~   | Open a bloated Web Browser (Chrome)         |
-| ~s-t~     | Open a terminal emulator (Foot)             |
-| ~s-e~     | Open text editor (Emacs)                    |
+| ~s-i~     | Open a Web Browser (IceCat)             |
+| ~s-S-i~   | Open a bloated Web Browser (Ungoogled Chromium) |
+| ~s-t~     | Open a terminal emulator (Alacritty)    |
+| ~s-e~     | Open text editor (Emacs GUI Client)         |
 | ~s--~     | Open password manager (1password)           |
 |         |                                             |
 |---------+---------------------------------------------|
@@ -772,7 +816,7 @@ Labwc session has a a more windows-like style of bindings.
 
 ------
 
-* Emacs keybindings
+* Some relevant Emacs keybindings
 
 ** General non-vanilla bindings
 
@@ -852,81 +896,6 @@ Labwc session has a a more windows-like style of bindings.
 
 ----------
 
-* SSS project
-
-Contributing to free software is a uniquely beautiful act because it embodies principles of generosity, collaboration, and empowerment.
-
-We welcome everyone to feel invited to the SSS Project, and encourage active contribution in all forms, to improve it and/or suggest improvements, brainstorm with me, make it more modular/flexible, etc, feel free to contact me <jjbigorra@gmail.com> to chat, discuss or report feedback.
-
-Find here the Backlog and Kanban boards for SSS: https://lucidplan.jointhefreeworld.org/tickets/sss
-
-------
-
-* Glossary
-
-- **GNU/Linux**: A free and open-source operating system combining the GNU system and the Linux kernel.
-- **Lisp Machine**: A type of computer optimized for running Lisp, a family of programming languages.
-- **GNU Guix**: A functional package management tool and standalone distribution of the GNU system.
-- **REPL (Read Eval Print Loop)**: An interactive programming environment for evaluating code and seeing immediate results.
-- **TTY (TeleTYpewriter)**: A text terminal for interacting with a computer system.
-- **Scheme**: A Lisp dialect often used for scripting in GNU Guix.
-- **Wayland**: A protocol for a display server, often used as a modern alternative to X11.
-- **Hyprland**: A Wayland compositor with great and smooth graphics.
-- **PipeWire**: A modern multimedia framework for managing audio and video streams.
-- **Elpaca**: A package manager for Emacs that supports advanced configuration options.
-- **Libre**: Free and open-source software that respects user freedom.
-
-------
-
-* Acronyms
-
-- **SSS**: Supreme Sexp System
-- **GNU**: GNU's Not Unix
-- **OS**: Operating System
-- **REPL**: Read Eval Print Loop
-- **TTY**: TeleTYpewriter
-- **X11**: The X Window System
-- **DBus**: Desktop Bus (inter-process communication system)
-- **RTC**: Real-Time Communication
-
-
-------
-
-* Postume: Inheriting an SSS/GNU system
-
-While we may not like thinking about these situations, life has an expiry date for us all, and as such we should prepare for a day when we are no more.
-
-
-Instructions are crucial in this case because the computer systems we posess might hold valuable or sentimental information.
-
-Without guidance, it could be difficult to figure out how to access these computers, specially a somewhat niche setup like SSS.
-
-Our loved ones can hopefully thanks to this section of the manual understand how to use the computer, retrieve important files, or preserve their work.
-
-Firstly, get a hold of as many passwords as you can and account information, before turning on the device.
-
-Proceed to turn on the device. If immediately a password prompt appears, this is likely a system-wide BIOS password, which you will need to unlock to even use the computer.
-
-Choose the boot option for Guix/GNU/Linux if the choice is presented. If multiple options are shown, just press ENTER to choose the default option or use the arrow keys to move around the GRUB boot menu. If the machine struggles to boot, something like Universal Rescue Disk could come in handy.
-
-Once you boot into SSS (Guix + GNU + Linux), you will see a fast succession of letters in a black screen, wait a bit until you see appear something like:
-
-This is the GNU system!
-login:
-
-At this point you should type the username of the session you want to log into (generally this is short and all lowercase letters), followed by ENTER.
-
-Then you will get a password prompt. Type the password and press ENTER. Don't worry if you don't see any * characters for the password, your typing worked, this is just a security measure.
-
-If the details were not correct, you will get prompted to login again.
-
-If they were correct, then you will enter the user's shell, at which point you could type ~gui~ followed by ENTER to start a graphical user interface. If it doesn't work, try ~hyprland~ or ~labwc~.
-
-You should have then booted into a more familiar environment. If the user you logged into has the Hyprland session, the keyboard bindings are documented in sections above. You could for example use ~Super+/~ to open the fuzzy application finder (Super is often the "Windows" or "command" key).
-
-Good luck!
-
-------
 * Software engineering
 
 ** Development environments, manifests and flakes
@@ -934,6 +903,10 @@ Good luck!
 I would encourage that all your software projects have a reproducible build process, and preferably use *Guix* or Nix to declare a ~manifest.scm~ or ~flake.nix~.
 
 This way, and leveraging ~direnv~ and ~.envrc~ we can enter in our editor (Emacs, VSCode, IntelliJ...) in a reproducible build environment and dependencies.
+
+*** Guile Scheme hacking
+
+I can't think of a better setup than using Emacs, with good paren matching, smartparens, paredit if you like. Then you can use a nice Geiser install or as I do, Arei and Ares on Emacs. I usually like to use watchexec as well for hot reloading.
 
 *** Guix and manifests
 
@@ -1072,4 +1045,33 @@ Assuming you place the Nix flake above at the root of a repo, at ~flake.nix~, yo
 You will then just do a one time ~direnv allow~ and now your editor will magically load the right env variables and tools from the environment.
 
 
+* Glossary
+
+- **GNU/Linux**: A free and open-source operating system combining the GNU system and the Linux kernel.
+- **Lisp Machine**: A type of computer optimized for running Lisp, a family of programming languages.
+- **GNU Guix**: A functional package management tool and standalone distribution of the GNU system.
+- **REPL (Read Eval Print Loop)**: An interactive programming environment for evaluating code and seeing immediate results.
+- **TTY (TeleTYpewriter)**: A text terminal for interacting with a computer system.
+- **Scheme**: A Lisp dialect often used for scripting in GNU Guix.
+- **Wayland**: A protocol for a display server, often used as a modern alternative to X11.
+- **Hyprland**: A Wayland compositor with great and smooth graphics.
+- **PipeWire**: A modern multimedia framework for managing audio and video streams.
+- **Elpaca**: A package manager for Emacs that supports advanced configuration options.
+- **Libre**: Free and open-source software that respects user freedom.
+
+------
+
+* Acronyms
+
+- **SSS**: Supreme Sexp System
+- **GNU**: GNU's Not Unix
+- **OS**: Operating System
+- **REPL**: Read Eval Print Loop
+- **TTY**: TeleTYpewriter
+- **X11**: The X Window System
+- **DBus**: Desktop Bus (inter-process communication system)
+- **RTC**: Real-Time Communication
+
+
+------
 

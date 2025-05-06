@@ -37,131 +37,127 @@
   #:use-module ((guix licenses)
                 #:prefix license:))
 
-(use-package-modules freedesktop
+(use-package-modules admin
+                     android
+                     aspell
+                     astronomy
+                     audio
+                     autotools
                      base
-                     lxqt
+                     bash
+                     bittorrent
                      chromium
+                     cmake
+                     commencement
+                     compression
+                     containers
+                     cpp
+                     cups
+                     curl
+                     databases
+                     disk
+                     display-managers
+                     emacs
+                     emacs-xyz
+                     enchant
+                     engineering
+                     file-systems
+                     firmware
+                     fonts
+                     fontutils
+                     freedesktop
+                     games
+                     gcc
+                     gdb
+                     gettext
+                     gimp
+                     gl
+                     glib
+                     gnome
+                     gnome-xyz
+                     gnupg
+                     gnuzilla
+                     golang
+                     graphics
+                     gsasl
+                     gtk
+                     guile
+                     guile-xyz
+                     haskell-apps
+                     image
+                     image
+                     image-viewers
+                     imagemagick
+                     inkscape
+                     kde
+                     kde-frameworks
+                     kde-plasma
+                     kde-systemtools
+                     kde-utils
+                     kerberos
+                     libreoffice
+                     linux
+                     lisp
+                     lisp-xyz
+                     llvm
+                     lua
+                     lxde
+                     lxqt
+                     mpd
+                     multiprecision
+                     music
+                     ncurses
+                     networking
+                     node
+                     nss
                      package-management
                      parallel
-                     web
-                     gl
-                     texinfo
-                     cmake
-                     vnc
-                     autotools
                      perl
-                     linux
-                     golang
-                     gnuzilla
-                     ncurses
-                     mpd
-                     android
-                     xfce
-                     engineering
-                     cpp
-                     python-xyz
-                     commencement
-                     gnupg
-                     llvm
-                     image
-                     multiprecision
-                     kde
-                     gcc
-                     firmware
-                     graphics
-                     aspell
-                     gdb
-                     rust-apps
-                     inkscape
-                     texlive
-                     gimp
-                     python-web
-                     python
-                     xdisorg
-                     tls
-                     imagemagick
-                     curl
-                     cups
-                     terminals
-                     shells
-                     video
-                     image
-                     compression
-                     sqlite
-                     disk
-                     glib
-                     networking
-                     fontutils
-                     lisp
-                     image-viewers
-                     gnome-xyz
-                     guile-xyz
-                     guile
-                     bash
-                     nss
                      pkg-config
-                     games
-                     qt
-                     virtualization
                      polkit
-                     gtk
-                     kde-plasma
-                     kde-frameworks
-                     kde-utils
-                     wm
-                     compton
-                     ssh
-                     vpn
-                     version-control
-                     fonts
                      pulseaudio
-                     libreoffice
-                     lisp-xyz
-                     web-browsers
-                     audio
-                     kde-systemtools
-                     kde-multimedia
-                     music
-                     display-managers
-                     file-systems
-                     tree-sitter
-                     lua
-                     xorg
-                     admin
+                     python
+                     python-web
+                     python-xyz
+                     qt
+                     rust-apps
                      screen
-                     node
-                     emacs
-                     lxde
-                     vim
-                     astronomy
+                     shells
+                     shellutils
+                     sqlite
+                     ssh
+                     terminals
+                     texinfo
+                     texlive
                      text-editors
-                     enchant
-                     emacs-xyz
-                     containers
-                     haskell-apps
-                     gnome
-                     databases
-                     bittorrent
-                     shellutils)
+                     tls
+                     tree-sitter
+                     version-control
+                     video
+                     vim
+                     virtualization
+                     vnc
+                     vpn
+                     web
+                     web-browsers
+                     wm
+                     xdisorg
+                     xfce
+                     xorg)
 
 (load "../../per-host.scm")
 
-(define (sss/x86-only-pkg architecture pkg)
-  (if (string-prefix? "x86_64" architecture)
-      (specification->package pkg)
-      (specification->package "curl")))
-
 (define sss-font-packages
-  (list fontconfig
-        font-google-roboto
-        font-google-noto-emoji
-        font-adwaita
-        font-liberation
-        font-dejavu
-        font-microsoft-web-core-fonts
+  (list font-adwaita
         font-awesome
+        font-dejavu
         font-fira-code
-        font-google-noto))
+        font-google-noto
+        font-google-noto-emoji
+        font-google-roboto
+        font-liberation
+        font-microsoft-web-core-fonts
+        fontconfig))
 
 (define sss-normie-packages
   (list labwc))
@@ -261,8 +257,8 @@
         xorg-server))
 
 (define sss-theme-packages
-  (list papirus-icon-theme yaru-theme numix-gtk-theme gnome-themes-standard
-        adwaita-icon-theme))
+  (list adwaita-icon-theme gnome-themes-standard numix-gtk-theme
+        papirus-icon-theme yaru-theme))
 
 (define sss-latex-packages
   (list texinfo texlive))
@@ -277,140 +273,96 @@
   (list qtwayland qt6ct qtsvg))
 
 (define* (sss-other-system-packages #:key architecture)
-  (list flatpak
-        pipewire
-        nginx
-        watchexec
-        remmina
-        pavucontrol
-
-        geany
-
-        tumbler
-
-        gnome-font-viewer
-        gnome-characters
-        gnome-clocks
-
-        xz
-
-        gtk
-
-        binutils
-
-        gnome-calculator
-        cheese
-        gnome-system-monitor
-        evince
-
-        qemu
-        inkscape
-        obs
-        libreoffice
-        gimp
-        libwebp
-        feh
-
-        gparted
-
-        imagemagick
-
-        lm-sensors
-        exfatprogs
-        exfat-utils
-        fuse-exfat
-        tmon
-        flameshot
-
-        parallel
-
-        thunar
-        sysstat
-
-        pinentry
-        pinentry-tty
-        emacs-pinentry
-
-        powertop
-        ffmpegthumbs
-        xarchiver
-
-        blender
-
-        gnome-calendar
-
-        sqlitebrowser
-        direnv
-        netcat
-        jq
-
-        bsd-games
-
-        power-profiles-daemon
-
-        gthumb
-
-        light
-
-        gdb
-
-        transmission
-        transmission-remote-gtk
-
-        xf86-video-fbdev
-        xf86-input-libinput
-        lxsession
-        pamixer
-
-        (sss/x86-only-pkg architecture "ghcid")
-        httpie
-        fastfetch
-        cmatrix
-
-        pkg-config
-        fyi
-        bluez
-        blueman
-        hplip
-        desktop-file-utils
-
-        libltdl
-        libtool
-        zlib
-        ovmf-x86-64
-        stress
-        stress-ng
-
-        (sss/x86-only-pkg architecture "nyxt")
-
+  (list android-file-transfer
         autoconf
         automake
-
-        libtool
-
-        perl
-
-        youtube-dl
+        binutils
+        blender
+        blueman
+        bluez
+        bsd-games
+        cheese
+        cmatrix
+        desktop-file-utils
+        direnv
+        drill
+        emacs-pinentry
+        evince
+        exfat-utils
+        exfatprogs
+        fastfetch
+        feh
+        (specification->package "ffmpegthumbs")
+        flameshot
+        flatpak
+        freecad
+        fuse-exfat
+        fyi
+        fyi
+        gdb
+        geany
+        (specification->package "gettext")
+        ghcid
+        gimp
+        gnome-calculator
+        gnome-calendar
+        gnome-characters
+        gnome-clocks
+        gnome-font-viewer
+        gnome-system-monitor
+        gparted
+        gthumb
+        gtk
+        hplip
+        httpie
+        imagemagick
+        inkscape
+        jq
+        libreoffice
+        light
+        lm-sensors
+        lxsession
         mpv
         mpv-mpris
-        unixodbc
-        tree
-        fyi
-
-        drill
-        android-file-transfer
-        freecad
-
-        (specification->package "gettext")
-        (specification->package "ungoogled-chromium-wayland")
-        (sss/x86-only-pkg architecture "google-chrome-stable")
-        (sss/x86-only-pkg architecture "reaper")
-        (sss/x86-only-pkg architecture "stellarium")
-        (sss/x86-only-pkg architecture "virt-manager")
-
         nautilus
-
-        xxd))
+        netcat
+        nginx
+        obs
+        ovmf-x86-64
+        pamixer
+        parallel
+        pavucontrol
+        perl
+        pinentry
+        pinentry-tty
+        pipewire
+        pkg-config
+        power-profiles-daemon
+        powertop
+        qemu
+        reaper
+        remmina
+        sqlitebrowser
+        stellarium
+        stress
+        stress-ng
+        sysstat
+        thunar
+        tmon
+        transmission
+        transmission-remote-gtk
+        tree
+        tumbler
+        (specification->package "ungoogled-chromium-wayland")
+        unixodbc
+        virt-manager
+        watchexec
+        xarchiver
+        xf86-input-libinput
+        xf86-video-fbdev
+        xxd
+        xz
+        youtube-dl))
 
 (define sss-container-packages
   (list podman-compose passt))
@@ -424,13 +376,13 @@
         network-manager-openvpn))
 
 (define sss-dict-packages
-  (list enchant
-        aspell
+  (list aspell
+        aspell-dict-ca
+        aspell-dict-en
+        aspell-dict-es
         aspell-dict-nl
         aspell-dict-pt-pt
-        aspell-dict-es
-        aspell-dict-en
-        aspell-dict-ca))
+        enchant))
 
 (define sss-shell-packages
   (list fish))
@@ -439,7 +391,22 @@
   (list emacs-jinx))
 
 (define sss-hypr-packages
-  (list hyprland hypridle grimblast hyprcursor hyprlock))
+  (list grimblast hyprland hypridle hyprcursor hyprlock))
+
+(define sss-libs-packages
+  (list aria2
+        libevdev
+        libinput
+        libltdl
+        libtool
+        libwebp
+        libxkbcommon
+        libxkbfile
+        mit-krb5
+        nss
+        wmctrl
+        xdotool
+        zlib))
 
 ;; SYSTEM PACKAGES
 ;;
@@ -463,6 +430,7 @@
             sss-browser-packages
             sss-latex-packages
             sss-shell-packages
+            sss-libs-packages
             sss-dict-packages
             sss-net-packages
             sss-theme-packages))

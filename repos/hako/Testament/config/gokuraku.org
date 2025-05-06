@@ -19,14 +19,10 @@
   (define %os
     (operating-system
       (bootloader <<bootloader>>)
-      (kernel <<kernel>>)
-      (kernel-arguments (cons* <<kernel-argument>> %default-kernel-arguments))
       (file-systems (append <<file-systems>> %base-file-systems))
-      (swap-devices (list <<swap-space>>))
       (host-name "gokuraku")
-      (timezone <<timezone>>)
-      (packages (cons* <<package>> %base-packages))
       (users (cons* <<user>> %base-user-accounts))
+      (packages (cons* <<package>> %base-packages))
       (services (cons* <<service>> %base-services))))
 
   ((compose <<transformation>>)
@@ -77,16 +73,27 @@
                  ("@Data"   . "/var/lib")))))
 #+end_src
 
-#+begin_src scheme :noweb-ref swap-space
-  (swap-space
-    (target (uuid "62da8bb4-d578-40f7-be9f-f76e7d7c1a91"))
-    (discard? #t))
+#+begin_src scheme :noweb-ref transformation
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (swap-devices
+       (list (swap-space
+               (target (uuid "62da8bb4-d578-40f7-be9f-f76e7d7c1a91"))
+               (discard? #t))))))
 #+end_src
 
 ** Timezone
 #+name: timezone
 #+begin_src scheme
   "Asia/Hong_Kong"
+#+end_src
+
+#+begin_src scheme :noweb yes :noweb-ref transformation
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (timezone <<timezone>>)))
 #+end_src
 
 ** Users
@@ -148,21 +155,16 @@ No need to install less used ones, prefer ‘guix shell’.
   #:use-module (gnu packages linux)
 #+end_src
 
-#+name: kernel
-#+begin_src scheme
-  linux-libre-lts
-#+end_src
-
-#+begin_src scheme :noweb-ref kernel-argument
-  "kernel.sysrq=0"
-  "zswap.enabled=1"
-  "zswap.max_pool_percent=90"
-#+end_src
-
 #+begin_src scheme :noweb-ref transformation
   (lambda (os)
     (operating-system
       (inherit os)
+      (kernel linux-libre-lts)
+      (kernel-arguments
+       (cons* "kernel.sysrq=0"
+              "zswap.enabled=1"
+              "zswap.max_pool_percent=90"
+              (operating-system-user-kernel-arguments os)))
       (services
        (modify-services (operating-system-user-services os)
          (sysctl-service-type

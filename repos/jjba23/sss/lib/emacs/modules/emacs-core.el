@@ -71,7 +71,8 @@
          ("C-c w r" . sss-project-start-repl-process)
          ("C-c w f" . sss-project-fmt)
          ("C-c w t" . sss-project-start-test)
-         ("C-c w d" . sss-project-start-dev))
+         ("C-c w d" . sss-project-start-dev)
+         ("C-c t a" . sort-lines))
   :hook ((text-mode . visual-line-mode))
   :config  
   (setq-default line-spacing 6
@@ -127,6 +128,7 @@
   (global-hl-line-mode +1)
 
   (add-to-list 'after-make-frame-functions 'new-frame-setup t))
+
 
 (provide 'sss/emacs-self)
 
