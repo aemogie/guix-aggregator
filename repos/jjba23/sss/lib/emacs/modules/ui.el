@@ -79,56 +79,57 @@ According to size, color and font family"
     (set-face-attribute 'variable-pitch nil 
 		        :font sss-font-sans
                         :height (tekengrootte-mk-font-size 1.05))
-
-    (set-face-attribute 'org-table nil 
-		        :height (tekengrootte-mk-font-size 1.05)
-		        :font sss-font-mono)
     
-    (set-face-attribute 'org-default nil 
-		        :height (tekengrootte-mk-font-size 1.05)
-		        :font sss-font-mono)
     (set-face-attribute 'button nil :background 'unspecified
                         :weight 'bold)
-    (set-face-attribute 'org-block nil
-		        :font sss-font-mono
-                        :height (tekengrootte-mk-font-size 1.05))
+
     (set-face-attribute 'font-lock-doc-face nil
                         :foreground (ef-themes-get-color-value 'yellow-faint))
-    (set-face-attribute 'org-code nil                       
-		        :font sss-font-mono
-                        :height (tekengrootte-mk-font-size 1.05))
-    (set-face-attribute 'org-verbatim nil                       
-		        :font sss-font-mono
-                        :height (tekengrootte-mk-font-size 1.05))
-    (set-face-attribute 'org-document-title nil 
-		        :height (tekengrootte-mk-font-size 1.2))
-    (set-face-attribute 'org-level-1 nil
-                        :font sss-font-sans
-                        :weight 'bold
-		        :height (tekengrootte-mk-font-size 1.2))
-    (set-face-attribute 'org-level-2 nil
-                        :font sss-font-sans
-                        :weight 'bold
-		        :height (tekengrootte-mk-font-size 1.2))
-    (set-face-attribute 'org-level-3 nil
-                        :font sss-font-sans
-                        :weight 'bold
-		        :height (tekengrootte-mk-font-size 1.1))
-    (set-face-attribute 'org-level-4 nil
-                        :font sss-font-sans
-                        :weight 'bold
-		        :height (tekengrootte-mk-font-size 1.1))
-    (set-face-attribute 'org-level-5 nil
-                        :font sss-font-sans
-                        :weight 'bold
-		        :height (tekengrootte-mk-font-size 1.0))
+
+    (ignore-errors
+      (set-face-attribute 'org-table nil 
+		          :height (tekengrootte-mk-font-size 1.05)
+		          :font sss-font-mono)
+      (set-face-attribute 'org-default nil 
+		          :height (tekengrootte-mk-font-size 1.05)
+		          :font sss-font-mono)
+      (set-face-attribute 'org-block nil
+		          :font sss-font-mono
+                          :height (tekengrootte-mk-font-size 1.05))
+      (set-face-attribute 'org-code nil                       
+		          :font sss-font-mono
+                          :height (tekengrootte-mk-font-size 1.05))
+      (set-face-attribute 'org-verbatim nil                       
+		          :font sss-font-mono
+                          :height (tekengrootte-mk-font-size 1.05))
+      (set-face-attribute 'org-document-title nil 
+		          :height (tekengrootte-mk-font-size 1.2))
+      (set-face-attribute 'org-level-1 nil
+                          :font sss-font-sans
+                          :weight 'bold
+		          :height (tekengrootte-mk-font-size 1.2))
+      (set-face-attribute 'org-level-2 nil
+                          :font sss-font-sans
+                          :weight 'bold
+		          :height (tekengrootte-mk-font-size 1.2))
+      (set-face-attribute 'org-level-3 nil
+                          :font sss-font-sans
+                          :weight 'bold
+		          :height (tekengrootte-mk-font-size 1.1))
+      (set-face-attribute 'org-level-4 nil
+                          :font sss-font-sans
+                          :weight 'bold
+		          :height (tekengrootte-mk-font-size 1.1))
+      (set-face-attribute 'org-level-5 nil
+                          :font sss-font-sans
+                          :weight 'bold
+		          :height (tekengrootte-mk-font-size 1.0)))
     (ignore-errors
       (set-face-attribute 'keycast-key nil                       
 		          :font sss-font-mono
                           :background 'unspecified
                           :box nil
-                          :height (tekengrootte-mk-font-size 0.8)))
-    (ignore-errors
+                          :height (tekengrootte-mk-font-size 0.8))
       (set-face-attribute 'keycast-command nil                       
 		          :font sss-font-sans
                           :height (tekengrootte-mk-font-size 0.8)))

@@ -1,5 +1,7 @@
 (define-module (misako operating-systems base)
   #|Misako|#
+  #:use-module ((misako home-environments look)
+                #:prefix home-environment:)
   #:use-module ((misako operating-systems base opendoas)
                 #:prefix rules:)
   #:use-module ((misako operating-systems base privileged)
@@ -165,6 +167,11 @@
             (discover? #t)
             (extra-options '("--gc-keep-derivations=yes"
                              "--gc-keep-outputs=yes"))))
+
+        #|Home environment services|#
+        (service guix-home-service-type
+          (if (file-exists? "/run/current-system/provenance") '()
+            `(("look" ,home-environment:look))))
 
         #|Login services|#
         (service virtual-terminal-service-type)

@@ -353,7 +353,7 @@ time in `current-time' format."
            :publishing-function my/publish-to-html
            
            :base-extension "org"
-           :exclude "blog/.*"
+           :exclude ,(regexp-opt '("blog/" ".git"))
            :recursive t
            
            :author ""

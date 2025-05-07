@@ -79,7 +79,8 @@
                          icon-theme-name)
                        "gsettings set org.gnome.desktop.interface cursor-theme 'Yaru'"
                        "gsettings set org.gnome.desktop.interface cursor-size 24"
-                       "gsettings set org.gnome.desktop.interface font-name 'Adwaita Sans'"))))
+                       "gsettings set org.gnome.desktop.interface font-name 'Adwaita Sans'"
+                       "xdg-user-dirs-update"))))
     xs))
 
 (define* (hypr-input #:key keyboard-layout caps-to-ctrl)
@@ -304,13 +305,13 @@
                                        #:subtitle "Copied screenshot of area!")))
              (exec-bind #:mod "s"
                         #:bind "I"
-                        #:cmd "icecat")
+                        #:cmd "firefox")
              (exec-bind #:mod "s-S"
                         #:bind "I"
-                        #:cmd "chromium")
+                        #:cmd "google-chrome-beta")
              (exec-bind #:mod "s"
                         #:bind "B"
-                        #:cmd "thunar")
+                        #:cmd "nemo")
 
              (hypr-bind #:mod "s-S"
                         #:bind "space"

@@ -153,8 +153,9 @@
         #|Window Manager  |# hyprland hyprpaper hyprlock hypridle hyprcursor
         #|                |# hyprland-qtutils
         #|                |# mako waybar-sans-elogind grim slurp bemenu
-        #|                |# wl-clipboard wlsunset dbus qtwayland cursor-mcmojave
-        #|                |# hyprcursor-mcmojave nvidia-vaapi-driver
+        #|                |# wl-clipboard wlsunset dbus qtwayland cursor-rose-pine-dawn
+        #|                |# hyprcursor-rose-pine-dawn
+        #|                |# nvidia-vaapi-driver
         #|Messaging       |# senpai vesktop ;telegram-desktop
         #|E-mail          |# aerc #|required|# sound-theme-freedesktop
         #|                |# libnotify

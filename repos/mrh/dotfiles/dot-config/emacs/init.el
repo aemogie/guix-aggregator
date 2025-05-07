@@ -141,27 +141,27 @@ Otherwise set locally with `keymap-local-set'."
 (add-to-list 'default-frame-alist '(undecorated . t))
 
 (setopt mode-line-format
-              '("%e"
-                mode-line-front-space
-                mode-line-mule-info
-                mode-line-client
-                mode-line-modified
-                mode-line-remote
-                "  "
-                mode-line-buffer-identification
-                "  "
-                mode-line-position-column-line-format
-                "  "
-                (vc-mode vc-mode)
-                "  "
-                mode-name
-                "  "
-                (:eval (unless (zerop
-                                (bound-and-true-p text-scale-mode-amount))
-                         text-scale-mode-lighter))
-                "  "
-                mode-line-misc-info
-                mode-line-end-spaces))
+        '("%e"
+          mode-line-front-space
+          mode-line-mule-info
+          mode-line-client
+          mode-line-modified
+          mode-line-remote
+          "  "
+          mode-line-buffer-identification
+          "  "
+          mode-line-position-column-line-format
+          "  "
+          (vc-mode vc-mode)
+          "  "
+          mode-name
+          "  "
+          (:eval (unless (zerop
+                          (bound-and-true-p text-scale-mode-amount))
+                   text-scale-mode-lighter))
+          "  "
+          mode-line-misc-info
+          mode-line-end-spaces))
 
 (setopt mode-line-compact 'long)
 
@@ -193,15 +193,15 @@ Otherwise set locally with `keymap-local-set'."
   :config
   (set-face-attribute 'default nil
                       :family "DejaVu Sans Mono"
-                      :height 125)
+                      :height 130)
 
   (set-face-attribute 'fixed-pitch nil
                       :family "DejaVu Sans Mono"
-                      :height 125)
+                      :height 130)
 
   (set-face-attribute 'variable-pitch nil
                       :family "DejaVu Serif"
-                      :height 150))
+                      :height 160))
 
 (use-package face-remap
   :config
@@ -295,6 +295,8 @@ Otherwise set locally with `keymap-local-set'."
   :after vertico)
 
 (use-package disable-mouse
+  :custom
+  (global-disable-mouse-mode-lighter . nil)
   :hook
   (after-init . global-disable-mouse-mode))
 
@@ -382,7 +384,6 @@ See also `my/hide-buffer'."
         tab-width 4)
 
 (use-package tabify
-  :commands (tabify untabify)
   :config
   (with-eval-after-load 'dired
     (defun my/dired-tabify-files (&optional untabify)
@@ -509,6 +510,8 @@ Helpful advice for face changing functions."
           (set-buffer buffer)
           (when (eq major-mode 'org-mode)
             (font-lock-fontify-buffer))))))
+
+  (add-to-list 'org-structure-template-alist '("m" . "src emacs-lisp"))
   
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -555,6 +558,101 @@ Helpful advice for face changing functions."
   :config
   (defun my/set-latex-compile ()
     (my/set-compile-command (format "pdflatex %s" (buffer-file-name)))))
+
+(use-package meow
+  :disabled t
+  :custom
+  (meow-expand-hint-remove-delay 0)
+  :config
+  (defun meow-setup ()
+    (setopt meow-cheatsheet-layout meow-cheatsheet-layout-dvorak)
+    (meow-leader-define-key
+     '("1" . meow-digit-argument)
+     '("2" . meow-digit-argument)
+     '("3" . meow-digit-argument)
+     '("4" . meow-digit-argument)
+     '("5" . meow-digit-argument)
+     '("6" . meow-digit-argument)
+     '("7" . meow-digit-argument)
+     '("8" . meow-digit-argument)
+     '("9" . meow-digit-argument)
+     '("0" . meow-digit-argument)
+     '("/" . meow-keypad-describe-key)
+     '("?" . meow-cheatsheet))
+    (meow-motion-overwrite-define-key
+     ;; custom keybinding for motion state
+     '("<escape>" . ignore))
+    (meow-normal-define-key
+     '("0" . meow-expand-0)
+     '("9" . meow-expand-9)
+     '("8" . meow-expand-8)
+     '("7" . meow-expand-7)
+     '("6" . meow-expand-6)
+     '("5" . meow-expand-5)
+     '("4" . meow-expand-4)
+     '("3" . meow-expand-3)
+     '("2" . meow-expand-2)
+     '("1" . meow-expand-1)
+     '("-" . negative-argument)
+     '(";" . meow-reverse)
+     '("," . meow-inner-of-thing)
+     '("." . meow-bounds-of-thing)
+     '("<" . meow-beginning-of-thing)
+     '(">" . meow-end-of-thing)
+     '("{" . backward-paragraph)
+     '("}" . forward-paragraph)
+     '("a" . meow-append)
+     '("A" . meow-open-below)
+     '("b" . meow-back-word)
+     '("B" . meow-back-symbol)
+     '("c" . meow-change)
+     '("d" . meow-delete)
+     '("D" . meow-backward-delete)
+     '("e" . meow-line)
+     '("E" . meow-goto-line)
+     '("f" . meow-find)
+     '("F" . meow-find-expand)
+     '("g" . meow-cancel-selection)
+     '("G" . meow-grab)
+     '("h" . meow-left)
+     '("H" . meow-left-expand)
+     '("i" . meow-insert)
+     '("I" . meow-open-above)
+     '("j" . meow-join)
+     '("k" . meow-kill)
+     '("l" . meow-till)
+     '("L" . meow-till-expand)
+     '("m" . meow-mark-word)
+     '("M" . meow-mark-symbol)
+     '("n" . meow-next)
+     '("N" . meow-next-expand)
+     '("o" . meow-block)
+     '("O" . meow-to-block)
+     '("p" . meow-prev)
+     '("P" . meow-prev-expand)
+     '("q" . meow-quit)
+     '("Q" . meow-goto-line)
+     '("r" . meow-replace)
+     '("R" . meow-swap-grab)
+     '("s" . meow-search)
+     '("t" . meow-right)
+     '("T" . meow-right-expand)
+     '("u" . meow-undo)
+     '("U" . meow-undo-in-selection)
+     '("v" . meow-visit)
+     '("w" . meow-next-word)
+     '("W" . meow-next-symbol)
+     '("x" . meow-save)
+     '("X" . meow-sync-grab)
+     '("y" . meow-yank)
+     '("z" . meow-pop-selection)
+     '("'" . repeat)
+     '("<escape>" . ignore)))
+  
+  (meow-setup)
+  (meow-global-mode 1)
+  (meow--remove-modeline-indicator)
+  (meow-setup-indicator))
 
 (use-package eshell
   :commands eshell
@@ -669,7 +767,6 @@ and save an appropriate entry for `elfeed-feeds' to the kill ring."
   :defer t)
 
 (use-package gnus-start
-  :defer t
   :custom
   (gnus-use-dribble-file nil)
   :after gnus)
@@ -684,7 +781,7 @@ Directory name must be the name of the album, contain the song files,
 and contain a file =<album-name>--Album.txt= which lists the song files
 in desired playing order, separated by newlines.
 
-See https://codeberg.org/mrh/dotfiles/dot-local/bin for more info."
+See https://codeberg.org/mrh/dotfiles/dot-local/bin/ for more info."
   (interactive)
   (let* ((album-path (dired-get-filename))
          (album-name (shell-quote-argument (file-name-nondirectory album-path))))

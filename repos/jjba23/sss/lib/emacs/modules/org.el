@@ -23,7 +23,6 @@
 
 (use-package org
   :ensure nil
-  :after (org-modern)
   :hook ((org-mode . sss-org-mode))
   :bind (:map org-mode-map 
               ("C-c #" . nil))
@@ -41,16 +40,10 @@
   :config
   (defun sss-org-mode ()
     (variable-pitch-mode 1)
-    (org-modern-mode)
     (org-indent-mode)
     (auto-fill-mode 0)
     (org-restart-font-lock)
     (olivetti-mode)))
-
-(use-package org-modern
-  :ensure t
-  :config
-  (setq org-modern-star 'replace))
 
 (use-package org-roam-ui
   :ensure t

@@ -62,7 +62,7 @@
     <action name="Execute" command="xfce4-terminal" />
   </item>
   <item label="File Manager">
-    <action name="Execute" command="thunar" />
+    <action name="Execute" command="nemo" />
   </item>
   <item label="Text editor">
     <action name="Execute" command="geany" />

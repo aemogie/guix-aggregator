@@ -51,8 +51,7 @@
     (firmware (list linux-firmware))
 
     (kernel-arguments
-      (cons* "nvidia_drm.modeset=1"
-             "modprobe.blacklist=nouveau,wacom,hid_uclogic"
+      (cons* "modprobe.blacklist=i2c_nvidia_gpu,wacom,hid_uclogic"
              (operating-system-user-kernel-arguments base)))
 
     (kernel-loadable-modules
@@ -61,34 +60,9 @@
     (file-systems %btrfs-ephemeral-file-systems)
 
     (services
-      (cons* #|QEMU builds|#
-             ; (service qemu-binfmt-service-type
-             ;   (qemu-binfmt-configuration
-             ;     (platforms (lookup-qemu-platforms "aarch64")))
-
-             #|NVIDIA|#
-             (service nvidia-service-type
-               (nvidia-configuration
-                 (driver nvda)
-                 (module nvidia-module)
-                 (firmware nvidia-firmware)))
-
-             (service pam-limits-service-type
+      (cons* (service pam-limits-service-type
                (list
                  (pam-limits-entry "*" 'hard 'nofile 1048576)))
-
-             #|CI services|#
-             ; (service postgresql-service-type
-             ;   (postgresql-configuration
-             ;     (postgresql postgresql)))
-
-             ; (service cuirass-service-type
-             ;   (cuirass-configuration
-             ;     (host "0.0.0.0")
-             ;     (port 8082)
-             ;     (interval 60)
-             ;     (fallback? #f)
-             ;     (specifications %cuirass-specs)))
 
              (service samba-service-type
                (samba-configuration
@@ -100,6 +74,12 @@
                  (local-file
                    (string-append yumiko-dir "/udev/70-opentabletdriver.rules")))
                #:groups '("tablet"))
+
+             (udev-rules-service 'usb-phone
+               (udev-rule "90-usb-phone.rules"
+                 (string-append "SUBSYSTEM==\"usb\", ATTRS{idVendor}==\"04e8\", MODE:=\"0666\"\n"
+                                "SUBSYSTEM==\"usb_device\", ATTRS{idVendor}==\"04e8\", MODE:=\"0666\"")) 
+               #:groups '("usb"))
 
              #|SSH services|#
              (service openssh-service-type

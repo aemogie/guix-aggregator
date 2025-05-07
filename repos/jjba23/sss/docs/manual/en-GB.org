@@ -3,7 +3,7 @@
 #+email: jjbigorra@gmail.com
 #+language: en
 #+options: num:nil html-style:nil
-#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css" />
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/water.css@2/out/light.css" />
 
 
 [[https://jointhefreeworld.org/static-assets/badges/GNU-Guix-c48702.png]] [[https://jointhefreeworld.org/static-assets/badges/Scheme-Guile-d0730f.png]] [[https://jointhefreeworld.org/static-assets/badges/Wayland-Hyprland-6a6aff.png]] [[https://jointhefreeworld.org/static-assets/badges/Emacs-30-a8516e.png]]  [[https://jointhefreeworld.org/static-assets/badges/Shell-Fish-2fffb2.png]] 
@@ -40,6 +40,7 @@ It is recommended to use tagged releases of SSS, as those are considered as stab
 - GNU Guix system configuration
 - Hyprland configuration
 - 🎨 Theme palettes that affect the entire system (ef-themes, solarized-light, everforest dark and light)
+- Firefox custom declarative configuration inspired on BetterFox
 - Labwc configuration (work-in progress)
 - Fish shell configuration
 - Alacritty terminal emulator  
@@ -561,6 +562,58 @@ This is currently done with hyprpaper.
 
 TODO: allow more dynamics and often changing of wallpapers, also random wallpaper script (but within theme)
 
+-----
+
+* Firefox custom declarative configurations
+
+I like to declaratively customize and configure my software, and my web browsers of course too.
+
+With Firefox (from nonguix) I like to configure it in Lisp (Guile Scheme) code, generating ~user.js~ , ~userChrome.css~ and more, from Lisp code, to customize, harden and optimize it, all declaratively.
+
+See ~lib/firefox.scm~ for more.
+
+As for manual work needed for achieving Firefox Zen, we document several tips below:
+
+** Stick to SSS defaults when it comes to hardening
+
+If you need more then just go for Tor.
+
+** Recommended extensions
+
+*** TODO:  declarative extension installation and configuration via Guile Scheme and Guix
+
+[[https://addons.mozilla.org/en-US/firefox/addon/ublock-origin/?utm_source=addons.mozilla.org&utm_medium=referral&utm_content=search][uBlock Origin]]: Finally, an efficient wide-spectrum content blocker. Easy on CPU and memory.
+
+[[https://addons.mozilla.org/en-US/firefox/addon/adaptive-tab-bar-colour/?utm_source=addons.mozilla.org&utm_medium=referral&utm_content=featured][Adaptive Tab Bar Color]]: Changes the color of Firefox theme to match the website’s appearance.
+
+[[https://addons.mozilla.org/en-US/firefox/addon/search_by_image/?utm_source=addons.mozilla.org&utm_medium=referral&utm_content=featured][Search by Image]]: A powerful reverse image search tool, with support for various search engines, such as Google, Bing, Yandex, Baidu and TinEye.
+
+[[https://addons.mozilla.org/en-US/firefox/addon/darkreader/?utm_source=addons.mozilla.org&utm_medium=referral&utm_content=featured][Dark Reader]]: Dark mode for every website. Take care of your eyes, use dark theme for night and daily browsing.
+
+[[https://addons.mozilla.org/en-US/firefox/addon/copy-plaintext/?utm_source=addons.mozilla.org&utm_medium=referral&utm_content=featured][Copy PlainText]]: Copy Plain Text without any formatting
+
+[[https://addons.mozilla.org/en-US/firefox/addon/1password-x-password-manager/?utm_source=addons.mozilla.org&utm_medium=referral&utm_content=search][1password]]: worth it if you have a license: The best way to experience 1Password in your browser. Easily sign in to sites, generate passwords, and store secure information, including logins, credit cards, notes, and more.
+
+[[https://addons.mozilla.org/en-US/firefox/addon/emoji-sav/?utm_source=addons.mozilla.org&utm_medium=referral&utm_content=featured][Emoji]]: It permits just with a single click to copy an emoji. There is a search-box and the "Most used emojis" section (the first one). If you want to send feedback or report bug, please contact me
+
+[[https://addons.mozilla.org/en-US/firefox/addon/video-downloadhelper/?utm_source=addons.mozilla.org&utm_medium=referral&utm_content=featured][Video DownloadHelper]]: Download videos from the web. Easy, smart, no tracking.
+
+[[https://addons.mozilla.org/en-US/firefox/addon/to-google-translate/?utm_source=addons.mozilla.org&utm_medium=referral&utm_content=featured][To Google Translate]]: Right-click a section of text and click the Translate icon next to it to text translate or listen to it in your language.
+
+[[https://addons.mozilla.org/en-US/firefox/addon/privacy-badger17/?utm_source=addons.mozilla.org&utm_medium=referral&utm_content=featured][Privacy Badger]]: Automatically learns to block invisible trackers.
+
+[[https://addons.mozilla.org/en-US/firefox/addon/view-page-archive/?utm_source=addons.mozilla.org&utm_medium=referral&utm_content=featured][Web Archives]]: View archived and cached versions of web pages on various search engines, such as the Wayback Machine and Archive․is.
+
+[[https://addons.mozilla.org/en-US/firefox/addon/save-all-images-webextension/?utm_source=addons.mozilla.org&utm_medium=referral&utm_content=featured][Download All Images]]: Easily save images with a wide range of customization features, such as file size, dimensions, and image type.
+
+[[https://addons.mozilla.org/en-US/firefox/addon/languagetool/?utm_source=addons.mozilla.org&utm_medium=referral&utm_content=featured][Language Tool]]: With this extension you can check text with the free style and grammar checker LanguageTool. It finds many errors that a simple spell checker cannot detect, like mixing up there/their, a/an, or repeating a word.
+
+[[https://addons.mozilla.org/en-US/firefox/addon/weather-extension/?utm_source=addons.mozilla.org&utm_medium=referral&utm_content=featured][Weather Extension]]: The best way to see the weather right in your browser. Easier than looking outside!
+
+[[https://addons.mozilla.org/en-US/firefox/addon/user-agent-string-switcher/?utm_source=addons.mozilla.org&utm_medium=referral&utm_content=featured][User Agent Switcher and Manager]]: Spoof websites trying to gather information about your web navigation—like your browser type and operating system—to deliver distinct content you may not want.
+
+
+
 * Nyxt browser (experimental)
 
 Nyxt is a fantastic web browser, infinitely extensible, and in Emacs-spirit. It is a great fit for SSS. I am currently experimenting with it, since it's not production-ready yet. I for now am content with GNU IceCat and Ungoogle Chromium.
@@ -820,83 +873,78 @@ Labwc session has a a more windows-like style of bindings.
 
 ** General non-vanilla bindings
 
-| keybind | command         |
-|---------+-----------------|
-| ~M-s r~   | consult-ripgrep |
-| ~M-s o~   | consult-occur   |
-|         |                 |
-|---------+-----------------|
+| keybind | command         | description                                                         |
+| ~M-s r~   | consult-ripgrep | Grep with ripgrep through your codebase, with minibuffer completion |
+| ~M-s o~   | consult-occur   | find occurences in file                                             |
+|---------+-----------------+---------------------------------------------------------------------|
 
 ** SSS specific keybindings
 
-| keybind | command                               |
-|---------+---------------------------------------|
-| ~C-c # s~ | Perform a system rebuild              |
-| ~C-c # j~ | Perform a user (joe) rebuild          |
-| ~C-c # f~ | Perform a system + user (joe) rebuild |
-| ~C-c # m~ | Publish SSS manual locally            |
-|---------+---------------------------------------|
+| keybind | command              | description                           |
+| ~C-c # s~ | sss-sys-reconfigure  | Perform a system rebuild              |
+| ~C-c # j~ | sss-joe-reconfigure  | Perform a user (joe) rebuild          |
+| ~C-c # f~ | sss-full-reconfigure | Perform a system + user (joe) rebuild |
+|---------+----------------------+---------------------------------------|
 
 ** More bindings
 
 | keybind | command                  | description                                          |
-|---------+--------------------------+------------------------------------------------------|
-| C-x C-f | find-file                | Open a file.                                         |
-| C-x C-s | save-buffer              | Save the current buffer.                             |
-| C-x C-w | write-file               | Save the current buffer to a different file.         |
-| C-x C-b | list-buffers             | List open buffers.                                   |
-| C-g     | keyboard-quit            | Cancel the current command.                          |
-| C-x k   | kill-buffer              | Kill (close) the current buffer.                     |
-| C-x C-c | save-buffers-kill-emacs  | Save all buffers and exit Emacs.                     |
-| C-y     | yank                     | Paste the most recently killed (cut or copied) text. |
-| C-w     | kill-region              | Cut the selected region.                             |
-| M-w     | kill-ring-save           | Copy the selected region.                            |
-| C-k     | kill-line                | Cut the text from the cursor to the end of the line. |
-| C-d     | delete-char              | Delete the character under the cursor.               |
-| C-a     | beginning-of-line        | Move the cursor to the beginning of the line.        |
-| C-e     | end-of-line              | Move the cursor to the end of the line.              |
-| C-p     | previous-line            | Move the cursor to the previous line.                |
-| C-n     | next-line                | Move the cursor to the next line.                    |
-| C-f     | forward-char             | Move the cursor forward one character.               |
-| C-b     | backward-char            | Move the cursor backward one character.              |
-| M-f     | forward-word             | Move the cursor forward one word.                    |
-| M-b     | backward-word            | Move the cursor backward one word.                   |
-| C-v     | scroll-up-command        | Scroll the buffer up one screen.                     |
-| M-v     | scroll-down-command      | Scroll the buffer down one screen.                   |
-| C-s     | isearch-forward          | Incremental search forward.                          |
-| C-r     | isearch-backward         | Incremental search backward.                         |
-| M-x     | execute-extended-command | Execute an extended command (by name).               |
-| C-h k   | describe-key             | Describe a key binding.                              |
-| C-h f   | describe-function        | Describe a function.                                 |
-| C-h v   | describe-variable        | Describe a variable.                                 |
-| C-h m   | describe-mode            | Describe the current major mode.                     |
-| C-h i   | info                     | Open the Emacs Info manual.                          |
-| C-x 2   | split-window-below       | Split the current window horizontally.               |
-| C-x 3   | split-window-right       | Split the current window vertically.                 |
-| C-x 0   | delete-window            | Delete the current window.                           |
-| C-x 1   | delete-other-windows     | Delete all other windows.                            |
-| C-x o   | other-window             | Switch to the next window.                           |
-| C-l     | recenter-top-bottom      | Recenter the current line in the window.             |
-| M-g g   | goto-line                | Go to a specific line number.                        |
-| C-x u   | undo                     | Undo the last change.                                |
-| C-/     | redo                     | Redo the last undone change.                         |
-| C-j     | newline                  | Insert a newline.                                    |
-| TAB     | indent-for-tab-command   | Indent the current line (or region).                 |
-| M-TAB   | completion-at-point      | Attempt completion at point.                         |
-| C-t     | transpose-chars          | Transpose the characters around point.               |
-| M-t     | transpose-words          | Transpose the words around point.                    |
-| C-x C-l | downcase-region          | Convert the selected region to lowercase.            |
-| C-x C-u | upcase-region            | Convert the selected region to uppercase.            |
-| M-u     | upcase-word              | Uppercase the word at point.                         |
-| M-l     | downcase-word            | Lowercase the word at point.                         |
-| M-c     | capitalize-word          | Capitalize the word at point.                        |
-| C-x h   | mark-whole-buffer        | Select the entire buffer.                            |
-| C-v     | scroll-down              | Scroll down in the buffer                            |
-| M-v     | scroll-up                | Scroll up in the buffer                              |
+| ~C-x C-f~ | find-file                | Open a file.                                         |
+| ~C-x C-s~ | save-buffer              | Save the current buffer.                             |
+| ~C-x C-w~ | write-file               | Save the current buffer to a different file.         |
+| ~C-x C-b~ | list-buffers             | List open buffers.                                   |
+| ~C-g~     | keyboard-quit            | Cancel the current command.                          |
+| ~C-x k~   | kill-buffer              | Kill (close) the current buffer.                     |
+| ~C-x C-c~ | save-buffers-kill-emacs  | Save all buffers and exit Emacs.                     |
+| ~C-y~     | yank                     | Paste the most recently killed (cut or copied) text. |
+| ~C-w~     | kill-region              | Cut the selected region.                             |
+| ~M-w~     | kill-ring-save           | Copy the selected region.                            |
+| ~C-k~     | kill-line                | Cut the text from the cursor to the end of the line. |
+| ~C-d~     | delete-char              | Delete the character under the cursor.               |
+| ~C-a~     | beginning-of-line        | Move the cursor to the beginning of the line.        |
+| ~C-e~     | end-of-line              | Move the cursor to the end of the line.              |
+| ~C-p~     | previous-line            | Move the cursor to the previous line.                |
+| ~C-n~     | next-line                | Move the cursor to the next line.                    |
+| ~C-f~     | forward-char             | Move the cursor forward one character.               |
+| ~C-b~     | backward-char            | Move the cursor backward one character.              |
+| ~M-f~     | forward-word             | Move the cursor forward one word.                    |
+| ~M-b~     | backward-word            | Move the cursor backward one word.                   |
+| ~C-v~     | scroll-up-command        | Scroll the buffer up one screen.                     |
+| ~M-v~     | scroll-down-command      | Scroll the buffer down one screen.                   |
+| ~C-s~     | isearch-forward          | Incremental search forward.                          |
+| ~C-r~     | isearch-backward         | Incremental search backward.                         |
+| ~M-x~     | execute-extended-command | Execute an extended command (by name).               |
+| ~C-h k~   | describe-key             | Describe a key binding.                              |
+| ~C-h f~   | describe-function        | Describe a function.                                 |
+| ~C-h v~   | describe-variable        | Describe a variable.                                 |
+| ~C-h m~   | describe-mode            | Describe the current major mode.                     |
+| ~C-h i~   | info                     | Open the Emacs Info manual.                          |
+| ~C-x 2~   | split-window-below       | Split the current window horizontally.               |
+| ~C-x 3~   | split-window-right       | Split the current window vertically.                 |
+| ~C-x 0~   | delete-window            | Delete the current window.                           |
+| ~C-x 1~   | delete-other-windows     | Delete all other windows.                            |
+| ~C-x o~   | other-window             | Switch to the next window.                           |
+| ~C-l~     | recenter-top-bottom      | Recenter the current line in the window.             |
+| ~M-g g~   | goto-line                | Go to a specific line number.                        |
+| ~C-x u~   | undo                     | Undo the last change.                                |
+| ~C-/~     | redo                     | Redo the last undone change.                         |
+| ~C-j~     | newline                  | Insert a newline.                                    |
+| ~TAB~     | indent-for-tab-command   | Indent the current line (or region).                 |
+| ~M-TAB~   | completion-at-point      | Attempt completion at point.                         |
+| ~C-t~     | transpose-chars          | Transpose the characters around point.               |
+| ~M-t~     | transpose-words          | Transpose the words around point.                    |
+| ~C-x C-l~ | downcase-region          | Convert the selected region to lowercase.            |
+| ~C-x C-u~ | upcase-region            | Convert the selected region to uppercase.            |
+| ~M-u~     | upcase-word              | Uppercase the word at point.                         |
+| ~M-l~     | downcase-word            | Lowercase the word at point.                         |
+| ~M-c~     | capitalize-word          | Capitalize the word at point.                        |
+| ~C-x h~   | mark-whole-buffer        | Select the entire buffer.                            |
+| ~C-v~     | scroll-down              | Scroll down in the buffer                            |
+| ~M-v~     | scroll-up                | Scroll up in the buffer                              |
 
 ----------
 
-* Software engineering
+* On Software engineering
 
 ** Development environments, manifests and flakes
 
@@ -906,7 +954,7 @@ This way, and leveraging ~direnv~ and ~.envrc~ we can enter in our editor (Emacs
 
 *** Guile Scheme hacking
 
-I can't think of a better setup than using Emacs, with good paren matching, smartparens, paredit if you like. Then you can use a nice Geiser install or as I do, Arei and Ares on Emacs. I usually like to use watchexec as well for hot reloading.
+I can't think of a better setup than using Emacs to work with Lisp languages, with good paren matching, structural editing, sexp aware,  smartparens, paredit if you like. Then you can use a nice REPL via Emacs, like Geiser, or as I do, Arei and Ares. I usually like to use  ~watchexec~ as well for hot reloading.
 
 *** Guix and manifests
 

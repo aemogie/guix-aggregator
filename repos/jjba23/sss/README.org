@@ -41,6 +41,7 @@ It is recommended to use tagged releases of SSS, as those are considered as stab
 - GNU Guix system configuration
 - Hyprland configuration
 - 🎨 Theme palettes that affect the entire system (ef-themes, solarized-light, everforest dark and light)
+- Firefox custom declarative configuration inspired on BetterFox
 - Labwc configuration (work-in progress)
 - Fish shell configuration
 - Alacritty terminal emulator  

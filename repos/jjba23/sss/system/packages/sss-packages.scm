@@ -47,6 +47,7 @@
                      bash
                      bittorrent
                      chromium
+                     cinnamon
                      cmake
                      commencement
                      compression
@@ -267,7 +268,8 @@
   (list spotifyd lilypond ardour))
 
 (define sss-browser-packages
-  (list icecat icedove))
+  (list (specification->package "firefox")
+        (specification->package "google-chrome-beta")))
 
 (define sss-qt-packages
   (list qtwayland qt6ct qtsvg))
@@ -315,6 +317,7 @@
         gtk
         hplip
         httpie
+        icedove
         imagemagick
         inkscape
         jq
@@ -324,7 +327,7 @@
         lxsession
         mpv
         mpv-mpris
-        nautilus
+        nemo
         netcat
         nginx
         obs
@@ -347,17 +350,16 @@
         stress
         stress-ng
         sysstat
-        thunar
         tmon
         transmission
         transmission-remote-gtk
         tree
         tumbler
-        (specification->package "ungoogled-chromium-wayland")
         unixodbc
         virt-manager
         watchexec
         xarchiver
+        xdg-user-dirs
         xf86-input-libinput
         xf86-video-fbdev
         xxd

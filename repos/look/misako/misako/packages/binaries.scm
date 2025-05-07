@@ -27,18 +27,26 @@
   #:use-module (gnu packages xdisorg)
   #:use-module (gnu packages xml)
   #:use-module (gnu packages xorg)
+  #:use-module (gnu packages tls)
+  #:use-module (gnu packages qt)
+  #:use-module (nongnu packages nvidia)
+  #:use-module (misako packages cuda)
   #:use-module (guix download)
+  #:use-module (guix git-download)
   #:use-module (guix gexp)
   #:use-module (guix packages)
   #:use-module (guix utils)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system copy)
+  #:use-module (guix build-system qt)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (nonguix build-system chromium-binary)
+  #:use-module (nonguix build-system binary)
   #:use-module (ice-9 match)
   #:export (vesktop
             path-of-building-bin
-            libdeep-filter-ladspa-bin))
+            libdeep-filter-ladspa-bin
+            ollama-bin))
 
 (define path-of-building-bin
   (package
@@ -244,9 +252,9 @@ well.")
                            "--ignore-gpu-blocklist"
                            "--enable-zero-copy"
                            ; "--enable-features=WaylandLinuxDrmSyncobj"
-                           ; "--use-angle=vulkan"
-                           ; "--disable-gpu-compositing"
-                           ; "--enable-gpu-rasterization"
+                           "--use-angle=vulkan"
+                           "--disable-gpu-compositing"
+                           "--enable-gpu-rasterization"
                            "}")))))))))
     (inputs
       (list ffmpeg
@@ -275,3 +283,56 @@ well.")
 @end itemize")
     (home-page "https://github.com/Vencord/Vesktop")
     (license (list license:gpl3))))
+
+(define ollama-bin
+  (package
+    (name "ollama-bin")
+    (version "0.6.6")
+    (source
+     (origin
+       (method url-fetch/tarbomb)
+       (uri (string-append
+             "https://github.com/ollama/ollama/releases/download/v" version
+             "/ollama-linux-amd64.tgz"))
+       (sha256
+        (base32 "00ygy496j4zcrx4qq7vr5y18959w126b75w4fxk9k2b8j2k8axhv"))))
+    (build-system binary-build-system)
+    (supported-systems (list "x86_64-linux"))
+    (arguments
+      (list #:strip-binaries? #f
+            #:patchelf-plan ''(("bin/ollama" ("glibc" "gcc")))
+            #:install-plan ''(("." ""))
+            #:phases
+            #~(modify-phases %standard-phases
+                (add-after 'install 'patch-elf
+                  (lambda* (#:key inputs #:allow-other-keys)
+                    (let ((ld.so (string-append #$(this-package-input "glibc")
+                                                #$(glibc-dynamic-linker)))
+                          (rpath (string-join
+                                   (cons*
+                                     (string-append #$output "/lib")
+                                     (string-append #$output "/lib/ollama")
+                                     (string-append #$output "/lib/ollama/cuda_v12")
+                                     (string-append #$output "/lib/ollama/cuda_v11")
+                                     (map
+                                       (lambda (input)
+                                         (string-append (cdr input) "/lib"))
+                                       inputs))
+                                   ":")))
+                      ;; Got this proc from hako's Rosenthal, thanks
+                      (define (patch-elf file)
+                        (format #t "Patching ~a ..." file)
+                        (unless (string-contains file ".so")
+                          (invoke "patchelf" "--set-interpreter" ld.so file))
+                        (invoke "patchelf" "--set-rpath" rpath file)
+                        (display " done\n"))
+                      (for-each
+                        (lambda (binary)
+                          (patch-elf binary))
+                        (find-files (string-append #$output "/lib") ".*\\.so.*"))))))))
+    (inputs (list (list gcc "lib") glibc nvda cuda))
+    (home-page "https://ollama.com")
+    (synopsis "Get up and running with large language models")
+    (description "Get up and running with large language models. Run Llama
+2, Code Llama, and other models. Customize and create your own.")
+    (license license:expat)))

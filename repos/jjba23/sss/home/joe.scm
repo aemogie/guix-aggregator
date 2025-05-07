@@ -74,10 +74,11 @@
              (sss alacritty)
              (sss qt)
              (sss openpgp)
+             (sss dirs)
              (sss waybar)
              (sss rofi)
              (sss ssh)
-             (sss icecat)
+             (sss firefox)
              (sss emacs))
 
 (define sss-home-files-service
@@ -104,7 +105,8 @@
                    (sss-hyprpaper-svc #:clone-dir sss-clone-dir
                                       #:palette sss-palette)
                    (sss-mime-svc)
-                   (sss-icecat-svc)
+                   (sss-dirs-svc)
+                   (sss-firefox-svc #:palette sss-palette)
                    (sss-fastfetch-svc #:clone-dir sss-clone-dir)
                    (sss-fish-svc #:clone-dir sss-clone-dir
                                  #:palette sss-palette)

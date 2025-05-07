@@ -101,6 +101,7 @@
    emacs-magit
    emacs-marginalia
    emacs-markdown-mode
+   emacs-meow
    emacs-orderless
    emacs-org-bullets
    emacs-paredit

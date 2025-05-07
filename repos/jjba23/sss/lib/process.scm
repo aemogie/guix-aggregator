@@ -98,6 +98,9 @@
 (define-public equal-conf-pair
   "~a=~a\n")
 
+(define-public equal-conf-quote-value-pair
+  "~a=\"~a\"\n")
+
 (define-public (nix-profile-install x)
   (syscall (format #f "nix -L profile install --impure nixpkgs#~a" x)))
 

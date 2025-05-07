@@ -2,8 +2,9 @@
 
 declare -A defaults
 
-# binary
-defaults["steam_app_739630"]="wine64-preloader"
+# hyprland class =  name
+defaults["steam_app_739630"]="Phasmophobia.exe"
+defaults["zen"]="Zen"
 
 current_window="$(hyprctl activewindow -j)"
 current_window_title=$(echo $current_window | jq .title)

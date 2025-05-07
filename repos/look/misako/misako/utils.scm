@@ -1,5 +1,4 @@
 ;;; Copyright © 2025 Murilo <murilo@disroot.org>
-;;; Copyright © 2025 Sergio Pastor Pérez <sergio.pastorperez@outlook.es>
 
 (define-module (misako utils)
   #:use-module (gnu home)
@@ -15,15 +14,15 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 textual-ports)
   #:use-module (nongnu packages nvidia)
+  #:use-module (nongnu packages linux)
   #:use-module (nongnu packages video)
+  #:use-module (nongnu system linux-initrd)
   #:use-module (nonguix utils)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-43)
-  #:export (nvidia-home-environment
-            nvidia-beta-home-environment
-            nvidia-operating-system
-            nvidia-beta-operating-system
+  #:export (nvidia-operating-system
+            nvidia-home-environment
             ffmpeg-nvenc-beta
             obs-nvenc
             plist
@@ -125,77 +124,29 @@
     `((,mesa   . ,nvdb)
       (,ffmpeg . ,ffmpeg-nvenc-beta))))
 
-(define-syntax-rule (nvidia-operating-system exp ...)
-  "Like 'operating-system' but graft Mesa with the proprietary NVIDIA driver."
-  (if nvidia?
-      (with-transformation-except
-        replace-all-nvidia
-        (operating-system exp ...))
-      (operating-system exp ...)))
-
-(define-syntax-rule (nvidia-beta-operating-system exp ...)
-  "Like 'operating-system' but graft Mesa with the proprietary NVIDIA driver."
-  (if nvidia?
-      (with-transformation-except
-        replace-all-nvidia-beta
-        (operating-system exp ...))
-      (operating-system exp ...)))
-
 (define-syntax-rule (nvidia-home-environment exp ...)
   "Like 'home-environment' but graft Mesa with the proprietary NVIDIA driver."
   (if nvidia?
-      (with-transformation-except
+      (with-transformation
         replace-all-nvidia
         (home-environment exp ...))
       (home-environment exp ...)))
 
-(define-syntax-rule (nvidia-beta-home-environment exp ...)
-  "Like 'home-environment' but graft Mesa with the proprietary NVIDIA driver."
-  (if nvidia?
-      (with-transformation-except
-        replace-all-nvidia-beta
-        (home-environment exp ...))
-      (home-environment exp ...)))
-
-;; Sergio's procedure
-(define* (with-transformation-except proc obj #:optional (pred package?))
-  "Recursing into child elements, apply PROC to every element of OBJ that matches
-PRED."
-  (match obj
-    ((? pred)
-     (if (equal? (package-name obj) "btrfs-progs")
-         obj
-         (proc obj)))
-    ((? procedure?)
-     (lambda args
-       (apply values
-              (map (cut with-transformation-except proc <> pred)
-                   (call-with-values
-                       (lambda ()
-                         (apply obj args))
-                     list)))))
-    ((a . b)
-     (cons (with-transformation-except proc a pred)
-           (with-transformation-except proc b pred)))
-    ((_ ...)
-     (map (cut with-transformation-except proc <> pred)
-          obj))
-    (#(_ ...)
-     (vector-map (lambda (vec elt)
-                   (with-transformation-except proc elt pred))
-                 obj))
-    ;; `<service-type>' and `<origin>' record types are expected to not be
-    ;; modified. Altering them causes very difficult to debug run-time errors.
-    ((or (? service-type?)
-         (? origin?))
-     obj)
-    ((? record?)
-     (let* ((record-type (record-type-descriptor obj))
-            (record-fields (record-type-fields record-type)))
-       (apply (record-constructor record-type)
-              (map (lambda (field)
-                     (let* ((accessor (record-accessor record-type field))
-                            (obj (accessor obj)))
-                       (with-transformation-except proc obj pred)))
-                   record-fields))))
-    (_ obj)))
+(define-syntax nvidia-operating-system
+  (syntax-rules (driver x11-system?)
+    ((nvidia-operating-system #:driver dri #:x11-system? x11 exp ...)
+     ((nvidia-system-transformation #:driver dri
+                                    #:x11-display? x11)
+      (operating-system exp ...)))
+    ((nvidia-operating-system #:x11-system? x11 #:driver dri exp ...)
+     ((nvidia-system-transformation #:driver dri
+                                    #:x11-display? x11)
+      (operating-system exp ...)))
+    ((nvidia-operating-system #:driver dri exp ...)
+     ((nvidia-system-transformation #:driver dri)
+      (operating-system exp ...)))
+    ((nvidia-operating-system #:x11-system? x11 exp ...)
+     ((nvidia-system-transformation #:x11-display? x11)
+      (operating-system exp ...)))
+    ((nvidia-operating-system exp ...)
+     ((nvidia-system-transformation) (operating-system exp ...)))))

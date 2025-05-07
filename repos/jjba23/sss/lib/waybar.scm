@@ -167,11 +167,11 @@
         (hyprland/mode (format . "<span style=\"italic\">{}</span>"))
         (tray (spacing . 12))
         ,sss-waybar-clock
-        (cpu (format . "{usage}% \uf2db")
+        (cpu (format . "\uf2db cpu: {usage}%")
              (tooltip . #f)
              (on-click . "gnome-system-monitor"))
         ,(cond
-           (with-memory `(memory (format . "{}% \uf0c9")
+           (with-memory `(memory (format . "\uf0c9 mem: {}%")
                                  (on-click . "gnome-system-monitor")))
            (else `(memory . null)))
         ,sss-waybar-backlight
