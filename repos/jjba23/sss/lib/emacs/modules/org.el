@@ -43,7 +43,8 @@
     (org-indent-mode)
     (auto-fill-mode 0)
     (org-restart-font-lock)
-    (olivetti-mode)))
+    (olivetti-mode)
+    (ignore-errors (sss-set-base-faces))))
 
 (use-package org-roam-ui
   :ensure t

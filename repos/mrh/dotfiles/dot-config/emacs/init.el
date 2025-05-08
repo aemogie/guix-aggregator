@@ -116,149 +116,6 @@ Otherwise set locally with `keymap-local-set'."
   :config
   (repeat-mode 1))
 
-(add-to-list 'default-frame-alist '(alpha-background . 80))
-
-(setopt initial-scratch-message nil
-        inhibit-startup-screen t)
-
-(use-package scroll-bar
-  :config
-  (scroll-bar-mode -1))
-
-(use-package tool-bar
-  :config
-  (tool-bar-mode -1))
-
-(use-package menu-bar
-  :config
-  (menu-bar-mode -1))
-
-(use-package frame
-  :config
-  (blink-cursor-mode -1))
-
-(setopt frame-title-format "%b")
-(add-to-list 'default-frame-alist '(undecorated . t))
-
-(setopt mode-line-format
-        '("%e"
-          mode-line-front-space
-          mode-line-mule-info
-          mode-line-client
-          mode-line-modified
-          mode-line-remote
-          "  "
-          mode-line-buffer-identification
-          "  "
-          mode-line-position-column-line-format
-          "  "
-          (vc-mode vc-mode)
-          "  "
-          mode-name
-          "  "
-          (:eval (unless (zerop
-                          (bound-and-true-p text-scale-mode-amount))
-                   text-scale-mode-lighter))
-          "  "
-          mode-line-misc-info
-          mode-line-end-spaces))
-
-(setopt mode-line-compact 'long)
-
-(use-package time
-  :custom
-  (display-time-format "%R")
-  (display-time-default-load-average nil)
-  :config
-  (display-time-mode 1))
-
-(global-visual-line-mode 1)
-
-(use-package hl-line
-  :config
-  (global-hl-line-mode 1)
-  (dolist (hook '(comint-mode-hook eshell-mode-hook))
-    (add-hook hook (lambda () (setq-local global-hl-line-mode nil)))))
-
-(use-package display-line-numbers
-  :custom
-  (display-line-numbers-type t)
-  :config
-  (dolist (hook '(conf-mode-hook nxml-mode-hook prog-mode-hook))
-    (add-hook hook 'display-line-numbers-mode)))
-
-(use-package font-lock)
-
-(use-package faces
-  :config
-  (set-face-attribute 'default nil
-                      :family "DejaVu Sans Mono"
-                      :height 130)
-
-  (set-face-attribute 'fixed-pitch nil
-                      :family "DejaVu Sans Mono"
-                      :height 130)
-
-  (set-face-attribute 'variable-pitch nil
-                      :family "DejaVu Serif"
-                      :height 160))
-
-(use-package face-remap
-  :config
-  (defun my/remap-pitch-faces (_enable)
-    (face-remap--remap-face 'fixed-pitch)
-    (face-remap--remap-face 'variable-pitch))
-  
-  (advice-add 'text-scale-mode :after #'my/remap-pitch-faces))
-
-(defun my/enable-variable-pitch-mode (&optional exceptions)
-  "Enable `variable-pitch-mode' only in sensible major modes."
-  (unless (derived-mode-p 'html-mode 'nxml-mode 'org-mode 'markdown-mode)
-    (variable-pitch-mode 1)))
-
-(use-package text-mode
-  :defer t
-  :config
-  (add-hook 'text-mode-hook #'my/enable-variable-pitch-mode))
-
-(use-package nerd-icons-dired
-  :hook
-  (dired-mode . nerd-icons-dired-mode)
-  :after dired)
-
-(use-package ef-themes
-  :custom
-  (ef-themes-mixed-fonts t)
-  (ef-themes-to-toggle '(ef-eagle ef-autumn))
-  :config
-  (defun my/adjust-opacity (&optional theme)
-    "Make sure opacity is correct for a given theme."
-    (interactive)
-    (let ((theme (if theme theme (ef-themes--current-theme))))
-      (set-frame-parameter nil 'alpha-background
-                           (if (member theme ef-themes-light-themes)
-                               100
-                             80))))
-
-  (advice-add 'ef-themes-load-theme :after #'my/adjust-opacity)
-
-  (with-eval-after-load 'server
-    (add-hook 'server-after-make-frame-hook
-              (lambda ()
-                (ef-themes-load-theme (ef-themes--current-theme)))))
-
-  (with-eval-after-load 'markdown-mode
-    (add-hook 'markdown-mode-hook #'variable-pitch-mode))
-
-  (with-eval-after-load 'elfeed
-    (add-hook 'elfeed-show-mode-hook #'variable-pitch-mode))
-
-  (with-eval-after-load 'org
-    (advice-add 'ef-themes-load-theme :after #'my/fontify-org-buffers)
-    (add-hook 'org-mode-hook #'variable-pitch-mode))
-  
-  (ef-themes-select-dark 'ef-autumn))
-
 (use-package orderless 
   :custom
   (completion-styles '(orderless basic))
@@ -294,15 +151,6 @@ Otherwise set locally with `keymap-local-set'."
   (marginalia-mode 1)
   :after vertico)
 
-(use-package disable-mouse
-  :custom
-  (global-disable-mouse-mode-lighter . nil)
-  :hook
-  (after-init . global-disable-mouse-mode))
-
-(setopt scroll-conservatively 10000
-        auto-window-vscroll nil)
-
 (use-package consult
   :custom
   (consult-buffer-sources '(consult--source-hidden-buffer
@@ -314,6 +162,20 @@ Otherwise set locally with `keymap-local-set'."
                             consult--source-project-buffer-hidden
                             consult--source-project-recent-file-hidden
                             consult--source-project-root-hidden)))
+
+(use-package isearch
+  :commands (isearch-forward isearch-backward)
+  :custom
+  (isearch-lazy-count t))
+
+(setopt scroll-conservatively 10000
+        auto-window-vscroll nil)
+
+(use-package disable-mouse
+  :custom
+  (global-disable-mouse-mode-lighter . nil)
+  :hook
+  (after-init . global-disable-mouse-mode))
 
 (unless (boundp '*hidden-buffers*)
   (defvar *hidden-buffers* ()
@@ -491,6 +353,7 @@ See `my/dired-run-command'."
   (org-startup-folded t)
   (org-M-RET-may-split-line '((default . nil)))
   (org-insert-heading-respect-content t)
+  (org-image-actual-width '(300))
 
   (org-log-done 'time)
   (org-log-into-drawer t)
@@ -652,7 +515,10 @@ Helpful advice for face changing functions."
   (meow-setup)
   (meow-global-mode 1)
   (meow--remove-modeline-indicator)
-  (meow-setup-indicator))
+  (meow-setup-indicator)
+
+  (with-eval-after-load 'hl-line
+    (global-hl-line-mode -1)))
 
 (use-package eshell
   :commands eshell
@@ -767,6 +633,7 @@ and save an appropriate entry for `elfeed-feeds' to the kill ring."
   :defer t)
 
 (use-package gnus-start
+  :defer t
   :custom
   (gnus-use-dribble-file nil)
   :after gnus)

@@ -305,7 +305,9 @@
      ("byggsteg" . "https://byggsteg.jointhefreeworld.org")
      ("oculuslambda" . "https://oculuslambda.jointhefreeworld.org")
      ("hygguile" . "https://hygguile.jointhefreeworld.org"))
-    ("jjba23 codeberg" . "https://codeberg.org/jjba23")))
+    ("jjba23 codeberg" . "https://codeberg.org/jjba23")
+    ("socials" ("whatsapp" . "https://web.whatsapp.com/")
+     ("mastodon" . "https://mastodon.social"))))
 
 (define serialized-firefox-bookmarks
   `(dl ,(map serialize-sss-firefox-bookmark sss-firefox-bookmarks)))

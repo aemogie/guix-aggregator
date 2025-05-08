@@ -19,6 +19,7 @@
   #:use-module (gnu)
   #:use-module (nongnu packages fonts)
   #:use-module (nongnu packages messaging)
+  #:use-module (nongnu packages k8s)
   #:use-module (nongnu packages chrome)
   #:use-module (nongnu packages music)
   #:use-module (gnu services nix)
@@ -321,6 +322,7 @@
         imagemagick
         inkscape
         jq
+        kubectl
         libreoffice
         light
         lm-sensors

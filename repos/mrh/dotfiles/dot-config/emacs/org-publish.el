@@ -345,7 +345,8 @@ time in `current-time' format."
                                           "pdf"
                                           "png"
                                           "svg"
-                                          "webm"))
+                                          "webm"
+                                          "ttf"))
            :recursive t)
           ("site.pages"
            :base-directory ,site-source-directory

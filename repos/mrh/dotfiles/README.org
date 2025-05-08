@@ -1,13 +1,13 @@
 #+author: Alec Barreto
 #+options: toc:nil
 
-* Dotfiles
-These are the configuration files for my personal guix + emacs setup. Feel free to take anything you find helpful and tell me your thoughts!
+These are the configuration files for my personal guix + emacs setup.
+Feel free to take anything you find helpful and tell me your thoughts!
 
 #+caption: desktop screenshot
 [[file:screenshot.png]]
 
-** Free Software
+* Free Software
 The most important part of my system is that it uses as much [[https://www.gnu.org/philosophy/free-sw.en.html][free software]] as possible.
 I also have a fondness for lisp and hackable systems, hence why I control as much of my computing as possible through GNU Guix and Emacs.
 
@@ -15,7 +15,7 @@ My system is not completely free however, as some of my hardware is completely n
 I hope hardware manufacturers turn away from this practice.
 Those that do would surely have the business of myself and many others.
 
-** Guix
+* Guix
 [[https://guix.gnu.org][GNU Guix]] is a purely functional package manager and distribution of the GNU sytsem. It is committed to dependability (unbreakable), hackability, and software freedom.
 I run Guix System, but it can also be installed as a standalone package manager on any GNU/Linux distribution.
 
@@ -27,7 +27,7 @@ Here is where I setup [[https://guix.gnu.org/manual/en/html_node/Home-Configurat
 
 Finally, my custom packages which are either not available or more up to date than those in the standard guix repo are available as a [[https://guix.gnu.org/manual/devel/en/html_node/Channels.html][guix channel]] at [[https://codeberg.org/mrh/guix-channel][codeberg.org/mrh/guix-channel]].
 
-** Emacs
+* Emacs
 [[https://www.gnu.org/software/emacs][GNU Emacs]] is a text editor and lisp interpreter designed to maximize hackability and software freedom, in addition to serving as the primary text editor for the GNU system.
 
 I use emacs for just about everything on my computer other than browsing the web and consuming audio/visual media. This of course includes editing source code, but also:
@@ -46,5 +46,5 @@ I use emacs for just about everything on my computer other than browsing the web
 
 All of my emacs packages are installed and managed via guix home (see =Guix= section).
 
-My configuration can be found at =dot-config/emacs/init.org=.
-Note that my =init.el= is simply the tangled elisp codeblocks from =init.org=.
+My configuration can be found at =dot-config/emacs/config.org=.
+Note that my =init.el= is simply the tangled elisp codeblocks from =config.org=.

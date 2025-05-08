@@ -25,11 +25,7 @@
 
 (define* (sss-fastfetch-conf #:key clone-dir)
   `(($schema . "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json")
-    ;; (logo (source unquote
-    ;; (format #f "~a/resources/img/meditate.png"
-    ;; (string-replace-substring clone-dir "$HOME" "~")))
-    ;; (height . 10)
-    ;; (type . auto))
+    (logo . "GNU")
     (modules . #(title separator os host kernel uptime packages shell display wm wmtheme theme icons terminal cpu gpu memory disk battery locale break colors))))
 
 (begin

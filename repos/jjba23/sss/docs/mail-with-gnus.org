@@ -592,7 +592,7 @@ Here are three commands =w3mext-open-with-mplayer=, =w3mext-download-rss-stream=
         (message "%s => clipd/kill-ring" cmd))))))
 
 (defun w3mext-open-link-or-image-or-url ()
-  "Opens the current link or image or current page's uri or any url-like text under cursor in icecat."
+  "Opens the current link or image or current page's uri or any url-like text under cursor in browser."
   (interactive)
   (let* (url)
     (when (or (string= major-mode "w3m-mode") (string= major-mode "gnus-article-mode"))

@@ -87,6 +87,37 @@ According to size, color and font family"
                         :foreground (ef-themes-get-color-value 'yellow-faint))
 
     (ignore-errors
+      (set-face-attribute 'markdown-pre-face nil
+		          :font sss-font-mono
+                          :height (tekengrootte-mk-font-size 0.95))
+      (set-face-attribute 'markdown-code-face nil                       
+		          :font sss-font-mono
+                          :height (tekengrootte-mk-font-size 0.95))
+      (set-face-attribute 'markdown-inline-code-face nil                       
+		          :font sss-font-mono
+                          :height (tekengrootte-mk-font-size 0.95))
+      (set-face-attribute 'markdown-header-face-1 nil
+                          :font sss-font-sans
+                          :weight 'bold
+		          :height (tekengrootte-mk-font-size 1.2))
+      (set-face-attribute 'markdown-header-face-2 nil
+                          :font sss-font-sans
+                          :weight 'bold
+		          :height (tekengrootte-mk-font-size 1.2))
+      (set-face-attribute 'markdown-header-face-3 nil
+                          :font sss-font-sans
+                          :weight 'bold
+		          :height (tekengrootte-mk-font-size 1.1))
+      (set-face-attribute 'markdown-header-face-4 nil
+                          :font sss-font-sans
+                          :weight 'bold
+		          :height (tekengrootte-mk-font-size 1.1))
+      (set-face-attribute 'markdown-header-face-5 nil
+                          :font sss-font-sans
+                          :weight 'bold
+		          :height (tekengrootte-mk-font-size 1.0)))
+    
+    (ignore-errors
       (set-face-attribute 'org-table nil 
 		          :height (tekengrootte-mk-font-size 1.05)
 		          :font sss-font-mono)
@@ -95,10 +126,10 @@ According to size, color and font family"
 		          :font sss-font-mono)
       (set-face-attribute 'org-block nil
 		          :font sss-font-mono
-                          :height (tekengrootte-mk-font-size 1.05))
+                          :height (tekengrootte-mk-font-size 0.95))
       (set-face-attribute 'org-code nil                       
 		          :font sss-font-mono
-                          :height (tekengrootte-mk-font-size 1.05))
+                          :height (tekengrootte-mk-font-size 0.95))
       (set-face-attribute 'org-verbatim nil                       
 		          :font sss-font-mono
                           :height (tekengrootte-mk-font-size 1.05))

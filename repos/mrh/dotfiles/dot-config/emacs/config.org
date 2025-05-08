@@ -3,38 +3,219 @@
 #+date: [{{{time(%Y-%m-%d)}}}]
 #+export_file_name: emacs-config
 #+options: toc:1 num:2
-#+property: header-args :tangle yes
+#+property: header-args :tangle init.el
 
 Note that this is for emacs 29.x with pgtk on wayland.
 Most here is agnostic of that but some is not.
 
 * Early Init
-** Suprress Symlink Warning
+:PROPERTIES:
+:header-args: :tangle early-init.el
+:END:
+** Suppress Symlink Warning
 
-#+begin_src emacs-lisp :tangle early-init.el
+#+begin_src emacs-lisp
 (setq vc-follow-symlinks t)
-#+end_src
-
-** Workaround White Flash On Startup
-
-#+begin_src emacs-lisp :tangle early-init.el
-(setq default-frame-alist '((background-color . "#000000")
-                            (ns-appearance . dark)
-                            (ns-transparent-titlebar . t)
-                            (alpha-background . 80)))
 #+end_src
 
 ** GC Optimizations
 
-#+begin_src emacs-lisp :tangle early-init.el
+#+begin_src emacs-lisp
 (defun restore-gc-cons-threshold ()
-  (setq gc-cons-threshold 32000000
+  (setq gc-cons-threshold 16000000
         gc-cons-percentage 0.1))
 
 (setq gc-cons-threshold most-positive-fixnum
       gc-cons-percentage 0.6)
 
 (add-hook 'emacs-startup-hook #'restore-gc-cons-threshold 105)
+#+end_src
+
+** UI
+*** Opacity / Transparency
+NOTE: On wayland emacs must be pure GTK (=emacs-pgtk= on guix)
+
+#+begin_src emacs-lisp
+(add-to-list 'default-frame-alist '(alpha-background . 80))
+#+end_src
+
+*** General Cleanup
+**** Startup Buffers
+
+#+begin_src emacs-lisp
+(setopt initial-scratch-message nil
+        inhibit-startup-screen t)
+#+end_src
+
+**** Toolbars
+
+#+begin_src emacs-lisp
+(use-package scroll-bar
+  :config
+  (scroll-bar-mode -1))
+
+(use-package tool-bar
+  :config
+  (tool-bar-mode -1))
+
+(use-package menu-bar
+  :config
+  (menu-bar-mode -1))
+#+end_src
+
+**** Cursor
+
+#+begin_src emacs-lisp
+(use-package frame
+  :config
+  (blink-cursor-mode -1))
+#+end_src
+
+*** X / Wayland Window Properties
+
+#+begin_src emacs-lisp
+(setopt frame-title-format "%b")
+(add-to-list 'default-frame-alist '(undecorated . t))
+#+end_src
+
+*** Mode Line
+
+#+begin_src emacs-lisp
+(setopt mode-line-format
+        '("%e"
+          mode-line-front-space
+          mode-line-mule-info
+          mode-line-client
+          mode-line-modified
+          mode-line-remote
+          "  "
+          mode-line-buffer-identification
+          "  "
+          mode-line-position-column-line-format
+          "  "
+          (vc-mode vc-mode)
+          "  "
+          mode-name
+          "  "
+          (:eval (unless (zerop
+                          (bound-and-true-p text-scale-mode-amount))
+                   text-scale-mode-lighter))
+          "  "
+          mode-line-misc-info
+          mode-line-end-spaces))
+
+(setopt mode-line-compact 'long)
+
+(use-package time
+  :custom
+  (display-time-format "%R")
+  (display-time-default-load-average nil)
+  :config
+  (display-time-mode 1))
+#+end_src
+
+*** Lines
+
+#+begin_src emacs-lisp
+(global-visual-line-mode 1)
+
+(use-package hl-line
+  :config
+  (global-hl-line-mode 1)
+  (dolist (hook '(comint-mode-hook eshell-mode-hook))
+    (add-hook hook (lambda () (setq-local global-hl-line-mode nil)))))
+
+(use-package display-line-numbers
+  :custom
+  (display-line-numbers-type t)
+  :config
+  (dolist (hook '(conf-mode-hook nxml-mode-hook prog-mode-hook))
+    (add-hook hook 'display-line-numbers-mode)))
+#+end_src
+
+*** Fonts
+
+#+begin_src emacs-lisp
+(use-package font-lock)
+
+(use-package faces
+  :config
+  (set-face-attribute 'default nil
+                      :family "DejaVu Sans Mono"
+                      :height 130)
+
+  (set-face-attribute 'fixed-pitch nil
+                      :family "DejaVu Sans Mono"
+                      :height 130)
+
+  (set-face-attribute 'variable-pitch nil
+                      :family "DejaVu Serif"
+                      :height 160))
+
+(use-package face-remap
+  :config
+  (defun my/remap-pitch-faces (_enable)
+    (face-remap--remap-face 'fixed-pitch)
+    (face-remap--remap-face 'variable-pitch))
+  
+  (advice-add 'text-scale-mode :after #'my/remap-pitch-faces))
+
+(defun my/enable-variable-pitch-mode (&optional exceptions)
+  "Enable `variable-pitch-mode' only in sensible major modes."
+  (unless (derived-mode-p 'html-mode 'nxml-mode 'org-mode 'markdown-mode)
+    (variable-pitch-mode 1)))
+
+(use-package text-mode
+  :defer t
+  :config
+  (add-hook 'text-mode-hook #'my/enable-variable-pitch-mode))
+#+end_src
+
+**** Icons
+You may need to call =(nerd-icons-install-fonts)=
+
+#+begin_src emacs-lisp
+(use-package nerd-icons-dired
+  :hook
+  (dired-mode . nerd-icons-dired-mode)
+  :after dired)
+#+end_src
+
+*** Themes
+
+#+begin_src emacs-lisp
+(use-package ef-themes
+  :custom
+  (ef-themes-mixed-fonts t)
+  (ef-themes-to-toggle '(ef-eagle ef-autumn))
+  :config
+  (defun my/adjust-opacity (&optional theme)
+    "Make sure opacity is correct for a given theme."
+    (interactive)
+    (let ((theme (if theme theme (ef-themes--current-theme))))
+      (set-frame-parameter nil 'alpha-background
+                           (if (member theme ef-themes-light-themes)
+                               100
+                             80))))
+
+  (advice-add 'ef-themes-load-theme :after #'my/adjust-opacity)
+
+  (with-eval-after-load 'server
+    (add-hook 'server-after-make-frame-hook
+              (lambda ()
+                (ef-themes-load-theme (ef-themes--current-theme)))))
+
+  (with-eval-after-load 'markdown-mode
+    (add-hook 'markdown-mode-hook #'variable-pitch-mode))
+
+  (with-eval-after-load 'elfeed
+    (add-hook 'elfeed-show-mode-hook #'variable-pitch-mode))
+
+  (with-eval-after-load 'org
+    (advice-add 'ef-themes-load-theme :after #'my/fontify-org-buffers)
+    (add-hook 'org-mode-hook #'variable-pitch-mode))
+  
+  (ef-themes-select-dark 'ef-autumn))
 #+end_src
 
 * Files / Directories
@@ -211,195 +392,8 @@ Otherwise set locally with `keymap-local-set'."
   (repeat-mode 1))
 #+end_src
 
-* UI
-** Opacity/Transparency
-NOTE: On wayland emacs must be pure GTK (=emacs-pgtk= on guix)
-
-#+begin_src emacs-lisp
-(add-to-list 'default-frame-alist '(alpha-background . 80))
-#+end_src
-
-** General Cleanup
-*** Startup Buffers
-
-#+begin_src emacs-lisp
-(setopt initial-scratch-message nil
-        inhibit-startup-screen t)
-#+end_src
-
-*** Toolbars
-
-#+begin_src emacs-lisp
-(use-package scroll-bar
-  :config
-  (scroll-bar-mode -1))
-
-(use-package tool-bar
-  :config
-  (tool-bar-mode -1))
-
-(use-package menu-bar
-  :config
-  (menu-bar-mode -1))
-#+end_src
-
-*** Cursor
-
-#+begin_src emacs-lisp
-(use-package frame
-  :config
-  (blink-cursor-mode -1))
-#+end_src
-
-** X/Wayland Window Properties
-
-#+begin_src emacs-lisp
-(setopt frame-title-format "%b")
-(add-to-list 'default-frame-alist '(undecorated . t))
-#+end_src
-
-** Mode Line
-
-#+begin_src emacs-lisp
-(setopt mode-line-format
-        '("%e"
-          mode-line-front-space
-          mode-line-mule-info
-          mode-line-client
-          mode-line-modified
-          mode-line-remote
-          "  "
-          mode-line-buffer-identification
-          "  "
-          mode-line-position-column-line-format
-          "  "
-          (vc-mode vc-mode)
-          "  "
-          mode-name
-          "  "
-          (:eval (unless (zerop
-                          (bound-and-true-p text-scale-mode-amount))
-                   text-scale-mode-lighter))
-          "  "
-          mode-line-misc-info
-          mode-line-end-spaces))
-
-(setopt mode-line-compact 'long)
-
-(use-package time
-  :custom
-  (display-time-format "%R")
-  (display-time-default-load-average nil)
-  :config
-  (display-time-mode 1))
-#+end_src
-
-** Lines
-
-#+begin_src emacs-lisp
-(global-visual-line-mode 1)
-
-(use-package hl-line
-  :config
-  (global-hl-line-mode 1)
-  (dolist (hook '(comint-mode-hook eshell-mode-hook))
-    (add-hook hook (lambda () (setq-local global-hl-line-mode nil)))))
-
-(use-package display-line-numbers
-  :custom
-  (display-line-numbers-type t)
-  :config
-  (dolist (hook '(conf-mode-hook nxml-mode-hook prog-mode-hook))
-    (add-hook hook 'display-line-numbers-mode)))
-#+end_src
-
-** Fonts
-
-#+begin_src emacs-lisp
-(use-package font-lock)
-
-(use-package faces
-  :config
-  (set-face-attribute 'default nil
-                      :family "DejaVu Sans Mono"
-                      :height 130)
-
-  (set-face-attribute 'fixed-pitch nil
-                      :family "DejaVu Sans Mono"
-                      :height 130)
-
-  (set-face-attribute 'variable-pitch nil
-                      :family "DejaVu Serif"
-                      :height 160))
-
-(use-package face-remap
-  :config
-  (defun my/remap-pitch-faces (_enable)
-    (face-remap--remap-face 'fixed-pitch)
-    (face-remap--remap-face 'variable-pitch))
-  
-  (advice-add 'text-scale-mode :after #'my/remap-pitch-faces))
-
-(defun my/enable-variable-pitch-mode (&optional exceptions)
-  "Enable `variable-pitch-mode' only in sensible major modes."
-  (unless (derived-mode-p 'html-mode 'nxml-mode 'org-mode 'markdown-mode)
-    (variable-pitch-mode 1)))
-
-(use-package text-mode
-  :defer t
-  :config
-  (add-hook 'text-mode-hook #'my/enable-variable-pitch-mode))
-#+end_src
-
-*** Icons
-You may need to call =(nerd-icons-install-fonts)=
-
-#+begin_src emacs-lisp
-(use-package nerd-icons-dired
-  :hook
-  (dired-mode . nerd-icons-dired-mode)
-  :after dired)
-#+end_src
-
-** Themes
-
-#+begin_src emacs-lisp
-(use-package ef-themes
-  :custom
-  (ef-themes-mixed-fonts t)
-  (ef-themes-to-toggle '(ef-eagle ef-autumn))
-  :config
-  (defun my/adjust-opacity (&optional theme)
-    "Make sure opacity is correct for a given theme."
-    (interactive)
-    (let ((theme (if theme theme (ef-themes--current-theme))))
-      (set-frame-parameter nil 'alpha-background
-                           (if (member theme ef-themes-light-themes)
-                               100
-                             80))))
-
-  (advice-add 'ef-themes-load-theme :after #'my/adjust-opacity)
-
-  (with-eval-after-load 'server
-    (add-hook 'server-after-make-frame-hook
-              (lambda ()
-                (ef-themes-load-theme (ef-themes--current-theme)))))
-
-  (with-eval-after-load 'markdown-mode
-    (add-hook 'markdown-mode-hook #'variable-pitch-mode))
-
-  (with-eval-after-load 'elfeed
-    (add-hook 'elfeed-show-mode-hook #'variable-pitch-mode))
-
-  (with-eval-after-load 'org
-    (advice-add 'ef-themes-load-theme :after #'my/fontify-org-buffers)
-    (add-hook 'org-mode-hook #'variable-pitch-mode))
-  
-  (ef-themes-select-dark 'ef-autumn))
-#+end_src
-
-** Completion
-*** Fuzzy Finding
+* Completion
+** Fuzzy Finding
 
 #+begin_src emacs-lisp
 (use-package orderless 
@@ -409,7 +403,7 @@ You may need to call =(nerd-icons-install-fonts)=
   (completion-category-overrides nil))
 #+end_src
 
-*** Main Buffer
+** Main Buffer
 
 #+begin_src emacs-lisp
 (use-package corfu 
@@ -431,7 +425,7 @@ You may need to call =(nerd-icons-install-fonts)=
     (add-to-list 'savehist-additional-variables 'corfu-history)))
 #+end_src
 
-*** Minibuffer
+** Minibuffer
 
 #+begin_src emacs-lisp
 (use-package vertico
@@ -441,7 +435,7 @@ You may need to call =(nerd-icons-install-fonts)=
 (setopt use-short-answers t)
 #+end_src
 
-*** Annotations
+** Annotations
 
 #+begin_src emacs-lisp
 (use-package marginalia
@@ -450,26 +444,9 @@ You may need to call =(nerd-icons-install-fonts)=
   :after vertico)
 #+end_src
 
-** Mouse
-Disable the mouse
-
-#+begin_src emacs-lisp
-(use-package disable-mouse
-  :custom
-  (global-disable-mouse-mode-lighter . nil)
-  :hook
-  (after-init . global-disable-mouse-mode))
-#+end_src
-
-** Scrolling
-
-#+begin_src emacs-lisp
-(setopt scroll-conservatively 10000
-        auto-window-vscroll nil)
-#+end_src
-
 * Navigation
 ** Consult
+
 #+begin_src emacs-lisp
 (use-package consult
   :custom
@@ -482,6 +459,33 @@ Disable the mouse
                             consult--source-project-buffer-hidden
                             consult--source-project-recent-file-hidden
                             consult--source-project-root-hidden)))
+#+end_src
+
+** Search
+
+#+begin_src emacs-lisp
+(use-package isearch
+  :commands (isearch-forward isearch-backward)
+  :custom
+  (isearch-lazy-count t))
+#+end_src
+
+** Scrolling
+
+#+begin_src emacs-lisp
+(setopt scroll-conservatively 10000
+        auto-window-vscroll nil)
+#+end_src
+
+** Mouse
+Disable the mouse
+
+#+begin_src emacs-lisp
+(use-package disable-mouse
+  :custom
+  (global-disable-mouse-mode-lighter . nil)
+  :hook
+  (after-init . global-disable-mouse-mode))
 #+end_src
 
 ** Buffers
@@ -752,6 +756,7 @@ See [[https://unimath.github.io/agda-unimath/HOWTO-INSTALL.html#emacs][agda-unim
   (org-startup-folded t)
   (org-M-RET-may-split-line '((default . nil)))
   (org-insert-heading-respect-content t)
+  (org-image-actual-width '(300))
 
   (org-log-done 'time)
   (org-log-into-drawer t)
@@ -1129,6 +1134,7 @@ and save an appropriate entry for `elfeed-feeds' to the kill ring."
   :defer t)
 
 (use-package gnus-start
+  :defer t
   :custom
   (gnus-use-dribble-file nil)
   :after gnus)
