@@ -87,6 +87,7 @@
                   erc
                   go
                   libs
+                  macros
                   maps
                   misc
                   music

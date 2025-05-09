@@ -1,4 +1,4 @@
-;;; libs.el --- Libs configuration for Emacs -*- lexical-binding: t -*-
+;;; macros.el --- Macros for Emacs -*- lexical-binding: t -*-
 
 ;; Copyright © Josep Bigorra <jjbigorra@gmail.com>
 
@@ -17,30 +17,22 @@
 
 ;;; Commentary:
 
-;; Libs configuration for Emacs
+;; Macros for Emacs
 
 ;;; Code:
 
-(use-package transient :ensure t)
+(defun replace-css-class-hygguile-abstraction ()
+  (interactive)
+  (kill-region 10305 10346 'region)
+  (backward-char 1)
+  (delete-char 1 nil)
+  (delete-char 1 nil)
+  (insert ",(->css '(")
+  (yank nil)
+  (insert "))"))
 
-(use-package f :ensure t)
 
-(use-package page-break-lines :ensure t)
 
-(use-package queue
-  :ensure (:host github :repo "emacs-straight/queue" :branch "master")
-  :demand t)
+(provide 'sss/macros)
 
-;; (use-package compat
-;;   :ensure (:host github :repo "emacs-compat/compat" :branch "main"))
-
-(use-package elmacro
-  :ensure (:host github :repo "Silex/elmacro" :branch "master")
-  :demand t
-  :config
-  (elmacro-mode +1))
-
-(provide 'sss/libs)
-
-;;; libs.el ends here
-
+;;; maps.el ends here
