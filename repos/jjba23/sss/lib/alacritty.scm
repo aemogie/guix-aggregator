@@ -37,8 +37,9 @@
 (define sss-alacritty-scrolling
   `((history . 100000)))
 
-(define sss-alacritty-font
-  `((normal . "{ family = \"Adwaita Mono\", style = \"Regular\" }")
+(define* (sss-alacritty-font #:key mono-font)
+  `((normal unquote
+            (format #f "{ family = \"~a\", style = \"Regular\" }" mono-font))
     (size . 11)))
 
 (define* (sss-alacritty-colors-primary #:key palette)
@@ -131,15 +132,18 @@
                                      #:k ">"
                                      #:action 'ScrollToBottom)))
 
-(define* (sss-alacritty-config #:key palette)
-  (append (list "" "[general]")
+(define* (sss-alacritty-config #:key palette mono-font)
+  (append '("# ====== SSS Alacritty configuration ======" "#"
+            "# auto-generated file, DO NOT EDIT!")
+          (list "" "[general]")
           (map serialize-alacritty-setting sss-alacritty-general)
           (list "" "[window]")
           (map serialize-alacritty-setting sss-alacritty-window)
           (list "" "[scrolling]")
           (map serialize-alacritty-setting sss-alacritty-scrolling)
           (list "" "[font]")
-          (map serialize-alacritty-setting sss-alacritty-font)
+          (map serialize-alacritty-setting
+               (sss-alacritty-font #:mono-font mono-font))
           (list "" "[terminal]")
           (map serialize-alacritty-setting sss-alacritty-terminal)
           (list "" "[colors.primary]")
@@ -158,9 +162,12 @@
   (export serialize-alacritty-config))
 
 (begin
-  (define* (sss-alacritty-svc #:key palette
-                              (config (sss-alacritty-config #:palette palette)))
+  (define* (sss-alacritty-svc #:key palette mono-font)
     `((".config/alacritty/alacritty.toml" ,(plain-file "alacritty.toml"
                                                        (serialize-alacritty-config
-                                                        #:config config)))))
+                                                        #:config (sss-alacritty-config
+                                                                  #:palette
+                                                                  palette
+                                                                  #:mono-font
+                                                                  mono-font))))))
   (export sss-alacritty-svc))

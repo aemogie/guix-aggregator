@@ -25,14 +25,6 @@
   "SSS customization group."
   :group 'tools)
 
-(defcustom sss-font-mono "Adwaita Mono"
-  "My personal choice for monospaced font family."
-  :type 'string)
-
-(defcustom sss-font-sans "Adwaita Sans"
-  "My personal choice for sans font family."
-  :type 'string)
-
 (defcustom sss-ews-music-directory "~/Muziek"
   "My personal main directory where to read music from."
   :type 'string)

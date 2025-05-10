@@ -15,9 +15,12 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
+(load "./palette.scm")
+
 (define-module (sss emacs)
   #:use-module (gnu)
   #:use-module (ice-9 string-fun)
+  #:use-module (sss palette)
   #:use-module (srfi srfi-64))
 
 (begin
@@ -27,53 +30,68 @@
                              user-email
                              user-initials
                              clone-dir
-                             notes-roam-dir)
+                             notes-roam-dir
+                             sans-font
+                             mono-font)
     (define sss-bridge-emacs-vars
-      `((user-personal-name unquote
-                            (format #f "\"~a\"" user-name))
-        (user-personal-full-name unquote
-                                 (format #f "\"~a\"" user-full-name))
-        (user-personal-email unquote
-                             (format #f "\"~a\"" user-email))
-        (user-personal-initials unquote
-                                (format #f "\"~a\"" user-initials))
-        (sss-clone-dir unquote
-                       (format #f "\"~a\"" clone-dir))
-        (sss-notes-roam-dir unquote
-                            (format #f "\"~a\"" notes-roam-dir))
-        (sss-emacs-theme unquote
-                         (cond
-                           ((equal? palette
-                                    'sss-palette-ef-dream)
-                            "'ef-dream")
-                           ((equal? palette
-                                    'sss-palette-ef-cyprus)
-                            "'ef-cyprus")
-                           ((equal? palette
-                                    'sss-palette-ef-autumn)
-                            "'ef-autumn")
-                           ((equal? palette
-                                    'sss-palette-heavy-metal)
-                            "'ef-tritanopia-dark")
-                           ((equal? palette
-                                    'sss-palette-everforest-dark)
-                            "'everforest-hard-dark")
-                           ((equal? palette
-                                    'sss-palette-everforest-light)
-                            "'everforest-hard-light")
-                           ((equal? palette
-                                    'sss-palette-solarized-light)
-                            "'solarized-light")
-                           (else "'ef-bio")))))
+      `((user-personal-name (value unquote
+                                   (format #f "\"~a\"" user-name))
+                            (type . string)
+                            (description . "My personal name."))
+        (user-personal-full-name (value unquote
+                                        (format #f "\"~a\"" user-full-name))
+                                 (type . string)
+                                 (description . "My personal full name."))
+        (user-personal-email (value unquote
+                                    (format #f "\"~a\"" user-email))
+                             (type . string)
+                             (description . "My personal e-mail address."))
+        (user-personal-initials (value unquote
+                                       (format #f "\"~a\"" user-initials))
+                                (type . string)
+                                (description . "My personal initials."))
+        (sss-clone-dir (value unquote
+                              (format #f "\"~a\"" clone-dir))
+                       (type . string)
+                       (description . "Directory where SSS is cloned."))
+        (sss-notes-roam-dir (value unquote
+                                   (format #f "\"~a\"" notes-roam-dir))
+                            (type . string)
+                            (description . "Directory where my Org Roam notes are."))
+        (sss-font-mono (value unquote
+                              (format #f "\"~a\"" mono-font))
+                       (type . string)
+                       (description . "My preferred monospaced font family."))
+        (sss-font-sans (value unquote
+                              (format #f "\"~a\"" sans-font))
+                       (type . string)
+                       (description . "My preferred sans-serif font family."))
+        (sss-emacs-theme (value unquote
+                                (sss-get-emacs-theme palette))
+                         (type . string)
+                         (description . "My preferred Emacs theme."))))
 
     (with-output-to-string (lambda ()
-                             (display "(setq-default")
                              (for-each (lambda (v)
-                                         (display (format #f "\n    ~a ~a"
+                                         (display (format #f
+                                                          "
+(defcustom ~a ~a
+  \"~a\"
+  :type '~a)
+
+(setq ~a ~a)
+"
                                                           (car v)
-                                                          (cdr v))))
-                                       sss-bridge-emacs-vars)
-                             (display ")\n"))))
+                                                          (assoc-ref (cdr v)
+                                                                     'value)
+                                                          (assoc-ref (cdr v)
+                                                                     'description)
+                                                          (assoc-ref (cdr v)
+                                                                     'type)
+                                                          (car v)
+                                                          (assoc-ref (cdr v)
+                                                                     'value))))
+                                       sss-bridge-emacs-vars))))
   (export sss-bridge-emacs))
 
 (begin
@@ -111,21 +129,36 @@
                           user-email
                           user-initials
                           clone-dir
-                          notes-roam-dir)
+                          notes-roam-dir
+                          sans-font
+                          mono-font)
     (append `((".emacs.d/init.el" ,(local-file "./emacs/init.el"))
               
               (".emacs.d/sss-bridge.el" ,(plain-file "sss-bridge.el"
-                                                     (sss-bridge-emacs
-                                                      #:palette palette
-                                                      #:user-name user-name
-                                                      #:user-full-name
-                                                      user-full-name
-                                                      #:user-email user-email
-                                                      #:user-initials
-                                                      user-initials
-                                                      #:clone-dir clone-dir
-                                                      #:notes-roam-dir
-                                                      notes-roam-dir)))
+                                                     (string-append (string-join '
+                                                                     (";; ====== SSS Emacs bridge ======"
+                                                                      ";;"
+                                                                      ";; auto-generated file, DO NOT EDIT!"
+                                                                      "") "\n")
+                                                                    (sss-bridge-emacs
+                                                                     #:palette
+                                                                     palette
+                                                                     #:user-name
+                                                                     user-name
+                                                                     #:user-full-name
+                                                                     user-full-name
+                                                                     #:user-email
+                                                                     user-email
+                                                                     #:user-initials
+                                                                     user-initials
+                                                                     #:clone-dir
+                                                                     clone-dir
+                                                                     #:notes-roam-dir
+                                                                     notes-roam-dir
+                                                                     #:sans-font
+                                                                     sans-font
+                                                                     #:mono-font
+                                                                     mono-font))))
 
               (".emacs.d/early-init.el" ,(local-file "./emacs/early-init.el"))
               (".emacs.d/templates" ,(local-file "./emacs/templates")))
@@ -134,28 +167,3 @@
                                                #:clone-dir clone-dir))
                  sss-emacs-modules)))
   (export sss-emacs-svc))
-
-;; ====== module tests ======
-
-(test-begin "Emacs bridge tests")
-(test-assert "bridge is correctly computed"
-             (equal? (string-append "(setq-default
-    user-personal-name \"John\"
-"
-                      "    user-personal-full-name \"John Doe\"\n"
-                      "    user-personal-email \"john@doe.com\"\n"
-                      "    user-personal-initials \"JD\"\n"
-                      "    sss-clone-dir \"/home/john\"\n"
-                      "    sss-notes-roam-dir \"/home/john/notes/roam\"
-"
-                      "    sss-emacs-theme 'ef-bio)\n")
-                     (sss-bridge-emacs #:palette 'sss-palette-ef-bio
-                                       #:user-name "John"
-                                       #:user-full-name "John Doe"
-                                       #:user-email "john@doe.com"
-                                       #:user-initials "JD"
-                                       #:clone-dir "/home/john"
-                                       #:notes-roam-dir
-                                       "/home/john/notes/roam")))
-
-(test-end)

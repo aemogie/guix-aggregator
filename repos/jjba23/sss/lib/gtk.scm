@@ -24,124 +24,37 @@
   #:use-module (sss process))
 
 (begin
-  (define* (sss-gtk3-config #:key palette
-                            (fixed-theme #f)
-                            (fixed-icon-theme #f))
+  (define* (sss-gtk3-config #:key palette)
     `((gtk-icon-theme-name unquote
-                           (cond
-                             ((not (equal? #f fixed-icon-theme))
-                              fixed-icon-theme)
-                             ((equal? 'sss-palette-ef-cyprus palette)
-                              "Yaru-sage")
-                             ((equal? 'sss-palette-ef-autumn palette)
-                              "Yaru-dark")
-                             ((equal? 'sss-palette-heavy-metal palette)
-                              "Yaru-red-dark")
-                             ((equal? 'sss-palette-ef-dream palette)
-                              "Yaru-magenta-dark")
-                             ((equal? 'sss-palette-solarized-light palette)
-                              "Yaru")
-                             ((equal? 'sss-palette-everforest-light palette)
-                              "Yaru-sage")
-                             (else "Yaru-sage-dark")))
+                           (sss-get-icon-theme palette))
       (gtk-theme-name unquote
-                      (cond
-                        ((not (equal? #f fixed-theme))
-                         fixed-theme)
-                        ((equal? 'sss-palette-ef-cyprus palette)
-                         "Yaru-sage")
-                        ((equal? 'sss-palette-heavy-metal palette)
-                         "Yaru-red-dark")
-                        ((equal? 'sss-palette-ef-autumn palette)
-                         "Yaru-dark")
-                        ((equal? 'sss-palette-ef-dream palette)
-                         "Yaru-magenta-dark")
-                        ((equal? 'sss-palette-solarized-light palette)
-                         "Yaru")
-                        ((equal? 'sss-palette-everforest-light palette)
-                         "Yaru-sage")
-                        (else "Yaru-sage-dark")))
+                      (sss-get-gtk-theme palette))
       (gtk-font-name . "Adwaita Sans 11")
-      (gtk-key-theme-name . "Emacs")
+      (gtk-key-theme-name . Emacs)
       (gtk-enable-event-sounds . 0)
-      (gtk-cursor-theme-name . "Yaru")
+      (gtk-cursor-theme-name unquote
+                             (sss-get-cursor-theme palette))
       (gtk-cursor-theme-size . 24)
       (gtk-enable-input-feedback-sounds . 0)
       (gtk-application-prefer-dark-theme unquote
-                                         (cond
-                                           ((equal? 'sss-palette-ef-cyprus
-                                                    palette)
-                                            0)
-                                           ((equal? 'sss-palette-ef-dream
-                                                    palette)
-                                            1)
-                                           ((equal? 'sss-palette-solarized-light
-                                                    palette)
-                                            0)
-                                           ((equal? 'sss-palette-everforest-light
-                                                    palette)
-                                            0)
-                                           (else 1)))))
+                                         (if (sss-is-dark-palette palette) 1 0))))
   (export sss-gtk3-config))
 
 (begin
-  (define* (sss-gtk4-config #:key palette
-                            (fixed-theme #f)
-                            (fixed-icon-theme #f))
+  (define* (sss-gtk4-config #:key palette)
     `((gtk-icon-theme-name unquote
-                           (cond
-                             ((not (equal? #f fixed-icon-theme))
-                              fixed-icon-theme)
-                             ((equal? 'sss-palette-ef-cyprus palette)
-                              "Yaru-sage")
-                             ((equal? 'sss-palette-heavy-metal palette)
-                              "Yaru-red-dark")
-                             ((equal? 'sss-palette-ef-autumn palette)
-                              "Yaru-dark")
-                             ((equal? 'sss-palette-ef-dream palette)
-                              "Yaru-magenta-dark")
-                             ((equal? 'sss-palette-solarized-light palette)
-                              "Yaru")
-                             ((equal? 'sss-palette-everforest-light palette)
-                              "Yaru-sage")
-                             (else "Yaru-sage-dark")))
+                           (sss-get-icon-theme palette))
       (gtk-theme-name unquote
-                      (cond
-                        ((not (equal? #f fixed-theme))
-                         fixed-theme)
-                        ((equal? 'sss-palette-ef-cyprus palette)
-                         "Yaru-sage")
-                        ((equal? 'sss-palette-heavy-metal palette)
-                         "Yaru-red-dark")
-                        ((equal? 'sss-palette-ef-autumn palette)
-                         "Yaru-dark")
-                        ((equal? 'sss-palette-ef-dream palette)
-                         "Yaru-magenta-dark")
-                        ((equal? 'sss-palette-solarized-light palette)
-                         "Yaru")
-                        ((equal? 'sss-palette-everforest-light palette)
-                         "Yaru-sage")
-                        (else "Yaru-sage-dark")))
+                      (sss-get-gtk-theme palette))
       (gtk-font-name . "Adwaita Sans 11")
+      (gtk-key-theme-name . Emacs)
       (gtk-enable-event-sounds . 0)
-      (gtk-cursor-theme-name . "Yaru")
+      (gtk-cursor-theme-name unquote
+                             (sss-get-cursor-theme palette))
       (gtk-cursor-theme-size . 24)
       (gtk-enable-input-feedback-sounds . 0)
       (gtk-application-prefer-dark-theme unquote
-                                         (cond
-                                           ((equal? 'sss-palette-ef-cyprus
-                                                    palette)
-                                            0)
-                                           ((equal? 'sss-palette-ef-dream
-                                                    palette)
-                                            1)
-                                           ((equal? 'sss-palette-solarized-light
-                                                    palette)
-                                            0)
-                                           ((equal? 'sss-palette-everforest-light
-                                                    palette)
-                                            0)
-                                           (else 1)))))
+                                         (if (sss-is-dark-palette palette) 1 0))))
   (export sss-gtk4-config))
 
 (begin

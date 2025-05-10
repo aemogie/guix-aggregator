@@ -15,15 +15,19 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
+(load "./palette.scm")
+
 (define-module (sss vars)
   #:use-module (gnu home)
   #:use-module (gnu home services)
   #:use-module (gnu home services shells)
+  #:use-module (sss palette)
   #:use-module (gnu services))
 
 ;; Environment variables Guix service for a user, plug into SSS
 (begin
-  (define* (sss-home-vars-service #:key (clone-dir "$HOME/hacking/sss")
+  (define* (sss-home-vars-service #:key palette
+                                  (clone-dir "$HOME/hacking/sss")
                                   (lang "en_US")
                                   (desktop-dir "$HOME/desktop")
                                   (documents-dir "$HOME/documents")
@@ -53,7 +57,8 @@
                     ("HISTCONTROL" . "ignoreboth:erasedups")
                     ("HISTFILESIZE" . "200000")
                     ("XCURSOR_SIZE" . "24")
-                    ("XCURSOR_THEME" . "Yaru")
+                    ("XCURSOR_THEME" unquote
+                     (sss-get-cursor-theme palette))
                     ("CC" . "/run/current-system/profile/bin/gcc")
                     ("SDL_VIDEODRIVER" . "wayland")
                     ("_JAVA_AWT_WM_NONREPARENTING" . "1")

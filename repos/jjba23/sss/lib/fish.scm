@@ -158,10 +158,9 @@
 
 (begin
   (define* (sss-fish-config #:key clone-dir palette)
-    (append `("#
-# SSS - Supreme Sexp System - fish configurations
+    (append `("# ====== SSS Fish configuration ======
 #
-# auto-generated file! do not edit!
+# auto-generated file, DO NOT EDIT!
 #
 "
               ;; turn on the Emacs-style keybindings for the shell

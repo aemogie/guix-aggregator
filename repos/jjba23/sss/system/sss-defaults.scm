@@ -73,8 +73,16 @@
 ;;   - sss-palette-heavy-metal
 ;;   - sss-palette-solarized-light
 ;;   - sss-palette-ef-autumn
+;;   - sss-palette-everforest-dark
+;;   - sss-palette-everforest-light
 (define sss-palette
   'sss-palette-ef-dream)
+
+(define sss-sans-font
+  "Adwaita Sans")
+
+(define sss-mono-font
+  "Adwaita Mono")
 
 ;; Nix packages to install
 (define sss-nixpkgs

@@ -45,15 +45,23 @@
       (else (format #f "~a/resources/wallpapers/some-forest.jpg" clone-dir))))
   (export sss-hypr-wallpaper))
 
+;; hyprpaper: Hyprpaper is a blazing fast wallpaper utility for Hyprland
+;; with the ability to dynamically change wallpapers through sockets.
+;; It will work on all wlroots-based compositors, though.
+;;
+;; https://github.com/hyprwm/hyprpaper
 (begin
   (define* (sss-hyprpaper-config #:key img)
-    (string-join (map (lambda (l)
-                        (serialize-hypr-setting (car l)
-                                                (cdr l)))
-                      `((preload unquote img)
-                        (splash . false)
-                        (wallpaper unquote
-                                   (format #f ",~a" img)))) "\n"))
+    (let* ((config-lines (map (lambda (l)
+                                (serialize-hypr-setting (car l)
+                                                        (cdr l)))
+                              `((preload unquote img)
+                                (splash . false)
+                                (wallpaper unquote
+                                           (format #f ",~a" img))))))
+      (string-join (append `("# ====== SSS Hyprpaper configuration ======" "#"
+                             "# auto-generated file, DO NOT EDIT!" "")
+                           config-lines) "\n")))
   (export sss-hyprpaper-config))
 
 (begin

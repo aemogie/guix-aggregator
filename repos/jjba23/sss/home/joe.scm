@@ -87,10 +87,12 @@
                    (sss-gtk4-svc #:palette sss-palette)
                    (sss-git-svc)
                    (sss-waybar-svc #:palette sss-palette
+                                   #:sans-font sss-sans-font
                                    #:with-memory #t
                                    #:hyprland-session #t)
                    (sss-rofi-svc #:palette sss-palette)
-                   (sss-alacritty-svc #:palette sss-palette)
+                   (sss-alacritty-svc #:palette sss-palette
+                                      #:mono-font sss-mono-font)
                    (sss-foot-svc #:palette sss-palette)
                    (sss-hyprland-svc #:palette sss-palette
                                      #:clone-dir sss-clone-dir
@@ -110,7 +112,8 @@
                    (sss-fastfetch-svc #:clone-dir sss-clone-dir)
                    (sss-fish-svc #:clone-dir sss-clone-dir
                                  #:palette sss-palette)
-                   (sss-mako-svc #:palette sss-palette)
+                   (sss-mako-svc #:palette sss-palette
+                                 #:sans-font sss-sans-font)
                    (sss-emacs-svc #:palette sss-palette
                                   #:user-name "Joe"
                                   #:user-full-name "Josep Bigorra"
@@ -118,7 +121,9 @@
                                   #:user-email "jjbigorra@gmail.com"
                                   #:clone-dir sss-clone-dir
                                   #:notes-roam-dir
-                                  "$HOME/hacking/private-notes/roam")
+                                  "$HOME/hacking/private-notes/roam"
+                                  #:sans-font sss-sans-font
+                                  #:mono-font sss-mono-font)
                    (sss-nix-svc)
                    (sss-qt6-svc #:palette sss-palette)
                    (sss-containers-svc)
@@ -129,11 +134,13 @@
 (display "
 >>= configuring Joe's home environment...
 ")
+
 (home-environment
   (services
    (append (list sss-home-files-service
                  (sss-ssh-service)
-                 (sss-home-vars-service #:clone-dir sss-clone-dir
+                 (sss-home-vars-service #:palette sss-palette
+                                        #:clone-dir sss-clone-dir
                                         #:lang sss-lang)
                  (sss-bash-service #:clone-dir sss-clone-dir)
                  sss-openpgp-conf

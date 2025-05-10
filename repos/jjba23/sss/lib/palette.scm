@@ -21,6 +21,11 @@
   #:use-module (ice-9 exceptions)
   #:use-module (srfi srfi-64))
 
+(define-public (raise-unknown-palette-exception palette)
+  (raise-exception (make-exception-with-message (format #f
+                                                 "exception ocurred! unknown palette selected: ~a"
+                                                 palette))))
+
 (define-public (sss-get-color palette sym)
   (match palette
     ('sss-palette-ef-bio (cdr (assoc sym sss-palette-ef-bio)))
@@ -32,9 +37,67 @@
     ('sss-palette-everforest-light (cdr (assoc sym
                                                sss-palette-everforest-light)))
     ('sss-palette-everforest-dark (cdr (assoc sym sss-palette-everforest-dark)))
-    (_ (raise-exception (make-exception-with-message (format #f
-                                                      "exception ocurred! unknown palette selected: ~a"
-                                                      palette))))))
+    (_ (raise-unknown-palette-exception palette))))
+
+(define-public (sss-get-gtk-theme palette)
+  (match palette
+    ('sss-palette-ef-bio "Yaru-sage-dark")
+    ('sss-palette-ef-dream "Yaru-magenta-dark")
+    ('sss-palette-heavy-metal "Yaru-red-dark")
+    ('sss-palette-ef-cyprus "Yaru-sage")
+    ('sss-palette-ef-autumn "Yaru-dark")
+    ('sss-palette-solarized-light "Yaru")
+    ('sss-palette-everforest-light "Yaru-sage")
+    ('sss-palette-everforest-dark "Yaru-sage-dark")
+    (_ (raise-unknown-palette-exception palette))))
+
+(define-public (sss-is-dark-palette palette)
+  (match palette
+    ('sss-palette-ef-bio #t)
+    ('sss-palette-ef-dream #t)
+    ('sss-palette-heavy-metal #t)
+    ('sss-palette-ef-cyprus #f)
+    ('sss-palette-ef-autumn #t)
+    ('sss-palette-solarized-light #f)
+    ('sss-palette-everforest-light #f)
+    ('sss-palette-everforest-dark #t)
+    (_ (raise-unknown-palette-exception palette))))
+
+(define-public (sss-get-icon-theme palette)
+  (match palette
+    ('sss-palette-ef-bio "Yaru-sage-dark")
+    ('sss-palette-ef-dream "Yaru-magenta-dark")
+    ('sss-palette-heavy-metal "Yaru-red-dark")
+    ('sss-palette-ef-cyprus "Yaru-sage")
+    ('sss-palette-ef-autumn "Yaru-dark")
+    ('sss-palette-solarized-light "Yaru")
+    ('sss-palette-everforest-light "Yaru-sage")
+    ('sss-palette-everforest-dark "Yaru-sage-dark")
+    (_ (raise-unknown-palette-exception palette))))
+
+(define-public (sss-get-emacs-theme palette)
+  (match palette
+    ('sss-palette-ef-bio "'ef-bio")
+    ('sss-palette-ef-dream "'ef-dream")
+    ('sss-palette-heavy-metal "'ef-tritanopia-dark")
+    ('sss-palette-ef-cyprus "'ef-cyprus")
+    ('sss-palette-ef-autumn "'ef-autumn")
+    ('sss-palette-solarized-light "'solarized-light")
+    ('sss-palette-everforest-light "'everforest-hard-light")
+    ('sss-palette-everforest-dark "'everforest-hard-dark")
+    (_ (raise-unknown-palette-exception palette))))
+
+(define-public (sss-get-cursor-theme palette)
+  (match palette
+    ('sss-palette-ef-bio "Yaru")
+    ('sss-palette-ef-dream "Yaru")
+    ('sss-palette-heavy-metal "Yaru")
+    ('sss-palette-ef-cyprus "Yaru")
+    ('sss-palette-ef-autumn "Yaru")
+    ('sss-palette-solarized-light "Yaru")
+    ('sss-palette-everforest-light "Yaru")
+    ('sss-palette-everforest-dark "Yaru")
+    (_ (raise-unknown-palette-exception palette))))
 
 (begin
   (define (hex-to-decimal n)

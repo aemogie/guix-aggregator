@@ -107,7 +107,9 @@
 
 (begin
   (define* (sss-bash-config #:key clone-dir)
-    (append (map serialize-bash-vars sss-bash-vars)
+    (append '("# ====== SSS Bash configuration ======" "#"
+              "# auto-generated file, DO NOT EDIT!")
+            (map serialize-bash-vars sss-bash-vars)
             (map serialize-bash-exports sss-bash-exports)
             (map serialize-bash-function sss-bash-functions)
             (map serialize-bash-alias

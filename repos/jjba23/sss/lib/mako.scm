@@ -23,7 +23,7 @@
   #:use-module (sss process))
 
 (begin
-  (define* (sss-mako-config #:key palette)
+  (define* (sss-mako-config #:key palette sans-font)
     `((sort . "-time") (max-history . 7)
       (on-button-left . dismiss)
       (on-button-right . invoke-default-action)
@@ -39,17 +39,20 @@
                   (string-upcase (format #f "~abb"
                                          (sss-get-color palette
                                                         'text))))
-      (font . "Adwaita Sans 11")
+      (font unquote
+            (format #f "~a 11" sans-font))
       (width . 420)
       (icons . 1)
-      (default-timeout . 12000)
+      (default-timeout . 10000)
       (ignore-timeout . 1)
       (border-radius . 10)))
   (export sss-mako-config))
 
 (begin
-  (define* (sss-mako-svc #:key palette)
+  (define* (sss-mako-svc #:key palette sans-font)
     `((".config/mako/config" ,(plain-file "config"
                                           (mk-kv-conf-lines (sss-mako-config
-                                                             #:palette palette))))))
+                                                             #:palette palette
+                                                             #:sans-font
+                                                             sans-font))))))
   (export sss-mako-svc))

@@ -83,9 +83,11 @@
                    (sss-mime-svc)
                    (sss-waybar-svc #:palette sss-palette
                                    #:with-memory #f
-                                   #:labwc-session #t)
+                                   #:labwc-session #t
+                                   #:sans-font sss-sans-font)
                    (sss-portals-svc)
-                   (sss-mako-svc #:palette sss-palette)
+                   (sss-mako-svc #:palette sss-palette
+                                 #:sans-font sss-sans-font)
                    (sss-containers-svc)
                    (sss-labwc-svc #:extra-startups sss-labwc-extra-startups))))
 

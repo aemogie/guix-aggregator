@@ -33,34 +33,9 @@
 
 (define* (hypr-startup-programs #:key palette
                                 (extra-startups '()))
-  (let* ((gtk-theme-name (cond
-                           ((equal? 'sss-palette-ef-cyprus palette)
-                            "Yaru-sage")
-                           ((equal? 'sss-palette-heavy-metal palette)
-                            "Yaru-red-dark")
-                           ((equal? 'sss-palette-ef-dream palette)
-                            "Yaru-magenta-dark")
-                           ((equal? 'sss-palette-ef-autumn palette)
-                            "Yaru-dark")
-                           ((equal? 'sss-palette-solarized-light palette)
-                            "Yaru")
-                           ((equal? 'sss-palette-everforest-light palette)
-                            "Yaru-sage")
-                           (else "Yaru-sage-dark")))
-         (icon-theme-name (cond
-                            ((equal? 'sss-palette-ef-cyprus palette)
-                             "Yaru-sage")
-                            ((equal? 'sss-palette-heavy-metal palette)
-                             "Yaru-red-dark")
-                            ((equal? 'sss-palette-ef-dream palette)
-                             "Yaru-magenta-dark")
-                            ((equal? 'sss-palette-ef-autumn palette)
-                             "Yaru-dark")
-                            ((equal? 'sss-palette-solarized-light palette)
-                             "Yaru")
-                            ((equal? 'sss-palette-everforest-light palette)
-                             "Yaru-sage")
-                            (else "Yaru-sage-dark")))
+  (let* ((gtk-theme-name (sss-get-gtk-theme palette))
+         (icon-theme-name (sss-get-icon-theme palette))
+         (cursor-theme-name (sss-get-cursor-theme palette))
          (xs (append extra-startups
                      `("lxsession" "mako"
                        "dbus-update-activation-environment --all"
@@ -77,7 +52,9 @@
                        ,(format #f
                          "gsettings set org.gnome.desktop.interface icon-theme '~a'"
                          icon-theme-name)
-                       "gsettings set org.gnome.desktop.interface cursor-theme 'Yaru'"
+                       ,(format #f
+                         "gsettings set org.gnome.desktop.interface cursor-theme '~a'"
+                         cursor-theme-name)
                        "gsettings set org.gnome.desktop.interface cursor-size 24"
                        "gsettings set org.gnome.desktop.interface font-name 'Adwaita Sans'"
                        "xdg-user-dirs-update"))))
@@ -336,6 +313,11 @@
                                   #:palette palette)
           hypr-mouse-binds))
 
+;; hyprland: Hyprland is a 100% independent, dynamic tiling Wayland compositor that doesn't sacrifice on its looks.
+;; It provides the latest Wayland features, is highly customizable, has all the eyecandy, the most powerful plugins,
+;; easy IPC, much more QoL stuff than other compositors and more... 
+;;
+;; https://github.com/hyprwm/Hyprland
 (begin
   (define* (sss-hyprland-config #:key clone-dir
                                 keyboard-layout
@@ -382,7 +364,7 @@
                                                         (serialize-hypr-setting 'windowrulev2
                                                          r)) window-rules)
                                                  "\n"))
-           (config-lines (append `("# ====== SSS Hypr configuration ======"
+           (config-lines (append `("# ====== SSS Hyprland configuration ======"
                                    "#"
                                    "# auto-generated file, DO NOT EDIT!"
                                    ""

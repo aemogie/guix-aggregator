@@ -128,7 +128,8 @@
 (define* (sss-waybar-taskbar #:key palette)
   `(wlr/taskbar (format . "{icon} {title:.28}")
                 (icon-size . 16)
-                (icon-theme . "Yaru")
+                (icon-theme unquote
+                            (sss-get-icon-theme palette))
                 (tooltip-format . "{title}")
                 (on-click . "activate")
                 (on-click-middle . "minimize")))
@@ -218,9 +219,10 @@
 ;; - Dynamic colors fetched from `sss-get-color` for consistency with theme settings.
 ;; - Use of transition effects and alpha blending to enhance UI responsiveness.
 (begin
-  (define* (sss-waybar-css #:key palette)
+  (define* (sss-waybar-css #:key palette sans-font)
     `((module (background . transparent)
-              (font-family . "FontAwesome, Adwaita Sans")
+              (font-family unquote
+                           (format #f "FontAwesome, ~a" sans-font))
               (font-weight . 500)
               (color unquote
                      (sss-get-color palette
@@ -243,7 +245,8 @@
                                                                    'background)
                                                     #:alpha 0.0))
        (padding . "8px")
-       (font-family . "FontAwesome, Adwaita Sans")
+       (font-family unquote
+                    (format #f "FontAwesome, ~a" sans-font))
        (color unquote
               (sss-get-color palette
                              'text)))
@@ -297,8 +300,11 @@
   (export sss-waybar-css))
 
 (begin
-  (define* (sss-waybar-svc #:key palette with-memory labwc-session
-                           hyprland-session)
+  (define* (sss-waybar-svc #:key palette
+                           with-memory
+                           labwc-session
+                           hyprland-session
+                           sans-font)
     `( ;Waybar configuration (for status bar)
        (".config/waybar/config.jsonc" ,(plain-file "config.jsonc"
                                                    (scm->json-string (sss-waybar-conf
@@ -317,7 +323,9 @@
       (".config/waybar/style.css" ,(plain-file "waybar.css"
                                                (mk-css-conf-lines (sss-waybar-css
                                                                    #:palette
-                                                                   palette))))
+                                                                   palette
+                                                                   #:sans-font
+                                                                   sans-font))))
       ;; Waybar Power menu from Scheme to XML format
       (".config/waybar/power_menu.xml" ,(plain-file "power_menu.xml"
                                                     (with-output-to-string (lambda ()

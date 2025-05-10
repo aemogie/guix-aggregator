@@ -23,6 +23,9 @@
   #:use-module (sss palette)
   #:use-module (sss hyprland hyprlang))
 
+;; hyprlock: Hyprland's simple, yet multi-threaded and GPU-accelerated screen locking utility.
+;;
+;; https://github.com/hyprwm/hyprlock
 (begin
   (define* (sss-hyprlock-config #:key clone-dir)
     (let* ((serialized-img (serialize-hypr-section #:section 'image
@@ -91,6 +94,7 @@
                                                                        (blur_passes . 2)
                                                                        (color . "rgb(10, 10, 10)"))))
            (config-lines (append `("# ====== SSS Hyprlock configuration ======"
+                                   "#" "# auto-generated file, DO NOT EDIT!"
                                    "")
                                  `("# ====== UI elements ======" ""
                                    ,serialized-img
