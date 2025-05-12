@@ -130,7 +130,6 @@
                    (sss-portals-svc)
                    (sss-enchant-svc))))
 
-;; Configure user's Guix home environment
 (display "
 >>= configuring Joe's home environment...
 ")

@@ -7,12 +7,8 @@
 
 * Guix System
 #+begin_src scheme :tangle gokuraku.scm :noweb yes
-  (define-module (gokuraku)
-    #:use-module (gnu)
-    #:use-module (testament common)
-    #:use-module (testament counter-stop)
-    #:use-module (testament packages)
-    <<module>>)
+  (load "../common.scm")
+  (use-modules (gnu) <<module>>)
 
   <<definition>>
 
@@ -31,12 +27,12 @@
 
 * Base
 #+begin_src scheme :noweb-ref module
-  #:use-module (srfi srfi-26)
-  #:use-module (ice-9 match)
-  #:use-module (gnu packages gnupg)
-  #:use-module (gnu packages rsync)
-  #:use-module (gnu packages shells)
-  #:use-module (sops packages sops)
+  (srfi srfi-26)
+  (ice-9 match)
+  (gnu packages gnupg)
+  (gnu packages rsync)
+  (gnu packages shells)
+  (sops packages sops)
 #+end_src
 
 ** Bootloader
@@ -151,8 +147,8 @@ No need to install less used ones, prefer ‘guix shell’.
 
 * Kernel
 #+begin_src scheme :noweb-ref module
-  #:use-module (gnu services sysctl)
-  #:use-module (gnu packages linux)
+  (gnu services sysctl)
+  (gnu packages linux)
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
@@ -179,8 +175,8 @@ No need to install less used ones, prefer ‘guix shell’.
 * Networking
 ** nftables
 #+begin_src scheme :noweb-ref module
-  #:use-module (gnu services networking)
-  #:use-module (rosenthal services networking)
+  (gnu services networking)
+  (rosenthal services networking)
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -228,8 +224,8 @@ No need to install less used ones, prefer ‘guix shell’.
 
 * Session and Seat Management
 #+begin_src scheme :noweb-ref module
-  #:use-module (gnu services dbus)
-  #:use-module (gnu services desktop)
+  (gnu services dbus)
+  (gnu services desktop)
 #+end_src
 
 ** dbus
@@ -244,9 +240,9 @@ No need to install less used ones, prefer ‘guix shell’.
 
 * SSH
 #+begin_src scheme :noweb-ref module
-  #:use-module (gnu services security)
-  #:use-module (gnu services ssh)
-  #:use-module (gnu packages ssh)
+  (gnu services security)
+  (gnu services ssh)
+  (gnu packages ssh)
 #+end_src
 
 #+begin_src scheme :noweb-ref package
@@ -286,7 +282,7 @@ No need to install less used ones, prefer ‘guix shell’.
 
 * Containers
 #+begin_src scheme :noweb-ref module
-  #:use-module (gnu services docker)
+  (gnu services docker)
 #+end_src
 
 ** containerd
@@ -303,8 +299,8 @@ No need to install less used ones, prefer ‘guix shell’.
 
 * Databases
 #+begin_src scheme :noweb-ref module
-  #:use-module (gnu services databases)
-  #:use-module (gnu packages databases)
+  (gnu services databases)
+  (gnu packages databases)
 #+end_src
 
 ** postgresql
@@ -321,8 +317,8 @@ No need to install less used ones, prefer ‘guix shell’.
 
 * Web Servers
 #+begin_src scheme :noweb-ref module
-  #:use-module (gnu services certbot)
-  #:use-module (rosenthal services child-error)
+  (gnu services certbot)
+  (rosenthal services child-error)
 #+end_src
 
 ** cloudflared
@@ -344,9 +340,9 @@ No need to install less used ones, prefer ‘guix shell’.
 
 * Web Services
 #+begin_src scheme :noweb-ref module
-  #:use-module (rosenthal services child-error)
-  #:use-module (rosenthal services mail)
-  #:use-module (rosenthal services web)
+  (rosenthal services child-error)
+  (rosenthal services mail)
+  (rosenthal services web)
 #+end_src
 
 ** docker-mailserver
@@ -451,7 +447,7 @@ No need to install less used ones, prefer ‘guix shell’.
 
 * Miscellaneous
 #+begin_src scheme :noweb-ref module
-  #:use-module (rosenthal services file-systems)
+  (rosenthal services file-systems)
 #+end_src
 
 ** btrbk

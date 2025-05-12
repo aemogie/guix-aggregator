@@ -10,16 +10,14 @@ This repository contains my dotfiles and Guix System literate configurations (wi
 
 ** Structure
 + [[file:config][config]]: Guix System configurations.
-+ [[file:modules][modules]]: Guile modules.
 + [[file:files/blobs][files/blobs]]: Private files.
 + [[file:files/dotfiles][files/dotfiles]]: Dotfiles for ~home-dotfiles-service-type~.
 + [[file:files/plain][files/plain]]: Files to be referenced in Guix configurations.
-+ [[file:.envrc][.envrc]]: direnv configuration to manage environment variables.
 + [[file:.sops.yaml][.sops.yaml]] -> [[file:files/plain/sops.yaml][files/plain/sops.yaml]]: SOPS configuration for secrets management.
 
 See [[file:Makefile][Makefile]] for usage.
 
-Dependencies: direnv, guix.
+Dependencies: guix, sops.
 
 ** Resources
 + [[https://files.spritely.institute/papers/scheme-primer.html][A Scheme Primer]]: Nice short guide to get you started with Scheme.

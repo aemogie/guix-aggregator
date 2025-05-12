@@ -64,6 +64,7 @@
              (sss gtk)
              (sss nix)
              (sss containers)
+             (sss hyprland hyprpaper)
              (sss portals)
              (sss qt)
              (sss channels)
@@ -82,6 +83,7 @@
                    (sss-rofi-svc #:palette sss-palette)
                    (sss-mime-svc)
                    (sss-waybar-svc #:palette sss-palette
+                                   #:sans-font sss-sans-font
                                    #:with-memory #f
                                    #:labwc-session #t
                                    #:sans-font sss-sans-font)
@@ -89,15 +91,19 @@
                    (sss-mako-svc #:palette sss-palette
                                  #:sans-font sss-sans-font)
                    (sss-containers-svc)
+                   (sss-hyprpaper-svc #:clone-dir sss-clone-dir
+                                      #:palette sss-palette)
                    (sss-labwc-svc #:extra-startups sss-labwc-extra-startups))))
 
 (display "
 >>= configuring Manon's home environment...
 ")
+
 (home-environment
   (services
    (append (list sss-home-files-service
-                 (sss-home-vars-service #:clone-dir sss-clone-dir
+                 (sss-home-vars-service #:palette sss-palette
+                                        #:clone-dir sss-clone-dir
                                         #:lang sss-lang)
                  (sss-bash-service #:clone-dir sss-clone-dir)
                  sss-openpgp-conf

@@ -7,12 +7,8 @@
 
 * Guix System
 #+begin_src scheme :tangle dorphine.scm :noweb yes
-  (define-module (dorphine)
-    #:use-module (gnu)
-    #:use-module (testament common)
-    #:use-module (testament counter-stop)
-    #:use-module (testament packages)
-    <<module>>)
+  (load "../common.scm")
+  (use-modules (gnu) <<module>>)
 
   <<definition>>
 
@@ -31,9 +27,9 @@
 
 * Guix Home
 #+begin_src scheme :noweb-ref module
-  #:use-module (gnu services guix)
-  #:use-module (gnu home)
-  #:use-module (gnu home services)
+  (gnu services guix)
+  (gnu home)
+  (gnu home services)
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref service
@@ -45,20 +41,20 @@
 
 * Base
 #+begin_src scheme :noweb-ref module
-  #:use-module (srfi srfi-26)
-  #:use-module (ice-9 match)
-  #:use-module (sops secrets)
-  #:use-module (gnu home services dotfiles)
-  #:use-module (gnu home services shells)
-  #:use-module (gnu home services shepherd)
-  #:use-module (sops home services sops)
-  #:use-module (rosenthal services keyboard)
-  #:use-module (gnu packages compression)
-  #:use-module (gnu packages fonts)
-  #:use-module (gnu packages gnupg)
-  #:use-module (gnu packages rsync)
-  #:use-module (gnu packages shells)
-  #:use-module (sops packages sops)
+  (srfi srfi-26)
+  (ice-9 match)
+  (sops secrets)
+  (gnu home services dotfiles)
+  (gnu home services shells)
+  (gnu home services shepherd)
+  (sops home services sops)
+  (rosenthal services keyboard)
+  (gnu packages compression)
+  (gnu packages fonts)
+  (gnu packages gnupg)
+  (gnu packages rsync)
+  (gnu packages shells)
+  (sops packages sops)
 #+end_src
 
 ** Bootloader
@@ -327,11 +323,9 @@ https://github.com/fishinthecalculator/sops-guix
 
 * Kernel
 #+begin_src scheme :noweb-ref module
-  #:use-module (guix packages)
-  #:use-module (guix download)
-  #:use-module (gnu packages linux)
-  #:use-module (nongnu system linux-initrd)
-  #:use-module (nongnu packages linux)
+  (nongnu system)
+  (nongnu system linux-initrd)
+  (nongnu packages linux)
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
@@ -355,7 +349,7 @@ https://github.com/fishinthecalculator/sops-guix
 
 * Power Management
 #+begin_src scheme :noweb-ref module
-  #:use-module (gnu services pm)
+  (gnu services pm)
 #+end_src
 
 ** tlp
@@ -365,15 +359,15 @@ https://github.com/fishinthecalculator/sops-guix
 
 * Networking
 #+begin_src scheme :noweb-ref module
-  #:use-module (gnu services desktop)
-  #:use-module (gnu services networking)
-  #:use-module (gnu services shepherd)
-  #:use-module (rosenthal services child-error)
-  #:use-module (rosenthal services networking)
-  #:use-module (gnu packages linux)
-  #:use-module (rosenthal services dns)
-  #:use-module (rosenthal packages binaries)
-  #:use-module (rosenthal packages dns)
+  (gnu services desktop)
+  (gnu services networking)
+  (gnu services shepherd)
+  (rosenthal services child-error)
+  (rosenthal services networking)
+  (gnu packages linux)
+  (rosenthal services dns)
+  (rosenthal packages binaries)
+  (rosenthal packages dns)
 #+end_src
 
 ** nftables
@@ -479,12 +473,12 @@ https://github.com/fishinthecalculator/sops-guix
 
 * Session and Seat Management
 #+begin_src scheme :noweb-ref module
-  #:use-module (gnu services dbus)
-  #:use-module (gnu services desktop)
-  #:use-module (rosenthal services file-systems)
-  #:use-module (gnu home services desktop)
-  #:use-module (gnu packages admin)
-  #:use-module (rosenthal packages admin)
+  (gnu services dbus)
+  (gnu services desktop)
+  (rosenthal services file-systems)
+  (gnu home services desktop)
+  (gnu packages admin)
+  (rosenthal packages admin)
 #+end_src
 
 ** dbus
@@ -535,7 +529,7 @@ https://github.com/fishinthecalculator/sops-guix
 
 * Containers
 #+begin_src scheme :noweb-ref module
-  #:use-module (gnu services docker)
+  (gnu services docker)
 #+end_src
 
 ** containerd
@@ -552,7 +546,7 @@ https://github.com/fishinthecalculator/sops-guix
 
 * Web Servers
 #+begin_src scheme :noweb-ref module
-  #:use-module (rosenthal services child-error)
+  (rosenthal services child-error)
 #+end_src
 
 ** cloudflared
@@ -565,9 +559,9 @@ https://github.com/fishinthecalculator/sops-guix
 
 * Web Services
 #+begin_src scheme :noweb-ref module
-  #:use-module (rosenthal services child-error)
-  #:use-module (rosenthal services web)
-  #:use-module (gnu packages fonts)
+  (rosenthal services child-error)
+  (rosenthal services web)
+  (gnu packages fonts)
 #+end_src
 
 ** jellyfin
@@ -598,28 +592,24 @@ https://github.com/fishinthecalculator/sops-guix
 
 * Graphical Session
 #+begin_src scheme :noweb-ref module
-  #:use-module (nonguix utils)
-  #:use-module (gnu services desktop)
-  #:use-module (gnu services xorg)
-  #:use-module (nongnu services nvidia)
-  #:use-module (gnu home services desktop)
-  #:use-module (gnu home services fontutils)
-  #:use-module (gnu packages freedesktop)
-  #:use-module (gnu packages fonts)
-  #:use-module (gnu packages gl)
-  #:use-module (gnu packages gnome)
-  #:use-module (gnu packages gnome-xyz)
-  #:use-module (gnu packages linux)
-  #:use-module (gnu packages qt)
-  #:use-module (gnu packages terminals)
-  #:use-module (gnu packages video)
-  #:use-module (gnu packages wm)
-  #:use-module (gnu packages xdisorg)
-  #:use-module (nongnu packages fonts)
-  #:use-module (nongnu packages nvidia)
-  #:use-module (nongnu packages video)
-  #:use-module (rosenthal packages wm)
-  #:use-module (rosenthal packages xorg)
+  (nongnu system)
+  (gnu services desktop)
+  (gnu services xorg)
+  (gnu home services desktop)
+  (gnu home services fontutils)
+  (gnu packages freedesktop)
+  (gnu packages fonts)
+  (gnu packages gl)
+  (gnu packages gnome)
+  (gnu packages gnome-xyz)
+  (gnu packages linux)
+  (gnu packages qt)
+  (gnu packages terminals)
+  (gnu packages wm)
+  (gnu packages xdisorg)
+  (nongnu packages fonts)
+  (rosenthal packages wm)
+  (rosenthal packages xorg)
 #+end_src
 
 ** Graphics Driver
@@ -814,7 +804,7 @@ To use NVK, mesa should be installed into a profile.
 
 * Multimedia
 #+begin_src scheme :noweb-ref module
-  #:use-module (gnu home services sound)
+  (gnu home services sound)
 #+end_src
 
 #+begin_src scheme :noweb-ref group
@@ -828,10 +818,10 @@ To use NVK, mesa should be installed into a profile.
 
 * OpenPGP
 #+begin_src scheme :noweb-ref module
-  #:use-module (gnu services security-token)
-  #:use-module (gnu home services gnupg)
-  #:use-module (gnu packages gnupg)
-  #:use-module (gnu packages ssh)
+  (gnu services security-token)
+  (gnu home services gnupg)
+  (gnu packages gnupg)
+  (gnu packages ssh)
 #+end_src
 
 ** pcscd
@@ -857,19 +847,19 @@ To use NVK, mesa should be installed into a profile.
 
 * Emacs
 #+begin_src scheme :noweb-ref module
-  #:use-module (gnu home services emacs)
-  #:use-module (gnu packages cpp)
-  #:use-module (gnu packages emacs)
-  #:use-module (gnu packages emacs-xyz)
-  #:use-module (gnu packages python)
-  #:use-module (gnu packages python-xyz)
-  #:use-module (gnu packages rust)
-  #:use-module (gnu packages shells)
-  #:use-module (gnu packages shellutils)
-  #:use-module (gnu packages tree-sitter)
-  #:use-module (gnu packages zig)
-  #:use-module (gnu packages zig-xyz)
-  #:use-module (rosenthal packages tree-sitter)
+  (gnu home services emacs)
+  (gnu packages cpp)
+  (gnu packages emacs)
+  (gnu packages emacs-xyz)
+  (gnu packages python)
+  (gnu packages python-xyz)
+  (gnu packages rust)
+  (gnu packages shells)
+  (gnu packages shellutils)
+  (gnu packages tree-sitter)
+  (gnu packages zig)
+  (gnu packages zig-xyz)
+  (rosenthal packages tree-sitter)
 #+end_src
 
 #+begin_src scheme :noweb-ref home-environment-variable
@@ -982,10 +972,12 @@ Load paths are inherited from the server's environment.  If reader extensions ar
             (provision '(ares))
             (start
              #~(make-forkexec-constructor
-                (list #$(file-append direnv "/bin/direnv") "exec"
-                      "/home/hako/Workspace/Testament"
-                      #$(file-append gnu-make "/bin/make") "ares" "-C"
-                      "/home/hako/Workspace/Testament")))
+                (list "guix" "shell" "guile-next" "guile-ares-rs"
+                      "--" "guile" "-c" (format #f "~
+  (begin ~
+     (use-modules (guix gexp) ~
+                  (gnu home services emacs)) ~
+     ((@ (ares server) run-nrepl-server)))"))))
             (stop #~(make-kill-destructor)))))
 #+end_src
 
@@ -1506,30 +1498,31 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 
 * Miscellaneous
 #+begin_src scheme :noweb-ref module
-  #:use-module (guix utils)
-  #:use-module (gnu services mcron)
-  #:use-module (rosenthal services bittorrent)
-  #:use-module (rosenthal services file-systems)
-  #:use-module (gnu home services mcron)
-  #:use-module (gnu home services shepherd)
-  #:use-module (gnu home services syncthing)
-  #:use-module (gnu packages android)
-  #:use-module (gnu packages bash)
-  #:use-module (gnu packages bittorrent)
-  #:use-module (gnu packages browser-extensions)
-  #:use-module (gnu packages fcitx5)
-  #:use-module (gnu packages games)
-  #:use-module (gnu packages librewolf)
-  #:use-module (gnu packages linux)
-  #:use-module (gnu packages mail)
-  #:use-module (gnu packages pulseaudio)
-  #:use-module (gnu packages rust-apps)
-  #:use-module (gnu packages security-token)
-  #:use-module (gnu packages version-control)
-  #:use-module (gnu packages wm)
-  #:use-module (gnu packages xdisorg)
-  #:use-module (nongnu packages game-client)
-  #:use-module (rosenthal packages rust-apps)
+  (guix download)
+  (guix packages)
+  (guix utils)
+  (rosenthal services bittorrent)
+  (rosenthal services file-systems)
+  (gnu home services shepherd)
+  (gnu home services syncthing)
+  (gnu packages android)
+  (gnu packages bash)
+  (gnu packages bittorrent)
+  (gnu packages browser-extensions)
+  (gnu packages fcitx5)
+  (gnu packages games)
+  (gnu packages librewolf)
+  (gnu packages linux)
+  (gnu packages mail)
+  (gnu packages pulseaudio)
+  (gnu packages rust-apps)
+  (gnu packages security-token)
+  (gnu packages version-control)
+  (gnu packages video)
+  (gnu packages wm)
+  (gnu packages xdisorg)
+  (nongnu packages game-client)
+  (rosenthal packages rust-apps)
 #+end_src
 
 ** adb
@@ -1698,18 +1691,14 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
             (stop #~(make-kill-destructor)))))
 #+end_src
 
-** mcron
-#+begin_src scheme :noweb yes :noweb-ref home-service
-  (service home-mcron-service-type
-    (for-home
-     (mcron-configuration
-       (jobs (list <<home-mcron-job>>)))))
-#+end_src
-
 ** modprobed-db
-#+begin_src scheme :noweb-ref home-mcron-job
-  #~(job next-hour-from
-         #$(file-append modprobed-db "/bin/modprobed-db storesilent"))
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'modprobed-db
+      home-shepherd-service-type
+    (list (shepherd-timer
+           '(update-modprobed-db)
+           #~(calendar-event #:minutes '(0))
+           #~(#$(file-append modprobed-db "/bin/modprobed-db") "storesilent"))))
 #+end_src
 
 [[file:../files/dotfiles/.config/modprobed-db.conf][~/.config/modprobed-db.conf]]

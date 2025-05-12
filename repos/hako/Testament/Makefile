@@ -2,7 +2,8 @@
 #
 # SPDX-License-Identifier: CC0-1.0
 
-ARGS  := --verbosity=1
+ARGS  :=
+OPTS  := $(ARGS) --verbosity=1
 GUIX  := guix
 EMACS := $(GUIX) shell emacs-next-minimal -- emacs
 
@@ -13,31 +14,31 @@ EMACS := $(GUIX) shell emacs-next-minimal -- emacs
 
 .PHONY: pull
 pull:
-	$(GUIX) pull --disable-authentication --channels=channels.scm $(ARGS)
+	$(GUIX) pull --channels=channels.scm $(OPTS)
 
 .PHONY: build
 build: build-dorphine build-gokuraku
 build-%: config/%.scm
-	$(GUIX) system build $< $(ARGS)
+	$(GUIX) system build $< $(OPTS)
 
 .PHONY: reconfigure
 reconfigure: reconfigure-dorphine
 reconfigure-%: config/%.scm
-	$(GUIX) system reconfigure $< $(ARGS)
+	$(GUIX) system reconfigure $< $(OPTS)
 
 .PHONY: home-build
 home-build: home-build-dorphine
 home-build-%: config/%.scm
-	$(GUIX) home build $< $(ARGS)
+	$(GUIX) home build $< $(OPTS)
 
 .PHONY: home-reconfigure
 home-reconfigure: home-reconfigure-dorphine
 home-reconfigure-%: config/%.scm
-	$(GUIX) home reconfigure $< $(ARGS)
+	$(GUIX) home reconfigure $< $(OPTS)
 
 .PHONY: deploy
 deploy: config/gokuraku.scm
-	$(GUIX) deploy files/blobs/deploy $(ARGS)
+	$(GUIX) deploy files/blobs/deploy $(OPTS)
 
 .PHONY: ares
 # Load reader extensions before starting nREPL server.

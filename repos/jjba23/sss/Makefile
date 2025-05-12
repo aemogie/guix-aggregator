@@ -179,8 +179,7 @@ fpu:  # Updates Flatpak packages
 # deploy: Deploys the manual HTML to a web server directory.
 deploy:
 	guix shell -m manifest.scm -- emacs -Q --batch \
-		-l $(shell realpath ./lib/sss-manual.el) \
-		--funcall sss/publish-manual
+		--eval '(progn (find-file "$(shell realpath ./docs/manual/en-GB.org)")(org-html-export-to-html)(message "finished publishing SSS manual"))'
 	mkdir -pv $(DEPLOY_WWW)/manuals/sss
 	rm -rfv $(DEPLOY_WWW)/manuals/sss/index.html
 	mv -v docs/manual/en-GB.html $(DEPLOY_WWW)/manuals/sss/index.html

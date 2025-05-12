@@ -2,7 +2,7 @@
 ;;;
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
-(use-modules (testament counter-stop))
+(load "common.scm")
 
 (list (channel
         (inherit %default-guix-channel)
