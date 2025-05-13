@@ -27,7 +27,7 @@
   (backward-char 1)
   (delete-char 1 nil)
   (delete-char 1 nil)
-  (insert ",(->css '(")
+  (insert ",(mk-class '(")
   (yank nil)
   (insert "))"))
 
