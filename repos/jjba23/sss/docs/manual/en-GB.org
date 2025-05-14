@@ -1128,3 +1128,19 @@ You will then just do a one time ~direnv allow~ and now your editor will magical
 
 ------
 
+* Acknowledgments
+
+The SSS project has been inspired by countless free software projects and amazing people. Here follow some shoutouts and thank yous, in no particular order:
+
+*Inspiring Projects*
+
+GNU Emacs, GNU Guix, Arch Linux, Void Linux, Nix, NixOS, Hyprland, ...
+
+*Inspiring People*
+
+- Richard M. Stallman for starting and making the free software movement thrive
+- Ludovic Courtès for his work on Guix and more
+- Andrew Tropin for his work on Guix and more, great videos, starting the RDE project
+- Derek Taylor (DT) for his great videos on free software and the GNU/Linux ecosystem
+- Mu Lei (NalaGinrut) for his great work on GNU Artanis and Scheme, and inspiring me to pursue my projects and power them with a Lispy flavor
+

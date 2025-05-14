@@ -70,6 +70,16 @@
                                           :hintsInPatternMatch (:enable nil ))
                             :bloopJvmProperties ["-Xmx2G"])
                   :haskell (:formattingProvider "ormolu")
+                  :typescript (:format (:baseIndentSize 0
+                                                        :convertTabsToSpaces t
+                                                        :indentSize 2
+                                                        :semicolons "remove"
+                                                        :tabSize 2))
+                  :javascript (:format (:baseIndentSize 0
+                                                        :convertTabsToSpaces t
+                                                        :indentSize 2
+                                                        :semicolons "remove"
+                                                        :tabSize 2))
                   :rust-analyzer (:cargo (:sysroot "discover"
                                                    :features "all"
                                                    :buildScripts (:enable t))
