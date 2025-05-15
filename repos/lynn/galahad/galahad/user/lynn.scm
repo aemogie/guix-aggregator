@@ -5,6 +5,7 @@
   #:use-module (gnu packages messaging)
   #:use-module (nongnu packages messaging)
   #:use-module (nongnu packages mozilla)
+  #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages pdf)
   #:use-module (gnu packages fonts)
   #:use-module (gnu packages fcitx5)
@@ -12,6 +13,7 @@
   #:use-module (gnu packages bqn)
   #:use-module (gnu packages apl)
   #:use-module (gnu packages emacs-xyz)
+  #:use-module (gnu packages shells)
   #:use-module (gnu packages llvm)
   #:use-module (gnu services) ;simple service
   #:use-module (guix gexp) ;plain-file
@@ -22,8 +24,7 @@
   #:use-module (gnu home services xdg)
   #:use-module (gnu home services desktop)
   #:use-module (gnu home services shells)
-  #:use-module (galahad system channels)
-  )
+  #:use-module (galahad system channels))
 
 (define lynn-wm-packages
   (list mpv
@@ -37,6 +38,8 @@
 	fcitx5-gtk
 	cbqn
 	apl
+	xdg-desktop-portal
+	xdg-desktop-portal-gtk
 					;zsh-autocompletions
 					;zsh-syntax-highlighting
 					;fzf-tab
@@ -54,7 +57,7 @@
   (list emacs-aggressive-indent
 	emacs-auctex
 	emacs-autothemer
-	emacs-base16-theme
+	emacs-gruvbox-theme
 	emacs-buffer-env
 	emacs-clang-format
 	emacs-consult
@@ -64,6 +67,7 @@
 	emacs-doom-modeline
 	emacs-dired-hacks		; dired-subtree
 	emacs-eat
+	emacs-emms
 	emacs-eglot
 	emacs-flycheck
 	emacs-geiser-guile
@@ -95,15 +99,32 @@
 	emacs-bqn-mode
 	emacs-zig-mode))
 
-(define %bashrc
+(define %zshrc
   (plain-file
-   "bashrc"
+   "zshrc"
    "
-export SHELL
-[ -f /etc/bashrc ] && source /etc/bashrc
-export PATH=/run/setuid-programs:$PATH
-export PATH=$HOME/.nix-profile/bin:$PATH
-export XDG_DATA_DIRS=$HOME/.nix-profile/share:$XDG_DATA_DIRS
+autoload -Uz vcs_info
+setopt prompt_subst
+
+HISTFILE=~/.histfile
+HISTSIZE=1000
+SAVEHIST=1000
+
+zstyle ':vcs_info:git*' formats \" %F{blue}%b%f %m%u%c %a \"
+zstyle ':vcs_info:*' enable git
+zstyle ':vcs_info:*' check-for-changes true
+zstyle ':vcs_info:*' stagedstr ' %F{green}✚%f'
+zstyle ':vcs_info:*' unstagedstr ' %F{red}●%f'
+
+precmd() {
+    vcs_info
+    print -P '%B%~%b ${vcs_info_msg_0_}'
+}
+
+PROMPT='%B%(!.#.>)%b '
+
+source $HOME/.guix-profile/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+source $HOME/.guix-profile/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 "))
 
 (define %bash-profile
@@ -139,10 +160,15 @@ export PATH=$HOME/.nix-profile/bin:$PATH"))
 	     (download "$HOME/downloads/")
 	     (pictures "$HOME/pics/")
 	     (videos "$HOME/videos/")))
+   (service home-zsh-service-type
+	    (home-zsh-configuration
+	     (zshrc (list %zshrc))))
    (simple-service 'env-vars home-environment-variables-service-type
-		   '(("EDITOR" . "emacs")
+		   `(("SHELL" . ,(file-append zsh "/bin/zsh"))
+		     ("EDITOR" . "emacs")
 		     ("BROWSER" . "firefox")
 		     ("XDG_CURRENT_DESKTOP" . "sway")
+		     ("QT_QPA_PLATFORMTHEME" . "qt6ct")
 		     ("GTK_IM_MODULE" . "fcitx")
 		     ("QT_IM_MODULE" . "fcitx")
 		     ("XMODIFIERS" . "@im=fcitx")
@@ -151,18 +177,4 @@ export PATH=$HOME/.nix-profile/bin:$PATH"))
 		     ("XCOMPOSECACHE" . "$HOME/.xcompose-cache")
 		     ("WEBKIT_DISABLE_COMPOSITING_MODE" . "1") ;; prevent nyxt from crashing
 		     ("TERM" . "xterm-256color")))
-   (service home-dbus-service-type)
-   (service home-bash-service-type
-	    (home-bash-configuration
-	     (guix-defaults? #f)
-	     (aliases
-	      '(("grep" . "grep --color=auto")
-		("ll" . "ls -l")
-		("ls" . "ls -p --color=auto")
-		("lt" . "eza --tree --git-ignore")))
-	     (bashrc
-	      (list
-	       %bashrc))
-	     (bash-profile
-	      (list
-	       %bash-profile)))))))
+   (service home-dbus-service-type))))

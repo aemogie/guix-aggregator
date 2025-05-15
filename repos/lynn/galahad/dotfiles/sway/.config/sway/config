@@ -7,11 +7,11 @@ set $term foot
 set $screenshot grim
 set $menu fuzzel
 
-output * scale 1 mode 2880x1800@60Hz bg $HOME/.bg-white-room.jpg fill
+output * scale 1 mode 2880x1800@60Hz bg $HOME/.test.png fill
 exec swayidle -w \
-         timeout 300 'swaylock -f --image "/home/lynn/.bg-white-room.jpg"' \
+         timeout 300 'swaylock -f --image "/home/lynn/.cyborg.png"' \
          timeout 600 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' \
-         before-sleep 'swaylock -f --image "/home/lynn/.bg-white-room.jpg"' \
+         before-sleep 'swaylock -f --image "/home/lynn/.cyborg.png"' \
 
 input type:keyboard {
       #xkb_options ctrl:swapcaps,compose:lctrl
@@ -66,7 +66,6 @@ bindsym $mod+r mode "resize"
 
 font Iosevka Term Slab 18px
 gaps inner 10
-smart_gaps on
 default_border pixel 0
 default_floating_border normal
 blur on
@@ -74,6 +73,11 @@ corner_radius 4
 shadows enable
 shadow_blur_radius 20
 default_dim_inactive 0.05
+
+layer_effects "waybar" {
+    blur enable;
+    blur_ignore_transparent enable;
+}
 
 bar {
   swaybar_command waybar

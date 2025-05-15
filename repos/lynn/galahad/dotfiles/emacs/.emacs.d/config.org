@@ -1,4 +1,5 @@
 
+
 #+TITLE: Literate Emacs @lynn
 #+PROPERTY: header-args :tangle ./init.el
 #+auto_tangle: t
@@ -28,11 +29,6 @@ Prevent Emacs from loading out of date, native compiled jsonrpc:
 (setq custom-file "~/.emacs.d/custom.el")
 (load-file custom-file)  
 #+end_src
-** Theme
-#+begin_src emacs-lisp
-  (use-package base16-theme)
-  (load-theme 'base16-atelier-forest-light t)
-#+end_src
 ** Fonts
 #+begin_src emacs-lisp
   (setq x-underline-at-descent-line t) ; for some reason there is an issue with modeline
@@ -52,6 +48,11 @@ Prevent Emacs from loading out of date, native compiled jsonrpc:
   ;; Enables ligature checks globally in all buffers. You can also do it
   ;; per mode with `ligature-mode'.
   (global-ligature-mode t))
+#+end_src
+** Theme
+#+begin_src emacs-lisp
+  (use-package gruvbox-theme)
+  (load-theme 'gruvbox)
 #+end_src
 ** QoL
 #+begin_src emacs-lisp
@@ -73,6 +74,35 @@ Prevent Emacs from loading out of date, native compiled jsonrpc:
     :config
     (which-key-mode)
     (setq which-key-idle-delay 1))
+#+end_src
+** Music
+Testing out using EMMS to manage my music listening.
+#+begin_src emacs-lisp
+  (setq emms-browser-covers
+      '((:browse-dir "~/Music")
+        (:cover-name "cover.jpg" "folder.jpg" "AlbumArt.jpg")
+        (:thumbnail-dir "~/.cache/emms/thumbnails")
+        (:thumbnail-size 128)))
+  (use-package emms
+    :commands (emms
+               emms-stop
+               emms-pause
+               emms-next
+               emms-previous
+               emms-play-directory)
+    :bind (("C-c e p" . emms)
+           ("C-c e s" . emms-stop)
+           ("C-c e SPC" . emms-pause)
+           ("C-c e n" . emms-next)
+           ("C-c e b" . emms-previous))
+    :config
+    (require 'emms-setup)
+    (require 'emms-player-mpv)
+    (emms-all)
+    (setq emms-browser-covers 'emms-browser-cache-thumbnail-async)
+    (setq emms-player-list '(emms-player-mpv))
+    (setq emms-player-debug t)
+    (setq emms-volume-change-function 'emms-volume-mpv-change))
 #+end_src
 ** Dired
 Turning dired into a subtree buffer that can allow for better management of projects.
@@ -174,6 +204,10 @@ Dired-subtree's functionality is within =dired-subtree-toggle=
          '("/" . meow-keypad-describe-key)
          '("?" . meow-cheatsheet))
         (meow-normal-define-key
+         ;; music stuff
+         '("+" . emms-volume-raise)
+         '("=" . emms-volume-lower)
+          ;; regular meow
          '("0" . meow-expand-0)
          '("9" . meow-expand-9)
          '("8" . meow-expand-8)
@@ -402,13 +436,13 @@ Dired-subtree's functionality is within =dired-subtree-toggle=
 when the Window (window manager) is not in focus, remove modeline for less noise
 ** Font setup
 #+begin_src emacs-lisp
-  (set-face-attribute 'default nil :font "Iosevka Term" :height 140)
+  (set-face-attribute 'default nil :font "Iosevka Term" :height 120)
   (set-face-attribute 'variable-pitch nil :font "Iosevka Etoile")
   (set-face-attribute 'org-modern-symbol nil :font "Iosevka Etoile")
 #+end_src
-** Sweet sweet opacity
+** Sweet sweet transparency
 #+begin_src emacs-lisp
-  (add-to-list 'default-frame-alist '(alpha-background . 90))
+  (add-to-list 'default-frame-alist '(alpha-background . 95))
 #+end_src
 ** Line & Column Numbers
 #+begin_src emacs-lisp

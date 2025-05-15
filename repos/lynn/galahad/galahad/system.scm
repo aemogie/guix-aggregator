@@ -3,6 +3,7 @@
   #:use-module (galahad packages)
   #:use-module (galahad system channels)
   #:use-module (gnu packages linux) ;light
+  #:use-module (gnu packages shells)
   #:use-module (gnu packages wm)
 
   #:use-module (gnu services cups)
@@ -22,6 +23,7 @@
   (user-account
    (name "lynn")
    (group "users")
+   (shell (file-append zsh "/bin/zsh"))
    (supplementary-groups '("wheel" "netdev" "audio" "video"))))
 
 (define galahad-desktop-services

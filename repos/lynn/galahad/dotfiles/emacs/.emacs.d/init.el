@@ -13,9 +13,6 @@
 (setq custom-file "~/.emacs.d/custom.el")
 (load-file custom-file)
 
-(use-package base16-theme)
-(load-theme 'base16-atelier-forest-light t)
-
 (setq x-underline-at-descent-line t) ; for some reason there is an issue with modeline
 
 (use-package mixed-pitch) ; prettier org mode
@@ -31,6 +28,9 @@
 ;; Enables ligature checks globally in all buffers. You can also do it
 ;; per mode with `ligature-mode'.
 (global-ligature-mode t))
+
+(use-package gruvbox-theme)
+(load-theme 'gruvbox)
 
 (use-package swiper)
 (use-package counsel
@@ -50,6 +50,32 @@
   :config
   (which-key-mode)
   (setq which-key-idle-delay 1))
+
+(setq emms-browser-covers
+    '((:browse-dir "~/Music")
+      (:cover-name "cover.jpg" "folder.jpg" "AlbumArt.jpg")
+      (:thumbnail-dir "~/.cache/emms/thumbnails")
+      (:thumbnail-size 128)))
+(use-package emms
+  :commands (emms
+             emms-stop
+             emms-pause
+             emms-next
+             emms-previous
+             emms-play-directory)
+  :bind (("C-c e p" . emms)
+         ("C-c e s" . emms-stop)
+         ("C-c e SPC" . emms-pause)
+         ("C-c e n" . emms-next)
+         ("C-c e b" . emms-previous))
+  :config
+  (require 'emms-setup)
+  (require 'emms-player-mpv)
+  (emms-all)
+  (setq emms-browser-covers 'emms-browser-cache-thumbnail-async)
+  (setq emms-player-list '(emms-player-mpv))
+  (setq emms-player-debug t)
+  (setq emms-volume-change-function 'emms-volume-mpv-change))
 
 (use-package dired-subtree
   :bind
@@ -131,6 +157,10 @@
        '("/" . meow-keypad-describe-key)
        '("?" . meow-cheatsheet))
       (meow-normal-define-key
+       ;; music stuff
+       '("+" . emms-volume-raise)
+       '("=" . emms-volume-lower)
+        ;; regular meow
        '("0" . meow-expand-0)
        '("9" . meow-expand-9)
        '("8" . meow-expand-8)
@@ -324,11 +354,11 @@
 (add-to-list 'default-frame-alist '(undecorated . t))
 (setf frame-title-format "%b - Emacs")
 
-(set-face-attribute 'default nil :font "Iosevka Term" :height 140)
+(set-face-attribute 'default nil :font "Iosevka Term" :height 120)
 (set-face-attribute 'variable-pitch nil :font "Iosevka Etoile")
 (set-face-attribute 'org-modern-symbol nil :font "Iosevka Etoile")
 
-(add-to-list 'default-frame-alist '(alpha-background . 90))
+(add-to-list 'default-frame-alist '(alpha-background . 95))
 
 (setf display-line-numbers-type t)
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)

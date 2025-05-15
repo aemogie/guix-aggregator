@@ -67,7 +67,8 @@
         xz))
 
 (define galahad-cli-packages
-  (list zsh
+  (list bash-minimal
+	zsh
 	stow
 	btop
 	hyfetch
