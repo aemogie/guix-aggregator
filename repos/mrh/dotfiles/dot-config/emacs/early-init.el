@@ -1,7 +1,7 @@
 (setq vc-follow-symlinks t)
 
 (defun restore-gc-cons-threshold ()
-  (setq gc-cons-threshold 16000000
+  (setq gc-cons-threshold 64000000
         gc-cons-percentage 0.1))
 
 (setq gc-cons-threshold most-positive-fixnum
@@ -142,9 +142,6 @@
 
   (with-eval-after-load 'markdown-mode
     (add-hook 'markdown-mode-hook #'variable-pitch-mode))
-
-  (with-eval-after-load 'elfeed
-    (add-hook 'elfeed-show-mode-hook #'variable-pitch-mode))
 
   (with-eval-after-load 'org
     (advice-add 'ef-themes-load-theme :after #'my/fontify-org-buffers)

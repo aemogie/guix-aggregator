@@ -7,8 +7,8 @@
         (operating-system %unmatched-system)
         (environment managed-host-environment-type)
         (configuration (machine-ssh-configuration
-                         ;(host-name "unmatched.unicorn-typhon.ts.net")
-                         (host-name "192.168.68.64")
+                         (host-name "unmatched.unicorn-typhon.ts.net")
+                         ;(host-name "192.168.68.54")
                          (system "riscv64-linux")
                          (port 22)
                          (user "efraim")

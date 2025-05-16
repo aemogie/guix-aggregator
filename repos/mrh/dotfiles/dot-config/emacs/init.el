@@ -177,38 +177,37 @@ Otherwise set locally with `keymap-local-set'."
   :hook
   (after-init . global-disable-mouse-mode))
 
-(unless (boundp '*hidden-buffers*)
-  (defvar *hidden-buffers* ()
-    "List of buffer names to be ignored by `next-buffer' and `previous-buffer'.
-See also `my/hide-buffer' and `hidden-buffer-p'."))
+(defvar my/hidden-buffers '()
+  "List of buffer names to be ignored by `next-buffer' and `previous-buffer'.
+See also `my/hide-buffer' and `my/hidden-buffer-p'.")
 
 (with-eval-after-load 'savehist
-  (add-to-list 'savehist-additional-variables '*hidden-buffers*))
+  (add-to-list 'savehist-additional-variables 'my/hidden-buffers))
 
-(defun hidden-buffer-p (_window buffer _bury-or-kill)
-  "Hide buffers with name in `*hidden-buffers*'.
+(defun my/hidden-buffer-p (_window buffer _bury-or-kill)
+  "Hide buffers with name in `my/hidden-buffers'.
 See also `switch-to-prev-buffer-skip'."
-  (cl-find (buffer-name buffer) *hidden-buffers* :test #'string=))
+  (member (buffer-name buffer) my/hidden-buffers))
 
-(setopt switch-to-prev-buffer-skip 'hidden-buffer-p)
+(setopt switch-to-prev-buffer-skip 'my/hidden-buffer-p)
 
 (defun my/hide-buffer (&optional buffer-name)
-  "Adds BUFFER-NAME to `*hidden-buffers*'.
+  "Adds BUFFER-NAME to `my/hidden-buffers'.
 If BUFFER-NAME is nil then the current buffer name is used via `buffer-name'.
 See also `my/unhide-buffer'."
   (interactive)
   (cl-pushnew (if buffer-name buffer-name (buffer-name))
-              *hidden-buffers*
+              my/hidden-buffers
               :test #'string=))
 
 (defun my/unhide-buffer (&optional buffer-name)
-  "Removes BUFFER-NAME from `*hidden-buffers*'.
+  "Removes BUFFER-NAME from `my/hidden-buffers'.
 If BUFFER-NAME is nil then the current buffer name is used via `buffer-name'.
 See also `my/hide-buffer'."
   (interactive)
-  (setf *hidden-buffers*
+  (setf my/hidden-buffers
         (remove (if buffer-name buffer-name (buffer-name))
-                *hidden-buffers*)))
+                my/hidden-buffers)))
 
 (setopt split-width-threshold 90)
 
@@ -234,9 +233,7 @@ See also `my/hide-buffer'."
   (writeroom-major-modes '(text-mode))
   (writeroom-major-modes-exceptions '(mhtml-mode nxml-mode))
   :config
-  (global-writeroom-mode 1)
-  (with-eval-after-load 'elfeed
-    (add-to-list 'writeroom-major-modes 'elfeed-show-mode)))
+  (global-writeroom-mode 1))
 
 (use-package prog-mode
   :config

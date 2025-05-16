@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-License-Identifier: CC-BY-SA-4.0
 
-#+TITLE: dorphine (Laptop)
+#+TITLE: dorphine
 #+PROPERTY: header-args :noweb-prefix no
 
 * Guix System
@@ -18,7 +18,7 @@
       (file-systems (append <<file-systems>> %base-file-systems))
       (host-name "dorphine")
       (users (cons* <<user>> %base-user-accounts))
-      (packages (cons* <<package>> %base-packages))
+      (packages (append (pkgs+out <<package>>) %base-packages))
       (services (cons* <<service>> %base-services))))
 
   ((compose <<transformation>>)
@@ -35,7 +35,7 @@
 #+begin_src scheme :noweb yes :noweb-ref service
   (service guix-home-service-type
     `(("hako" ,(home-environment
-                 (packages (list <<home-package>>))
+                 (packages (pkgs+out <<home-package>>))
                  (services (cons* <<home-service>> %base-home-services))))))
 #+end_src
 
@@ -48,13 +48,9 @@
   (gnu home services shells)
   (gnu home services shepherd)
   (sops home services sops)
+  (gnu services ssh)
   (rosenthal services keyboard)
-  (gnu packages compression)
-  (gnu packages fonts)
-  (gnu packages gnupg)
-  (gnu packages rsync)
-  (gnu packages shells)
-  (sops packages sops)
+  (sops services sops)
 #+end_src
 
 ** Bootloader
@@ -71,18 +67,9 @@
 #+end_src
 
 ** File Systems
-#+begin_src scheme :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (kernel-arguments
-       (cons "rootfstype=tmpfs"
-             (operating-system-user-kernel-arguments os)))))
-#+end_src
-
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
-          (device "none")                 ;NOTE: Must use "none" for tmpfs root.
+          (device "tmpfs")
           (mount-point "/")
           (type "tmpfs")
           (options "mode=0755,size=25%")
@@ -188,7 +175,7 @@
          (console-font-service-type
           _ => (map (lambda (num)
                       (let* ((path "/share/consolefonts/ter-132n")
-                             (font (file-append font-terminus path))
+                             (font (file-append (pkg "font-terminus") path))
                              (tty (string-append "tty" (number->string num))))
                         (cons tty font)))
                     (iota 6 1)))))))
@@ -212,12 +199,24 @@
 #+end_src
 
 ** Users
+Generate password hash:
+#+begin_src shell
+  echo <password> | guix shell openssl passwd -6 -stdin
+#+end_src
+
+Generate random password hash:
+#+begin_src shell
+  guix shell pwgen -- pwgen -sync 16 1 | guix shell openssl -- openssl passwd -6 -stdin
+#+end_src
+
+Personal account.
 #+begin_src scheme :noweb yes :noweb-ref user
   (user-account
     (name "hako")
+    (password "$6$KC5RtFkRZBpkNFHg$tnl.h.9tzVMOxFy37WTGl8QBBmt.ZiZmxuLD8/9YCimYvFkU26xR6YTcHqhUeMQPiQZxZA3yEjeDBi6nST8ue/")
     (group "users")
     (supplementary-groups '(<<group>> "wheel"))
-    (shell (file-append fish "/bin/fish")))
+    (shell (file-append (pkg "fish") "/bin/fish")))
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref home-service
@@ -226,12 +225,47 @@
       (config (list <<home-fish-config>>))))
 #+end_src
 
+Administration accounts.
+#+begin_src scheme :noweb-ref user
+  (user-account
+    (inherit %root-account)
+    (password "$6$KGxgY56Yzwn1vU6l$F3/7C4UA3PtqHPTs5qbwUyruV9qMC.MZ0SzwPteegfL/oj/DHBSHf0/1znMpdCi3jiAnR74D.A.lnaLsUIljA0"))
+
+  (user-account
+    (name "deploy")
+    (password "$6$U2m1GLm8ETSZpLXw$jaItvEaziaOWqDlaKIIogWWXoll631h.VxnIN2Pl4q/fbcr4OW4dDoOnOFOendkt2Jg8KMAPTOoa6L3y0MjT00")
+    (group "users")
+    (comment "User for 'guix deploy'")
+    (create-home-directory? #f))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'add-user-ssh-keys
+      openssh-service-type
+    `(("deploy"
+       ,(plain-file
+         "hako.pub"
+         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2"))))
+#+end_src
+
+#+begin_src scheme :noweb-ref transformation
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (sudoers-file
+       (plain-file
+        "sudoers"
+        (string-append
+         (plain-file-content (operating-system-sudoers-file os))
+         "deploy ALL = NOPASSWD: ALL\n")))))
+#+end_src
+
 ** Packages
 No need to install less used ones, prefer ‘guix shell’.
 #+begin_src scheme :noweb-ref home-package
-  rsync
-  unzip
-  zstd
+  "rsync"
+  "unzip"
+  "zstd"
 #+end_src
 
 ** Files
@@ -260,21 +294,21 @@ No need to install less used ones, prefer ‘guix shell’.
 
 ** Guix Daemon
 #+begin_src scheme :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (services
-       (modify-services (operating-system-user-services os)
-         (guix-service-type
-          config => (guix-configuration
-                     (inherit config)
-                     (authorized-keys
-                      (cons* %guix-authorized-key-gokuraku
-                             %guix-authorized-key-nonguix
-                             %default-authorized-guix-keys))
-                     (substitute-urls
-                      `(,@%default-substitute-urls
-                        "https://substitutes.nonguix.org"))))))))
+  (nongnu-transformation-nonguix)
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'guix-extension-gokuraku
+      guix-service-type
+    (guix-extension
+     (authorized-keys (list %guix-authorized-key-gokuraku))))
+
+  (simple-service 'guix-extension-jingrocks
+      guix-service-type
+    (guix-extension
+     (substitute-urls
+      '("https://berlin-guix.jing.rocks"
+        "https://bordeaux-guix.jing.rocks"))))
 #+end_src
 
 ** Shepherd
@@ -286,11 +320,42 @@ No need to install less used ones, prefer ‘guix shell’.
 #+end_src
 
 ** SOPS Secrets
-https://github.com/fishinthecalculator/sops-guix
+Create GPG home directory specifically for use with SOPS.
+#+begin_src shell
+  MY_GPGHOME="<GPG homedir>"
+
+  mkdir --parents --mode=0700 "$MY_GPGHOME"
+  cat <<EOF > "$MY_GPGHOME/gpg.conf"
+  pinentry-mode loopback
+  EOF
+  cat <<EOF > "$MY_GPGHOME/gpg-agent.conf"
+  allow-loopback-pinentry
+  EOF
+
+  unset MY_GPGHOME
+#+end_src
+
+Generate passwordless ECC key:
+#+begin_src shell
+  MY_GPGHOME="<GPG homedir>"
+  MY_NAME="<Your Name>"
+
+  gpg --homedir "$MY_GPGHOME" --batch --generate-key <<EOF
+  %no-protection
+  Key-Type: EDDSA
+  Key-Curve: ed25519
+  Subkey-Type: ECDH
+  Subkey-Curve: cv25519
+  Name-Real: $MY_NAME
+  Expire-Date: 0
+  EOF
+
+  unset MY_GPGHOME MY_NAME
+#+end_src
 
 #+begin_src scheme :noweb-ref package
-  gnupg
-  sops
+  "gnupg"
+  "sops"
 #+end_src
 
 #+begin_src scheme :noweb-ref definition
@@ -310,6 +375,7 @@ https://github.com/fishinthecalculator/sops-guix
   (service home-sops-secrets-service-type
     (home-sops-service-configuration
       (config (testament-file-object "sops.yaml"))
+      (gnupg-home (in-vicinity (getenv "XDG_DATA_HOME") "sops"))
       (secrets
        (list (sops-secret
                (key '("mail"))
@@ -319,32 +385,53 @@ https://github.com/fishinthecalculator/sops-guix
                (file dorphine.yaml))))))
 #+end_src
 
+#+begin_src scheme :noweb-ref service
+  (service sops-secrets-service-type
+    (sops-service-configuration
+     (config (testament-file-object "sops.yaml"))
+     (gnupg-home "/var/lib/sops")
+     (secrets
+      (list (sops-secret
+              (key '("cloudflared"))
+              (file dorphine.yaml)
+              (user "nobody"))))))
+#+end_src
+
 [[file:../files/plain/sops.yaml][sops.yaml]]
 
 * Kernel
 #+begin_src scheme :noweb-ref module
   (nongnu system)
   (nongnu system linux-initrd)
-  (nongnu packages linux)
+  (gnu services sysctl)
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  ;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
+  (simple-service 'udp-buffer-size
+      sysctl-service-type
+    '(("net.core.rmem_max" . "7500000")
+      ("net.core.wmem_max" . "7500000")))
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
+  (nongnu-transformation-linux
+   #:firmwares (pkgs "atheros-firmware")
+   #:initrd
+   (lambda (file-systems . rest)
+     (apply microcode-initrd file-systems
+            #:microcode-packages (pkgs "amd-microcode")
+            rest)))
+
   (lambda (os)
     (operating-system
       (inherit os)
-      (kernel linux-6.14)
       (kernel-arguments
        (cons* "kernel.sysrq=1"
               "zswap.enabled=1"
               "zswap.max_pool_percent=90"
               "modprobe.blacklist=pcspkr,snd_pcsp"
-              (operating-system-user-kernel-arguments os)))
-      (firmware (list linux-firmware))
-      (initrd
-       (lambda (file-systems . rest)
-         (apply microcode-initrd file-systems
-                #:microcode-packages (list amd-microcode)
-                rest)))))
+              (operating-system-user-kernel-arguments os)))))
 #+end_src
 
 * Power Management
@@ -364,10 +451,7 @@ https://github.com/fishinthecalculator/sops-guix
   (gnu services shepherd)
   (rosenthal services child-error)
   (rosenthal services networking)
-  (gnu packages linux)
   (rosenthal services dns)
-  (rosenthal packages binaries)
-  (rosenthal packages dns)
 #+end_src
 
 ** nftables
@@ -378,27 +462,6 @@ https://github.com/fishinthecalculator/sops-guix
 #+end_src
 
 [[file:../files/plain/dorphine-nftables.nft][dorphine-nftables.nft]]
-
-#+begin_src scheme :noweb-ref service
-  (simple-service 'transparent-proxy
-      shepherd-root-service-type
-    (let ((ip (file-append iproute "/sbin/ip")))
-      (list (shepherd-service
-              (provision '(transparent-proxy))
-              (requirement '(loopback))
-              (start
-               #~(make-system-constructor
-                  #$ip " rule add fwmark 38417 table 100 && "
-                  #$ip " route add local default dev lo table 100 && "
-                  #$ip " -6 rule add fwmark 38417 table 100 && "
-                  #$ip " -6 route add local default dev lo table 100"))
-              (stop
-               #~(make-system-destructor
-                  #$ip " route del local default dev lo table 100 && "
-                  #$ip " rule del fwmark 38417 table 100 && "
-                  #$ip " -6 route del local default dev lo table 100 && "
-                  #$ip " -6 rule del fwmark 38417 table 100"))))))
-#+end_src
 
 ** iwd
 #+begin_src scheme :noweb-ref service
@@ -436,7 +499,7 @@ https://github.com/fishinthecalculator/sops-guix
 #+name: smartdns-config
 #+begin_src scheme
   (let* ((filename "smartdns.conf")
-         (conf-dir (file-append dnsmasq-china-list "/share/dnsmasq-china-list/")))
+         (conf-dir (file-append (pkg "dnsmasq-china-list") "/share/dnsmasq-china-list/")))
     (mixed-text-file
      filename
      (testament-file-content filename) "\n"
@@ -461,7 +524,7 @@ https://github.com/fishinthecalculator/sops-guix
 #+begin_src scheme :noweb-ref service
   (service clash-service-type
     (clash-configuration
-      (clash mihomo-bin)
+      (clash (pkg "mihomo"))
       (config
        (mixed-text-file
         "mihomo.yaml"
@@ -477,8 +540,6 @@ https://github.com/fishinthecalculator/sops-guix
   (gnu services desktop)
   (rosenthal services file-systems)
   (gnu home services desktop)
-  (gnu packages admin)
-  (rosenthal packages admin)
 #+end_src
 
 ** dbus
@@ -498,7 +559,7 @@ https://github.com/fishinthecalculator/sops-guix
 #+begin_src scheme :noweb-ref service
   (service seatd-service-type
     (seatd-configuration
-      (seatd seatd-sans-logind)))
+      (seatd (pkg "seatd-sans-logind"))))
 #+end_src
 
 ** dumb-runtime-dir
@@ -512,7 +573,7 @@ https://github.com/fishinthecalculator/sops-guix
     (let ((uaccess-pam-entry
            (pam-entry
              (control "optional")
-             (module (file-append pam-uaccess "/lib/security/pam_uaccess.so"))
+             (module (file-append (pkg "pam-uaccess") "/lib/security/pam_uaccess.so"))
              (arguments '("skip_ungrant")))))
       (list (pam-extension
               (transformer
@@ -527,9 +588,26 @@ https://github.com/fishinthecalculator/sops-guix
                      pam)))))))
 #+end_src
 
-* Containers
+* SSH
+#+begin_src scheme :noweb-ref module
+  (gnu services ssh)
+#+end_src
+
+#+begin_src scheme :noweb-ref package
+  "mosh"
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (service openssh-service-type
+    (openssh-configuration
+      (openssh (pkg "openssh-sans-x"))
+      (password-authentication? #f)))
+#+end_src
+
+* Containers & Virtualization
 #+begin_src scheme :noweb-ref module
   (gnu services docker)
+  (gnu services virtualization)
 #+end_src
 
 ** containerd
@@ -544,6 +622,13 @@ https://github.com/fishinthecalculator/sops-guix
       (enable-iptables? #f)))
 #+end_src
 
+** binfmt_misc
+#+begin_src scheme :noweb-ref service
+  (service qemu-binfmt-service-type
+    (qemu-binfmt-configuration
+     (platforms (lookup-qemu-platforms "aarch64" "powerpc64le" "riscv64"))))
+#+end_src
+
 * Web Servers
 #+begin_src scheme :noweb-ref module
   (rosenthal services child-error)
@@ -554,14 +639,13 @@ https://github.com/fishinthecalculator/sops-guix
   (service cloudflare-tunnel-service-type
     (cloudflare-tunnel-configuration
       (log-level "error")
-      (token (sops-str '("cloudflared")))))
+      (token-file "/run/secrets/cloudflared")))
 #+end_src
 
 * Web Services
 #+begin_src scheme :noweb-ref module
   (rosenthal services child-error)
   (rosenthal services web)
-  (gnu packages fonts)
 #+end_src
 
 ** jellyfin
@@ -573,7 +657,7 @@ https://github.com/fishinthecalculator/sops-guix
          "--volume" "/mnt/Mentha/@Library/Shows:/media/Shows"
          "--volume"
          ,(let ((path "/share/fonts/truetype/NotoSansCJK-VF.otf.ttc"))
-            (file-append font-google-noto-sans-cjk path ":/usr" path))))))
+            (file-append (pkg "font-google-noto-sans-cjk") path ":/usr" path))))))
 #+end_src
 
 ** komga
@@ -597,19 +681,6 @@ https://github.com/fishinthecalculator/sops-guix
   (gnu services xorg)
   (gnu home services desktop)
   (gnu home services fontutils)
-  (gnu packages freedesktop)
-  (gnu packages fonts)
-  (gnu packages gl)
-  (gnu packages gnome)
-  (gnu packages gnome-xyz)
-  (gnu packages linux)
-  (gnu packages qt)
-  (gnu packages terminals)
-  (gnu packages wm)
-  (gnu packages xdisorg)
-  (nongnu packages fonts)
-  (rosenthal packages wm)
-  (rosenthal packages xorg)
 #+end_src
 
 ** Graphics Driver
@@ -617,37 +688,19 @@ https://github.com/fishinthecalculator/sops-guix
 
 *** nvidia-driver
 #+begin_src scheme :noweb-ref transformation
-  (let ((driver nvda))
-    (lambda (os)
-      (operating-system
-        (inherit os)
-        (kernel-arguments
-         (cons* "modprobe.blacklist=nouveau"
-                ;; 啓用 DRM KMS，Wayland 環境必要，詳見驅動自述文檔。
-                "nvidia_drm.modeset=1"
-                (operating-system-user-kernel-arguments os)))
-        (services
-         (cons (service nvidia-service-type)
-               (modify-services (operating-system-user-services os)
-                 (guix-home-service-type
-                  config => (with-transformation
-                                (package-input-grafting
-                                 `((,ffmpeg . ,ffmpeg-nvenc)
-                                   (,mesa . ,driver)
-                                   (,nvidia-driver . ,driver)))
-                              config))))))))
+  (nongnu-transformation-nvidia)
 #+end_src
 
 *** nouveau
 To use NVK, mesa should be installed into a profile.
 #+begin_src scheme :noweb-ref home-package
-  #;mesa
+  #;"mesa"
 #+end_src
 
 ** Wayland
 #+begin_src scheme :noweb-ref home-package
-  qtwayland-5
-  wl-clipboard
+  "qtwayland@5"
+  "wl-clipboard"
 #+end_src
 
 *** Startup in TTY
@@ -674,13 +727,13 @@ To use NVK, mesa should be installed into a profile.
   (service screen-locker-service-type
     (screen-locker-configuration
       (name "swaylock")
-      (program (file-append swaylock-effects "/bin/swaylock"))
+      (program (file-append (pkg "swaylock-effects") "/bin/swaylock"))
       (using-setuid? #f)))
 #+end_src
 
 *** niri
 #+begin_src scheme :noweb-ref home-package
-  niri
+  "niri"
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref home-xdg-configuration-file
@@ -699,12 +752,11 @@ To use NVK, mesa should be installed into a profile.
      #~(begin
          (use-modules (guix build utils))
          (let ((inputs
-                '#$(list alacritty
-                         light
-                         rofi-wayland
-                         swaylock-effects
-                         wireplumber
-                         xwayland-satellite)))
+                '#$(pkgs "light"
+                         "rofi-wayland"
+                         "swaylock-effects"
+                         "wireplumber"
+                         "xwayland-satellite")))
            (copy-file #$(testament-file-object "niri.kdl") #$output)
            (substitute* #$output
              (("\\$\\$LOCKSCREEN\\$\\$")
@@ -721,20 +773,20 @@ To use NVK, mesa should be installed into a profile.
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (udev-rules-service 'backlight light)
+  (udev-rules-service 'backlight (pkg "light"))
 #+end_src
 
 ** fontconfig
 #+begin_src scheme :noweb-ref home-package
-  font-awesome-nonfree
-  font-adobe-source-serif
-  font-apple-new-york
-  font-apple-sf-pro
-  font-chiron-hei-hk
-  font-chiron-sung-hk
-  font-google-noto
-  font-google-noto-emoji
-  font-victor-mono
+  "font-awesome-nonfree"
+  "font-adobe-source-serif"
+  "font-apple-new-york"
+  "font-apple-sf-pro"
+  "font-chiron-hei-hk"
+  "font-chiron-sung-hk"
+  "font-google-noto"
+  "font-google-noto-emoji"
+  "font-victor-mono"
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
@@ -787,9 +839,9 @@ To use NVK, mesa should be installed into a profile.
 
 ** qogir-icon-theme
 #+begin_src scheme :noweb-ref home-package
-  adwaita-icon-theme
-  hicolor-icon-theme
-  qogir-icon-theme
+  "adwaita-icon-theme"
+  "hicolor-icon-theme"
+  "qogir-icon-theme"
 #+end_src
 
 [[file:../files/dotfiles/.config/gtk-3.0/settings.ini][~/.config/gtk-3.0/settings.ini]]
@@ -798,8 +850,8 @@ To use NVK, mesa should be installed into a profile.
 
 ** xdg-desktop-portal
 #+begin_src scheme :noweb-ref home-package
-  xdg-desktop-portal
-  xdg-desktop-portal-gtk
+  "xdg-desktop-portal"
+  "xdg-desktop-portal-gtk"
 #+end_src
 
 * Multimedia
@@ -820,8 +872,6 @@ To use NVK, mesa should be installed into a profile.
 #+begin_src scheme :noweb-ref module
   (gnu services security-token)
   (gnu home services gnupg)
-  (gnu packages gnupg)
-  (gnu packages ssh)
 #+end_src
 
 ** pcscd
@@ -834,32 +884,14 @@ To use NVK, mesa should be installed into a profile.
   (service home-gpg-agent-service-type
     (home-gpg-agent-configuration
       (pinentry-program
-       (file-append pinentry-emacs "/bin/pinentry-emacs"))
+       (file-append (pkg "pinentry-emacs") "/bin/pinentry-emacs"))
       (ssh-support? #t)
       (extra-content "allow-loopback-pinentry")))
-#+end_src
-
-因爲啓用了 SSH 支持，順帶也把相關軟件包放這了。
-#+begin_src scheme :noweb-ref home-package
-  mosh
-  openssh-sans-x
 #+end_src
 
 * Emacs
 #+begin_src scheme :noweb-ref module
   (gnu home services emacs)
-  (gnu packages cpp)
-  (gnu packages emacs)
-  (gnu packages emacs-xyz)
-  (gnu packages python)
-  (gnu packages python-xyz)
-  (gnu packages rust)
-  (gnu packages shells)
-  (gnu packages shellutils)
-  (gnu packages tree-sitter)
-  (gnu packages zig)
-  (gnu packages zig-xyz)
-  (rosenthal packages tree-sitter)
 #+end_src
 
 #+begin_src scheme :noweb-ref home-environment-variable
@@ -868,17 +900,20 @@ To use NVK, mesa should be installed into a profile.
 #+end_src
 
 home-emacs-service-type from [[https://issues.guix.gnu.org/64620][#64620]]
+
+#+begin_src scheme :noweb-ref home-package
+  "emacs-gcmh"
+  "emacs-no-littering"
+  "emacs-json-mode"
+  "emacs-markdown-mode"
+  "emacs-nftables-mode"
+  "emacs-zig-mode"
+#+end_src
+
 #+begin_src scheme :noweb-ref home-service :noweb yes
   (service home-emacs-service-type
     (home-emacs-configuration
-      (emacs emacs-next-pgtk)
-      (extra-packages
-       (list emacs-gcmh
-             emacs-no-littering
-             emacs-json-mode
-             emacs-markdown-mode
-             emacs-nftables-mode
-             emacs-zig-mode))
+      (emacs (pkg "emacs-next-pgtk"))
       (package-serializer %emacs-use-package-serializer)
       (native-compile? #f)
       (default-init
@@ -985,7 +1020,7 @@ Custom xref backend for Citre.  Arei's builtin xref backend provides =xref-buffe
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'arei)
-    (package emacs-arei)
+    (package (pkg "emacs-arei"))
     (load-after-packages '(xref))
     (load-force? #t)
     (extra-after-load
@@ -1010,7 +1045,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'citre)
-    (package emacs-citre)
+    (package (pkg "emacs-citre"))
     (options
      '((citre-default-create-tags-file-location . global-cache)
        (citre-edit-ctags-options-manually . #f)))
@@ -1059,7 +1094,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'dumb-jump)
-    (package emacs-dumb-jump)
+    (package (pkg "emacs-dumb-jump"))
     (load-after-packages '(xref))
     (load-force? #t)
     (extra-after-load
@@ -1068,10 +1103,10 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 
 *** emacs eglot
 #+begin_src scheme :noweb-ref home-package
-  python-next
-  rust
-  `(,rust "cargo")
-  zig-0.14
+  "python-next"
+  "rust"
+  "rust:cargo"
+  "zig"
 #+end_src
 
 #+begin_src scheme :noweb-ref emacs-package
@@ -1081,11 +1116,11 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
      (list #%(dolist
               (program
                `(((rust-ts-mode rust-mode)
-                  . (#$(file-append rust-analyzer "/bin/rust-analyzer")))
+                  . (#$(file-append (pkg "rust-analyzer") "/bin/rust-analyzer")))
                  ((python-mode python-ts-mode)
-                  . (#$(file-append python-lsp-server "/bin/pylsp")))
+                  . (#$(file-append (pkg "python-lsp-server") "/bin/pylsp")))
                  ((c-mode c-ts-mode c++-mode c++-ts-mode)
-                  . (#$(file-append ccls "/bin/ccls")
+                  . (#$(file-append (pkg "ccls") "/bin/ccls")
                      ,(concat "--init="
                               (json-serialize
                                `((cache
@@ -1093,7 +1128,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
                                       . ,(concat (getenv "XDG_CACHE_HOME")
                                                  "/ccls-cache")))))))))
                  ((zig-mode)
-                  . (#$(file-append zig-zls-0.14 "/bin/zls")))))
+                  . (#$(file-append (pkg "zig-zls") "/bin/zls")))))
               (add-to-list 'eglot-server-programs program)))))
 #+end_src
 
@@ -1101,7 +1136,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'macrostep)
-    (package emacs-macrostep)
+    (package (pkg "emacs-macrostep"))
     (keys-global '(("C-c e" . macrostep-expand))))
 #+end_src
 
@@ -1131,8 +1166,8 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
     (name 'ox-hugo)
     (package
       ((package-input-rewriting
-        `((,emacs-minimal . ,emacs-next-minimal)))
-       emacs-ox-hugo))
+        `((,(pkg "emacs-minimal") . ,(pkg "emacs-next-minimal"))))
+       (pkg "emacs-ox-hugo")))
     (load-after-packages '(ox))
     (load-force? #t))
 #+end_src
@@ -1141,7 +1176,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'puni)
-    (package emacs-puni)
+    (package (pkg "emacs-puni"))
     (hooks
      (map (cut cons <> 'puni-mode)
           '(eval-expression-minibuffer-setup
@@ -1156,7 +1191,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'adaptive-wrap)
-    (package emacs-adaptive-wrap)
+    (package (pkg "emacs-adaptive-wrap"))
     (hooks '((visual-line-mode . adaptive-wrap-prefix-mode))))
 #+end_src
 
@@ -1164,7 +1199,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'doom-modeline)
-    (package emacs-doom-modeline)
+    (package (pkg "emacs-doom-modeline"))
     (options
      '((doom-modeline-icon . #f)
        (doom-modeline-height . 18)))
@@ -1175,7 +1210,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'helpful)
-    (package emacs-helpful)
+    (package (pkg "emacs-helpful"))
     (keys-global
      '(("<remap> <describe-function>" . helpful-callable)
        ("<remap> <describe-variable>" . helpful-variable)
@@ -1189,7 +1224,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'hl-todo)
-    (package emacs-hl-todo)
+    (package (pkg "emacs-hl-todo"))
     (options '((hl-todo-highlight-punctuation . ":")))
     (hooks '((prog-mode . hl-todo-mode))))
 #+end_src
@@ -1208,19 +1243,17 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 *** emacs-modus-themes
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
-    (name 'modus-themes)
-    (package emacs-modus-themes)
-    (load-force? #t)
+    (name 'emacs)
     (options '((modus-themes-italic-constructs . #t)))
     (extra-after-load
-     (list #%(load-theme 'modus-operandi-tinted t))))
+     (list #%(load-theme 'modus-operandi-tinted :no-confirm))))
 #+end_src
 
 *** emacs-mwim
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'mwim)
-    (package emacs-mwim)
+    (package (pkg "emacs-mwim"))
     (keys-global
      '(("<remap> <move-beginning-of-line>" . mwim-beginning)
        ("<remap> <move-end-of-line>" . mwim-end))))
@@ -1230,7 +1263,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'orderless)
-    (package emacs-orderless)
+    (package (pkg "emacs-orderless"))
     (options
      '((completion-styles . (orderless basic))
        (completion-category-overrides . ((file (styles basic partial-completion))))
@@ -1244,7 +1277,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'org-rainbow-tags)
-    (package emacs-org-rainbow-tags)
+    (package (pkg "emacs-org-rainbow-tags"))
     (hooks '((org-mode . org-rainbow-tags-mode))))
 #+end_src
 
@@ -1260,23 +1293,25 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'rainbow-delimiters)
-    (package emacs-rainbow-delimiters)
+    (package (pkg "emacs-rainbow-delimiters"))
     (hooks '((prog-mode . rainbow-delimiters-mode))))
 #+end_src
 
 *** emacs-treesit-auto
+#+begin_src scheme :noweb-ref home-package
+  "tree-sitter-cmake"
+  "tree-sitter-dockerfile"
+  "tree-sitter-go"
+  "tree-sitter-gomod"
+  "tree-sitter-rust"
+  "tree-sitter-typescript"
+  "tree-sitter-yaml"
+#+end_src
+
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'treesit-auto)
-    (package emacs-treesit-auto)
-    (extra-packages
-     (list tree-sitter-cmake
-           tree-sitter-dockerfile
-           tree-sitter-go
-           tree-sitter-gomod
-           tree-sitter-rust
-           tree-sitter-typescript
-           tree-sitter-yaml))
+    (package (pkg "emacs-treesit-auto"))
     (extra-after-load
      ;; FIXME: These modes aren't loaded automatically.
      (list #%(require 'cmake-ts-mode)
@@ -1298,7 +1333,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'vertico)
-    (package emacs-vertico)
+    (package (pkg "emacs-vertico"))
     (hooks '((after-init . vertico-mode))))
 
   (emacs-package
@@ -1320,7 +1355,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'visual-fill-column)
-    (package emacs-visual-fill-column)
+    (package (pkg "emacs-visual-fill-column"))
     (options '((visual-fill-column-center-text . #t)))
     (hooks '((visual-line-mode . visual-fill-column-mode))))
 #+end_src
@@ -1338,7 +1373,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'daemons)
-    (package emacs-daemons)
+    (package (pkg "emacs-daemons"))
     (options '((daemons-list-fill-frame . #t))))
 #+end_src
 
@@ -1364,21 +1399,21 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'envrc)
-    (package emacs-envrc)
+    (package (pkg "emacs-envrc"))
     (hooks '((after-init . envrc-global-mode))))
 #+end_src
 
 #+begin_src scheme :noweb-ref home-fish-config
   (mixed-text-file
    "fish-config-direnv"
-   direnv "/bin/direnv hook fish | source")
+   (pkg "direnv") "/bin/direnv hook fish | source")
 #+end_src
 
 *** emacs-forge
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'forge)
-    (package emacs-forge)
+    (package (pkg "emacs-forge"))
     (load-after-packages '(magit))
     (load-force? #t))
 #+end_src
@@ -1387,7 +1422,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'magit)
-    (package emacs-magit)
+    (package (pkg "emacs-magit"))
     (options '((git-commit-cd-to-toplevel . #t))))
 
   (emacs-package
@@ -1400,11 +1435,41 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
              (keys '(("m" . magit-project-status)))))))
 #+end_src
 
+*** emacs-notmuch
+#+begin_src scheme :noweb-ref home-package
+  "notmuch"
+#+end_src
+
+#+begin_src scheme :noweb-ref emacs-package
+  (emacs-package
+   (name 'notmuch)
+   (package (pkg "emacs-notmuch")))
+#+end_src
+
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'mbsync
+      home-shepherd-service-type
+    (list
+     (shepherd-timer
+      '(update-mailbox)
+      #~(calendar-event #:minutes '(0 10 20 30 40 50))
+      #~(#$(program-file
+            "update-mailbox"
+            (with-imported-modules '((guix build utils))
+              #~(begin
+                  (use-modules (guix build utils))
+                  (invoke #$(file-append (pkg "isync") "/bin/mbsync") "-a"
+                          "--config" #$(testament-file-object "mbsync.conf"))
+                  (invoke #$(file-append (pkg "notmuch") "/bin/notmuch") "new"))))))))
+#+end_src
+
+[[file:../files/plain/mbsync.conf][mbsync.conf]]
+
 *** emacs-pinentry
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'pinentry)
-    (package emacs-pinentry)
+    (package (pkg "emacs-pinentry"))
     (options '((epg-pinentry-mode . loopback)))
     (hooks '((after-init . pinentry-start))))
 #+end_src
@@ -1413,11 +1478,11 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'vterm)
-    (package emacs-vterm)
+    (package (pkg "emacs-vterm"))
     (options
      `((vterm-enable-manipulate-selection-data-by-osc52 . #t)
        (vterm-max-scrollback . 100000)
-       (vterm-shell . ,(file-append fish "/bin/fish"))
+       (vterm-shell . ,(file-append (pkg "fish") "/bin/fish"))
        ;; Improve responsiveness.
        (vterm-timer-delay . 0.05)))
     (extra-init
@@ -1452,77 +1517,12 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
   end")
 #+end_src
 
-*** mu4e
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-   (name 'mu4e)
-   (package mu)
-   (extra-packages (list emacs-message-view-patch))
-   (options
-    `((mu4e-sent-folder   . "/Sent")
-      (mu4e-drafts-folder . "/Drafts")
-      (mu4e-trash-folder  . "/Trash")
-      (mu4e-refile-folder . "/Archive")
-      (mu4e-change-filenames-when-moving . #t)
-      ;; Search.
-      (mu4e-query-rewrite-function
-       . (lambda (expr)
-           (if (string-match "maildir:\"/\\(Junk\\|Trash\\)\"" expr)
-               expr
-               (concat expr " AND NOT (maildir:/Junk OR maildir:/Trash)"))))
-      (mu4e-search-full . #t)
-      ;; Compose.
-      (message-dont-reply-to-names . mu4e-personal-or-alternative-address-p)
-      ;; Send.
-      (smtpmail-default-smtp-server . "mail.boiledscript.com")
-      (smtpmail-smtp-service . 465)
-      (smtpmail-stream-type . ssl)
-      (smtpmail-queue-mail . #t)
-      (smtpmail-queue-dir . "~/.local/share/queued-mail")
-      ;; Receive.
-      (mu4e-get-mail-command
-       . ,#~(concat #$isync "/bin/mbsync -a --config "
-                    #$(testament-file-object "mbsync.conf")))
-      (mu4e-update-interval . ,(* 10 60))))
-   (hooks '((gnus-part-display-hook . message-view-patch-highlight))))
-
-  ;; Prefer text/plain.
-  (emacs-package
-   (name 'mm-decode)
-   (extra-after-load
-    (list #%(add-to-list 'mm-discouraged-alternatives "text/html")
-          #%(add-to-list 'mm-discouraged-alternatives "text/richtext"))))
-#+end_src
-
-[[file:../files/plain/mbsync.conf][mbsync.conf]]
-
 * Miscellaneous
 #+begin_src scheme :noweb-ref module
-  (guix download)
-  (guix packages)
-  (guix utils)
   (rosenthal services bittorrent)
   (rosenthal services file-systems)
   (gnu home services shepherd)
   (gnu home services syncthing)
-  (gnu packages android)
-  (gnu packages bash)
-  (gnu packages bittorrent)
-  (gnu packages browser-extensions)
-  (gnu packages fcitx5)
-  (gnu packages games)
-  (gnu packages librewolf)
-  (gnu packages linux)
-  (gnu packages mail)
-  (gnu packages pulseaudio)
-  (gnu packages rust-apps)
-  (gnu packages security-token)
-  (gnu packages version-control)
-  (gnu packages video)
-  (gnu packages wm)
-  (gnu packages xdisorg)
-  (nongnu packages game-client)
-  (rosenthal packages rust-apps)
 #+end_src
 
 ** adb
@@ -1531,39 +1531,14 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (udev-rules-service 'android android-udev-rules #:groups '("adbusers"))
-#+end_src
-
-** alacritty
-#+begin_src scheme :noweb yes :noweb-ref home-xdg-configuration-file
-  ("alacritty/alacritty.toml" ,<<alacritty-config>>)
-#+end_src
-
-#+name: alacritty-config
-#+begin_src scheme
-  (let ((theme
-         (origin
-           (method url-fetch)
-           (uri (string-append "https://github.com/catppuccin/alacritty" "/raw/"
-                               "f6cb5a5c2b404cdaceaff193b9c52317f62c62f7"
-                               "/catppuccin-latte.toml"))
-           (sha256
-            (base32 "061lraysrma94md83296166c6cgn29p5yxmv0am8n3ciyq505m5d")))))
-    (with-imported-modules '((guix build utils))
-      (computed-file
-       "alacritty.toml"
-       #~(begin
-           (use-modules (guix build utils))
-           (copy-file #$(testament-file-object "alacritty.toml") #$output)
-           (substitute* #$output
-             (("\\$\\$THEME\\$\\$") #$theme))))))
+  (udev-rules-service 'android (pkg "android-udev-rules") #:groups '("adbusers"))
 #+end_src
 
 ** atuin
 #+begin_src scheme :noweb-ref home-fish-config
   (mixed-text-file
    "fish-config-atuin"
-   atuin "/bin/atuin init fish | source")
+   (pkg "atuin") "/bin/atuin init fish | source")
 #+end_src
 
 ** btrbk
@@ -1578,17 +1553,19 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 
 ** fcitx5
 #+begin_src scheme :noweb-ref home-package
-  fcitx5
-  fcitx5-configtool
-  fcitx5-material-color-theme
-  fcitx5-anthy
-  fcitx5-rime
+  "fcitx5"
+  "fcitx5-configtool"
+  "fcitx5-material-color-theme"
+  "fcitx5-anthy"
+  "fcitx5-rime"
 #+end_src
 
 #+begin_src scheme :noweb-ref home-environment-variable
-  ("GUIX_GTK2_IM_MODULE_FILE" . "$HOME/.guix-home/profile/lib/gtk-2.0/2.10.0/immodules-gtk2.cache")
-  ("GUIX_GTK3_IM_MODULE_FILE" . "$HOME/.guix-home/profile/lib/gtk-3.0/3.0.0/immodules-gtk3.cache")
+  ;; For X11 environment.
+  ("XMODIFIERS" . "@im=fcitx")
 #+end_src
+
+To use fcitx5 in QT applications, install =fcitx5-qt= and set environment variable =QT_IM_MODULE= to =fcitx=.
 
 #+begin_src scheme :noweb-ref home-service
   (simple-service 'fcitx5
@@ -1598,7 +1575,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
             (requirement '(dbus))
             (start
              #~(make-forkexec-constructor
-                (list #$(file-append fcitx5 "/bin/fcitx5"))))
+                (list #$(file-append (pkg "fcitx5") "/bin/fcitx5"))))
             (stop #~(make-kill-destructor)))))
 #+end_src
 
@@ -1611,17 +1588,15 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
             (requirement '(graphical-session wayland-display home-sops-secrets))
             (start
              #~(make-forkexec-constructor
-                (list #$(file-append bash-minimal "/bin/sh") "-c"
-                      (string-append
-                       #$gammastep "/bin/gammastep "
-                       "$(cat $XDG_RUNTIME_DIR/secrets/gammastep)"))))
+                (list #$(file-append (pkg "bash-minimal") "/bin/sh") "-c"
+                      #$(file-append (pkg "gammastep") "/bin/gammastep "
+                                     "$(cat $XDG_RUNTIME_DIR/secrets/gammastep)"))))
             (stop #~(make-kill-destructor)))))
 #+end_src
 
 ** git
 #+begin_src scheme :noweb-ref home-package
-  git
-  `(,git "send-email")
+  "git"
 #+end_src
 
 [[file:../files/dotfiles/.config/git/config][~/.config/git/config]]
@@ -1635,7 +1610,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
             (requirement '(graphical-session x11-display))
             (start
              #~(make-forkexec-constructor
-                '(#$(file-append jellyfin-mpv-shim "/bin/jellyfin-mpv-shim"))))
+                '(#$(file-append (pkg "jellyfin-mpv-shim") "/bin/jellyfin-mpv-shim"))))
             (stop #~(make-kill-destructor)))))
 #+end_src
 
@@ -1645,22 +1620,18 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (udev-rules-service 'u2f libfido2 #:groups '("plugdev"))
+  (udev-rules-service 'u2f (pkg "libfido2") #:groups '("plugdev"))
 #+end_src
 
 ** librewolf
 #+begin_src scheme :noweb-ref home-package
-  librewolf
-  adaptive-tab-bar-colour/icecat
-  bitwarden/icecat
-  livemarks/icecat
-  miniflux-injector/icecat
-  privacy-redirect/icecat
-  ublock-origin/icecat
-#+end_src
-
-#+begin_src scheme :noweb-ref home-environment-variable
-  ("MOZ_DISABLE_RDD_SANDBOX" . "1")
+  "librewolf"
+  "adaptive-tab-bar-colour-icecat"
+  "bitwarden-icecat"
+  "livemarks-icecat"
+  "miniflux-injector-icecat"
+  "privacy-redirect-icecat"
+  "ublock-origin-icecat"
 #+end_src
 
 ** l2md
@@ -1671,7 +1642,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
             (provision '(l2md))
             (start
              #~(make-forkexec-constructor
-                (list #$(file-append l2md "/bin/l2md") "--verbose")))
+                (list #$(file-append (pkg "l2md") "/bin/l2md") "--verbose")))
             (stop
              #~(make-kill-destructor)))))
 #+end_src
@@ -1687,7 +1658,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
             (requirement '(graphical-session wayland-display))
             (start
              #~(make-forkexec-constructor
-                (list #$(file-append mako "/bin/mako"))))
+                (list #$(file-append (pkg "mako") "/bin/mako"))))
             (stop #~(make-kill-destructor)))))
 #+end_src
 
@@ -1698,35 +1669,35 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
     (list (shepherd-timer
            '(update-modprobed-db)
            #~(calendar-event #:minutes '(0))
-           #~(#$(file-append modprobed-db "/bin/modprobed-db") "storesilent"))))
+           #~(#$(file-append (pkg "modprobed-db") "/bin/modprobed-db") "storesilent"))))
 #+end_src
 
 [[file:../files/dotfiles/.config/modprobed-db.conf][~/.config/modprobed-db.conf]]
 
 ** mpv
 #+begin_src scheme :noweb-ref home-package
-  mpv/dolly
+  "mpv-nvidia"
 #+end_src
 
 [[../files/dotfiles/.config/mpv/mpv.conf][~/.config/mpv/mpv.conf]]
 
 ** obs
 #+begin_src scheme :noweb-ref home-package
-  obs
-  obs-wlrobs
+  "obs"
+  "obs-wlrobs"
 #+end_src
 
 ** qbittorrent
 #+begin_src scheme :noweb-ref home-service
   (service home-qbittorrent-service-type
     (qbittorrent-configuration
-      (qbittorrent qbittorrent-enhanced-nox)
+      (qbittorrent (pkg "qbittorrent-enhanced-no-x"))
       (webui-port 35951)))
 #+end_src
 
 ** steam
 #+begin_src scheme :noweb-ref home-package
-  steam-nvidia
+  "steam-nvidia"
 #+end_src
 
 #+begin_src scheme :noweb-ref home-environment-variable
@@ -1740,7 +1711,7 @@ My game controller provides both Xbox and Nintendo interfaces but doesn't offer 
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref service
-  (udev-rules-service 'steam-devices steam-devices-udev-rules)
+  (udev-rules-service 'steam-devices (pkg "steam-devices-udev-rules"))
   (udev-rules-service 'controller <<controller-permission-udev-rule>>)
 #+end_src
 
@@ -1761,7 +1732,7 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
             (requirement '(graphical-session wayland-display))
             (start
              #~(make-forkexec-constructor
-                (list #$(file-append swaybg "/bin/swaybg")
+                (list #$(file-append (pkg "swaybg") "/bin/swaybg")
                       "--image" #$(testament-file-object "101361103_p0.jpg")
                       "--mode" "fill")))
             (stop #~(make-kill-destructor)))))
@@ -1784,7 +1755,7 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
             (requirement '(graphical-session wayland-display))
             (start
              #~(make-forkexec-constructor
-                (list #$(file-append waybar "/bin/waybar"))))
+                (list #$(file-append (pkg "waybar") "/bin/waybar"))))
             (stop #~(make-kill-destructor)))))
 #+end_src
 
@@ -1801,7 +1772,7 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
      "waybar.jsonc"
      #~(begin
          (use-modules (guix build utils))
-         (let ((inputs '#$(list light pavucontrol wireplumber)))
+         (let ((inputs '#$(pkgs "light" "pavucontrol" "wireplumber")))
            (copy-file #$(testament-file-object "waybar.jsonc") #$output)
            (substitute* #$output
              (("\\$\\$(.*)\\$\\$" _ program)
@@ -1818,5 +1789,5 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
 #+begin_src scheme :noweb-ref home-fish-config
   (mixed-text-file
    "fish-config-zoxide"
-   zoxide "/bin/zoxide init --cmd cd fish | source")
+   (pkg "zoxide") "/bin/zoxide init --cmd cd fish | source")
 #+end_src

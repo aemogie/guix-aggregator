@@ -1,0 +1,28 @@
+#!/bin/sh
+# SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+load_path_guix="$HOME/Workspace/Guix"
+
+load_path_nonguix="$HOME/Workspace/Nonguix"
+load_path_rosenthal="$HOME/Workspace/Rosenthal/modules"
+load_path_sops="$(dirname $(realpath $XDG_CONFIG_HOME/guix/current/share/guile/site/3.0/sops))"
+
+for path in "$load_path_nonguix" "$load_path_rosenthal" "$load_path_sops"; do
+    extra_load_paths="$path${extra_load_paths:+:}$extra_load_paths"
+done
+
+GUILE_LOAD_PATH="$extra_load_paths${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH"
+GUIX_PACKAGE_PATH="$extra_load_paths${GUIX_PACKAGE_PATH:+:}$GUIX_PACKAGE_PATH"
+if [ -x "$guix_load_path/scripts/guix" ]; then
+    GUILE_LOAD_PATH="$load_path_guix${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH"
+    GUILE_LOAD_COMPILED_PATH="$load_path_guix${GUILE_LOAD_COMPILED_PATH:+:}$GUILE_LOAD_COMPILED_PATH"
+    GUIX="$guix_load_path/scripts/guix"
+    GUIX_UNINSTALLED=1
+    PATH="$load_path_guix/scripts:$load_path_guix:$PATH"
+    export GUIX GUIX_UNINSTALLED PATH
+fi
+export GUILE_LOAD_PATH GUILE_LOAD_COMPILED_PATH GUIX_PACKAGE_PATH
+
+exec "$@"

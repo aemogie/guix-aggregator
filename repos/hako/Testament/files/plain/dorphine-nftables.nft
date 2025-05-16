@@ -60,6 +60,8 @@ table inet filter {
         ip6 saddr fe80::/10 udp sport 547 udp dport 546 accept \
         comment "Accept DHCPv6 replies from IPv6 link-local addresses"
 
+        tcp dport https accept
+
         udp dport { 4950, 4955 } accept
         tcp dport 6695-6699 accept \
         comment "Allow Warframe"
@@ -82,63 +84,5 @@ table inet filter {
 
     chain output {
         type filter hook output priority 0; policy accept;
-    }
-}
-
-table inet proxy {
-    set IPv4_RESERVED {
-        typeof ip daddr
-        flags interval
-        elements = {
-            0.0.0.0/8,
-            10.0.0.0/8,
-            100.64.0.0/10,
-            127.0.0.0/8,
-            169.254.0.0/16,
-            172.16.0.0/12,
-            192.0.0.0/24,
-            192.0.2.0/24,
-            192.88.99.0/24,
-            192.168.0.0/16,
-            198.18.0.0/15,
-            198.51.100.0/24,
-            203.0.113.0/24,
-            224.0.0.0/4,
-            240.0.0.0/4
-        }
-    }
-
-    set IPv6_RESERVED {
-        typeof ip6 daddr
-        flags interval
-        elements = {
-            ::/128,
-            ::1/128,
-            ::ffff:0:0:0/96,
-            64:ff9b::/96,
-            100::/64,
-            2001::/32,
-            2001:20::/28,
-            2001:db8::/32,
-            2002::/16,
-            fc00::/7,
-            fe80::/10,
-            ff00::/8
-        }
-    }
-
-    chain prerouting {
-        type filter hook prerouting priority mangle; policy accept;
-        ip daddr @IPv4_RESERVED return
-        ip6 daddr @IPv6_RESERVED return
-        meta l4proto { tcp, udp } tproxy to :7890 meta mark set 38417
-    }
-
-    chain output {
-        type route hook output priority mangle; policy accept;
-        ip daddr @IPv4_RESERVED return
-        ip6 daddr @IPv6_RESERVED return
-        meta skgid clash return
-        meta l4proto { tcp, udp } meta mark set 38417
     }
 }

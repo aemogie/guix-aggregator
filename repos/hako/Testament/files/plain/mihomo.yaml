@@ -55,7 +55,14 @@ sniffer:
     QUIC:
       ports: ["443", "8443"]
 
-tproxy-port: 7890
+tun:
+  enable: true
+  stack: mixed
+  device: mihomo0
+  auto-route: true
+  auto-redirect: true
+  exclude-interface:
+    - tailscale0
 
 proxy-groups:
   - {

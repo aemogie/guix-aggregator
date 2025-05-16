@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 ARGS  :=
-OPTS  := $(ARGS) --verbosity=1
+OPTS  := --verbosity=1 $(ARGS)
 GUIX  := guix
 EMACS := $(GUIX) shell emacs-next-minimal -- emacs
 
@@ -21,38 +21,33 @@ build: build-dorphine build-gokuraku
 build-%: config/%.scm
 	$(GUIX) system build $< $(OPTS)
 
-.PHONY: reconfigure
-reconfigure: reconfigure-dorphine
-reconfigure-%: config/%.scm
-	$(GUIX) system reconfigure $< $(OPTS)
-
-.PHONY: home-build
-home-build: home-build-dorphine
-home-build-%: config/%.scm
+.PHONY: build-home
+build-home: build-home-dorphine
+build-home-%: config/%.scm
 	$(GUIX) home build $< $(OPTS)
 
-.PHONY: home-reconfigure
-home-reconfigure: home-reconfigure-dorphine
-home-reconfigure-%: config/%.scm
-	$(GUIX) home reconfigure $< $(OPTS)
-
 .PHONY: deploy
-deploy: config/gokuraku.scm
-	$(GUIX) deploy files/blobs/deploy $(OPTS)
+# Use pre-inst-env, as ‘guix deploy’ doesn't provide a ‘--allow-downgrades’
+# option.
+deploy: deploy-dorphine deploy-gokuraku
+deploy-%: config/%.scm
+	./pre-inst-env $(GUIX) deploy files/deploy/$(notdir $<) $(OPTS)
+
+.PHONY: authenticate
+# Authenticate commits.
+authenticate:
+	@$(GUIX) git authenticate c5d46fdfdfbc84fe413f1d930049d1f703f9a0ff \
+		"F4C2 D1DF 3FDE EA63 D1D3  0776 ACC6 6D09 CA52 8292"
 
 .PHONY: ares
-# Load reader extensions before starting nREPL server.
+# Start nREPL server for Guile.
+# NOTE: Load reader extensions before starting nREPL server.
 ares:
 	@$(GUIX) shell guile-next guile-ares-rs -- guile -c \
 	"(begin \
 	   (use-modules (guix gexp) \
 	                (gnu home services emacs)) \
 	   ((@ (ares server) run-nrepl-server)))"
-
-.PHONY: authenticate
-authenticate:
-	@$(GUIX) git authenticate c5d46fdfdfbc84fe413f1d930049d1f703f9a0ff \
-		"F4C2 D1DF 3FDE EA63 D1D3  0776 ACC6 6D09 CA52 8292"
 
 .PHONY: clean
 clean:

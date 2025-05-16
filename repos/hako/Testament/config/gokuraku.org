@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-License-Identifier: CC-BY-SA-4.0
 
-#+TITLE: gokuarku (Server)
+#+TITLE: gokuraku
 #+PROPERTY: header-args :noweb-prefix no
 
 * Guix System
@@ -18,7 +18,7 @@
       (file-systems (append <<file-systems>> %base-file-systems))
       (host-name "gokuraku")
       (users (cons* <<user>> %base-user-accounts))
-      (packages (cons* <<package>> %base-packages))
+      (packages (append (pkgs+out <<package>>) %base-packages))
       (services (cons* <<service>> %base-services))))
 
   ((compose <<transformation>>)
@@ -29,10 +29,9 @@
 #+begin_src scheme :noweb-ref module
   (srfi srfi-26)
   (ice-9 match)
-  (gnu packages gnupg)
-  (gnu packages rsync)
-  (gnu packages shells)
-  (sops packages sops)
+  (sops secrets)
+  (gnu services ssh)
+  (sops services sops)
 #+end_src
 
 ** Bootloader
@@ -93,43 +92,73 @@
 #+end_src
 
 ** Users
+Personal account.
 #+begin_src scheme :noweb-ref user
   (user-account
     (name "hako")
+    (password "$6$w0.1nJP5izI6Z/fc$EnWXCvbnFlwdO5dMp8Ir1J3NKRoVlPrTbv90cmPPe.t3Hxtalwt1jabylQIzTQlR3MHe4iNgiEyytwdVv3W55/")
     (group "users")
     (supplementary-groups '("wheel"))
-    (shell (file-append fish "/bin/fish")))
+    (shell (file-append (pkg "fish") "/bin/fish")))
+#+end_src
+
+Administration accounts.
+#+begin_src scheme :noweb-ref user
+  (user-account
+    (inherit %root-account)
+    (password "$6$d8f88gM9iuPYdXyB$bbRdv9MchAZ1RJOXN4PpvB/CgJ4IqOBKsmzrus8WyLscy7D/ZUucGalLnlvN5zndkZKosd7Y7wFtEX8yPMR3c."))
+
+  (user-account
+    (name "deploy")
+    (password "$6$7Gxaa7QJDruyGqOP$BWqPRPh8sqwHxfbWamR6pRdD41pvrZswQf4VFRaURK4OxpP30ziSP5RREzvzLJF3IBce5bagTp3MDTi8yW38a0")
+    (group "users")
+    (comment "User for 'guix deploy'")
+    (create-home-directory? #f))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'add-user-ssh-keys
+      openssh-service-type
+    `(("deploy"
+       ,(plain-file
+         "hako.pub"
+         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2"))
+      ("hako"
+       ,(plain-file
+         "hako.pub"
+         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2"))))
+#+end_src
+
+#+begin_src scheme :noweb-ref transformation
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (sudoers-file
+       (plain-file
+        "sudoers"
+        (string-append
+         (plain-file-content (operating-system-sudoers-file os))
+         "deploy ALL = NOPASSWD: ALL\n")))))
 #+end_src
 
 ** Packages
 No need to install less used ones, prefer ‘guix shell’.
 #+begin_src scheme :noweb-ref package
-  rsync
+  "rsync"
 #+end_src
 
 ** Guix Daemon
-#+begin_src scheme :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (services
-       (modify-services (operating-system-user-services os)
-         (guix-service-type
-          config => (guix-configuration
-                     (inherit config)
-                     (authorized-keys
-                      (cons* %guix-authorized-key-dorphine
-                             %guix-authorized-key-nonguix
-                             %default-authorized-guix-keys))
-                     (substitute-urls
-                      `(,@%default-substitute-urls
-                        "https://substitutes.nonguix.org"))))))))
+#+begin_src scheme :noweb-ref service
+  (simple-service 'guix-extension-dorphine
+      guix-service-type
+    (guix-extension
+     (authorized-keys (list %guix-authorized-key-dorphine))))
 #+end_src
 
 ** SOPS Secrets
 #+begin_src scheme :noweb-ref package
-  gnupg
-  sops
+  "gnupg"
+  "sops"
 #+end_src
 
 #+begin_src scheme :noweb-ref definition
@@ -145,31 +174,43 @@ No need to install less used ones, prefer ‘guix shell’.
     (get-sops-secret key #:file gokuraku.yaml #:number? #t))
 #+end_src
 
+#+begin_src scheme :noweb-ref service
+  (service sops-secrets-service-type
+    (sops-service-configuration
+     (config (testament-file-object "sops.yaml"))
+     (gnupg-home "/var/lib/sops")
+     (secrets
+      (list (sops-secret
+              (key '("cloudflared"))
+              (file gokuraku.yaml)
+              (user "nobody"))))))
+#+end_src
+
+[[file:../files/plain/sops.yaml][sops.yaml]]
+
 * Kernel
 #+begin_src scheme :noweb-ref module
   (gnu services sysctl)
-  (gnu packages linux)
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  ;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
+  (simple-service 'udp-buffer-size
+      sysctl-service-type
+    '(("net.core.rmem_max" . "7500000")
+      ("net.core.wmem_max" . "7500000")))
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
   (lambda (os)
     (operating-system
       (inherit os)
-      (kernel linux-libre-lts)
+      (kernel (pkg "linux-libre@6.12"))
       (kernel-arguments
        (cons* "kernel.sysrq=0"
               "zswap.enabled=1"
               "zswap.max_pool_percent=90"
-              (operating-system-user-kernel-arguments os)))
-      (services
-       (modify-services (operating-system-user-services os)
-         (sysctl-service-type
-          _ => (sysctl-configuration
-                (settings
-                 `(;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
-                   ("net.core.rmem_max" . "7500000")
-                   ("net.core.wmem_max" . "7500000")
-                   ,@%default-sysctl-settings))))))))
+              (operating-system-user-kernel-arguments os)))))
 #+end_src
 
 * Networking
@@ -240,44 +281,18 @@ No need to install less used ones, prefer ‘guix shell’.
 
 * SSH
 #+begin_src scheme :noweb-ref module
-  (gnu services security)
   (gnu services ssh)
-  (gnu packages ssh)
 #+end_src
 
 #+begin_src scheme :noweb-ref package
-  mosh
+  "mosh"
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (service (fail2ban-jail-service
-            openssh-service-type
-            (fail2ban-jail-configuration
-              (name "sshd")
-              (enabled? #t)
-              (extra-content
-               (list (plain-file "filter" "filter=sshd[_daemon='sshd-session']")))
-              (action
-               (list (fail2ban-jail-action-configuration
-                       (name "nftables"))))))
+  (service openssh-service-type
     (openssh-configuration
-      (openssh openssh-sans-x)
-      (password-authentication? #f)
-      (authorized-keys
-       `(("hako" ,(plain-file "hako.pub" "ssh-ed25519 \
-  AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2"))))))
-#+end_src
-
-#+begin_src scheme :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (sudoers-file
-       (plain-file
-        "sudoers"
-        (string-append
-         (plain-file-content %sudoers-specification)
-         "hako ALL = NOPASSWD: ALL\n")))))
+      (openssh (pkg "openssh-sans-x"))
+      (password-authentication? #f)))
 #+end_src
 
 * Containers
@@ -300,14 +315,13 @@ No need to install less used ones, prefer ‘guix shell’.
 * Databases
 #+begin_src scheme :noweb-ref module
   (gnu services databases)
-  (gnu packages databases)
 #+end_src
 
 ** postgresql
 #+begin_src scheme :noweb-ref service
   (service postgresql-service-type
     (postgresql-configuration
-      (postgresql postgresql-15)))
+      (postgresql (pkg "postgresql@15"))))
 #+end_src
 
 ** redis
@@ -326,7 +340,7 @@ No need to install less used ones, prefer ‘guix shell’.
   (service cloudflare-tunnel-service-type
     (cloudflare-tunnel-configuration
       (log-level "error")
-      (token (sops-str '("cloudflared")))))
+      (token-file "/run/secrets/cloudflared")))
 #+end_src
 
 ** certbot

@@ -121,9 +121,13 @@ This means, among other things that SSS:
 - includes the OG Linux kernel (with proprietary blobs) so as to be more compatible with modern hardware
 - includes non-guix software channel by default, so as to allow installation of convenient software to which few/no libre alternatives exist.
 
-* Keyboard Terminology
+* About this manual
 
-When keybindings (shortcurts) are defined, the following legend applies (a la Emacs):
+This manual is written by hand with care and attention for detail.
+
+We try to write this manual to cater to the widest possible audience, and to make it easy to onboard new users to SSS. We also try to document things extensively here, so you have a point of reference.
+
+When keybindings (shortcurts) are defined or mentioned, the following legend applies (a la Emacs):
 
 | term | meaning                   |
 |------+---------------------------|
@@ -134,14 +138,7 @@ When keybindings (shortcurts) are defined, the following legend applies (a la Em
 | ~SPC~  | Space key                 |
 |------+---------------------------|
 
-* How this manual works
 
-This manual is written by hand with care and attention for detail.
-
-I write my documents in Org format from Emacs and export them for your convenience to several other formats. A usual release of the manual happens as follows:
-
-- Edit the SSS manual
-- Run ~C-c # m~ from Emacs, which runs lib/sss-manual.el, exporting the Org document to several other formats (LaTEX, PDF, HTML, Markdown, etc.)   
 
 * Customizing SSS
 
@@ -388,10 +385,19 @@ Find here a reference configuration with what is required.
 
 -----
 
+* Explaining certain choices
+
+*Q*: Why choose for Emacs-style keybindings in the power-user session?
+*A*: SSS puts a heavy emphasis on mnemonics and ease of use. Emacs keybindings are well documented, well known and are quite easy to remember thanks to mnemonics, as well as being quite ergonomic too, specially when combined with split keyboards and thumb clusters. In the universal session we choose for CUA-style keybindings to be familiar to most people.
+
+*Q*: Why choose to put Waybar at the bottom, when most rices put it at the top?
+*A*: SSS chooses to place the status bar at the bottom of the screen to minimize distractions. We mostly read things from top-left to top-right, and having a bar take that prominent space in the screen can be wasteful and distracting, and you end up looking at the clock or start button more often than the actual task you are working on. This is true for both the power-user session and the universal session (it might help for people that used Windows).
 
 
+-------
 
-** User Management
+
+* User Management
 
 SSS works by programatically define users via code.
 
@@ -403,7 +409,7 @@ When everything is in place, if it's a new user, you can add a password to the u
 
 -----
 
-** Adding channels
+* Adding channels
 
 Add ~nonguix~ in your channels file (=$HOME/.config/guix/channels.scm=). This will later be overwritten by SSS.
 
@@ -422,7 +428,7 @@ Add ~nonguix~ in your channels file (=$HOME/.config/guix/channels.scm=). This wi
 
 After adding the channel, perform a ~guix pull~ from your user account (*no sudo or root*) and let all channels get updated.
 
-** Installation of SSS
+* Installation of SSS
 
 Once you have followed all those above steps, you can enter a temporary Guix shell, so as to bootstrap SSS.
 
@@ -465,7 +471,7 @@ Guix is a rolling distribution and you don't need to be always on bleeding edge 
 
 --------
 
-** Login managers, and login screen
+* Login managers, and login screen
 
 SSS uses *no login managers* like GDM or SDDM. Simply login to the TTY and start your favorite GUI (or not).
 That being said, feel free to use your own.

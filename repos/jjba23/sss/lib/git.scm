@@ -59,6 +59,7 @@
     (pull (rebase . "false"))
     ("includeIf \"gitdir:~/work/\"" ("  path" . "~/.gitconfig-work"))
     ("includeIf \"gitdir:~/hacking/\"" ("  path" . "~/.gitconfig-personal"))
+    ("includeIf \"gitdir:~/fork/\"" ("  path" . "~/.gitconfig-personal"))
     ("includeIf \"gitdir:~/scratch/\"" ("  path" . "~/.gitconfig-personal"))))
 
 (begin

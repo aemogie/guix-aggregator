@@ -2,6 +2,8 @@ alias profile-emacs guix shell emacs-pgtk emacs-esup -- emacs --eval '(progn (se
 
 alias mw monero-wallet-cli --daemon-address=10.0.0.1:18081 --trusted-daemon
 
+alias wr sudo herd restart wireguard-wg0
+
 alias sr sudo guix system reconfigure -L $HOME/src/dotfiles $HOME/src/dotfiles/mrh-guix/system/$MACHINE_ROLE/config.scm
 
 alias hr guix home reconfigure -L $HOME/src/dotfiles $HOME/src/dotfiles/mrh-guix/home/$MACHINE_ROLE/config.scm
