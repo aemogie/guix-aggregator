@@ -1,0 +1,17 @@
+# SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+[database]
+path=/home/hako/.local/share/mail
+
+[user]
+name=Hilton Chain
+primary_email=hako@ultrarare.space
+
+[new]
+tags=new
+ignore=Trash
+
+[search]
+exclude_tags=deleted;spam
