@@ -183,7 +183,7 @@ No need to install less used ones, prefer ‘guix shell’.
       (list (sops-secret
               (key '("cloudflared"))
               (file gokuraku.yaml)
-              (user "nobody"))))))
+              (user "cloudflared"))))))
 #+end_src
 
 [[file:../files/plain/sops.yaml][sops.yaml]]

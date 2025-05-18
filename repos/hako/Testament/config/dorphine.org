@@ -394,7 +394,7 @@ Generate passwordless ECC key:
       (list (sops-secret
               (key '("cloudflared"))
               (file dorphine.yaml)
-              (user "nobody"))))))
+              (user "cloudflared"))))))
 #+end_src
 
 [[file:../files/plain/sops.yaml][sops.yaml]]
@@ -904,6 +904,8 @@ home-emacs-service-type from [[https://issues.guix.gnu.org/64620][#64620]]
 #+begin_src scheme :noweb-ref home-package
   "emacs-gcmh"
   "emacs-no-littering"
+
+  "emacs-fish-mode"
   "emacs-json-mode"
   "emacs-markdown-mode"
   "emacs-nftables-mode"
@@ -1709,6 +1711,7 @@ To use fcitx5 in QT applications, install =fcitx5-qt= and set environment variab
   "bitwarden-icecat"
   "livemarks-icecat"
   "miniflux-injector-icecat"
+  "ohmyech-icecat"
   "privacy-redirect-icecat"
   "ublock-origin-icecat"
 #+end_src
