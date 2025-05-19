@@ -7,33 +7,29 @@ padding.y = 20
 normal.family = "DejaVu Sans Mono"
 size = 13
 
-# Colors (Gruvbox dark)
-
 # Default colors
 [colors.primary]
-# hard contrast background = = '#1d2021'
-background = "#0f0e06"
-# soft contrast background = = '#32302f'
-foreground = "#cfbcba"
+background = "#222524"
+foreground = "#eaf2ef"
 
 # Normal colors
 [colors.normal]
 black   = "#000000"
-red     = "#ff7a7f"
-green   = "#2fa526"
-yellow  = "#c48702"
-blue    = "#6a88ff"
-magenta = "#d570af"
-cyan    = "#4fb0cf"
+red     = "#ff656a"
+green   = "#7fc87f"
+yellow  = "#cac85f"
+blue    = "#57aff6"
+magenta = "#f59acf"
+cyan    = "#7fcfdf"
 white   = "#a6a6a6"
 
 # Bright colors
 [colors.bright]
 black   = '#595959'
-red     = "#f06a3f"
-green   = "#64aa0f"
-yellow  = "#d0730f"
-blue    = "#029fff"
-magenta = "#af8aff"
-cyan    = "#6fafff"
+red     = "#ff7a5f"
+green   = "#50cf89"
+yellow  = "#e0b02f"
+blue    = "#78afff"
+magenta = "#cfaaff"
+cyan    = "#60d5c2"
 white   = "#ffffff"

@@ -388,6 +388,8 @@ Helpful advice for face changing functions."
        'my/org-cycle-list-bullet-repeat-keymap))
 
 (use-package org-bullets
+  :custom
+  (org-bullets-bullet-list '("◉" "○" "❀" "✿" "◆" "◇" "✸"))
   :hook
   (org-mode . org-bullets-mode)
   :after org)

@@ -5,6 +5,15 @@ HISTFILE=~/.histfile
 HISTSIZE=1000
 SAVEHIST=1000
 
+alias \
+    cp='cp -iv' \
+    mv='mv -iv' \
+    mkdir='mkdir -pv' \
+    ls='eza' \
+    lah='eza -lah' \
+    lt='eza --tree --git-ignore' \
+    search='guix search' \
+	
 zstyle ':vcs_info:git*' formats " %F{blue}%b%f %m%u%c %a "
 zstyle ':vcs_info:*' enable git
 zstyle ':vcs_info:*' check-for-changes true
@@ -15,8 +24,12 @@ precmd() {
     vcs_info
     print -P '%B%~%b ${vcs_info_msg_0_}'
 }
-
-PROMPT='%B%(!.#.>)%b '
+ENV_PART=''
+USER_PART='%B%(!.#.>)%b'
+if [ -n "$GUIX_ENVIRONMENT" ]; then
+    ENV_PART="%F{blue}[guix-shell]%f"
+fi
+PROMPT="${ENV_PART}$USER_PART "
 
 source $HOME/.guix-profile/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 source $HOME/.guix-profile/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh

@@ -40,8 +40,8 @@
 	apl
 	xdg-desktop-portal
 	xdg-desktop-portal-gtk
-					;zsh-autocompletions
-					;zsh-syntax-highlighting
+	;; zsh-autocompletions
+	;; zsh-syntax-highlighting
 					;fzf-tab
 	zathura-pdf-mupdf))
 
@@ -96,6 +96,7 @@
 	emacs-yaml-mode
 	emacs-pinentry
 	emacs-which-key
+	emacs-pdf-tools
 	emacs-bqn-mode
 	emacs-zig-mode))
 
@@ -126,15 +127,6 @@ PROMPT='%B%(!.#.>)%b '
 source $HOME/.guix-profile/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 source $HOME/.guix-profile/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 "))
-
-(define %bash-profile
-  (plain-file
-   "bash_profile"
-   "
-if [ -f ~/.profile ]; then source ~/.profile fi
-if [ -f ~/.bashrc ]; then source ~/.bashrc fi
-export PATH=/run/setuid-programs:$PATH
-export PATH=$HOME/.nix-profile/bin:$PATH"))
 
 (home-environment
  (packages

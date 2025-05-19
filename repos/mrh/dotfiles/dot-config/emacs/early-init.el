@@ -122,7 +122,7 @@
 (use-package ef-themes
   :custom
   (ef-themes-mixed-fonts t)
-  (ef-themes-to-toggle '(ef-eagle ef-autumn))
+  (ef-themes-to-toggle '(ef-elea-dark ef-elea-light))
   :config
   (defun my/adjust-opacity (&optional theme)
     "Make sure opacity is correct for a given theme."
@@ -147,4 +147,4 @@
     (advice-add 'ef-themes-load-theme :after #'my/fontify-org-buffers)
     (add-hook 'org-mode-hook #'variable-pitch-mode))
   
-  (ef-themes-select-dark 'ef-autumn))
+  (ef-themes-select-dark 'ef-elea-dark))

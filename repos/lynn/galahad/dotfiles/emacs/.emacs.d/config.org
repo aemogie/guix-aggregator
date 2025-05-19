@@ -14,6 +14,12 @@ Prevent Emacs from loading out of date, native compiled jsonrpc:
    ;; generated from config.org via tangle
    (require 'package)
    (require 'use-package)
+   (use-package pdf-tools
+  :defer t
+  :config
+  (setq-default pdf-view-display-size 'fit-page)
+  (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward))
+
    (use-package org-auto-tangle
      :hook (org-mode . org-auto-tangle-mode))
 #+end_src
@@ -173,9 +179,6 @@ Dired-subtree's functionality is within =dired-subtree-toggle=
 #+end_src
 ** Modeline
 #+begin_src emacs-lisp
-   (use-package doom-modeline
-     :hook (after-init . doom-modeline-mode))
-  (use-package nerd-icons) ; modeline requires this
 #+end_src 
 ** Modal Editing
 #+begin_src emacs-lisp

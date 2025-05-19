@@ -1,8 +1,14 @@
 ;; generated from config.org via tangle
-(require 'package)
-(require 'use-package)
-(use-package org-auto-tangle
-  :hook (org-mode . org-auto-tangle-mode))
+ (require 'package)
+ (require 'use-package)
+ (use-package pdf-tools
+:defer t
+:config
+(setq-default pdf-view-display-size 'fit-page)
+(define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward))
+
+ (use-package org-auto-tangle
+   :hook (org-mode . org-auto-tangle-mode))
 
 (use-package no-littering)
   (setq backup-directory-alist
@@ -128,9 +134,7 @@
 (use-package flycheck)
 ;(use-package flycheck-pos-tip) this isn't packaged for guix, should find alternative? or package it?
 
-(use-package doom-modeline
-   :hook (after-init . doom-modeline-mode))
-(use-package nerd-icons) ; modeline requires this
+
 
 (use-package meow)
     (defun meow-setup ()
