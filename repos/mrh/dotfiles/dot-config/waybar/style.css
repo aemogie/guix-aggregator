@@ -13,7 +13,6 @@ window#waybar {
 tooltip {
     background: #222524;
     border: 1px solid #5d5f63;
-
 }
 
 tooltip label {
@@ -21,7 +20,7 @@ tooltip label {
 }
 
 #workspaces button {
-    color: #cac85f;
+    color: #7fc87f;
 }
 
 #workspaces button.persistent {
@@ -29,14 +28,12 @@ tooltip label {
 }
 
 #workspaces button.focused {
-	border-top: 3px solid #cac85f;
+	border-top: 3px solid #7fc87f;
 }
 
 #workspaces button:hover {
-	box-shadow: inherit;
-	text-shadow: inherit;
-	background: #a6a6a6;
-	color: #0f0e06;
+    background: #edf5e2;
+    color: #221321;
 }
 
 #window {
@@ -75,7 +72,7 @@ tooltip label {
 }
 
 #memory {
-    border-top: 3px solid gray;
+    border-top: 3px solid #969faf;
     color: #eaf2ef;
 }
 
