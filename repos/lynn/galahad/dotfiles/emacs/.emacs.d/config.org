@@ -81,6 +81,10 @@ Prevent Emacs from loading out of date, native compiled jsonrpc:
     (which-key-mode)
     (setq which-key-idle-delay 1))
 #+end_src
+** Elfeed
+#+begin_src emacs-lisp
+  (use-package elfeed)
+#+end_src
 ** Music
 Testing out using EMMS to manage my music listening.
 #+begin_src emacs-lisp

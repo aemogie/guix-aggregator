@@ -2,10 +2,10 @@
 #+author: Josep Bigorra
 #+email: jjbigorra@gmail.com
 #+language: en
-#+options: toc:nil num:nil
 
-[[https://ci.codeberg.org/api/badges/14110/status.svg]] [[https://jointhefreeworld.org/static-assets/badges/GNU-Guix-c48702.png]] [[https://jointhefreeworld.org/static-assets/badges/Scheme-Guile-d0730f.png]] [[https://jointhefreeworld.org/static-assets/badges/Wayland-Hyprland-6a6aff.png]] [[https://jointhefreeworld.org/static-assets/badges/Emacs-30-a8516e.png]] [[https://jointhefreeworld.org/static-assets/badges/Shell-Fish-2fffb2.png]] 
-
+[[https://jointhefreeworld.org/ggg/dist/scheme-guile.svg]] [[https://jointhefreeworld.org/ggg/dist/gnu-guix.svg]]  [[https://jointhefreeworld.org/ggg/dist/gnu-emacs.svg]] [[https://jointhefreeworld.org/ggg/dist/shell-eshell.svg]]  [[https://jointhefreeworld.org/ggg/dist/shell-fish.svg]] 
+[[https://jointhefreeworld.org/ggg/dist/gnu-make.svg]] 
+[[https://jointhefreeworld.org/ggg/dist/license-gpl3+.svg]]    [[https://jointhefreeworld.org/ggg/dist/license-fdl13+.svg]]
 
 SSS is a Lisp machine adventure, where the hacking culture is celebrated. Let me help you achieve /GNUrvana/.
 
@@ -23,9 +23,9 @@ Refer to the project's code of conduct here: [[https://jointhefreeworld.org/blog
 
 Note: Screenshots below might be outdated and no longer representative of the current, ever-changing state of SSS.
 
-This screenshot is from version (v2.0.4):
+This screenshot is from version (v2.3.23):
 
-[[https://jointhefreeworld.org/static-assets/sss/screenshots/2025-03-11.png]]
+[[https://jointhefreeworld.org/static-assets/sss/screenshots/7bdfaa50fbc45b63.png]]
 
 -----
 
@@ -63,12 +63,28 @@ An operating system unto itself 🐂.
 - Dev setup for: Scheme, Scala, Haskell, Lisp, Rust, Python, Shell, Nix, Golang and more
 
 
+------------------
+
 * SSS Manuals
 
 I strive to provide proper and extensive documentation on the Supreme Sexp System (SSS), in several formats, available at your convenience.
 
 - Org format [[file:docs/manual/en-GB.org]]
-- Online HTML: [[https://jointhefreeworld.org/manuals/sss/index.html]] 
+- Online HTML at jointhefreeworld: [[https://jointhefreeworld.org/manuals/sss/index.html]] 
+
+------------------------  
+  
+* Licensing
+
+sss and all of its source code are free software, licensed under the GNU General Public License v3 (or newer at your convenience).
+
+https://www.gnu.org/licenses/gpl-3.0.html
+
+The documentation and examples, including this document, which are provided with sss, are all licensed under the GNU Free Documentation License v1.3 (or newer at your convenience).
+
+https://www.gnu.org/licenses/fdl-1.3.html
+
+---------
 
 * Code of conduct
 
@@ -79,6 +95,8 @@ https://jointhefreeworld.org/blog/articles/personal/jointhefreeworld-code-of-con
 In summary, we foster an inclusive, respectful, and cooperative environment for all contributors and users of this free software project. Inspired by the ideals of the GNU Project, we strive to uphold freedom, equality, and community as guiding principles. We believe that collaboration in a community of mutual respect is essential to creating excellent free software.
 
 
+--------------
+
 * SSS Project
 
 Contributing to free software is a uniquely beautiful act because it embodies principles of generosity, collaboration, and empowerment.
@@ -86,3 +104,6 @@ Contributing to free software is a uniquely beautiful act because it embodies pr
 We welcome everyone to feel invited to the SSS Project, and encourage active contribution in all forms, to improve it and/or suggest improvements, brainstorm with me, make it more modular/flexible, etc, feel free to contact me <jjbigorra@gmail.com> to chat, discuss or report feedback.
 
 Find here the Backlog and Kanban boards for SSS: https://lucidplan.jointhefreeworld.org/tickets/sss
+
+----------
+

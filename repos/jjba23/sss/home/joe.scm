@@ -44,6 +44,7 @@
              (gnu packages admin)
              (gnu home services)
              (gnu home services shells)
+             (gnu home services mcron)
              (gnu home services ssh)
              (gnu home services gnupg)
              (gnu home services shepherd)
@@ -64,7 +65,7 @@
              (sss hyprland hyprlang)
              (sss hyprland hyprland)
              (sss hyprland hyprlock)
-             (sss hyprland hyprpaper)
+             (sss wallpaper)
              (sss bash)
              (sss containers)
              (sss mime)
@@ -104,7 +105,7 @@
                                      #:with-blur #t
                                      #:with-shadow #t)
                    (sss-hyprlock-svc #:clone-dir sss-clone-dir)
-                   (sss-hyprpaper-svc #:clone-dir sss-clone-dir
+                   (sss-wallpaper-svc #:clone-dir sss-clone-dir
                                       #:palette sss-palette)
                    (sss-mime-svc)
                    (sss-dirs-svc)
@@ -143,6 +144,10 @@
                                         #:lang sss-lang)
                  (sss-bash-service #:clone-dir sss-clone-dir)
                  sss-openpgp-conf
+                 (simple-service 'sss-home-cron-service
+                                 home-mcron-service-type
+                                 '())
+                 (sss-random-wallpaper-service #:username "joe")
                  (service home-dbus-service-type)
                  (service home-pipewire-service-type)
                  sss-fontconfig-service-type

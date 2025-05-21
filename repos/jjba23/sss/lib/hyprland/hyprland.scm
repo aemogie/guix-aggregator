@@ -17,13 +17,11 @@
 
 (load "../palette.scm")
 (load "./hyprlang.scm")
-(load "./hyprpaper.scm")
 
 (define-module (sss hyprland hyprland)
   #:use-module (gnu)
   #:use-module (sss palette)
-  #:use-module (sss hyprland hyprlang)
-  #:use-module (sss hyprland hyprpaper))
+  #:use-module (sss hyprland hyprlang))
 
 (define* (notify-cmd #:key title subtitle)
   (format #f
@@ -40,7 +38,7 @@
                      `("lxsession" "mako"
                        "dbus-update-activation-environment --all"
                        "waybar"
-                       "hyprpaper"
+                       "herd trigger sss-random-wallpaper"
                        "alacritty --daemon"
                        "emacs --daemon"
                        "transmission-daemon"
@@ -105,10 +103,10 @@
   `((enabled . true) (first_launch_animation . true)))
 
 (define hypr-misc
-  `((disable_hypr_logo . true) (disable_splash_rendering . true)
+  `((disable_hyprland_logo . true) (force_default_wallpaper . 0)
+    (disable_splash_rendering . true)
     (font_family . "Adwaita Sans")))
 
-;;
 
 (define hypr-media-binds
   (map (lambda (kb)
@@ -225,10 +223,7 @@
                         #:cmd "hyprlock")
              (exec-bind #:mod "s-S"
                         #:bind "B"
-                        #:cmd (format #f "hyprctl hyprpaper reload ,~a"
-                                      (sss-hypr-wallpaper #:clone-dir
-                                                          clone-dir
-                                                          #:palette palette)))
+                        #:cmd "herd trigger sss-random-wallpaper")
              (exec-bind #:mod "s"
                         #:bind "T"
                         #:cmd "alacritty msg create-window || alacritty")
@@ -347,6 +342,8 @@
                                                        #:settings (hypr-general
                                                                    #:palette
                                                                    palette)))
+           (serialized-misc (serialize-hypr-section #:section 'misc
+                                                    #:settings hypr-misc))
            (serialized-decoration (serialize-hypr-section #:section 'decoration
                                                           #:settings (hypr-decoration
                                                                       #:with-blur
@@ -374,12 +371,16 @@
                                    "# ====== Startup programs ======")
                                  serialized-startup-programs
                                  `("" "# ====== General configuration ======"
-                                   ,serialized-general)
+                                   ,serialized-general
+                                   ;; "debug:disable_logs = false"
+                                   )
                                  `("" "# ====== Input configuration ======"
                                    ,serialized-input)
                                  `(""
                                    "# ====== Decoration configuration ======"
                                    ,serialized-decoration)
+                                 `("" "# ====== Misc configuration ======"
+                                   ,serialized-misc)
                                  `(""
                                    "# ====== Animations configuration ======"
                                    ,serialized-animations)

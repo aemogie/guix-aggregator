@@ -1,0 +1,3 @@
+[submodule "submodules/digital-art-dreams"]
+	path = submodules/digital-art-dreams
+	url = https://codeberg.org/jjba23/digital-art-dreams.git

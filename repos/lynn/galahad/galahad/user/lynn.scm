@@ -67,6 +67,7 @@
 	emacs-doom-modeline
 	emacs-dired-hacks		; dired-subtree
 	emacs-eat
+	emacs-elfeed
 	emacs-emms
 	emacs-eglot
 	emacs-flycheck
@@ -154,7 +155,7 @@ source $HOME/.guix-profile/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-
 	     (videos "$HOME/videos/")))
    (service home-zsh-service-type
 	    (home-zsh-configuration
-	     (zshrc (list %zshrc))))
+	     (zshrc (list (local-file "../packages/zshrc")))))
    (simple-service 'env-vars home-environment-variables-service-type
 		   `(("SHELL" . ,(file-append zsh "/bin/zsh"))
 		     ("EDITOR" . "emacs")

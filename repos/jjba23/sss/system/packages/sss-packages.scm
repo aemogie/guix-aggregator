@@ -172,7 +172,7 @@
 
         waybar-experimental
         wmenu
-        hyprpaper
+        swaybg
 
         mako
         wev

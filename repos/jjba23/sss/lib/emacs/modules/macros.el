@@ -22,6 +22,7 @@
 ;;; Code:
 
 (defun replace-css-class-hygguile-abstraction ()
+  "Replace a string of CSS classes by a hygguile class set."
   (interactive)
   (kill-region 10305 10346 'region)
   (backward-char 1)
@@ -35,4 +36,4 @@
 
 (provide 'sss/macros)
 
-;;; maps.el ends here
+;;; macros.el ends here

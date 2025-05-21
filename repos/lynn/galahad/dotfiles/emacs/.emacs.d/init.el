@@ -57,6 +57,8 @@
   (which-key-mode)
   (setq which-key-idle-delay 1))
 
+(use-package elfeed)
+
 (setq emms-browser-covers
     '((:browse-dir "~/Music")
       (:cover-name "cover.jpg" "folder.jpg" "AlbumArt.jpg")

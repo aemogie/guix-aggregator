@@ -64,7 +64,7 @@
              (sss gtk)
              (sss nix)
              (sss containers)
-             (sss hyprland hyprpaper)
+             (sss wallpaper)
              (sss portals)
              (sss qt)
              (sss channels)
@@ -91,7 +91,7 @@
                    (sss-mako-svc #:palette sss-palette
                                  #:sans-font sss-sans-font)
                    (sss-containers-svc)
-                   (sss-hyprpaper-svc #:clone-dir sss-clone-dir
+                   (sss-wallpaper-svc #:clone-dir sss-clone-dir
                                       #:palette sss-palette)
                    (sss-labwc-svc #:extra-startups sss-labwc-extra-startups))))
 

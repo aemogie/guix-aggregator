@@ -2,35 +2,55 @@
 #+author: Josep Bigorra
 #+email: jjbigorra@gmail.com
 #+language: en
-#+options: num:nil html-style:nil
+#+options: html-style:nil
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://jointhefreeworld.org/static/css/jointhefreeworld.css" />
 
+[[https://jointhefreeworld.org/ggg/dist/scheme-guile.svg]] [[https://jointhefreeworld.org/ggg/dist/gnu-guix.svg]]  [[https://jointhefreeworld.org/ggg/dist/gnu-emacs.svg]] [[https://jointhefreeworld.org/ggg/dist/shell-eshell.svg]]  [[https://jointhefreeworld.org/ggg/dist/shell-fish.svg]] 
+[[https://jointhefreeworld.org/ggg/dist/gnu-make.svg]] 
+[[https://jointhefreeworld.org/ggg/dist/license-gpl3+.svg]]    [[https://jointhefreeworld.org/ggg/dist/license-fdl13+.svg]]
 
-[[https://ci.codeberg.org/api/badges/14110/status.svg]] [[https://jointhefreeworld.org/static-assets/badges/GNU-Guix-c48702.png]] [[https://jointhefreeworld.org/static-assets/badges/Scheme-Guile-d0730f.png]] [[https://jointhefreeworld.org/static-assets/badges/Wayland-Hyprland-6a6aff.png]] [[https://jointhefreeworld.org/static-assets/badges/Emacs-30-a8516e.png]]  [[https://jointhefreeworld.org/static-assets/badges/Shell-Fish-2fffb2.png]] 
+
+SSS is a Lisp machine adventure, where the hacking culture is celebrated. Let me help you achieve /GNUrvana/.
+
+-------------
 
 You are reading the manual for the Supreme Sexp System (SSS).
 
 This manual documents the SSS/GNU system and its functionalities.
 
-SSS is a Lisp machine adventure, where the hacking culture is celebrated. Let me help you achieve /GNUrvana/.
-
 If you like my work, please support me by [[https://bmc.link/jjbigorra][buying me a cup of coffee]] so I can continue with a lot of motivation.
 
 You can follow the project here on Codeberg, or on the fediverse at Mastodon: https://mastodon.social/@sss_project
 
-This custom GNU + Linux setup lets you customize everything endlessly, inspires creativity and problem-solving, and gives you a great user experience. This is partly thanks to the REPL (Read Eval Print Loop) and Lisp programming languages.
+-----------------------------
+
+
+SSS is a custom GNU + Linux setup lets you customize everything endlessly, inspires creativity and problem-solving, and gives you a great user experience. This is partly thanks to the REPL (Read Eval Print Loop) and Lisp programming languages.
 
 SSS strives to have all things configured via Lisp dialects when possible and convenient, staying accessible to all kinds of users, and allowing for magical things to happen 🪄.
 
 ⚠️ Installing and managing SSS is not meant for people new to GNU/Linux systems. You should already have some experience with software development. Knowing Lisp dialects, or functional programming techniques is also a big help and is something you will learn further.
 
-Refer to the project's code of conduct here: [[https://jointhefreeworld.org/blog/articles/personal/jointhefreeworld-code-of-conduct/index.html][jointhefreeworld code of conduct]]
 
 [[https://jointhefreeworld.org/static-assets/sss/dall-e-3-thumb.png]]
 
 I would appreciate if you write your findings when using SSS and if you can, fork the project, and contribute some improvements, or mail me at <jjbigorra@gmail.com>
 
 It is recommended to use tagged releases of SSS, as those are considered as stable by the developers.
+
+------------------------  
+  
+* Licensing
+
+sss and all of its source code are free software, licensed under the GNU General Public License v3 (or newer at your convenience).
+
+https://www.gnu.org/licenses/gpl-3.0.nl.html
+
+The documentation and examples, including this manual, which are provided with sss, are all licensed under the GNU Free Documentation License v1.3 (or newer at your convenience).
+
+https://www.gnu.org/licenses/fdl-1.3.html
+
+---------
 
 
 * What lies here?
@@ -155,13 +175,11 @@ There are more palettes though, see per-host section for more.
 Note: Screenshots below might be outdated and no longer representative of the current, ever-changing state of SSS.
 
 
-[[https://jointhefreeworld.org/static-assets/sss/screenshots/2025-03-11.png]]
+[[https://jointhefreeworld.org/static-assets/sss/screenshots/7bdfaa50fbc45b63.png]]
 
 [[https://jointhefreeworld.org/static-assets/sss/screenshots/2025-03-05-2.png]]
 
 [[https://jointhefreeworld.org/static-assets/sss/screenshots/2025-03-05-3.png]]
-
-[[https://jointhefreeworld.org/static-assets/sss/screenshots/2025-03-05-4.png]]
 
 
 ------
@@ -394,7 +412,253 @@ Find here a reference configuration with what is required.
 *A*: SSS chooses to place the status bar at the bottom of the screen to minimize distractions. We mostly read things from top-left to top-right, and having a bar take that prominent space in the screen can be wasteful and distracting, and you end up looking at the clock or start button more often than the actual task you are working on. This is true for both the power-user session and the universal session (it might help for people that used Windows).
 
 
--------
+-----------
+
+* On Emacs
+
+A customized Emacs is an extension to a human's being, and an invaluable tool in productivity. Part of SSS is my Emacs configuration as well. I do try to make my config as portable as possible, and it should work pretty well out of the box in non-Guix systems, although it's best enjoyed as part of SSS and with Guix (and Guix home).
+
+Thanks to using modern standards and a modular approach, SSS has a very flexible and powerful Emacs configuration, with facilities for all kinds of software development with comfort, that will make your IDE-using coworkers green with envy, it has creative writing features, ergonomics and mnemonics in mind, and doesn't sacrifice in good looks.
+
+Package management is done with Elpaca in an asynchronous and non-blocking way, ensuring that Emacs starts up blazingly fast (faster than certain Vim setups) and making sure that packages are loaded properly and with good practices.
+
+Some of the tweaks and improvements you get:
+
+Ultra smooth scrolling (yes also on touchpad/trackpad), super fast startup, pretty modeline, nice welcome screen, transparency in Emacs, good use of monospace and sans-serif fonts, no-config and no-headache language server integrations with many languages, opinionated and good-practice settings for language servers, pretty and fast Org mode buffers, etc.
+
+I split the Emacs configuration into several modules that you can optionally include/exclude, see ~lib/emacs/modules~. Here follow some explanations of each module:
+
+*** common-lisp.el
+This module configures the sly package, transforming Emacs into a robust Common Lisp development environment. It installs sly directly from its GitHub repository and ensures it loads immediately when Emacs starts. The configuration also specifies that sly should connect to SBCL (Steel Bank Common Lisp) as the preferred underlying Lisp interpreter, providing a complete suite of tools for writing, evaluating, and debugging Common Lisp code within Emacs.
+
+*** consult.el
+
+This module significantly upgrades Emacs's search and navigation through the configuration of the ~consult~ package. The primary functionality it provides is a unified and enhanced interface for nearly all interactive searching and jumping within Emacs. This means you get much more powerful ways to:
+
+-  Navigate quickly: Easily switch between open buffers, browse bookmarks, and find recent files, including those part of a specific project. You can also jump precisely to lines, headings, marks, or code symbols within a file.
+
+- Search efficiently: Perform robust searches across files using tools like grep, git grep, and ripgrep, search specifically within the current buffer, and more.
+
+- Manage history and commands: Access and cycle through your command history and kill-ring (yanked text) with greater ease.
+
+The configuration heavily customizes keybindings, mapping a wide array of consult commands to intuitive shortcuts under prefixes like C-c, M-g, and M-s. It also integrates consult with Emacs's default completion system and cross-reference features, providing a seamless and more intelligent user experience across the board.
+
+*** dashboard.el
+
+This module configures a custom "dashboard" or "welcome screen" using the ~welkomscherm~ package, offering quick access to frequently used directories and system actions.
+
+The primary functionality is to provide a personalized, interactive starting point within Emacs. It organizes and presents:
+
+- Custom Bookmarks: Two distinct sets of bookmarks are defined: personal and work. These bookmarks are designed for quick navigation to specific file paths.
+    
+- Action Buttons: A set of interactive buttons allows for one-click execution of common Emacs actions and system commands. This includes switching to essential buffers like *scratch* and *Messages*, re-rendering the welcome screen itself, and/or executing system rebuild commands (sss-sys-reconfigure and sss-joe-reconfigure).
+
+The welkomscherm package itself is installed directly from its Codeberg repository. The configuration binds the welkomscherm command to ~C-c SPC SPC~, making it easily accessible.
+
+*** dev.el
+
+This module transforms Emacs into a comprehensive development environment by configuring various language-specific modes and essential developer utilities.
+
+The configuration provides specialized support for numerous programming languages, ensuring proper syntax highlighting, intelligent indentation, and language-specific features. This includes dedicated modes for Rust, Python (with integrated black auto-formatting on save), Haskell, Scala, Lua, TypeScript, Nix, TOML, YAML and more.
+
+For Lisp-based languages such as Emacs Lisp and Scheme, the setup enables aggressive-indent for consistent automatic indentation. Additionally, it configures geiser and geiser-guile to provide a robust interactive development environment for Scheme (Guile). I actually use Ares/Arei for Guile instead of Geiser by the way, but for other Schemes it can be nice.
+
+Beyond language-specific features, the code integrates several packages designed to streamline common developer workflows. package-lint assists in linting Emacs Lisp packages, while smartparens enhances code editing with intelligent auto-pairing and manipulation of delimiters. direnv integrates with your system's direnv setup, automatically managing environment variables when navigating project directories.
+
+For containerization, it includes support for Docker, with a dedicated mode for Containerfiles/Dockerfiles with podman, and keybindings for container interactions.
+
+Visual enhancements come from fancy-compilation, which improves the appearance of compilation output, and diff-hl, which provides visual indicators in the margin for changes in version-controlled files, seamlessly integrating with magit and dired.
+
+For document editing, markdown-mode is set up for better readability with adjusted line wrapping and font settings, as well as more alignment with Org mode.
+
+Finally, request provides general HTTP client capabilities, and flymake-collection enables on-the-fly syntax checking and error highlighting.
+
+*** dired.el
+
+This module significantly upgrades the dired file manager, turning it into a more powerful and visually intuitive tool for file and directory navigation. The primary functionality centers on improving the user's interaction with dired.
+
+It enables subtree navigation through the dired-subtree package, letting you expand and collapse directories right within the dired buffer for a convenient tree-like view of your file system (use TAB).
+
+This setup also customizes the display, ensuring a cleaner look. Additionally, dired-open-with is included to allow opening files in dired using external applications, similar to a graphical file manager's "Open With" feature. Finally, nerd-icons-dired integrates visually appealing icons next to files and directories in dired listings, making file types more quickly identifiable and enhancing the overall aesthetic.
+
+Together, these packages combine to make dired a more user-friendly, visually rich, and efficient file management solution within Emacs.
+
+*** eglot.el
+
+This module heavily customizes eglot, Emacs's built-in client for the Language Server Protocol (LSP). This setup transforms Emacs into a sophisticated, feature-rich integrated development environment (IDE) by enabling advanced language-aware functionalities across numerous programming languages.
+
+This includes real-time diagnostics (errors and warnings), code completion, "go to definition," "find references," code formatting, refactoring capabilities (like renaming symbols), and displaying type information.
+
+The configuration explicitly enables eglot for Scala, Shell scripts, Haskell, Markdown, Nix, Go, Python, Rust, and YAML modes, ensuring that language features are available automatically when you open files in these modes. It also binds numerous eglot commands to ~C-c i~ prefixes, making these powerful features readily accessible. Furthermore, it's configured to format the buffer automatically before saving, helping maintain consistent code style.
+
+Regarding package configuration, eglot itself is the central piece here. The configuration fine-tunes eglot's behavior with several settings: it ensures eglot servers automatically shut down when no longer needed (eglot-autoshutdown t), confirms server edits without prompting (eglot-confirm-server-edits nil), and displays progress reports (eglot-report-progress t). It also enables eglot to integrate with Emacs's cross-referencing system and to automatically reconnect to servers.
+
+Crucially, the configuration customizes which language servers eglot uses for specific modes: for Scala, it explicitly uses the "metals" server; for Nix, it uses "nil" (likely referring to the nil LSP server for Nix); and for Markdown, it uses "marksman".
+
+It also sets language-specific configurations for metals (Scala), haskell (using ormolu for formatting), typescript and javascript (setting formatting rules like indent size and semicolon removal), rust-analyzer (enabling cargo features, build scripts, and proc macros), and yaml (enabling formatting, validation, hover, completion, and schema validation with specific schema URLs). Finally, it integrates eglot's diagnostics with Emacs's eldoc and flymake systems, ensuring that errors and information are displayed prominently, and sets up flake8 as the linter for Python through flymake when eglot is active.
+
+*** emacs-core.el
+
+This module focuses on refining the core Emacs user experience and integrating essential tools for a more efficient workflow.
+
+We set up flymake for efficient navigation through code diagnostics and errors, allowing for quick issue resolution. The which-key package (now built-in) is configured to offer interactive keybinding help, making it much easier to discover and remember Emacs commands as you type. For a consistent visual experience, a custom new-frame-setup function is defined to apply initial UI scaling and base face settings across all Emacs frames, regardless of whether they are graphical or terminal-based.
+
+Beyond these, the configuration deeply customizes fundamental Emacs behaviors. It rebinds common actions like buffer management to ibuffer, adds shortcuts for comparing buffers, toggling debugging, and evaluating Emacs Lisp code. Crucially, it introduces numerous custom keybindings for system-level reconfigurations and updates (e.g., sss-joe-reconfigure, sss-sys-update) and project-specific actions like starting REPLs, formatting code, running tests, and initiating development environments.
+
+Text editing and display are refined with settings for line spacing, automatic indentation (preferring spaces), and global symbol prettification for better code readability. It ensures automatic line wrapping in text modes and that Emacs remembers your cursor position and recently opened files across sessions.
+
+Enhancements to the dired file manager include a cleaner listing view and optimized buffer handling. Finally, the startup experience is personalized to display a custom "welkomscherm" (welcome screen), and recentf-mode is enabled to keep a convenient history of your opened files.
+
+The setup also includes global line highlighting and a preferred bar cursor (often better for writing and a more intuitive approach than a block cursor like in a terminal).
+
+*** erc.el
+
+This module configures erc, Emacs's built-in IRC (Internet Relay Chat) client, turning Emacs into a fully functional chat interface.
+
+This includes connecting to IRC networks, joining channels, and participating in chat. The configuration sets a default nickname and automatically joins specific channels upon connecting. It's also tailored to improve the chat experience by customizing message display, such as hiding common "JOIN," "PART," and "QUIT" messages to reduce clutter, and configuring how text fills and wraps in chat buffers. For reliability, it sets up automatic server reconnection attempts.
+
+The setup explicitly enables erc-services-mode and incorporates additional erc modules for notifications and spelling, enhancing the client's utility by providing alerts for messages and assisting with correct grammar.
+
+*** go.el
+
+This module configures go-mode, providing dedicated support for developing in the Go programming language within Emacs.
+
+This includes proper handling of Go source files, syntax highlighting and intelligent navigation. It integrates with external Go tools by specifying that gofumpt should be used as the code formatter, ensuring consistent code style. When a Go file is opened, it automatically sets the indentation to use tabs with a width of 4 spaces, adhering to common Go style conventions.
+
+*** libs.el
+
+This module configures several general-purpose utility libraries and also a macro recording tool, all designed to enhance Emacs's foundational capabilities.
+
+We setup the transient package, which is a core component for many modern Emacs features, streamlining complex multi-key commands and interactive completion.
+
+We also incorporate the f package for convenient filesystem utilities, simplifying common operations with files and directories directly within Emacs Lisp.
+
+For visual organization, page-break-lines adds distinct indicators for page breaks, useful for segmenting documents or code.
+
+A queue data structure is introduced through its dedicated package, providing a fundamental programming construct for various internal Emacs Lisp operations.
+
+Lastly, elmacro is configured to enhance Emacs's built-in macro capabilities, allowing for more sophisticated recording and playback of command sequences, and is activated globally.
+
+*** macros.el
+
+This module defines and configures several editor macros, small abstractions that make text editing and other tasks faster and more efficient, by means of automation. You can use ~elmacro~ to record keyboard macro/sequences into clean Emacs Lisp code. You can then also bind these macros to a key for convenient access.
+
+*** maps.el
+
+This module configures the ~osm~ package, integrating OpenStreetMap functionalities directly into Emacs. The primary functionalities provided include the ability to view and interact with maps within Emacs, save coordinates, integrate with Org mode. It allows you to display OpenStreetMap data, and the configuration ensures that copyright information is shown on the maps.
+
+It also sets up a dedicated prefix key, ~C-c m~, for osm commands, making it convenient to access map-related functions.
+
+*** misc.el
+
+This module configures additional miscellaneous extensions and tweaks to Emacs. Some of those include ~git-riddance~ to nuke Git repo history (also on remote), ~dagboek~ to easily create and organize your daily diary entries, ~gptel~ for LLM integration inside Emacs, ~guix~ for integration with the amazing Guix package manager, and more.
+
+*** music.el
+
+This module significantly enhances Emacs's capabilities for music in different ways.
+
+It configures fretboard, which provides tools for visualizing and interacting with guitar fretboards and chords.
+
+It sets up smudge to allow controlling Spotify from within Emacs (note you need a running Spotify client in your machine).
+
+Finally, it configures emms (Emacs Multimedia System), turning Emacs into a full-featured music player. It ensures all emms components and default players are loaded, specifically enabling emms-mpris for integration with desktop media players.
+
+The default directory for music files is set to sss-ews-music-directory, and album covers are configured to be displayed asynchronously in the browser.
+
+*** org.el
+
+This module deeply integrates and customizes Org mode, Emacs's powerful plain-text note-taking and outlining system, transforming it into a robust environment for personal knowledge management, task tracking, and document creation.
+
+The primary functionality provided centers around enhancing the core Org mode experience. It customizes org-mode itself with specific hooks that apply a variable-pitch font for better readability, enable Org indent mode, disable auto-fill for greater control, and activate olivetti-mode for a more focused writing experience.
+
+Visual clutter is reduced by hiding emphasis markers and leading stars, and pretty entities are enabled for improved display.
+
+Source code blocks within Org files are configured for native fontification and tab behavior, with zero indentation for cleaner editing. Keybindings are also adjusted, including one to toggle link display.
+
+For task management, org-todo-keywords are set to a workflow including "TODO," "WIP," "REVIEWING," and "DONE," with done tasks automatically logging their completion time.
+
+Beyond the core org package, this module integrates org-roam and org-roam-ui to create a sophisticated Zettelkasten-style personal knowledge management system.
+
+org-roam facilitates rapid note creation, linking, and navigation, with custom keybindings for finding nodes, inserting new ones, capturing dailies, and toggling a buffer for linked notes. It's configured to automatically sync the database and uses a custom template for node display, showing both title and tags. org-roam-ui provides a graphical web interface for visualizing your org-roam graph, configured to sync themes, follow node selections, update on save, and open automatically when Emacs starts.
+
+Additional functionalities include org-present for creating presentations directly from Org files, and org-auto-tangle, which automatically extracts source code blocks from Org files, making it ideal for literate programming configurations. Finally, ob-http and ob-mermaid are included, extending Org mode's ability to execute HTTP requests and render Mermaid diagrams directly within Org buffers.
+
+*** search.el
+
+This module enhances Emacs's searching capabilities by integrating powerful external tools. It sets up ripgrep, a fast, modern grep alternative, to handle efficient text searching across files (considering .gitignore too).
+
+Complementing this, the module also configures deadgrep, which provides a user-friendly interface within Emacs for executing ripgrep searches and navigating their results. A dedicated keybinding, ~C-c z g~, is assigned to deadgrep, making these advanced search functionalities easily accessible. 
+
+*** shell.el
+
+This module profoundly customizes Emacs's Eshell, its built-in command-line shell, to provide a more functional and aesthetically pleasing terminal experience, along with integrating Git information.
+
+The primary functionality offered centers on enhancing the shell's usability and integrating it seamlessly with Emacs's file management and version control. It introduces a custom function, ~git-prompt-branch-name~, to dynamically retrieve and display the current Git branch name directly within the shell prompt, offering immediate context when navigating repositories.
+
+The ~eshell-here~ function ~C-!~ allows you to quickly open an Eshell buffer in the directory of your current file, intelligently renaming the Eshell buffer to reflect that directory for easier management of multiple shell sessions.
+
+To keep the prompt concise, the ~fish-path~ function intelligently abbreviates long directory paths, replacing parent directories with their initial characters.
+
+The core of the shell's appearance is customized through the ~sss-eshell-prompt~ function, which creates a visually informative multi-line prompt displaying the username, hostname, current directory (abbreviated), and the Git branch name, all with enhanced font styling. It also sets up a custom banner message for a personalized welcome.
+
+For better workflow, a collection of aliases is defined, mapping common shell commands to their Emacs equivalents or custom functions. This includes g for magit (Git interface), gl for magit-log, d for dired (file manager), and o and oo for opening files in the current or another window. It also includes l and ll for a detailed directory listing.
+
+Overall, this module transforms Eshell into a powerful and user-friendly command-line environment tailored for development and system interaction.
+
+*** sss.el
+
+This module acts as the core integration for SSS (Supreme Sexp System) environment, defining crucial variables and a suite of functions for system maintenance, project development, and general utilities within Emacs.
+
+The module first establishes several user-configurable variables.
+
+A significant part of this module is dedicated to automating various system and project-specific tasks, primarily by executing make commands asynchronously.
+
+For general utility, sss-uuidgen generates and yanks a unique identifier to the kill ring, while sss-uuidgen-string simply returns it as a string.
+
+The module also introduces several robust utilities to streamline project-based operations. ~sss-do-in-project~ is a versatile function that runs a given operation within the root directory of your current version-controlled project.
+
+~async-shell-to-buffer~ is a helper that executes shell commands in the background, directing their output to a dedicated Emacs buffer so you can continue working uninterrupted. Building on this, the module includes specialized functions for common development tasks: sss-project-start-repl-process kicks off a project-specific REPL, sss-project-fmt initiates project-wide code formatting, sss-project-start-dev begins a development session, and sss-project-start-test runs the project's test suite.
+
+Finally, the module provides specialized functions for code formatting and data presentation. ~sss-guix-fmt~ formats the current buffer in place using the guix style command, ensuring adherence to specific coding standards.
+
+Additionally, ~sss-new-buffer-with-json~ creates a new buffer, inserts JSON data, attempts to format it neatly, and then switches you to that new buffer for easy viewing. This is useful for working with HTTP bodies and responses too.
+
+*** theme.el
+
+This module manages the visual appearance of Emacs by configuring and applying various color themes.
+
+Its primary functionality is to provide a flexible system for loading different Emacs themes, particularly focusing on ef-themes, solarized-theme, and everforest.
+
+The module also includes custom palette overrides for certain ef-themes (like ef-bio, ef-autumn, and ef-cyprus), allowing for fine-grained adjustments to their default color schemes.
+
+The module then conditionally loads a specific theme based on the value of the ~sss-emacs-theme~ variable. This ensures that your Emacs instance consistently loads your chosen aesthetic from the defined collection of themes upon startup.
+
+*** ui.el
+
+This module significantly enhances Emacs's user interface and visual feedback, focusing on dynamic visual cues, optimized text presentation, intelligent font scaling, and comprehensive display customization.
+
+The module configures pulsar to provide dynamic visual feedback, causing the cursor or targeted text to "pulse" when certain actions occur, such as jumping to a location or revealing entries after a search. This visual cue is customized with specific colors based on the active Emacs theme (ef-dream, everforest-hard-dark, everforest-hard-light), enhancing immediate feedback.
+
+olivetti is also included, a package that centers text within the buffer, promoting a more focused writing or reading experience by limiting line width.
+
+vertico is configured as the primary completion UI, providing a highly performant and customizable experience with features like cycling through candidates and dynamic resizing. marginalia works alongside vertico to add descriptive annotations to completion candidates.
+
+At its heart, this module integrates ~tekengrootte~, a package designed for highly granular control over font sizes across various Emacs UI elements. It provides numerous keybindings (~C-c f c~, ~C-c f j~, ~C-c f x~, ~C-c f l~, ~C-c f r~, ~C-c f s~, ~C-c f t~, C-c f n) to instantly switch between predefined font scales from "colossal" to "nano."
+
+A crucial hook ensures that whenever the font scale changes, the ~sss-set-base-faces~ function is called to meticulously adjust the size, color, and font family of a wide array of Emacs faces. This includes the default text, mode lines, window dividers, and specific elements within Markdown and Org mode, ensuring a consistent and aesthetically pleasing appearance regardless of the chosen scale.
+
+For a richer visual experience, nerd-icons is enabled, bringing a vast collection of icons to Emacs. This is complemented by nerd-icons-completion, which integrates these icons into completion frameworks like marginalia and vertico, making command and file selection more intuitive.
+
+~spacious-padding~, adds customizable padding around Emacs UI elements, such as internal borders, header lines, and fringes, creating a less cramped and more modern look.
+
+The module also includes svg-lib, a library for SVG rendering and manipulation, and kind-icon, which integrates icons into corfu completion margins, further enhancing visual cues during interactive completion.
+
+modusregel customizes the mode line format, integrating keycast-mode-line to display current commands and their keybindings directly in the mode line, while keycast itself is enabled globally to show this information.
+
+To improve navigation, ultra-scroll is enabled, refining Emacs's scrolling behavior with advanced settings for smooth, controlled movement.
+
+
+-----------
 
 
 * User Management
@@ -434,7 +698,15 @@ Once you have followed all those above steps, you can enter a temporary Guix she
 
 You can do this with ~guix shell make git icecat~. Icecat is a 100% libre version of Firefox, and it will be temporarily used for you to browse temporarily to Codeberg and download and install SSS.
 
-Then proceed to clone SSS with ~git clone https://codeberg.org/jjba23/sss.git~ to your favourite location. This location will need to be added to ~per-host.scm~.
+Then proceed to clone SSS with ~git clone --recursive https://codeberg.org/jjba23/sss.git~ to your favourite location. This location will need to be added to ~per-host.scm~. You can skip the ~--recursive~ option if you are not interested in the wallpapers and other art.
+
+If ~digital-art-dreams~ (the wallpapers and so on) didn't get properly cloned to your destination, you can always ~cd~ into the SSS clone path, and then do a ~git submodule add https://codeberg.org/jjba23/digital-art-dreams.git submodules/digital-art-dreams~ and then a  ~git submodule update --init --recursive~. Also from time to time, handy to keep the submodules updated with ~git submodule update --recursive --remote~.
+
+See more about Git submodules here:
+
+https://git-scm.com/book/en/v2/Git-Tools-Submodules
+
+---------------------
 
 You should have by now written an appropriate ~per-host.scm~ for your setup. See the above section on this topic.
 
@@ -467,6 +739,8 @@ You can then reboot and you should be greeted by a simple TTY.
 
 You should every now and then update the SSS repo with ~git pull~. You also should regularly do a ~guix pull~ from your regular user, and then rebuild this system with the root user (~make sr~).
 
+It's important to also keep the SSS modules updated, and thus from time to time run ~git submodule update --recursive --remote~.
+
 Guix is a rolling distribution and you don't need to be always on bleeding edge releases, but it's nice to stay updated.
 
 --------
@@ -482,7 +756,16 @@ Sometimes for the fun I work in Emacs from the TTY for that 60's and 70's comput
 
 If you run traditional X11 sessions, you /could/ choose to do startx instead of a Wayland session, but SSS is more geared to Wayland.
 
------
+-------------
+
+* Important directories
+
+SSS uses the Guix and GNU/Linux conventions as closely as possible, and also tries to adhere to the XDG standards. Apart from that, here are some interesting files and directories that may not be so obvious:
+
+- Guix Shepherd Home Services and Timerslog file: ~$XDG_STATE_HOME/shepherd/shepherd.log~ which is often ~~/.local/state/shepherd/shepherd.log~
+
+
+-----------------
 
 * Nix profile
 
@@ -568,9 +851,9 @@ You will also want to set the ~RTC_USE_PIPEWIRE~ variable to ~true~. This is alr
 
 SSS automatically loads at startup a matching wallpaper for the currently enabled theme.
 
-This is currently done with hyprpaper.
+This is currently done with custom scripts and swaybg. SSS automatically loads a random wallpaper (within the palette) every 10 minutes.
 
-TODO: allow more dynamics and often changing of wallpapers, also random wallpaper script (but within theme)
+Pressing ~s-S b~ will select a random other wallpaper within the palette.
 
 -----
 
@@ -1149,4 +1432,5 @@ GNU Emacs, GNU Guix, Arch Linux, Void Linux, Nix, NixOS, Hyprland, ...
 - Andrew Tropin for his work on Guix and more, great videos, starting the RDE project
 - Derek Taylor (DT) for his great videos on free software and the GNU/Linux ecosystem
 - Mu Lei (NalaGinrut) for his great work on GNU Artanis and Scheme, and inspiring me to pursue my projects and power them with a Lispy flavor
+
 

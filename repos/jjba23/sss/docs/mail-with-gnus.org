@@ -6,6 +6,8 @@ In contrast to my computer, and software that I write, which are organized, stru
 
 Check the extensive GNUS manual for more information: [[https://www.gnu.org/software/emacs/manual/html_node/gnus/Don_0027t-Panic.html][here]].
 
+I am slowly adopting GNUS as my one and only mail client, but this is a learning process akin to learning Emacs for the first time.
+
 ** Preparing
 
 For starters, if you plan to use Gmail with GNUS you should create an "application password" which will allow you to connect without OAuth. Note that this is a different password than the usual one, and is buried inside your Google account settings.

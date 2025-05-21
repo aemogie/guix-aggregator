@@ -92,7 +92,6 @@
                                        "dbus-update-activation-environment --all >/dev/null 2>&1 &"
                                        "transmission-daemon >/dev/null 2>&1 &"
                                        "waybar >/dev/null 2>&1 &"
-                                       "hyprpaper >/dev/null 2>&1 &"
                                        "xdg-user-dirs-update 2>&1 &")) "\n")))
   (export labwc-autostart))
 
