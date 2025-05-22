@@ -12,7 +12,7 @@
 (define guix
   (channel
     (name 'guix)
-    (url "https://git.savannah.gnu.org/git/guix.git")
+    (url "/home/look/projects/guile/guix")
     (branch "master")
     (introduction
       (make-channel-introduction

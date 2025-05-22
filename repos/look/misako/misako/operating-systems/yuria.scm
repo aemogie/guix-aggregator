@@ -23,7 +23,6 @@
   #:use-module (nongnu packages linux)
   #|Saayix|#
   #:use-module (saayix services system rfkill)
-  #:use-module (saayix services system forgejo)
   #|Rosenthal|#
   #:use-module (rosenthal services networking)
   #:export (yuria))

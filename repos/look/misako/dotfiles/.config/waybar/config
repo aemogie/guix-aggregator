@@ -4,13 +4,15 @@
     "mod": "dock",
     "exclusive": true,
     "passthrough": false,
-    "gtk-layer-shell": true,
-    "height": 50,
+    "reload_style_on_change": true,
     "modules-left": [
         "custom/launch_wofi",
         "hyprland/workspaces",
+        "tray",
+        "pulseaudio#speakers",
+        "pulseaudio#microphone",
     ],
-    "modules-center": [],
+    "modules-center": ["mpris"],
     "modules-right": [
         "network",
         "cpu",
@@ -18,11 +20,23 @@
         "memory",
         "battery",
         "backlight",
-        "pulseaudio",
-        "pulseaudio#microphone",
-        "tray",
         "clock"
     ],
+
+    "mpris": {
+        "format": "{player_icon}   {title} | {artist} [{position}/{length}]",
+        "format-paused": "{status_icon}   {title} | {artist} [{position}/{length}]",
+        "interval": 1,
+        "player-icons": {
+            "default": "",
+            "spotify": "",
+            "mpv": ""
+        },
+        "status-icons": {
+            "paused": ""
+        },
+        "ignored-players": ["firefox"]
+    },
 
     "custom/launch_wofi": {
         "format": "",
@@ -52,7 +66,12 @@
             "8": "θ",
             "9": "ι",
             "10": "κ"
-        }
+        },
+        "ignore-workspaces": [
+            "spotify",
+            "vesktop",
+            "steam",
+        ]
     },
 
     "hyprland/window": {
@@ -76,7 +95,7 @@
 
     "cpu": {
         "interval": 10,
-        "format": " {usage}%",
+        "format": " {usage}%",
         "max-length": 10,
         "on-click": "ghostty -e htop",
         "states": {
@@ -87,7 +106,7 @@
 
     "temperature": {
         "critical-threshold": 90,
-        "hwmon-path": "/sys/class/hwmon/hwmon2/temp1_input",
+        // "hwmon-path": "/sys/class/hwmon/hwmon6/temp1_input",
         "interval": 5,
         "format": "{icon} {temperatureC}°C",
         "format-icons": [ "", "", "", "", "" ],
@@ -96,10 +115,10 @@
 
     "memory": {
         "interval": 30,
-        "format": " {}%",
+        "format": " {}%",
         "max-length": 25,
         "tooltip": true,
-        "tooltip-format": " {used:0.1f}/{total:0.1f}GB"
+        "tooltip-format": " {used:0.1f}/{total:0.1f}GB"
     },
 
     "tray": {
@@ -150,7 +169,7 @@
         "interval": 2,
         // "min-length": 30,
         "format-wifi": "{icon} {signalStrength}% {essid}",
-        "format-ethernet": " {ifname}: {bandwidthDownBits} ↓↑ {bandwidthUpBits}",
+        "format-ethernet": "󰈀 {ifname}: {bandwidthDownBits} ↓↑ {bandwidthUpBits}",
         "format-alt": " {ifname}: {ipaddr}/{cidr}",
         "format-disconnected": "⚠ Disconnected",
         "tooltip-format": "{essid}",
@@ -172,7 +191,7 @@
         "format-icons": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"]
     },
 
-    "pulseaudio": {
+    "pulseaudio#speakers": {
         "format": "{icon} {volume}%",
         "format-bluetooth": "{icon} {volume}%",
         "format-muted": " ",

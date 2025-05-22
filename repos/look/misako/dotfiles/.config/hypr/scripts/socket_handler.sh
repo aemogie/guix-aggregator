@@ -8,25 +8,15 @@ handle() {
     ;;
     openwindow*)
       # Enable phasmo stuff
-      if [[ ${args[2]} == "steam_app_739630" ]]; then
+      if [[ ${args[2]} == "phasmophobia.exe" ]]; then
         PHASMO_ADDRESS=${args[0]}
-        $XDG_CONFIG_HOME/phasmometer/run_chronometer.sh
         hyprctl keyword decoration:screen_shader '$XDG_CONFIG_HOME/hypr/shaders/bright.frag'
       fi
     ;;
     closewindow*)
       # Disable phasmo stuff
       if [[ ${args[0]} == $PHASMO_ADDRESS ]]; then
-        $XDG_CONFIG_HOME/phasmometer/chronometer_cmd.py exit
         hyprctl keyword decoration:screen_shader ''
-      fi
-    ;;
-    fullscreen*)
-      # Make chronometer on top
-      if [[ ${args[0]} == 1 && $ACTIVE_WINDOW == $PHASMO_ADDRESS ]]; then
-        hyprctl dispatch alterzorder top, title:Chronometer
-        hyprctl dispatch workspace 7
-        hyprctl dispatch workspace 8
       fi
     ;;
   esac

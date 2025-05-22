@@ -26,3 +26,6 @@ smtpuser = {{{ aerc.primary.email }}}
 smtpencryption = ssl
 smtpserverport = 465
 annotate = true
+
+[safe]
+directory = ~/projects/guile/guix

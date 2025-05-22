@@ -5,6 +5,7 @@
   #:use-module (misako operating-systems yumiko file-systems)
   #:use-module (misako operating-systems yumiko cuirass)
   #:use-module (misako utils)
+  #:use-module (saayix services system nvidia-unload)
   #|Guix|#
   #:use-module (guix gexp)
   #|GNU System|#
@@ -64,6 +65,7 @@
                (list
                  (pam-limits-entry "*" 'hard 'nofile 1048576)))
 
+             (service nvidia-unload-service-type)
              (service samba-service-type
                (samba-configuration
                  (enable-smbd? #t)

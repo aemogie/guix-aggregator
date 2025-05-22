@@ -29,3 +29,6 @@ on-notify=exec mpv ~/.guix-home/profile/share/sounds/freedesktop/stereo/message.
 [category=irc]
 group-by=category
 on-notify=exec mpv ~/.guix-home/profile/share/sounds/freedesktop/stereo/complete.oga
+
+[app-name=Spotify]
+invisible=true

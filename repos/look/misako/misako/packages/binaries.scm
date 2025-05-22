@@ -1,52 +1,62 @@
+;; SPDX-FileCopyrightText: 2025 Murilo <murilo@disroot.org>
+;;
+;; SPDX-License-Identifier: GPL-3.0
+
 (define-module (misako packages binaries)
+  #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
+  #:use-module (gnu packages bootstrap)
+  #:use-module (gnu packages cmake)
+  #:use-module (gnu packages commencement)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages cups)
+  #:use-module (gnu packages databases)
+  #:use-module (gnu packages elf)
   #:use-module (gnu packages fontutils)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages gl)
-  #:use-module (gnu packages elf)
-  #:use-module (gnu packages wine)
-  #:use-module (gnu packages bootstrap)
-  #:use-module (gnu packages databases)
   #:use-module (gnu packages glib)
   #:use-module (gnu packages gnome)
+  #:use-module (gnu packages gnupg)
   #:use-module (gnu packages gtk)
-  #:use-module (gnu packages cmake)
-  #:use-module (gnu packages music)
+  #:use-module (gnu packages image)
   #:use-module (gnu packages kerberos)
   #:use-module (gnu packages linux)
+  #:use-module (gnu packages music)
   #:use-module (gnu packages node)
-  #:use-module (gnu packages commencement)
   #:use-module (gnu packages nss)
   #:use-module (gnu packages pulseaudio)
+  #:use-module (gnu packages qt)
+  #:use-module (gnu packages sqlite)
+  #:use-module (gnu packages tls)
   #:use-module (gnu packages video)
   #:use-module (gnu packages wget)
+  #:use-module (gnu packages wine)
   #:use-module (gnu packages xdisorg)
   #:use-module (gnu packages xml)
   #:use-module (gnu packages xorg)
-  #:use-module (gnu packages tls)
-  #:use-module (gnu packages qt)
-  #:use-module (nongnu packages nvidia)
-  #:use-module (misako packages cuda)
+  #:use-module (guix build-system copy)
+  #:use-module (guix build-system gnu)
+  #:use-module (guix build-system qt)
   #:use-module (guix download)
-  #:use-module (guix git-download)
   #:use-module (guix gexp)
+  #:use-module (guix git-download)
   #:use-module (guix packages)
   #:use-module (guix utils)
-  #:use-module (guix build-system gnu)
-  #:use-module (guix build-system copy)
-  #:use-module (guix build-system qt)
-  #:use-module ((guix licenses) #:prefix license:)
-  #:use-module (nonguix build-system chromium-binary)
-  #:use-module (nonguix build-system binary)
   #:use-module (ice-9 match)
+  #:use-module (misako packages cuda)
+  #:use-module (nongnu packages chromium)
+  #:use-module (nongnu packages nvidia)
+  #:use-module (nonguix build utils)
+  #:use-module (nonguix build-system binary)
+  #:use-module (nonguix build-system chromium-binary)
   #:export (vesktop
             path-of-building-bin
             libdeep-filter-ladspa-bin
-            ollama-bin))
+            ollama-bin
+            spotify))
 
 (define path-of-building-bin
   (package
@@ -242,26 +252,32 @@ well.")
                      (list v
                            "${WAYLAND_DISPLAY:+"
                            "--enable-features=UseOzonePlatform"
-                           "--ozone-platform=wayland"
+                           "--ozone-platform-hint=auto"
                            "--enable-features=WebRTCPipeWireCapturer"
                            "--enable-features=VaapiVideoDecoder"
                            "--enable-features=VaapiIgnoreDriverChecks"
                            "--enable-features=VaapiVideoEncoder"
-                           "--enable-features=UseMultiPlaneFormatForHardwareVideo"
+                           ; "--enable-features=UseMultiPlaneFormatForHardwareVideo"
                            "--enable-features=VaapiVideoDecodeLinuxGL"
+                           "--enable-features=AcceleratedVideoDecodeLinuxGL"
+                           "--enable-features=AcceleratedVideoEncoder"
+                           "--disable-features=UseChromeOSDirectVideoDecoder"
                            "--ignore-gpu-blocklist"
                            "--enable-zero-copy"
-                           ; "--enable-features=WaylandLinuxDrmSyncobj"
-                           "--use-angle=vulkan"
-                           "--disable-gpu-compositing"
+                           "--enable-features=WaylandLinuxDrmSyncobj"
                            "--enable-gpu-rasterization"
+                           "--enable-gpu-compositing"
+                           "--use-angle=vulkan"
+                           "--use-vulkan"
+                           "--enable-features=Vulkan,VulkanFromANGLE,DefaultANGLEVulkan"
+                           "--ozone-platform-hint=x11"
                            "}")))))))))
     (inputs
       (list ffmpeg
             gdk-pixbuf
             libappindicator
             libdbusmenu
-            libglvnd
+            mesa
             libxscrnsaver
             util-linux
             wayland
@@ -336,3 +352,139 @@ well.")
     (description "Get up and running with large language models. Run Llama
 2, Code Llama, and other models. Customize and create your own.")
     (license license:expat)))
+
+(define spotify
+  (let ((revision "gcc6305cb"))
+    (package
+      (name "spotify")
+      (version "1.2.60.564")
+      (source
+        (origin
+          (method url-fetch)
+          (uri
+            (string-append "http://repository.spotify.com/pool/non-free/s/spotify-client/spotify-client_"
+                           version "." revision "_amd64.deb"))
+          (sha256
+            (base32 "0rsamn2y6ippwb2rzjz1qnalbpgg6ykd2grfnvfkb2ac2b17lws3"))))
+      (build-system copy-build-system)
+      (arguments
+        (list
+          #:install-plan
+          #~`(("usr/share/spotify/" "lib/spotify")
+              ("usr/share/spotify/icons/" "share/icons")
+              ("usr/share/spotify/spotify.desktop" "share/applications/spotify.desktop"))
+          #:imported-modules %binary-build-system-modules
+          #:modules '((nonguix build binary-build-system)
+                      (guix build utils)
+                      (guix build copy-build-system)
+                      (nonguix build utils))
+          #:phases
+          #~(modify-phases %standard-phases
+              (add-after 'unpack 'unpack-deb
+                (lambda _
+                  (for-each (lambda (file)
+                              (invoke "ar" "-x" file))
+                            (find-files "." ".*\\.deb"))
+                  (invoke "tar" "-xf" "data.tar.gz")))
+              (add-after 'install 'make-bin
+                (lambda _
+                  (let* ((spotify (string-append #$output "/lib/spotify/spotify"))
+                         (bin (string-append #$output "/bin/spotify")))
+                    (mkdir-p (dirname bin))
+                    (with-output-to-file bin
+                       (lambda _
+                         (define (line . args)
+                           (display (apply string-append args)) (newline))
+                         (define spotify "$HOME/.local/share/spotify")
+                         (line "#!/bin/sh")
+                         (line (string-append "export LD_LIBRARY_PATH=\"" spotify ":" #$output "/lib${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH\""))
+                         (line (string-append "if [ ! -d \"" spotify "\" ]; then"))
+                         (line "    mkdir -p \"" spotify "\"")
+                         (line (string-append "    cp -r \"" #$output "/lib/spotify/\" \"$HOME/.local/share/\""))
+                         (line (string-append "    chmod -R 755 " spotify))
+                         (line "fi")
+                         (line (string-append "cd " spotify))
+                         (line (string-append "exec -a \"$0\" \"" spotify "/spotify\" ${WAYLAND_DISPLAY:+ --enable-features=UseOzonePlatform --ozone-platform=wayland --enable-features=WebRTCPipeWireCapturer --enable-features=VaapiVideoDecoder --enable-features=VaapiIgnoreDriverChecks --enable-features=VaapiVideoEncoder --enable-features=UseMultiPlaneFormatForHardwareVideo --enable-features=VaapiVideoDecodeLinuxGL --ignore-gpu-blocklist --enable-zero-copy --use-angle=vulkan --disable-gpu-compositing --enable-gpu-rasterization } \"$@\""))))
+                    (chmod bin #o755))))
+              (add-after 'install 'patch-elf
+                (lambda* (#:key inputs #:allow-other-keys)
+                  (let ((ld.so (string-append #$(this-package-input "glibc")
+                                              #$(glibc-dynamic-linker)))
+                        (rpath (string-join
+                                 (cons* (string-append #$output "/lib")
+                                        (string-append #$(this-package-input "nss") "/lib/nss")
+                                        (map (lambda (input)
+                                               (string-append (cdr input) "/lib"))
+                                             inputs))
+                                 ":")))
+                    (define (patch-elf file)
+                      (chmod file #o777)
+                      (format #t "Patching ~a ..." file)
+                      (unless (string-contains file ".so")
+                        (invoke "patchelf" "--set-interpreter" ld.so file))
+                      (invoke "patchelf" "--set-rpath" rpath file)
+                      (chmod file #o555)
+                      (display " done\n"))
+                    (for-each
+                      (lambda (binary)
+                        (patch-elf binary))
+                      (append
+                        (find-files (string-append #$output "/lib/spotify") ".*\\.so.*")
+                        (find-files (string-append #$output "/lib/spotify") "^spotify$"))))))
+              (add-before 'patch-elf 'fix-so
+                (lambda _
+                  (symlink (string-append #$(this-package-input "libappindicator") "/lib/libappindicator3.so")
+                           (string-append #$output "/lib/libayatana-appindicator3.so.1")))))))
+      (native-inputs
+        (list p7zip patchelf))
+      (inputs
+        (list alsa-lib
+              at-spi2-atk
+              at-spi2-core
+              atk
+              cairo
+              chromium-embedded-framework
+              cups
+              eudev
+              ffmpeg-4
+              gcc-toolchain
+              gdk-pixbuf
+              glib
+              glibc
+              glibc
+              gtk+
+              harfbuzz
+              libappindicator
+              libdbusmenu
+              libdrm
+              libgcrypt
+              libglvnd
+              libice
+              libnotify
+              libpng
+              libpng
+              libsm
+              libwebp
+              libx11
+              libxcb
+              libxcomposite
+              libxcursor
+              libxdamage
+              libxext
+              libxfixes
+              libxi
+              libxkbcommon
+              libxrandr
+              libxrender
+              libxscrnsaver
+              libxshmfence
+              libxtst
+              nss
+              pango
+              sqlite
+              zlib))
+      (synopsis "Play music from the Spotify music service")
+      (description "Spotify is a digital music service that gives you access to
+millions of songs.")
+      (home-page "https://open.spotify.com/")
+      (license #f))))

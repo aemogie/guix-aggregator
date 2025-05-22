@@ -107,7 +107,6 @@
     (disable_splash_rendering . true)
     (font_family . "Adwaita Sans")))
 
-
 (define hypr-media-binds
   (map (lambda (kb)
          (serialize-hypr-setting (car kb)

@@ -64,7 +64,6 @@
   #:use-module (saayix packages binaries)
   #:use-module (saayix packages text-editors)
   #:use-module (saayix packages toys)
-  #:use-module (saayix packages waydroid)
   #|Radix|#
   #:use-module (radix utils)
   #:use-module (radix services admin)
@@ -85,8 +84,7 @@
     (kernel-arguments
       (list "loglevel=3"
             "quiet"
-            "console=tty3"
-            "psi=1"))
+            "console=tty3"))
 
     ;; We don't use any file-systems for the base operating-system
     (file-systems '())
@@ -106,7 +104,7 @@
     (packages
       (list #|admin       |# htop inetutils opendoas shadow
             #|base        |# coreutils diffutils findutils grep patch sed tar which
-            #|            |# glibc-locales bash-minimal waydroid
+            #|            |# glibc-locales bash-minimal
             #|certs       |# nss-certs
             #|compression |# gzip unzip xz
             #|curl        |# curl
@@ -149,8 +147,7 @@
         (service guix-service-type
           (guix-configuration
             (substitute-urls
-              '("https://cuirass.genenetwork.org"
-                "https://substitutes.nonguix.org"
+              '("https://substitutes.nonguix.org"
                 "https://guix.bordeaux.inria.fr"
                 "https://ci.guix.gnu.org"))
             (authorized-keys
@@ -235,16 +232,14 @@
         (service ntp-service-type)
 
         #|IPC services|#
-        (service dbus-root-service-type
-          (dbus-configuration
-            (services (list waydroid))))
+        (service dbus-root-service-type)
 
         #|Memory management services|#
         ;; TODO: see if /proc/meminfo works on new install
-        (service zram-device-service-type
-          (zram-device-configuration
-            (size (* 2 (ram-total)))
-            (compression-algorithm 'lz4)))
+        ; (service zram-device-service-type
+        ;   (zram-device-configuration
+        ;     (size (* 2 (ram-total)))
+        ;     (compression-algorithm 'lz4)))
 
         #|Xwayland|#
         (service x11-socket-directory-service-type)

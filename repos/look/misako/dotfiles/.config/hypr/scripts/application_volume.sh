@@ -5,6 +5,7 @@ declare -A defaults
 # hyprland class =  name
 defaults["steam_app_739630"]="Phasmophobia.exe"
 defaults["zen"]="Zen"
+defaults["spotify"]="PipeWire ALSA [spotify]"
 
 current_window="$(hyprctl activewindow -j)"
 current_window_title=$(echo $current_window | jq .title)

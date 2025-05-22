@@ -21,7 +21,7 @@
 
 ;;; Code:
 
-;; TODO the bookmarks should be managed by SSS in Scheme and not in Emacs
+;; TODO? the bookmarks could be managed by SSS in Scheme and not in Emacs?
 (defvar joe-bookmarks-personal)
 (setq joe-bookmarks-personal
       `((("sss" . ,(string-replace "$HOME" "~" sss-clone-dir))
@@ -34,11 +34,19 @@
         (("wolk-jjba" . "~/hacking/wolk-jjba/")
          ("wikimusic" . "~/hacking/wikimusic/")
          ("lucidplan" . "~/hacking/lucidplan/")
-         ("byggsteg" . "~/hacking/byggsteg/"))))
+         ("byggsteg" . "~/hacking/byggsteg/"))
+        (("ggg" . "~/hacking/ggg")
+         ("pingwing" . "~/hacking/pingwing")
+         ("kracht" . "~/hacking/kracht")
+         ("hygguile" . "~/hacking/hygguile"))
+        (("orgwebalchemy" . "~/hacking/orgwebalchemy")
+         ("oculuslambda" . "~/hacking/oculuslambda"))
+        ))
 
 (defvar joe-bookmarks-work)
 (setq joe-bookmarks-work
       '((("VDB" . "~/work/Vandebron/")
+         ("mobile" . "~/work/mobile")
          ("onboarding" . "~/work/onboarding/"))          
         ))
 

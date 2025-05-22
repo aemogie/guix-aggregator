@@ -92,11 +92,13 @@
   #|Saayix Home Services|#
   #:use-module (saayix services home wm)
   #:use-module (saayix services home dotfiles)
+  #:use-module (saayix services home hyprland)
   #|Saayix Packages|#
   #:use-module (saayix packages binaries)
   #:use-module (saayix packages browser-extensions)
   #:use-module (saayix packages file-managers)
   #:use-module (saayix packages fonts)
+  #:use-module (saayix packages hyprland)
   #:use-module (saayix packages lsp)
   #:use-module (saayix packages minecraft)
   #:use-module (saayix packages pdf)
@@ -128,7 +130,7 @@
         #|                |# light ncurses git sops kexec-tools pciutils
         #|                |# gtk gtk+ gsettings-desktop-schemas
         #|                |# p7zip 
-        #|Productivity    |# wayneko newsraft playerctl ;kew
+        #|Productivity    |# wayneko newsraft playerctl spotify ;kew
         #|Shell           |# fish
         #|Terminal        |# foot ghostty-tip ydotool
         #|Guile           |# guile-next guile-readline guile-colorized guile-gcrypt
@@ -149,18 +151,18 @@
         #|Image Viewer    |# imv
         #|Sound           |# wireplumber-minimal ncpamixer helvum easyeffects
         #|Password Manager|# keepassxc password-store passff-host
-        #|PDF             |# sioyek zaread
+        #|PDF             |# sioyek ;zaread
         #|Window Manager  |# hyprland hyprpaper hyprlock hypridle hyprcursor
-        #|                |# hyprland-qtutils
-        #|                |# mako waybar-sans-elogind grim slurp bemenu
-        #|                |# wl-clipboard wlsunset dbus qtwayland cursor-rose-pine-dawn
-        #|                |# hyprcursor-rose-pine-dawn
+        #|                |# hyprland-qtutils hyprsunset
+        #|                |# mako waybar grim slurp bemenu fuzzel
+        #|                |# wl-clipboard wlsunset dbus qtwayland cursor-mcmojave
+        #|                |# hyprcursor-mcmojave
         #|                |# nvidia-vaapi-driver
-        #|Messaging       |# senpai vesktop ;telegram-desktop
+        #|Messaging       |# senpai vesktop telegram-desktop
         #|E-mail          |# aerc #|required|# sound-theme-freedesktop
         #|                |# libnotify
         #|SSH             |# openssh
-        #|Video           |# mpv-minimal/wayland yt-dlp ffmpeg-nvenc obs-nvenc
+        #|Video           |# mpv-minimal/wayland yt-dlp ffmpeg-nvenc/patched obs-nvenc
         #|                |# cuda
         #|Fonts           |# font-adobe-source-han-sans
         #|                |# font-adobe-source-sans-pro
@@ -212,6 +214,8 @@
         (service home-shepherd-transient-service-type)
 
         (service home-log-rotation-service-type)
+
+        (service home-hyprland-service-type)
 
         (service home-dotfiles-service-type
           (home-dotfiles-configuration
@@ -314,7 +318,7 @@
             ("HISTFILE"            . "$XDG_CACHE_HOME/shell_history")
             ("HISTSIZE"            . "-1")
             ("HISTFILESIZE"        . "-1")
-            ("PATH"                . "$HOME/.local/bin:$PATH")
+            ("PATH"                . "$HOME/.local/bin:$HOME/.spicetify:$PATH")
             #|Language|#
             ("LANG"                . "en_US.UTF-8")
             ("LANGUAGE"            . "en_US.UTF-8")
@@ -327,8 +331,7 @@
             ("QT_QPA_PLATFORM"     . "wayland")
             #|NVIDIA|#
             ,@(if (not nvidia?) '()
-                `(("QT_X11_NO_MITSHM"                    . "1")
-                  ("QT_WAYLAND_DISABLE_WINDOWDECORATION" . "1")
+                `(("QT_WAYLAND_DISABLE_WINDOWDECORATION" . "1")
                   ; ("QT_OPENGL_NO_SANITY_CHECK"           . "1") ;; Bad flag
                   ("__GLX_VENDOR_LIBRARY_NAME"           . "nvidia")
                   ("__EGL_VENDOR_LIBRARY_FILENAMES"      . ,(file-append nvidia-driver "/share/glvnd/egl_vendor.d/10_nvidia.x86_64.json"))

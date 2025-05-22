@@ -4,11 +4,13 @@
   #:use-module (gnu home)
   #:use-module (gnu packages gl)
   #:use-module (gnu packages video)
+  #:use-module (gnu packages audio)
   #:use-module (gnu services)
   #:use-module (gnu system setuid)
   #:use-module (gnu system)
   #:use-module (guix packages)
   #:use-module (guix utils)
+  #:use-module (guix gexp)
   #:use-module (guix transformations)
   #:use-module (ice-9 format)
   #:use-module (ice-9 match)
@@ -23,7 +25,7 @@
   #:use-module (srfi srfi-43)
   #:export (nvidia-operating-system
             nvidia-home-environment
-            ffmpeg-nvenc-beta
+            ffmpeg-nvenc/patched
             obs-nvenc
             plist
             misako-dir
@@ -89,22 +91,9 @@
 (define plist
   (compose flatten-package-list list))
 
-(define nv-codec-headers-beta
-  (package/inherit nv-codec-headers
-    (name "nv-codec-headers-beta")
-    (inputs
-      (modify-inputs (package-inputs nv-codec-headers)
-        (replace "nvidia-driver" nvidia-driver-beta)))))
-
-(define ffmpeg-nvenc-beta
-  (package/inherit ffmpeg-nvenc
-    (name "ffmpeg-nvenc-beta")
-    (inputs
-      (modify-inputs (package-inputs ffmpeg-nvenc)
-        (replace "nv-codec-headers" nv-codec-headers-beta)))))
-
 (define ffmpeg-nvenc/patched
-  (package/inherit ffmpeg-nvenc
+  (package
+    (inherit ffmpeg-nvenc)
     (name "ffnveg")))
 
 (define obs-nvenc
@@ -112,17 +101,12 @@
     (name "obs-nvenc")
     (inputs
       (modify-inputs (package-inputs obs)
-        (replace "ffmpeg" ffmpeg-nvenc)))))
+        (replace "ffmpeg" ffmpeg-nvenc/patched)))))
 
 (define replace-all-nvidia
   (package-input-grafting
     `((,mesa   . ,nvda)
       (,ffmpeg . ,ffmpeg-nvenc/patched))))
-
-(define replace-all-nvidia-beta
-  (package-input-grafting
-    `((,mesa   . ,nvdb)
-      (,ffmpeg . ,ffmpeg-nvenc-beta))))
 
 (define-syntax-rule (nvidia-home-environment exp ...)
   "Like 'home-environment' but graft Mesa with the proprietary NVIDIA driver."

@@ -23,6 +23,7 @@
   #:use-module (rde predicates)
   #:use-module (gnu home-services ssh)
   #:use-module (gnu home services)
+  #:use-module (gnu home services ssh)
   #:use-module (gnu home services shepherd)
   #:use-module (gnu services)
   #:use-module (gnu packages)
@@ -41,42 +42,49 @@
           (ssh openssh)
           (mosh mosh)
           (ssh-configuration (home-ssh-configuration))
-          (ssh-agent? #f))
+          (ssh-agent? #f)
+          (ssh-add-keys '()))
   "Setup and configure ssh and ssh-agent."
   (ensure-pred file-like? ssh)
   (ensure-pred file-like? mosh)
   (ensure-pred home-ssh-configuration? ssh-configuration)
   (ensure-pred boolean? ssh-agent?)
+  (ensure-pred list-of-strings? ssh-add-keys)
 
   (define (ssh-home-services config)
     "Returns home services related to SSH."
     (append
      (if ssh-agent?
-         (let* ((sock "ssh-agent.sock"))
-           (list
-            (simple-service
-             'start-ssh-agent-at-startup
-             home-shepherd-service-type
-             (list
-              (shepherd-service
-               (documentation "Run the ssh-agent at startup.")
-               (provision '(ssh-agent))
-               (requirement '())
-               (start
-                #~(make-forkexec-constructor
-                   (list (string-append
-                          #$(get-value 'ssh config)
-                          "/bin/ssh-agent")
-                         "-d" "-a"
-                         (string-append (getenv "XDG_RUNTIME_DIR") "/" #$sock))
-                   #:log-file (string-append
-                               (getenv "XDG_STATE_HOME") "/log"
-                               "/ssh-agent.log")))
-               (stop #~(make-kill-destructor)))))
-            (simple-service
-             'ssh-auth-socket-env-export
-             home-environment-variables-service-type
-             `(("SSH_AUTH_SOCK" . ,(string-append "$XDG_RUNTIME_DIR/" sock))))))
+         (let* ((ssh-agent-configuration (home-ssh-agent-configuration
+                                          (openssh ssh)))
+                (ssh-agent-service (service home-ssh-agent-service-type
+                                            ssh-agent-configuration)))
+           (if (null? ssh-add-keys)
+               (list ssh-agent-service)
+               (let* ((ssh-add (file-append ssh "/bin/ssh-add"))
+                      (socket-file #~(string-append
+                                      #$(home-ssh-agent-socket-directory
+                                         ssh-agent-configuration)
+                                      "/socket")))
+                 (list
+                  ssh-agent-service
+                  (simple-service
+                   'ssh-add-keys
+                   home-shepherd-service-type
+                   (list
+                    (shepherd-service
+                     (documentation "Add keys after ssh-agent start.")
+                     (provision '(ssh-add-keys))
+                     (requirement '(ssh-agent))
+                     (modules '((shepherd support)))
+                     (one-shot? #t)
+                     (start
+                      #~(lambda _
+                          (apply
+                           system*
+                           "env" (string-append "SSH_AUTH_SOCK=" #$socket-file)
+                           #$ssh-add '#$ssh-add-keys)))
+                     (stop #~(make-kill-destructor)))))))))
          '())
      (list
       (simple-service
