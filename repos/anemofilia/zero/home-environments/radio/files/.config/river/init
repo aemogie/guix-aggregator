@@ -292,6 +292,9 @@ riverctl rule-add -app-id 'org.telegram' float
 riverctl rule-add -app-id 'org.telegram' ssd
 riverctl rule-add -app-id 'org.telegram' tags ${scratch_tag}
 
+#imv
+riverctl rule-add -app-id 'imv' ssd
+
 # browser
 riverctl rule-add -app-id 'zen' tags 2
 riverctl rule-add -app-id 'zen' ssd

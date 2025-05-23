@@ -189,8 +189,8 @@
                       ,(savannah-url "guix"))
                      ("resources/code/scm/shepherd"
                       ,(savannah-url "shepherd"))))
-          (service home-symlinks-service-type
-                   `((".config/guix/home.scm" ,radio.scm)))
+          (service home-files-service-type
+                   `((".config/guix/home.scm" ,(symlink-to radio.scm))))
 
           #|Dotfiles service|#
           (service home-dotfiles-service-type

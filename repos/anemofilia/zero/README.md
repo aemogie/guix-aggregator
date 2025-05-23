@@ -44,8 +44,6 @@ system, for example `buer`, should be in `operating-systems/buer/` and `operatin
     configuration, including aliases and plugins.
   * Uses `home-directories-service-type`, from radix channel, to declaratively ensure the existence of certain home subdirectories.
   * Uses `home-repositories-service-type`, from radix channel, to declaratively ensure the existence of certain cloned repositories.
-  * Uses `home-symlinks-service-type`, from radix channel, to ensure the existence of certain symlinks in the home directory.
-    a fork of `home-fish-service-type` available in the , still to be upstreamed.
   * Avoid dotfiles by opting for [XDG](https://www.freedesktop.org/wiki/) compliant software, setting environment variables and/or explicitly
     passing configuration files and/or parameters to commands, which are then aliased.
   * Uses the [river](https://codeberg.org/river/river) window manager together with a bar written in [eww](https://elkowar.github.io/eww/eww.html), available in the [saayix channel](https://codeberg.org/look/saayix),
