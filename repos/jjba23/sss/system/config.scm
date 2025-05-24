@@ -20,33 +20,28 @@
              (gnu system privilege)
              (gnu services)
              (gnu system accounts)
-             (guix packages))
-
-(use-modules (nongnu packages linux)
+             (guix packages)
+             (sss packages)
+             (sss iptables)
+             (sss prelude)
+             (nongnu packages linux)
              (nongnu system linux-initrd))
 
-;; load SSS defaults
-(load "./sss-defaults.scm")
-
-;; load user preferences per-host
-(load "../per-host.scm")
-
-;; show input settings
-(load "../system/show-settings.scm")
-(sss-show-settings)
-
-(load "../lib/process.scm")
-(load "../lib/sudoers.scm")
-(load "../lib/iptables.scm")
-
-;; load system packages and definitions
-(load "./packages/sss-packages.scm")
-
-;; load system users
-(load "./users.scm")
-
-(use-modules (sss packages)
-             (sss iptables))
+;; show active SSS per-host settings
+(log-exprs (get-setting 'lang)
+           (get-setting 'timezone)
+           (get-setting 'keyboard-layout)
+           (get-setting 'caps-to-ctrl?)
+           (get-setting 'hostname)
+           (get-setting 'clone-dir)
+           (get-setting 'palette)
+           (get-setting 'hyprland-monitors)
+           (get-setting 'hyprland-extra-startups)
+           (get-setting 'labwc-extra-startups)
+           (get-setting 'flatpak-user-remotes)
+           (length (get-setting 'flatpak-pkgs))
+           (length (get-setting 'extra-packages))
+           (length (get-setting 'nixpkgs)))
 
 (use-service-modules networking
                      desktop
@@ -169,34 +164,29 @@
   (identifier-syntax (sss-desktop-services-for-system)))
 
 (operating-system
-  (host-name sss-hostname)
-  (timezone sss-timezone)
-  (locale (format #f "~a.utf8" sss-lang))
-  (keyboard-layout (keyboard-layout sss-keyboard-layout))
-  (bootloader sss-bootloader-configuration)
+  (host-name (get-setting 'hostname))
+  (timezone (get-setting 'timezone))
+  (locale (format #f "~a.utf8"
+                  (get-setting 'lang)))
+  (keyboard-layout (keyboard-layout (get-setting 'keyboard-layout)))
+  (bootloader (get-setting 'bootloader-configuration))
   (kernel linux)
   (initrd microcode-initrd)
   (firmware (list linux-firmware))
   (sudoers-file (plain-file "sudoers"
-                            (sss-sudoers)))
-  (mapped-devices sss-mapped-devices)
-  (file-systems (append sss-filesystems %base-file-systems))
-  (users sss-users)
-  (packages (append (sss-system-packages #:per-host-packages
-                                         sss-per-host-packages) %base-packages))
+                            (get-setting 'sudoers)))
+  (mapped-devices (get-setting 'mapped-devices))
+  (file-systems (append (get-setting 'filesystems) %base-file-systems))
+  (users (get-setting 'users))
+  (packages (append (sss-system-packages #:per-host-packages (get-setting 'extra-packages))
+                    %base-packages))
   (services
    (cons* (service nix-service-type)
           (service power-profiles-daemon-service-type)
           sss-iptables-service
           (service rootless-podman-service-type
-                   (rootless-podman-configuration (subgids (list (subid-range (name
-                                                                               "joe"))
-                                                                 (subid-range (name
-                                                                               "manon"))))
-                                                  (subuids (list (subid-range (name
-                                                                               "joe"))
-                                                                 (subid-range (name
-                                                                               "manon"))))))
+                   (rootless-podman-configuration (subgids (get-setting 'subgids))
+                                                  (subuids (get-setting 'subuids))))
           (service screen-locker-service-type
                    (screen-locker-configuration (name "hyprlock")
                                                 (program (file-append hyprlock

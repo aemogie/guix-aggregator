@@ -1,0 +1,96 @@
+# -*- mode: caddyfile -*-
+# SPDX-FileCopyrightText: 2019-2025 Codeberg e.V.
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# https://codeberg.org/Codeberg-Infrastructure/build-deploy-forgejo/src/etc/forgejo/public/robots.txt
+respond /robots.txt 200 {
+	body <<EOF
+	User-agent: *
+	Disallow: /api/*
+	Disallow: /avatars
+	Disallow: /user/*
+	Disallow: /*/*/src/commit/*
+	Disallow: /*/*/commit/*
+	Disallow: /*/*/*/refs/*
+	Disallow: /*/*/*/star
+	Disallow: /*/*/*/watch
+	Disallow: /*/*/labels
+	Disallow: /*/*/activity/*
+	Disallow: /vendor/*
+	Disallow: /swagger.*.json
+
+	Disallow: /explore/*?*
+
+	Disallow: /repo/create
+	Disallow: /repo/migrate
+	Disallow: /org/create
+	Disallow: /*/*/fork
+
+	Disallow: /*/*/watchers
+	Disallow: /*/*/stargazers
+	Disallow: /*/*/forks
+
+	Disallow: /*/*/actions?*
+	Disallow: /*/*/actions/runs/*
+	Disallow: /*/*/activity
+	Disallow: /*/*/projects
+	Disallow: /*/*/commits/
+	Disallow: /*/*/branches
+	Disallow: /*/*/tags
+	Disallow: /*/*/compare
+	Disallow: /*/*/lastcommit/*
+
+	Disallow: /*/*/issues/new
+	Disallow: /*/*/issues/?*
+	Disallow: /*/*/issues?*
+	Disallow: /*/*/pulls/?*
+	Disallow: /*/*/pulls?*
+	Disallow: /*/*/pulls/*/files
+
+	Disallow: /*/tree/
+	Disallow: /*/download
+	Disallow: /*/revisions
+	Disallow: /*/commits/*?author
+	Disallow: /*/commits/*?path
+	Disallow: /*/comments
+	Disallow: /*/blame/
+	Disallow: /*/raw/
+	Disallow: /*/cache/
+	Disallow: /.git/
+	Disallow: */.git/
+	Disallow: /*.git
+	Disallow: /*.atom
+	Disallow: /*.rss
+
+	Disallow: /*/*/archive/
+	Disallow: *.bundle
+	Disallow: */commit/*.patch
+	Disallow: */commit/*.diff
+
+	Disallow: /*lang=*
+	Disallow: /*source=*
+	Disallow: /*ref_cta=*
+	Disallow: /*plan=*
+	Disallow: /*return_to=*
+	Disallow: /*ref_loc=*
+	Disallow: /*setup_organization=*
+	Disallow: /*source_repo=*
+	Disallow: /*ref_page=*
+	Disallow: /*source=*
+	Disallow: /*referrer=*
+	Disallow: /*report=*
+	Disallow: /*author=*
+	Disallow: /*since=*
+	Disallow: /*until=*
+	Disallow: /*commits?author=*
+	Disallow: /*tab=*
+	Disallow: /*q=*
+	Disallow: /*repo-search-archived=*
+
+	Disallow: /mirror
+
+	Crawl-delay: 2
+
+	EOF
+}

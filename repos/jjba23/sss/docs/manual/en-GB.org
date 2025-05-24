@@ -248,155 +248,158 @@ I would recommend to then use a web browser and visit the web version of this ma
 
 Once you have a working Guix base installation on your machine, you are ready to go about installing SSS.
 
-* Per host - per-host.scm
+* Per host - per-host/sss/overrides.scm
 
-It is *REQUIRED* to include a ~per-host.scm~ in the root of this project, which is excluded from Git, and will determine certain settings for your own machine.
-Find here a reference configuration with what is required.
+It is *REQUIRED* to include a ~per-host/sss/overrides.scm~ in the root of this project, which is excluded from Git, and will determine certain settings for your own machine.
+
+The idea is that by default, we will use the settings that come from ~src/sss/defaults.scm~, unless there exists an override with a matching name at ~per-host/sss/overrides.scm~.
+
+For example if you want to set your own system language, and thus not use ~sss-default-lang~, you need to define and export a ~sss-override-lang~ with a compatible value. This logic applies to all settings in ~src/sss/defaults.scm~.
+
+You will NEED a file at ~per-host/sss/overrides.scm~ with at least:
+
+#+begin_src scheme
+(define-module (sss overrides))
+#+end_src
+
+Although you will likely want to add your filesystems, to get a working Guix system.
+
+Find here an example configuration of a SSS overrides file for one of my machines, this one with BTRFS and LUKS encryption.
 
 #+begin_src  scheme
-(use-modules (gnu)
-             (gnu packages))
+;;; SSS - Supreme Sexp System
+
+;; Copyright © Josep Bigorra <jjbigorra@gmail.com>
+
+;; sss is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; sss is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
+
+(define-module (sss overrides)
+  #:declarative? #t
+  #:use-module (gnu)
+  #:use-module (gnu packages)
+  #:use-module (gnu bootloader)
+  #:use-module (gnu system file-systems)
+  #:use-module (gnu system accounts)
+  #:export (sss-override-extra-packages sss-override-filesystems
+                                        sss-override-hostname
+                                        sss-override-hyprland-extra-startups
+                                        sss-override-hyprland-monitors
+                                        sss-override-keyboard-layout
+                                        sss-override-lang
+                                        sss-override-mapped-devices
+                                        sss-override-palette
+                                        sss-override-subgids
+                                        sss-override-subuids
+                                        sss-override-sudoers
+                                        sss-override-users
+                                        sss-override-timezone))
+
+(define sss-override-sudoers
+  (let ((no-passwd-cmd (string-join '("/run/current-system/profile/sbin/halt"
+                                      "/run/current-system/profile/bin/chvt"
+                                      "/run/current-system/profile/sbin/reboot"
+                                      "/run/current-system/profile/bin/loginctl")
+                                    ",")))
+    (string-join `("root ALL=(ALL) NOPASSWD:ALL" "%wheel ALL=(ALL) ALL"
+                   "joe ALL=(ALL) NOPASSWD:ALL"
+                   ,(format #f "manon ALL=(ALL) NOPASSWD:~a" no-passwd-cmd)
+                   ,(format #f "claudio ALL=(ALL) NOPASSWD:~a" no-passwd-cmd))
+                 "\n")))
+
+(define sss-override-subgids
+  (list (subid-range (name "joe"))
+        (subid-range (name "manon"))))
+
+(define sss-override-subuids
+  (list (subid-range (name "joe"))
+        (subid-range (name "manon"))))
+
+(define sss-joe-user-account
+  (user-account
+    (name "joe")
+    (group "users")
+    (supplementary-groups '("wheel" "netdev"
+                            "audio"
+                            "video"
+                            "input"
+                            "libvirt"
+                            "cgroup"))
+    (comment "Josep Bigorra's account")
+    (home-directory "/home/joe")))
+
+(define sss-manon-user-account
+  (user-account
+    (name "manon")
+    (group "users")
+    (supplementary-groups '("wheel" "netdev"
+                            "audio"
+                            "video"
+                            "input"
+                            "libvirt"
+                            "cgroup"))
+    (comment "Manon van den Bout's account")
+    (home-directory "/home/manon")))
+
+(define sss-override-users
+  (list sss-joe-user-account sss-manon-user-account))
 
 ;; system language
-(define sss-lang "en_US")
+(define sss-override-lang
+  "nl_NL")
 
 ;; system timezone
-(define sss-timezone "Europe/Amsterdam")
+(define sss-override-timezone
+  "Europe/Amsterdam")
 
 ;; system keyboard layout
-(define sss-keyboard-layout "us")
-
-;; caps to control enabled
-(define sss-caps-to-ctrl
-  #t)
+(define sss-override-keyboard-layout
+  "us")
 
 ;; system hostname
-(define sss-hostname "gnusystem")
+(define sss-override-hostname
+  "gnu-framework")
 
-;; disk partitioning
+(define sss-override-extra-packages
+  '("amd-microcode" "amdgpu-firmware" "prismlauncher"))
 
-;; mapped devices for advanced configs, by default is empty '()
-;; check /etc/config.scm after installing Guix and copy, or you know what to do if
-;; you are a more advanced user
-(define sss-mapped-devices
-  (list (mapped-device
-         (source (uuid "e84af212-b13b-4163-9165-57bd6f1b787d"))
-         (target "rootfs")
-         (type luks-device-mapping))))
-
-;; using mapped device of encrypted btrfs
-(define sss-filesystems
-  (list (file-system
-         (mount-point "/")
-         (device "/dev/mapper/rootfs")
-         (type "btrfs")
-         (dependencies sss-mapped-devices))
-        (file-system
-         (device "/dev/nvme0n1p1")
-         (mount-point "/boot/efi")
-         (type "vfat"))))
-
-;; alternatively for simple ext4 (legacy configurations)
-;;  (define sss-filesystems
-;;    (list (file-system
-;;           (device "/dev/nvme0n1p3")
-;;           (mount-point "/")
-;;           (type "ext4"))
-;;          (file-system
-;;           (device "/dev/nvme0n1p1")
-;;           (mount-point "/boot/efi")
-;;           (type "vfat"))))
-
-;; bootloader configuration
-(define sss-bootloader-configuration
-  (bootloader-configuration
-   (bootloader grub-efi-bootloader)
-   (targets '("/boot/efi"))))
-
-;; packages that should only be installed in the current host
-;; or (define sss-per-host-packages '())
-(define sss-per-host-packages '(
-                                ;; AMD non-free drivers
-                                "amd-microcode" "amdgpu-firmware"
-                                ;; Games
-                                "prismlauncher" "steam")
-  )
-
-;; location where you cloned SSS Git repository
-(define sss-clone-dir
-  "$HOME/hacking/sss")
-
-;;
-;; Define the active palette for all users accounts
-;; You should reconfigure and ideally restart the system
-;; for all changes to take effect
-;;
-;; Note: You could choose on a per-user basis to set a fixed palette
-;; and not follow system wide, by just redefining this value
-;;
-;; Possible values are:
-;;   - sss-palette-ef-bio
-;;   - sss-palette-ef-cyprus
-;;   - sss-palette-ef-dream
-;;   - sss-palette-heavy-metal
-;;   - sss-palette-solarized-light
-;;   - sss-palette-ef-autumn
-;;   - sss-palette-everforest-dark
-;;   - sss-palette-everforest-light
-;;
-(define-public sss-palette
-  'sss-palette-ef-dream)
-
-(define sss-sans-font "Adwaita Sans")
-
-(define sss-mono-font "Adwaita Mono")
-
-;; Nix packages to install
-(define-public sss-nixpkgs
-  '("yaml-language-server" "bash-language-server"
-    "monaspace"
-    "jdt-language-server"
-    "nil"
-    "black"
-    "pyright"
-    "marksman"
-    "_1password-gui"
-    "_1password-cli"
-    "stack"
-    "sbt"
-    "scala_2_13"
-    "thunderbird"
-    "postman"
-    "vscode-langservers-extracted"
-    "nwg-look"
-    "krew"
-    "mermaid-cli"
-    "jetbrains.idea-community"))
-
-;; Flatpak remotes to add to the user
-(define sss-flatpak-user-remotes '((flathub . "https://dl.flathub.org/repo/flathub.flatpakrepo")))
-
-;; Flatpak packages to install
-(define sss-flatpak-pkgs '("app.drey.Warp" "com.usebottles.bottles"))
-
-;; Additional Labwc startup commands on per-host basis, byt default '() , see example:
-(define sss-labwc-extra-startups
-  '("wlr-randr --output eDP-1 --scale 1.5  >/dev/null 2>&1 &"))
-
-;; Hyprland monitor configurations as a list of strings (lines)
-;;
-;; you can have a sensible default like "monitor = , preferred, auto, 1"
-;; or more detailed config like "monitor=DP-1,1920x1080@144,0x0,1"
-;; see https://wiki.hyprland.org/hyprland-wiki/pages/Configuring/Monitors/
-;;
-(define sss-hyprland-monitors
-  '("monitor = , preferred, auto, 1"))
-
-;; Additional Hyprland startup commands on per-host basis, by default '() , see example:
-(define sss-hyprland-extra-startups
+(define sss-override-hyprland-extra-startups
   '("sudo warp-svc" "sudo mkdir -p /usr/share/warp/images"
     "sleep 1 && warp-taskbar"))
 
+(define sss-override-palette
+  'sss-palette-ef-dream)
+
+(define sss-override-mapped-devices
+  (list (mapped-device
+          (source (uuid "e84af212-b13b-4163-9165-57bd6f1b787d"))
+          (target "rootfs")
+          (type luks-device-mapping))))
+
+(define sss-override-filesystems
+  (list (file-system
+          (mount-point "/")
+          (device "/dev/mapper/rootfs")
+          (type "btrfs")
+          (dependencies sss-override-mapped-devices))
+        (file-system
+          (mount-point "/boot/efi")
+          (device (uuid "FC82-5EC0"
+                        'fat32))
+          (type "vfat"))))
+
+(define sss-override-hyprland-monitors
+  '("monitor = , preferred, auto, 1.33333"))
 
 #+end_src
 
@@ -426,7 +429,7 @@ Some of the tweaks and improvements you get:
 
 Ultra smooth scrolling (yes also on touchpad/trackpad), super fast startup, pretty modeline, nice welcome screen, transparency in Emacs, good use of monospace and sans-serif fonts, no-config and no-headache language server integrations with many languages, opinionated and good-practice settings for language servers, pretty and fast Org mode buffers, etc.
 
-I split the Emacs configuration into several modules that you can optionally include/exclude, see ~lib/emacs/modules~. Here follow some explanations of each module:
+I split the Emacs configuration into several modules that you can optionally include/exclude, see ~src/sss/emacs/modules~. Here follow some explanations of each module:
 
 *** common-lisp.el
 This module configures the sly package, transforming Emacs into a robust Common Lisp development environment. It installs sly directly from its GitHub repository and ensures it loads immediately when Emacs starts. The configuration also specifies that sly should connect to SBCL (Steel Bank Common Lisp) as the preferred underlying Lisp interpreter, providing a complete suite of tools for writing, evaluating, and debugging Common Lisp code within Emacs.
@@ -663,9 +666,9 @@ To improve navigation, ultra-scroll is enabled, refining Emacs's scrolling behav
 
 * User Management
 
-SSS works by programatically define users via code.
+SSS works by programatically define users via code. By default there will be a user ~sss~ that is in the ~wheel~ group.
 
-You should create users by tweaking the Scheme code (more specifically ~system/users.scm~ and ~lib/sudoers.scm~ ) and you should also create a Guix home file (~home/<user>.scm~) if you want to use the home services SSS provides.
+You should create users by tweaking the Scheme code in the per-host overrides and you should also create a Guix home file (~home/<user>.scm~) if you want to use the home services SSS provides.
 
 When everything is in place, if it's a new user, you can add a password to the user with ~sudo passwd <user>~. If this user was created by the Guix install then this will already be done for you.
 
@@ -698,7 +701,7 @@ Once you have followed all those above steps, you can enter a temporary Guix she
 
 You can do this with ~guix shell make git icecat~. Icecat is a 100% libre version of Firefox, and it will be temporarily used for you to browse temporarily to Codeberg and download and install SSS.
 
-Then proceed to clone SSS with ~git clone --recursive https://codeberg.org/jjba23/sss.git~ to your favourite location. This location will need to be added to ~per-host.scm~. You can skip the ~--recursive~ option if you are not interested in the wallpapers and other art.
+Then proceed to clone SSS with ~git clone --recursive https://codeberg.org/jjba23/sss.git~ to your favourite location. This location will need to be added to your ~per-host/sss/overrides.scm~. You can skip the ~--recursive~ option if you are not interested in the wallpapers and other art.
 
 If ~digital-art-dreams~ (the wallpapers and so on) didn't get properly cloned to your destination, you can always ~cd~ into the SSS clone path, and then do a ~git submodule add https://codeberg.org/jjba23/digital-art-dreams.git submodules/digital-art-dreams~ and then a  ~git submodule update --init --recursive~. Also from time to time, handy to keep the submodules updated with ~git submodule update --recursive --remote~.
 
@@ -708,21 +711,19 @@ https://git-scm.com/book/en/v2/Git-Tools-Submodules
 
 ---------------------
 
-You should have by now written an appropriate ~per-host.scm~ for your setup. See the above section on this topic.
+You should have by now written an appropriate ~per-host/sss/overrides.scm~ for your setup. See the above section on this topic.
 
-Enter the directory of SSS: ~cd sss~.
+Enter the directory of SSS: ~cd sss~ and do a ~make sr~.
 
-Make sure you place your ~per-host.scm~ in the root of this directory. Then you can do a ~make sr~.
+Note: ~make sr~ translates to ~sudo guix system reconfigure~ with some extra settings.
 
-Note: ~make sr~ translates to ~sudo guix system reconfigure config.scm --fallback~.
-
-While unlikely, it's possible that some packages fail to install/build for your setup. I would encourage to temporarily comment those out of the configuration (likely at ~system/packages.scm~) and try again. After a working SSS setup, you can uncomment them and try again.
+While unlikely, it's possible that some packages fail to install/build for your setup. I would encourage to temporarily comment those out of the configuration (likely at ~src/sss/packages.scm~) and try again. After a working SSS setup, you can uncomment them and try again.
 
 For more commands take a look at the SSS Makefile: [[file:../../Makefile]].
 
-The ~fallback~ option is optional, and simply helps when upstream substitute (cache) servers are less available.
+The ~--fallback~ option is optional, and simply helps when upstream substitute (cache) servers are less available.
 
-Once the system reconfigure is complete, you should also bootstrap your user's GNU home with something like: ~guix home reconfigure ./home/joe.scm  --fallback~
+Once the system reconfigure is complete, you should also bootstrap your user's GNU home with something like: ~guix home reconfigure~ 
 
 You might at this point want to reset the font cache for the system and user.
 
@@ -863,7 +864,7 @@ I like to declaratively customize and configure my software, and my web browsers
 
 With Firefox (from nonguix) I like to configure it in Lisp (Guile Scheme) code, generating ~user.js~ , ~userChrome.css~ and more, from Lisp code, to customize, harden and optimize it, all declaratively.
 
-See ~lib/firefox.scm~ for more.
+See ~src/sss/firefox.scm~ for more.
 
 As for manual work needed for achieving Firefox Zen, we document several tips below:
 
@@ -941,7 +942,7 @@ You are then ready to start the Nyxt browser, all configuration should work well
 * Git
 **** TODO: make this more configurable.
 
-Joe's account is automatically configured with a multi-user Git setup. See ~lib/git.scm~.
+Joe's account is automatically configured with a multi-user Git setup. See ~src/sss/git.scm~.
 Currently this works on a per-directory basis, and is configured by default to my preferred settings.
 
 
@@ -1009,10 +1010,10 @@ In this case, the next best option is to use a virtual bridge with static routin
 
 SSS supports specifying default applications to use for certain files, and also xdg-open, and customize allowed options, all in comfortable Scheme code.
 
-Refer to the ~sss mime~ module at ~lib/~ and the ~sss-mimeapps-list-file~ function to understand more how it works.
+Refer to the ~sss mime~ module at ~src/sss/~ and the ~sss-mimeapps-list-file~ function to understand more how it works.
 
 #+begin_src scheme
-  (define-public sss-mime-default-applications
+  (define sss-mime-default-applications
     '((application/pdf org.gnome.Evince firefox)
       (text/html firefox emacsclient)))
 #+end_src

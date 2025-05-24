@@ -181,6 +181,10 @@ No need to install less used ones, prefer ‘guix shell’.
      (gnupg-home "/var/lib/sops")
      (secrets
       (list (sops-secret
+              (key '("cloudflare"))
+              (file gokuraku.yaml)
+              (user "caddy"))
+            (sops-secret
               (key '("cloudflared"))
               (file gokuraku.yaml)
               (user "cloudflared"))))))
@@ -335,21 +339,40 @@ No need to install less used ones, prefer ‘guix shell’.
   (rosenthal services child-error)
 #+end_src
 
+** caddy
+#+begin_src scheme :noweb yes :noweb-ref service
+  (service caddy-service-type
+    (caddy-configuration
+     (caddy (pkg "caddy-hako"))
+     (caddyfile <<caddy-config>>)))
+#+end_src
+
+#+name: caddy-config
+#+begin_src scheme
+  (with-imported-modules '((guix build utils))
+    (computed-file
+     "gokuraku.caddyfile"
+     #~(begin
+         (use-modules (guix build utils))
+         (let ((inputs '#$(pkgs "ai-robots-txt")))
+           (copy-file #$(testament-file-object "gokuraku.caddyfile") #$output)
+           (substitute* #$output
+             (("\\$\\$ROBOTS_forgejo\\$\\$")
+              #$(testament-file-object "robots.txt/forgejo"))
+             (("\\$\\$(.*)\\$\\$" _ file)
+              (search-path inputs file)))))))
+#+end_src
+
+[[file:../files/plain/gokuraku.caddyfile][gokuraku.caddyfile]]
+
+[[file:../files/plain/robots.txt/forgejo][robots.txt/forgejo]]
+
 ** cloudflared
 #+begin_src scheme :noweb-ref service
   (service cloudflare-tunnel-service-type
     (cloudflare-tunnel-configuration
       (log-level "error")
       (token-file "/run/secrets/cloudflared")))
-#+end_src
-
-** certbot
-#+begin_src scheme :noweb-ref service
-  (service certbot-service-type
-    (certbot-configuration
-      (certificates
-       (list (certificate-configuration
-               (domains '("mail.boiledscript.com")))))))
 #+end_src
 
 * Web Services
@@ -371,8 +394,7 @@ No need to install less used ones, prefer ‘guix shell’.
 #+begin_src scheme :noweb yes :noweb-ref service
   (service docker-mailserver-service-type
     (docker-mailserver-configuration
-      (shepherd-requirement
-       '(redis renew-certbot-certificates))
+      (shepherd-requirement '(redis))
       (options
        '(("ENABLE_AMAVIS" . "0")
          ("ENABLE_FAIL2BAN" . "1")
@@ -391,7 +413,14 @@ No need to install less used ones, prefer ‘guix shell’.
          ("SSL_TYPE" . "letsencrypt")))
       (extra-arguments
        `("--cap-add=NET_ADMIN"      ;For fail2ban.
-         "--volume" "/etc/letsencrypt:/etc/letsencrypt:ro"
+         "--volume"
+         ,(string-append
+           "/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/mail.boiledscript.com/mail.boiledscript.com.crt"
+           ":/etc/letsencrypt/live/mail.boiledscript.com/fullchain.pem")
+         "--volume"
+         ,(string-append
+           "/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/mail.boiledscript.com/mail.boiledscript.com.key"
+           ":/etc/letsencrypt/live/mail.boiledscript.com/privkey.pem")
          "--volume"
          ,(file-append
            <<rspamd-redis-conf>> ":/etc/rspamd/local.d/redis.conf:ro")
@@ -419,7 +448,7 @@ No need to install less used ones, prefer ‘guix shell’.
          ("CLEANUP_ARCHIVE_READ_DAYS" . -1)
          ("CLEANUP_ARCHIVE_UNREAD_DAYS" . -1)
          ("DATABASE_URL" . ,(sops-str '("miniflux" "database")))
-         ("LISTEN_ADDR" . "/tmp/.miniflux.sock")
+         ("LISTEN_ADDR" . "127.0.0.1:51787")
          ("RUN_MIGRATIONS" . 1)))))
 #+end_src
 

@@ -1,0 +1,50 @@
+;;; macros.el --- Macros for Emacs -*- lexical-binding: t -*-
+
+;; Copyright © Josep Bigorra <jjbigorra@gmail.com>
+
+;; sss is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; sss is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; Macros for Emacs - tips: you can use `elmacro' package, by activating `elmacro-mode'
+;; and after having recorded a macro with the F3 - do - F4 dance
+;; use `elmacro-show-last-macro'
+
+;;; Code:
+
+(defun kbd-scheme-hygguile-abstraction ()
+  "Replace a (selected) string that is a whitespace separated list of CSS classes by a hygguile class set."
+  (interactive)
+  (kill-region 10305 10346 'region)
+  (backward-char 1)
+  (delete-char 1 nil)
+  (delete-char 1 nil)
+  (insert ",(mk-class '(")
+  (yank nil)
+  (insert "))"))
+
+(defun kbd-scheme-make-parameter ()
+  "Replace a (selected) value by a (make-parameter ~a).
+Useful for libraries where you want to allow users to redefine values."
+  (interactive)
+  (kill-region 2350 2361 'region)
+  (insert "(make-parameter ")
+  (yank nil)
+  (insert ")"))
+
+
+(provide 'sss/macros)
+
+;;; macros.el ends here
+

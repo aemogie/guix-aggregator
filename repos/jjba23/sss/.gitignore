@@ -1,3 +1,2 @@
-per-host.scm
-*.log
 en-GB.html
+per-host/sss/overrides.scm

@@ -60,7 +60,6 @@ table inet filter {
         ip6 saddr fe80::/10 udp sport 547 udp dport 546 accept \
         comment "Accept DHCPv6 replies from IPv6 link-local addresses"
 
-        tcp dport http accept
         tcp dport https accept
         tcp dport imap accept
         tcp dport imaps accept

@@ -1,0 +1,85 @@
+# SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+{
+	acme_dns cloudflare {file./run/secrets/cloudflare}
+	ech hello.boiledscript.com
+	log {
+		output file /var/lib/caddy/access.log
+	}
+	servers {
+		trusted_proxies static private_ranges
+		client_ip_headers X-Forwarded-For X-Real-IP
+		trusted_proxies_strict
+	}
+}
+
+
+(block_bots) {
+	import $$share/ai-robots-txt/Caddyfile$$
+	handle @aibots {
+		respond /* "Access denied" 403 {
+			close
+		}
+	}
+}
+
+(logging) {
+	log {
+		output file /var/lib/caddy/{args[0]}.access.log
+		format json
+		format filter {
+			request>client_ip ip_mask {
+				ipv4 20
+				ipv6 44
+			}
+		}
+	}
+}
+
+(robots_txt) {
+	respond /robots.txt 200 {
+		body <<EOF
+		User-Agent: *
+		Disallow: /
+
+		EOF
+	}
+}
+
+(tailscale) {
+	bind 100.108.11.68 [fd7a:115c:a1e0::5201:b44]
+}
+
+
+# Komga
+http://manga.boiledscript.com, manga.ultrarare.space {
+	import block_bots
+	import robots_txt
+	import logging komga
+	reverse_proxy localhost:44293
+}
+
+# Navidrome
+http://music.boiledscript.com, music.ultrarare.space {
+	import block_bots
+	import robots_txt
+	import logging navidrome
+	reverse_proxy localhost:43502
+}
+
+# Jellyfin
+http://shows.boiledscript.com, shows.ultrarare.space {
+	import block_bots
+	import robots_txt
+	import logging jellyfin
+	reverse_proxy localhost:22443
+}
+
+:80, :443 {
+	import logging catchall
+	respond "Access denied" 403 {
+		close
+	}
+}

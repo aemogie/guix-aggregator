@@ -35,12 +35,14 @@
              iter-vitae
              jointhefreeworld
              keuringsdienst
+             kracht
              lucidplan
              modusregel
-             neppegesprek
+             orgwebalchemy
              pop-server
              pop-test
              private-notes
+             pingwing
              rostob
              scala-rank
              social-media-jjba

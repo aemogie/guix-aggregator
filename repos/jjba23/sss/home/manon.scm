@@ -19,26 +19,8 @@
 
 (use-modules (gnu)
              (gnu bootloader)
-             (gnu system file-systems))
-
-;; load SSS defaults
-(load "../system/sss-defaults.scm")
-
-;; load user preferences per-host
-(load "../per-host.scm")
-
-;; show input settings
-(load "../system/show-settings.scm")
-(sss-show-settings)
-
-(load "../lib/path.scm")
-
-;; Autoload all Scheme modules in lib and subdirectories
-;; All modules should have the `.scm' extension
-(load-lib-modules)
-
-;; Load Guile modules
-(use-modules (gnu home)
+             (gnu system file-systems)
+             (gnu home)
              (gnu services)
              (guix gexp)
              (gnu packages admin)
@@ -50,10 +32,9 @@
              (gnu home services sound)
              (gnu home services desktop)
              (json)
-             (sxml simple))
-
-;; Load SSS modules
-(use-modules (sss process)
+             (sxml simple)
+             (sss prelude)
+             (sss process)
              (sss foot)
              (sss git)
              (sss vars)
@@ -75,25 +56,41 @@
              (sss ssh)
              (sss labwc))
 
+;; show active SSS per-host settings
+(log-exprs (get-setting 'lang)
+           (get-setting 'timezone)
+           (get-setting 'keyboard-layout)
+           (get-setting 'caps-to-ctrl?)
+           (get-setting 'hostname)
+           (get-setting 'clone-dir)
+           (get-setting 'palette)
+           (get-setting 'hyprland-monitors)
+           (get-setting 'hyprland-extra-startups)
+           (get-setting 'labwc-extra-startups)
+           (get-setting 'flatpak-user-remotes)
+           (length (get-setting 'flatpak-pkgs))
+           (length (get-setting 'extra-packages))
+           (length (get-setting 'nixpkgs)))
+
 (define sss-home-files-service
   (service home-files-service-type
-           (append (sss-gtk3-svc #:palette sss-palette)
-                   (sss-gtk4-svc #:palette sss-palette)
+           (append (sss-gtk3-svc #:palette (get-setting 'palette))
+                   (sss-gtk4-svc #:palette (get-setting 'palette))
                    (sss-nix-svc)
-                   (sss-rofi-svc #:palette sss-palette)
+                   (sss-rofi-svc #:palette (get-setting 'palette))
                    (sss-mime-svc)
-                   (sss-waybar-svc #:palette sss-palette
-                                   #:sans-font sss-sans-font
+                   (sss-waybar-svc #:palette (get-setting 'palette)
+                                   #:sans-font (get-setting 'sans-font)
                                    #:with-memory #f
                                    #:labwc-session #t
-                                   #:sans-font sss-sans-font)
+                                   #:sans-font (get-setting 'sans-font))
                    (sss-portals-svc)
-                   (sss-mako-svc #:palette sss-palette
-                                 #:sans-font sss-sans-font)
+                   (sss-mako-svc #:palette (get-setting 'palette)
+                                 #:sans-font (get-setting 'sans-font))
                    (sss-containers-svc)
-                   (sss-wallpaper-svc #:clone-dir sss-clone-dir
-                                      #:palette sss-palette)
-                   (sss-labwc-svc #:extra-startups sss-labwc-extra-startups))))
+                   (sss-wallpaper-svc #:clone-dir (get-setting 'clone-dir)
+                                      #:palette (get-setting 'palette))
+                   (sss-labwc-svc #:extra-startups (get-setting 'labwc-extra-startups)))))
 
 (display "
 >>= configuring Manon's home environment...
@@ -102,10 +99,10 @@
 (home-environment
   (services
    (append (list sss-home-files-service
-                 (sss-home-vars-service #:palette sss-palette
-                                        #:clone-dir sss-clone-dir
-                                        #:lang sss-lang)
-                 (sss-bash-service #:clone-dir sss-clone-dir)
+                 (sss-home-vars-service #:palette (get-setting 'palette)
+                                        #:clone-dir (get-setting 'clone-dir)
+                                        #:lang (get-setting 'lang))
+                 (sss-bash-service #:clone-dir (get-setting 'clone-dir))
                  sss-openpgp-conf
                  (service home-dbus-service-type)
                  (service home-pipewire-service-type)

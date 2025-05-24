@@ -5,4 +5,4 @@
 
 [submodule "blobs"]
         path = files/blobs
-        url = forgejo@gokuraku:hako/Testament-blobs.git
+        url = forgejo@gokuraku.ultrarare.space:hako/Testament-blobs.git

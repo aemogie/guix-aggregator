@@ -1,0 +1,93 @@
+# SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+{
+	acme_dns cloudflare {file./run/secrets/cloudflare}
+	ech hello.boiledscript.com
+	log {
+		output file /var/lib/caddy/access.log
+	}
+	servers {
+		trusted_proxies static private_ranges
+		client_ip_headers X-Forwarded-For X-Real-IP
+		trusted_proxies_strict
+	}
+}
+
+
+(block_bots) {
+	import $$share/ai-robots-txt/Caddyfile$$
+	handle @aibots {
+		respond /* "Access denied" 403 {
+			close
+		}
+	}
+}
+
+(logging) {
+	log {
+		output file /var/lib/caddy/{args[0]}.access.log
+		format json
+		format filter {
+			request>client_ip ip_mask {
+				ipv4 20
+				ipv6 44
+			}
+		}
+	}
+}
+
+(robots_txt) {
+	respond /robots.txt 200 {
+		body <<EOF
+		User-Agent: *
+		Disallow: /
+
+		EOF
+	}
+}
+
+(tailscale) {
+	bind 100.97.195.93 [fd7a:115c:a1e0::2401:c35d]
+}
+
+
+# docker-mailserver
+mail.boiledscript.com {
+	respond /* "Access denied" 403 {
+		close
+	}
+}
+
+# Forgejo
+http://git.boiledscript.com {
+	import block_bots
+	import $$ROBOTS_forgejo$$
+	import logging forgejo
+	reverse_proxy localhost:48071
+}
+
+# Miniflux
+http://reader.boiledscript.com {
+	import block_bots
+	import robots_txt
+	import logging miniflux
+	reverse_proxy localhost:51787
+}
+
+# Misskey
+http://social.boiledscript.com {
+	import block_bots
+	import robots_txt
+	import logging misskey
+	reverse_proxy localhost:54493
+}
+
+# Vaultwarden
+http://vault.boiledscript.com {
+	import block_bots
+	import robots_txt
+	import logging vaultwarden
+	reverse_proxy localhost:23263
+}
