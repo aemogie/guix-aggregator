@@ -1,0 +1,8 @@
+keys:
+  - &look 8A6971471CF700C1DA530A2787F4DAF30B83AC70
+
+creation_rules:
+  - path_regex: .*look\.yaml$
+    key_groups:
+      - pgp:
+          - *look

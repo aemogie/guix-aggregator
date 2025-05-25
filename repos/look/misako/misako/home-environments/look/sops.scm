@@ -7,14 +7,11 @@
             senpai
             senpai-keys))
 
-(define common
-  (string-append secrets-dir "/common.yaml"))
-
-(define (common-sops-secret keys)
+(define (look-sops-secret keys)
   (map (lambda (key)
          (sops-secret
            (key key)
-           (file (local-file common))
+           (file (local-file (string-append look-sops-dir "/look.yaml")))
            (permissions #o400)))
        keys))
 
@@ -33,5 +30,5 @@
 (define senpai-keys
   (list '("senpai" "sourcehut" "password")))
 
-(define aerc (common-sops-secret aerc-keys))
-(define senpai (common-sops-secret senpai-keys))
+(define aerc (look-sops-secret aerc-keys))
+(define senpai (look-sops-secret senpai-keys))

@@ -30,8 +30,10 @@
             plist
             misako-dir
             yumiko-dir
-            secrets-dir
-            dotfiles-dir
+            yuria-dir
+            yumiko-sops-dir
+            look-sops-dir
+            look-files-dir
             nvidia?
             nvidia?*
             edit
@@ -49,11 +51,17 @@
 (define yumiko-dir
   (string-append misako-dir "/misako/operating-systems/yumiko"))
 
-(define secrets-dir
-  (string-append misako-dir "/secrets"))
+(define yuria-dir
+  (string-append misako-dir "/misako/operating-systems/yuria"))
 
-(define dotfiles-dir
-  (string-append misako-dir "/dotfiles"))
+(define yumiko-sops-dir
+  (string-append misako-dir "/misako/operating-systems/yumiko/sops"))
+
+(define look-sops-dir
+  (string-append misako-dir "/misako/home-environments/look/sops"))
+
+(define look-files-dir
+  (string-append misako-dir "/misako/home-environments/look/files"))
 
 (define (secret key)
   (call-with-input-file

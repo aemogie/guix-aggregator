@@ -62,7 +62,7 @@
     (theme
      (grub-theme
        (inherit (grub-theme))
-       (image (testament-file-object "grub.png"))
+       (image (local-file (testament-blobs "grub.png")))
        (resolution '(2560 . 1440)))))
 #+end_src
 
@@ -360,7 +360,7 @@ Generate passwordless ECC key:
 
 #+begin_src scheme :noweb-ref definition
   (define dorphine.yaml
-    (testament-file-object "dorphine.yaml"))
+    (local-file (testament-blobs "dorphine.yaml")))
 
   (define (sops-str key)
     "The result will be publicly available in /gnu/store, YOU ARE WARNED."
@@ -374,7 +374,7 @@ Generate passwordless ECC key:
 #+begin_src scheme :noweb-ref home-service
   (service home-sops-secrets-service-type
     (home-sops-service-configuration
-      (config (testament-file-object "sops.yaml"))
+      (config (local-file (testament-plain "sops.yaml")))
       (gnupg-home (in-vicinity (getenv "XDG_DATA_HOME") "sops"))
       (secrets
        (list (sops-secret
@@ -388,7 +388,7 @@ Generate passwordless ECC key:
 #+begin_src scheme :noweb-ref service
   (service sops-secrets-service-type
     (sops-service-configuration
-     (config (testament-file-object "sops.yaml"))
+     (config (local-file (testament-plain "sops.yaml")))
      (gnupg-home "/var/lib/sops")
      (secrets
       (list (sops-secret
@@ -462,10 +462,10 @@ Generate passwordless ECC key:
 #+begin_src scheme :noweb-ref service
   (service nftables-service-type
     (nftables-configuration
-      (ruleset (testament-file-object "dorphine-nftables.nft"))))
+      (ruleset (local-file (testament-plain "dorphine/nftables.conf")))))
 #+end_src
 
-[[file:../files/plain/dorphine-nftables.nft][dorphine-nftables.nft]]
+[[file:../files/plain/dorphine/nftables.conf][dorphine/nftables.conf]]
 
 ** iwd
 #+begin_src scheme :noweb-ref service
@@ -503,11 +503,10 @@ Generate passwordless ECC key:
 
 #+name: smartdns-config
 #+begin_src scheme
-  (let* ((filename "smartdns.conf")
-         (conf-dir (file-append (pkg "dnsmasq-china-list") "/share/dnsmasq-china-list/")))
+  (let ((conf-dir (file-append (pkg "dnsmasq-china-list") "/share/dnsmasq-china-list/")))
     (mixed-text-file
-     filename
-     (testament-file-content filename) "\n"
+     "smartdns.conf"
+     (file-content (testament-plain "smartdns.conf")) "\n"
      "conf-file " (file-append conf-dir "accelerated-domains.china.smartdns.conf") "\n"
      "conf-file " (file-append conf-dir "apple.china.smartdns.conf") "\n"
      "conf-file " (file-append conf-dir "bogus-nxdomain.china.smartdns.conf") "\n"))
@@ -534,7 +533,7 @@ Generate passwordless ECC key:
        (mixed-text-file
         "mihomo.yaml"
         (sops-str '("mihomo")) "\n"
-        (testament-file-content "mihomo.yaml")))))
+        (file-content (testament-plain "mihomo.yaml"))))))
 #+end_src
 
 [[file:../files/plain/mihomo.yaml][mihomo.yaml]]
@@ -650,19 +649,13 @@ Generate passwordless ECC key:
 
 #+name: caddy-config
 #+begin_src scheme
-  (with-imported-modules '((guix build utils))
-    (computed-file
-     "dorphine.caddyfile"
-     #~(begin
-         (use-modules (guix build utils))
-         (let ((inputs '#$(pkgs "ai-robots-txt")))
-           (copy-file #$(testament-file-object "dorphine.caddyfile") #$output)
-           (substitute* #$output
-             (("\\$\\$(.*)\\$\\$" _ file)
-              (search-path inputs file)))))))
+  (computed-substitution-with-inputs
+   "dorphine.caddyfile"
+   (local-file (testament-plain "dorphine/Caddyfile"))
+   (pkgs "ai-robots-txt"))
 #+end_src
 
-[[file:../files/plain/dorphine.caddyfile][dorphine.caddyfile]]
+[[file:../files/plain/dorphine/Caddyfile][dorphine/Caddyfile]]
 
 ** cloudflared
 #+begin_src scheme :noweb-ref service
@@ -701,7 +694,7 @@ Generate passwordless ECC key:
 #+begin_src scheme :noweb-ref service
   (service navidrome-service-type
     (navidrome-configuration
-      (extra-config (testament-file-content "navidrome.toml"))))
+      (extra-config (file-content (testament-blobs "navidrome.toml")))))
 #+end_src
 
 * Monitoring
@@ -786,23 +779,15 @@ To use NVK, mesa should be installed into a profile.
 
 #+name: niri-config
 #+begin_src scheme
-  (with-imported-modules '((guix build utils))
-    (computed-file
-     "niri.kdl"
-     #~(begin
-         (use-modules (guix build utils))
-         (let ((inputs
-                '#$(pkgs "light"
-                         "rofi-wayland"
-                         "swaylock-effects"
-                         "wireplumber"
-                         "xwayland-satellite")))
-           (copy-file #$(testament-file-object "niri.kdl") #$output)
-           (substitute* #$output
-             (("\\$\\$LOCKSCREEN\\$\\$")
-              #$(testament-file-object "115008128_p0.jpg"))
-             (("\\$\\$(.*)\\$\\$" _ program)
-              (search-path inputs program)))))))
+  (computed-substitution-with-inputs
+   "niri.kdl"
+   (local-file (testament-plain "niri.kdl"))
+   (cons (testament-blobs)
+         (pkgs "light"
+               "rofi-wayland"
+               "swaylock-effects"
+               "wireplumber"
+               "xwayland-satellite")))
 #+end_src
 
 [[file:../files/plain/niri.kdl][niri.kdl]]
@@ -963,7 +948,7 @@ home-emacs-service-type from [[https://issues.guix.gnu.org/64620][#64620]]
       (default-init
         (emacs-configuration
           (extra-init-files
-           `(("font.el" . ,(testament-file-object "emacs-font.el"))))
+           `(("font.el" . ,(local-file (testament-plain "emacs-font.el")))))
           (variables
            '((no-littering-etc-directory . "~/.config")
              (no-littering-var-directory . "~/.local/share")))
@@ -1510,7 +1495,7 @@ Fetch from mail server:
                                (guix build utils))
                   ;; Sync with mail server.
                   (invoke #$(file-append (pkg "isync") "/bin/mbsync") "-a"
-                          "--config" #$(testament-file-object "mbsync.conf"))
+                          "--config" #$(local-file (testament-plain "mbsync.conf")))
                   ;; Index & tag.
                   (let ((notmuch #$(file-append (pkg "notmuch") "/bin/notmuch")))
                     (invoke notmuch "new")
@@ -1669,10 +1654,10 @@ Send
   (service btrbk-service-type
     (btrbk-configuration
       (config-file
-       (testament-file-object "dorphine-btrbk.conf"))))
+       (local-file (testament-plain "dorphine/btrbk.conf")))))
 #+end_src
 
-[[file:../files/plain/dorphine-btrbk.conf][dorphine-btrbk.conf]]
+[[file:../files/plain/dorphine/btrbk.conf][dorphine/btrbk.conf]]
 
 ** fcitx5
 #+begin_src scheme :noweb-ref home-package
@@ -1841,7 +1826,7 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
             (start
              #~(make-forkexec-constructor
                 (list #$(file-append (pkg "swaybg") "/bin/swaybg")
-                      "--image" #$(testament-file-object "101361103_p0.jpg")
+                      "--image" #$(local-file (testament-blobs "101361103_p0.jpg"))
                       "--mode" "fill")))
             (stop #~(make-kill-destructor)))))
 #+end_src
@@ -1869,29 +1854,23 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
 
 #+begin_src scheme :noweb yes :noweb-ref home-xdg-configuration-file
   ("waybar/config.jsonc" ,<<waybar-config>>)
-  ("waybar/colors.css" ,(testament-file-object "dorphine-waybar-colors.css"))
-  ("waybar/style.css" ,(testament-file-object "waybar.css"))
+  ("waybar/colors.css" ,(local-file (testament-plain "dorphine/waybar-colors.css")))
+  ("waybar/style.css" ,(local-file (testament-plain "waybar.css")))
 #+end_src
 
 #+name: waybar-config
 #+begin_src scheme
-  (with-imported-modules '((guix build utils))
-    (computed-file
-     "waybar.jsonc"
-     #~(begin
-         (use-modules (guix build utils))
-         (let ((inputs '#$(pkgs "light" "pavucontrol" "wireplumber")))
-           (copy-file #$(testament-file-object "waybar.jsonc") #$output)
-           (substitute* #$output
-             (("\\$\\$(.*)\\$\\$" _ program)
-              (search-path inputs program)))))))
+  (computed-substitution-with-inputs
+   "waybar.jsonc"
+   (local-file (testament-plain "waybar.jsonc"))
+   (pkgs "light" "pavucontrol" "wireplumber"))
 #+end_src
 
 [[file:../files/plain/waybar.jsonc][waybar.jsonc]]
 
-[[file:../files/plain/dorphine-waybar-colors.css][dorphine-waybar-colors.css]]
-
 [[file:../files/plain/waybar.css][waybar.css]]
+
+[[file:../files/plain/dorphine/waybar-colors.css][dorphine/waybar-colors.css]]
 
 ** zoxide
 #+begin_src scheme :noweb-ref home-fish-config

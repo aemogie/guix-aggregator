@@ -18,16 +18,15 @@
 (define-module (sss enchant)
   #:declarative? #t
   #:use-module (gnu)
-  #:use-module (sss process))
+  #:use-module (sss process)
+  #:export (sss-enchant-svc sss-enchant-ordering sss-enchant-dict-en))
 
-(begin
-  (define* (sss-enchant-svc #:key (ordering sss-enchant-ordering)
-                            (en-dict sss-enchant-dict-en))
-    `((".enchant" ,(plain-file "enchant"
-                               (mk-lines ordering)))
-      (".config/enchant/en_US.dic" ,(plain-file "en_US.dic"
-                                                (mk-lines en-dict)))))
-  (export sss-enchant-svc))
+(define* (sss-enchant-svc #:key (ordering sss-enchant-ordering)
+                          (en-dict sss-enchant-dict-en))
+  `((".enchant" ,(plain-file "enchant"
+                             (mk-lines ordering)))
+    (".config/enchant/en_US.dic" ,(plain-file "en_US.dic"
+                                              (mk-lines en-dict)))))
 
 ;; Enchant uses global and per-user ordering files named enchant.ordering to decide
 ;; which spelling provider to use for particular languages. The per-user file takes precedence.
@@ -35,11 +34,11 @@
 ;; The ordering file takes the form language_tag:<comma-separated list of spelling providers>.
 ;; To see what dictionaries are available, run enchant-lsmod-2.
 ;; ’*’ is used to mean use this ordering for all languages, unless instructed otherwise.
-(define-public sss-enchant-ordering
+(define sss-enchant-ordering
   `("*:aspell,hunspell,nuspell"))
 
 ;; Custom dictionary for English
-(define-public sss-enchant-dict-en
+(define sss-enchant-dict-en
   `("Guix" "Hyprland"
     "aspell"
     "hunspell"

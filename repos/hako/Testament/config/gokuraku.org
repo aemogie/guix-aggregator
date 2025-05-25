@@ -163,7 +163,7 @@ No need to install less used ones, prefer ‘guix shell’.
 
 #+begin_src scheme :noweb-ref definition
   (define gokuraku.yaml
-    (testament-file-object "gokuraku.yaml"))
+    (local-file (testament-blobs "gokuraku.yaml")))
 
   (define (sops-str key)
     "The result will be publicly available in /gnu/store, YOU ARE WARNED."
@@ -177,7 +177,7 @@ No need to install less used ones, prefer ‘guix shell’.
 #+begin_src scheme :noweb-ref service
   (service sops-secrets-service-type
     (sops-service-configuration
-     (config (testament-file-object "sops.yaml"))
+     (config (local-file (testament-plain "sops.yaml")))
      (gnupg-home "/var/lib/sops")
      (secrets
       (list (sops-secret
@@ -227,10 +227,10 @@ No need to install less used ones, prefer ‘guix shell’.
 #+begin_src scheme :noweb-ref service
   (service nftables-service-type
     (nftables-configuration
-      (ruleset (testament-file-object "gokuraku-nftables.nft"))))
+      (ruleset (local-file (testament-plain "gokuraku/nftables.conf")))))
 #+end_src
 
-[[file:../files/plain/gokuraku-nftables.nft][gokuraku-nftables.nft]]
+[[file:../files/plain/gokuraku/nftables.conf][gokuraku/nftables.conf]]
 
 ** static-networking
 #+begin_src scheme :noweb-ref service
@@ -349,21 +349,14 @@ No need to install less used ones, prefer ‘guix shell’.
 
 #+name: caddy-config
 #+begin_src scheme
-  (with-imported-modules '((guix build utils))
-    (computed-file
-     "gokuraku.caddyfile"
-     #~(begin
-         (use-modules (guix build utils))
-         (let ((inputs '#$(pkgs "ai-robots-txt")))
-           (copy-file #$(testament-file-object "gokuraku.caddyfile") #$output)
-           (substitute* #$output
-             (("\\$\\$ROBOTS_forgejo\\$\\$")
-              #$(testament-file-object "robots.txt/forgejo"))
-             (("\\$\\$(.*)\\$\\$" _ file)
-              (search-path inputs file)))))))
+  (computed-substitution-with-inputs
+   "gokuraku.caddyfile"
+   (local-file (testament-plain "gokuraku/Caddyfile"))
+   (cons (testament-plain)
+         (pkgs "ai-robots-txt")))
 #+end_src
 
-[[file:../files/plain/gokuraku.caddyfile][gokuraku.caddyfile]]
+[[file:../files/plain/gokuraku/Caddyfile][gokuraku/Caddyfile]]
 
 [[file:../files/plain/robots.txt/forgejo][robots.txt/forgejo]]
 
@@ -426,7 +419,7 @@ No need to install less used ones, prefer ‘guix shell’.
            <<rspamd-redis-conf>> ":/etc/rspamd/local.d/redis.conf:ro")
          "--volume"
          ,(file-append
-           (testament-file-object "rspamd-dkim-signing.conf")
+           (local-file (testament-plain "rspamd-dkim-signing.conf"))
            ":/etc/rspamd/override.d/dkim_signing.conf:ro")))))
 #+end_src
 
@@ -436,7 +429,7 @@ No need to install less used ones, prefer ‘guix shell’.
 #+begin_src scheme :noweb-ref service
   (service forgejo-service-type
     (forgejo-configuration
-      (config-file (testament-file-object "forgejo.ini"))))
+      (config-file (local-file (testament-blobs "forgejo.ini")))))
 #+end_src
 
 ** miniflux
@@ -497,8 +490,7 @@ No need to install less used ones, prefer ‘guix shell’.
 #+begin_src scheme :noweb-ref service
   (service btrbk-service-type
     (btrbk-configuration
-      (config-file
-       (testament-file-object "gokuraku-btrbk.conf"))))
+      (config-file (local-file (testament-plain "gokuraku/btrbk.conf")))))
 #+end_src
 
-[[file:../files/plain/gokuraku-btrbk.conf][gokuraku-btrbk.conf]]
+[[file:../files/plain/gokuraku/btrbk.conf][gokuraku/btrbk.conf]]

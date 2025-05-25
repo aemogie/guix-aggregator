@@ -18,17 +18,17 @@
 (define-module (sss containers)
   #:declarative? #t
   #:use-module (gnu)
-  #:use-module (json))
+  #:use-module (json)
+  #:export (sss-containers-svc))
 
-(begin
-  (define* (sss-containers-svc)
-    `((".config/containers/registries.conf" ,(plain-file "registries.conf"
-                                              "unqualified-search-registries = [
+(define* (sss-containers-svc)
+  `((".config/containers/registries.conf" ,(plain-file "registries.conf"
+                                            "unqualified-search-registries = [
        'docker.io',
        'registry.fedoraproject.org',
        'registry.access.redhat.com',
        'registry.centos.org']"))
-      
-      (".config/containers/policy.json" ,(plain-file "policy.json"
-                                                     (scm->json-string `((default . #(((type . insecureAcceptAnything))))))))))
-  (export sss-containers-svc))
+    
+    (".config/containers/policy.json" ,(plain-file "policy.json"
+                                                   (scm->json-string `((default . #(((type . insecureAcceptAnything))))))))))
+

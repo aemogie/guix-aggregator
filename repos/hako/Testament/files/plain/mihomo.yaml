@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: CC0-1.0
 
-allow-lan: false
 mode: "rule"
 log-level: "error"
 ipv6: false
@@ -27,6 +26,12 @@ geox-url:
   geosite: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat"
   mmdb: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb"
   asn: "https://github.com/xishang0128/geoip/releases/download/latest/GeoLite2-ASN.mmdb"
+
+bind-address: 100.108.11.68
+mixed-port: 7890
+allow-lan: true
+lan-allowed-ips:
+  - 100.64.0.0/10
 
 dns:
   enable: true

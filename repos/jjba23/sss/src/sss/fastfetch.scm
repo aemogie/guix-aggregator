@@ -20,20 +20,19 @@
   #:use-module (gnu)
   #:use-module (json)
   #:use-module (ice-9 string-fun)
-  #:use-module (sss process))
+  #:use-module (sss process)
+  #:export (sss-fastfetch-conf sss-fastfetch-svc))
 
 (define* (sss-fastfetch-conf #:key clone-dir)
   `(($schema . "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json")
     (logo . "GNU")
     (modules . #(title separator os host kernel uptime packages shell display wm wmtheme theme icons terminal cpu gpu memory disk battery locale break colors))))
 
-(begin
-  (define* (sss-fastfetch-svc #:key clone-dir)
-    `((".config/fastfetch/config.jsonc" ,(plain-file "config.jsonc"
-                                                     (scm->json-string (sss-fastfetch-conf
-                                                                        #:clone-dir
-                                                                        clone-dir)
-                                                                       #:pretty
-                                                                       #t)))))
-  (export sss-fastfetch-svc))
+(define* (sss-fastfetch-svc #:key clone-dir)
+  `((".config/fastfetch/config.jsonc" ,(plain-file "config.jsonc"
+                                                   (scm->json-string (sss-fastfetch-conf
+                                                                      #:clone-dir
+                                                                      clone-dir)
+                                                                     #:pretty
+                                                                     #t)))))
 

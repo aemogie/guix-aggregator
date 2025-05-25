@@ -94,19 +94,19 @@
                    `(("look" ,(local-file "/etc/ssh/look.pub"))))))
 
              #|SOPS services|#
-             (service sops-secrets-service-type
-               (sops-service-configuration
-                 (gnupg-home "/root/.gnupg")
-                 (generate-key? #f)
-                 (config (local-file "../../secrets/.sops.yaml" "sops.yaml"))
-                 (secrets
-                   (list))))
-                     ; (sops-secret
-                     ;   (key '("wireguard"))
-                     ;   (file (local-file "../../secrets/yumiko.yaml"))
-                     ;   (user "root")
-                     ;   (group "root")
-                     ;   (permissions #o400))))))
+             ; (service sops-secrets-service-type
+             ;   (sops-service-configuration
+             ;     (gnupg-home "/root/.gnupg")
+             ;     (generate-key? #f)
+             ;     (config (local-file "../../secrets/.sops.yaml" "sops.yaml"))
+             ;     (secrets
+             ;       (list
+             ;         (sops-secret
+             ;           (key '("wireguard"))
+             ;           (file (local-file "../../secrets/yumiko.yaml"))
+             ;           (user "root")
+             ;           (group "root")
+             ;           (permissions #o400))))))
 
              (service kernel-module-loader-service-type
                '("v4l2loopback"))

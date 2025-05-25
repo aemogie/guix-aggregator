@@ -66,7 +66,7 @@ binds {
     XF86MonBrightnessUp   allow-when-locked=true { spawn "$$bin/light$$" "-A" "5"; }
 
     Mod+Space   { spawn "$$bin/rofi$$" "-modes" "combi" "-show" "combi"; }
-    Mod+L       { spawn "$$bin/swaylock$$" "--clock" "--daemonize" "--ignore-empty-password" "--image" "$$LOCKSCREEN$$"; }
+    Mod+L       { spawn "$$bin/swaylock$$" "--clock" "--daemonize" "--ignore-empty-password" "--image" "$$115008128_p0.jpg$$"; }
     Mod+Return  { spawn "emacsclient" "--create-frame" "--no-wait"; }
     Mod+Shift+E { spawn "sh" "-c" "herd stop root 2> /dev/null && niri msg action quit || niri msg action quit"; }
 }

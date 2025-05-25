@@ -6,7 +6,7 @@
 This repository contains my dotfiles and Guix System literate configurations (with Guix Home configured via ~guix-home-service-type~).
 
 * Screenshot
-[[file:files/plain/screenshot.png]]
+[[file:files/plain/assets/screenshot.png]]
 
 * Structure
 + [[file:config][config]] :: Guix System configurations.

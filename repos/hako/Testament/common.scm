@@ -2,42 +2,40 @@
 ;;;
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
-(use-modules (srfi srfi-26)
+(use-modules (ice-9 match)
              (ice-9 popen)
              (ice-9 textual-ports)
              (sops secrets)
              (guix diagnostics)
              (guix gexp)
              (guix i18n)
-             ((guix licenses) #:prefix license:)
              (guix packages)
              (guix store)
-             (guix utils)
              (gnu packages))
 ;;;
 ;;; Common
 ;;;
 
-(define (testament-find-file name)
-  "Find file NAME under \"files/plain\" directory (fallback to \"files/blobs\")
-of Testament repository.  Return file path as a string, or #f when not found."
-  (define testament-path (getcwd))
+(define testament-path
+  (getcwd))
 
-  (or (search-path
-       (map (cut in-vicinity testament-path <>)
-            '("files/plain" "files/blobs"))
-       name)
-      (leave (G_ "file '~a' not found.~%") name)))
+(define (testament-blobs . name)
+  (let ((blobs (in-vicinity testament-path "files/blobs")))
+    (match name
+      (()
+       (local-file blobs #:recursive? #t))
+      ((file)
+       (or (search-path (list blobs) file)
+           (leave (G_ "file '~a' not found.~%") file))))))
 
-(define (testament-file-content name)
-  "Return a string, the content of file NAME to be found by
-'testament-find-file'."
-  (call-with-input-file (testament-find-file name)
-    get-string-all))
-
-(define (testament-file-object name)
-  "Similar to 'testament-file-content' but return a file-like object."
-  (local-file (testament-find-file name)))
+(define (testament-plain . name)
+  (let ((plain (in-vicinity testament-path "files/plain")))
+    (match name
+      (()
+       (local-file plain #:recursive? #t))
+      ((file)
+       (or (search-path (list plain) file)
+           (leave (G_ "file '~a' not found.~%") file))))))
 
 (define* (get-sops-secret key #:key file (number? #f))
   "Return a string (or number if NUMBER? is set to #t) of SOPS secret for KEY
@@ -58,11 +56,25 @@ WARNED."
         (string->number secret)
         secret)))
 
+(define (computed-substitution-with-inputs name file inputs)
+  (with-imported-modules '((guix build utils))
+    (computed-file
+     name
+     #~(begin
+         (use-modules (guix build utils))
+         (copy-file #$file #$output)
+         (substitute* #$output
+           (("\\$\\$([^\\$]+)\\$\\$" _ path)
+            (search-path '#$inputs path)))))))
+
 (define (delete-package-from-list name lst)
   "Return a copy of package list LST, removing packages named NAME."
   (filter (lambda (pkg)
             (not (string=? name (package-name pkg))))
           lst))
+
+(define (file-content file)
+  (call-with-input-file (canonicalize-path file) get-string-all))
 
 (define (pkg spec)
   (specification->package spec))

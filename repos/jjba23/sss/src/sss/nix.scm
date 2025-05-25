@@ -18,14 +18,14 @@
 (define-module (sss nix)
   #:declarative? #t
   #:use-module (gnu)
-  #:use-module (sss process))
+  #:use-module (sss process)
+  #:export (sss-nix-svc))
 
-(begin
-  (define* (sss-nix-svc)
-    `((".config/nix/nix.conf" ,(plain-file "nix.conf"
-                                           (mk-rec-kv-conf-lines `((experimental-features . "nix-command flakes"))
-                                            #:template spaced-equal-conf-pair)))
-      
-      (".config/nixpkgs/config.nix" ,(plain-file "nixpkgs.nix"
-                                                 "\n{\nallowUnfree = true;\n}\n"))))
-  (export sss-nix-svc))
+(define* (sss-nix-svc)
+  `((".config/nix/nix.conf" ,(plain-file "nix.conf"
+                                         (mk-rec-kv-conf-lines `((experimental-features . "nix-command flakes"))
+                                          #:template spaced-equal-conf-pair)))
+    
+    (".config/nixpkgs/config.nix" ,(plain-file "nixpkgs.nix"
+                                               "\n{\nallowUnfree = true;\n}\n"))))
+

@@ -1,53 +1,52 @@
 # Misako
 
-My personal repository for storing and sharing my **manifests** and **declarative configuration files** for my **GNU/Guix** operating system.
+This repository features my [GNU Guix](https://guix.gnu.org/) declarative configuration and dotfiles.
 
 My **GNU/Guix** channel can be found in [Saayix](https://codeberg.org/look/saayix).
 
 ![desktop](images/desktop.png)
 
-## Configuration files
-**Misako** stands as a centralized repository for diverse **configuration files**, spanning both my personal **home** and **system** declarative configurations. It also hosts settings for a variety of applications, all maintained in a **declarative fashion** and automatically updated on reconfigure.
+## Regarding the structure
+The configuration herein contained is done in a modular fashion, striving for a proper separation of domains:
+* Operating system configuration (done declaratively using `guix system`);
+* Home environment configuration (done declaratively using `guix home`).
 
-### Home
-- look
+Each operating system should provide only the packages, services and other resources needed for the system installation, proper functioning and administrative tasks. It should avoid to make assumptions regarding the needs of its users, which should themselves provide the functionality needed by their use through their home environments configurations. In this sense, no desktop environment, sound backend and other desktop-related functionality is provided by the systems herein presented. Complementarily, each home environment should make as little assumptions as possible regarding the operating system it will be used on.
 
-### System
-- yuria (laptop)
-- yumiko (desktop, cuirass, guix publish)
+For organization, everything related to a user environment, for example `look`, should be under `home-environments/look/` and `home-environments/look.scm`. Similarly, everything related to a operating system, for example `yumiko`, should be in `operating-systems/yumiko/` and `operating-systems/yumiko.scm`.
 
-### Applications
-- aerc
-- bemenu (also pinentry)
-- doas
-- fish
-- foot
-- git
-- helix
-- hyfetch
-- hyprcursor
-- hypridle
-- hyprland
-- hyprpaper
-- hyprsunset
-- imv
-- mako
-- mpv
-- obs
-- password-store
-- senpai
-- sioyek
-- vesktop
-- waybar
-- xdg-desktop-portal-hyprland
-- yazi
-- zen-browser
+In many cases, it is desirable to share configuration settings across multiple operating systems. To achieve this, an operating system can inherit properties from a `base` operating-system. Any modifications made to this base are then automatically propagated to all derived operating systems.
 
-## Manifests
-In addition to configuration files, **Misako** hosts my personal **general manifests** designed for swift `guix shell` development across a variety of programming languages.
+## Possibly interesting to point out
+### Operating Systems
+- [yumiko](https://codeberg.org/look/misako/src/branch/main/misako/operating-systems/yumiko.scm)
+  * Uses a `tmpfs` root filesystem, a setup known as [impermanence](https://nixos.wiki/wiki/Impermanence), with the intent of extending the reproducibility to the system runtime, by deleting on reboot every non explicitly managed state. State which is assumed to be unwanted.
+  * Uses subvolumes of a single `btrfs` partition for every non-tmpfs filesystem. For the following reasons:
+    - compression for `/gnu/store`;
+    - snapshots for `/home`;
+    - this setup avoids completely the need for partition resizes if the memory usage isn't distributed as initially expected.
+  * Uses NVIDIA latest proprietary drivers.
 
-- Guile
-- Java
-- LaTeX
-- Python
-- Typst
+- [yuria](https://codeberg.org/look/misako/src/branch/main/misako/operating-systems/yuria.scm)
+  * Uses subvolumes of a single `btrfs` partition for every non-tmpfs filesystem. For the following reasons:
+    - compression for `/gnu/store`;
+    - snapshots for `/home`;
+    - this setup avoids completely the need for partition resizes if the memory usage isn't distributed as initially expected.
+
+- [base](https://codeberg.org/look/misako/src/branch/main/misako/operating-systems/base.scm)
+  * The base operating system from which all the previous inherit from.
+  * Uses `opendoas-service-type`, available in the [radix channel](https://codeberg.org/anemofilia/radix), for declaratively setting up the rules for `doas`, a minimal replacement for `sudo`.
+  * No use of `%base-services` or `%base-packages`, every package and service is declared explicitly, since it makes more sense to declare what you want, rather than what you don't.
+
+### Home Environments
+- [look](https://codeberg.org/look/misako/src/branch/main/misako/home-environments/look.scm)
+  * Uses a fork of `home-fish-service-type`, from radix channel, to declaratively setting up the `fish shell` configuration, including aliases and plugins.
+  * Uses `home-directories-service-type`, from radix channel, to declaratively ensure the existence of certain home subdirectories.
+  * Uses `home-repositories-service-type`, from radix channel, to declaratively ensure the existence of certain cloned repositories.
+  * Avoid dotfiles by opting for [XDG](https://www.freedesktop.org/wiki/) compliant software, setting environment variables and/or explicitly passing configuration files and/or parameters to commands, which are then aliased.
+  * Uses the [Hyprland](https://github.com/hyprwm/Hyprland/) window manager together with a bar written in [eww](https://elkowar.github.io/eww/eww.html), available in the [saayix channel](https://codeberg.org/look/saayix).
+  * Uses `home-sops-secrets-service-type`, available in the [sops-guix channel](https://github.com/fishinthecalculator/sops-guix), to manage secrets needed to ease the usage of the setup.
+  * No use of `%base-home-services`, since it makes more sense to declare what you want than what you don't.
+  * For anyone looking for dotfiles, these can be found [here](https://codeberg.org/look/misako/src/branch/main/misako/home-environments/look/files).
+
+All scheme code in this repository is written with readability in mind, so other users can gather examples on how to do specific configurations for their own setups. If you have any doubt regarding this repository files, feel free to open an issue asking about it.

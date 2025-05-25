@@ -20,7 +20,8 @@
   #:use-module (gnu)
   #:use-module (gnu home services)
   #:use-module (gnu home services guix)
-  #:use-module (guix channels))
+  #:use-module (guix channels)
+  #:export (sss-channels-service))
 
 (define guix-gaming-games-channel
   (channel
@@ -40,6 +41,7 @@
                                 (openpgp-fingerprint
                                  "2A39 3FFF 68F4 EF7A 3D29 12AF 6F51 20A0 22FB B2D5")))))
 
+;; WIP
 (define iter-vitae-channel
   (channel
     (name 'iter-vitae)
@@ -50,7 +52,7 @@
                                 (openpgp-fingerprint
                                  "83BC 6E1C 8726 B8C2 97F8 D16E 24F4 6738 CE11 4AF6")))))
 
-(define-public sss-channels-service
+(define sss-channels-service
   (simple-service 'sss-channels-service home-channels-service-type
                   (list nonguix-channel guix-gaming-games-channel)))
 

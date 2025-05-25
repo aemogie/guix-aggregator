@@ -162,8 +162,11 @@
         #|E-mail          |# aerc #|required|# sound-theme-freedesktop
         #|                |# libnotify
         #|SSH             |# openssh
-        #|Video           |# mpv-minimal/wayland yt-dlp ffmpeg-nvenc/patched obs-nvenc
-        #|                |# cuda
+        #|Video           |# mpv-minimal/wayland yt-dlp
+                             (if nvidia?
+                                 (list ffmpeg-nvenc obs-nvenc)
+                                 (list ffmpeg obs))
+        #|                |# (nvidia?* cuda)
         #|Fonts           |# font-adobe-source-han-sans
         #|                |# font-adobe-source-sans-pro
         #|                |# font-adobe-source-serif-pro
@@ -220,7 +223,7 @@
         (service home-dotfiles-service-type
           (home-dotfiles-configuration
             (layout 'plain)
-            (directories (list dotfiles-dir))
+            (directories (list look-files-dir))
             (tokens
               (list (token
                       (link-to-store? #f)
@@ -261,7 +264,7 @@
               (string-append (getenv "HOME") "/.gnupg"))
             (config
               (local-file
-                (string-append secrets-dir "/.sops.yaml")
+                (string-append look-sops-dir "/.sops.yaml")
                 "sops.yaml"))
             (secrets
               (append sops-secrets:aerc
