@@ -13,29 +13,31 @@
   #:use-module (guix packages)
   #:use-module (rde features android)
   #:use-module (rde features base)
-  #:use-module (rde features wm)
   #:use-module (rde features clojure)
+  #:use-module (rde features containers)
   #:use-module (rde features emacs-xyz)
   #:use-module (rde features gnupg)
+  #:use-module (rde features gtk)
   #:use-module (rde features irc)
   #:use-module (rde features keyboard)
-  #:use-module (rde features mail)
-  #:use-module (rde features networking)
-  #:use-module (rde features password-utils)
-  #:use-module (rde features security-token)
-  #:use-module (rde features system)
-  #:use-module (rde features xdg)
-  #:use-module (rde features markup)
   #:use-module (rde features libreoffice)
-  #:use-module (rde features containers)
-  #:use-module (rde features virtualization)
+  #:use-module (rde features llm)
+  #:use-module (rde features mail)
+  #:use-module (rde features markup)
+  #:use-module (rde features networking)
   #:use-module (rde features ocaml)
+  #:use-module (rde features password-utils)
   #:use-module (rde features presets)
+  #:use-module (rde features security-token)
+  #:use-module (rde features sourcehut)
+  #:use-module (rde features system)
+  #:use-module (rde features terminals)
+  #:use-module (rde features uml)
   #:use-module (rde features version-control)
   #:use-module (rde features video)
-  #:use-module (rde features terminals)
-  #:use-module (rde features gtk)
-  #:use-module (rde features sourcehut)
+  #:use-module (rde features virtualization)
+  #:use-module (rde features wm)
+  #:use-module (rde features xdg)
   #:use-module (rde features)
   #:use-module (rde home services emacs)
   #:use-module (rde home services i2p)
@@ -112,13 +114,13 @@
        ;; "emacs-dirvish"
        "emacs-elixir-mode"
        "emacs-company-posframe"
-       "emacs-eat"
        "emacs-wgrep"
        "emacs-ox-haunt"
        "emacs-haskell-mode"
        "emacs-rainbow-mode"
        "emacs-hl-todo"
        "emacs-yasnippet"
+       ;; "emacs-xkb-mode"
        ;; "emacs-consult-dir"
        "emacs-kind-icon"
        "emacs-nginx-mode" "emacs-yaml-mode"
@@ -168,7 +170,7 @@
      "kdenlive"
      ;; "glib:bin"
 
-     "ffmpeg"
+     ;; "ffmpeg"
      "ripgrep" "curl"))))
 
 (define (wallpaper url hash)
@@ -192,23 +194,32 @@
   (simple-service
    'sway-extra-config
    home-sway-service-type
-   `((output DP-2 scale 2)
+   `((output HDMI-A-1 scale 2)
+     (output DP-2 scale 2)
+     ;; (gaps bottom 90)
      ;; (output * bg ,wallpaper-ai-art center)
      ;; (output eDP-1 disable)
      ,@(map (lambda (x) `(workspace ,x output DP-2)) (iota 8 1))
 
+     ,@(append-map
+        (lambda (x)
+          `(;; (bindsym --to-code ,(format #f "$mod+~a" (modulo x 10))
+            ;;          workspace number ,x)
+            (bindsym --to-code ,(format #f "$mod+Control+~a" (modulo x 10))
+                     move container to workspace number ,x)))
+        (iota 10 1))
      ;; (workspace 9 output DP-2)
      ;; (workspace 10 output DP-2)
 
      ;; (bindswitch --reload --locked lid:on exec /run/setuid-programs/swaylock)
 
      (bindsym
-      --locked $mod+Shift+t exec
+      --locked Pause exec
       ,(file-append (@ (gnu packages music) playerctl) "/bin/playerctl")
       play-pause)
 
      (bindsym
-      --locked $mod+Shift+n exec
+      --locked $mod+Alt+n exec
       ,(file-append (@ (gnu packages music) playerctl) "/bin/playerctl")
       next)
 
@@ -216,7 +227,7 @@
      (bindsym $mod+Ctrl+o focus output left)
      (input type:touchpad
             ;; TODO: Move it to feature-sway or feature-mouse?
-            (;; (natural_scroll enabled)
+            ((natural_scroll enabled)
              (tap enabled)))
 
      ;; (xwayland disable)
@@ -264,6 +275,12 @@
                  (port . ,(+ 10020 id))))))
            (iota 4))
       (list
+       (ssh-host
+        (host "*.cons.town")
+        (options
+         '((user . "root")
+           (port . 22)
+           (compression . #t))))
        (ssh-host
         (host "pinky-ygg")
         (options
@@ -461,11 +478,9 @@ if [ -f $GUIX_PROFILE/etc/profile ]; then source $GUIX_PROFILE/etc/profile; fi
                       (network "irc.oftc.net")
                       (nick "abcdw"))))
 
-    (feature-ssh-proxy #:host "pinky-ygg" #:auto-start? #f)
-    (feature-ssh-proxy #:host "pinky-ygg" #:name "hundredrps"
-                       #:proxy-string "50080:localhost:8080"
-                       #:reverse? #t
-                       #:auto-start? #f)
+    (feature-ssh-proxy  #:host "pinky-ygg" #:auto-start? #f)
+    (feature-ssh-tunnel #:host "pinky-ygg" #:name "pinky-web-server"
+                        #:auto-start? #t)
 
     (feature-foot)
     (feature-yggdrasil)
@@ -600,6 +615,8 @@ subject:/home:/) and tag:new}\"'"
      #:user-name-fn (const "abcdw"))
     (feature-yt-dlp)
 
+    (feature-plantuml)
+    (feature-clojure)
     (feature-libreoffice)
 
     ;; TODO: Remove auctex dependency, which interjects in texinfo-mode.
@@ -607,9 +624,13 @@ subject:/home:/) and tag:new}\"'"
      #:global-bibliography
      (list "/data/abcdw/work/abcdw/notes/bibliography.bib"))
 
+    (feature-ellama)
+    (feature-emacs-cua)
     (feature-keyboard
      ;; To get all available options, layouts and variants run:
      ;; cat `guix build xkeyboard-config`/share/X11/xkb/rules/evdev.lst
+     ;; To get a list of symbols and actions:
+     ;; cat `guix build xorgproto`/include/X11/keysymdef.h
      #:keyboard-layout
      (keyboard-layout
       "us,ru" "dvorak,"

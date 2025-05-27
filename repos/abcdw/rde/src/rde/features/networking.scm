@@ -41,6 +41,7 @@
   #:export (feature-i2pd
             feature-yggdrasil
             feature-ssh-proxy
+            feature-ssh-tunnel
             feature-networking))
 
 ;; TODO: Migrate to iwd
@@ -160,7 +161,7 @@
 
 
 ;;;
-;;; SSH SOCKS Proxy.
+;;; SSH Tunnels.
 ;;;
 
 (define* (feature-ssh-proxy
@@ -168,7 +169,6 @@
           (auto-start? #t)
           (host #f)
           (name host)
-          (reverse? #f)
           (proxy-port 8123)
           (proxy-string (number->string proxy-port)))
   "Configure SSH SOCKS Proxy. To customize ssh host port and other settings use
@@ -178,8 +178,7 @@ feature-ssh."
   (ensure-pred string? proxy-string)
 
   (define f-name
-    (symbol-append 'ssh- (string->symbol name) '-
-                   (if reverse? 'reverse 'socks) '-proxy))
+    (symbol-append 'ssh-socks-proxy- (string->symbol name)))
   (define (get-home-services config)
     (define ssh (get-value 'ssh config openssh))
     (ensure-pred file-like? ssh)
@@ -194,8 +193,52 @@ feature-ssh."
         (stop  #~(make-kill-destructor))
         (start #~(make-forkexec-constructor
                   (list #$(file-append ssh "/bin/ssh")
-                        "-N" #$(if reverse? "-R" "-D")
-                        #$proxy-string #$host))))))))
+                        "-N" "-D" #$proxy-string #$host))))))))
+
+  (feature
+   (name f-name)
+   (values `((,f-name . #t)))
+   (home-services-getter get-home-services)))
+
+(define* (feature-ssh-tunnel
+          #:key
+          (auto-start? #t)
+          (host #f)
+          (name host)
+          (reverse? #f)
+          (local-address "localhost:8880")
+          (remote-address "localhost:80"))
+  "Configure SSH tunnel from @code{local-address} to @code{remote-address}.  If
+@code{reverse?} is @code{#t} the direction is reversed.  Check out
+@url{https://iximiuz.com/en/posts/ssh-tunnels/} to get a better understanding
+of ssh tunnels.  To customize ssh host port and other settings use feature-ssh."
+  (ensure-pred string? host)
+  (ensure-pred string? name)
+  (ensure-pred string? local-address)
+  (ensure-pred string? remote-address)
+
+  (define f-name
+    (symbol-append 'ssh (if reverse? '-reverse- '-) 'tunnel-
+                   (string->symbol name)))
+  (define (get-home-services config)
+    (define ssh (get-value 'ssh config openssh))
+    (ensure-pred file-like? ssh)
+    (list
+     (simple-service
+      (symbol-append f-name '-shepherd-service)
+      home-shepherd-service-type
+      (list
+       (shepherd-service
+        (provision `(,f-name))
+        (auto-start? auto-start?)
+        (stop  #~(make-kill-destructor))
+        (start #~(make-forkexec-constructor
+                  (list #$(file-append ssh "/bin/ssh")
+                        "-N" #$(if reverse? "-R" "-L")
+                        #$(string-join
+                           ((if reverse? reverse identity)
+                            (list local-address remote-address)) ":")
+                        #$host))))))))
 
   (feature
    (name f-name)
