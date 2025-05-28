@@ -19,58 +19,52 @@
   #:declarative? #t
   #:use-module (gnu)
   #:use-module (sss palette)
-  #:use-module (sss process))
+  #:use-module (sss process)
+  #:export (gtk3-config gtk4-config gtk3-capability gtk4-capability))
 
-(begin
-  (define* (sss-gtk3-config #:key palette)
-    `((gtk-icon-theme-name unquote
-                           (sss-get-icon-theme palette))
-      (gtk-theme-name unquote
-                      (sss-get-gtk-theme palette))
-      (gtk-font-name . "Adwaita Sans 11")
-      (gtk-key-theme-name . Emacs)
-      (gtk-enable-event-sounds . 0)
-      (gtk-cursor-theme-name unquote
-                             (sss-get-cursor-theme palette))
-      (gtk-cursor-theme-size . 24)
-      (gtk-enable-input-feedback-sounds . 0)
-      (gtk-application-prefer-dark-theme unquote
-                                         (if (sss-is-dark-palette palette) 1 0))))
-  (export sss-gtk3-config))
+(define* (gtk3-config #:key palette)
+  `((gtk-icon-theme-name unquote
+                         (get-icon-theme palette))
+    (gtk-theme-name unquote
+                    (get-gtk-theme palette))
+    (gtk-font-name . "Adwaita Sans 11")
+    (gtk-key-theme-name . Emacs)
+    (gtk-enable-event-sounds . 0)
+    (gtk-cursor-theme-name unquote
+                           (sss-get-cursor-theme palette))
+    (gtk-cursor-theme-size . 24)
+    (gtk-enable-input-feedback-sounds . 0)
+    (gtk-application-prefer-dark-theme unquote
+                                       (if (is-dark-palette palette) 1 0))))
 
-(begin
-  (define* (sss-gtk4-config #:key palette)
-    `((gtk-icon-theme-name unquote
-                           (sss-get-icon-theme palette))
-      (gtk-theme-name unquote
-                      (sss-get-gtk-theme palette))
-      (gtk-font-name . "Adwaita Sans 11")
-      (gtk-key-theme-name . Emacs)
-      (gtk-enable-event-sounds . 0)
-      (gtk-cursor-theme-name unquote
-                             (sss-get-cursor-theme palette))
-      (gtk-cursor-theme-size . 24)
-      (gtk-enable-input-feedback-sounds . 0)
-      (gtk-application-prefer-dark-theme unquote
-                                         (if (sss-is-dark-palette palette) 1 0))))
-  (export sss-gtk4-config))
+(define* (gtk4-config #:key palette)
+  `((gtk-icon-theme-name unquote
+                         (get-icon-theme palette))
+    (gtk-theme-name unquote
+                    (get-gtk-theme palette))
+    (gtk-font-name . "Adwaita Sans 11")
+    (gtk-key-theme-name . Emacs)
+    (gtk-enable-event-sounds . 0)
+    (gtk-cursor-theme-name unquote
+                           (sss-get-cursor-theme palette))
+    (gtk-cursor-theme-size . 24)
+    (gtk-enable-input-feedback-sounds . 0)
+    (gtk-application-prefer-dark-theme unquote
+                                       (if (is-dark-palette palette) 1 0))))
 
-(begin
-  (define* (sss-gtk3-svc #:key palette)
-    `((".config/gtk-3.0/settings.ini" ,(plain-file "settings.ini"
-                                                   (string-append
-                                                    "[Settings]\n"
-                                                    (mk-kv-conf-lines (sss-gtk3-config
-                                                                       #:palette
-                                                                       palette)))))))
-  (export sss-gtk3-svc))
+(define* (gtk3-capability #:key palette)
+  `((".config/gtk-3.0/settings.ini" ,(plain-file "settings.ini"
+                                                 (string-append "[Settings]\n"
+                                                                (mk-kv-conf-lines
+                                                                 (gtk3-config
+                                                                  #:palette
+                                                                  palette)))))))
 
-(begin
-  (define* (sss-gtk4-svc #:key palette)
-    `((".config/gtk-4.0/settings.ini" ,(plain-file "settings.ini"
-                                                   (string-append
-                                                    "[Settings]\n"
-                                                    (mk-kv-conf-lines (sss-gtk4-config
-                                                                       #:palette
-                                                                       palette)))))))
-  (export sss-gtk4-svc))
+(define* (gtk4-capability #:key palette)
+  `((".config/gtk-4.0/settings.ini" ,(plain-file "settings.ini"
+                                                 (string-append "[Settings]\n"
+                                                                (mk-kv-conf-lines
+                                                                 (gtk4-config
+                                                                  #:palette
+                                                                  palette)))))))
+

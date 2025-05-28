@@ -19,28 +19,48 @@
   #:declarative? #t
   #:use-module (sss defaults)
   #:use-module (sss overrides)
-  #:export (log-exprs get-setting))
+  #:use-module (ice-9 string-fun)
+  #:use-module (ice-9 regex)
+
+  #:export (log-exprs get-setting pretty-quote))
 
 (define-syntax-rule (log-exprs exp ...)
   (begin
     (format #t "~a: ~S\n"
-            'exp exp) ...))
+            (pretty-quote (with-output-to-string (lambda ()
+                                                   (write 'exp)))) exp) ...))
 
 (define (get-setting setting)
-  (let* ((sss-default-var-name (format #f "sss-default-~a" setting))
-         (sss-default (module-variable (resolve-module '(sss defaults))
-                                       (string->symbol sss-default-var-name)))
-         (user-override-var-name (format #f "sss-override-~a" setting))
+  (let* ((default-var-name (format #f "default-~a" setting))
+         (default (module-variable (resolve-module '(sss defaults))
+                                   (string->symbol default-var-name)))
+         (user-override-var-name (format #f "override-~a" setting))
          (user-override (module-variable (resolve-module '(sss overrides))
                                          (string->symbol
                                           user-override-var-name))))
-    ;; (display (format #f "\nsss-default: ~a: ~a\n" sss-default-var-name sss-default))
-    ;; (display (format #f "\nuser-override: ~a: ~a\n" user-override-var-name
-    ;; user-override))
     (catch #t
            (lambda ()
              (if (equal? #f user-override)
-                 (variable-ref sss-default)
+                 (variable-ref default)
                  (variable-ref user-override)))
            (lambda (key . args)
-             (variable-ref sss-default)))))
+             (variable-ref default)))))
+
+(define (string-drop-first-last-n s n)
+  (if (> (string-length s) 2)
+
+      (string-take (string-drop s n)
+                   (- (string-length s)
+                      (+ 1 n))) s))
+
+(define (pretty-quote str)
+  (regexp-substitute/global #f
+                            "\\((quote [^)]*)\\)*"
+                            str
+                            'pre
+                            (lambda (m)
+                              
+                              (let* ((mm (string-drop-first-last-n (match:substring
+                                                                    m) 1)))
+                                (string-replace-substring mm "quote " "'")))
+                            'post))

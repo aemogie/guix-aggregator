@@ -18,9 +18,10 @@
 (define-module (sss iptables)
   #:declarative? #t
   #:use-module (gnu)
-  #:use-module (gnu services networking))
+  #:use-module (gnu services networking)
+  #:export (iptables-capability))
 
-(define-public sss-iptables-service
+(define iptables-capability
   (service iptables-service-type
            (iptables-configuration (ipv4-rules (plain-file "iptables.rules"
                                                 "*filter

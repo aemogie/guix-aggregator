@@ -39,19 +39,18 @@ It is recommended to use tagged releases of SSS, as those are considered as stab
 ** An operating system (OS) configured in Lisp (Guile Scheme)
 
 - GNU Guix system configuration
-- Hyprland configuration
 - 🎨 Theme palettes that affect the entire system (ef-themes, solarized-light, everforest dark and light)
-- Firefox custom declarative configuration inspired on BetterFox
-- Labwc configuration (work-in progress)
+- Hyprland configuration (power user session)
+- Labwc configuration (work-in progress - universal session)
 - Fish shell configuration
 - Alacritty terminal emulator  
-- Foot terminal emulator
+- Firefox custom declarative configuration inspired on BetterFox
 - Waybar configuration and style
 - Rofi application launcher
 - Mako configuration and style
 - multi-user Git configuration setup (work/personal)
 - Fastfetch configuration
-- Multi user configuration
+
 
   and more....
   

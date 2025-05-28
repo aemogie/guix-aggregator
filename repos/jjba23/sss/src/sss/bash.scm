@@ -19,31 +19,31 @@
   #:declarative? #t
   #:use-module (gnu)
   #:use-module (gnu home services shells)
-  #:export (sss-bash-vars sss-bash-path-appends
-                          sss-bash-exports
-                          sss-bash-aliases
-                          sss-bash-functions
-                          sss-bash-postlude
-                          serialize-bash-alias
-                          serialize-bash-var
-                          serialize-bash-path-append
-                          serialize-bash-export
-                          serialize-bash-function
-                          sss-bash-config
-                          sss-bash-service))
+  #:export (bash-vars bash-path-appends
+                      bash-exports
+                      bash-aliases
+                      bash-functions
+                      bash-postlude
+                      serialize-bash-alias
+                      serialize-bash-var
+                      serialize-bash-path-append
+                      serialize-bash-export
+                      serialize-bash-function
+                      bash-config
+                      bash-capability))
 
-(define sss-bash-vars
+(define bash-vars
   (make-parameter `((green . "'\\[\\033[01;32m\\]'")
                     (reset . "'\\[\\033[00m\\]'"))))
 
-(define sss-bash-path-appends
+(define bash-path-appends
   (make-parameter `("${KREW_ROOT:-$HOME/.krew}/bin" "$HOME/.local/bin"
                     "$HOME/.guix-profile/bin")))
 
-(define sss-bash-exports
+(define bash-exports
   (make-parameter `((PS1 . "${grn}\"\\u@\\h \\w${GUIX_ENVIRONMENT:+ [env]} λ\"${clr}\"  \""))))
 
-(define* (sss-bash-aliases #:key clone-dir)
+(define* (bash-aliases #:key clone-dir gui-cmd)
   `((".." . "cd ..;pwd") ("..." . "cd ../..;pwd")
     ("...." . "cd ../../..;pwd")
     (c . "clear")
@@ -79,15 +79,15 @@
     (docker . "podman")
     (docker-compose . "podman-compose")
     (podman-unix-socket . "podman system service --time=0 unix:///tmp/podman.sock")
-    (gui . "hyprland")
+    (gui unquote gui-cmd)
     (find-largest-files . "du -h -x -s -- * | sort -r -h | head -20")))
 
-(define sss-bash-functions
+(define bash-functions
   (make-parameter `((glog . "sudo gzip -d \"$1.gz\" && cat \"$1\"")
                     (hgrep . "history | grep \"$1\"")
                     (flameshot-bash . "flameshot full -r>\"$1\""))))
 
-(define-public sss-bash-postlude
+(define-public bash-postlude
   `("shopt -s histappend" "eval \"$(fzf --bash)\""
     "source /run/current-system/profile/etc/profile.d/nix.sh"))
 
@@ -117,27 +117,30 @@
              (string-join (cdr f) "\n\t"))
             (else (cdr f)))))
 
-(define* (sss-bash-config #:key clone-dir)
+(define* (bash-config #:key clone-dir gui-cmd)
   (append '("# ====== SSS Bash configuration ======" "#"
             "# auto-generated file, DO NOT EDIT!")
           (map serialize-bash-var
-               (sss-bash-vars))
+               (bash-vars))
           (map serialize-bash-export
-               (sss-bash-exports))
+               (bash-exports))
           (map serialize-bash-function
-               (sss-bash-functions))
+               (bash-functions))
           (map serialize-bash-alias
-               (sss-bash-aliases #:clone-dir clone-dir))
+               (bash-aliases #:clone-dir clone-dir
+                             #:gui-cmd gui-cmd))
           (map serialize-bash-path-append
-               (sss-bash-path-appends))
-          sss-bash-postlude))
+               (bash-path-appends))
+          bash-postlude))
 
-(define* (sss-bash-service #:key clone-dir)
-  (simple-service 'sss-fancy-bash home-bash-service-type
+(define* (bash-capability #:key clone-dir gui-cmd)
+  (simple-service 'bash-capability home-bash-service-type
                   (home-bash-extension (environment-variables '())
                                        (bashrc `(,(plain-file "bashrc.sh"
-                                                              (string-join (sss-bash-config
+                                                              (string-join (bash-config
                                                                             #:clone-dir
-                                                                            clone-dir)
+                                                                            clone-dir
+                                                                            #:gui-cmd
+                                                                            gui-cmd)
                                                                            "\n")))))))
 

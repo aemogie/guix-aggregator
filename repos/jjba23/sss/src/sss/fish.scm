@@ -65,21 +65,21 @@
 
 (define (fish-color-for-palette palette)
   (cond
-    ((eq? 'sss-palette-ef-dream palette)
+    ((eq? 'ef-dream palette)
      'magenta)
-    ((eq? 'sss-palette-ef-bio palette)
+    ((eq? 'ef-bio palette)
      'green)
-    ((eq? 'sss-palette-heavy-metal palette)
+    ((eq? 'heavy-metal palette)
      'red)
-    ((eq? 'sss-palette-ef-cyprus palette)
+    ((eq? 'ef-cyprus palette)
      'green)
-    ((eq? 'sss-palette-ef-autumn palette)
+    ((eq? 'ef-autumn palette)
      'yellow)
-    ((eq? 'sss-palette-solarized-light palette)
+    ((eq? 'solarized-light palette)
      'yellow)
-    ((eq? 'sss-palette-everforest-dark palette)
+    ((eq? 'everforest-dark palette)
      'green)
-    ((eq? 'sss-palette-everforest-light palette)
+    ((eq? 'everforest-light palette)
      'green)
     (else 'magenta)))
 
@@ -176,12 +176,12 @@
   (export sss-fish-config))
 
 (begin
-  (define* (sss-fish-svc #:key clone-dir palette)
+  (define* (sss-fish-capability #:key clone-dir palette)
     `((".config/fish/config.fish" ,(plain-file "config.fish"
                                                (string-join (sss-fish-config
                                                              #:clone-dir
                                                              clone-dir
                                                              #:palette palette)
                                                             "\n")))))
-  (export sss-fish-svc))
+  (export sss-fish-capability))
 

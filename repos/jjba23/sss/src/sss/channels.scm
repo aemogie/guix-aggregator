@@ -21,7 +21,7 @@
   #:use-module (gnu home services)
   #:use-module (gnu home services guix)
   #:use-module (guix channels)
-  #:export (sss-channels-service))
+  #:export (channels-capability))
 
 (define guix-gaming-games-channel
   (channel
@@ -52,7 +52,7 @@
                                 (openpgp-fingerprint
                                  "83BC 6E1C 8726 B8C2 97F8 D16E 24F4 6738 CE11 4AF6")))))
 
-(define sss-channels-service
-  (simple-service 'sss-channels-service home-channels-service-type
+(define channels-capability
+  (simple-service 'channels-capability home-channels-service-type
                   (list nonguix-channel guix-gaming-games-channel)))
 

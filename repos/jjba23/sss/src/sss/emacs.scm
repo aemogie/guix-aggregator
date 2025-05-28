@@ -21,19 +21,18 @@
   #:use-module (ice-9 string-fun)
   #:use-module (sss palette)
   #:use-module (srfi srfi-64)
-  #:export (sss-bridge-emacs sss-emacs-svc serialize-sss-emacs-module
-                             sss-emacs-modules))
+  #:export (bridge-emacs emacs-capability serialize-emacs-module emacs-modules))
 
-(define* (sss-bridge-emacs #:key palette
-                           user-name
-                           user-full-name
-                           user-email
-                           user-initials
-                           clone-dir
-                           notes-roam-dir
-                           sans-font
-                           mono-font)
-  (define sss-bridge-emacs-vars
+(define* (bridge-emacs #:key palette
+                       user-name
+                       user-full-name
+                       user-email
+                       user-initials
+                       clone-dir
+                       notes-roam-dir
+                       sans-font
+                       mono-font)
+  (define bridge-emacs-vars
     `((user-personal-name (value unquote
                                  (format #f "\"~a\"" user-name))
                           (type . string)
@@ -67,7 +66,7 @@
                      (type . string)
                      (description . "My preferred sans-serif font family."))
       (sss-emacs-theme (value unquote
-                              (sss-get-emacs-theme palette))
+                              (get-emacs-theme palette))
                        (type . string)
                        (description . "My preferred Emacs theme."))))
 
@@ -91,9 +90,9 @@
                                                         (car v)
                                                         (assoc-ref (cdr v)
                                                                    'value))))
-                                     sss-bridge-emacs-vars))))
+                                     bridge-emacs-vars))))
 
-(define sss-emacs-modules
+(define emacs-modules
   (make-parameter '(common-lisp consult
                                 dashboard
                                 dev
@@ -114,7 +113,7 @@
                                 theme
                                 ui)))
 
-(define* (serialize-sss-emacs-module #:key clone-dir mod)
+(define* (serialize-emacs-module #:key clone-dir mod)
   `(,(format #f ".emacs.d/modules/~a.el" mod) ,(local-file (format #f
                                                             "~a/src/sss/emacs/modules/~a.el"
                                                             (string-replace-substring
@@ -122,15 +121,15 @@
                                                              (getenv "HOME"))
                                                             mod))))
 
-(define* (sss-emacs-svc #:key palette
-                        user-name
-                        user-full-name
-                        user-email
-                        user-initials
-                        clone-dir
-                        notes-roam-dir
-                        sans-font
-                        mono-font)
+(define* (emacs-capability #:key palette
+                           user-name
+                           user-full-name
+                           user-email
+                           user-initials
+                           clone-dir
+                           notes-roam-dir
+                           sans-font
+                           mono-font)
   (append `((".emacs.d/init.el" ,(local-file "./emacs/init.el"))
             
             (".emacs.d/sss-bridge.el" ,(plain-file "sss-bridge.el"
@@ -139,7 +138,7 @@
                                                                     ";;"
                                                                     ";; auto-generated file, DO NOT EDIT!"
                                                                     "") "\n")
-                                                                  (sss-bridge-emacs
+                                                                  (bridge-emacs
                                                                    #:palette
                                                                    palette
                                                                    #:user-name
@@ -162,7 +161,7 @@
             (".emacs.d/early-init.el" ,(local-file "./emacs/early-init.el"))
             (".emacs.d/templates" ,(local-file "./emacs/templates")))
           (map (lambda (m)
-                 (serialize-sss-emacs-module #:mod m
-                                             #:clone-dir clone-dir))
-               (sss-emacs-modules))))
+                 (serialize-emacs-module #:mod m
+                                         #:clone-dir clone-dir))
+               (emacs-modules))))
 

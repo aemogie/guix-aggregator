@@ -29,7 +29,7 @@
 	("C-c ! f" . flymake-mode)))
 
 (use-package which-key
-  :ensure nil
+  :ensure (:host github :repo "justbur/emacs-which-key")
   :config
   (setq which-key-sort-order 'which-key-key-order-alpha
 	which-key-max-description-length 35)

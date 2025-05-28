@@ -95,7 +95,7 @@
   (export labwc-autostart))
 
 (begin
-  (define* (sss-labwc-svc #:key extra-startups)
+  (define* (sss-labwc-capability #:key extra-startups)
     `((".config/labwc/rc.xml" ,labwc-rc)
       (".config/labwc/menu.xml" ,(plain-file "menu.xml"
                                              (with-output-to-string (lambda ()
@@ -103,4 +103,4 @@
                                                                        labwc-menu)))))
       (".config/labwc/autostart" ,(labwc-autostart #:extra-startups
                                                    extra-startups))))
-  (export sss-labwc-svc))
+  (export sss-labwc-capability))

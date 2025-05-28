@@ -61,21 +61,31 @@
 According to size, color and font family"
     (interactive)
 
-    (set-face-attribute 'window-divider nil
-                        :foreground (ef-themes-get-color-value 'bg-alt)
-                        :background (ef-themes-get-color-value 'bg-alt))
+    (ignore-errors
+      (set-face-attribute 'window-divider nil
+                          :foreground (ef-themes-get-color-value 'bg-alt)
+                          :background (ef-themes-get-color-value 'bg-alt)))
+    
     (set-face-attribute 'default nil 
 		        :height (round (tekengrootte-mk-font-size 114)) 
 		        :font sss-font-mono)
-    (set-face-attribute 'mode-line nil 
-		        :height (tekengrootte-mk-font-size 0.7)
-		        :font sss-font-sans)
-    (set-face-attribute 'mode-line-active nil 
-		        :height (tekengrootte-mk-font-size 0.7) 
-		        :font sss-font-sans) 
-    (set-face-attribute 'mode-line-inactive nil 
-		        :height (tekengrootte-mk-font-size 0.7) 
-		        :font sss-font-sans)
+    
+    (ignore-errors
+      (set-face-attribute 'mode-line nil
+                          :box `(:line-width 3 :color ,(face-attribute 'mode-line :background))
+		          :height (tekengrootte-mk-font-size 0.7)
+		          :font sss-font-sans))
+    (ignore-errors
+      (set-face-attribute 'mode-line-active nil
+                          :box `(:line-width 3 :color ,(face-attribute 'mode-line :background))
+		          :height (tekengrootte-mk-font-size 0.7) 
+		          :font sss-font-sans))
+    (ignore-errors
+      (set-face-attribute 'mode-line-inactive nil
+                          :box `(:line-width 3 :color ,(face-attribute 'mode-line-inactive :background))
+		          :height (tekengrootte-mk-font-size 0.7) 
+		          :font sss-font-sans))
+    
     (set-face-attribute 'variable-pitch nil 
 		        :font sss-font-sans
                         :height (tekengrootte-mk-font-size 1.05))
@@ -195,15 +205,6 @@ According to size, color and font family"
                                    :background "#96b070")
                (set-face-attribute 'dired-directory nil
                                    :inherit '(font-lock-string-face))))))
-
-
-    ;; ====== Final tweaks ======
-    (ignore-errors
-      (set-face-attribute 'mode-line-active nil
-                          :box `(:line-width 3 :color ,(face-attribute 'mode-line-active :background))))
-    (ignore-errors
-      (set-face-attribute 'mode-line-inactive nil
-                          :box `(:line-width 3 :color ,(face-attribute 'mode-line-inactive :background))))
     )
   
   (sss-set-base-faces))
@@ -268,17 +269,13 @@ According to size, color and font family"
   :init
   (setq vertico-cycle t
         vertico-resize t)
+  :after (compat)
   :config
-  ;; (ignore-errors
-  ;;   (require 'vertico-multiform)
-  ;;   (add-to-list 'vertico-multiform-categories
-  ;;                '(jinx grid (vertico-grid-annotate . 20)))
-  ;;   (vertico-multiform-mode 1))
   (vertico-mode))
 
 (use-package marginalia 
   :ensure t 
-  :after (vertico) 
+  :after (vertico compat) 
   :config (marginalia-mode))
 
 

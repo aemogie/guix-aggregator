@@ -35,7 +35,6 @@
              (sxml simple)
              (sss prelude)
              (sss process)
-             (sss foot)
              (sss git)
              (sss vars)
              (sss mako)
@@ -45,6 +44,7 @@
              (sss gtk)
              (sss nix)
              (sss containers)
+             (sss dirs)
              (sss wallpaper)
              (sss portals)
              (sss qt)
@@ -74,23 +74,24 @@
 
 (define sss-home-files-service
   (service home-files-service-type
-           (append (sss-gtk3-svc #:palette (get-setting 'palette))
-                   (sss-gtk4-svc #:palette (get-setting 'palette))
-                   (sss-nix-svc)
-                   (sss-rofi-svc #:palette (get-setting 'palette))
-                   (sss-mime-svc)
-                   (sss-waybar-svc #:palette (get-setting 'palette)
-                                   #:sans-font (get-setting 'sans-font)
-                                   #:with-memory #f
-                                   #:labwc-session #t
-                                   #:sans-font (get-setting 'sans-font))
-                   (sss-portals-svc)
-                   (sss-mako-svc #:palette (get-setting 'palette)
-                                 #:sans-font (get-setting 'sans-font))
-                   (sss-containers-svc)
-                   (sss-wallpaper-svc #:clone-dir (get-setting 'clone-dir)
-                                      #:palette (get-setting 'palette))
-                   (sss-labwc-svc #:extra-startups (get-setting 'labwc-extra-startups)))))
+           (append (gtk3-capability #:palette (get-setting 'palette))
+                   (gtk4-capability #:palette (get-setting 'palette))
+                   (sss-nix-capability)
+                   (rofi-capability #:palette (get-setting 'palette))
+                   (sss-mime-capability)
+                   (sss-waybar-capability #:palette (get-setting 'palette)
+                                          #:sans-font (get-setting 'sans-font)
+                                          #:with-memory #f
+                                          #:labwc-session #t
+                                          #:sans-font (get-setting 'sans-font))
+                   (portals-capability)
+                   (mako-capability #:palette (get-setting 'palette)
+                                    #:sans-font (get-setting 'sans-font))
+                   (containers-capability)
+                   (dirs-capability)
+                   (sss-wallpaper-capability #:clone-dir (get-setting 'clone-dir)
+                                             #:palette (get-setting 'palette))
+                   (sss-labwc-capability #:extra-startups (get-setting 'labwc-extra-startups)))))
 
 (display "
 >>= configuring Manon's home environment...
@@ -102,10 +103,11 @@
                  (sss-home-vars-service #:palette (get-setting 'palette)
                                         #:clone-dir (get-setting 'clone-dir)
                                         #:lang (get-setting 'lang))
-                 (sss-bash-service #:clone-dir (get-setting 'clone-dir))
+                 (bash-capability #:clone-dir (get-setting 'clone-dir)
+                                  #:gui-cmd "labwc")
                  sss-openpgp-conf
                  (service home-dbus-service-type)
                  (service home-pipewire-service-type)
                  sss-fontconfig-service-type
-                 sss-channels-service) %base-home-services)))
+                 channels-capability) %base-home-services)))
 

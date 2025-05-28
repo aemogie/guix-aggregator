@@ -22,45 +22,45 @@
   #:use-module (sss palette)
   #:use-module (sss process)
   #:use-module (ice-9 string-fun)
-  #:export (sss-alacritty-general sss-alacritty-window
-                                  sss-alacritty-scrolling
-                                  sss-alacritty-font
-                                  sss-alacritty-colors-primary
-                                  sss-alacritty-terminal
-                                  serialize-alacritty-setting
-                                  translate-alacritty-mods
-                                  serialize-alacritty-binding
-                                  sss-alacritty-bindings
-                                  sss-alacritty-config
-                                  serialize-alacritty-config
-                                  sss-alacritty-svc))
+  #:export (alacritty-general alacritty-window
+                              alacritty-scrolling
+                              alacritty-font
+                              alacritty-colors-primary
+                              alacritty-terminal
+                              serialize-alacritty-setting
+                              translate-alacritty-mods
+                              serialize-alacritty-binding
+                              alacritty-bindings
+                              alacritty-config
+                              serialize-alacritty-config
+                              alacritty-capability))
 
-(define sss-alacritty-general
+(define alacritty-general
   `((live_config_reload . true) (ipc_socket . true)))
 
-(define sss-alacritty-window
+(define alacritty-window
   `((padding . "{ x = 14, y = 14}") (decorations . None)
     (opacity . 0.9)
     (blur . false) ;let WM take care of it
     ))
 
-(define sss-alacritty-scrolling
+(define alacritty-scrolling
   `((history . 100000)))
 
-(define* (sss-alacritty-font #:key mono-font)
+(define* (alacritty-font #:key mono-font)
   `((normal unquote
             (format #f "{ family = \"~a\", style = \"Regular\" }" mono-font))
     (size . 11)))
 
-(define* (sss-alacritty-colors-primary #:key palette)
+(define* (alacritty-colors-primary #:key palette)
   `((foreground unquote
-                (sss-get-color palette
-                               'text))
+                (get-color palette
+                           'text))
     (background unquote
-                (sss-get-color palette
-                               'background))))
+                (get-color palette
+                           'background))))
 
-(define sss-alacritty-terminal
+(define alacritty-terminal
   `((shell . fish)))
 
 (define (serialize-alacritty-setting s)
@@ -96,7 +96,7 @@
   (format #f "{ key = \"~a\", mods = \"~a\", action = \"~a\"}" k
           (translate-alacritty-mods mods) action))
 
-(define sss-alacritty-bindings
+(define alacritty-bindings
   (list (serialize-alacritty-binding #:mods "C"
                                      #:k "Y"
                                      #:action 'Paste)
@@ -140,37 +140,37 @@
                                      #:k ">"
                                      #:action 'ScrollToBottom)))
 
-(define* (sss-alacritty-config #:key palette mono-font)
+(define* (alacritty-config #:key palette mono-font)
   (append '("# ====== SSS Alacritty configuration ======" "#"
             "# auto-generated file, DO NOT EDIT!")
           (list "" "[general]")
-          (map serialize-alacritty-setting sss-alacritty-general)
+          (map serialize-alacritty-setting alacritty-general)
           (list "" "[window]")
-          (map serialize-alacritty-setting sss-alacritty-window)
+          (map serialize-alacritty-setting alacritty-window)
           (list "" "[scrolling]")
-          (map serialize-alacritty-setting sss-alacritty-scrolling)
+          (map serialize-alacritty-setting alacritty-scrolling)
           (list "" "[font]")
           (map serialize-alacritty-setting
-               (sss-alacritty-font #:mono-font mono-font))
+               (alacritty-font #:mono-font mono-font))
           (list "" "[terminal]")
-          (map serialize-alacritty-setting sss-alacritty-terminal)
+          (map serialize-alacritty-setting alacritty-terminal)
           (list "" "[colors.primary]")
           (map serialize-alacritty-setting
-               (sss-alacritty-colors-primary #:palette palette))
+               (alacritty-colors-primary #:palette palette))
           (list ""
                 "[keyboard]"
                 "bindings = ["
-                (string-join sss-alacritty-bindings ",\n")
+                (string-join alacritty-bindings ",\n")
                 "]"
                 "")))
 
 (define* (serialize-alacritty-config #:key config)
   (string-join config "\n"))
 
-(define* (sss-alacritty-svc #:key palette mono-font)
+(define* (alacritty-capability #:key palette mono-font)
   `((".config/alacritty/alacritty.toml" ,(plain-file "alacritty.toml"
                                                      (serialize-alacritty-config
-                                                      #:config (sss-alacritty-config
+                                                      #:config (alacritty-config
                                                                 #:palette
                                                                 palette
                                                                 #:mono-font

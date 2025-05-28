@@ -62,12 +62,12 @@
     ("includeIf \"gitdir:~/scratch/\"" ("  path" . "~/.gitconfig-personal"))))
 
 (begin
-  (define* (sss-git-svc #:key (gitconfig sss-gitconfig)
-                        (gitconfig-personal sss-gitconfig-personal)
-                        (gitconfig-work sss-gitconfig-work)
-                        (gitignore-global sss-gitignore-global)
-                        (gitmessage-personal sss-gitmessage-personal)
-                        (gitmessage-work sss-gitmessage-work))
+  (define* (sss-git-capability #:key (gitconfig sss-gitconfig)
+                               (gitconfig-personal sss-gitconfig-personal)
+                               (gitconfig-work sss-gitconfig-work)
+                               (gitignore-global sss-gitignore-global)
+                               (gitmessage-personal sss-gitmessage-personal)
+                               (gitmessage-work sss-gitmessage-work))
     `( ;Global Git configuration
        (".gitconfig" ,(plain-file "gitconfig.ini"
                                   (mk-rec-kv-conf-lines gitconfig
@@ -90,4 +90,4 @@
                                            gitmessage-personal))
       ;; Work-related Git commit message template
       (".gitmessage-work" ,(plain-file "gitmessage-work" gitmessage-work))))
-  (export sss-git-svc))
+  (export sss-git-capability))

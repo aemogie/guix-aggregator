@@ -18,7 +18,8 @@
 (define-module (sss ssh)
   #:declarative? #t
   #:use-module (gnu)
-  #:use-module (gnu home services ssh))
+  #:use-module (gnu home services ssh)
+  #:export (ssh-capability))
 
 (define joe-ssh-hosts
   (list (openssh-host (name "wolk-jjba")
@@ -44,10 +45,8 @@
                       (identity-file "~/.ssh/work_id"))))
 
 ;; Define a SSH configuration service for a SSS user
-(begin
-  (define* (sss-ssh-service #:key (hosts joe-ssh-hosts)
-                            (authorized-keys '()))
-    (service home-openssh-service-type
-             (home-openssh-configuration (hosts hosts)
-                                         (authorized-keys authorized-keys))))
-  (export sss-ssh-service))
+(define* (ssh-capability #:key (hosts joe-ssh-hosts)
+                         (authorized-keys '()))
+  (service home-openssh-service-type
+           (home-openssh-configuration (hosts hosts)
+                                       (authorized-keys authorized-keys))))

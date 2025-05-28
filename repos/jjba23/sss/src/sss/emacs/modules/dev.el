@@ -60,7 +60,11 @@
 (use-package aggressive-indent
   :ensure t
   :hook ((emacs-lisp-mode . aggressive-indent-mode)
-         (scheme-mode . aggressive-indent-mode)
+         ;; in Scheme I usually just use Guix format
+         ;; which auto-formats my files nicely
+         ;;
+         ;;otherwise feel free to turn this on
+         ;; (scheme-mode . aggressive-indent-mode)
          (lisp-mode . aggressive-indent-mode)))
 
 (use-package dockerfile-ts-mode

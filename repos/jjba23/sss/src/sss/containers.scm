@@ -19,9 +19,9 @@
   #:declarative? #t
   #:use-module (gnu)
   #:use-module (json)
-  #:export (sss-containers-svc))
+  #:export (containers-capability))
 
-(define* (sss-containers-svc)
+(define* (containers-capability)
   `((".config/containers/registries.conf" ,(plain-file "registries.conf"
                                             "unqualified-search-registries = [
        'docker.io',

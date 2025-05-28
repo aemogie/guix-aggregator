@@ -19,39 +19,37 @@
   #:declarative? #t
   #:use-module (gnu)
   #:use-module (sss palette)
-  #:use-module (sss process))
+  #:use-module (sss process)
+  #:export (mako-config mako-capability))
 
-(begin
-  (define* (sss-mako-config #:key palette sans-font)
-    `((sort . "-time") (max-history . 7)
-      (on-button-left . dismiss)
-      (on-button-right . invoke-default-action)
-      (background-color unquote
-                        (string-upcase (format #f "~abb"
-                                               (sss-get-color palette
-                                                              'background))))
-      (border-color unquote
-                    (string-upcase (format #f "~abb"
-                                           (sss-get-color palette
-                                                          'primary))))
-      (text-color unquote
+(define* (mako-config #:key palette sans-font)
+  `((sort . "-time") (max-history . 7)
+    (on-button-left . dismiss)
+    (on-button-right . invoke-default-action)
+    (background-color unquote
+                      (string-upcase (format #f "~abb"
+                                             (get-color palette
+                                                        'background))))
+    (border-color unquote
                   (string-upcase (format #f "~abb"
-                                         (sss-get-color palette
-                                                        'text))))
-      (font unquote
-            (format #f "~a 11" sans-font))
-      (width . 420)
-      (icons . 1)
-      (default-timeout . 10000)
-      (ignore-timeout . 1)
-      (border-radius . 10)))
-  (export sss-mako-config))
+                                         (get-color palette
+                                                    'primary))))
+    (text-color unquote
+                (string-upcase (format #f "~abb"
+                                       (get-color palette
+                                                  'text))))
+    (font unquote
+          (format #f "~a 11" sans-font))
+    (width . 420)
+    (icons . 1)
+    (default-timeout . 10000)
+    (ignore-timeout . 1)
+    (border-radius . 10)))
 
-(begin
-  (define* (sss-mako-svc #:key palette sans-font)
-    `((".config/mako/config" ,(plain-file "config"
-                                          (mk-kv-conf-lines (sss-mako-config
-                                                             #:palette palette
-                                                             #:sans-font
-                                                             sans-font))))))
-  (export sss-mako-svc))
+(define* (mako-capability #:key palette sans-font)
+  `((".config/mako/config" ,(plain-file "config"
+                                        (mk-kv-conf-lines (mako-config
+                                                           #:palette palette
+                                                           #:sans-font
+                                                           sans-font))))))
+

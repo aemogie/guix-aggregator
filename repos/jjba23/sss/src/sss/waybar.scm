@@ -127,7 +127,7 @@
   `(wlr/taskbar (format . "{icon} {title:.28}")
                 (icon-size . 16)
                 (icon-theme unquote
-                            (sss-get-icon-theme palette))
+                            (get-icon-theme palette))
                 (tooltip-format . "{title}")
                 (on-click . "activate")
                 (on-click-middle . "minimize")))
@@ -184,18 +184,18 @@
 
 (define* (button-css #:key palette)
   `((background unquote
-                (sss-hex-to-rgba (sss-get-color palette
-                                                'background)
-                                 #:alpha 0.7))
+                (hex-to-rgba (get-color palette
+                                        'background)
+                             #:alpha 0.7))
     (border unquote
             (format #f "1px solid ~a"
-                    (sss-hex-to-rgba (sss-get-color palette
-                                                    'background-l)
-                                     #:alpha 0.9)))
+                    (hex-to-rgba (get-color palette
+                                            'background-l)
+                                 #:alpha 0.9)))
     (color unquote
-           (sss-hex-to-rgba (sss-get-color palette
-                                           'text-l)
-                            #:alpha 1))
+           (hex-to-rgba (get-color palette
+                                   'text-l)
+                        #:alpha 1))
     (font-weight . 700)
     (margin-top . "4px")
     (margin-bottom . "4px")
@@ -209,12 +209,12 @@
 ;; Defines a CSS configuration for SSS Waybar using Scheme.
 ;; This configuration customizes various UI elements, such as background color,
 ;; padding, font styles, and colors, with dynamic values derived from functions
-;; like `sss-get-color` and `sss-hex-to-rgba`.
+;; like `get-color` and `hex-to-rgba`.
 ;;
 ;; Key Features:
 ;; - Transparent background for the Waybar module with consistent padding.
 ;; - Specific styles for workspace buttons, clocks, and tooltips.
-;; - Dynamic colors fetched from `sss-get-color` for consistency with theme settings.
+;; - Dynamic colors fetched from `get-color` for consistency with theme settings.
 ;; - Use of transition effects and alpha blending to enhance UI responsiveness.
 (begin
   (define* (sss-waybar-css #:key palette sans-font)
@@ -223,8 +223,8 @@
                            (format #f "FontAwesome, ~a" sans-font))
               (font-weight . 500)
               (color unquote
-                     (sss-get-color palette
-                                    'text)))
+                     (get-color palette
+                                'text)))
       ("#workspaces" unquote
        (button-css #:palette palette))
       ("#workspaces button" (font-size . "11pt"))
@@ -239,18 +239,18 @@
       ("#clock" unquote
        (button-css #:palette palette))
       ("window#waybar" (background unquote
-                                   (sss-hex-to-rgba (sss-get-color palette
-                                                                   'background)
-                                                    #:alpha 0.0))
+                                   (hex-to-rgba (get-color palette
+                                                           'background)
+                                                #:alpha 0.0))
        (padding . "8px")
        (font-family unquote
                     (format #f "FontAwesome, ~a" sans-font))
        (color unquote
-              (sss-get-color palette
-                             'text)))
+              (get-color palette
+                         'text)))
       (tooltip (background unquote
-                           (sss-get-color palette
-                                          'background-l))
+                           (get-color palette
+                                      'background-l))
                (border-radius . 0))
       ("#custom-sss-waybar-start-button" unquote
        (button-css #:palette palette))
@@ -258,29 +258,29 @@
       ("#workspaces button" (padding . "4px")
        (font-weight . 700)
        (color unquote
-              (sss-get-color palette
-                             'text)))
+              (get-color palette
+                         'text)))
       ("#workspaces button.active" (background unquote
-                                               (sss-get-color palette
-                                                              'primary-l))
+                                               (get-color palette
+                                                          'primary-l))
        (border-radius . "10px")
        (color unquote
-              (sss-get-color palette
-                             'background))
+              (get-color palette
+                         'background))
        (margin-top . "4px")
        (margin-bottom . "4px")
        (transition . none))
       ("#workspaces button.focused" (color unquote
-                                           (sss-get-color palette
-                                                          'primary-l)))
+                                           (get-color palette
+                                                      'primary-l)))
       ("#workspaces button.urgent" (color . "#ef6560"))
       ("#workspaces button.hover" (color unquote
-                                         (sss-get-color palette
-                                                        'text))
+                                         (get-color palette
+                                                    'text))
        (background unquote
-                   (sss-hex-to-rgba (sss-get-color palette
-                                                   'background)
-                                    #:alpha 0.7)))
+                   (hex-to-rgba (get-color palette
+                                           'background)
+                                #:alpha 0.7)))
       ("window#waybar.empty #window" (padding . 0)
        (margin . 0)
        (opacity . 0))
@@ -298,11 +298,11 @@
   (export sss-waybar-css))
 
 (begin
-  (define* (sss-waybar-svc #:key palette
-                           with-memory
-                           labwc-session
-                           hyprland-session
-                           sans-font)
+  (define* (sss-waybar-capability #:key palette
+                                  with-memory
+                                  labwc-session
+                                  hyprland-session
+                                  sans-font)
     `( ;Waybar configuration (for status bar)
        (".config/waybar/config.jsonc" ,(plain-file "config.jsonc"
                                                    (scm->json-string (sss-waybar-conf
@@ -330,4 +330,4 @@
                                                                              
                                                                              (sxml->xml
                                                                               sss-waybar-power-menu)))))))
-  (export sss-waybar-svc))
+  (export sss-waybar-capability))

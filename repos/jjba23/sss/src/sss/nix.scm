@@ -19,9 +19,9 @@
   #:declarative? #t
   #:use-module (gnu)
   #:use-module (sss process)
-  #:export (sss-nix-svc))
+  #:export (sss-nix-capability))
 
-(define* (sss-nix-svc)
+(define* (sss-nix-capability)
   `((".config/nix/nix.conf" ,(plain-file "nix.conf"
                                          (mk-rec-kv-conf-lines `((experimental-features . "nix-command flakes"))
                                           #:template spaced-equal-conf-pair)))

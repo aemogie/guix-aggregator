@@ -21,7 +21,7 @@
 
 ;;; Code:
 
-(use-package transient :ensure t)
+(use-package transient :ensure t :after (compat))
 
 (use-package f :ensure t)
 
@@ -38,8 +38,7 @@
   (elmacro-mode +1))
 
 (use-package compat
-  ;; 30.1
-  :ensure (:host github :repo "emacs-compat/compat" :commit "7179960b7c82a7cca6bac60d79dd7fe09ae390a0")
+  :ensure (:host github :repo "emacs-compat/compat" :branch "main")
   :demand t)
 
 (provide 'sss/libs)

@@ -515,17 +515,18 @@ Use prefix argument ARG for number of lines, otherwise use default."
 ;; org mode ;;
 ;;;;;;;;;;;;;;
 
-
-
 (use-package org
   :ensure t
+  :commands org-capture-finalize
   :bind
   (("C-c n C-i" . org-id-get-create)
    ("C-c a" . org-agenda)
    ("C-c o s" . org-save-all-org-buffers)
    ("C-M-] c" . org-capture)
    :map org-mode-map
-   ("C-c \\" . puni-mark-sexp-around-point))
+   ("C-c \\" . puni-mark-sexp-around-point)
+   ("C-c c" . my/org-capture-and-kill)
+   )
   :hook
   (org-mode . org-indent-mode)
   (org-mode . turn-on-org-cdlatex)
@@ -542,7 +543,7 @@ Use prefix argument ARG for number of lines, otherwise use default."
                  (window-height . fit-window-to-buffer)))
   (display-line-numbers-mode 1)
 
-    :custom
+  :custom
   (org-directory "~/org")
   (org-indent-mode-turns-off-org-adapt-indentation nil)
   (org-startup-with-inline-images t)
@@ -578,12 +579,6 @@ Use prefix argument ARG for number of lines, otherwise use default."
    '((:name "Tasks"
             :and (:todo ("TODO" "IN PROGRESS"))
             :order 0)
-     (:name "Habits (remaining)"
-            :and (:habit t :not(:scheduled future))
-            :order 2)
-     (:name "Habits (complete)"
-            :habit t
-            :order 3)
      (:name "Schedule" ; remove closed tasks in schedule.org; time of close is irrelevant
             :order 1
             :and (:time-grid t :not (:and (:category "schedule" :log closed))))
@@ -671,8 +666,8 @@ Use prefix argument ARG for number of lines, otherwise use default."
   (plist-put org-format-latex-options :scale 1.5)
   (set-face-attribute 'org-ellipsis nil :underline nil)
   (org-clock-persistence-insinuate)
-  (set-face-attribute 'org-column nil :background nil)
-  (set-face-attribute 'org-column-title nil :background nil)
+  (set-face-attribute 'org-column nil :background 'unspecified)
+  (set-face-attribute 'org-column-title nil :background 'unspecified)
   (org-babel-do-load-languages
      'org-babel-load-languages
      '((lisp . t)
@@ -699,101 +694,87 @@ Use prefix argument ARG for number of lines, otherwise use default."
     (setq-local electric-pair-pairs (append electric-pair-pairs org-electric-pairs))
     (setq-local electric-pair-text-pairs electric-pair-pairs))
 
-  (use-package org-habit
-    :init
-    (add-to-list 'org-modules 'org-habit))
-
-  (use-package org-protocol
-    :init
-    (add-to-list 'org-modules 'org-protocol))
-  
-  (use-package org-roam
-    :ensure t
-    :after org
-    :bind (("C-c n l" . org-roam-buffer-toggle)
-	   ("C-c n f" . org-roam-node-find)
-	   ("C-c n i" . org-roam-node-insert)
-	   ("C-c n c" . org-roam-capture)
-	   ("C-c n g" . org-roam-graph)
-           ("C-c n t" . org-roam-tag-add)
-	   ("C-c n I" . org-roam-node-insert-immediate)
-	   :map org-mode-map
-	   (("C-M-i" . completion-at-point)))
-    :bind-keymap
-    ("C-c n d" . org-roam-dailies-map)
-    :custom
-    (org-roam-v2-ack t)
-    (org-roam-directory (file-truename "~/org/roam/"))
-    (org-roam-completion-everywhere t)
-    (org-roam-node-default-sort 'file-atime)
-    (org-roam-node-display-template
-     (concat "${title:*} "
-             (propertize "${tags:20}" 'face 'org-tag)))
-    (org-roam-mode-sections
-     (list #'org-roam-backlinks-section
-	   #'org-roam-reflinks-section))
-    (org-roam-dailies-capture-templates
-     '(("d" "default" entry "* %<%I:%M %p> \n%?"
-	:if-new (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n"))))
-    :config
-    (require 'org-roam-dailies)
-    (org-roam-db-autosync-mode)
-    
-    (defun org-roam-node-insert-immediate (arg &rest args)
-      (interactive "P")
-      (let ((args (cons arg args))
-	    (org-roam-capture-templates (list (append (car org-roam-capture-templates)
-						      '(:immediate-finish t)))))
-        (apply #'org-roam-node-insert args)))
-
-    ;; update org roam ids
-    (org-roam-update-org-id-locations)
-
-    (advice-add #'corfu-insert
-                :after (lambda ()
-                         (when
-                             (eq major-mode 'org-mode)
-                           (org-roam-link-replace-all)))))
-  
-  (use-package org-super-agenda ;; if there's a problem with loading the package, it could be because of dash conflicts - needs to be installed internally, not externally
-    :ensure t
-    :after org-agenda
-    :config
-    (org-super-agenda-mode))
-
-  (defun my/org-search ()
-    "Search through org files ."
+  (defun my/org-capture-and-kill ()
+    "Finalize the current Org capture and then kill the buffer."
     (interactive)
-    (consult-ripgrep "~/org"))
+    (org-capture-finalize)
+    (delete-frame)))
 
-  ;; org-habit-stats
-  (use-package org-habit-stats
-    :ensure t
-    :hook (org-after-todo-state-change . (lambda () (run-at-time "1 sec" nil 'org-habit-stats-update-properties)))
-    :custom
-    (org-habit-stats-stat-functions-alist
-     '((org-habit-stats-streak . "Current Streak")
-       (org-habit-stats-exp-smoothing-list-today . "Habit Strength")
-       (org-habit-stats-record-streak-days . "Record Streak")
-       (org-habit-stats-record-streak-date . "Record Date")
-       (org-habit-stats-unstreak . "Unstreak")
-       (org-habit-stats-30-day-total . "Monthly total")
-       (org-habit-stats-30-day-percentage . "Monthly percentage")
-       (org-habit-stats-alltime-total . "Total Completions")
-       (org-habit-stats-alltime-percentage . "Total Percentage"))))
+(use-package org-protocol
+  :init
+  (add-to-list 'org-modules 'org-protocol))
 
-  ;; org-notify
-  (use-package org-notify
-    :ensure t
-    :custom
-    (org-notify-timestamp-types '(:deadline :scheduled))
-    :config
-    (message "hello")
-    (defun my/alarm-long (&rest _)
-      "Wrapper function for alarm to fit :actions list below"
-      (my/alarm "long"))
-    (org-notify-start)
-    (org-notify-add 'default
+(use-package org-roam
+  :ensure t
+  :after org
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+	 ("C-c n f" . org-roam-node-find)
+	 ("C-c n i" . org-roam-node-insert)
+	 ("C-c n c" . org-roam-capture)
+	 ("C-c n g" . org-roam-graph)
+         ("C-c n t" . org-roam-tag-add)
+	 ("C-c n I" . org-roam-node-insert-immediate)
+	 :map org-mode-map
+	 (("C-M-i" . completion-at-point)))
+  :bind-keymap
+  ("C-c n d" . org-roam-dailies-map)
+  :custom
+  (org-roam-v2-ack t)
+  (org-roam-directory (file-truename "~/org/roam/"))
+  (org-roam-completion-everywhere t)
+  (org-roam-node-default-sort 'file-atime)
+  (org-roam-node-display-template
+   (concat "${title:*} "
+           (propertize "${tags:20}" 'face 'org-tag)))
+  (org-roam-mode-sections
+   (list #'org-roam-backlinks-section
+	 #'org-roam-reflinks-section))
+  (org-roam-dailies-capture-templates
+   '(("d" "default" entry "* %<%I:%M %p> \n%?"
+      :if-new (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n"))))
+  :config
+  (require 'org-roam-dailies)
+  (org-roam-db-autosync-mode)
+  
+  (defun org-roam-node-insert-immediate (arg &rest args)
+    (interactive "P")
+    (let ((args (cons arg args))
+	  (org-roam-capture-templates (list (append (car org-roam-capture-templates)
+						    '(:immediate-finish t)))))
+      (apply #'org-roam-node-insert args)))
+
+  ;; update org roam ids
+  (org-roam-update-org-id-locations)
+
+  (advice-add #'corfu-insert
+              :after (lambda ()
+                       (when
+                           (eq major-mode 'org-mode)
+                         (org-roam-link-replace-all)))))
+
+(use-package org-super-agenda ;; if there's a problem with loading the package, it could be because of dash conflicts - needs to be installed internally, not externally
+  :ensure t
+  :after org-agenda
+  :config
+  (org-super-agenda-mode))
+
+(defun my/org-search ()
+  "Search through org files ."
+  (interactive)
+  (consult-ripgrep "~/org"))
+
+
+;; org-notify
+(use-package org-notify
+  :ensure t
+  :custom
+  (org-notify-timestamp-types '(:deadline :scheduled))
+  :config
+  (defun my/alarm-long (&rest _)
+    "Wrapper function for alarm to fit :actions list below"
+    (my/alarm "long"))
+  (org-notify-start)
+  (org-notify-add 'default
                   '(:time "5s" :duration 50 :urgency critical
                           :actions (my/alarm-long -notify))
         	  '(:time "1m" :duration 55
@@ -804,65 +785,67 @@ Use prefix argument ARG for number of lines, otherwise use default."
                           :actions -notify)
                   '(:time "30m" :duration 1200 :actions -notify)))
 
-  ;; org-pomodoro
-  (defun my/pomodoro-finished-alert ()
-    (my/alarm)
-    (alert (format-time-string "%H:%M")
-           :severity 'high
-           :title "Pomodoro session finished!"
-           :category 'org-pomodoro
-           :style 'notifications
-           :persistent t))
+;; org-pomodoro
+(defun my/pomodoro-finished-alert ()
+  (interactive)
+  (my/alarm)
+  (alert (format-time-string "%H:%M")
+         :severity 'high
+         :title "Pomodoro session finished!"
+         :category 'org-pomodoro
+         :style 'notifications
+         :persistent t))
 
-  (defun my/pomodoro-break-finished-alert ()
-    (my/alarm)
-    (alert (format-time-string "%H:%M")
-           :severity 'high
-           :title "Pomodoro break finished!"
-           :category 'org-pomodoro
-           :style 'notifications
-           :persistent t))
+(defun my/pomodoro-break-finished-alert ()
+  (interactive)
+  (my/alarm)
+  (alert (format-time-string "%H:%M")
+         :severity 'high
+         :title "Pomodoro break finished!"
+         :category 'org-pomodoro
+         :style 'notifications
+         :persistent t))
 
-  (use-package org-pomodoro
-    :ensure t
-    :hook ((org-pomodoro-finished . (lambda () my/pomodoro-finished-alert))
-           (org-pomodoro-break-finished . (lambda () my/pomodoro-break-finished-alert)))
-    :custom
-    (org-pomodoro-keep-killed-pomodoro-time t)
-    (org-pomodoro-format "%s")
-    (org-clock-clocked-in-display nil)
-    (setq org-pomodoro-ticking-sound t))
+(use-package org-pomodoro
+  :ensure t
+  :hook ((org-pomodoro-finished . (lambda () (my/pomodoro-finished-alert)))
+         (org-pomodoro-break-finished . (lambda () (my/pomodoro-break-finished-alert))))
+  :custom
+  (org-pomodoro-keep-killed-pomodoro-time t)
+  (org-pomodoro-format "%s")
+  (org-clock-clocked-in-display nil)
+  (setq org-pomodoro-ticking-sound t))
 
-  ;; remind me to clock in/out
-  (use-package org-clock-reminder
-    :ensure t
-    :commands org-clock-reminder-mode
-    :init (org-clock-reminder-mode)
-    :custom
-    (org-clock-reminder-formatters
-     '((?c . (org-duration-from-minutes (floor (org-time-convert-to-integer
-		                                (time-since org-clock-start-time))
-		                               60)))
-       (?h . org-clock-heading)
-       (?t . (format-time-string "%H:%M" (current-time)))))
+;; remind me to clock in/out
+(use-package org-clock-reminder
+  :ensure t
+  :commands org-clock-reminder-mode
+  :init (org-clock-reminder-mode)
+  :custom
+  (org-clock-reminder-formatters
+   '((?c . (org-duration-from-minutes (floor (org-time-convert-to-integer
+		                              (time-since org-clock-start-time))
+		                             60)))
+     (?h . org-clock-heading)
+     (?t . (format-time-string "%H:%M" (current-time)))))
 
-    (org-clock-reminder-inactive-title "Big Brother says:")
-    (org-clock-reminder-active-title "Big Brother says:")
-    (org-clock-reminder-inactive-text "%t: You're not clocked in, bro")
-    (org-clock-reminder-active-text "%t: You've been working for %c on %h.")
-    (org-clock-reminder-interval (cons 10 30))
-    (org-clock-reminder-inactive-notifications-p nil)
-    :config
-    ;; replace function to configure urgency, timeout
-    (defun org-clock-reminder-notify (title message)
-      (let ((icon-path (org-clock-reminder--icon)))
-        (notifications-notify :title title
-                              :body message
-                              :timeout 54000)))
+  (org-clock-reminder-inactive-title "Big Brother says:")
+  (org-clock-reminder-active-title "Big Brother says:")
+  (org-clock-reminder-inactive-text "%t: You're not clocked in, bro")
+  (org-clock-reminder-active-text "%t: You've been working for %c on %h.")
+  (org-clock-reminder-interval (cons 10 30))
+  (org-clock-reminder-inactive-notifications-p nil)
+  :config
+  ;; replace function to configure urgency, timeout
+  (defun org-clock-reminder-notify (title message)
+    (let ((icon-path (org-clock-reminder--icon)))
+      (notifications-notify :title title
+                            :body message
+                            :timeout 54000)))
 
-    ;; define duration based on time since latest clock-in, not total clocked time
-    ;; add current
-    (org-clock-reminder-mode)))
+  ;; define duration based on time since latest clock-in, not total clocked time
+  ;; add current
+  (org-clock-reminder-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; hydra ----------------------------------------------------------------------- ;;
@@ -1666,7 +1649,7 @@ T - tag prefix
 
 (add-hook 'server-after-make-frame-hook
           (lambda ()
-            (when (equal (buffer-name) "*scratch*art")
+            (when (equal (buffer-name) "*scratch*")
               (revert-buffer))))
 
 ;; which-key
@@ -2193,19 +2176,32 @@ Otherwise, call eat."
 
 ;; org-gcal
 (use-package org-gcal
-  :commands (org-gcal--sync-unlock org-todo)
-  :init
-  (add-hook 'org-gcal-after-update-entry-functions 'my/org-gcal-format)
-  (load (expand-file-name "private/gcal-credentials.el" user-emacs-directory))
+  :commands (org-todo org-sort-entries org-gcal-sync org-gcal--sync-unlock)
   :custom
   (org-gcal-up-days 0)
   (org-gcal-down-days 30)
-  :config
+  :init
+  ;; format gcal property hook
+  (add-hook 'org-gcal-after-update-entry-functions 'my/org-gcal-format)
+  (load (expand-file-name "private/gcal-credentials.el" user-emacs-directory))
+  
   ;; set delay time in seconds (30 seconds in this case) before running (due to emacs-daemon startup time).
-  ;; run at least every 12 housr
-  (defvar my/org-gcal-sync-delay 15)
-  (run-with-timer my/org-gcal-sync-delay 43200 'org-gcal-sync)
+  ;; run once an hour
+  (run-with-timer 30 3600
+                  (lambda ()
+                    (org-gcal-sync)
+                    (message "GCal synced at %s" (format-time-string "%Y-%m-%d %H:%M:%S"))))
 
+  ;; this function is used as a local variable in schedule.org to remove the
+  ;; timestamps org-gcal puts into the org-gcal drawer after sync
+  (defun my/clear-extra-gcal-timestamps ()
+    "Remove all lines in the current buffer that start with the character '<'."
+    (interactive)
+    (goto-char (point-min))
+    (while (re-search-forward "^<.*$" nil t)
+      (replace-match "")))
+
+  :config
   (defun my/org-gcal-format (_calendar-id event _update-mode)
       "Format org-gcal events in the schedule.org buffer."
       (if (eq _update-mode 'newly-fetched)
@@ -2223,16 +2219,60 @@ Otherwise, call eat."
                   (org-todo "TODO")
                 (org-todo "UPCOMING"))
               (org-schedule nil (format "<%s>" stime))))
-        (org-sort-entries nil ?o))))
+        (org-sort-entries nil ?o)))
 
-;; this function is used as a local variable in schedule.org to remove the
-;; timestamps org-gcal puts into the org-gcal drawer after sync
-(defun my/clear-extra-gcal-timestamps ()
-  "Remove all lines in the current buffer that start with the character '<'."
-  (interactive)
-  (goto-char (point-min))
-  (while (re-search-forward "^<.*$" nil t)
-    (replace-match "")))
+  (defun my/delete-specified-org-headings-in-file (file headings-to-delete)
+  "Delete all occurrences of specified headings in FILE given
+in HEADINGS-TO-DELETE."
+  (when (file-exists-p file)
+    (with-current-buffer (find-file-noselect file)
+      (org-mode)
+      (goto-char (point-min))
+      (org-map-entries
+       (lambda ()
+         (let ((heading (nth 4 (org-heading-components))))
+           (when (and heading (member (string-trim heading) headings-to-delete))
+             (org-cut-subtree))))
+       t)  ;; Use 't' to process all headings in the buffer
+      (save-buffer)
+      ;; (kill-buffer)
+      )))
+  
+  (my/delete-specified-org-headings-in-file
+   "~/org/schedule.org"
+   '(
+   "AWS (Office)"
+   "Channels & Alliances Office Hours"
+   "Daily Guilt Free Break"
+   "Dream Team Weekly Pipeline Review"
+   "Dream Team Weekly Sync"
+   "Focus"
+   "Large Deal Review"
+   "Midweek Meditation"
+   "Mission - Office Hour with Paul"
+   "Product Marketing Office Hours"
+   "Salesforce Office Hours"))
+
+  (my/delete-specified-org-headings-in-file
+   "~/org/schedule.org_archive"
+   '(
+     "All Hands | Department Updates"
+     "Bobby, Paul, Jake Mission, AWS, CDW Bi-weekly Cadence"
+     "Channels & Alliances Office Hours"
+     "Daily Guilt Free Break"
+     "Do BoostUp"
+     "Dr. Abbott"
+     "Dream Team Weekly Pipeline Review"
+     "Dream Team Weekly Sync"
+     "Focus"
+     "Emacs ATX Meetup"
+     "GTM Standup"
+     "Joshua / Paul"
+     "Kyle / Paul"
+     "Large Deal Review"
+     "Mission - Office Hour with Paul"
+     "New(ish) Crew | Weekly Sync"
+     "Resale Operations Office Hours")))
 
 ;; scratchpad in scratch buffers
 (load "~/projects/scratchpad/scratchpad.el")
@@ -2269,35 +2309,7 @@ Otherwise, call eat."
  '(epg-pinentry-mode 'loopback nil nil "Customized with use-package epa")
  '(safe-local-variable-values
    '((eval progn (my/clear-extra-gcal-timestamps) (goto-char (point-min))
-           (org-sort-entries t 115)
-           (org-map-entries
-            (lambda nil
-              (when
-                  (re-search-forward
-                   "\\(Daily\\|Midweek Meditation\\|Office Hours\\|Jan\\)"
-                   (line-end-position) t)
-                (org-cut-special)))
-            nil 'agenda))
-     (eval progn (my/clear-extra-gcal-timestamps)
-           (goto-char (point-min)) (org-sort-entries t 115)
-           (org-map-entries
-            (lambda nil
-              (when
-                  (re-search-forward
-                   "\\(Daily\\|Midweek Meditation\\|Office Hours\\)"
-                   (line-end-position) t)
-                (org-cut-special)))
-            nil 'agenda))
-     (eval progn (my/clear-extra-gcal-timestamps)
-           (goto-char (point-min)) (org-sort-entries t 115)
-           (org-map-entries (lambda nil (org-cut-subtree))
-                            "Daily\\|Midweek Meditation\\|Office Hours\\|Jan"))
-     (eval progn (my/clear-extra-gcal-timestamps)
-           (goto-char (point-min)) (org-sort-entries t 115)
-           (org-map-entries (lambda nil (org-cut-subtree))
-                            "Daily\\|Midweek Meditation\\|Office Hours"))
-     (eval progn (my/clear-extra-gcal-timestamps)
-           (goto-char (point-min)) (org-sort-entries t 115))
+           (org-sort-entries t 115))
      (eval save-excursion (goto-char (point-min))
            (while (re-search-forward "^\\(<\\([^>]+\\)>\\)" nil t)
              (replace-match "SCHEDULED: \\1")))

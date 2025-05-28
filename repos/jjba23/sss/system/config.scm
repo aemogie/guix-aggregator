@@ -183,7 +183,7 @@
   (services
    (cons* (service nix-service-type)
           (service power-profiles-daemon-service-type)
-          sss-iptables-service
+          iptables-capability
           (service rootless-podman-service-type
                    (rootless-podman-configuration (subgids (get-setting 'subgids))
                                                   (subuids (get-setting 'subuids))))

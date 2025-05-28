@@ -22,31 +22,31 @@
   #:use-module (gnu bootloader)
   #:use-module (gnu system file-systems)
   #:use-module (gnu system accounts)
-  #:export (sss-default-bootloader-configuration sss-default-caps-to-ctrl?
-            sss-default-clone-dir
-            sss-default-extra-packages
-            sss-default-filesystems
-            sss-default-flatpak-pkgs
-            sss-default-flatpak-user-remotes
-            sss-default-hostname
-            sss-default-hyprland-extra-startups
-            sss-default-hyprland-monitors
-            sss-default-keyboard-layout
-            sss-default-labwc-extra-startups
-            sss-default-lang
-            sss-default-mapped-devices
-            sss-default-mono-font
-            sss-default-nixpkgs
-            sss-default-palette
-            sss-default-sans-font
-            sss-default-timezone
-            sss-default-subgids
-            sss-default-subuids
-            sss-default-sudoers
-            sss-default-users))
+  #:export (default-bootloader-configuration default-caps-to-ctrl?
+                                             default-clone-dir
+                                             default-extra-packages
+                                             default-filesystems
+                                             default-flatpak-pkgs
+                                             default-flatpak-user-remotes
+                                             default-hostname
+                                             default-hyprland-extra-startups
+                                             default-hyprland-monitors
+                                             default-keyboard-layout
+                                             default-labwc-extra-startups
+                                             default-lang
+                                             default-mapped-devices
+                                             default-mono-font
+                                             default-nixpkgs
+                                             default-palette
+                                             default-sans-font
+                                             default-timezone
+                                             default-subgids
+                                             default-subuids
+                                             default-sudoers
+                                             default-users))
 
 ;; root privileges per user (sudo)
-(define sss-default-sudoers
+(define default-sudoers
   (let ((no-passwd-cmd (string-join '("/run/current-system/profile/sbin/halt"
                                       "/run/current-system/profile/bin/chvt"
                                       "/run/current-system/profile/sbin/reboot"
@@ -57,13 +57,13 @@
                  "\n")))
 
 ;; subgids and subuids for containers (Podman)
-(define sss-default-subgids
+(define default-subgids
   '())
-(define sss-default-subuids
+(define default-subuids
   '())
 
 ;; user accounts
-(define sss-default-users
+(define default-users
   (list (user-account
           (name "sss")
           (group "users")
@@ -77,67 +77,67 @@
           (home-directory "/home/sss"))))
 
 ;; system language
-(define sss-default-lang
+(define default-lang
   "en_US")
 
 ;; system timezone
-(define sss-default-timezone
+(define default-timezone
   "Europe/Amsterdam")
 
 ;; system keyboard layout
-(define sss-default-keyboard-layout
+(define default-keyboard-layout
   "us")
 
 ;; caps to control enabled
-(define sss-default-caps-to-ctrl?
+(define default-caps-to-ctrl?
   #t)
 
 ;; system hostname
-(define sss-default-hostname
+(define default-hostname
   "gnu-system")
 
 ;; mapped devices (encrypted file systems)
-(define sss-default-mapped-devices
+(define default-mapped-devices
   '())
 
 ;; file systems (partitions)
-(define sss-default-filesystems
+(define default-filesystems
   #f)
 
 ;; bootloader configuration
-(define sss-default-bootloader-configuration
+(define default-bootloader-configuration
   (bootloader-configuration
     (bootloader grub-efi-bootloader)
     (targets '("/boot/efi"))))
 
 ;; location where you cloned SSS Git repository
-(define sss-default-clone-dir
+(define default-clone-dir
   "$HOME/hacking/sss")
 
 ;; packages that should only be installed in the current host
-(define sss-default-extra-packages
+(define default-extra-packages
   '())
 
 ;; color palette
-;;   - sss-palette-ef-bio
-;;   - sss-palette-ef-cyprus
-;;   - sss-palette-ef-dream
-;;   - sss-palette-heavy-metal
-;;   - sss-palette-solarized-light
-;;   - sss-palette-ef-autumn
-;;   - sss-palette-everforest-dark
-;;   - sss-palette-everforest-light
-(define sss-default-palette
-  'sss-palette-ef-dream)
+;;   - ef-bio
+;;   - ef-cyprus
+;;   - ef-dream
+;;   - ef-autumn
+;;   - heavy-metal
+;;   - solarized-light
+;;   - everforest-dark
+;;   - everforest-light
+(define default-palette
+  'ef-dream)
 
-(define sss-default-sans-font
+(define default-sans-font
   "Adwaita Sans")
 
-(define sss-default-mono-font
+(define default-mono-font
   "Adwaita Mono")
 
 ;; Nix packages to install
-(define sss-default-nixpkgs
+(define default-nixpkgs
   '("yaml-language-server" "bash-language-server"
     "discord"
     "typescript-language-server"
@@ -169,20 +169,20 @@
     "awscli"))
 
 ;; Flatpak remotes to add to a user
-(define sss-default-flatpak-user-remotes
+(define default-flatpak-user-remotes
   '((flathub . "https://dl.flathub.org/repo/flathub.flatpakrepo")))
 
 ;; Flatpak packages to install to the user
-(define sss-default-flatpak-pkgs
+(define default-flatpak-pkgs
   '("app.drey.Warp" "com.usebottles.bottles" "com.ktechpit.whatsie"
     "com.anydesk.Anydesk" "app.zen_browser.zen"))
 
 ;; Additional Hyprland startup commands on per-host basis
-(define sss-default-hyprland-extra-startups
+(define default-hyprland-extra-startups
   '())
 
 ;; Additional Labwc startup commands on per-host basis
-(define sss-default-labwc-extra-startups
+(define default-labwc-extra-startups
   '())
 
 ;; Hyprland monitor configurations as a list of strings (lines)
@@ -191,6 +191,6 @@
 ;; or more detailed config like "monitor=DP-1,1920x1080@144,0x0,1"
 ;; see https://wiki.hyprland.org/hyprland-wiki/pages/Configuring/Monitors/
 ;;
-(define sss-default-hyprland-monitors
+(define default-hyprland-monitors
   '("monitor = , preferred, auto, 1"))
 

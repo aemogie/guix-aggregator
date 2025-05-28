@@ -36,7 +36,7 @@
                        hypr-common-exec-binds
                        hypr-binds
                        sss-hyprland-config
-                       sss-hyprland-svc))
+                       sss-hyprland-capability))
 
 (define* (notify-cmd #:key title subtitle)
   (format #f
@@ -46,8 +46,8 @@
 
 (define* (hypr-startup-programs #:key palette
                                 (extra-startups '()))
-  (let* ((gtk-theme-name (sss-get-gtk-theme palette))
-         (icon-theme-name (sss-get-icon-theme palette))
+  (let* ((gtk-theme-name (get-gtk-theme palette))
+         (icon-theme-name (get-icon-theme palette))
          (cursor-theme-name (sss-get-cursor-theme palette))
          (xs (append extra-startups
                      `("lxsession" "mako"
@@ -91,8 +91,8 @@
     (resize_on_border . true)
     ("col.active_border" unquote
      (format #f "0xff~a"
-             (string-drop (sss-get-color palette
-                                         'primary) 1)))))
+             (string-drop (get-color palette
+                                     'primary) 1)))))
 
 (define hypr-gestures
   `((workspace_swipe . true)))
@@ -403,14 +403,14 @@
     
     (string-join config-lines "\n")))
 
-(define* (sss-hyprland-svc #:key palette
-                           clone-dir
-                           keyboard-layout
-                           caps-to-ctrl
-                           monitors
-                           extra-startups
-                           with-blur
-                           with-shadow)
+(define* (sss-hyprland-capability #:key palette
+                                  clone-dir
+                                  keyboard-layout
+                                  caps-to-ctrl
+                                  monitors
+                                  extra-startups
+                                  with-blur
+                                  with-shadow)
   `((".config/hypr/hyprland.conf" ,(plain-file "hyprland.conf"
                                                (sss-hyprland-config
                                                 #:clone-dir clone-dir

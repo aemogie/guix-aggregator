@@ -19,10 +19,10 @@
   #:declarative? #t
   #:use-module (gnu)
   #:use-module (sss process)
-  #:export (sss-enchant-svc sss-enchant-ordering sss-enchant-dict-en))
+  #:export (enchant-capability enchant-ordering enchant-dict-en))
 
-(define* (sss-enchant-svc #:key (ordering sss-enchant-ordering)
-                          (en-dict sss-enchant-dict-en))
+(define* (enchant-capability #:key (ordering enchant-ordering)
+                             (en-dict enchant-dict-en))
   `((".enchant" ,(plain-file "enchant"
                              (mk-lines ordering)))
     (".config/enchant/en_US.dic" ,(plain-file "en_US.dic"
@@ -34,11 +34,11 @@
 ;; The ordering file takes the form language_tag:<comma-separated list of spelling providers>.
 ;; To see what dictionaries are available, run enchant-lsmod-2.
 ;; ’*’ is used to mean use this ordering for all languages, unless instructed otherwise.
-(define sss-enchant-ordering
+(define enchant-ordering
   `("*:aspell,hunspell,nuspell"))
 
 ;; Custom dictionary for English
-(define sss-enchant-dict-en
+(define enchant-dict-en
   `("Guix" "Hyprland"
     "aspell"
     "hunspell"

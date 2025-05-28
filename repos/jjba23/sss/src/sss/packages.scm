@@ -217,7 +217,7 @@
         tree-sitter-javascript))
 
 (define sss-terminal-emulator-packages
-  (list foot alacritty xfce4-terminal))
+  (list alacritty xfce4-terminal))
 
 (define sss-dev-packages
   (list (specification->package "openjdk@21")
@@ -227,7 +227,7 @@
 (define sss-coreutils
   (list htop
         btop
-        emacs-next-pgtk
+        emacs-pgtk
         vim
         git
         openssh

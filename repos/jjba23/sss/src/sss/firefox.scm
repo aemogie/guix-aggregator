@@ -314,7 +314,7 @@
   `(dl ,(map serialize-sss-firefox-bookmark sss-firefox-bookmarks)))
 
 (begin
-  (define* (sss-firefox-svc #:key palette)
+  (define* (sss-firefox-capability #:key palette)
     `((".mozilla/firefox/profiles.ini" ,(plain-file "profiles.ini"
                                                     (string-join
                                                      sss-firefox-profiles-config
@@ -333,5 +333,5 @@
                                                       (mk-css-conf-lines (sss-firefox-userchrome-css
                                                                           #:palette
                                                                           palette))))))
-  (export sss-firefox-svc))
+  (export sss-firefox-capability))
 

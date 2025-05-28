@@ -19,15 +19,17 @@
   #:declarative? #t
   #:use-module (gnu)
   #:use-module (sss palette)
-  #:use-module (sss process))
+  #:use-module (sss process)
+  #:export (rofi-capability rofi-theme rofi-font rofi-icon-theme
+                            rofi-configuration))
 
-(define-public sss-rofi-font
+(define rofi-font
   "Adwaita Sans")
 
-(define-public sss-rofi-icon-theme
-  "Adwaita Sans")
+(define rofi-icon-theme
+  "Papirus")
 
-(define-public sss-rofi-config
+(define rofi-configuration
   (format #f "configuration {
     font: \"~a 14\";
     show-icons: true;
@@ -39,90 +41,87 @@
     sidebar-mode: false;
 }
 
-@theme \"./sss-theme.rasi\"" sss-rofi-font sss-rofi-icon-theme))
+@theme \"./sss-theme.rasi\"" rofi-font rofi-icon-theme))
 
-(begin
-  (define* (sss-rofi-theme #:key palette)
-    `(("*" (foreground unquote
-                       (sss-get-color palette
-                                      'text))
-       (backlight unquote
-                  (sss-hex-to-rgba (sss-get-color palette
-                                                  'background)
-                                   #:alpha 0.8))
-       (background-color . "transparent")
-       (highlight . "underline bold #ffffff")
-       (font unquote
-             (format #f "\"~a 14\"" sss-rofi-font)))
-      ("window" (location . "center")
-       (anchor . "center")
-       (transparency . "\"real\"")
-       (padding . "10px")
-       (border . "0px")
-       (border-radius . "12px")
-       (spacing . "0")
-       (background-color . "transparent")
-       (orientation . "horizontal")
-       (children . "[ mainbox ]"))
-      ("message" (font unquote
-                       (format #f "\"~a 14\"" sss-rofi-font))
-       (border . "0px 2px 2px 2px")
-       (color unquote
-              (sss-get-color palette
-                             'text))
-       (padding . "5px"))
-      ("mainbox" (spacing . "0")
-       (children . "[ inputbar, message, listview ]"))
-      ("entry,prompt,case-indicator" (text-font . "inherit")
-       (text-color . "inherit"))
-      ("prompt" (margin . "0px 0.3em 0em 0em"))
-      ("element" (padding . "3px")
-       (vertical-align . "0.5")
-       (border-radius . "2px")
-       (background-color . "transparent")
-       (text-color unquote
-                   (sss-get-color palette
+(define* (rofi-theme #:key palette)
+  `(("*" (foreground unquote
+                     (get-color palette
+                                'text))
+     (backlight unquote
+                (hex-to-rgba (get-color palette
+                                        'background)
+                             #:alpha 0.8))
+     (background-color . "transparent")
+     (highlight . "underline bold #ffffff")
+     (font unquote
+           (format #f "\"~a 14\"" rofi-font)))
+    ("window" (location . "center")
+     (anchor . "center")
+     (transparency . "\"real\"")
+     (padding . "10px")
+     (border . "0px")
+     (border-radius . "12px")
+     (spacing . "0")
+     (background-color . "transparent")
+     (orientation . "horizontal")
+     (children . "[ mainbox ]"))
+    ("message" (font unquote
+                     (format #f "\"~a 14\"" rofi-font))
+     (border . "0px 2px 2px 2px")
+     (color unquote
+            (get-color palette
+                       'text))
+     (padding . "5px"))
+    ("mainbox" (spacing . "0")
+     (children . "[ inputbar, message, listview ]"))
+    ("entry,prompt,case-indicator" (text-font . "inherit")
+     (text-color . "inherit"))
+    ("prompt" (margin . "0px 0.3em 0em 0em"))
+    ("element" (padding . "3px")
+     (vertical-align . "0.5")
+     (border-radius . "2px")
+     (background-color . "transparent")
+     (text-color unquote
+                 (get-color palette
+                            'text))
+     (font . "inherit"))
+    ("listview" (padding . "8px")
+     (border-radius . "16px")
+     (background-color unquote
+                       (hex-to-rgba (get-color palette
+                                               'background)
+                                    #:alpha 0.8))
+     (dynamic . "false")
+     (lines . "20"))
+    ("element-text" (text-color unquote
+                                (get-color palette
+                                           'text)))
+    ("element selected" (highlight . none)
+     (text-color unquote
+                 (get-color palette
+                            'background))
+     (background-color unquote
+                       (hex-to-rgba (get-color palette
+                                               'primary)
+                                    #:alpha 0.5))
+     (border-radius . "4px"))
+    ("element-icon" (size . "1.1em"))
+    ("inputbar" (color unquote
+                       (get-color palette
                                   'text))
-       (font . "inherit"))
-      ("listview" (padding . "8px")
-       (border-radius . "16px")
-       (background-color unquote
-                         (sss-hex-to-rgba (sss-get-color palette
-                                                         'background)
-                                          #:alpha 0.8))
-       (dynamic . "false")
-       (lines . "20"))
-      ("element-text" (text-color unquote
-                                  (sss-get-color palette
-                                                 'text)))
-      ("element selected" (highlight . none)
-       (text-color unquote
-                   (sss-get-color palette
-                                  'background))
-       (background-color unquote
-                         (sss-hex-to-rgba (sss-get-color palette
-                                                         'primary)
-                                          #:alpha 0.5))
-       (border-radius . "4px"))
-      ("element-icon" (size . "1.1em"))
-      ("inputbar" (color unquote
-                         (sss-get-color palette
-                                        'text))
-       (padding . "11px")
-       (margin-bottom . "6px")
-       (border-radius . "16px")
-       (background-color unquote
-                         (sss-hex-to-rgba (sss-get-color palette
-                                                         'background-l)
-                                          #:alpha 0.9)))))
-  (export sss-rofi-theme))
+     (padding . "11px")
+     (margin-bottom . "6px")
+     (border-radius . "16px")
+     (background-color unquote
+                       (hex-to-rgba (get-color palette
+                                               'background-l)
+                                    #:alpha 0.9)))))
 
-(begin
-  (define* (sss-rofi-svc #:key palette)
-    `((".config/rofi/config.rasi" ,(plain-file "config.rasi" sss-rofi-config))
-      
-      (".config/rofi/sss-theme.rasi" ,(plain-file "sss-theme.rasi"
-                                                  (mk-css-conf-lines (sss-rofi-theme
-                                                                      #:palette
-                                                                      palette))))))
-  (export sss-rofi-svc))
+(define* (rofi-capability #:key palette)
+  `((".config/rofi/config.rasi" ,(plain-file "config.rasi" rofi-configuration))
+    
+    (".config/rofi/sss-theme.rasi" ,(plain-file "sss-theme.rasi"
+                                                (mk-css-conf-lines (rofi-theme
+                                                                    #:palette
+                                                                    palette))))))
+

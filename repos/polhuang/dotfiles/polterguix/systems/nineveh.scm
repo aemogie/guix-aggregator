@@ -10,7 +10,9 @@
              (gnu packages fonts)
              (gnu packages gnome-xyz)
              (gnu packages guile)
+             (gnu packages ibus)
              (gnu packages librewolf)
+             (gnu packages qt)
              (gnu packages shells)
              (gnu packages shellutils)
              (gnu packages terminals)
@@ -20,7 +22,6 @@
              (guix gexp)
              (nongnu packages mozilla)
              (polterguix packages cli)
-             ;; (polterguix packages emacs)
              )
 
 (home-environment
@@ -31,13 +32,15 @@
              fcitx5-configtool
              fcitx5-gtk
              fcitx5-material-color-theme
-             fcitx5-qt
+             fcitx5-qt 
              fcitx5-rime
              firefox
              font-aporetic
              guile-next
+             ibus  ;; required for fcitx for some reason
+             ;; ibus-libpinyin
              kitty ;; locale errors (tab-completion problem with unicode characters) when kitty isn't installed with guix package manager
-             libime
+             ;; libime
              librewolf
              papirus-icon-theme
              zsh
@@ -67,20 +70,13 @@
                                     "../files/.zprofile"
                                     "zprofile")))))
 
-
          (simple-service 'dotfiles
                           home-xdg-configuration-files-service-type
                           `(("hypr/hyprland.conf"  ,(local-file "../files/hypr/hyprland-nineveh.conf"))
                             ("hypr/hyprland-base.conf"  ,(local-file "../files/hypr/hyprland-base.conf"))))
 
-         (simple-service 'dotfiles
-                          home-xdg-configuration-files-service-type
-                          `(("hypr/hyprland.conf"  ,(local-file "../files/hypr/hyprland-nineveh.conf"))
-                            ("hypr/hyprland-base.conf"  ,(local-file "../files/hypr/hyprland-base.conf"))))
-
+         ;; for nineveh only, run "guix build firefox --substitute-urls='https://ci.guix.gnu.org https://bordeaux.guix.gnu.org https://substitutes.nonguix.org'" to guix home reconfigure... not sure if the below does anything
          (simple-service 'guix-substitute-env-vars-service
 		home-environment-variables-service-type
 		`(("GUIX_AUTHORIZED_KEYS" . "$HOME/.config/guix/nonguix.pub")
-                  ("GUIX_SUBSTITUTE_URLS" . "https://substitutes.nonguix.org https://ci.guix.gnu.org")))
-         
-         )))
+                  ("GUIX_SUBSTITUTE_URLS" . "https://substitutes.nonguix.org https://ci.guix.gnu.org"))))))
