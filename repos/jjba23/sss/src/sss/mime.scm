@@ -17,7 +17,13 @@
 
 (define-module (sss mime)
   #:declarative? #t
-  #:use-module (gnu))
+  #:use-module (gnu)
+  #:export (mime-capability mimeapps-list-file
+                            mime-renderer
+                            make-mime-row
+                            mime-default-applications
+                            mime-removed-associations
+                            mime-added-associations))
 
 ;; SSS implementation of the XDG mimeapps standard
 ;;
@@ -31,16 +37,17 @@
 ;; For example, baz.desktop cannot open H.264 video.
 ;;
 ;; Default Applications indicates that the applications should be the default choice for opening that MIME type.
-;; For example, JPEG images should be opened with foo.desktop. This implicitly adds an association between the application and the MIME type.
+;; For example, JPEG images should be opened with foo.desktop.
+;; This implicitly adds an association between the application and the MIME type.
 ;; If there are multiple applications, they are tried in order.
 
-(define-public sss-mime-added-associations
+(define mime-added-associations
   '())
 
-(define-public sss-mime-removed-associations
+(define mime-removed-associations
   '())
 
-(define-public sss-mime-default-applications
+(define mime-default-applications
   '((application/pdf org.gnome.Evince firefox google-chrome-beta)
     (text/html firefox google-chrome-beta emacsclient)
     (text/plain emacsclient geany)
@@ -51,41 +58,35 @@
     (image/jpg org.gnome.gThumb firefox google-chrome-beta feh)
     (image/jpeg org.gnome.gThumb firefox google-chrome-beta feh)))
 
-(begin
-  (define (make-mime-row r)
-    (format #f "~a=~a"
-            (car r)
-            (string-join (map (lambda (y)
-                                (format #f "~a.desktop" y))
-                              (cdr r)) ";")))
+(define (make-mime-row r)
+  (format #f "~a=~a"
+          (car r)
+          (string-join (map (lambda (y)
+                              (format #f "~a.desktop" y))
+                            (cdr r)) ";")))
 
-  (define (mime-renderer xs)
-    (string-join (map (lambda (x)
-                        (make-mime-row x)) xs) "\n"))
+(define (mime-renderer xs)
+  (string-join (map (lambda (x)
+                      (make-mime-row x)) xs) "\n"))
 
-  (define* (sss-mimeapps-list-file #:key (added-associations '())
-                                   (removed-associations '())
-                                   (default-applications '()))
-    (string-join `("[Added Associations]" ,(mime-renderer added-associations)
-                   "[Removed Associations]"
-                   ,(mime-renderer removed-associations)
-                   "[Default Applications]"
-                   ,(mime-renderer default-applications)) "\n"))
-  (export sss-mimeapps-list-file))
+(define* (mimeapps-list-file #:key (added-associations '())
+                             (removed-associations '())
+                             (default-applications '()))
+  (string-join `("[Added Associations]" ,(mime-renderer added-associations)
+                 "[Removed Associations]"
+                 ,(mime-renderer removed-associations)
+                 "[Default Applications]"
+                 ,(mime-renderer default-applications)) "\n"))
 
-(begin
-  (define* (sss-mime-capability #:key (added-associations
-                                       sss-mime-added-associations)
-                                (removed-associations
-                                 sss-mime-removed-associations)
-                                (default-applications
-                                 sss-mime-default-applications))
-    `((".config/mimeapps.list" ,(plain-file "mimeapps.list"
-                                            (sss-mimeapps-list-file
-                                             #:added-associations
-                                             added-associations
-                                             #:removed-associations
-                                             removed-associations
-                                             #:default-applications
-                                             default-applications)))))
-  (export sss-mime-capability))
+(define* (mime-capability #:key (added-associations mime-added-associations)
+                          (removed-associations mime-removed-associations)
+                          (default-applications mime-default-applications))
+  `((".config/mimeapps.list" ,(plain-file "mimeapps.list"
+                                          (mimeapps-list-file
+                                           #:added-associations
+                                           added-associations
+                                           #:removed-associations
+                                           removed-associations
+                                           #:default-applications
+                                           default-applications)))))
+

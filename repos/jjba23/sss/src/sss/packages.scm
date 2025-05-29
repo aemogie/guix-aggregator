@@ -37,7 +37,27 @@
   #:use-module (guix download)
   #:use-module (guix build-system gnu)
   #:use-module ((guix licenses)
-                #:prefix license:))
+                #:prefix license:)
+  #:export (sss-system-packages libs-packages
+                                hypr-packages
+                                emacs-packages
+                                shell-packages
+                                dict-packages
+                                net-packages
+                                container-packages
+                                other-system-packages
+                                qt-packages
+                                browser-packages
+                                music-packages
+                                latex-packages
+                                theme-packages
+                                coreutils-packages
+                                dev-packages
+                                terminal-emulator-packages
+                                treesitter-packages
+                                wm-packages
+                                normie-packages
+                                font-packages))
 
 (use-package-modules admin
                      android
@@ -148,7 +168,7 @@
                      xfce
                      xorg)
 
-(define sss-font-packages
+(define font-packages
   (list font-adwaita
         font-awesome
         font-dejavu
@@ -160,10 +180,10 @@
         font-microsoft-web-core-fonts
         fontconfig))
 
-(define sss-normie-packages
+(define normie-packages
   (list labwc))
 
-(define sss-wm-packages
+(define wm-packages
   (list rofi-wayland
         fzf
 
@@ -200,7 +220,7 @@
         shared-mime-info
         (list glib "bin")))
 
-(define sss-treesitter-packages
+(define treesitter-packages
   (list tree-sitter
         tree-sitter-bash
         tree-sitter-dockerfile
@@ -216,15 +236,15 @@
         tree-sitter-java
         tree-sitter-javascript))
 
-(define sss-terminal-emulator-packages
+(define terminal-emulator-packages
   (list alacritty xfce4-terminal))
 
-(define sss-dev-packages
+(define dev-packages
   (list (specification->package "openjdk@21")
         (specification->package "node@22")
         (specification->package "python@3.10") cl-asdf sbcl))
 
-(define sss-coreutils
+(define coreutils-packages
   (list htop
         btop
         emacs-pgtk
@@ -257,24 +277,24 @@
         cairo
         xorg-server))
 
-(define sss-theme-packages
+(define theme-packages
   (list adwaita-icon-theme gnome-themes-standard numix-gtk-theme
         papirus-icon-theme yaru-theme))
 
-(define sss-latex-packages
+(define latex-packages
   (list texinfo texlive))
 
-(define sss-music-packages
+(define music-packages
   (list spotifyd lilypond ardour))
 
-(define sss-browser-packages
+(define browser-packages
   (list (specification->package "firefox")
         (specification->package "google-chrome-beta")))
 
-(define sss-qt-packages
+(define qt-packages
   (list qtwayland qt6ct qtsvg))
 
-(define* (sss-other-system-packages #:key architecture)
+(define* other-system-packages
   (list android-file-transfer
         autoconf
         automake
@@ -365,12 +385,12 @@
         xf86-video-fbdev
         xxd
         xz
-        youtube-dl))
+        yt-dlp))
 
-(define sss-container-packages
+(define container-packages
   (list podman-compose passt))
 
-(define sss-net-packages
+(define net-packages
   (list openvpn
         (specification->package "darkhttpd")
         network-manager-applet
@@ -378,7 +398,7 @@
         wireshark
         network-manager-openvpn))
 
-(define sss-dict-packages
+(define dict-packages
   (list aspell
         aspell-dict-ca
         aspell-dict-en
@@ -387,16 +407,16 @@
         aspell-dict-pt-pt
         enchant))
 
-(define sss-shell-packages
+(define shell-packages
   (list fish))
 
-(define sss-emacs-packages
+(define emacs-packages
   (list emacs-jinx))
 
-(define sss-hypr-packages
+(define hypr-packages
   (list grimblast hyprland hypridle hyprcursor hyprlock))
 
-(define sss-libs-packages
+(define libs-packages
   (list aria2
         libevdev
         libinput
@@ -411,30 +431,26 @@
         xdotool
         zlib))
 
-;; SYSTEM PACKAGES
-;;
-;; Add packages here to install them system wide
-(begin
-  (define* (sss-system-packages #:key (per-host-packages '())
-                                (architecture (or (%current-target-system)
-                                                  (%current-system))))
-    (append (map (lambda (x)
-                   (specification->package x)) per-host-packages)
-            (sss-other-system-packages #:architecture architecture)
-            sss-wm-packages
-            sss-normie-packages
-            sss-font-packages
-            sss-dev-packages
-            sss-container-packages
-            sss-treesitter-packages
-            sss-coreutils
-            sss-hypr-packages
-            sss-terminal-emulator-packages
-            sss-browser-packages
-            sss-latex-packages
-            sss-shell-packages
-            sss-libs-packages
-            sss-dict-packages
-            sss-net-packages
-            sss-theme-packages))
-  (export sss-system-packages))
+(define* (sss-system-packages #:key (per-host-packages '()))
+  "SYSTEM PACKAGES
+Add packages here to install them system wide"
+  (append (map (lambda (x)
+                 (specification->package x)) per-host-packages)
+          other-system-packages
+          wm-packages
+          normie-packages
+          font-packages
+          dev-packages
+          container-packages
+          treesitter-packages
+          coreutils-packages
+          hypr-packages
+          terminal-emulator-packages
+          browser-packages
+          latex-packages
+          shell-packages
+          libs-packages
+          dict-packages
+          net-packages
+          theme-packages))
+

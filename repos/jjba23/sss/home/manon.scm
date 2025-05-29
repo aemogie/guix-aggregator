@@ -34,7 +34,7 @@
              (json)
              (sxml simple)
              (sss prelude)
-             (sss process)
+             (sss prelude)
              (sss git)
              (sss vars)
              (sss mako)
@@ -76,22 +76,23 @@
   (service home-files-service-type
            (append (gtk3-capability #:palette (get-setting 'palette))
                    (gtk4-capability #:palette (get-setting 'palette))
-                   (sss-nix-capability)
+                   (nix-capability)
                    (rofi-capability #:palette (get-setting 'palette))
-                   (sss-mime-capability)
-                   (sss-waybar-capability #:palette (get-setting 'palette)
-                                          #:sans-font (get-setting 'sans-font)
-                                          #:with-memory #f
-                                          #:labwc-session #t
-                                          #:sans-font (get-setting 'sans-font))
+                   (mime-capability)
+                   (waybar-capability #:palette (get-setting 'palette)
+                                      #:sans-font (get-setting 'sans-font)
+                                      #:with-memory #f
+                                      #:labwc-session #t
+                                      #:sans-font (get-setting 'sans-font))
                    (portals-capability)
                    (mako-capability #:palette (get-setting 'palette)
                                     #:sans-font (get-setting 'sans-font))
                    (containers-capability)
+                   (hyprlock-capability #:clone-dir (get-setting 'clone-dir))
                    (dirs-capability)
-                   (sss-wallpaper-capability #:clone-dir (get-setting 'clone-dir)
-                                             #:palette (get-setting 'palette))
-                   (sss-labwc-capability #:extra-startups (get-setting 'labwc-extra-startups)))))
+                   (random-wallpaper-capability #:clone-dir (get-setting 'clone-dir)
+                                                #:palette (get-setting 'palette))
+                   (labwc-capability #:extra-startups (get-setting 'labwc-extra-startups)))))
 
 (display "
 >>= configuring Manon's home environment...
@@ -100,14 +101,14 @@
 (home-environment
   (services
    (append (list sss-home-files-service
-                 (sss-home-vars-service #:palette (get-setting 'palette)
-                                        #:clone-dir (get-setting 'clone-dir)
-                                        #:lang (get-setting 'lang))
+                 (env-variables-capability #:palette (get-setting 'palette)
+                                           #:clone-dir (get-setting 'clone-dir)
+                                           #:lang (get-setting 'lang))
                  (bash-capability #:clone-dir (get-setting 'clone-dir)
                                   #:gui-cmd "labwc")
-                 sss-openpgp-conf
+                 openpgp-capability
                  (service home-dbus-service-type)
                  (service home-pipewire-service-type)
-                 sss-fontconfig-service-type
+                 fontconfig-capability
                  channels-capability) %base-home-services)))
 

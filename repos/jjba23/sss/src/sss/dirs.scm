@@ -18,7 +18,7 @@
 (define-module (sss dirs)
   #:declarative? #t
   #:use-module (gnu)
-  #:use-module (sss process)
+  #:use-module (sss prelude)
   #:export (dirs-capability))
 
 (define* (dirs-capability #:key (desktop-dir "$HOME/desktop")

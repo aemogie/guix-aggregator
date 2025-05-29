@@ -18,17 +18,23 @@
 (define-module (sss git)
   #:declarative? #t
   #:use-module (gnu)
-  #:use-module (sss process))
+  #:use-module (sss prelude)
+  #:export (gitmessage-personal gitmessage-work
+                                gitignore-global
+                                gitconfig-personal
+                                gitconfig-work
+                                gitconfig
+                                git-capability))
 
 ;; I enjoy having a default commit message, and I overwrite it
 ;; sometimes when the commit is meaningful, otherwise I use it
 ;; \xad is an invisible - character
-(define-public sss-gitmessage-personal
+(define gitmessage-personal
   "\xad")
-(define-public sss-gitmessage-work
+(define gitmessage-work
   "\xad")
 
-(define-public sss-gitignore-global
+(define gitignore-global
   `("bloop" ".bloop"
     ".metals"
     ".stack-work"
@@ -37,19 +43,19 @@
     ".direnv"
     "dist-newstyle"))
 
-(define-public sss-gitconfig-personal
+(define gitconfig-personal
   `((user (name . "Josep Bigorra")
           (email . "jjbigorra@gmail.com")
           (signingkey . "24F46738CE114AF6"))
     (commit (template . "~/.gitmessage-personal"))))
 
-(define-public sss-gitconfig-work
+(define gitconfig-work
   `((user (name . "Josep Bigorra")
           (email . "josepbigorraalgaba@vandebron.nl")
           (signingkey . "3B6D20502E380697"))
     (commit (template . "~/.gitmessage-work"))))
 
-(define-public sss-gitconfig
+(define gitconfig
   `((core (editor . "emacsclient")
           (excludesfile . "~/.gitignore-global"))
     (commit (gpgsign . "true"))
@@ -61,33 +67,33 @@
     ("includeIf \"gitdir:~/fork/\"" ("  path" . "~/.gitconfig-personal"))
     ("includeIf \"gitdir:~/scratch/\"" ("  path" . "~/.gitconfig-personal"))))
 
-(begin
-  (define* (sss-git-capability #:key (gitconfig sss-gitconfig)
-                               (gitconfig-personal sss-gitconfig-personal)
-                               (gitconfig-work sss-gitconfig-work)
-                               (gitignore-global sss-gitignore-global)
-                               (gitmessage-personal sss-gitmessage-personal)
-                               (gitmessage-work sss-gitmessage-work))
-    `( ;Global Git configuration
-       (".gitconfig" ,(plain-file "gitconfig.ini"
-                                  (mk-rec-kv-conf-lines gitconfig
-                                   #:template spaced-equal-conf-pair)))
-      ;; Personal Git configuration
-      (".gitconfig-personal" ,(plain-file "gitconfig-personal.ini"
-                                          (mk-rec-kv-conf-lines
-                                           gitconfig-personal
-                                           #:template spaced-equal-conf-pair)))
-      ;; Work Git configuration
-      (".gitconfig-work" ,(plain-file "gitconfig-work.ini"
-                                      (mk-rec-kv-conf-lines gitconfig-work
-                                       #:template spaced-equal-conf-pair)))
+(define* (git-capability #:key (gitconfig gitconfig)
+                         (gitconfig-personal gitconfig-personal)
+                         (gitconfig-work gitconfig-work)
+                         (gitignore-global gitignore-global)
+                         (gitmessage-personal gitmessage-personal)
+                         (gitmessage-work gitmessage-work))
+  `( ;Global Git configuration
+     (".gitconfig" ,(plain-file "gitconfig.ini"
+                                (mk-rec-kv-conf-lines gitconfig
+                                                      #:template
+                                                      spaced-equal-conf-pair)))
+    ;; Personal Git configuration
+    (".gitconfig-personal" ,(plain-file "gitconfig-personal.ini"
+                                        (mk-rec-kv-conf-lines
+                                         gitconfig-personal
+                                         #:template spaced-equal-conf-pair)))
+    ;; Work Git configuration
+    (".gitconfig-work" ,(plain-file "gitconfig-work.ini"
+                                    (mk-rec-kv-conf-lines gitconfig-work
+                                     #:template spaced-equal-conf-pair)))
 
-      ;; Global Git ignore and message configuration
-      (".gitignore-global" ,(plain-file "gitignore-global"
-                                        (mk-lines gitignore-global)))
-      ;; Personal Git commit message template
-      (".gitmessage-personal" ,(plain-file "gitmessage-personal"
-                                           gitmessage-personal))
-      ;; Work-related Git commit message template
-      (".gitmessage-work" ,(plain-file "gitmessage-work" gitmessage-work))))
-  (export sss-git-capability))
+    ;; Global Git ignore and message configuration
+    (".gitignore-global" ,(plain-file "gitignore-global"
+                                      (mk-lines gitignore-global)))
+    ;; Personal Git commit message template
+    (".gitmessage-personal" ,(plain-file "gitmessage-personal"
+                                         gitmessage-personal))
+    ;; Work-related Git commit message template
+    (".gitmessage-work" ,(plain-file "gitmessage-work" gitmessage-work))))
+

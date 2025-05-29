@@ -19,12 +19,26 @@
   #:declarative? #t
   #:use-module (gnu)
   #:use-module (sss palette)
-  #:use-module (sss process)
+  #:use-module (sss prelude)
   #:use-module (sxml simple)
-  #:use-module (json))
+  #:use-module (json)
+  #:export (waybar-capability waybar-css
+                              waybar-button-css
+                              waybar-power-menu
+                              waybar-power-button
+                              waybar-start-button
+                              waybar-audio-icon
+                              waybar-power-profiles
+                              waybar-battery-2
+                              waybar-battery
+                              waybar-hyprland-workspaces
+                              waybar-clock
+                              waybar-taskbar
+                              waybar-backlight
+                              waybar-conf))
 
 ;; Waybar power menu, encoding XML as Scheme - SXML - s-expressions
-(define-public sss-waybar-power-menu
+(define waybar-power-menu
   '(*TOP* (*PI* xml "version=\"1.0\" encoding=\"UTF-8\"")
           (interface (object (@ (class "GtkMenu")
                                 (id "menu"))
@@ -47,7 +61,7 @@
                                             (property (@ (name "label"))
                                                       "Reboot")))))))
 
-(define sss-waybar-power-button
+(define waybar-power-button
   `(custom/power (format . "sys")
                  (tooltip . #f)
                  (menu . "on-click")
@@ -58,11 +72,11 @@
                                (hibernate . "sudo loginctl hibernate"))))
 
 ;;- SSS/GNU
-(define* (sss-waybar-start-button #:key (content "λ  SSS/GNU"))
-  `(custom/sss-waybar-start-button (format unquote content)
-                                   (on-click . "rofi -show drun")))
+(define* (waybar-start-button #:key (content "λ  SSS/GNU"))
+  `(custom/waybar-start-button (format unquote content)
+                               (on-click . "rofi -show drun")))
 
-(define sss-waybar-audio-icon
+(define waybar-audio-icon
   `(pulseaudio (format . "{volume}% {icon} {format_source}")
                (format-bluetooth . "{volume}% {icon}\uf294 {format_source}")
                (format-bluetooth-muted . "\uf6a9 {icon}\uf294 {format_source}")
@@ -78,7 +92,7 @@
                              (default . #("\uf026" "\uf027" "\uf028")))
                (on-click . "pavucontrol")))
 
-(define sss-waybar-power-profiles
+(define waybar-power-profiles
   `(power-profiles-daemon (format . "{icon}")
                           (tooltip-format . "Power profile: {profile}\nDriver: {driver}")
                           (tooltip . #t)
@@ -87,10 +101,10 @@
                                         (balanced . "\uf24e bal")
                                         (power-saver . "\uf06c eco"))))
 
-(define sss-waybar-battery-2
+(define waybar-battery-2
   `(#{battery#bat2}# (bat . "BAT2")))
 
-(define sss-waybar-battery
+(define waybar-battery
   `(battery (states (warning . 30)
                     (critical . 15))
             (format . "{capacity}% {icon}")
@@ -100,7 +114,7 @@
             (format-alt . "{time} {icon}")
             (format-icons . #("\uf244" "\uf243" "\uf242" "\uf241" "\uf240"))))
 
-(define sss-waybar-hyprland-workspaces
+(define waybar-hyprland-workspaces
   `(hyprland/workspaces (disable-scroll . #t)
                         (all-outputs . #t)
                         (warp-on-scroll . #f)
@@ -117,13 +131,13 @@
                                       ("10" . "10")
                                       ("default" . "\uf111"))))
 
-(define sss-waybar-clock
+(define waybar-clock
   `(clock (on-click . "gnome-calendar")
           (format . "{:%H:%M - %a, %d %B %Y}")
           (tooltip-format . "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>")
           (interval . 60)))
 
-(define* (sss-waybar-taskbar #:key palette)
+(define* (waybar-taskbar #:key palette)
   `(wlr/taskbar (format . "{icon} {title:.28}")
                 (icon-size . 16)
                 (icon-theme unquote
@@ -132,57 +146,55 @@
                 (on-click . "activate")
                 (on-click-middle . "minimize")))
 
-(define sss-waybar-backlight
+(define waybar-backlight
   `(backlight (format . "{percent}% {icon}")
               (format-icons . #("\ue38d" "\ue3d3" "\ue3d1" "\ue3cf" "\ue3ce" "\ue3cd" "\ue3ca" "\ue3c8" "\ue39b"))))
 
 ;; My WayBar configurations, defined in Guile Scheme, a status bar with a detailed, modular setup.
-(begin
-  (define* (sss-waybar-conf #:key palette
-                            (hyprland-session #f)
-                            (labwc-session #f)
-                            (with-memory #f)
-                            (with-numlock #f)
-                            (with-capslock #f))
-    (let ((modules-left (if labwc-session
-                            #(custom/sss-waybar-start-button clock wlr/taskbar)
-                            #(custom/sss-waybar-start-button clock hyprland/workspaces custom/media)))
-          (modules-right (if labwc-session
-                             #(pulseaudio power-profiles-daemon cpu memory backlight keyboard-state battery custom/power tray)
-                             #(pulseaudio power-profiles-daemon cpu memory backlight keyboard-state battery custom/power tray))))
-      `((position . bottom) (height . 38)
-        (modules-left unquote modules-left)
-        (modules-center)
-        (modules-right unquote modules-right)
-        ,(sss-waybar-start-button)
-        ,(cond
-           (hyprland-session sss-waybar-hyprland-workspaces)
-           (else `(hyprland/workspaces . null)))
-        (keyboard-state (numlock unquote with-numlock)
-                        (capslock unquote with-capslock)
-                        (format . "{name} {icon} ")
-                        (format-icons (locked . "\uf023")
-                                      (unlocked . "\uf09c")))
-        (hyprland/mode (format . "<span style=\"italic\">{}</span>"))
-        (tray (spacing . 12))
-        ,sss-waybar-clock
-        (cpu (format . "\uf2db cpu: {usage}%")
-             (tooltip . #f)
-             (on-click . "gnome-system-monitor"))
-        ,(cond
-           (with-memory `(memory (format . "\uf0c9 mem: {}%")
-                                 (on-click . "gnome-system-monitor")))
-           (else `(memory . null)))
-        ,sss-waybar-backlight
-        ,sss-waybar-battery
-        ,sss-waybar-battery-2
-        ,sss-waybar-power-profiles
-        ,(sss-waybar-taskbar #:palette palette)
-        ,sss-waybar-audio-icon
-        ,sss-waybar-power-button)))
-  (export sss-waybar-conf))
+(define* (waybar-conf #:key palette
+                      (hyprland-session #f)
+                      (labwc-session #f)
+                      (with-memory #f)
+                      (with-numlock #f)
+                      (with-capslock #f))
+  (let ((modules-left (if labwc-session
+                          #(custom/waybar-start-button clock wlr/taskbar)
+                          #(custom/waybar-start-button clock hyprland/workspaces custom/media)))
+        (modules-right (if labwc-session
+                           #(pulseaudio power-profiles-daemon cpu memory backlight keyboard-state battery custom/power tray)
+                           #(pulseaudio power-profiles-daemon cpu memory backlight keyboard-state battery custom/power tray))))
+    `((position . bottom) (height . 38)
+      (modules-left unquote modules-left)
+      (modules-center)
+      (modules-right unquote modules-right)
+      ,(waybar-start-button)
+      ,(cond
+         (hyprland-session waybar-hyprland-workspaces)
+         (else `(hyprland/workspaces . null)))
+      (keyboard-state (numlock unquote with-numlock)
+                      (capslock unquote with-capslock)
+                      (format . "{name} {icon} ")
+                      (format-icons (locked . "\uf023")
+                                    (unlocked . "\uf09c")))
+      (hyprland/mode (format . "<span style=\"italic\">{}</span>"))
+      (tray (spacing . 12))
+      ,waybar-clock
+      (cpu (format . "\uf2db cpu: {usage}%")
+           (tooltip . #f)
+           (on-click . "gnome-system-monitor"))
+      ,(cond
+         (with-memory `(memory (format . "\uf0c9 mem: {}%")
+                               (on-click . "gnome-system-monitor")))
+         (else `(memory . null)))
+      ,waybar-backlight
+      ,waybar-battery
+      ,waybar-battery-2
+      ,waybar-power-profiles
+      ,(waybar-taskbar #:palette palette)
+      ,waybar-audio-icon
+      ,waybar-power-button)))
 
-(define* (button-css #:key palette)
+(define* (waybar-button-css #:key palette)
   `((background unquote
                 (hex-to-rgba (get-color palette
                                         'background)
@@ -216,118 +228,113 @@
 ;; - Specific styles for workspace buttons, clocks, and tooltips.
 ;; - Dynamic colors fetched from `get-color` for consistency with theme settings.
 ;; - Use of transition effects and alpha blending to enhance UI responsiveness.
-(begin
-  (define* (sss-waybar-css #:key palette sans-font)
-    `((module (background . transparent)
-              (font-family unquote
-                           (format #f "FontAwesome, ~a" sans-font))
-              (font-weight . 500)
-              (color unquote
-                     (get-color palette
-                                'text)))
-      ("#workspaces" unquote
-       (button-css #:palette palette))
-      ("#workspaces button" (font-size . "11pt"))
-      ("#power-profiles-daemon" unquote
-       (button-css #:palette palette))
-      ("#custom-power" unquote
-       (button-css #:palette palette))
-      ("#battery" unquote
-       (button-css #:palette palette))
-      ("#backlight" unquote
-       (button-css #:palette palette))
-      ("#clock" unquote
-       (button-css #:palette palette))
-      ("window#waybar" (background unquote
-                                   (hex-to-rgba (get-color palette
-                                                           'background)
-                                                #:alpha 0.0))
-       (padding . "8px")
-       (font-family unquote
-                    (format #f "FontAwesome, ~a" sans-font))
-       (color unquote
-              (get-color palette
-                         'text)))
-      (tooltip (background unquote
-                           (get-color palette
-                                      'background-l))
-               (border-radius . 0))
-      ("#custom-sss-waybar-start-button" unquote
-       (button-css #:palette palette))
-      ("#workspaces" (padding-right . 0))
-      ("#workspaces button" (padding . "4px")
-       (font-weight . 700)
-       (color unquote
-              (get-color palette
-                         'text)))
-      ("#workspaces button.active" (background unquote
-                                               (get-color palette
-                                                          'primary-l))
-       (border-radius . "10px")
-       (color unquote
-              (get-color palette
-                         'background))
-       (margin-top . "4px")
-       (margin-bottom . "4px")
-       (transition . none))
-      ("#workspaces button.focused" (color unquote
-                                           (get-color palette
-                                                      'primary-l)))
-      ("#workspaces button.urgent" (color . "#ef6560"))
-      ("#workspaces button.hover" (color unquote
+(define* (waybar-css #:key palette sans-font)
+  `((module (background . transparent)
+            (font-family unquote
+                         (format #f "FontAwesome, ~a" sans-font))
+            (font-weight . 500)
+            (color unquote
+                   (get-color palette
+                              'text)))
+    ("#workspaces" unquote
+     (waybar-button-css #:palette palette))
+    ("#workspaces button" (font-size . "11pt"))
+    ("#power-profiles-daemon" unquote
+     (waybar-button-css #:palette palette))
+    ("#custom-power" unquote
+     (waybar-button-css #:palette palette))
+    ("#battery" unquote
+     (waybar-button-css #:palette palette))
+    ("#backlight" unquote
+     (waybar-button-css #:palette palette))
+    ("#clock" unquote
+     (waybar-button-css #:palette palette))
+    ("window#waybar" (background unquote
+                                 (hex-to-rgba (get-color palette
+                                                         'background)
+                                              #:alpha 0.0))
+     (padding . "8px")
+     (font-family unquote
+                  (format #f "FontAwesome, ~a" sans-font))
+     (color unquote
+            (get-color palette
+                       'text)))
+    (tooltip (background unquote
+                         (get-color palette
+                                    'background-l))
+             (border-radius . 0))
+    ("#custom-waybar-start-button" unquote
+     (waybar-button-css #:palette palette))
+    ("#workspaces" (padding-right . 0))
+    ("#workspaces button" (padding . "4px")
+     (font-weight . 700)
+     (color unquote
+            (get-color palette
+                       'text)))
+    ("#workspaces button.active" (background unquote
+                                             (get-color palette
+                                                        'primary-l))
+     (border-radius . "10px")
+     (color unquote
+            (get-color palette
+                       'background))
+     (margin-top . "4px")
+     (margin-bottom . "4px")
+     (transition . none))
+    ("#workspaces button.focused" (color unquote
                                          (get-color palette
-                                                    'text))
-       (background unquote
-                   (hex-to-rgba (get-color palette
-                                           'background)
-                                #:alpha 0.7)))
-      ("window#waybar.empty #window" (padding . 0)
-       (margin . 0)
-       (opacity . 0))
-      ("#tray" unquote
-       (append (button-css #:palette palette)
-               '((transition . "all .3s ease"))))
-      ("#keyboard-state" (font-size . "11pt"))
-      ("#pulseaudio" unquote
-       (button-css #:palette palette))
-      ("#cpu" unquote
-       (button-css #:palette palette))
-      ("#memory" unquote
-       (button-css #:palette palette))))
+                                                    'primary-l)))
+    ("#workspaces button.urgent" (color . "#ef6560"))
+    ("#workspaces button.hover" (color unquote
+                                       (get-color palette
+                                                  'text))
+     (background unquote
+                 (hex-to-rgba (get-color palette
+                                         'background)
+                              #:alpha 0.7)))
+    ("window#waybar.empty #window" (padding . 0)
+     (margin . 0)
+     (opacity . 0))
+    ("#tray" unquote
+     (append (waybar-button-css #:palette palette)
+             '((transition . "all .3s ease"))))
+    ("#keyboard-state" (font-size . "11pt"))
+    ("#pulseaudio" unquote
+     (waybar-button-css #:palette palette))
+    ("#cpu" unquote
+     (waybar-button-css #:palette palette))
+    ("#memory" unquote
+     (waybar-button-css #:palette palette))))
 
-  (export sss-waybar-css))
+(define* (waybar-capability #:key palette
+                            with-memory
+                            labwc-session
+                            hyprland-session
+                            sans-font)
+  `( ;Waybar configuration (for status bar)
+     (".config/waybar/config.jsonc" ,(plain-file "config.jsonc"
+                                                 (scm->json-string (waybar-conf
+                                                                    #:palette
+                                                                    palette
+                                                                    #:labwc-session
+                                                                    labwc-session
+                                                                    #:hyprland-session
+                                                                    hyprland-session
+                                                                    #:with-memory
+                                                                    with-memory)
+                                                                   #:pretty #t)))
 
-(begin
-  (define* (sss-waybar-capability #:key palette
-                                  with-memory
-                                  labwc-session
-                                  hyprland-session
-                                  sans-font)
-    `( ;Waybar configuration (for status bar)
-       (".config/waybar/config.jsonc" ,(plain-file "config.jsonc"
-                                                   (scm->json-string (sss-waybar-conf
-                                                                      #:palette
-                                                                      palette
-                                                                      #:labwc-session
-                                                                      labwc-session
-                                                                      #:hyprland-session
-                                                                      hyprland-session
-                                                                      #:with-memory
-                                                                      with-memory)
-                                                                     #:pretty
-                                                                     #t)))
+    ;; Waybar styling
+    (".config/waybar/style.css" ,(plain-file "waybar.css"
+                                             (mk-css-conf-lines (waybar-css
+                                                                 #:palette
+                                                                 palette
+                                                                 #:sans-font
+                                                                 sans-font))))
+    ;; Waybar Power menu from Scheme to XML format
+    (".config/waybar/power_menu.xml" ,(plain-file "power_menu.xml"
+                                                  (with-output-to-string (lambda ()
+                                                                           
+                                                                           (sxml->xml
+                                                                            waybar-power-menu)))))))
 
-      ;; Waybar styling
-      (".config/waybar/style.css" ,(plain-file "waybar.css"
-                                               (mk-css-conf-lines (sss-waybar-css
-                                                                   #:palette
-                                                                   palette
-                                                                   #:sans-font
-                                                                   sans-font))))
-      ;; Waybar Power menu from Scheme to XML format
-      (".config/waybar/power_menu.xml" ,(plain-file "power_menu.xml"
-                                                    (with-output-to-string (lambda ()
-                                                                             
-                                                                             (sxml->xml
-                                                                              sss-waybar-power-menu)))))))
-  (export sss-waybar-capability))

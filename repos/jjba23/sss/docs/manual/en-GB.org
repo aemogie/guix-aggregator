@@ -161,14 +161,6 @@ When keybindings (shortcurts) are defined or mentioned, the following legend app
 
 
 
-* Customizing SSS
-
-SSS supports several user customizations via the ~per-host.scm~ file and others.
-
-I took inspiration from many sources, including several color palettes, inspired by the great `ef-themes` by Protesilaos Stavrou  (https://github.com/protesilaos/ef-themes).
-
-There are more palettes though, see per-host section for more.
-
 -----
 
 * Showcase
@@ -214,7 +206,7 @@ recommended minimums:
 - *RAM:* 4GB of RAM is the absolute minimum. 8GB or more is highly
   recommended for a comfortable experience, especially if you plan to
   run memory-intensive applications or virtual machines.
-- *Disk Space:* 30GB of disk space is a good starting point. Consider
+- *Disk Space:* 90GB of disk space is a good starting point. Consider
   more if you plan to install a large number of packages, store many
   files, or use virtual machines extensively. SSDs are strongly
   recommended for optimal performance.
@@ -425,18 +417,132 @@ When doing a system or home reconfigure, SSS will try to give you as much inform
 (length (get-setting 'nixpkgs)): 30
 #+end_example
 
------
+------------
 
 * Explaining certain choices
 
 *Q*: Why choose for Emacs-style keybindings in the power-user session?
+
 *A*: SSS puts a heavy emphasis on mnemonics and ease of use. Emacs keybindings are well documented, well known and are quite easy to remember thanks to mnemonics, as well as being quite ergonomic too, specially when combined with split keyboards and thumb clusters. In the universal session we choose for CUA-style keybindings to be familiar to most people.
 
 *Q*: Why choose to put Waybar at the bottom, when most rices put it at the top?
+
 *A*: SSS chooses to place the status bar at the bottom of the screen to minimize distractions. We mostly read things from top-left to top-right, and having a bar take that prominent space in the screen can be wasteful and distracting, and you end up looking at the clock or start button more often than the actual task you are working on. This is true for both the power-user session and the universal session (it might help for people that used Windows).
+
+*Q*: Capabilities?
+
+*A*: In SSS, the concept of "capabilities" is fundamentally woven into the system's design. It represents a higher-order approach to managing your computing environment, abstracting away complexity and details beyond the granular configuration of individual Guix Home files or distinct Guix services.
+
+This abstraction simplifies configuration, promotes reusability, and fosters a more intuitive interaction with the system, allowing for the composition of complex environments by simply enabling a collection of predefined, yet customizable, functionalities.
+
+See ~home/joe.scm~ for more examples on how to use the capabilities, and see ~src/sss/~ for more details on all the capabilities available.
 
 
 -----------
+
+* User Management
+
+SSS works by programatically define users via code. By default there will be a user ~sss~ that is in the ~wheel~ group.
+
+You should create users by tweaking the Scheme code in the per-host overrides and you should also create a Guix home file (~home/<user>.scm~) if you want to use the home services SSS provides.
+
+When everything is in place, if it's a new user, you can add a password to the user with ~sudo passwd <user>~. If this user was created by the Guix install then this will already be done for you.
+
+⚠️ You shouldn't create users manually with ~useradd~ or the likes, and sudoers should also be managed from Scheme code, not by manually editing ~/etc/sudoers~. If you do these things manually, Guix will reset them at next reboot or reconfigure.
+
+-----
+
+* Adding channels
+
+Add ~nonguix~ in your channels file (=$HOME/.config/guix/channels.scm=). This will later be overwritten by SSS.
+
+#+begin_src  scheme
+  (cons* (channel
+        (name 'nonguix)
+        (url "https://gitlab.com/nonguix/nonguix")
+        (introduction
+         (make-channel-introduction
+          "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
+          (openpgp-fingerprint
+           "2A39 3FFF 68F4 EF7A 3D29 12AF 6F51 20A0 22FB B2D5"))))
+       %default-channels)
+
+#+end_src
+
+After adding the channel, perform a ~guix pull~ from your user account (*no sudo or root*) and let all channels get updated.
+
+* Installation of SSS
+
+Once you have followed all those above steps, you can enter a temporary Guix shell, so as to bootstrap SSS.
+
+You can do this with ~guix shell make git icecat~. Icecat is a 100% libre version of Firefox, and it will be temporarily used for you to browse temporarily to Codeberg and download and install SSS.
+
+Then proceed to clone SSS with ~git clone --recursive https://codeberg.org/jjba23/sss.git~ to your favourite location. This location will need to be added to your ~per-host/sss/overrides.scm~. You can skip the ~--recursive~ option if you are not interested in the wallpapers and other art.
+
+If ~digital-art-dreams~ (the wallpapers and so on) didn't get properly cloned to your destination, you can always ~cd~ into the SSS clone path, and then do a ~git submodule add https://codeberg.org/jjba23/digital-art-dreams.git submodules/digital-art-dreams~ and then a  ~git submodule update --init --recursive~. Also from time to time, handy to keep the submodules updated with ~git submodule update --recursive --remote~.
+
+See more about Git submodules here:
+
+https://git-scm.com/book/en/v2/Git-Tools-Submodules
+
+---------------------
+
+You should have by now written an appropriate ~per-host/sss/overrides.scm~ for your setup. See the above section on this topic.
+
+Enter the directory of SSS: ~cd sss~ and do a ~make sr~.
+
+Note: ~make sr~ translates to ~sudo guix system reconfigure~ with some extra settings.
+
+While unlikely, it's possible that some packages fail to install/build for your setup. I would encourage to temporarily comment those out of the configuration (likely at ~src/sss/packages.scm~) and try again. After a working SSS setup, you can uncomment them and try again.
+
+For more commands take a look at the SSS Makefile: [[file:../../Makefile]].
+
+The ~--fallback~ option is optional, and simply helps when upstream substitute (cache) servers are less available.
+
+Once the system reconfigure is complete, you should also bootstrap your user's GNU home with something like: ~guix home reconfigure~ 
+
+You might at this point want to reset the font cache for the system and user.
+
+#+begin_example
+fc-cache -frv
+sudo fc-cache -frv
+#+end_example
+
+You can then reboot and you should be greeted by a simple TTY.
+
+-----
+
+** Keeping SSS updated
+
+You should every now and then update the SSS repo with ~git pull~. You also should regularly do a ~guix pull~ from your regular user, and then rebuild this system with the root user (~make sr~).
+
+It's important to also keep the SSS modules updated, and thus from time to time run ~git submodule update --recursive --remote~.
+
+Guix is a rolling distribution and you don't need to be always on bleeding edge releases, but it's nice to stay updated.
+
+--------
+
+* Login managers, and login screen
+
+SSS uses *no login managers* like GDM or SDDM. Simply login to the TTY and start your favorite GUI (or not).
+That being said, feel free to use your own.
+
+I like to alias my login command to ~gui~, or sometimes I directly run ~hyprland~ or ~labwc~ from the TTY.
+
+Sometimes for the fun I work in Emacs from the TTY for that 60's and 70's computer vibe.
+
+If you run traditional X11 sessions, you /could/ choose to do startx instead of a Wayland session, but SSS is more geared to Wayland.
+
+-------------
+
+* Important directories
+
+SSS uses the Guix and GNU/Linux conventions as closely as possible, and also tries to adhere to the XDG standards. Apart from that, here are some interesting files and directories that may not be so obvious:
+
+- Guix Shepherd Home Services and Timerslog file: ~$XDG_STATE_HOME/shepherd/shepherd.log~ which is often ~~/.local/state/shepherd/shepherd.log~
+
+
+-----------------
 
 * On Emacs
 
@@ -684,110 +790,6 @@ To improve navigation, ultra-scroll is enabled, refining Emacs's scrolling behav
 
 -----------
 
-
-* User Management
-
-SSS works by programatically define users via code. By default there will be a user ~sss~ that is in the ~wheel~ group.
-
-You should create users by tweaking the Scheme code in the per-host overrides and you should also create a Guix home file (~home/<user>.scm~) if you want to use the home services SSS provides.
-
-When everything is in place, if it's a new user, you can add a password to the user with ~sudo passwd <user>~. If this user was created by the Guix install then this will already be done for you.
-
-⚠️ You shouldn't create users manually with ~useradd~ or the likes, and sudoers should also be managed from Scheme code, not by manually editing ~/etc/sudoers~. If you do these things manually, Guix will reset them at next reboot or reconfigure.
-
------
-
-* Adding channels
-
-Add ~nonguix~ in your channels file (=$HOME/.config/guix/channels.scm=). This will later be overwritten by SSS.
-
-#+begin_src  scheme
-  (cons* (channel
-        (name 'nonguix)
-        (url "https://gitlab.com/nonguix/nonguix")
-        (introduction
-         (make-channel-introduction
-          "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
-          (openpgp-fingerprint
-           "2A39 3FFF 68F4 EF7A 3D29 12AF 6F51 20A0 22FB B2D5"))))
-       %default-channels)
-
-#+end_src
-
-After adding the channel, perform a ~guix pull~ from your user account (*no sudo or root*) and let all channels get updated.
-
-* Installation of SSS
-
-Once you have followed all those above steps, you can enter a temporary Guix shell, so as to bootstrap SSS.
-
-You can do this with ~guix shell make git icecat~. Icecat is a 100% libre version of Firefox, and it will be temporarily used for you to browse temporarily to Codeberg and download and install SSS.
-
-Then proceed to clone SSS with ~git clone --recursive https://codeberg.org/jjba23/sss.git~ to your favourite location. This location will need to be added to your ~per-host/sss/overrides.scm~. You can skip the ~--recursive~ option if you are not interested in the wallpapers and other art.
-
-If ~digital-art-dreams~ (the wallpapers and so on) didn't get properly cloned to your destination, you can always ~cd~ into the SSS clone path, and then do a ~git submodule add https://codeberg.org/jjba23/digital-art-dreams.git submodules/digital-art-dreams~ and then a  ~git submodule update --init --recursive~. Also from time to time, handy to keep the submodules updated with ~git submodule update --recursive --remote~.
-
-See more about Git submodules here:
-
-https://git-scm.com/book/en/v2/Git-Tools-Submodules
-
----------------------
-
-You should have by now written an appropriate ~per-host/sss/overrides.scm~ for your setup. See the above section on this topic.
-
-Enter the directory of SSS: ~cd sss~ and do a ~make sr~.
-
-Note: ~make sr~ translates to ~sudo guix system reconfigure~ with some extra settings.
-
-While unlikely, it's possible that some packages fail to install/build for your setup. I would encourage to temporarily comment those out of the configuration (likely at ~src/sss/packages.scm~) and try again. After a working SSS setup, you can uncomment them and try again.
-
-For more commands take a look at the SSS Makefile: [[file:../../Makefile]].
-
-The ~--fallback~ option is optional, and simply helps when upstream substitute (cache) servers are less available.
-
-Once the system reconfigure is complete, you should also bootstrap your user's GNU home with something like: ~guix home reconfigure~ 
-
-You might at this point want to reset the font cache for the system and user.
-
-#+begin_example
-fc-cache -frv
-sudo fc-cache -frv
-#+end_example
-
-You can then reboot and you should be greeted by a simple TTY.
-
------
-
-** Keeping SSS updated
-
-You should every now and then update the SSS repo with ~git pull~. You also should regularly do a ~guix pull~ from your regular user, and then rebuild this system with the root user (~make sr~).
-
-It's important to also keep the SSS modules updated, and thus from time to time run ~git submodule update --recursive --remote~.
-
-Guix is a rolling distribution and you don't need to be always on bleeding edge releases, but it's nice to stay updated.
-
---------
-
-* Login managers, and login screen
-
-SSS uses *no login managers* like GDM or SDDM. Simply login to the TTY and start your favorite GUI (or not).
-That being said, feel free to use your own.
-
-I like to alias my login command to ~gui~, or sometimes I directly run ~hyprland~ or ~labwc~ from the TTY.
-
-Sometimes for the fun I work in Emacs from the TTY for that 60's and 70's computer vibe.
-
-If you run traditional X11 sessions, you /could/ choose to do startx instead of a Wayland session, but SSS is more geared to Wayland.
-
--------------
-
-* Important directories
-
-SSS uses the Guix and GNU/Linux conventions as closely as possible, and also tries to adhere to the XDG standards. Apart from that, here are some interesting files and directories that may not be so obvious:
-
-- Guix Shepherd Home Services and Timerslog file: ~$XDG_STATE_HOME/shepherd/shepherd.log~ which is often ~~/.local/state/shepherd/shepherd.log~
-
-
------------------
 
 * Nix profile
 

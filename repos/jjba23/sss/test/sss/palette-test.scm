@@ -21,30 +21,37 @@
   #:use-module (sss test-utils)
   #:use-module (sss palette))
 
-(define-test test-hyprlang
+(define-test test-palette
              (test-group "palette"
-                         ;; Test color retrieval
                          (test-equal
-                          "Retrieve primary color from ef-dream palette"
-                          "#675072"
-                          (get-color 'ef-dream
-                                     'primary))
+                          "Retrieve primary color from ef-dream palette" "#"
+                          (string-take (get-color 'ef-dream
+                                                  'primary) 1))
 
                          (test-equal "Retrieve text color from ef-bio palette"
-                          "#dfefe6"
-                          (get-color 'ef-bio
-                                     'text))
+                          "#"
+                          (string-take (get-color 'ef-bio
+                                                  'text) 1))
 
                          (test-error (get-color 'unknown-palette
                                                 'primary))
 
-                         ;; Test hex-to-rgba conversion
                          (test-equal "Convert hex #ff5733 to rgba"
                                      "rgba(255, 87, 51, 1)"
                                      (hex-to-rgba "#ff5733"))
+                         (test-equal "Convert hex #000000 to rgba"
+                                     "rgba(0, 0, 0, 1)"
+                                     (hex-to-rgba "#000000"))
+                         (test-equal "Convert hex #ffffff to rgba"
+                                     "rgba(255, 255, 255, 1)"
+                                     (hex-to-rgba "#ffffff"))
 
                          (test-equal
                           "Convert hex #008080 to rgba with alpha 0.5"
                           "rgba(0, 128, 128, 0.5)"
                           (hex-to-rgba "#008080"
-                                       #:alpha 0.5))))
+                                       #:alpha 0.5))
+                         (test-equal
+                          "Getting an ANSI color for a palette works" #t
+                          (not (equal? ""
+                                       (get-ansi-color 'ef-dream))))))

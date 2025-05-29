@@ -20,7 +20,7 @@
   #:use-module (gnu)
   #:use-module (gnu home services)
   #:use-module (sss palette)
-  #:use-module (sss process)
+  #:use-module (sss prelude)
   #:use-module (ice-9 string-fun)
   #:export (alacritty-general alacritty-window
                               alacritty-scrolling

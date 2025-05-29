@@ -34,7 +34,7 @@
              (gnu home services desktop)
              (shepherd service timer)
              (sss prelude)
-             (sss process)
+             (sss prelude)
              (sss git)
              (sss vars)
              (sss mako)
@@ -59,6 +59,7 @@
              (sss dirs)
              (sss waybar)
              (sss rofi)
+             (sss labwc)
              (sss ssh)
              (sss firefox)
              (sss emacs))
@@ -83,31 +84,31 @@
   (service home-files-service-type
            (append (gtk3-capability #:palette (get-setting 'palette))
                    (gtk4-capability #:palette (get-setting 'palette))
-                   (sss-git-capability)
-                   (sss-waybar-capability #:palette (get-setting 'palette)
-                                          #:sans-font (get-setting 'sans-font)
-                                          #:with-memory #t
-                                          #:hyprland-session #t)
+                   (git-capability)
+                   (waybar-capability #:palette (get-setting 'palette)
+                                      #:sans-font (get-setting 'sans-font)
+                                      #:with-memory #t
+                                      #:hyprland-session #t)
                    (rofi-capability #:palette (get-setting 'palette))
                    (alacritty-capability #:palette (get-setting 'palette)
                                          #:mono-font (get-setting 'mono-font))
-                   (sss-hyprland-capability #:palette (get-setting 'palette)
-                                            #:clone-dir (get-setting 'clone-dir)
-                                            #:keyboard-layout (get-setting 'keyboard-layout)
-                                            #:caps-to-ctrl (get-setting 'caps-to-ctrl?)
-                                            #:monitors (get-setting 'hyprland-monitors)
-                                            #:extra-startups (get-setting 'hyprland-extra-startups)
-                                            #:with-blur #t
-                                            #:with-shadow #t)
-                   (sss-hyprlock-capability #:clone-dir (get-setting 'clone-dir))
-                   (sss-wallpaper-capability #:clone-dir (get-setting 'clone-dir)
-                                             #:palette (get-setting 'palette))
-                   (sss-mime-capability)
+                   (hyprland-capability #:palette (get-setting 'palette)
+                                        #:clone-dir (get-setting 'clone-dir)
+                                        #:keyboard-layout (get-setting 'keyboard-layout)
+                                        #:caps-to-ctrl (get-setting 'caps-to-ctrl?)
+                                        #:monitors (get-setting 'hyprland-monitors)
+                                        #:extra-startups (get-setting 'hyprland-extra-startups)
+                                        #:with-blur #t
+                                        #:with-shadow #t)
+                   (hyprlock-capability #:clone-dir (get-setting 'clone-dir))
+                   (random-wallpaper-capability #:clone-dir (get-setting 'clone-dir)
+                                                #:palette (get-setting 'palette))
+                   (mime-capability)
                    (dirs-capability)
-                   (sss-firefox-capability #:palette (get-setting 'palette))
-                   (sss-fastfetch-capability #:clone-dir (get-setting 'clone-dir))
-                   (sss-fish-capability #:clone-dir (get-setting 'clone-dir)
-                                        #:palette (get-setting 'palette))
+                   (firefox-capability #:palette (get-setting 'palette))
+                   (fastfetch-capability #:clone-dir (get-setting 'clone-dir))
+                   (fish-capability #:clone-dir (get-setting 'clone-dir)
+                                    #:palette (get-setting 'palette))
                    (mako-capability #:palette (get-setting 'palette)
                                     #:sans-font (get-setting 'sans-font))
                    (emacs-capability #:palette (get-setting 'palette)
@@ -120,11 +121,12 @@
                                      "$HOME/hacking/private-notes/roam"
                                      #:sans-font (get-setting 'sans-font)
                                      #:mono-font (get-setting 'mono-font))
-                   (sss-nix-capability)
-                   (sss-qt6-capability #:palette (get-setting 'palette))
+                   (nix-capability)
+                   (qt6-capability #:palette (get-setting 'palette))
                    (containers-capability)
                    (portals-capability)
-                   (enchant-capability))))
+                   (enchant-capability)
+                   (labwc-capability #:extra-startups (get-setting 'labwc-extra-startups)))))
 
 (display "
 >>= configuring Joe's home environment...
@@ -134,24 +136,24 @@
   (services
    (append (list sss-home-files-service
                  (ssh-capability)
-                 (sss-home-vars-service #:palette (get-setting 'palette)
-                                        #:clone-dir (get-setting 'clone-dir)
-                                        #:lang (get-setting 'lang))
+                 (env-variables-capability #:palette (get-setting 'palette)
+                                           #:clone-dir (get-setting 'clone-dir)
+                                           #:lang (get-setting 'lang))
                  (bash-capability #:clone-dir (get-setting 'clone-dir)
                                   #:gui-cmd "hyprland")
-                 sss-openpgp-conf
+                 openpgp-capability
                  (simple-service 'sss-home-cron-service
                                  home-mcron-service-type
                                  '())
-                 (simple-service 'sss-random-wallpaper
+                 (simple-service 'set-random-wallpaper
                                  home-shepherd-service-type
-                                 (list (shepherd-timer '(sss-random-wallpaper)
+                                 (list (shepherd-timer '(set-random-wallpaper)
                                                        #~(cron-string->calendar-event
                                                           "*/10 * * * *")
                                                        `("sh" ,(format #f
-                                                                "/home/joe/.local/bin/sss-wallpaper-random.sh")))))
+                                                                "/home/joe/.local/bin/set-random-wallpaper.sh")))))
                  (service home-dbus-service-type)
                  (service home-pipewire-service-type)
-                 sss-fontconfig-service-type
+                 fontconfig-capability
                  channels-capability) %base-home-services)))
 

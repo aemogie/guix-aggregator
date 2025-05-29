@@ -19,7 +19,7 @@
   #:declarative? #t
   #:use-module (gnu)
   #:use-module (sss palette)
-  #:use-module (sss process)
+  #:use-module (sss prelude)
   #:export (rofi-capability rofi-theme rofi-font rofi-icon-theme
                             rofi-configuration))
 

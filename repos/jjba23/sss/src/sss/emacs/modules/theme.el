@@ -52,6 +52,12 @@
         ((equal sss-emacs-theme 'everforest-hard-light)
          (load-theme sss-emacs-theme t))))
 
+(use-package gruvbox-theme
+  :ensure (:host github :repo "greduan/emacs-theme-gruvbox" :branch "master")
+  :config
+  (cond ((equal sss-emacs-theme 'gruvbox-dark-hard) (load-theme sss-emacs-theme t))
+        ((equal sss-emacs-theme 'gruvbox-light-hard) (load-theme sss-emacs-theme t))))
+
 
 (provide 'sss/theme)
 

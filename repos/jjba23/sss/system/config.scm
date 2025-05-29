@@ -21,9 +21,9 @@
              (gnu services)
              (gnu system accounts)
              (guix packages)
+             (sss prelude)
              (sss packages)
              (sss iptables)
-             (sss prelude)
              (nongnu packages linux)
              (nongnu system linux-initrd))
 

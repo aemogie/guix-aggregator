@@ -35,8 +35,8 @@
                        hypr-focus-binds
                        hypr-common-exec-binds
                        hypr-binds
-                       sss-hyprland-config
-                       sss-hyprland-capability))
+                       hyprland-config
+                       hyprland-capability))
 
 (define* (notify-cmd #:key title subtitle)
   (format #f
@@ -48,12 +48,12 @@
                                 (extra-startups '()))
   (let* ((gtk-theme-name (get-gtk-theme palette))
          (icon-theme-name (get-icon-theme palette))
-         (cursor-theme-name (sss-get-cursor-theme palette))
+         (cursor-theme-name (get-cursor-theme palette))
          (xs (append extra-startups
                      `("lxsession" "mako"
                        "dbus-update-activation-environment --all"
                        "waybar"
-                       "herd trigger sss-random-wallpaper"
+                       "herd trigger set-random-wallpaper"
                        "alacritty --daemon"
                        "emacs --daemon"
                        "transmission-daemon"
@@ -237,7 +237,7 @@
                         #:cmd "hyprlock")
              (exec-bind #:mod "s-S"
                         #:bind "B"
-                        #:cmd "herd trigger sss-random-wallpaper")
+                        #:cmd "herd trigger set-random-wallpaper")
              (exec-bind #:mod "s"
                         #:bind "T"
                         #:cmd "alacritty msg create-window || alacritty")
@@ -327,20 +327,20 @@
 ;; easy IPC, much more QoL stuff than other compositors and more... 
 ;;
 ;; https://github.com/hyprwm/Hyprland
-(define* (sss-hyprland-config #:key clone-dir
-                              keyboard-layout
-                              caps-to-ctrl
-                              palette
-                              monitors
-                              (extra-startups '())
-                              (with-blur #f)
-                              (with-shadow #f)
-                              (startup-programs (hypr-startup-programs
-                                                 #:palette palette
-                                                 #:extra-startups
-                                                 extra-startups))
-                              (window-rules (list (hypr-window-rule #:action 'float
-                                                   #:class "pavucontrol"))))
+(define* (hyprland-config #:key clone-dir
+                          keyboard-layout
+                          caps-to-ctrl
+                          palette
+                          monitors
+                          (extra-startups '())
+                          (with-blur #f)
+                          (with-shadow #f)
+                          (startup-programs (hypr-startup-programs #:palette
+                                             palette
+                                             #:extra-startups extra-startups))
+                          (window-rules (list (hypr-window-rule #:action 'float
+                                                                #:class
+                                                                "pavucontrol"))))
   (let* ((serialized-startup-programs (map (lambda (startup-item)
                                              (serialize-hypr-setting 'exec-once
                                               startup-item)) startup-programs))
@@ -403,17 +403,17 @@
     
     (string-join config-lines "\n")))
 
-(define* (sss-hyprland-capability #:key palette
-                                  clone-dir
-                                  keyboard-layout
-                                  caps-to-ctrl
-                                  monitors
-                                  extra-startups
-                                  with-blur
-                                  with-shadow)
+(define* (hyprland-capability #:key palette
+                              clone-dir
+                              keyboard-layout
+                              caps-to-ctrl
+                              monitors
+                              extra-startups
+                              with-blur
+                              with-shadow)
   `((".config/hypr/hyprland.conf" ,(plain-file "hyprland.conf"
-                                               (sss-hyprland-config
-                                                #:clone-dir clone-dir
+                                               (hyprland-config #:clone-dir
+                                                clone-dir
                                                 #:keyboard-layout
                                                 keyboard-layout
                                                 #:caps-to-ctrl caps-to-ctrl

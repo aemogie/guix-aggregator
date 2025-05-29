@@ -54,7 +54,7 @@
 	 ("C-c f n" . tekengrootte-set-scale-nano)) 
   :hook ((tekengrootte-set-scale . (lambda () 
                                      (sss-set-base-faces)))) 
-  :after (ef-themes solarized-theme)
+  :after (ef-themes solarized-theme gruvbox-theme)
   :config
   (defun sss-set-base-faces ()
     "Adjust the base Emacs faces to my preferences.

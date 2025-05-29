@@ -22,20 +22,20 @@
   #:use-module (gnu home services shells)
   #:use-module (sss palette)
   #:use-module (gnu services)
-  #:export (sss-home-vars-service))
+  #:export (env-variables-capability))
 
-;; Environment variables Guix service for a user, plug into SSS
-(define* (sss-home-vars-service #:key palette
-                                (clone-dir "$HOME/hacking/sss")
-                                (lang "en_US")
-                                (desktop-dir "$HOME/desktop")
-                                (documents-dir "$HOME/documents")
-                                (downloads-dir "$HOME/downloads")
-                                (music-dir "$HOME/music")
-                                (pictures-dir "$HOME/pictures")
-                                (public-dir "$HOME/public")
-                                (templates-dir "$HOME/templates")
-                                (videos-dir "$HOME/videos"))
+(define* (env-variables-capability #:key palette
+                                   (clone-dir "$HOME/hacking/sss")
+                                   (lang "en_US")
+                                   (desktop-dir "$HOME/desktop")
+                                   (documents-dir "$HOME/documents")
+                                   (downloads-dir "$HOME/downloads")
+                                   (music-dir "$HOME/music")
+                                   (pictures-dir "$HOME/pictures")
+                                   (public-dir "$HOME/public")
+                                   (templates-dir "$HOME/templates")
+                                   (videos-dir "$HOME/videos"))
+  "Environment variables Guix service for a user, plug into SSS"
   (let ((home-v `(("GUIX_LOCPATH" . "$HOME/.guix-profile/lib/locale") ("LANG"
                                                                        unquote
                                                                        (format
@@ -57,7 +57,7 @@
                   ("HISTFILESIZE" . "200000")
                   ("XCURSOR_SIZE" . "24")
                   ("XCURSOR_THEME" unquote
-                   (sss-get-cursor-theme palette))
+                   (get-cursor-theme palette))
                   ("CC" . "/run/current-system/profile/bin/gcc")
                   ("SDL_VIDEODRIVER" . "wayland")
                   ("_JAVA_AWT_WM_NONREPARENTING" . "1")
@@ -75,6 +75,6 @@
                   ("XDG_PUBLICSHARE_DIR" unquote public-dir)
                   ("XDG_TEMPLATES_DIR" unquote templates-dir)
                   ("XDG_VIDEOS_DIR" unquote videos-dir))))
-    (simple-service 'sss-home-vars-service
+    (simple-service 'env-variables-capability
                     home-environment-variables-service-type home-v)))
 

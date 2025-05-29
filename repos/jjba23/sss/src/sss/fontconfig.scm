@@ -18,9 +18,10 @@
 (define-module (sss fontconfig)
   #:declarative? #t
   #:use-module (gnu)
-  #:use-module (gnu home services fontutils))
+  #:use-module (gnu home services fontutils)
+  #:export (fontconfig-capability))
 
-(define-public sss-fontconfig-service-type
+(define fontconfig-capability
   (simple-service 'additional-fonts-service home-fontconfig-service-type
                   (list "~/.nix-profile/share/fonts"
                         '(alias (family "monospace")

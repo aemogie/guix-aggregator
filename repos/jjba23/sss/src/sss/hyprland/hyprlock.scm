@@ -20,12 +20,12 @@
   #:use-module (gnu)
   #:use-module (sss palette)
   #:use-module (sss hyprland hyprlang)
-  #:export (sss-hyprlock-config sss-hyprlock-capability))
+  #:export (hyprlock-config hyprlock-capability))
 
 ;; hyprlock: Hyprland's simple, yet multi-threaded and GPU-accelerated screen locking utility.
 ;;
 ;; https://github.com/hyprwm/hyprlock
-(define* (sss-hyprlock-config #:key clone-dir)
+(define* (hyprlock-config #:key clone-dir)
   (let* ((serialized-img (serialize-hypr-section #:section 'image
                                                  #:settings `((monitor . "") (path
                                                                               unquote
@@ -111,9 +111,8 @@
     
     (string-join config-lines "\n")))
 
-(define* (sss-hyprlock-capability #:key clone-dir)
+(define* (hyprlock-capability #:key clone-dir)
   `((".config/hypr/hyprlock.conf" ,(plain-file "hyprlock.conf"
-                                               (sss-hyprlock-config
-                                                                    #:clone-dir
-                                                                    clone-dir)))))
+                                               (hyprlock-config #:clone-dir
+                                                                clone-dir)))))
 

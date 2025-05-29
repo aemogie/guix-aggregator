@@ -20,7 +20,23 @@
   #:use-module (gnu)
   #:use-module (sxml simple)
   #:use-module (json)
-  #:use-module (sss process))
+  #:use-module (sss prelude)
+  #:export (serialize-firefox-ini-setting serialize-firefox-userjs-setting
+                                          userjs-value-quoting
+                                          firefox-profile-default
+                                          firefox-profile-sss
+                                          firefox-profile-general
+                                          firefox-profiles-config
+                                          firefox-userjs-fastfox
+                                          firefox-userjs-securefox
+                                          firefox-ui-customization
+                                          firefox-userjs-peskyfox
+                                          firefox-userjs-config
+                                          firefox-userchrome-css
+                                          serialize-firefox-bookmark
+                                          firefox-bookmarks
+                                          serialized-firefox-bookmarks
+                                          firefox-capability))
 
 (define (serialize-firefox-ini-setting s)
   (format #f "~a=~a"
@@ -43,28 +59,28 @@
           (userjs-value-quoting (car s))
           (userjs-value-quoting (cdr s))))
 
-(define sss-firefox-profile-default
+(define firefox-profile-default
   `((Name . default) (Path . "qwexsrf7.default")
     (IsRelative . 1)
     (Default . 0)))
 
-(define sss-firefox-profile-sss
+(define firefox-profile-sss
   `((Name . sss) (Path . sss)
     (IsRelative . 1)
     (Default . 1)))
 
-(define sss-firefox-profile-general
+(define firefox-profile-general
   `((StartWithLastProfile . 1) (Version . 2)))
 
-(define sss-firefox-profiles-config
+(define firefox-profiles-config
   (append (list "" "[Profile0]")
-          (map serialize-firefox-ini-setting sss-firefox-profile-default)
+          (map serialize-firefox-ini-setting firefox-profile-default)
           (list "" "[Profile1]")
-          (map serialize-firefox-ini-setting sss-firefox-profile-sss)
+          (map serialize-firefox-ini-setting firefox-profile-sss)
           (list "" "[General]")
-          (map serialize-firefox-ini-setting sss-firefox-profile-general)))
+          (map serialize-firefox-ini-setting firefox-profile-general)))
 
-(define sss-firefox-userjs-fastfox
+(define firefox-userjs-fastfox
   '((content.notify.interval . 100000)
     ;; gfx
     (gfx.canvas.accelerated.cache-size . 512)
@@ -93,7 +109,7 @@
     ;; experimental
     (layout.css.grid-template-masonry-value.enabled . #t)))
 
-(define sss-firefox-userjs-securefox
+(define firefox-userjs-securefox
   '(
     
     ;; TRACKING PROTECTION
@@ -192,7 +208,7 @@
     (network.captive-portal-service.enabled . #t)
     (network.connectivity-service.enabled . #t)))
 
-(define sss-firefox-ui-customization
+(define firefox-ui-customization
   `((placements (widget-overflow-fixed-list . #())
                 (unified-extensions-area . #())
                 (nav-bar . #(firefox-view-button alltabs-button reset-pbm-toolbar-button unified-extensions-button bookmarks-menu-button home-button developer-button customizableui-special-spring2 back-button forward-button urlbar-container customizableui-special-spring3 vertical-spacer sidebar-button find-button history-panelmenu downloads-button))
@@ -205,7 +221,7 @@
     (currentVersion . 22)
     (newElementCount . 3)))
 
-(define sss-firefox-userjs-peskyfox
+(define firefox-userjs-peskyfox
   `(
     
     ;; Firefox UI
@@ -222,8 +238,7 @@
     (browser.profiles.enabled . #t)
     (browser.ml.chat.enabled . #f)
     (browser.uiCustomization.state unquote
-                                   (scm->json-string
-                                    sss-firefox-ui-customization))
+                                   (scm->json-string firefox-ui-customization))
 
     ;; Sidebar
     (sidebar.main.tools . "history,bookmarks")
@@ -278,27 +293,25 @@
 
     ))
 
-(define sss-firefox-userjs-config
+(define firefox-userjs-config
   (map serialize-firefox-userjs-setting
-       (append sss-firefox-userjs-fastfox sss-firefox-userjs-securefox
-               sss-firefox-userjs-peskyfox)))
+       (append firefox-userjs-fastfox firefox-userjs-securefox
+               firefox-userjs-peskyfox)))
 
-(begin
-  (define* (sss-firefox-userchrome-css #:key palette)
-    `(("*" (font-family . "\"Adwaita Sans\", sans-serif !important "))))
-  (export sss-firefox-userchrome-css))
+(define* (firefox-userchrome-css #:key palette)
+  `(("*" (font-family . "\"Adwaita Sans\", sans-serif !important "))))
 
-(define (serialize-sss-firefox-bookmark b)
+(define (serialize-firefox-bookmark b)
   (cond
     ((list? (cdr b))
      `((dt (h3 ,(car b)))
-       (dl ,(map serialize-sss-firefox-bookmark
+       (dl ,(map serialize-firefox-bookmark
                  (cdr b)))))
     ((string? (cdr b))
      `((dt (a (@ (href ,(cdr b)))
               ,(car b)))))))
 
-(define sss-firefox-bookmarks
+(define firefox-bookmarks
   '(("jointhefreeworld"
      ("jointhefreeworld.org" . "https://jointhefreeworld.org")
      ("wikimusic" . "https://wikimusic.jointhefreeworld.org")
@@ -311,27 +324,24 @@
      ("mastodon" . "https://mastodon.social"))))
 
 (define serialized-firefox-bookmarks
-  `(dl ,(map serialize-sss-firefox-bookmark sss-firefox-bookmarks)))
+  `(dl ,(map serialize-firefox-bookmark firefox-bookmarks)))
 
-(begin
-  (define* (sss-firefox-capability #:key palette)
-    `((".mozilla/firefox/profiles.ini" ,(plain-file "profiles.ini"
-                                                    (string-join
-                                                     sss-firefox-profiles-config
-                                                     "\n")))
-      (".mozilla/firefox/sss/user.js" ,(plain-file "user.js"
-                                                   (string-join
-                                                    sss-firefox-userjs-config
-                                                    "\n")))
-      (".mozilla/firefox/sss/user-bookmarks.html" ,(plain-file
-                                                    "user-bookmarks.html"
-                                                    (with-output-to-string (lambda ()
-                                                                             (sxml->xml
-                                                                              serialized-firefox-bookmarks)))))
-      (".mozilla/firefox/sss/chrome/userChrome.css" ,(plain-file
-                                                      "userChrome.css"
-                                                      (mk-css-conf-lines (sss-firefox-userchrome-css
-                                                                          #:palette
-                                                                          palette))))))
-  (export sss-firefox-capability))
+(define* (firefox-capability #:key palette)
+  `((".mozilla/firefox/profiles.ini" ,(plain-file "profiles.ini"
+                                                  (string-join
+                                                   firefox-profiles-config
+                                                   "\n")))
+    (".mozilla/firefox/sss/user.js" ,(plain-file "user.js"
+                                                 (string-join
+                                                  firefox-userjs-config "\n")))
+    (".mozilla/firefox/sss/user-bookmarks.html" ,(plain-file
+                                                  "user-bookmarks.html"
+                                                  (with-output-to-string (lambda ()
+                                                                           (sxml->xml
+                                                                            serialized-firefox-bookmarks)))))
+    (".mozilla/firefox/sss/chrome/userChrome.css" ,(plain-file
+                                                    "userChrome.css"
+                                                    (mk-css-conf-lines (firefox-userchrome-css
+                                                                        #:palette
+                                                                        palette))))))
 

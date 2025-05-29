@@ -65,7 +65,7 @@ update:
 system-reconfigure: format test
 	$(call sss-log-starting,"system-reconfigure")
 	@sudo guix system reconfigure \
-		-L ./per-host -L ./src ./system/config.scm --fallback
+		-L ./per-host -L ./src ./system/config.scm --fallback --on-error=backtrace
 	$(call sss-log-complete,"system-reconfigure")
 	$(call sss-notify-success,"SSS system-reconfigure complete","task was completed successfully!")
 	@-sudo fc-cache -frv

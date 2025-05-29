@@ -19,7 +19,7 @@
   #:declarative? #t
   #:use-module (gnu)
   #:use-module (sss palette)
-  #:use-module (sss process)
+  #:use-module (sss prelude)
   #:export (mako-config mako-capability))
 
 (define* (mako-config #:key palette sans-font)

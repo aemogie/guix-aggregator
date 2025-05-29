@@ -20,9 +20,9 @@
   #:use-module (gnu)
   #:use-module (gnu packages gnupg)
   #:use-module (gnu home services gnupg)
-  #:export (sss-openpgp-conf))
+  #:export (openpgp-capability))
 
-(define sss-openpgp-conf
+(define openpgp-capability
   (service home-gpg-agent-service-type
            (home-gpg-agent-configuration (pinentry-program (file-append
                                                             pinentry-emacs

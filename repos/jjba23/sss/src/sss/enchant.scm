@@ -18,7 +18,7 @@
 (define-module (sss enchant)
   #:declarative? #t
   #:use-module (gnu)
-  #:use-module (sss process)
+  #:use-module (sss prelude)
   #:export (enchant-capability enchant-ordering enchant-dict-en))
 
 (define* (enchant-capability #:key (ordering enchant-ordering)

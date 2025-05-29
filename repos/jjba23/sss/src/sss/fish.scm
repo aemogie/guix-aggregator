@@ -17,14 +17,22 @@
 
 (define-module (sss fish)
   #:declarative? #t
-  #:use-module (gnu))
+  #:use-module (gnu)
+  #:use-module (sss palette)
+  #:export (serialize-fish-abbreviation fish-abbreviations
+                                        fish-greeting
+                                        serialize-fish-greeting
+                                        fish-prompt
+                                        serialize-fish-prompt
+                                        fish-config
+                                        fish-capability))
 
 (define (serialize-fish-abbreviation a)
   (format #f "abbr -a ~a \"~a\""
           (car a)
           (cdr a)))
 
-(define* (sss-fish-abbreviations #:key clone-dir)
+(define* (fish-abbreviations #:key clone-dir)
   `((c . "clear") (h . "history")
     (tree . "tree --dirsfirst -F")
     (mkdir . "mkdir -p -v")
@@ -63,41 +71,21 @@
     (gui . "hyprland")
     (find-largest-files . "du -h -x -s -- * | sort -r -h | head -20")))
 
-(define (fish-color-for-palette palette)
-  (cond
-    ((eq? 'ef-dream palette)
-     'magenta)
-    ((eq? 'ef-bio palette)
-     'green)
-    ((eq? 'heavy-metal palette)
-     'red)
-    ((eq? 'ef-cyprus palette)
-     'green)
-    ((eq? 'ef-autumn palette)
-     'yellow)
-    ((eq? 'solarized-light palette)
-     'yellow)
-    ((eq? 'everforest-dark palette)
-     'green)
-    ((eq? 'everforest-light palette)
-     'green)
-    (else 'magenta)))
-
-(define* (shell-greeting #:key palette)
+(define* (fish-greeting #:key palette)
   `(,(format #f "set_color -o ~a"
-             (fish-color-for-palette palette))
+             (get-fish-color palette))
     "echo \"Welcome to SSS/GNU - the Supreme Sexp System\"" "echo \"\""
     "set_color normal"))
 
 (define* (serialize-fish-greeting #:key palette)
   (format #f "function fish_greeting\n    ~a\nend"
-          (string-join (shell-greeting #:palette palette) "\n    ")))
+          (string-join (fish-greeting #:palette palette) "\n    ")))
 
-(define* (shell-prompt #:key palette)
+(define* (fish-prompt #:key palette)
   `("set -l last_status $status"
 
     ,(format #f "set_color -o ~a"
-             (fish-color-for-palette palette))
+             (get-fish-color palette))
     "echo -n \"$USER@\"(hostname)"
     "set_color normal"
 
@@ -157,31 +145,27 @@
   (format #f "function fish_prompt\n    ~a\nend"
           (string-join prompt "\n    ")))
 
-(begin
-  (define* (sss-fish-config #:key clone-dir palette)
-    (append `("# ====== SSS Fish configuration ======
+(define* (fish-config #:key clone-dir palette)
+  (append `("# ====== SSS Fish configuration ======
 #
 # auto-generated file, DO NOT EDIT!
 #
 "
-              ;; turn on the Emacs-style keybindings for the shell
-              "fish_default_key_bindings" "")
-            ;; abbreviations (a much better approach than aliases)
-            (map serialize-fish-abbreviation
-                 (sss-fish-abbreviations #:clone-dir clone-dir))
-            `("")
-            (list (serialize-fish-greeting #:palette palette))
-            `("")
-            (list (serialize-fish-prompt (shell-prompt #:palette palette)))))
-  (export sss-fish-config))
+            ;; turn on the Emacs-style keybindings for the shell
+            "fish_default_key_bindings" "")
+          ;; abbreviations (a much better approach than aliases)
+          (map serialize-fish-abbreviation
+               (fish-abbreviations #:clone-dir clone-dir))
+          `("")
+          (list (serialize-fish-greeting #:palette palette))
+          `("")
+          (list (serialize-fish-prompt (fish-prompt #:palette palette)))))
 
-(begin
-  (define* (sss-fish-capability #:key clone-dir palette)
-    `((".config/fish/config.fish" ,(plain-file "config.fish"
-                                               (string-join (sss-fish-config
-                                                             #:clone-dir
-                                                             clone-dir
-                                                             #:palette palette)
-                                                            "\n")))))
-  (export sss-fish-capability))
+(define* (fish-capability #:key clone-dir palette)
+  `((".config/fish/config.fish" ,(plain-file "config.fish"
+                                             (string-join (fish-config
+                                                           #:clone-dir
+                                                           clone-dir
+                                                           #:palette palette)
+                                                          "\n")))))
 
