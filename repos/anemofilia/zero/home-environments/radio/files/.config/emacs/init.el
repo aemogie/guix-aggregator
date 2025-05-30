@@ -12,6 +12,7 @@
 
   (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
   (add-to-list 'default-frame-alist '(ns-appearance . dark))
+  (add-to-list 'default-frame-alist '(undecorated . t))
 
   ;; load-path
   (add-to-list 'load-path

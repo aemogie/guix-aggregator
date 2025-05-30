@@ -285,16 +285,19 @@ riverctl map passthrough Super F12 enter-mode normal
 
 # Application rules ___________________________________________________________
 
+# browser
+riverctl rule-add -app-id 'zen' tags 2
+riverctl rule-add -app-id 'zen' ssd
+
+#emacs
+riverctl rule-add -app-id 'emacs' ssd
+
+#imv
+riverctl rule-add -app-id 'imv' ssd
+
 # telegram
 riverctl rule-add -app-id 'org.telegram' position 493 33
 riverctl rule-add -app-id 'org.telegram' dimensions 380 724
 riverctl rule-add -app-id 'org.telegram' float
 riverctl rule-add -app-id 'org.telegram' ssd
 riverctl rule-add -app-id 'org.telegram' tags ${scratch_tag}
-
-#imv
-riverctl rule-add -app-id 'imv' ssd
-
-# browser
-riverctl rule-add -app-id 'zen' tags 2
-riverctl rule-add -app-id 'zen' ssd

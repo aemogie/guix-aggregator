@@ -12,9 +12,9 @@
 #*.default = true
 #*.normal = true
 
-#*.selected.bg = 12
-#*.selected.fg = 15
-#*.selected.bold = true
+*.selected.bg = 12
+*.selected.fg = 0
+*.selected.bold = false
 
 statusline_*.dim = false
 statusline_*.bg = 0
@@ -25,11 +25,11 @@ statusline_*.fg = 4
 #*error.fg = 1
 #*error.bold = true
 
-#border.fg = 12
-#border.bold = true
-#title.bg = 12
-#title.fg = 15
-#title.bold = true
+border.fg = 12
+border.bold = true
+title.bg = 12
+title.fg = 15
+title.bold = false
 
 #header.fg = 4
 #header.bold = true
@@ -47,14 +47,16 @@ msglist_pill.fg = 15
 
 #part_mimetype.fg = 12
 
-#selector_chooser.bold = true
-#selector_focused.bold = true
-#selector_focused.bg = 12
-#selector_focused.fg = 15
+selector_chooser.bold = true
+selector_focused.bold = true
+selector_focused.bg = 0
+selector_focused.fg = 15
 
-#completion_pill.bg = 12
-#completion_default.bg = 8
-#completion_default.fg = 15
+completion_pill.bg = 12
+completion_default.bg = 0
+completion_default.fg = 15
+completion_description.bg = 0
+completion_description.fg = 15
 
 #[viewer]
 # Uncomment these two lines to reset all attributes in the [viewer] section.

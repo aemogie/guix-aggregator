@@ -7,7 +7,7 @@
 (define alarm
   (shepherd-timer
    (name 'alarm)
-   (event #~(calendar-event #:hours '(6) #:minutes '(0)))
+   (event #~(calendar-event #:hours '(5) #:minutes '(0)))
    (action #~(lambda ()
                (spawn-shell-command
                  "notify-send \"$(rem)\" --expire-time 0; \

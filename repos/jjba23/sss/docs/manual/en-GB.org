@@ -493,7 +493,7 @@ Enter the directory of SSS: ~cd sss~ and do a ~make sr~.
 
 Note: ~make sr~ translates to ~sudo guix system reconfigure~ with some extra settings.
 
-While unlikely, it's possible that some packages fail to install/build for your setup. I would encourage to temporarily comment those out of the configuration (likely at ~src/sss/packages.scm~) and try again. After a working SSS setup, you can uncomment them and try again.
+While unlikely, it's possible that some packages fail to install/build for your setup. I would encourage to temporarily comment those out of the configuration (likely at ~src/sss/packages/~) and try again. After a working SSS setup, you can uncomment them and try again.
 
 For more commands take a look at the SSS Makefile: [[file:../../Makefile]].
 

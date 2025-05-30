@@ -1,14 +1,15 @@
 #!/bin/sh
 
-  lswt | grep -q 'org.telegram'
-  if [ $? -ne 0 ]; then
-      setsid -f telegram-desktop >/dev/null 2>&1 & disown
-      sleep 3
-  fi
-  if [ $1 = "-c" ]; then
-     shift 1
-     for f in $@; do echo $PWD/$f; done | wl-copy
-  fi
-  wlrctl keyboard type '.' modifiers SUPER
-  wlrctl toplevel focus org.telegram
-  telegram-desktop -sendpath $(for f in $@; do realpath $f; done)
+[ $1 = "-c" ] && shift 1 && realpath -s "$@" | wl-copy
+
+lswt | grep -q 'org.telegram' \
+|| setsid -f telegram-desktop >/dev/null 2>&1 \
+&& sleep 3
+
+river-bedload -print tags | jq -e 'map(select(.id == 8)).[].focused' >/dev/null \
+|| wlrctl keyboard type '.' modifiers SUPER
+
+lswt -j | jq -e '.toplevels | map(select(."app-id" == "org.telegram")).[].activated' >/dev/null \
+|| wlrctl toplevel focus org.telegram
+
+realpath -z "$@" | xargs -0 telegram-desktop -sendpath

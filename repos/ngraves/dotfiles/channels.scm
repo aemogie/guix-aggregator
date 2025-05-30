@@ -184,5 +184,13 @@
 
 ;; (map maybe-instantiate-channel %channels)
 
-((@ (guix-stack submodules) submodules-dir->channels) "channels"
- #:use-local-urls? #t)
+(catch #t
+  (lambda ()
+    (use-modules (guix-stack channel-submodules))
+    (submodules-dir->channels "channels" #:use-local-urls? #t))
+  (lambda (key . args)
+    (display "(guix-stack channel-submodules) not found. Falling back...\n")
+    (load (string-append
+           %cwd "/channels/guix-stack/src/guix-stack/channel-submodules.scm"))
+    (use-modules (guix-stack channel-submodules))
+    (submodules-dir->channels "channels" #:use-local-urls? #t)))

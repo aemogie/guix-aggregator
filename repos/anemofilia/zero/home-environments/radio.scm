@@ -186,9 +186,9 @@
                      ("resources/code/scm/guile"
                       ,(savannah-url "guile"))
                      ("resources/code/scm/guix"
-                      ,(savannah-url "guix"))
+                      ,(codeberg-url "guix"))
                      ("resources/code/scm/shepherd"
-                      ,(savannah-url "shepherd"))))
+                      ,(codeberg-url "shepherd"))))
           (service home-files-service-type
                    `((".config/guix/home.scm" ,(symlink-to radio.scm))))
 
