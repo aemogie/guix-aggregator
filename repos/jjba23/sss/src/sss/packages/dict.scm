@@ -15,10 +15,17 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
-(define-module (sss packages container)
+(define-module (sss packages dict)
   #:declarative? #t
-  #:use-module (gnu packages containers)
-  #:export (container-packages))
+  #:use-module (gnu packages aspell)
+  #:use-module (gnu packages enchant)
+  #:export (dict-packages))
 
-(define container-packages
-  (make-parameter (list podman-compose passt)))
+(define dict-packages
+  (make-parameter (list aspell
+                        aspell-dict-ca
+                        aspell-dict-en
+                        aspell-dict-es
+                        aspell-dict-nl
+                        aspell-dict-pt-pt
+                        enchant)))

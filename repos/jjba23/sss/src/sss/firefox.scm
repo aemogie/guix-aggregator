@@ -299,7 +299,7 @@
                firefox-userjs-peskyfox)))
 
 (define* (firefox-userchrome-css #:key palette)
-  `(("*" (font-family . "\"Adwaita Sans\", sans-serif !important "))))
+  `())
 
 (define (serialize-firefox-bookmark b)
   (cond

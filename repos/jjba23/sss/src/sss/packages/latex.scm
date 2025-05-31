@@ -15,10 +15,11 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
-(define-module (sss packages container)
+(define-module (sss packages latex)
   #:declarative? #t
-  #:use-module (gnu packages containers)
-  #:export (container-packages))
+  #:use-module (gnu packages texinfo)
+  #:use-module (gnu packages texlive)
+  #:export (latex-packages))
 
-(define container-packages
-  (make-parameter (list podman-compose passt)))
+(define latex-packages
+  (make-parameter (list texinfo texlive)))

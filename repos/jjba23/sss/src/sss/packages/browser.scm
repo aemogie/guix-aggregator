@@ -15,10 +15,11 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
-(define-module (sss packages container)
+(define-module (sss packages browser)
   #:declarative? #t
-  #:use-module (gnu packages containers)
-  #:export (container-packages))
+  #:use-module (nongnu packages mozilla)
+  #:use-module (nongnu packages chrome)
+  #:export (browser-packages))
 
-(define container-packages
-  (make-parameter (list podman-compose passt)))
+(define browser-packages
+  (make-parameter (list firefox google-chrome-beta)))

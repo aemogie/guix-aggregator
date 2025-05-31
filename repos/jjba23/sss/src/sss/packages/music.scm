@@ -15,10 +15,11 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
-(define-module (sss packages container)
+(define-module (sss packages music)
   #:declarative? #t
-  #:use-module (gnu packages containers)
-  #:export (container-packages))
+  #:use-module (gnu packages music)
+  #:use-module (gnu packages audio)
+  #:export (music-packages))
 
-(define container-packages
-  (make-parameter (list podman-compose passt)))
+(define music-packages
+  (make-parameter (list lilypond ardour tenacity)))

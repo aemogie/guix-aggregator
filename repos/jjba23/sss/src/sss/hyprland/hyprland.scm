@@ -44,7 +44,7 @@
            " /run/current-system/profile/share/icons/Yaru/32x32/actions/dialog-yes.png"
            " \"~a\" \"~a\"" " >/dev/null 2>&1") title subtitle))
 
-(define* (hypr-startup-programs #:key palette
+(define* (hypr-startup-programs #:key palette sans-font
                                 (extra-startups '()))
   (let* ((gtk-theme-name (get-gtk-theme palette))
          (icon-theme-name (get-icon-theme palette))
@@ -69,7 +69,9 @@
                          "gsettings set org.gnome.desktop.interface cursor-theme '~a'"
                          cursor-theme-name)
                        "gsettings set org.gnome.desktop.interface cursor-size 24"
-                       "gsettings set org.gnome.desktop.interface font-name 'Adwaita Sans'"
+                       ,(format #f
+                         "gsettings set org.gnome.desktop.interface font-name '~a'"
+                         sans-font)
                        "xdg-user-dirs-update"))))
     xs))
 
@@ -332,11 +334,13 @@
                           caps-to-ctrl
                           palette
                           monitors
+                          sans-font
                           (extra-startups '())
                           (with-blur #f)
                           (with-shadow #f)
                           (startup-programs (hypr-startup-programs #:palette
                                              palette
+                                             #:sans-font sans-font
                                              #:extra-startups extra-startups))
                           (window-rules (list (hypr-window-rule #:action 'float
                                                                 #:class
@@ -408,6 +412,7 @@
                               keyboard-layout
                               caps-to-ctrl
                               monitors
+                              sans-font
                               extra-startups
                               with-blur
                               with-shadow)
@@ -418,6 +423,7 @@
                                                 keyboard-layout
                                                 #:caps-to-ctrl caps-to-ctrl
                                                 #:palette palette
+                                                #:sans-font sans-font
                                                 #:monitors monitors
                                                 #:extra-startups
                                                 extra-startups

@@ -15,10 +15,18 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
-(define-module (sss packages container)
+(define-module (sss packages net)
   #:declarative? #t
-  #:use-module (gnu packages containers)
-  #:export (container-packages))
+  #:use-module (gnu packages networking)
+  #:use-module (gnu packages vpn)
+  #:use-module (gnu packages web)
+  #:use-module (gnu packages gnome)
+  #:export (net-packages))
 
-(define container-packages
-  (make-parameter (list podman-compose passt)))
+(define net-packages
+  (make-parameter (list openvpn
+                        darkhttpd
+                        network-manager-applet
+                        network-manager-openconnect
+                        network-manager-openvpn
+                        wireshark)))

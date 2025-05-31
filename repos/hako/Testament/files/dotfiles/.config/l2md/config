@@ -4,7 +4,7 @@
 
 [general]
         base = ~/.local/share/l2md/
-        period = 900
+        period = 3600
 
 # emacs-devel@gnu.org
 [repo emacs-devel]

@@ -82,20 +82,24 @@
 
 (define sss-home-files-service
   (service home-files-service-type
-           (append (gtk3-capability #:palette (get-setting 'palette))
-                   (gtk4-capability #:palette (get-setting 'palette))
+           (append (gtk3-capability #:palette (get-setting 'palette)
+                                    #:sans-font (get-setting 'sans-font))
+                   (gtk4-capability #:palette (get-setting 'palette)
+                                    #:sans-font (get-setting 'sans-font))
                    (git-capability)
                    (waybar-capability #:palette (get-setting 'palette)
                                       #:sans-font (get-setting 'sans-font)
                                       #:with-memory #t
                                       #:hyprland-session #t)
-                   (rofi-capability #:palette (get-setting 'palette))
+                   (rofi-capability #:palette (get-setting 'palette)
+                                    #:sans-font (get-setting 'sans-font))
                    (alacritty-capability #:palette (get-setting 'palette)
                                          #:mono-font (get-setting 'mono-font))
                    (hyprland-capability #:palette (get-setting 'palette)
                                         #:clone-dir (get-setting 'clone-dir)
                                         #:keyboard-layout (get-setting 'keyboard-layout)
                                         #:caps-to-ctrl (get-setting 'caps-to-ctrl?)
+                                        #:sans-font (get-setting 'sans-font)
                                         #:monitors (get-setting 'hyprland-monitors)
                                         #:extra-startups (get-setting 'hyprland-extra-startups)
                                         #:with-blur #t
@@ -154,6 +158,6 @@
                                                                 "/home/joe/.local/bin/set-random-wallpaper.sh")))))
                  (service home-dbus-service-type)
                  (service home-pipewire-service-type)
-                 fontconfig-capability
+                 (fontconfig-capability #:mono-font (get-setting 'mono-font))
                  channels-capability) %base-home-services)))
 

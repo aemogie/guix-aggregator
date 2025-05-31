@@ -15,10 +15,10 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
-(define-module (sss packages container)
+(define-module (sss packages qt)
   #:declarative? #t
-  #:use-module (gnu packages containers)
-  #:export (container-packages))
+  #:use-module (gnu packages qt)
+  #:export (qt-packages))
 
-(define container-packages
-  (make-parameter (list podman-compose passt)))
+(define qt-packages
+  (make-parameter (list qtwayland qt6ct qtsvg)))

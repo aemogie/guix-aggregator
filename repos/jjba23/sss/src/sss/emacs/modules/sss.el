@@ -284,6 +284,19 @@ DATA: A string containing JSON data."
   (switch-to-buffer buffer-name)
   (scroll-down 10000))
 
+
+(defun guix-package-location-on-mark ()
+  (interactive)
+  (require 'guix)
+  (require 'guix-package)
+  (let* ((target-package (buffer-substring (mark) (point)))
+         (loc (guix-package-location target-package))
+         (clean-loc (if (not loc)
+                        (format "Error! Could not find %s as valid Guix package" target-package)
+                      (format "Found package %s at: %s" target-package (car (string-split loc ":"))))))
+    (message clean-loc)))
+
 (provide 'sss/sss)
 
 ;;; sss.el ends here
+labwc

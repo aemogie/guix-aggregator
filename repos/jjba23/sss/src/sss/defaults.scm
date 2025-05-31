@@ -132,11 +132,29 @@
 (define default-palette
   'ef-dream)
 
+;; Sans-serif font choice for the system
+;;
+;; some good choices:
+;; - Liberation Sans
+;; - Adwaita Sans
 (define default-sans-font
-  "Adwaita Sans")
+  "Liberation Sans")
 
+;; Serif font choice for the system
+;;
+;; some good choices:
+;; - Liberation Serif
+;; - Noto Serif
+(define default-serif-font
+  "Liberation Serif")
+
+;; Monospaced font choice for the system
+;;
+;; some good choices:
+;; - Liberation Mono
+;; - Adwaita Mono
 (define default-mono-font
-  "Adwaita Mono")
+  "Liberation Mono")
 
 ;; Nix packages to install
 (define default-nixpkgs

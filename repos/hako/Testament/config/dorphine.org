@@ -374,6 +374,7 @@ Generate passwordless ECC key:
 #+begin_src scheme :noweb-ref home-service
   (service home-sops-secrets-service-type
     (home-sops-service-configuration
+      (sops (pkg "sops"))
       (config (local-file (testament-plain "sops.yaml")))
       (gnupg-home (in-vicinity (getenv "XDG_DATA_HOME") "sops"))
       (secrets
@@ -388,17 +389,18 @@ Generate passwordless ECC key:
 #+begin_src scheme :noweb-ref service
   (service sops-secrets-service-type
     (sops-service-configuration
-     (config (local-file (testament-plain "sops.yaml")))
-     (gnupg-home "/var/lib/sops")
-     (secrets
-      (list (sops-secret
-              (key '("cloudflare"))
-              (file dorphine.yaml)
-              (user "caddy"))
-            (sops-secret
-              (key '("cloudflared"))
-              (file dorphine.yaml)
-              (user "cloudflared"))))))
+      (sops (pkg "sops"))
+      (config (local-file (testament-plain "sops.yaml")))
+      (gnupg-home "/var/lib/sops")
+      (secrets
+       (list (sops-secret
+               (key '("cloudflare"))
+               (file dorphine.yaml)
+               (user "caddy"))
+             (sops-secret
+               (key '("cloudflared"))
+               (file dorphine.yaml)
+               (user "cloudflared"))))))
 #+end_src
 
 [[file:../files/plain/sops.yaml][sops.yaml]]
@@ -766,7 +768,7 @@ To use NVK, mesa should be installed into a profile.
 
 *** niri
 #+begin_src scheme :noweb-ref home-package
-  "niri"
+  #;"niri"
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref home-xdg-configuration-file
@@ -876,6 +878,7 @@ To use NVK, mesa should be installed into a profile.
 ** xdg-desktop-portal
 #+begin_src scheme :noweb-ref home-package
   "xdg-desktop-portal"
+  "xdg-desktop-portal-gnome"
   "xdg-desktop-portal-gtk"
 #+end_src
 
@@ -986,6 +989,7 @@ For consistency, use this field order:
        (auth-sources . ("~/.local/share/authinfo.gpg"))
        (blink-cursor-mode . #f)
        (browse-url-firefox-program . "librewolf")
+       (compile-command . "make -k -j$(nproc)")
        (completion-ignore-case . #t)
        (enable-recursive-minibuffers . #t)
        (fill-column . 80)

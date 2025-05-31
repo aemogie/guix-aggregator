@@ -15,10 +15,13 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
-(define-module (sss packages container)
+(define-module (sss packages dev)
   #:declarative? #t
-  #:use-module (gnu packages containers)
-  #:export (container-packages))
+  #:use-module (gnu)
+  #:use-module (gnu packages lisp)
+  #:use-module (gnu packages node)
+  #:export (dev-packages))
 
-(define container-packages
-  (make-parameter (list podman-compose passt)))
+(define dev-packages
+  (make-parameter (list (specification->package "openjdk@21") node
+                        (specification->package "python@3.10") cl-asdf sbcl)))

@@ -15,10 +15,21 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
-(define-module (sss packages container)
+(define-module (sss packages font)
   #:declarative? #t
-  #:use-module (gnu packages containers)
-  #:export (container-packages))
+  #:use-module (gnu packages fonts)
+  #:use-module (gnu packages fontutils)
+  #:use-module (nongnu packages fonts)
+  #:export (font-packages))
 
-(define container-packages
-  (make-parameter (list podman-compose passt)))
+(define font-packages
+  (make-parameter (list font-adwaita
+                        font-awesome
+                        font-dejavu
+                        font-fira-code
+                        font-google-noto
+                        font-google-noto-emoji
+                        font-google-roboto
+                        font-liberation
+                        font-microsoft-web-core-fonts
+                        fontconfig)))

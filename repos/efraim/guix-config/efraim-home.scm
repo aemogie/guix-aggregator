@@ -1190,6 +1190,12 @@
                       ("PROMPT_COMMAND" . "history -a; $PROMPT_COMMAND")))
                    (aliases
                     `(("cp" . "cp --reflink=auto")
+
+                      ;; I seem to have lost these
+                      ("ls" . "ls -p --color=auto")
+                      ("grep" . "grep --color=auto")
+                      ("ip" . "ip -color")
+
                       ("exitexit" . "exit")
                       ("clear" . "printf '\\E[H\\E[J\\E[0m'")
                       ;("clear" . ,(file-append (S "ncurses") "/bin/clear"))

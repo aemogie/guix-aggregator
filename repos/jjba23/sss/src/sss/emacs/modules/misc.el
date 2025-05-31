@@ -47,7 +47,7 @@
 
 (use-package speed-type :ensure t)
 
-(use-package guix :ensure t)
+(use-package guix :ensure t :demand t)
 
 (use-package pandoc-mode :ensure t)
 

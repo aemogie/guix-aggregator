@@ -70,7 +70,7 @@ http://git.boiledscript.com {
 }
 
 # Miniflux
-http://reader.boiledscript.com {
+reader.boiledscript.com {
 	import block_bots
 	import robots_txt
 	import logging miniflux
@@ -86,7 +86,7 @@ http://social.boiledscript.com {
 }
 
 # Vaultwarden
-http://vault.boiledscript.com {
+vault.boiledscript.com {
 	import block_bots
 	import robots_txt
 	import logging vaultwarden

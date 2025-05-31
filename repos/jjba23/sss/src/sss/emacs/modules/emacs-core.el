@@ -72,6 +72,7 @@
          ("C-c w f" . sss-project-fmt)
          ("C-c w t" . sss-project-start-test)
          ("C-c w d" . sss-project-start-dev)
+         ("C-c g l" . guix-package-location-on-mark)
          ("C-c t a" . sort-lines)
          ("C-c t p" . kbd-scheme-make-parameter)
          ("C-c t h" . kbd-scheme-hygguile-abstraction))
@@ -120,8 +121,8 @@
 
   (setq initial-buffer-choice
         (lambda () (ignore-errors
-                (welkomscherm)
-                (get-buffer welkomscherm-buffer-name))))
+                     (welkomscherm)
+                     (get-buffer welkomscherm-buffer-name))))
   
   (recentf-mode 1)
   (setq recentf-max-menu-items 100

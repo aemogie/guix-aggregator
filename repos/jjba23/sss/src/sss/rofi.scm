@@ -20,16 +20,12 @@
   #:use-module (gnu)
   #:use-module (sss palette)
   #:use-module (sss prelude)
-  #:export (rofi-capability rofi-theme rofi-font rofi-icon-theme
-                            rofi-configuration))
-
-(define rofi-font
-  "Adwaita Sans")
+  #:export (rofi-capability rofi-theme rofi-icon-theme rofi-configuration))
 
 (define rofi-icon-theme
-  "Papirus")
+  (make-parameter "Papirus"))
 
-(define rofi-configuration
+(define* (rofi-configuration #:key sans-font)
   (format #f "configuration {
     font: \"~a 14\";
     show-icons: true;
@@ -41,9 +37,10 @@
     sidebar-mode: false;
 }
 
-@theme \"./sss-theme.rasi\"" rofi-font rofi-icon-theme))
+@theme \"./sss-theme.rasi\"" sans-font
+          (rofi-icon-theme)))
 
-(define* (rofi-theme #:key palette)
+(define* (rofi-theme #:key palette sans-font)
   `(("*" (foreground unquote
                      (get-color palette
                                 'text))
@@ -54,7 +51,7 @@
      (background-color . "transparent")
      (highlight . "underline bold #ffffff")
      (font unquote
-           (format #f "\"~a 14\"" rofi-font)))
+           (format #f "\"~a 14\"" sans-font)))
     ("window" (location . "center")
      (anchor . "center")
      (transparency . "\"real\"")
@@ -66,7 +63,7 @@
      (orientation . "horizontal")
      (children . "[ mainbox ]"))
     ("message" (font unquote
-                     (format #f "\"~a 14\"" rofi-font))
+                     (format #f "\"~a 14\"" sans-font))
      (border . "0px 2px 2px 2px")
      (color unquote
             (get-color palette
@@ -117,11 +114,15 @@
                                                'background-l)
                                     #:alpha 0.9)))))
 
-(define* (rofi-capability #:key palette)
-  `((".config/rofi/config.rasi" ,(plain-file "config.rasi" rofi-configuration))
+(define* (rofi-capability #:key palette sans-font)
+  `((".config/rofi/config.rasi" ,(plain-file "config.rasi"
+                                             (rofi-configuration #:sans-font
+                                                                 sans-font)))
     
     (".config/rofi/sss-theme.rasi" ,(plain-file "sss-theme.rasi"
                                                 (mk-css-conf-lines (rofi-theme
                                                                     #:palette
-                                                                    palette))))))
+                                                                    palette
+                                                                    #:sans-font
+                                                                    sans-font))))))
 

@@ -21,14 +21,14 @@
   #:use-module (gnu home services fontutils)
   #:export (fontconfig-capability))
 
-(define fontconfig-capability
+(define* (fontconfig-capability #:key mono-font)
   (simple-service 'additional-fonts-service home-fontconfig-service-type
                   (list "~/.nix-profile/share/fonts"
-                        '(alias (family "monospace")
-                                (prefer (family "Adwaita Mono")))
-                        '(alias (family "ui-monospace")
-                                (prefer (family "Adwaita Mono")))
-                        '(alias (family "Consolas")
-                                (prefer (family "Adwaita Mono")))
-                        '(alias (family "SF Mono")
-                                (prefer (family "Adwaita Mono"))))))
+                        `(alias (family "monospace")
+                                (prefer (family ,mono-font)))
+                        `(alias (family "ui-monospace")
+                                (prefer (family ,mono-font)))
+                        `(alias (family "Consolas")
+                                (prefer (family ,mono-font)))
+                        `(alias (family "SF Mono")
+                                (prefer (family ,mono-font))))))

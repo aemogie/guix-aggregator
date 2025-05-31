@@ -246,7 +246,8 @@
    (eval . (put 'miniflux-configuration 'scheme-indent-function 0))
    (eval . (put 'misskey-configuration 'scheme-indent-function 0))
    (eval . (put 'navidrome-configuration 'scheme-indent-function 0))
-   (eval . (put 'vaultwarden-configuration 'scheme-indent-function 0))))
+   (eval . (put 'vaultwarden-configuration 'scheme-indent-function 0))
+   (eval . (put 'sops-service-configuration 'scheme-indent-function 0))))
 
  (emacs-lisp-mode . ((indent-tabs-mode . nil)))
  (texinfo-mode    . ((indent-tabs-mode . nil)
