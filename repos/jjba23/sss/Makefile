@@ -26,7 +26,7 @@
 
 .PHONY: update system-reconfigure joe-reconfigure manon-reconfigure \
         format jr fr sr mr fmt full-rebuild nix-profile-upgrade \
-        test publish-manual gc store-gc full-gc shepherd-logs npu \
+        test gc store-gc full-gc shepherd-logs npu \
         clone-user-repos install-nix-packages npi deploy install-flatpak-packages
 
 # Constants

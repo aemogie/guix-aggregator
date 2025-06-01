@@ -60,8 +60,6 @@
         (format #f "cd ~a && make sr" clone-dir))
     (jr unquote
         (format #f "cd ~a && make jr" clone-dir))
-    (pm unquote
-        (format #f "cd ~a && make publish-manual" clone-dir))
     (npi unquote
          (format #f "cd ~a && make npi" clone-dir))
     (npu unquote

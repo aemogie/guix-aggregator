@@ -134,27 +134,61 @@
   (string-append (dirname (current-filename)) "/files/btrbk.conf"))
 
 
+(use-modules (gnu services base))
+
+(define nonguix-service-type
+  (service-type
+   (name 'nonguix)
+   (extensions
+    (list
+     (service-extension
+      guix-service-type
+      (lambda (config)
+       (guix-extension
+        (substitute-urls (list "https://substitutes.nonguix.org"))
+        (authorized-keys
+         (list
+          (origin
+            (method url-fetch)
+            (uri "https://substitutes.nonguix.org/signing-key.pub")
+            (sha256
+             (base32
+              "0j66nq1bxvbxf5n8q2py14sjbkn57my0mjwq7k1qm9ddghca7177"))))))))))
+   (default-value #f)
+   (description "Provides substitutes for nonguix.")))
+
+;; Try upstreaming this one in
+(define guix-science-service-type
+  (service-type
+   (name 'guix-science)
+   (extensions
+    (list
+     (service-extension
+      guix-service-type
+      (lambda (config)
+       (guix-extension
+        (substitute-urls (list "https://guix.bordeaux.inria.fr"))
+        (authorized-keys
+         (list
+          (origin
+            (method url-fetch)
+            (uri "https://guix.bordeaux.inria.fr/signing-key.pub")
+            (sha256
+             (base32
+              "056cv0vlqyacyhbmwr5651fzg1icyxbw61nkap7sd4j2x8qj7ila"))))))))))
+   (default-value #f)
+   (description "Provides substitutes for guix-science.")))
+
 ;;; Substitutes helpers
 (define %base-services-feature
   (delay
-    (feature-base-services
-     #:guix-substitute-urls
-     (cons* "https://substitutes.nonguix.org"
-            "https://guix.bordeaux.inria.fr"
-            (@ (guix store) %default-substitute-urls))
-     #:guix-authorized-keys
-     (cons*
-      (origin
-        (method url-fetch)
-        (uri "https://substitutes.nonguix.org/signing-key.pub")
-        (sha256
-         (base32 "0j66nq1bxvbxf5n8q2py14sjbkn57my0mjwq7k1qm9ddghca7177")))
-      (origin
-        (method url-fetch)
-        (uri "https://guix.bordeaux.inria.fr/signing-key.pub")
-        (sha256
-         (base32 "056cv0vlqyacyhbmwr5651fzg1icyxbw61nkap7sd4j2x8qj7ila")))
-      (@ (gnu services base) %default-authorized-guix-keys)))))
+    (list
+     (feature-custom-services
+      #:feature-name-prefix 'more-substitutes
+      #:system-services
+      (list (service nonguix-service-type)
+            (service guix-science-service-type)))
+     (feature-base-services))))
 
 
 ;;; Live systems.
@@ -202,7 +236,7 @@
             (service network-manager-service-type)
             (service (@@ (gnu system install) cow-store-service-type) 'mooh!)))
           (feature-shepherd)
-          (force %base-services-feature))))))))
+          (feature-base-services))))))))
 
 
 
@@ -221,15 +255,6 @@
 
 (define %user-features
   (list
-   (feature-age
-    #:age (hidden-package (@ (gnu packages golang-crypto) age))
-    #:age-ssh-key (find-home "~/.local/share/ssh/id_encrypt"))
-   (feature-security-token)
-   (feature-password-store
-    #:default-pass-prompt? #t
-    #:password-store (@ (gnu packages password-utils) pass-age)
-    #:password-store-directory (string-append cwd "/files/pass")
-    #:remote-password-store-url "git@git.sr.ht:~ngraves/pass")
    (feature-user-info
     #:user-name "graves"
     #:full-name "Nicolas Graves"
@@ -938,8 +963,8 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
    ;; Might use r8169 module but it works fine without, use linux-libre then.
    (machine (name "OptiPlex 3020M")
             (efi "/dev/sda1")
-            (encrypted-uuid-mapped "be1f04af-dafe-4e1b-8e8b-a602951eeb35")
-            (btrfs-layout root-impermanence-btrfs-layout))))
+            (encrypted-uuid-mapped "ad1b7435-9957-424d-b9ac-9a9eac040e72")
+            (btrfs-layout (cons* '(home . "/home") root-impermanence-btrfs-layout)))))
 
 
 (define %current-machine
@@ -1014,7 +1039,10 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
 
   (define btrfs-file-systems
     (append
-     (list root-fs home-fs)
+     (list root-fs)
+     (if (machine-home-impermanence? %current-machine)
+         (list home-fs)
+         '())
      (map get-btrfs-file-system
           (machine-btrfs-layout %current-machine))
      (list (file-system
@@ -1076,12 +1104,21 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
      (match (machine-name %current-machine)
        ("Precision 3571"
         (append
-         (list (force %base-services-feature))
+         (force %base-services-feature)
          (list (feature-custom-services
                 #:feature-name-prefix 'machine
                 #:system-services (force %nvidia-services))
                (feature-dictation)
                (feature-scilab)
+               (feature-age
+                #:age (hidden-package (@ (gnu packages golang-crypto) age))
+                #:age-ssh-key (find-home "~/.local/share/ssh/id_encrypt"))
+               (feature-security-token)
+               (feature-password-store
+                #:default-pass-prompt? #t
+                #:password-store (@ (gnu packages password-utils) pass-age)
+                #:password-store-directory (string-append cwd "/files/pass")
+                #:remote-password-store-url "git@git.sr.ht:~ngraves/pass")
                (force %ssh-feature))
          (force %mail-features)
          (list
@@ -1104,6 +1141,10 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
                   (symlink (string-append profile "/current-guix")
                            ".config/guix/current"))
                 (system ".guix-home/activate")))))))
+       ("2325K55"
+        (force %base-services-feature))
+       ("OptiPlex 3020M"
+        (force %base-services-feature))
        (_ '())))))
 
 

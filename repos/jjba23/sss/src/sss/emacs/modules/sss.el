@@ -47,12 +47,6 @@
   (let ((default-directory (string-replace "$HOME" "~" sss-clone-dir)))
     (async-shell-command "make jr")))
 
-(defun sss-publish-manual ()
-  "Rebuild GNU Guix Joe's config manual."
-  (interactive)
-  (let ((default-directory (string-replace "$HOME" "~" sss-clone-dir)))
-    (async-shell-command "make publish-manual")))
-
 (defun sss-full-reconfigure ()
   "Fully Rebuild GNU Guix Joe's configs and Joe's user."
   (interactive)

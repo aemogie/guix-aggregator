@@ -66,7 +66,6 @@
          ("C-c # j" . sss-joe-reconfigure)
          ("C-c # s" . sss-sys-reconfigure)
          ("C-c # u" . sss-sys-update)
-         ("C-c # m" . sss-publish-manual)
          ("C-c # f" . sss-full-reconfigure)
          ("C-c w r" . sss-project-start-repl-process)
          ("C-c w f" . sss-project-fmt)

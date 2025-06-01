@@ -1,3 +1,4 @@
 (channel
  (version 0)
- (directory "lib"))
+ (url "https://codeberg.org/jjba23/sss.git")
+ (directory "src"))
