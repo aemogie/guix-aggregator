@@ -26,23 +26,23 @@
              (guix packages)
              (guix store)
 
-             (rde features)
-             ((rde packages) #:select (strings->packages))
              ((gnu services) #:select (simple-service))
 
              ((guix packages) #:select (origin base32 package))
-             ((guix records) #:select (recutils->alist))
+             (guix records)
              ((guix ui) #:select (with-error-handling))
              ((guix utils) #:select (readlink*))
              ((gnu services) #:select (simple-service etc-service-type service))
              (guix build-system channel)
              (guix build-system font)
-             (gnu packages fonts)
-             (nonguix licenses)
+             (gnu packages fonts))
 
+;; Modules depending on more than guix.
+(use-modules (rde features)
+             ((rde packages) #:select (strings->packages))
              (rde home services emacs)
-             (nongnu packages linux)
-             )
+             (nonguix licenses)
+             (nongnu packages linux))
 
 (eval-when (eval load compile)
   (begin
@@ -87,12 +87,10 @@
 
  ;; Modules for machine helpers.
  (guix records)
- (rde features system)
  (srfi srfi-1) (ice-9 popen) (ice-9 rdelim) (ice-9 match)
  (gnu system) (gnu system file-systems) (gnu system mapped-devices)
  (gnu system uuid)
- (gnu packages linux) (nongnu packages linux)
- (nongnu system linux-initrd)
+ (gnu packages linux)
 
  ;; Modules for config.
  (ice-9 popen) (ice-9 rdelim)
@@ -100,32 +98,38 @@
  (gnu system)
  ((guix build utils) #:select (find-files))
  ((gnu packages) #:select (specification->package))
- ((rde packages) #:select (strings->packages))
  ((gnu services) #:select (simple-service etc-service-type service))
  ((guix download) #:select (url-fetch url-fetch/zipbomb))
  ((guix packages) #:select (origin base32 package))
  ((guix ui) #:select (with-error-handling))
  ((guix utils) #:select (readlink*))
  (guix build-system channel)
- (guix build-system font) (gnu packages fonts) (nonguix licenses)
+ (guix build-system font) (gnu packages fonts)
  (guix gexp) (guix packages) (guix git-download) (guix git) (guix monads)
  (guix scripts system) (guix scripts system reconfigure) (gnu bootloader)
 
  ;; Modules for live config
 
  ;; Other modules.
- (rde features)
  (gnu services)
  (gnu system file-systems)
+ (gnu packages emacs-xyz)
+ (gnu home services)
+ ;; (gnu home services guix)
+ ;; (gnu home services ssh)
+ (guix derivations))
+
+(use-modules
+ (rde features)
+ (rde features system)
+ ((rde packages) #:select (strings->packages))
  (rde home services emacs)
  (contrib features emacs-xyz)
  (contrib features age)
  (nongnu packages linux)
- (gnu packages emacs-xyz)
- ;; (gnu home services)
- ;; (gnu home services guix)
- ;; (gnu home services ssh)
- (guix derivations))
+ (nongnu system linux-initrd)
+ (nongnu packages linux)
+ (nonguix licenses))
 
 (define config-file
   (string-append (dirname (current-filename)) "/configuration.scm"))
@@ -180,7 +184,7 @@
    (description "Provides substitutes for guix-science.")))
 
 ;;; Substitutes helpers
-(define %base-services-feature
+(define %base-services-features
   (delay
     (list
      (feature-custom-services
@@ -238,6 +242,14 @@
           (feature-shepherd)
           (feature-base-services))))))))
 
+(use-modules (gnu packages emacs-xyz)
+             (rde packages emacs-xyz)
+             (contrib features age)
+             (contrib features emacs-xyz)
+             (contrib features machine-learning)
+             (contrib features task-runners)
+             (contrib packages machine-learning))
+(use-modules (srfi srfi-2))
 
 
 ;;; Hardware/Host file systems
@@ -841,10 +853,6 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
     ;; (feature-ungoogled-chromium #:default-browser? #t)
     (feature-librewolf
      #:browser (hidden-package (@ (nongnu packages mozilla) firefox)))
-    ;; (feature-nyxt)
-    ;; (feature-emacs-nyxt)
-    ;; ((@(rde features lisp) feature-lisp))
-    ;; ((@(rde features nyxt-xyz) feature-nyxt-blocker))
 
     (feature-xdg
      #:xdg-user-directories-configuration
@@ -888,7 +896,8 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
     (log  . "/var/log")
     (lib  . "/var/lib")
     (boot . "/boot")
-    (NetworkManager . "/etc/NetworkManager")))
+    (NetworkManager . "/etc/NetworkManager")
+    (ssh . "/etc/ssh"))) ; Needed for build offloading.
 
 (define home-impermanence-para-btrfs-layout
   (append-map
@@ -932,7 +941,15 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
             (delayed)
             (default '()))
   (kernel-build-options machine-kernel-build-options     ; list of options
-                        (default '())))
+                        (default '()))
+  ;; SSH key identifying the ssh daemon, found in /etc/ssh/ssh_host_ed25519.pub
+  (ssh-host-key machine-ssh-host-key                     ; string
+                (default #f))
+  ;; SSH key used to connect between machines (as in ssh -i).
+  (ssh-privkey-location machine-ssh-privkey-location     ; string
+                        (default #f))
+  (ssh-pubkey machine-ssh-pubkey                         ; string
+              (default #f)))
 
 (define (machine-root-impermanence? machine)
   (not (assoc 'root (machine-btrfs-layout machine))))
@@ -951,21 +968,32 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
                                     (zoom . "/home/graves/.zoom"))
                                   root-impermanence-btrfs-layout
                                   home-impermanence-para-btrfs-layout))
-            (firmware (list linux-firmware)))
-   (machine (name "20AMS6GD00")
-            (efi "/dev/sda1")
-            (encrypted-uuid-mapped "a9319ee9-f216-4cad-bfa5-99a24a576562"))
+            (firmware (list linux-firmware))
+            (ssh-host-key "\
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKFEHSLyMo2hdIMmeRhaT1uObwahRqaQqHnAe0/bqLXn")
+            (ssh-privkey-location "/home/graves/.local/share/id_ed25519")
+            (ssh-pubkey "\
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJENtxo6OSdamVVqPlvwBrI5QLe4Wj4244cf51ubp/Uh"))
    (machine (name "2325K55")
             (efi "/dev/sda1")
             (encrypted-uuid-mapped "824f71bd-8709-4b8e-8fd6-deee7ad1e4f0")
             (btrfs-layout (cons* '(home . "/home") root-impermanence-btrfs-layout))
-            (firmware (list iwlwifi-firmware)))
+            (firmware (list iwlwifi-firmware))
+            (ssh-host-key "\
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM+hUmwvYmS8BC2HupASOnn88gLkeeZli7b+ji6Wz/M4")
+            (ssh-privkey-location "/home/graves/.ssh/id_ed25519")
+            (ssh-pubkey "\
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPpGldYnfml+ffHz8EuYMUoHXivuhTKzkdUYcIP/f1Bk"))
    ;; Might use r8169 module but it works fine without, use linux-libre then.
    (machine (name "OptiPlex 3020M")
             (efi "/dev/sda1")
             (encrypted-uuid-mapped "ad1b7435-9957-424d-b9ac-9a9eac040e72")
-            (btrfs-layout (cons* '(home . "/home") root-impermanence-btrfs-layout)))))
-
+            (btrfs-layout (cons* '(home . "/home") root-impermanence-btrfs-layout))
+            (ssh-host-key "\
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICc0KTnwphWQ7jm/C9C48o8HAU2Ee4fViAoUvj6w80x1")
+            (ssh-privkey-location "/home/graves/.ssh/id_ed25519")
+            (ssh-pubkey "\
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl"))))
 
 (define %current-machine
   (let ((name (call-with-input-file
@@ -1052,6 +1080,41 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
              (needed-for-boot? #t))
            swap-fs)))
 
+(use-modules (gnu services security) (gnu services ssh))
+
+(define machine->build-machine
+  (match-lambda
+    (($ <machine>
+        name _efi _uuid _layout arch _firmware _kernel host-key privkey-loc pubkey)
+     (build-machine
+      (name name)
+      (systems (list arch))
+      (user "graves")
+      (host-key host-key)
+      (private-key privkey-loc)))))
+
+(use-modules (guix scripts offload))
+
+(define precision-service-type
+  (service-type
+   (name 'precision)
+   (extensions
+    (list
+     (service-extension
+      guix-service-type
+      (lambda (config)
+        (guix-extension
+         (begin
+           (pk 'c config)
+           (build-machines
+            (list
+             (pk 'r (machine->build-machine
+                     (find (lambda (m)
+                             (string=? (machine-name m) "Precision 3571"))
+                           %machines)))))))))))
+   (default-value #f)
+   (description "Provides Precision 3571 as a build-machine for guix daemon offloading.")))
+
 (define %machine-features
   (let* ((user-file-systems btrfs-file-systems
                             (partition
@@ -1061,7 +1124,26 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
                                 "/home/"
                                 ;; (get-value 'home-directory config)
                                 (file-system-mount-point fs)))
-                             btrfs-file-systems)))
+                             btrfs-file-systems))
+         (ssh-daemon-feature
+          (feature-custom-services
+           #:feature-name-prefix 'ssh-daemon
+           #:home-services
+           (list (simple-service
+                  'ssh-server-authorized-key
+                  home-files-service-type
+                  `((".ssh/authorized_keys"
+                     ,(plain-file "authorized-keys"
+                                  (string-join
+                                   (map machine-ssh-pubkey %machines)
+                                   "\n"))))))
+           #:system-services
+           (list (service openssh-service-type
+                          (openssh-configuration
+                           (openssh
+                            (@ (gnu packages ssh) openssh-sans-x))
+                           (allow-empty-passwords? #t)
+                           (password-authentication? #f)))))))
     (append
      (list
       (feature-bootloader)
@@ -1104,7 +1186,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
      (match (machine-name %current-machine)
        ("Precision 3571"
         (append
-         (force %base-services-feature)
+         (force %base-services-features)
          (list (feature-custom-services
                 #:feature-name-prefix 'machine
                 #:system-services (force %nvidia-services))
@@ -1119,7 +1201,8 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
                 #:password-store (@ (gnu packages password-utils) pass-age)
                 #:password-store-directory (string-append cwd "/files/pass")
                 #:remote-password-store-url "git@git.sr.ht:~ngraves/pass")
-               (force %ssh-feature))
+               (force %ssh-feature)
+               ssh-daemon-feature)
          (force %mail-features)
          (list
           (feature-user-pam-hooks
@@ -1142,9 +1225,14 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
                            ".config/guix/current"))
                 (system ".guix-home/activate")))))))
        ("2325K55"
-        (force %base-services-feature))
+        (append (force %base-services-features)
+                (list (feature-ssh) ssh-daemon-feature
+                      (feature-custom-services
+                       #:feature-name-prefix 'precision
+                       #:system-services (list (service precision-service-type))))))
        ("OptiPlex 3020M"
-        (force %base-services-feature))
+        (append (force %base-services-features)
+                (list (feature-ssh) ssh-daemon-feature)))
        (_ '())))))
 
 
@@ -1201,7 +1289,7 @@ rde, home and system subcommands only!"))))
 ;; cryptsetup open --type luks2 /dev/<root partition> enc
 ;; mkfs.btrfs /dev/mapper/enc
 ;; mount -t btrfs /dev/mapper/enc /mnt
-;; for subvol in {boot,store,log,lib,guix,NetworkManager,btrbk_snapshots,swap}; do\
+;; for subvol in {boot,store,log,lib,guix,NetworkManager,ssh,btrbk_snapshots,swap}; do\
 ;;   btrfs subvolume create /mnt/${subvol};\
 ;; done
 ;; MAYBE btrfs subvolume create /mnt/root

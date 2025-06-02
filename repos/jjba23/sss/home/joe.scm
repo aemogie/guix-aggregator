@@ -64,21 +64,7 @@
              (sss firefox)
              (sss emacs))
 
-;; show active SSS per-host settings
-(log-exprs (get-setting 'lang)
-           (get-setting 'timezone)
-           (get-setting 'keyboard-layout)
-           (get-setting 'caps-to-ctrl?)
-           (get-setting 'hostname)
-           (get-setting 'clone-dir)
-           (get-setting 'palette)
-           (get-setting 'hyprland-monitors)
-           (get-setting 'hyprland-extra-startups)
-           (get-setting 'labwc-extra-startups)
-           (get-setting 'flatpak-user-remotes)
-           (length (get-setting 'flatpak-pkgs))
-           (length (get-setting 'extra-packages))
-           (length (get-setting 'nixpkgs)))
+(log-active-sss-settings)
 
 (define sss-home-files-service
   (service home-files-service-type
@@ -130,7 +116,8 @@
                    (containers-capability)
                    (portals-capability)
                    (enchant-capability)
-                   (labwc-capability #:extra-startups (get-setting 'labwc-extra-startups)))))
+                   (labwc-capability #:sans-font (get-setting 'sans-font)
+                                     #:extra-startups (get-setting 'labwc-extra-startups)))))
 
 (display "
 >>= configuring Joe's home environment...

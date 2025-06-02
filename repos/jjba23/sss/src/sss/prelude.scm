@@ -32,6 +32,7 @@
   #:use-module (ice-9 textual-ports)
   #:use-module (gnu services configuration)
   #:export (log-exprs get-setting
+                      log-active-sss-settings
                       pretty-quote
                       string-drop-first-last-n
                       syscall
@@ -78,6 +79,30 @@
                  (variable-ref user-override)))
            (lambda (key . args)
              (variable-ref default)))))
+
+(define-syntax-rule (log-active-sss-settings)
+  (catch #t
+         (lambda ()
+           (log-exprs (get-setting 'lang)
+                      (get-setting 'timezone)
+                      (get-setting 'keyboard-layout)
+                      (get-setting 'caps-to-ctrl?)
+                      (get-setting 'hostname)
+                      (get-setting 'clone-dir)
+                      (get-setting 'palette)
+                      (get-setting 'mono-font)
+                      (get-setting 'sans-font)
+                      (get-setting 'serif-font)
+                      (get-setting 'hyprland-monitors)
+                      (get-setting 'hyprland-extra-startups)
+                      (get-setting 'labwc-extra-startups)
+                      (get-setting 'flatpak-user-remotes)
+                      (length (get-setting 'flatpak-pkgs))
+                      (length (get-setting 'extra-packages))
+                      (length (get-setting 'nixpkgs))))
+         (lambda (key . args)
+           (display (format #f "error logging active SSS settings: ~a: ~a" key
+                            args)))))
 
 (define-syntax-rule (string-drop-first-last-n s n)
   (let* ((len (string-length s))

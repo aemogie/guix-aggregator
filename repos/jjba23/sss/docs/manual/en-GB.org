@@ -60,7 +60,7 @@ https://www.gnu.org/licenses/fdl-1.3.html
 - GNU Guix system configuration
 - 🎨 Theme palettes that affect the entire system (ef-themes, solarized-light, everforest dark and light)
 - Hyprland configuration (power user session)
-- Labwc configuration (work-in progress - universal session)
+- Labwc configuration (universal session)
 - Fish shell configuration
 - Alacritty terminal emulator  
 - Firefox custom declarative configuration inspired on BetterFox
