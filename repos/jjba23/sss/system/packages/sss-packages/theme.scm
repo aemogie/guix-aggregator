@@ -15,18 +15,13 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
-(define-module (sss packages dev)
+(define-module (sss-packages theme)
   #:declarative? #t
-  #:use-module (gnu)
-  #:use-module (gnu packages lisp)
-  #:use-module (gnu packages node)
-  #:use-module (gnu packages admin)
-  #:export (dev-packages))
+  #:use-module (gnu packages gnome)
+  #:use-module (gnu packages gnome-xyz)
+  #:use-module (guix packages)
+  #:export (theme-packages))
 
-(define dev-packages
-  (make-parameter (list (specification->package "openjdk@21")
-                        node
-                        (specification->package "python@3.10")
-                        cl-asdf
-                        sbcl
-                        inxi)))
+(define theme-packages
+  (make-parameter (list adwaita-icon-theme gnome-themes-standard
+                        numix-gtk-theme papirus-icon-theme yaru-theme)))

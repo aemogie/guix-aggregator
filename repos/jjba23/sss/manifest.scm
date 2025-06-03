@@ -21,5 +21,9 @@
              (gnu packages emacs)
              (gnu packages guile-xyz))
 
-(packages->manifest (list guile-next guile-ares-rs emacs
-                          (specification->package "make") coreutils))
+(packages->manifest (list guile-next
+                          guile-ares-rs
+                          emacs
+                          (specification->package "gettext")
+                          (specification->package "make")
+                          coreutils))

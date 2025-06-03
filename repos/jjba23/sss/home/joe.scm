@@ -64,6 +64,7 @@
              (sss firefox)
              (sss emacs))
 
+(setup-i18n)
 (log-active-sss-settings)
 
 (define sss-home-files-service
@@ -119,9 +120,7 @@
                    (labwc-capability #:sans-font (get-setting 'sans-font)
                                      #:extra-startups (get-setting 'labwc-extra-startups)))))
 
-(display "
->>= configuring Joe's home environment...
-")
+(log-info (G_ "Configuring home environment for user: ~a") "joe")
 
 (home-environment
   (services

@@ -17,12 +17,10 @@
 
 (use-modules (ice-9 popen)
              (ice-9 textual-ports)
-             (ice-9 readline))
+             (ice-9 readline)
+             (sss prelude))
 
-(define (syscall cmd)
-  (let* ((process (open-input-pipe cmd))
-         (process-output (get-string-all process)))
-    (close-pipe process)
-    (display process-output) process-output))
+(setup-i18n)
 
+(log-info (G_ "Updating Nix packages in user profile"))
 (syscall "NIXPGS_ALLOW_UNFREE=1 nix profile upgrade --impure '.*'")

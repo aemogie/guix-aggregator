@@ -140,59 +140,37 @@
 
 (use-modules (gnu services base))
 
-(define nonguix-service-type
-  (service-type
-   (name 'nonguix)
-   (extensions
-    (list
-     (service-extension
-      guix-service-type
-      (lambda (config)
-       (guix-extension
-        (substitute-urls (list "https://substitutes.nonguix.org"))
-        (authorized-keys
-         (list
-          (origin
-            (method url-fetch)
-            (uri "https://substitutes.nonguix.org/signing-key.pub")
-            (sha256
-             (base32
-              "0j66nq1bxvbxf5n8q2py14sjbkn57my0mjwq7k1qm9ddghca7177"))))))))))
-   (default-value #f)
-   (description "Provides substitutes for nonguix.")))
-
-;; Try upstreaming this one in
-(define guix-science-service-type
-  (service-type
-   (name 'guix-science)
-   (extensions
-    (list
-     (service-extension
-      guix-service-type
-      (lambda (config)
-       (guix-extension
-        (substitute-urls (list "https://guix.bordeaux.inria.fr"))
-        (authorized-keys
-         (list
-          (origin
-            (method url-fetch)
-            (uri "https://guix.bordeaux.inria.fr/signing-key.pub")
-            (sha256
-             (base32
-              "056cv0vlqyacyhbmwr5651fzg1icyxbw61nkap7sd4j2x8qj7ila"))))))))))
-   (default-value #f)
-   (description "Provides substitutes for guix-science.")))
-
-;;; Substitutes helpers
-(define %base-services-features
+(define nonguix-service
   (delay
-    (list
-     (feature-custom-services
-      #:feature-name-prefix 'more-substitutes
-      #:system-services
-      (list (service nonguix-service-type)
-            (service guix-science-service-type)))
-     (feature-base-services))))
+    (simple-service
+     'nonguix
+     guix-service-type
+     (guix-extension
+      (substitute-urls (list "https://substitutes.nonguix.org"))
+      (authorized-keys
+       (list
+        (origin
+          (method url-fetch)
+          (uri "https://substitutes.nonguix.org/signing-key.pub")
+          (sha256
+           (base32
+            "0j66nq1bxvbxf5n8q2py14sjbkn57my0mjwq7k1qm9ddghca7177")))))))))
+
+(define guix-science-service
+  (delay
+    (simple-service
+     'guix-science
+     guix-service-type
+     (guix-extension
+      (substitute-urls (list "https://guix.bordeaux.inria.fr"))
+      (authorized-keys
+       (list
+        (origin
+          (method url-fetch)
+          (uri "https://guix.bordeaux.inria.fr/signing-key.pub")
+          (sha256
+           (base32
+            "056cv0vlqyacyhbmwr5651fzg1icyxbw61nkap7sd4j2x8qj7ila")))))))))
 
 
 ;;; Live systems.
@@ -240,26 +218,24 @@
             (service network-manager-service-type)
             (service (@@ (gnu system install) cow-store-service-type) 'mooh!)))
           (feature-shepherd)
-          (feature-base-services))))))))
+          (feature-base-services)
+          (feature-custom-services
+           #:feature-name-prefix 'more-substitutes
+           #:system-services (list (force nonguix-service)
+                                   (force guix-science-service))))))))))
 
-(use-modules (gnu packages emacs-xyz)
-             (rde packages emacs-xyz)
-             (contrib features age)
-             (contrib features emacs-xyz)
-             (contrib features machine-learning)
-             (contrib features task-runners)
-             (contrib packages machine-learning))
+(when (string=? (call-with-input-file
+                       "/sys/devices/virtual/dmi/id/product_name"
+                  read-line)
+                 "Precision 3571")
+  (use-modules (gnu packages emacs-xyz)
+               (rde packages emacs-xyz)
+               (contrib features age)
+               (contrib features emacs-xyz)
+               (contrib features machine-learning)
+               (contrib features task-runners)
+               (contrib packages machine-learning)))
 (use-modules (srfi srfi-2))
-
-
-;;; Hardware/Host file systems
-(define %host-features
-  (list
-   (feature-host-info
-    #:host-name "guix"
-    #:timezone  "Europe/Paris"
-    #:locale "fr_FR.utf8")
-   (feature-hidpi)))
 
 
 ;; Privacy without GNUPG: currently using age with ssh and git commit signing. ;; TODO more details later.
@@ -289,6 +265,7 @@
 
 (define %wm-features
   (list
+   (feature-hidpi)
    (feature-sway
     #:xwayland? #f
     #:extra-config
@@ -813,7 +790,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
     (feature-desktop-services)
     (feature-backlight #:step 5)
     (feature-pipewire)
-    (feature-networking)
+    (feature-networking #:mdns? #t)
     ;; (feature-bluetooth)
 
     (feature-fonts
@@ -949,7 +926,10 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
   (ssh-privkey-location machine-ssh-privkey-location     ; string
                         (default #f))
   (ssh-pubkey machine-ssh-pubkey                         ; string
-              (default #f)))
+              (default #f))
+  ;; key to authentify archives, found in /etc/guix/signing-key.pub
+  (guix-pubkey machine-guix-pubkey                         ; string
+               (default #f)))
 
 (define (machine-root-impermanence? machine)
   (not (assoc 'root (machine-btrfs-layout machine))))
@@ -959,7 +939,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
 
 (define %machines
   (list
-   (machine (name "Precision 3571")
+   (machine (name "precision")
             (efi "/dev/nvme0n1p1")
             (encrypted-uuid-mapped "92f9af3d-d860-4497-91ea-9e46a1dacf7a")
             (btrfs-layout (append '(;;(data . "/data")
@@ -971,10 +951,12 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
             (firmware (list linux-firmware))
             (ssh-host-key "\
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKFEHSLyMo2hdIMmeRhaT1uObwahRqaQqHnAe0/bqLXn")
-            (ssh-privkey-location "/home/graves/.local/share/id_ed25519")
+            (ssh-privkey-location "/home/graves/.local/share/ssh/id_ed25519")
             (ssh-pubkey "\
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJENtxo6OSdamVVqPlvwBrI5QLe4Wj4244cf51ubp/Uh"))
-   (machine (name "2325K55")
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJENtxo6OSdamVVqPlvwBrI5QLe4Wj4244cf51ubp/Uh")
+            (guix-pubkey "\
+B7D7B8FE083E69FFDD54E19C62B1F906049CF1CF8DC637C170B43BFFA8871050"))
+   (machine (name "2325k55")
             (efi "/dev/sda1")
             (encrypted-uuid-mapped "824f71bd-8709-4b8e-8fd6-deee7ad1e4f0")
             (btrfs-layout (cons* '(home . "/home") root-impermanence-btrfs-layout))
@@ -983,9 +965,11 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJENtxo6OSdamVVqPlvwBrI5QLe4Wj4244cf51ubp/Uh
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM+hUmwvYmS8BC2HupASOnn88gLkeeZli7b+ji6Wz/M4")
             (ssh-privkey-location "/home/graves/.ssh/id_ed25519")
             (ssh-pubkey "\
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPpGldYnfml+ffHz8EuYMUoHXivuhTKzkdUYcIP/f1Bk"))
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPpGldYnfml+ffHz8EuYMUoHXivuhTKzkdUYcIP/f1Bk")
+            (guix-pubkey "\
+DF2804169A9219BD236B4C04106002FACAE5766525A2A668709C36F2741BDB3B"))
    ;; Might use r8169 module but it works fine without, use linux-libre then.
-   (machine (name "OptiPlex 3020M")
+   (machine (name "optiplex")
             (efi "/dev/sda1")
             (encrypted-uuid-mapped "ad1b7435-9957-424d-b9ac-9a9eac040e72")
             (btrfs-layout (cons* '(home . "/home") root-impermanence-btrfs-layout))
@@ -993,12 +977,15 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPpGldYnfml+ffHz8EuYMUoHXivuhTKzkdUYcIP/f1Bk
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICc0KTnwphWQ7jm/C9C48o8HAU2Ee4fViAoUvj6w80x1")
             (ssh-privkey-location "/home/graves/.ssh/id_ed25519")
             (ssh-pubkey "\
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl"))))
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl")
+            (guix-pubkey "\
+1BEC0CE366F2325E65FEE419BC43DAACDDF0F334FF8E7B018687557C0B60BB16"))))
 
 (define %current-machine
-  (let ((name (call-with-input-file
-                  "/sys/devices/virtual/dmi/id/product_name"
-                read-line)))
+  (let* ((raw-name (call-with-input-file
+                       "/sys/devices/virtual/dmi/id/product_name"
+                     read-line))
+         (name (string-downcase (car (string-split raw-name #\ )))))
     (find (lambda (in) (equal? name (machine-name in)))
           %machines)))
 
@@ -1080,40 +1067,36 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl
              (needed-for-boot? #t))
            swap-fs)))
 
-(use-modules (gnu services security) (gnu services ssh))
+(use-modules (gnu home-services ssh)
+             (gnu services security)
+             (gnu services ssh)
+             (guix scripts offload))
 
 (define machine->build-machine
-  (match-lambda
-    (($ <machine>
-        name _efi _uuid _layout arch _firmware _kernel host-key privkey-loc pubkey)
-     (build-machine
-      (name name)
-      (systems (list arch))
-      (user "graves")
-      (host-key host-key)
-      (private-key privkey-loc)))))
+  (lambda (target-machine)
+    #~(build-machine
+       (name #$(string-append (machine-name target-machine) ".local"))
+       (systems (list #$(machine-architecture target-machine)))
+       (user "graves")
+       (host-key #$(machine-ssh-host-key target-machine))
+       (private-key #$(machine-ssh-privkey-location %current-machine)))))
 
-(use-modules (guix scripts offload))
+(define (machine->guix-pubkey target-machine)
+  (plain-file
+   (string-append (machine-name target-machine) "signing-key.pub")
+   (format #f "\
+(public-key
+ (ecc
+  (curve Ed25519)
+  (q #~a#)))"
+           (machine-guix-pubkey target-machine))))
 
-(define precision-service-type
-  (service-type
-   (name 'precision)
-   (extensions
-    (list
-     (service-extension
-      guix-service-type
-      (lambda (config)
-        (guix-extension
-         (begin
-           (pk 'c config)
-           (build-machines
-            (list
-             (pk 'r (machine->build-machine
-                     (find (lambda (m)
-                             (string=? (machine-name m) "Precision 3571"))
-                           %machines)))))))))))
-   (default-value #f)
-   (description "Provides Precision 3571 as a build-machine for guix daemon offloading.")))
+(define machine->ssh-host
+  (lambda (target-machine)
+    (ssh-host
+     (host (string-append (machine-name target-machine) ".local"))
+     (options
+      `((identity-file . ,(machine-ssh-privkey-location %current-machine)))))))
 
 (define %machine-features
   (let* ((user-file-systems btrfs-file-systems
@@ -1124,26 +1107,7 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl
                                 "/home/"
                                 ;; (get-value 'home-directory config)
                                 (file-system-mount-point fs)))
-                             btrfs-file-systems))
-         (ssh-daemon-feature
-          (feature-custom-services
-           #:feature-name-prefix 'ssh-daemon
-           #:home-services
-           (list (simple-service
-                  'ssh-server-authorized-key
-                  home-files-service-type
-                  `((".ssh/authorized_keys"
-                     ,(plain-file "authorized-keys"
-                                  (string-join
-                                   (map machine-ssh-pubkey %machines)
-                                   "\n"))))))
-           #:system-services
-           (list (service openssh-service-type
-                          (openssh-configuration
-                           (openssh
-                            (@ (gnu packages ssh) openssh-sans-x))
-                           (allow-empty-passwords? #t)
-                           (password-authentication? #f)))))))
+                             btrfs-file-systems)))
     (append
      (list
       (feature-bootloader)
@@ -1181,13 +1145,21 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl
         "modprobe.blacklist=pcspkr,nouveau" "rootfstype=tmpfs"
         ;; "nvidia_drm.modeset=1" "nvidia_drm.fbdev=1"
         )
-       #:firmware (machine-firmware %current-machine)))
-     ;; Features that are in development by machine, or machine-specific
+       #:firmware (machine-firmware %current-machine))
+      (feature-base-services)
+      (feature-custom-services
+       #:feature-name-prefix 'more-substitutes
+       #:system-services (list (force nonguix-service)
+                               (force guix-science-service))))
+     ;; Machine-specific features
      (match (machine-name %current-machine)
-       ("Precision 3571"
+       ("precision"
         (append
-         (force %base-services-features)
-         (list (feature-custom-services
+         (list (feature-host-info
+                #:host-name "precision"
+                #:timezone  "Europe/Paris"
+                #:locale "fr_FR.utf8")
+               (feature-custom-services
                 #:feature-name-prefix 'machine
                 #:system-services (force %nvidia-services))
                (feature-dictation)
@@ -1201,8 +1173,7 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl
                 #:password-store (@ (gnu packages password-utils) pass-age)
                 #:password-store-directory (string-append cwd "/files/pass")
                 #:remote-password-store-url "git@git.sr.ht:~ngraves/pass")
-               (force %ssh-feature)
-               ssh-daemon-feature)
+               (force %ssh-feature))
          (force %mail-features)
          (list
           (feature-user-pam-hooks
@@ -1223,17 +1194,70 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl
                   (mkdir ".config/guix")
                   (symlink (string-append profile "/current-guix")
                            ".config/guix/current"))
-                (system ".guix-home/activate")))))))
-       ("2325K55"
-        (append (force %base-services-features)
-                (list (feature-ssh) ssh-daemon-feature
-                      (feature-custom-services
-                       #:feature-name-prefix 'precision
-                       #:system-services (list (service precision-service-type))))))
-       ("OptiPlex 3020M"
-        (append (force %base-services-features)
-                (list (feature-ssh) ssh-daemon-feature)))
-       (_ '())))))
+                (system ".guix-home/activate"))))
+          (feature-custom-services
+           #:feature-name-prefix 'build-machines
+           #:system-services
+           (let ((other-machines (remove (cut eq? %current-machine <>) %machines)))
+             (list
+              (simple-service
+               'build-machines
+               guix-service-type
+               (guix-extension
+                (build-machines
+                 (map machine->build-machine other-machines))))))))))
+       ("2325k55"
+        (list (feature-host-info
+               #:host-name "2325k55"
+               #:timezone  "Europe/Paris"
+               #:locale "fr_FR.utf8")
+              (feature-ssh)))
+       ("optiplex"
+        (list (feature-host-info
+               #:host-name "optiplex"
+               #:timezone  "Europe/Paris"
+               #:locale "fr_FR.utf8")
+              (feature-ssh)))
+       (_ '()))
+     ;; Cross-machine features (ssh daemon + guix daemon offload)
+     (let ((other-machines (remove (cut eq? %current-machine <>) %machines)))
+       (list (feature-custom-services
+              #:feature-name-prefix 'ssh-daemon
+              #:home-services
+              (list (simple-service
+                     'ssh-server-authorized-key
+                     home-files-service-type
+                     `((".ssh/authorized_keys"
+                        ,(plain-file "authorized-keys"
+                                     (string-join
+                                      (map machine-ssh-pubkey other-machines)
+                                      "\n"))))))
+              #:system-services
+              (list (service openssh-service-type
+                             (openssh-configuration
+                              (openssh
+                               (@ (gnu packages ssh) openssh-sans-x))
+                              (allow-empty-passwords? #t)
+                              (password-authentication? #f)))))
+             (feature-custom-services
+              #:feature-name-prefix 'ssh-build-machines
+              #:home-services
+              (list
+               (simple-service
+                'local-ssh-machines
+                home-ssh-service-type
+                (home-ssh-extension
+                 (extra-config (map machine->ssh-host other-machines))))))
+             (feature-custom-services
+              #:feature-name-prefix 'build-machines-keys
+              #:system-services
+              (list
+               (simple-service
+                'build-machines
+                guix-service-type
+                (guix-extension
+                 (authorized-keys
+                  (map machine->guix-pubkey other-machines)))))))))))
 
 
 ;;; rde-config and helpers for generating home-environment and
@@ -1245,7 +1269,6 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl
           (features (append
                      %user-features
                      %main-features
-                     %host-features
                      %machine-features)))))
     (override-rde-config-with-values
      config
@@ -1265,7 +1288,6 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl
                   (_  (rde-config-operating-system %config)))))
     (_        (error "This configuration is configured for \
 rde, home and system subcommands only!"))))
-
 
 
 

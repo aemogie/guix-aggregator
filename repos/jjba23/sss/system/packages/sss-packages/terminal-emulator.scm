@@ -15,10 +15,11 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
-(define-module (sss packages universal-session)
+(define-module (sss-packages terminal-emulator)
   #:declarative? #t
-  #:use-module (gnu packages wm)
-  #:export (universal-session-packages))
+  #:use-module (gnu packages terminals)
+  #:use-module (gnu packages xfce)
+  #:export (terminal-emulator-packages))
 
-(define universal-session-packages
-  (make-parameter (list labwc)))
+(define terminal-emulator-packages
+  (make-parameter (list alacritty xfce4-terminal)))

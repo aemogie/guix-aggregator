@@ -16,48 +16,57 @@
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
 (use-modules (ice-9 popen)
-             (ice-9 textual-ports))
+             (ice-9 textual-ports)
+             (sss prelude))
 
-(define-public (syscall cmd)
-  (let* ((process (open-input-pipe cmd))
-         (process-output (get-string-all process)))
-    (close-pipe process)
-    (display process-output) process-output))
+(setup-i18n)
 
-(define sss-joe-clone-repos
-  '(byggsteg carvoeiro-water-fun
-             cloud-infra
-             dagboek.el
-             free-alacarte
-             git-riddance.el
-             haskell-rank
-             hygguile
-             iter-vitae
-             jointhefreeworld
-             keuringsdienst
-             kracht
-             lucidplan
-             modusregel
-             orgwebalchemy
-             pop-server
-             pop-test
-             private-notes
-             pingwing
-             rostob
-             scala-rank
-             social-media-jjba
-             static-assets
-             tekengrootte.el
-             web-welkomscherm
-             welkomscherm.el
-             wikimusic
-             wolk-jjba
-             zzspec))
+(define clone-repos
+  (make-parameter '(byggsteg carvoeiro-water-fun
+                             cloud-infra
+                             dagboek.el
+                             free-alacarte
+                             git-riddance.el
+                             haskell-rank
+                             hygguile
+                             iter-vitae
+                             jointhefreeworld
+                             keuringsdienst
+                             kracht
+                             lucidplan
+                             modusregel
+                             orgwebalchemy
+                             pop-server
+                             pop-test
+                             private-notes
+                             pingwing
+                             rostob
+                             scala-rank
+                             social-media-jjba
+                             static-assets
+                             tekengrootte.el
+                             web-welkomscherm
+                             welkomscherm.el
+                             wikimusic
+                             wolk-jjba
+                             zzspec)))
 
-(display "\n>>= cloning personal repos...\n")
+(define destination-folder
+  (make-parameter "$HOME/hacking"))
+
+(define remote-url
+  (make-parameter "git@codeberg.org:jjba23"))
+
+(log-info (G_ "Cloning user's Git repositories"))
 
 (for-each (lambda (x)
             (syscall (format #f
-                             (string-join '("[ -d $HOME/hacking/~a ] || "
-                                            "git clone git@codeberg.org:jjba23/~a.git $HOME/hacking/~a"))
-                             x x x))) sss-joe-clone-repos)
+                             (string-join '("[ -d ~a/~a ] || "
+                                            "git clone ~a/~a.git ~a/~a"))
+                             (destination-folder)
+                             x
+                             (remote-url)
+                             x
+                             (destination-folder)
+                             x)))
+          (clone-repos))

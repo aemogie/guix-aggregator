@@ -15,21 +15,17 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
-(define-module (sss packages font)
+(define-module (sss-packages dict)
   #:declarative? #t
-  #:use-module (gnu packages fonts)
-  #:use-module (gnu packages fontutils)
-  #:use-module (nongnu packages fonts)
-  #:export (font-packages))
+  #:use-module (gnu packages aspell)
+  #:use-module (gnu packages enchant)
+  #:export (dict-packages))
 
-(define font-packages
-  (make-parameter (list font-adwaita
-                        font-awesome
-                        font-dejavu
-                        font-fira-code
-                        font-google-noto
-                        font-google-noto-emoji
-                        font-google-roboto
-                        font-liberation
-                        font-microsoft-web-core-fonts
-                        fontconfig)))
+(define dict-packages
+  (make-parameter (list aspell
+                        aspell-dict-ca
+                        aspell-dict-en
+                        aspell-dict-es
+                        aspell-dict-nl
+                        aspell-dict-pt-pt
+                        enchant)))

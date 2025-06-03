@@ -15,7 +15,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
-(define-module (sss packages core)
+(define-module (sss-packages core)
   #:declarative? #t
   #:use-module (gnu packages admin)
   #:use-module (gnu packages base)

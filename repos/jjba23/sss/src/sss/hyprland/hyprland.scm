@@ -19,6 +19,7 @@
   #:declarative? #t
   #:use-module (gnu)
   #:use-module (sss palette)
+  #:use-module (sss prelude)
   #:use-module (sss hyprland hyprlang)
   #:export (notify-cmd hypr-startup-programs
                        hypr-input
@@ -72,7 +73,12 @@
                        ,(format #f
                          "gsettings set org.gnome.desktop.interface font-name '~a'"
                          sans-font)
-                       "xdg-user-dirs-update"))))
+                       "xdg-user-dirs-update"
+                       ,(format #f "fyi \"~a\" \"~a\""
+                                (G_
+                                 "Welcome to the SSS/GNU power user session")
+                                (G_
+                                 "Enter and explore, for the cosmos of computation is yours to command. As the veil thins and the echoes of the aether draw you near, you stand at the precipice of boundless creation."))))))
     xs))
 
 (define* (hypr-input #:key keyboard-layout caps-to-ctrl)

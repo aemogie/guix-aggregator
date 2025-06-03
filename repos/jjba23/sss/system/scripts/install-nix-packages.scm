@@ -20,14 +20,10 @@
              (ice-9 readline)
              (sss prelude))
 
-(define (syscall cmd)
-  (let* ((process (open-input-pipe cmd))
-         (process-output (get-string-all process)))
-    (close-pipe process)
-    (display process-output) process-output))
+(setup-i18n)
 
 (define (nix-profile-install x)
-  (display (format #f "\n>>= installing nix package ~a\n" x))
+  (log-info (G_ "Installing Nix package: ~a") x)
   (syscall (format #f
                    (string-append "nix profile list | grep ~a ||"
                     " NIXPGS_ALLOW_UNFREE=1 nix -L profile install --impure nixpkgs#~a")

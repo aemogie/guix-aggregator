@@ -20,6 +20,7 @@
   #:declarative? #t
   #:use-module (gnu)
   #:use-module (sxml simple)
+  #:use-module (sss prelude)
   #:use-module (sss palette)
   #:export (labwc-keybind labwc-menu labwc-rc labwc-autostart labwc-config
                           labwc-capability))
@@ -431,14 +432,20 @@
   (plain-file "autostart"
               (string-join (append extra-startups
                                    (map mk-labwc-autostart
-                                        '("lxsession" "mako"
+                                        `("lxsession" "mako"
                                           "dbus-update-activation-environment --all"
                                           "transmission-daemon"
                                           "waybar"
                                           "herd trigger set-random-wallpaper"
                                           "transmission-daemon"
                                           "podman system service --time=0 unix:///tmp/podman.sock"
-                                          "xdg-user-dirs-update"))) "\n")))
+                                          "xdg-user-dirs-update"
+                                          ,(format #f "fyi \"~a\" \"~a\""
+                                                   (G_
+                                                    "Welcome to the SSS/GNU universal session")
+                                                   (G_
+                                                    "Enter and explore, for the cosmos of computation is yours to command. This session's keybindings should be familiar to Windows/CUA users.")))))
+                           "\n")))
 
 (define* (labwc-capability #:key extra-startups sans-font)
   `((".config/labwc/rc.xml" ,(plain-file "rc.xml"

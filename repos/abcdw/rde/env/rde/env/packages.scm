@@ -17,14 +17,11 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with rde.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-module (rde packages package-management)
+(define-module (rde env packages)
   #:use-module (rde lib file)
+  #:use-module (rde env channels)
   #:use-module (rde packages guix)
-  #:export (guix-from-channels-lock)
-  #:declarative? #f)
+  #:export (guix-package))
 
-(define my-channels
-  (load (canonicalize-path (find-file-in-load-path "channels-lock.scm"))))
-
-(define guix-from-channels-lock
-  (make-guix-package my-channels))
+(define guix-package
+  (make-guix-package core-channels))

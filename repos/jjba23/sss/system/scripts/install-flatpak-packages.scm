@@ -20,18 +20,14 @@
              (ice-9 readline)
              (sss prelude))
 
-(define (syscall cmd)
-  (let* ((process (open-input-pipe cmd))
-         (process-output (get-string-all process)))
-    (close-pipe process)
-    (display process-output) process-output))
+(setup-i18n)
 
 (define (flatpak-profile-install x)
-  (display (format #f "\n>>= installing flatpak package ~a\n" x))
+  (log-info (G_ "Installing Flatpak package: ~a") x)
   (syscall (format #f "flatpak --user install -y ~a" x)))
 
 (define (flatpak-remote-install x)
-  (display (format #f "\n>>= installing flatpak remote ~a\n" x))
+  (log-info (G_ "Installing Flatpak remote: ~a") x)
   (syscall (format #f "flatpak --user remote-add --if-not-exists ~a ~a"
                    (car x)
                    (cdr x))))

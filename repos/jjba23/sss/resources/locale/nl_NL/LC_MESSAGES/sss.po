@@ -1,0 +1,105 @@
+# Dutch translations for sss package
+# Nederlandse vertalingen voor het pakket sss.
+# Copyright (C) 2025 Josep Bigorra
+# This file is distributed under the same license as the sss package.
+# Automatically generated, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: sss\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-06-02 11:55+0200\n"
+"PO-Revision-Date: 2025-06-02 08:23+0200\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: nl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Cloning user Git repositories for SSS"
+msgstr "Gebruikers Git repositories klonen voor SSS"
+
+msgid "Compiling translation files"
+msgstr "Vertalingbestanden compilatie bezig"
+
+msgid "Creating new i18n template from source code"
+msgstr "Nieuwe i18n sjabloon aanmaken vanuit broncode"
+
+msgid "Installing Nix packages for SSS"
+msgstr "Nix pakketten installeren voor SSS"
+
+msgid "Updating Flatpak packages for SSS"
+msgstr "Flatpak pakketten updaten voor SSS"
+
+msgid "Updating i18n template from source code"
+msgstr "Updaten i18n sjabloon vanuit broncode"
+
+#: Makefile:44
+msgid "Completed work on Make target:"
+msgstr "Klaar met Make target:"
+
+#: Makefile:52
+msgid "Begin working on Make target:"
+msgstr "Begin werk van Make target:"
+
+#: Makefile:84
+msgid "Task was completed successfully!"
+msgstr "Taak was succesvol uitgevoerd!"
+
+#: home/joe.scm:122 home/joe.scm:123 home/manon.scm:88
+#, scheme-format
+msgid "Configuring home environment for user: ~a"
+msgstr "Home omgeving configureren voor gebruiker: ~a"
+
+#: src/sss/hyprland/hyprland.scm:79
+msgid "Welcome to the SSS/GNU power user session"
+msgstr "Welkom bij SSS/GNU power-user sessie"
+
+#: src/sss/hyprland/hyprland.scm:81
+msgid ""
+"Enter and explore, for the cosmos of computation is yours to command. As the "
+"veil thins and the echoes of the aether draw you near, you stand at the "
+"precipice of boundless creation."
+msgstr ""
+"Betreed en verken, want de kosmos van berekening is de jouwe om te beheersen. "
+"Terwijl de sluier dunner wordt en de echo's van de ether je naderbij trekken, "
+"sta je op het randje van grenzeloze schepping."
+
+#: src/sss/labwc.scm:445
+msgid "Welcome to the SSS/GNU universal session"
+msgstr "Welkom bij SSS/GNU universele sessie"
+
+#: src/sss/labwc.scm:447
+msgid ""
+"Enter and explore, for the cosmos of computation is yours to command. This "
+"session's keybindings should be familiar to Windows/CUA users."
+msgstr ""
+"Betreed en verken, want de kosmos van berekening is de jouwe om te beheersen. "
+"De sneltoetsen van deze sessie zouden bekend moeten zijn voor Windows/CUA gebruikers."
+
+#: system/scripts/clone-user-repos.scm:58
+#: system/scripts/clone-user-repos.scm:60
+msgid "Cloning user's Git repositories"
+msgstr "Gebruikers Git repositories klonen"
+
+#: system/scripts/install-flatpak-packages.scm:26
+#, scheme-format
+msgid "Installing Flatpak package: ~a"
+msgstr "Bezig met installatie van Flatpak pakket: ~a"
+
+#: system/scripts/install-flatpak-packages.scm:30
+#, scheme-format
+msgid "Installing Flatpak remote: ~a"
+msgstr "Bezig met installatie van Flatpak bron: ~a"
+
+#: system/scripts/install-nix-packages.scm:26
+#: system/scripts/install-nix-packages.scm:32
+#, scheme-format
+msgid "Installing Nix package: ~a"
+msgstr "Bezig met installatie van Nix pakket: ~a"
+
+#: system/scripts/update-nix-packages.scm:25
+msgid "Updating Nix packages in user profile"
+msgstr "Nix pakketten bijwerken in gebruikersprofiel"

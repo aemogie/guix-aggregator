@@ -19,11 +19,11 @@
   #:declarative? #t
   #:use-module (sss defaults)
   #:use-module (sss palette)
-  #:use-module (sss overrides)
   #:use-module (ice-9 string-fun)
   #:use-module (ice-9 regex)
   #:use-module (ice-9 popen)
   #:use-module (ice-9 time)
+  #:use-module (ice-9 i18n)
   #:use-module (ice-9 format)
   #:use-module (ice-9 iconv)
   #:use-module (ice-9 threads)
@@ -32,6 +32,12 @@
   #:use-module (ice-9 textual-ports)
   #:use-module (gnu services configuration)
   #:export (log-exprs get-setting
+                      log-message
+                      log
+                      log-info
+                      log-error
+                      G_
+                      setup-i18n
                       log-active-sss-settings
                       pretty-quote
                       string-drop-first-last-n
@@ -45,6 +51,42 @@
                       equal-conf-quote-value-pair
                       nix-profile-install
                       mk-css-conf-lines))
+
+(define (G_ msg)
+  (gettext msg))
+
+(define (setup-i18n)
+  (catch #t
+         (lambda ()
+           (setlocale LC_MESSAGES "")
+           (bindtextdomain "sss" "./resources/locale")
+           (textdomain "sss"))
+         (lambda (key . args)
+           (display (format #f "error setting i18n up: ~a: ~a" key args)))))
+
+(define preferred-strftime-format
+  (make-parameter "%Y-%m-%d %H:%M:%S%z"))
+
+(define (log-message msg)
+  (display (format #f "\n\x1b[1m~a\x1b[0m\n" msg)))
+
+(define (log msg . args)
+  (log-message (apply format
+                      (append (list #f msg) args))))
+
+(define (log-info msg . args)
+  (log-message (format #f "[INFO][~a] ~a"
+                       (strftime (preferred-strftime-format)
+                                 (localtime (current-time)))
+                       (apply format
+                              (append (list #f msg) args)))))
+
+(define (log-error msg . args)
+  (log-message (format #f "[ERROR][~a] ~a"
+                       (strftime (preferred-strftime-format)
+                                 (localtime (current-time)))
+                       (apply format
+                              (append (list #f msg) args)))))
 
 (define-syntax-rule (log-exprs exp ...)
   "Log a variadic number of expressions, and the result of their evaluation."
@@ -68,6 +110,12 @@
   (let* ((default-var-name (format #f "default-~a" setting))
          (default (module-variable (resolve-module '(sss defaults))
                                    (string->symbol default-var-name)))
+         (_ (catch #t
+                   (lambda ()
+                     (use-modules (sss overrides)))
+                   (lambda (key . args)
+                     (display (format #f
+                               "couldn't load SSS overrides, using defaults")))))
          (user-override-var-name (format #f "override-~a" setting))
          (user-override (module-variable (resolve-module '(sss overrides))
                                          (string->symbol

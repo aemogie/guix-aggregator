@@ -15,10 +15,10 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
-(define-module (sss packages qt)
+(define-module (sss-packages shell)
   #:declarative? #t
-  #:use-module (gnu packages qt)
-  #:export (qt-packages))
+  #:use-module (gnu packages shells)
+  #:export (shell-packages))
 
-(define qt-packages
-  (make-parameter (list qtwayland qt6ct qtsvg)))
+(define shell-packages
+  (make-parameter (list fish)))

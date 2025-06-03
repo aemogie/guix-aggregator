@@ -15,17 +15,11 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
-(define-module (sss packages dict)
+(define-module (sss-packages music)
   #:declarative? #t
-  #:use-module (gnu packages aspell)
-  #:use-module (gnu packages enchant)
-  #:export (dict-packages))
+  #:use-module (gnu packages music)
+  #:use-module (gnu packages audio)
+  #:export (music-packages))
 
-(define dict-packages
-  (make-parameter (list aspell
-                        aspell-dict-ca
-                        aspell-dict-en
-                        aspell-dict-es
-                        aspell-dict-nl
-                        aspell-dict-pt-pt
-                        enchant)))
+(define music-packages
+  (make-parameter (list lilypond ardour tenacity)))

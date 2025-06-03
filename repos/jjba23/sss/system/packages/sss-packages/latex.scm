@@ -15,11 +15,11 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
-(define-module (sss packages browser)
+(define-module (sss-packages latex)
   #:declarative? #t
-  #:use-module (nongnu packages mozilla)
-  #:use-module (nongnu packages chrome)
-  #:export (browser-packages))
+  #:use-module (gnu packages texinfo)
+  #:use-module (gnu packages texlive)
+  #:export (latex-packages))
 
-(define browser-packages
-  (make-parameter (list firefox google-chrome-beta)))
+(define latex-packages
+  (make-parameter (list texinfo texlive)))

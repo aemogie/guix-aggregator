@@ -15,11 +15,10 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
-(define-module (sss packages hypr)
+(define-module (sss-packages container)
   #:declarative? #t
-  #:use-module (gnu packages wm)
-  #:use-module (gnu packages xdisorg)
-  #:export (hypr-packages))
+  #:use-module (gnu packages containers)
+  #:export (container-packages))
 
-(define hypr-packages
-  (make-parameter (list hyprland hypridle hyprcursor hyprlock)))
+(define container-packages
+  (make-parameter (list podman-compose passt)))

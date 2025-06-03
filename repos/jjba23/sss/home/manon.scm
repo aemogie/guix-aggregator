@@ -56,6 +56,7 @@
              (sss ssh)
              (sss labwc))
 
+(setup-i18n)
 (log-active-sss-settings)
 
 (define sss-home-files-service
@@ -84,9 +85,7 @@
                    (labwc-capability #:sans-font (get-setting 'sans-font)
                                      #:extra-startups (get-setting 'labwc-extra-startups)))))
 
-(display "
->>= configuring Manon's home environment...
-")
+(log-info (G_ "Configuring home environment for user: ~a") "manon")
 
 (home-environment
   (services

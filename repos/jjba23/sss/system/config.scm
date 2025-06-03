@@ -22,11 +22,12 @@
              (gnu system accounts)
              (guix packages)
              (sss prelude)
-             (sss packages universe)
+             (sss-packages universe)
              (sss iptables)
              (nongnu packages linux)
              (nongnu system linux-initrd))
 
+(setup-i18n)
 (log-active-sss-settings)
 
 (use-service-modules networking

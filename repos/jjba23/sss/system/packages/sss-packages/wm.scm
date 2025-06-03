@@ -15,7 +15,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
-(define-module (sss packages wm)
+(define-module (sss-packages wm)
   #:declarative? #t
   #:use-module (gnu packages glib)
   #:use-module (gnu packages freedesktop)

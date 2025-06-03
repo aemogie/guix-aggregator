@@ -15,18 +15,11 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
-(define-module (sss packages net)
+(define-module (sss-packages browser)
   #:declarative? #t
-  #:use-module (gnu packages networking)
-  #:use-module (gnu packages vpn)
-  #:use-module (gnu packages web)
-  #:use-module (gnu packages gnome)
-  #:export (net-packages))
+  #:use-module (nongnu packages mozilla)
+  #:use-module (nongnu packages chrome)
+  #:export (browser-packages))
 
-(define net-packages
-  (make-parameter (list openvpn
-                        darkhttpd
-                        network-manager-applet
-                        network-manager-openconnect
-                        network-manager-openvpn
-                        wireshark)))
+(define browser-packages
+  (make-parameter (list firefox google-chrome-beta)))

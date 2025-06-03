@@ -15,11 +15,10 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
-(define-module (sss packages music)
+(define-module (sss-packages universal-session)
   #:declarative? #t
-  #:use-module (gnu packages music)
-  #:use-module (gnu packages audio)
-  #:export (music-packages))
+  #:use-module (gnu packages wm)
+  #:export (universal-session-packages))
 
-(define music-packages
-  (make-parameter (list lilypond ardour tenacity)))
+(define universal-session-packages
+  (make-parameter (list labwc)))
