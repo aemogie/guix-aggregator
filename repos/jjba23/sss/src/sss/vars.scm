@@ -25,6 +25,7 @@
   #:export (env-variables-capability))
 
 (define* (env-variables-capability #:key palette
+                                   (extra-vars '())
                                    (clone-dir "$HOME/hacking/sss")
                                    (lang "en_US")
                                    (desktop-dir "$HOME/desktop")
@@ -64,8 +65,6 @@
                   ("XDG_DATA_DIRS" unquote
                    (format #f
                     "$XDG_DATA_DIRS:$HOME/.nix-profile/share:$HOME/.local/share/flatpak/exports/share"))
-                  ("INFOPATH" unquote
-                   (format #f "$INFOPATH:~a/docs/manual" clone-dir))
                   ("DOCKER_HOST" . "unix:///tmp/podman.sock")
                   ("XDG_DESKTOP_DIR" unquote desktop-dir)
                   ("XDG_DOCUMENTS_DIR" unquote documents-dir)
@@ -76,5 +75,6 @@
                   ("XDG_TEMPLATES_DIR" unquote templates-dir)
                   ("XDG_VIDEOS_DIR" unquote videos-dir))))
     (simple-service 'env-variables-capability
-                    home-environment-variables-service-type home-v)))
+                    home-environment-variables-service-type
+                    (append extra-vars home-v))))
 

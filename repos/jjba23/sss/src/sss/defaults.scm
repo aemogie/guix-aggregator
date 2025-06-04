@@ -169,6 +169,7 @@
     "marksman"
     "_1password-gui"
     "_1password-cli"
+    "gh"
     "stack"
     "sbt"
     "scala_2_13"

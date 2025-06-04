@@ -21,6 +21,7 @@
   #:use-module (gnu packages lisp)
   #:use-module (gnu packages node)
   #:use-module (gnu packages admin)
+  #:use-module (gnu packages web)
   #:export (dev-packages))
 
 (define dev-packages
@@ -29,4 +30,5 @@
                         (specification->package "python@3.10")
                         cl-asdf
                         sbcl
+                        httpd
                         inxi)))

@@ -128,7 +128,9 @@
                  (ssh-capability)
                  (env-variables-capability #:palette (get-setting 'palette)
                                            #:clone-dir (get-setting 'clone-dir)
-                                           #:lang (get-setting 'lang))
+                                           #:lang (get-setting 'lang)
+                                           #:extra-vars `(("GH_PACKAGES_USERNAME" . "jjbavdb")
+                                                          ("GH_PACKAGES_TOKEN" . "$(/home/joe/.nix-profile/bin/gh auth token)")))
                  (bash-capability #:clone-dir (get-setting 'clone-dir)
                                   #:gui-cmd "hyprland")
                  openpgp-capability
