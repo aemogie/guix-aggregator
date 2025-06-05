@@ -31,5 +31,6 @@
                         font-google-noto-emoji
                         font-google-roboto
                         font-liberation
+                        font-ibm-plex
                         font-microsoft-web-core-fonts
                         fontconfig)))

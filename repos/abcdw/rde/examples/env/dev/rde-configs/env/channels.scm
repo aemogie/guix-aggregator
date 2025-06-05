@@ -4,17 +4,17 @@
 ;;;
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
-(define-module (rde env channels)
+(define-module (rde-configs env channels)
   #:use-module (guix channels)
   #:export (core-channels))
 
 (define core-channels
   (list (channel
          (name 'guix)
-         (url "https://codeberg.org/guix/guix-mirror")
+         (url "https://git.guix.gnu.org/guix.git")
          (branch "master")
          (commit
-          "e124661486ec722b5c09a94b416f0104b9dde5a4")
+          "4b9d14378fcc3d8dd4eea36b541fe87e198fd7b8")
          (introduction
           (make-channel-introduction
            "9edb3f66fd807b096b48283debdcddccfea34bad"

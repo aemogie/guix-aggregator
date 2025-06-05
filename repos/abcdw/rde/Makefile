@@ -1,21 +1,33 @@
 # pipefail is not POSIX complaint
 
-GUIXTM=guix time-machine -C ./env/rde/env/channels.scm
+GUIXTM=guix time-machine -C ./env/guix/rde/env/guix/channels.scm
 GUIX=$(GUIXTM) --
 EMACS=$(GUIX) shell emacs emacs-ox-html-stable-ids -- emacs
 HUT=$(GUIX) shell hut -- hut
 
+EXAMPLES_SRC_DIR=./examples/src
+CONFIGS=${EXAMPLES_SRC_DIR}/rde-configs/configs.scm
+
+DEV_ENV_LOAD_PATH=-L ./env/guix -L ./env/dev -L ./src
+RDE_SRC_LOAD_PATH=-L ./env/guix -L ./env/dev -L ./src
+EXAMPLES_LOAD_PATH=-L ${EXAMPLES_SRC_DIR}
+
+DEV_SRC_LOAD_PATH=${DEV_SRC_LOAD_PATH} \
+${EXAMPLES_LOAD_PATH} \
+-L ./tests \
+-L ./files/emacs/gider/src \
+
 QEMU_BASE_ARGS= \
--m 4096 -smp 1 -enable-kvm \
--vga none -device virtio-gpu-pci
-# -vga qxl
+-m 8192 -smp 1 -enable-kvm \
+-display gtk,zoom-to-fit=on \
+-vga qxl
+# -vga none -device virtio-gpu-pci
+# -vga vmware
+# -vga none -device qxl-vga,vgamem_mb=32
 
 
 all: ares
 	@echo default target
-
-install:
-	@echo some installation will happen here
 
 check:
 	guile -L ./src -L ./tests -L ./files/emacs/gider/src -c \
@@ -25,18 +37,26 @@ guix:
 	make -C examples guix
 
 ares:
-	make -C examples ares
+	${GUIX} shell ${DEV_ENV_LOAD_PATH} \
+	guile-next guile-ares-rs \
+	-e '(@ (rde env dev packages) guix-package)' \
+	-- guile \
+	${DEV_SRC_LOAD_PATH} \
+	-c \
+"(begin (use-modules (guix gexp)) #;(load gexp reader macro globally) \
+((@ (ares server) run-nrepl-server)))"
 
-repl: ares-rs
-
+repl: ares
 
 examples/ixy/home/reconfigure:
-	make -C examples ixy/home/reconfigure
+	RDE_TARGET=ixy-home ${GUIX} home \
+	${RDE_SRC_LOAD_PATH} ${EXAMPLES_LOAD_PATH} \
+	reconfigure ${CONFIGS}
 
 examples/ixy/home/build:
-	make -C examples ixy/home/build
-
-.PHONY: examples/target/rde-live.iso
+	RDE_TARGET=ixy-home ${GUIX} home \
+	${RDE_SRC_LOAD_PATH} ${EXAMPLES_LOAD_PATH} \
+	build ${CONFIGS}
 
 examples/target/rde-live.iso:
 	make -C examples target/rde-live.iso
@@ -67,6 +87,7 @@ doc/rde.info: doc/rde.texi
 	makeinfo -o doc/rde.info doc/rde.texi
 
 doc/rde.html: doc/rde.texi
+	${GUIX} shell texinfo -- \
 	makeinfo --html --no-split \
 	--css-ref=/assets/manual.css \
 	-c "EXTRA_HEAD=<meta name=\"viewport\" \

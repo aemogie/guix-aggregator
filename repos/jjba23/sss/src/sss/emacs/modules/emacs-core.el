@@ -99,6 +99,9 @@
         use-dialog-box nil
 	delete-by-moving-to-trash t
 	tab-width 2)
+
+  (setq safe-local-variable-directories
+        (list (string-replace "$HOME" (getenv "HOME") "$HOME/fork/guix/")))
   
   (savehist-mode 1)
   (save-place-mode 1)
@@ -120,8 +123,8 @@
 
   (setq initial-buffer-choice
         (lambda () (ignore-errors
-                     (welkomscherm)
-                     (get-buffer welkomscherm-buffer-name))))
+                (welkomscherm)
+                (get-buffer welkomscherm-buffer-name))))
   
   (recentf-mode 1)
   (setq recentf-max-menu-items 100
