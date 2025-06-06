@@ -26,13 +26,13 @@ set backup
 set showmode
 
 " size of an "indent", for autoidentation
-set shiftwidth=4        " default 8
+"set shiftwidth=4        " default 8
 " combo of spaces and tabs to simulate tab stops at a width other than the (hard)tabstop
-set softtabstop=4       " default 0
+"set softtabstop=4       " default 0
 " size of hard tabstop
-set tabstop=4           " default 8
+"set tabstop=4           " default 8
 " always uses spaces instead of tab characters
-set expandtab
+"set expandtab
 
 set formatoptions+=j    " Delete comment character when joining commented lines
 

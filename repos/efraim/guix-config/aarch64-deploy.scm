@@ -26,7 +26,7 @@
                          (port 22)
                          (user "efraim")
                          (identity "/home/efraim/.ssh/id_ecdsa")
-                         (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP9kV+GUPVd13NudY7iQUPBsAmMQklSRUnIMRGmeXcos")))))
+                         (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM46O8629shIIF9WBtr/m7MvFdI5H9jR0PVFGJIcrvdm")))))
 
 ;; For /etc/passwd
 ;; efraim ALL = NOPASSWD: ALL
