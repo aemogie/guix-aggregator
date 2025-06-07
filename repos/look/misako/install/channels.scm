@@ -1,6 +1,6 @@
 (list (channel
         (name 'guix)
-        (url "https://git.savannah.gnu.org/git/guix.git")
+        (url "https://codeberg.org/guix/guix")
         (branch "master")
         (introduction
           (make-channel-introduction
@@ -19,7 +19,7 @@
       (channel
         (name 'nonguix)
         (url "https://gitlab.com/look7/nonguix")
-        (branch "nvidia")
+        (branch "nonguix-hacks")
         (introduction
           (make-channel-introduction
             "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
@@ -33,13 +33,13 @@
           (make-channel-introduction
             "f9130e11e35d2c147c6764ef85542dc58dc09c4f"
             (openpgp-fingerprint
-              "F164 709E 5FC7 B32B AEC7  9F37 1F2E 76AC E3F5 31C8"))))
-      (channel
-        (name 'sops-guix)
-        (url "https://git.sr.ht/~look/sops-guix")
-        (branch "main")
-        (introduction
-          (make-channel-introduction
-            "e6f0a2c93504eca47c018303ec66e0a3e82e4826"
-            (openpgp-fingerprint
-              "3FFA 7335 973E 0A49 47FC  0A8C 38D5 96BE 07D3 34AB")))))
+              "F164 709E 5FC7 B32B AEC7  9F37 1F2E 76AC E3F5 31C8")))))
+      ; (channel
+      ;   (name 'sops-guix)
+      ;   (url "https://git.sr.ht/~look/sops-guix")
+      ;   (branch "main")
+      ;   (introduction
+      ;     (make-channel-introduction
+      ;       "e6f0a2c93504eca47c018303ec66e0a3e82e4826"
+      ;       (openpgp-fingerprint
+      ;         "3FFA 7335 973E 0A49 47FC  0A8C 38D5 96BE 07D3 34AB")))))
