@@ -1,6 +1,6 @@
 # SSS - Supreme Sexp System
 
-# Copyright (C) 2025 Josep Bigorra
+# Copyright © Josep Bigorra <jjbigorra@gmail.com>
 
 # sss is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,20 +17,25 @@
 
 
 steps:
-  update-jointhefreeworld:
-    image: debian
+  byggsteg-trigger-jointhefreeworld:
+    image: curlimages/curl
     when:
       - event: [push]
         branch: [trunk]        
     environment:
       BYGGSTEG_KEY:
         from_secret: BYGGSTEG_KEY
+      BYGGSTEG_USERNAME: "Joe"
+      JOB_CODE: |
+        (lambda()
+        `((project . "sss")
+          (branch-name . "trunk")
+          (task . ("make-test" "pull-and-deploy"))
+          (clone-url . "https://codeberg.org/jjba23/sss")))
     commands: |
-      apt-get update
-      apt-get install -y curl
       curl 'https://byggsteg.jointhefreeworld.org/api/v1/jobs/manage/submit' \
         -X POST -H 'Content-Type: application/x-www-form-urlencoded' \
-        --data-urlencode 'username=Joe' \
+        --data-urlencode "username=$BYGGSTEG_USERNAME" \
         --data-urlencode "password=$BYGGSTEG_KEY" \
-        --data-urlencode 'job-code=(lambda() `((project . "sss")(branch-name . "trunk")(task . ("make-test" "pull-and-deploy"))(clone-url . "https://codeberg.org/jjba23/sss")))'
+        --data-urlencode "job-code=$JOB_CODE"
 
