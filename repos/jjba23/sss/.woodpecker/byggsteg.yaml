@@ -15,27 +15,38 @@
 # You should have received a copy of the GNU General Public License
 # along with sss.  If not, see <https://www.gnu.org/licenses/>.
 
-
+variables:
+  - &byggsteg_url 'https://byggsteg.jointhefreeworld.org'
+  - &byggsteg_submit_job_image 'jjba23/byggsteg-woodpecker-submit-job:v0.1.3'
+  - &byggsteg_poll_job_image 'jjba23/byggsteg-woodpecker-poll-job:v0.1.3'
+  
 steps:
-  byggsteg-trigger-jointhefreeworld:
-    image: curlimages/curl
+  submit-byggsteg-job-jointhefreeworld:
+    image: *byggsteg_submit_job_image
     when:
-      - event: [push]
-        branch: [trunk]        
-    environment:
+      - event: [ "push" ]
+        branch: [ "trunk" ]
+    settings:
+      BYGGSTEG_USERNAME:
+        from_secret: "BYGGSTEG_USERNAME"
       BYGGSTEG_KEY:
-        from_secret: BYGGSTEG_KEY
-      BYGGSTEG_USERNAME: "Joe"
-      JOB_CODE: |
+        from_secret: "BYGGSTEG_KEY"      
+      BYGGSTEG_URL: *byggsteg_url
+      BYGGSTEG_JOB_CODE: |
         (lambda()
-        `((project . "sss")
-          (branch-name . "trunk")
-          (task . ("make-test" "pull-and-deploy"))
-          (clone-url . "https://codeberg.org/jjba23/sss")))
-    commands: |
-      curl 'https://byggsteg.jointhefreeworld.org/api/v1/jobs/manage/submit' \
-        -X POST -H 'Content-Type: application/x-www-form-urlencoded' \
-        --data-urlencode "username=$BYGGSTEG_USERNAME" \
-        --data-urlencode "password=$BYGGSTEG_KEY" \
-        --data-urlencode "job-code=$JOB_CODE"
-
+          `((task . ("make-test" "pull-and-deploy"))
+            (project . "%%CI_REPO_NAME%%")
+            (branch-name . "%%CI_COMMIT_BRANCH%%")            
+            (clone-url . "%%CI_REPO_CLONE_URL%%")))
+            
+  poll-byggsteg-job-jointhefreeworld:
+    image: *byggsteg_poll_job_image
+    when:
+      - event: [ "push" ]
+        branch: [ "trunk" ]
+    settings:
+      BYGGSTEG_USERNAME:
+        from_secret: "BYGGSTEG_USERNAME"
+      BYGGSTEG_KEY:
+        from_secret: "BYGGSTEG_KEY"      
+      BYGGSTEG_URL: *byggsteg_url

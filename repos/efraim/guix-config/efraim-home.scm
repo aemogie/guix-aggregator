@@ -591,7 +591,7 @@
     ;"keep-articles-days 180\n"
     "download-path \"~/Downloads/\"\n"
     "max-downloads 2\n"
-    ;"bind-key ^R reload-all\n"
+    "bind-key ^W mark-all-above-as-read\n"
     "prepopulate-query-feeds yes\n"
     "suppress-first-reload yes\n"
     ;"proxy localhost:9050\n"
