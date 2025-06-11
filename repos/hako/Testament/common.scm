@@ -5,13 +5,14 @@
 (use-modules (ice-9 match)
              (ice-9 popen)
              (ice-9 textual-ports)
+             (rosenthal utils file)
+             (rosenthal utils packages)
              (sops secrets)
              (guix diagnostics)
              (guix gexp)
              (guix i18n)
-             (guix packages)
-             (guix store)
-             (gnu packages))
+             (guix store))
+
 ;;;
 ;;; Common
 ;;;
@@ -56,44 +57,10 @@ WARNED."
         (string->number secret)
         secret)))
 
-(define (computed-substitution-with-inputs name file inputs)
-  (with-imported-modules '((guix build utils))
-    (computed-file
-     name
-     #~(begin
-         (use-modules (guix build utils))
-         (copy-file #$file #$output)
-         (substitute* #$output
-           (("\\$\\$([^\\$]+)\\$\\$" _ path)
-            (search-path '#$inputs path)))))))
-
-(define (delete-package-from-list name lst)
-  "Return a copy of package list LST, removing packages named NAME."
-  (filter (lambda (pkg)
-            (not (string=? name (package-name pkg))))
-          lst))
-
-(define (file-content file)
-  (call-with-input-file (canonicalize-path file) get-string-all))
-
-(define (pkg spec)
-  (specification->package spec))
-
-(define (pkg+out spec)
-  (specification->package+output spec))
-
-(define (pkgs . specs)
-  (map specification->package specs))
-
-(define (pkgs+out . specs)
-  (specifications->packages specs))
-
-
 
 ;;;
 ;;; Keys
 ;;;
-
 
 (define %guix-authorized-key-dorphine
   (plain-file "dorphine.pub" "
@@ -122,7 +89,6 @@ WARNED."
 ;;;
 ;;; Variables
 ;;;
-
 
 ;; Source: <https://wiki.archlinux.org/title/XDG_Base_Directory>
 (define %testament-xdg-base-directory-env-vars

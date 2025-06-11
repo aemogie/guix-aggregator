@@ -29,6 +29,7 @@
 #+begin_src scheme :noweb-ref module
   (srfi srfi-26)
   (ice-9 match)
+  (nonguix utils transformations)
   (sops secrets)
   (gnu services ssh)
   (sops services sops)
@@ -155,6 +156,18 @@ No need to install less used ones, prefer ‘guix shell’.
      (authorized-keys (list %guix-authorized-key-dorphine))))
 #+end_src
 
+#+begin_src scheme :noweb-ref transformation
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (services
+       (modify-services (operating-system-user-services os)
+         (guix-service-type
+          config => (guix-configuration
+                     (inherit config)
+                     (extra-options '("--cores=8"))))))))
+#+end_src
+
 ** SOPS Secrets
 #+begin_src scheme :noweb-ref package
   "gnupg"
@@ -219,12 +232,13 @@ No need to install less used ones, prefer ‘guix shell’.
 #+end_src
 
 * Networking
-** nftables
 #+begin_src scheme :noweb-ref module
+  (gnu services avahi)
   (gnu services networking)
   (rosenthal services networking)
 #+end_src
 
+** nftables
 #+begin_src scheme :noweb-ref service
   (service nftables-service-type
     (nftables-configuration
@@ -256,6 +270,11 @@ No need to install less used ones, prefer ‘guix shell’.
                "1.0.0.1"
                "2606:4700:4700::1111"
                "2606:4700:4700::1001")))))
+#+end_src
+
+** avahi
+#+begin_src scheme :noweb-ref service
+  (service avahi-service-type)
 #+end_src
 
 ** ntp
@@ -332,6 +351,95 @@ No need to install less used ones, prefer ‘guix shell’.
 ** redis
 #+begin_src scheme :noweb-ref service
   (service redis-service-type)
+#+end_src
+
+* Continuous Integration
+#+begin_src scheme :noweb-ref module
+  (rosenthal services cuirass)
+  (gnu services cuirass)
+#+end_src
+
+** cuirass
+#+begin_src scheme :noweb yes :noweb-ref service
+  (service cuirass-service-type
+    (cuirass-configuration
+      (cuirass (pkg "cuirass-hako"))
+      ;; 6 hours
+      (interval (* 6 3600))
+      (remote-server
+       (cuirass-remote-server-configuration
+         (trigger-url "http://localhost:49637")
+         (publish? #f)))
+      (port 17732)
+      (specifications #~(list <<cuirass-spec>>))))
+#+end_src
+
+** guix-publish
+#+begin_src scheme :noweb-ref service
+  (service guix-publish-service-type
+    (guix-publish-configuration
+      (port 49637)
+      (compression '(("zstd" 19)))
+      (cache "/var/cache/guix/publish")
+      ;; 30 days
+      (ttl (* 30 24 3600))
+      ;; 2 minutes
+      (negative-ttl (* 2 60))))
+#+end_src
+
+** cuirass-remote-worker
+#+begin_src scheme :noweb-ref service
+  (service cuirass-worker-container-service-type
+    (cuirass-worker-container-configuration
+      (host-name "gokuraku")
+      (server "ci.boiledscript.com:5555")
+      (supported-systems
+       '("x86_64-linux" "i686-linux"))
+      (substitute-urls
+       `(,@%default-substitute-urls
+         "https://ci.boiledscript.com"))))
+#+end_src
+
+** cuirass specifications
+#+begin_src scheme :noweb-ref cuirass-spec
+  (specification
+    (name "nonguix")
+    (build '(channels nonguix))
+    (channels
+     (list (channel
+             (inherit %default-guix-channel)
+             (url "https://codeberg.org/guix/guix.git"))
+           (channel
+             (name 'nonguix)
+             (url "https://gitlab.com/nonguix/nonguix")
+             (introduction
+              (make-channel-introduction
+               "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
+               (openpgp-fingerprint
+                "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))))
+    (priority 5)
+    (systems '("x86_64-linux" "i686-linux")))
+#+end_src
+
+#+begin_src scheme :noweb-ref cuirass-spec
+  (specification
+    (name "rosenthal")
+    (build '(channels rosenthal))
+    (channels
+     (list (channel
+             (inherit %default-guix-channel)
+             (url "https://codeberg.org/guix/guix.git"))
+           (channel
+             (name 'rosenthal)
+             (url "https://codeberg.org/hako/rosenthal.git")
+             (branch "trunk")
+             (introduction
+              (make-channel-introduction
+               "7677db76330121a901604dfbad19077893865f35"
+               (openpgp-fingerprint
+                "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7"))))))
+    (priority 5)
+    (systems '("x86_64-linux" "i686-linux")))
 #+end_src
 
 * Web Servers

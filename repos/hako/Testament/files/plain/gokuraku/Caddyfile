@@ -26,6 +26,15 @@
 	}
 }
 
+(guix_publish) {
+	@guix_publish {
+		path /*.narinfo || /file/* || /nar/* || /nix-cache-info || /signing-key.pub
+	}
+	handle @guix_publish {
+		reverse_proxy {args[0]}
+	}
+}
+
 (logging) {
 	log {
 		output file /var/lib/caddy/{args[0]}.access.log
@@ -37,6 +46,13 @@
 			}
 		}
 	}
+}
+
+(pow) {
+	@pow_matcher {
+		header User-Agent *Mozilla*
+	}
+	proof_of_work @pow_matcher
 }
 
 (robots_txt) {
@@ -54,6 +70,27 @@
 }
 
 
+# Cuirass
+ci.boiledscript.com {
+	import block_bots
+	import pow
+	import robots_txt
+
+	import logging cuirass
+	import guix_publish localhost:49637
+	respond /admin/* "Access denied" 403 {
+			close
+	}
+	reverse_proxy localhost:17732
+}
+
+ci.ultrarare.space {
+	import tailscale
+	import logging cuirass
+	import guix_publish localhost:49637
+	reverse_proxy localhost:17732
+}
+
 # docker-mailserver
 mail.boiledscript.com {
 	respond /* "Access denied" 403 {
@@ -62,9 +99,11 @@ mail.boiledscript.com {
 }
 
 # Forgejo
-http://git.boiledscript.com {
+git.boiledscript.com {
 	import block_bots
+	import pow
 	import $$robots.txt/forgejo$$
+
 	import logging forgejo
 	reverse_proxy localhost:48071
 }
@@ -73,6 +112,7 @@ http://git.boiledscript.com {
 reader.boiledscript.com {
 	import block_bots
 	import robots_txt
+
 	import logging miniflux
 	reverse_proxy localhost:51787
 }
@@ -81,6 +121,7 @@ reader.boiledscript.com {
 http://social.boiledscript.com {
 	import block_bots
 	import robots_txt
+
 	import logging misskey
 	reverse_proxy localhost:54493
 }
@@ -89,6 +130,7 @@ http://social.boiledscript.com {
 vault.boiledscript.com {
 	import block_bots
 	import robots_txt
+
 	import logging vaultwarden
 	reverse_proxy localhost:23263
 }

@@ -12,7 +12,7 @@
 (define guix
   (channel
     (name 'guix)
-    (url "https://codeberg.org/guix/guix-mirror")
+    (url "https://codeberg.org/guix/guix")
     (branch "master")
     (introduction
       (make-channel-introduction

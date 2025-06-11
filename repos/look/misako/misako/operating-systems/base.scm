@@ -45,6 +45,7 @@
   #:use-module (gnu packages file)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages gawk)
+  #:use-module (gnu packages games)
   #:use-module (gnu packages guile)
   #:use-module (gnu packages guile-xyz)
   #:use-module (gnu packages less)
@@ -216,7 +217,7 @@
         (service udev-service-type
           (udev-configuration
             (udev eudev)
-            (rules (list lvm2 fuse crda light))))
+            (rules (list lvm2 fuse crda light steam-devices-udev-rules))))
 
         #|Hosts|#
         (simple-service 'extra-hosts hosts-service-type
@@ -240,6 +241,9 @@
         ;   (zram-device-configuration
         ;     (size (* 2 (ram-total)))
         ;     (compression-algorithm 'lz4)))
+        (service earlyoom-service-type
+          (earlyoom-configuration
+            (minimum-available-memory 5)))
 
         #|Xwayland|#
         (service x11-socket-directory-service-type)
@@ -254,8 +258,7 @@
                         (value "127.0.0.1/8"))))
               (provision '(loopback)))))
 
-        (service dhcp-client-service-type
-          (dhcp-client-configuration (interfaces 'all)))
+        (service dhcpcd-service-type)
 
         #|Doas config service|#
         (service opendoas-service-type

@@ -21,17 +21,10 @@ build: build-dorphine build-gokuraku
 build-%: config/%.scm
 	$(GUIX) system build $< $(OPTS)
 
-.PHONY: build-home
-build-home: build-home-dorphine
-build-home-%: config/%.scm
-	$(GUIX) home build $< $(OPTS)
-
 .PHONY: deploy
-# Use pre-inst-env, as ‘guix deploy’ doesn't provide a ‘--allow-downgrades’
-# option.
 deploy: deploy-dorphine deploy-gokuraku
 deploy-%: config/%.scm
-	./pre-inst-env $(GUIX) deploy files/deploy/$(notdir $<) $(OPTS)
+	$(GUIX) deploy files/deploy/$(notdir $<) $(OPTS)
 
 .PHONY: authenticate
 # Authenticate commits.

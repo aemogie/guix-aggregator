@@ -5,7 +5,9 @@
   #:export (aerc
             aerc-keys
             senpai
-            senpai-keys))
+            senpai-keys
+            shadow
+            shadow-keys))
 
 (define (look-sops-secret keys)
   (map (lambda (key)
@@ -30,5 +32,16 @@
 (define senpai-keys
   (list '("senpai" "sourcehut" "password")))
 
+(define shadow-keys
+  (list '("ssh" "shadow-primary" "name")
+        '("ssh" "shadow-primary" "host-name")
+        '("ssh" "shadow-primary" "port")
+        '("ssh" "shadow-primary" "user")
+        '("ssh" "shadow-secondary" "name")
+        '("ssh" "shadow-secondary" "host-name")
+        '("ssh" "shadow-secondary" "port")
+        '("ssh" "shadow-secondary" "user")))
+
 (define aerc (look-sops-secret aerc-keys))
 (define senpai (look-sops-secret senpai-keys))
+(define shadow (look-sops-secret shadow-keys))

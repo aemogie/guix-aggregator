@@ -72,15 +72,17 @@
                  (config-file (local-file (string-append yumiko-dir "/samba/smb.conf")))))
 
              (udev-rules-service 'otd
-               (file->udev-rule "70-opentabletdriver.rules"
-                 (local-file
-                   (string-append yumiko-dir "/udev/70-opentabletdriver.rules")))
+               (let ((rules "70-opentabletdriver.rules"))
+                 (file->udev-rule rules
+                   (local-file
+                     (string-append yumiko-dir "/udev/" rules))))
                #:groups '("tablet"))
 
              (udev-rules-service 'usb-phone
-               (udev-rule "90-usb-phone.rules"
-                 (string-append "SUBSYSTEM==\"usb\", ATTRS{idVendor}==\"04e8\", MODE:=\"0666\"\n"
-                                "SUBSYSTEM==\"usb_device\", ATTRS{idVendor}==\"04e8\", MODE:=\"0666\"")) 
+               (let ((rules "90-usb-phone.rules"))
+                 (file->udev-rule rules
+                   (local-file
+                     (string-append yumiko-dir "/udev/" rules))))
                #:groups '("usb"))
 
              #|SSH services|#

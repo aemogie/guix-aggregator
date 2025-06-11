@@ -40,6 +40,24 @@
     (flags '(no-atime))
     (options "subvol=@home,discard=async,ssd")))
 
+(define snapshots-has
+  (file-system
+    (device has-part)
+    (type "btrfs")
+    (mount-point "/snapshots/has")
+    (needed-for-boot? #t)
+    (flags '(no-atime))
+    (options "compress=zstd,subvol=@snapshots")))
+
+(define snapshots-ssd
+  (file-system
+    (device guix-part)
+    (type "btrfs")
+    (mount-point "/snapshots/ssd")
+    (needed-for-boot? #t)
+    (flags '(no-atime))
+    (options "compress=zstd,subvol=@snapshots")))
+
 (define games
   (file-system
     (device games-part)
@@ -168,6 +186,8 @@
 (define %btrfs-ephemeral-file-systems
   (cons* root
          home
+         snapshots-ssd
+         snapshots-has
          games
          root-user
          boot

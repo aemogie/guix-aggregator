@@ -1,7 +1,14 @@
-@ Articles
+# @ Articles
 
 # @ News < reload-period 60
 # https://hnrss.org/best                                              "Hacker News"
+
+@ Guix
+# https://codeberg.org/guix/guix.rss "Guix"
+# https://codeberg.org/guix/guix.rss?1 "New issue" < reload-period 2; item-rule title LIKE '%created issue%'
+# https://codeberg.org/guix/guix.rss?2 "New pull request" < reload-period 2; item-rule title LIKE '%created pull request%'
+https://codeberg.org/guix/guix/rss/branch/master "New commit" < reload-period 30
+
 
 @ Software Updates < reload-period 30
 https://github.com/helix-editor/helix/releases.atom                 "Helix"
@@ -13,7 +20,8 @@ https://github.com/typst/typst/releases.atom                        "typst"
 https://github.com/Vencord/Vesktop/releases.atom                    "Vesktop"
 https://github.com/NVIDIA/open-gpu-kernel-modules/releases.atom     "NVIDIA"
 https://github.com/GloriousEggroll/proton-ge-custom/releases.atom   "Proton-GE"
-https://github.com/CachyOS/proton-cachyos/releases.atom             "Proton-CachyOS"
+https://git.sr.ht/~delthas/senpai/refs/rss.xml                      "Senpai"
+# https://github.com/CachyOS/proton-cachyos/releases.atom             "Proton-CachyOS"
 # Hypr* stack
 https://github.com/hyprwm/Hyprland/releases.atom                    "Hyprland"
 https://github.com/hyprwm/hyprutils/releases.atom                   "hyprutils"

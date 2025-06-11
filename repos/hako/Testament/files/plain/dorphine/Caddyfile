@@ -39,6 +39,13 @@
 	}
 }
 
+(pow) {
+	@pow_matcher {
+		header User-Agent *Mozilla*
+	}
+	proof_of_work @pow_matcher
+}
+
 (robots_txt) {
 	respond /robots.txt 200 {
 		body <<EOF
@@ -55,25 +62,49 @@
 
 
 # Komga
-http://manga.boiledscript.com, manga.ultrarare.space {
+http://manga.boiledscript.com {
 	import block_bots
+	import pow
 	import robots_txt
+
+	import logging komga
+	reverse_proxy localhost:44293
+}
+
+manga.ultrarare.space {
+	import tailscale
 	import logging komga
 	reverse_proxy localhost:44293
 }
 
 # Navidrome
-http://music.boiledscript.com, music.ultrarare.space {
+http://music.boiledscript.com {
 	import block_bots
+	import pow
 	import robots_txt
+
+	import logging navidrome
+	reverse_proxy localhost:43502
+}
+
+music.ultrarare.space {
+	import tailscale
 	import logging navidrome
 	reverse_proxy localhost:43502
 }
 
 # Jellyfin
-http://shows.boiledscript.com, shows.ultrarare.space {
+http://shows.boiledscript.com {
 	import block_bots
+	import pow
 	import robots_txt
+
+	import logging jellyfin
+	reverse_proxy localhost:22443
+}
+
+shows.ultrarare.space {
+	import tailscale
 	import logging jellyfin
 	reverse_proxy localhost:22443
 }

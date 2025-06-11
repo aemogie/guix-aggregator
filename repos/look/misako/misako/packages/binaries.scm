@@ -162,7 +162,7 @@ well.")
 (define vesktop
   (package
     (name "vesktop")
-    (version "1.5.6")
+    (version "1.5.7")
     (source
       (origin
         (method url-fetch)
@@ -170,7 +170,7 @@ well.")
           (string-append "https://github.com/Vencord/Vesktop/releases/download/"
                          "v" version "/" name "-" version ".tar.gz"))
         (sha256
-          (base32 "0qfks7gwqn5hcwkwiq8lf4jw72yv2jklvxan8a2814jbzfswn1c1"))))
+          (base32 "0f40a20cbyvz7ibgdkarzzrjr0yv70w2lmhp1gbd6mj9m8dkhw3n"))))
     (build-system chromium-binary-build-system)
     (arguments
       (list

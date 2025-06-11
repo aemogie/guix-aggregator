@@ -5,7 +5,7 @@ ui = true
 editor = hx
 
 [commit]
-gpgsign = true
+gpgsign = false
 
 [user]
 signingkey = 3FFA7335973E0A4947FC0A8C38D596BE07D334AB
@@ -19,6 +19,9 @@ last = log -1 HEAD
 
 [remote "origin"]
 fetch = +refs/pull/*/head:refs/remotes/origin/pr/*
+
+[remote "upstream"]
+fetch = +refs/pull/*/head:refs/remotes/upstream/pr/*
 
 [sendemail]
 smtpserver = {{{ aerc.primary.url }}}

@@ -7,6 +7,8 @@
             sourcehut
             gitlab
             forgejo
+            shadow-primary
+            shadow-secondary
             yumiko))
 
 (define aur
@@ -57,3 +59,19 @@
     (host-name "yumiko.local")
     (user "look")
     (identity-file "~/.ssh/look")))
+
+(define shadow-primary
+  (openssh-host
+    (name (secret '("ssh" "shadow-primary" "name")))
+    (host-name (secret '("ssh" "shadow-primary" "host-name")))
+    (user (secret '("ssh" "shadow-primary" "user")))
+    (port (string->number (secret '("ssh" "shadow-primary" "port"))))
+    (identity-file "~/.ssh/shadow")))
+
+(define shadow-secondary
+  (openssh-host
+    (name (secret '("ssh" "shadow-secondary" "name")))
+    (host-name (secret '("ssh" "shadow-secondary" "host-name")))
+    (user (secret '("ssh" "shadow-secondary" "user")))
+    (port (string->number (secret '("ssh" "shadow-secondary" "port"))))
+    (identity-file "~/.ssh/shadow")))

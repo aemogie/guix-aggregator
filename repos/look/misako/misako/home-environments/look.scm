@@ -153,7 +153,7 @@
         #|Password Manager|# keepassxc password-store passff-host
         #|PDF             |# sioyek ;zaread
         #|Window Manager  |# hyprland hyprpaper hyprlock hypridle hyprcursor
-        #|                |# hyprland-qtutils hyprsunset
+        #|                |# hyprland-qtutils hyprsunset eww/wayland
         #|                |# mako waybar grim slurp bemenu fuzzel
         #|                |# wl-clipboard wlsunset dbus qtwayland cursor-mcmojave
         #|                |# hyprcursor-mcmojave
@@ -201,6 +201,8 @@
                     ssh-host:sourcehut
                     ssh-host:gitlab
                     ssh-host:forgejo
+                    ssh-host:shadow-primary
+                    ssh-host:shadow-secondary
                     ssh-host:yumiko))))
 
         (service home-gpg-agent-service-type
@@ -268,7 +270,8 @@
                 "sops.yaml"))
             (secrets
               (append sops-secrets:aerc
-                      sops-secrets:senpai))))
+                      sops-secrets:senpai
+                      sops-secrets:shadow))))
 
         (service home-xdg-user-directories-service-type
           (home-xdg-user-directories-configuration

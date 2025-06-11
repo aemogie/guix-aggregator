@@ -5,6 +5,7 @@ use-grammars = { except = [ "hare", "wren", "gemini" ] }
 
 [language-server]
 guile-lsp-server = { command = "guile-lsp-server", args = ["--stdio"] }
+jdtls = { command = "jdtls" }
 
 [[language]]
 name = "scheme"
@@ -15,7 +16,7 @@ shebangs = ["scheme", "guile", "chicken"]
 comment-token = ";"
 indent = { tab-width = 2, unit = "  " }
 language-servers = [ "guile-lsp-server" ]
-auto-format = true
+auto-format = false
 formatter = { command = "parinfer-rust" }
 
 [language.auto-pairs]
@@ -32,6 +33,17 @@ file-types = ["tex", "sty", "cls", "Rd", "bbx", "cbx"]
 comment-token = "%"
 language-servers = [ "texlab" ]
 indent = { tab-width = 4, unit = " " }
+
+[[language]]
+name = "java"
+scope = "source.java"
+injection-regex = "java"
+file-types = ["java", "jav", "pde"]
+roots = ["pom.xml", "build.gradle", "build.gradle.kts"]
+language-servers = [ "jdtls" ]
+indent = { tab-width = 4, unit = "    " }
+comment-tokens = ["//"]
+block-comment-tokens = { start = "/*", end = "*/" }
 
 [language-server.texlab]
 command = "texlab"
