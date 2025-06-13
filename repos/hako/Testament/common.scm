@@ -5,13 +5,18 @@
 (use-modules (ice-9 match)
              (ice-9 popen)
              (ice-9 textual-ports)
-             (rosenthal utils file)
-             (rosenthal utils packages)
-             (sops secrets)
              (guix diagnostics)
+             (guix download)
              (guix gexp)
              (guix i18n)
-             (guix store))
+             (guix packages)
+             (guix store)
+             (nonguix transformations)
+             (guix build-system copy)
+             (rosenthal utils file)
+             (rosenthal utils packages)
+             (rosenthal utils transformations)
+             (sops secrets))
 
 ;;;
 ;;; Common

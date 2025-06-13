@@ -15,6 +15,7 @@
   (define %os
     (operating-system
       (bootloader <<bootloader>>)
+      (mapped-devices (list <<mapped-device>>))
       (file-systems (append <<file-systems>> %base-file-systems))
       (host-name "dorphine")
       (users (cons* <<user>> %base-user-accounts))
@@ -44,6 +45,7 @@
   (srfi srfi-26)
   (ice-9 match)
   (sops secrets)
+  (rosenthal bootloader grub)
   (gnu home services dotfiles)
   (gnu home services shells)
   (gnu home services shepherd)
@@ -55,10 +57,11 @@
 
 ** Bootloader
 #+name: bootloader
-#+begin_src scheme
+#+begin_src scheme :noweb yes
   (bootloader-configuration
-    (bootloader grub-efi-removable-bootloader)
+    (bootloader grub-efi-luks2-removable-bootloader)
     (targets '("/efi"))
+    (keyboard-layout <<keyboard-layout>>)
     (theme
      (grub-theme
        (inherit (grub-theme))
@@ -67,6 +70,59 @@
 #+end_src
 
 ** File Systems
+Disk layout:
+#+begin_example
+  +---------+-----------------------+
+  | ESP     | Btrfs subvolumes      |
+  | /efi    |_ _ _ _ _ _ _ _ _ _ _ _|
+  |         |                       |
+  |         | LUKS encrypted volume |
+  |         |_ _ _ _ _ _ _ _ _ _ _ _|
+  |         |                       |
+  |         | LVM Logical volume    |
+  |_ _ _ _ _|_ _ _ _ _ _ _ _ _ _ _ _|
+  |         |         |             |
+  | part. 1 | part. 2 |             |
+  |_ _ _ _ _| _ _ _ _ | disk 2      |
+  |                   |             |
+  | disk 1            |             |
+  +-------------------+-------------+
+#+end_example
+
+Btrfs subvolumes:
+#+begin_example
+  @Library
+  @Sandbox
+  @Snapshot
+
+  @Config
+  @Data
+  @Home
+
+  System/@Boot
+  System/@Guix
+  System/@Log
+  System/@Store
+  System/@Swap
+  System/@Temp
+#+end_example
+
+Root file system layout:
+#+begin_example
+  /               tmpfs
+  ├─/boot         btrfs System/@Boot
+  ├─/efi          fat32 ESP
+  ├─/etc          btrfs @Config
+  ├─/gnu/store    btrfs System/@Store
+  ├─/home         btrfs @Home
+  ├─/swap         btrfs System/@Swap
+  ├─/tmp          btrfs System/@Temp
+  ├─/var/guix     btrfs System/@Guix
+  ├─/var/lib      btrfs @Data
+  └─/var/log      btrfs System/@Log
+#+end_example
+
+
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
           (device "tmpfs")
@@ -76,57 +132,57 @@
           (check? #f))
 
         (file-system
-          (device "tmpfs")
-          (mount-point "/var/lock")
-          (type "tmpfs")
-          (flags '(no-suid no-dev no-exec))
-          (options "mode=0755,size=25%")
-          (check? #f)
-          (create-mount-point? #t))
-
-        (file-system
-          (device (uuid "BC2E-A7AA" 'fat))
+          (device (uuid "2574-B3EC" 'fat))
           (mount-point "/efi")
           (type "vfat")
           (create-mount-point? #t)))
 #+end_src
 
-#+begin_src scheme :noweb-ref file-systems
-  (let ((file-system-base
-         (file-system
-           (device (uuid "e54ffdf2-8113-4f75-9573-623d6e6b05ce"))
-           (mount-point "placeholder")
-           (type "btrfs")
-           (create-mount-point? #t)))
-        (options-for-subvolume
-         (cut string-append "compress=zstd,subvol=" <>)))
-    (cons* (file-system
-             (inherit file-system-base)
-             (mount-point "/mnt/Mentha")
-             (options "compress=zstd,subvolid=5")
-             (check? #f)
-             (create-mount-point? #t))
-           (map (match-lambda
-                  ((subvolume . mount-point)
-                   (file-system
-                     (inherit file-system-base)
-                     (mount-point mount-point)
-                     (options (options-for-subvolume subvolume))
-                     (check? (string=? mount-point "/gnu/store"))
-                     (needed-for-boot?
-                      (member mount-point '("/etc" "/gnu/store" "/var/guix"))))))
-                '(("@Boot"   . "/boot")
-                  ("@Config" . "/etc")
-                  ("@Store"  . "/gnu/store")
-                  ("@Home"   . "/home")
-                  ("@Swap"   . "/swap")
-                  ("@Tmp"    . "/tmp")
-                  ("@Guix"   . "/var/guix")
-                  ("@Data"   . "/var/lib")
-                  ("@Log"    . "/var/log")))))
+#+begin_src scheme :noweb-ref mapped-device
+  (mapped-device
+    (source "MenthaVG")
+    (target "MenthaVG-LV")
+    (type lvm-device-mapping))
+
+  (mapped-device
+    (source (uuid "c1800987-36b0-4b50-b046-7840be5c3aa1"))
+    (target "Mentha-LUKS")
+    (type luks-device-mapping))
 #+end_src
 
-#+begin_src scheme :noweb-ref transformation
+#+begin_src scheme :noweb yes :noweb-ref file-systems
+  (let ((options-for-subvolume
+         (lambda (subvolume)
+           (string-join
+            (list "compress=zstd:1"
+                  (or (and=> subvolume (cut string-append "subvol=" <>))
+                      "subvolid=5"))
+            ","))))
+    (map (match-lambda
+           ((subvolume . mount-point)
+            (file-system
+              (device "/dev/mapper/Mentha-LUKS")
+              (mount-point mount-point)
+              (type "btrfs")
+              (options (options-for-subvolume subvolume))
+              (dependencies mapped-devices)
+              (create-mount-point? #t)
+              (check? (string=? mount-point "/gnu/store"))
+              (needed-for-boot?
+               (member mount-point '("/etc" "/gnu/store" "/var/guix"))))))
+         '(("System/@Boot"  . "/boot")
+           ("System/@Store" . "/gnu/store")
+           ("System/@Swap"  . "/swap")
+           ("System/@Temp"  . "/tmp")
+           ("System/@Guix"  . "/var/guix")
+           ("System/@Log"   . "/var/log")
+           ("@Config" . "/etc")
+           ("@Home"   . "/home")
+           ("@Data"   . "/var/lib")
+           (#f        . "/mnt/Mentha"))))
+#+end_src
+
+#+begin_src scheme :noweb yes :noweb-ref transformation
   (lambda (os)
     (operating-system
       (inherit os)
@@ -134,9 +190,8 @@
        (list (swap-space
                (target "/swap/swapfile")
                (dependencies
-                (filter (file-system-mount-point-predicate "/swap")
-                        (operating-system-file-systems os)))
-               (discard? #t))))))
+              (filter (file-system-mount-point-predicate "/swap")
+                      (operating-system-file-systems os))))))))
 #+end_src
 
 ** Keyboard Layout
@@ -287,13 +342,14 @@ No need to install less used ones, prefer ‘guix shell’.
 ** Guix Daemon
 #+begin_src scheme :noweb-ref transformation
   (nonguix-transformation-guix #:substitutes? #f)
+  (rosenthal-transformation-guix)
 #+end_src
 
 #+begin_src scheme :noweb-ref service
   (simple-service 'guix-extension-gokuraku
       guix-service-type
     (guix-extension
-     (authorized-keys (list %guix-authorized-key-gokuraku))))
+      (authorized-keys (list %guix-authorized-key-gokuraku))))
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
@@ -304,10 +360,8 @@ No need to install less used ones, prefer ‘guix shell’.
        (modify-services (operating-system-user-services os)
          (guix-service-type
           config => (guix-configuration
-                     (inherit config)
-                     (substitute-urls
-                      `(,@(guix-configuration-substitute-urls config)
-                        "https://ci.boiledscript.com"))))))))
+                      (inherit config)
+                      (extra-options '("--cores=24"))))))))
 #+end_src
 
 ** Shepherd
@@ -406,7 +460,6 @@ Generate passwordless ECC key:
 
 * Kernel
 #+begin_src scheme :noweb-ref module
-  (nonguix utils transformations)
   (nongnu system linux-initrd)
   (gnu services sysctl)
 #+end_src
@@ -419,9 +472,26 @@ Generate passwordless ECC key:
       ("net.core.wmem_max" . "7500000")))
 #+end_src
 
+#+begin_src scheme :noweb-ref definition
+  ;; Using newer firmware will trigger an ath12k driver issue:
+  ;; https://bugzilla.kernel.org/show_bug.cgi?id=220108
+  (define %my-linux-firmware
+    (package
+      (inherit (pkg "linux-firmware"))
+      (version "20250410")
+      (source
+       (origin
+         (method url-fetch)
+         (uri (string-append "mirror://kernel.org/linux/kernel/firmware/"
+                             "linux-firmware-" version ".tar.xz"))
+         (sha256
+          (base32
+           "1y90banizlmm9mj99f1h6sy22mv2y6c59q8ayd5xa3wkv2ramria"))))))
+#+end_src
+
 #+begin_src scheme :noweb-ref transformation
   (nonguix-transformation-linux
-   #:firmware (pkgs "atheros-firmware")
+   #:firmware (list %my-linux-firmware)
    #:initrd
    (lambda (file-systems . rest)
      (apply microcode-initrd file-systems
@@ -627,7 +697,7 @@ Generate passwordless ECC key:
 #+begin_src scheme :noweb-ref service
   (service qemu-binfmt-service-type
     (qemu-binfmt-configuration
-     (platforms (lookup-qemu-platforms "aarch64" "powerpc64le" "riscv64"))))
+      (platforms (lookup-qemu-platforms "aarch64" "powerpc64le" "riscv64"))))
 #+end_src
 
 * Continuous Integration
@@ -636,16 +706,17 @@ Generate passwordless ECC key:
 #+end_src
 
 ** cuirass-remote-worker
+Remember to open TCP port 5558.
 #+begin_src scheme :noweb-ref service
   (service cuirass-worker-container-service-type
     (cuirass-worker-container-configuration
       (host-name "dorphine")
-      (server "ci.boiledscript.com:5555")
+      (server "100.97.195.93:5555")
       (supported-systems
        '("x86_64-linux" "i686-linux"))
       (substitute-urls
        `(,@%default-substitute-urls
-         "https://ci.boiledscript.com"))))
+         "https://ci.ultrarare.space"))))
 #+end_src
 
 * Web Servers
@@ -658,8 +729,8 @@ Generate passwordless ECC key:
 #+begin_src scheme :noweb yes :noweb-ref service
   (service caddy-service-type
     (caddy-configuration
-     (caddy (pkg "caddy-hako"))
-     (caddyfile <<caddy-config>>)))
+      (caddy (pkg "caddy-hako"))
+      (caddyfile <<caddy-config>>)))
 #+end_src
 
 #+name: caddy-config
@@ -714,7 +785,6 @@ Generate passwordless ECC key:
 
 * Graphical Session
 #+begin_src scheme :noweb-ref module
-  (nonguix utils transformations)
   (gnu services desktop)
   (gnu services xorg)
   (gnu home services desktop)
@@ -1524,6 +1594,7 @@ Frontend
      '((mail-user-agent . notmuch-user-agent)
        (message-kill-buffer-on-exit . #t)
        (mml-secure-openpgp-encrypt-to-self . #t)
+       (mml-secure-openpgp-signers . ("220F98D95E86204C0036DA7B6DEC4360408B4185"))
        (notmuch-show-logo . #f)
        (notmuch-draft-folder . "Drafts")
        (notmuch-fcc-dirs . "Sent")

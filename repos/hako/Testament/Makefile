@@ -12,9 +12,14 @@ EMACS := $(GUIX) shell emacs-next-minimal -- emacs
 	--eval "(require 'ob-tangle)" \
 	--eval "(org-babel-tangle-file \"$<\")"
 
+.PHONY: update-channels
+update-channels:
+	$(GUIX) time-machine --channels=channels-spec.scm -- \
+		describe --format=channels > channels.scm
+
 .PHONY: pull
 pull:
-	$(GUIX) pull --channels=channels.scm $(OPTS)
+	$(GUIX) pull --channels=channels-spec.scm $(OPTS)
 
 .PHONY: build
 build: build-dorphine build-gokuraku
@@ -44,4 +49,4 @@ ares:
 
 .PHONY: clean
 clean:
-	-$(RM) config/*.scm
+	-$(RM) config/*.scm channels.scm

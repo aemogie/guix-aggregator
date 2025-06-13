@@ -66,8 +66,6 @@ tun:
   device: mihomo0
   auto-route: true
   auto-redirect: true
-  exclude-interface:
-    - tailscale0
 
 proxy-groups:
   - {

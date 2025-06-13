@@ -228,6 +228,8 @@
         tree
         tumbler
         unixodbc
+        pngquant
+        jpegoptim
         virt-manager
         watchexec
         xarchiver

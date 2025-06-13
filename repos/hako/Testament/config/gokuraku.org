@@ -15,6 +15,7 @@
   (define %os
     (operating-system
       (bootloader <<bootloader>>)
+      (mapped-devices (list <<mapped-device>>))
       (file-systems (append <<file-systems>> %base-file-systems))
       (host-name "gokuraku")
       (users (cons* <<user>> %base-user-accounts))
@@ -29,7 +30,6 @@
 #+begin_src scheme :noweb-ref module
   (srfi srfi-26)
   (ice-9 match)
-  (nonguix utils transformations)
   (sops secrets)
   (gnu services ssh)
   (sops services sops)
@@ -45,28 +45,25 @@
 
 ** File Systems
 #+begin_src scheme :noweb-ref file-systems
-  (let ((file-system-base
-         (file-system
-           (device (file-system-label "Lycoris"))
-           (mount-point "/")
-           (type "btrfs")
-           (create-mount-point? #t)))
-        (options-for-subvolume
-         (cut string-append "compress=zstd,subvol=" <>)))
-    (cons (file-system
-            (inherit file-system-base)
-            (mount-point "/mnt/Lycoris")
-            (options "compress=zstd,subvolid=5")
-            (check? #f))
-          (map (match-lambda
-                 ((subvolume . mount-point)
-                  (file-system
-                    (inherit file-system-base)
-                    (mount-point mount-point)
-                    (options (options-for-subvolume subvolume))
-                    (check? (string=? "/" mount-point)))))
-               '(("@System" . "/")
-                 ("@Data"   . "/var/lib")))))
+  (let ((options-for-subvolume
+         (lambda (subvolume)
+           (string-join
+            (list "compress=zstd"
+                  (or (and=> subvolume (cut string-append "subvol=" <>))
+                      "subvolid=5"))
+            ","))))
+    (map (match-lambda
+           ((subvolume . mount-point)
+            (file-system
+              (device (file-system-label "Lycoris"))
+              (mount-point mount-point)
+              (type "btrfs")
+              (options (options-for-subvolume subvolume))
+              (create-mount-point? #t)
+              (check? (string=? mount-point "/")))))
+         '(("@System" . "/")
+           ("@Data"   . "/var/lib")
+           (#f        . "/mnt/Lycoris"))))
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
@@ -103,6 +100,22 @@ Personal account.
     (shell (file-append (pkg "fish") "/bin/fish")))
 #+end_src
 
+Nonguix sysadmins:
+#+begin_src scheme :noweb-ref user
+  (user-account
+    (name "jonathan")
+    (password "$6$0UzuLvTjtcBQGxke$5hUTyIJOumsgaG3y2QvD65SWWG3pqlj5FujOmSCFItoN74G5VpUOgWEPt4VVMIKe0UCV4L5pMpev8CVXl6hLn/")
+    (group "users")
+    (shell (file-append (pkg "fish") "/bin/fish"))
+    (comment "Jonathan Brielmaier"))
+
+  (user-account
+    (name "podiki")
+    (password "$6$FJMvZ5TbFamapsiC$kODPSRELkpXH1BauLekqbyiKTWwtxfTyYM0sbNUd32BYpw9ZWxVxfBRx2BXF.6anynMciqcPuWYtsbVE0P7mN/")
+    (group "users")
+    (shell (file-append (pkg "fish") "/bin/fish")))
+#+end_src
+
 Administration accounts.
 #+begin_src scheme :noweb-ref user
   (user-account
@@ -127,7 +140,15 @@ Administration accounts.
       ("hako"
        ,(plain-file
          "hako.pub"
-         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2"))))
+         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2"))
+      ("jonathan"
+       ,(plain-file
+         "jonathan.pub"
+         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHgzHvP3BRTIZ960LVglrK8w/C0+6Z5VM8/Q5Uwa0o+Z"))
+      ("podiki"
+       ,(plain-file
+         "podiki.pub"
+         "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDaSmW/3uq5L6ZP6gWmRw5RiTTg0es1PrbAo/x4vkPzwIKTrMFOCBCmcuH3vOCkEZJtNy3OpXbt/a3tDW+cc6dkeq2H4WpogQvyMTXreFS2phMgDTEXW2gGZIP6fA33CHERmhd9A/m0A+NH5KGAmLDQNK8QgPgIjZuseJYtYHNCnN2TCsWQYnbZtVQF5CS6iBUILpVp6p7QlSUokiCGaPjZfrjSFCm1hUPjJYSkv0NTq8TzyDfU2quqP7TBCj4WBi9HoW9+a8tN2TQ/+GYbGqlFljeNdz3vzItcHjidHOQL/42mpvzgZx7o7dtrqX9stp+mI3oBREYSD0bMyvND/dEBRWIbpFvbyYx/leMKq9yUcFNyI2lztk17ObaQkDLxlq4ClytgEtdbP6X0gua29FYK/YlAi13NptK6uy2xB2gsEIt5P4N3u+gZCNA0U3IVd7iMRSpg6PWiL1JguvhYSD5vGOnOjiXVlBCKn+ErTO9Ey/BZqwVBZMeDwynFnU1mYnkxtA+G54VI77gj24FrHw/ClOdJOdBUGAso9P3sFjdykkAJyKd4jiFzpDTOOJNs8qKhmFFzJBnJjn7nzwjElwOCZXdDKTrKqF/51WEqpNr8Za2QjRirV4m7n6FnyyD38b24InAVa+yze3qDI9yk2vjPdtFGCeLODSEjfV3U1z1hiw=="))))
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
@@ -149,11 +170,15 @@ No need to install less used ones, prefer ‘guix shell’.
 #+end_src
 
 ** Guix Daemon
+#+begin_src scheme :noweb-ref transformation
+  (nonguix-transformation-guix #:substitutes? #f)
+#+end_src
+
 #+begin_src scheme :noweb-ref service
   (simple-service 'guix-extension-dorphine
       guix-service-type
     (guix-extension
-     (authorized-keys (list %guix-authorized-key-dorphine))))
+      (authorized-keys (list %guix-authorized-key-dorphine))))
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
@@ -164,8 +189,8 @@ No need to install less used ones, prefer ‘guix shell’.
        (modify-services (operating-system-user-services os)
          (guix-service-type
           config => (guix-configuration
-                     (inherit config)
-                     (extra-options '("--cores=8"))))))))
+                      (inherit config)
+                      (extra-options '("--cores=4" "--max-jobs=2"))))))))
 #+end_src
 
 ** SOPS Secrets
@@ -190,18 +215,18 @@ No need to install less used ones, prefer ‘guix shell’.
 #+begin_src scheme :noweb-ref service
   (service sops-secrets-service-type
     (sops-service-configuration
-     (sops (pkg "sops"))
-     (config (local-file (testament-plain "sops.yaml")))
-     (gnupg-home "/var/lib/sops")
-     (secrets
-      (list (sops-secret
-              (key '("cloudflare"))
-              (file gokuraku.yaml)
-              (user "caddy"))
-            (sops-secret
-              (key '("cloudflared"))
-              (file gokuraku.yaml)
-              (user "cloudflared"))))))
+      (sops (pkg "sops"))
+      (config (local-file (testament-plain "sops.yaml")))
+      (gnupg-home "/var/lib/sops")
+      (secrets
+       (list (sops-secret
+               (key '("cloudflare"))
+               (file gokuraku.yaml)
+               (user "caddy"))
+             (sops-secret
+               (key '("cloudflared"))
+               (file gokuraku.yaml)
+               (user "cloudflared"))))))
 #+end_src
 
 [[file:../files/plain/sops.yaml][sops.yaml]]
@@ -233,7 +258,6 @@ No need to install less used ones, prefer ‘guix shell’.
 
 * Networking
 #+begin_src scheme :noweb-ref module
-  (gnu services avahi)
   (gnu services networking)
   (rosenthal services networking)
 #+end_src
@@ -254,15 +278,15 @@ No need to install less used ones, prefer ‘guix shell’.
             (addresses
              (map (lambda (version)
                     (network-address
-                     (device (sops-str (list "network" version "name")))
-                     (value (sops-str (list "network" version "address")))))
+                      (device (sops-str (list "network" version "name")))
+                      (value (sops-str (list "network" version "address")))))
                   '("v4" "v6")))
             (routes
              (map (lambda (version)
                     (network-route
-                     (destination "default")
-                     (device (sops-str (list "network" version "name")))
-                     (gateway (sops-str (list "network" version "gateway")))))
+                      (destination "default")
+                      (device (sops-str (list "network" version "name")))
+                      (gateway (sops-str (list "network" version "gateway")))))
                   '("v4" "v6")))
             (name-servers
              '("100.100.100.100"
@@ -270,11 +294,6 @@ No need to install less used ones, prefer ‘guix shell’.
                "1.0.0.1"
                "2606:4700:4700::1111"
                "2606:4700:4700::1001")))))
-#+end_src
-
-** avahi
-#+begin_src scheme :noweb-ref service
-  (service avahi-service-type)
 #+end_src
 
 ** ntp
@@ -355,13 +374,15 @@ No need to install less used ones, prefer ‘guix shell’.
 
 * Continuous Integration
 #+begin_src scheme :noweb-ref module
+  (gnu system privilege)
   (rosenthal services cuirass)
   (gnu services cuirass)
 #+end_src
 
 ** cuirass
+Remember to open TCP port 5555 and 5556.
 #+begin_src scheme :noweb yes :noweb-ref service
-  (service cuirass-service-type
+  (service cuirass-service-type/hako
     (cuirass-configuration
       (cuirass (pkg "cuirass-hako"))
       ;; 6 hours
@@ -392,15 +413,120 @@ No need to install less used ones, prefer ‘guix shell’.
   (service cuirass-worker-container-service-type
     (cuirass-worker-container-configuration
       (host-name "gokuraku")
-      (server "ci.boiledscript.com:5555")
+      (server "100.97.195.93:5555")
+      (workers 2)
       (supported-systems
        '("x86_64-linux" "i686-linux"))
       (substitute-urls
        `(,@%default-substitute-urls
-         "https://ci.boiledscript.com"))))
+         "https://ci.ultrarare.space"))))
+#+end_src
+
+** manage-cuirass
+#+begin_src scheme :noweb-ref definition
+  (define %manage-cuirass-script
+    (program-file
+     "manage-cuirass.scm"
+     #~(begin
+         (use-modules (ice-9 format) (ice-9 match))
+         (define %services
+           '("cuirass-remote-server"
+             "cuirass-worker-container"))
+         (define %actions
+           '("status"
+             "start"
+             "stop"
+             "restart"
+             "enable"
+             "disable"))
+         (define (service? service)
+           (member service %services))
+         (define (action? action)
+           (member action %actions))
+
+         (match (cdr (command-line))
+           (((? service? service) (? action? action))
+            (system* "herd" action service))
+           (_
+            (format (current-error-port) "~
+  Usage: manage-cuirass SERVICE ACTION
+
+  SERVICE:
+  ~{- ~a
+  ~}
+  ACTION:
+  ~{- ~a
+  ~}" %services %actions)
+            (exit 1))))))
+
+  (define %manage-cuirass
+    (package
+      (name "manage-cuirass")
+      (version "0.0.0")
+      (source #f)
+      (build-system copy-build-system)
+      (arguments
+       (list
+        #:phases
+        #~(modify-phases %standard-phases
+            (delete 'unpack)
+            (replace 'install
+              (lambda _
+                (call-with-output-file "manage-cuirass.c"
+                  (lambda (port)
+                    (format port "~
+  #include <sys/types.h>
+  #include <stdio.h>
+  #include <unistd.h>
+
+  int main(int argc, char **argv, char **envp) {
+    setuid(geteuid());
+    ,*argv = ~s;
+    execve(*argv, argv, envp);
+    perror(*argv);
+    return 127;
+  }~%"
+                            #$%manage-cuirass-script)))
+                (invoke "gcc" "manage-cuirass.c" "-o" "manage-cuirass")
+                (install-file "manage-cuirass" (in-vicinity #$output "bin")))))))
+      (home-page "")
+      (synopsis "")
+      (description "")
+      (license #f)))
+#+end_src
+
+#+begin_src scheme :noweb-ref transformation
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (privileged-programs
+       (cons* (privileged-program
+                (program (file-append %manage-cuirass "/bin/manage-cuirass"))
+                (setuid? #t))
+              (operating-system-privileged-programs os)))))
 #+end_src
 
 ** cuirass specifications
+#+begin_src scheme :noweb-ref cuirass-spec
+  (specification
+    (name "guixcn")
+    (build '(channels guixcn))
+    (channels
+     (list (channel
+             (inherit %default-guix-channel)
+             (url "https://codeberg.org/guix/guix.git"))
+           (channel
+             (name 'guixcn)
+             (url "https://github.com/guixcn/guix-channel.git")
+             (introduction
+              (make-channel-introduction
+               "993d200265630e9c408028a022f32f34acacdf29"
+               (openpgp-fingerprint
+                "7EBE A494 60CE 5E2C 0875  7FDB 3B5A A993 E1A2 DFF0"))))))
+    (priority 5)
+    (systems '("x86_64-linux" "i686-linux")))
+#+end_src
+
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification
     (name "nonguix")
@@ -442,6 +568,28 @@ No need to install less used ones, prefer ‘guix shell’.
     (systems '("x86_64-linux" "i686-linux")))
 #+end_src
 
+#+begin_src scheme :noweb-ref cuirass-spec
+  (specification
+    (name "rosenthal-auto-updates")
+    (build '(manifests "etc/manifests/rosenthal-auto-update.scm"))
+    (channels
+     (list (channel
+             (inherit %default-guix-channel)
+             (url "https://codeberg.org/guix/guix.git"))
+           (channel
+             (name 'rosenthal)
+             (url "https://codeberg.org/hako/rosenthal.git")
+             (branch "trunk")
+             (introduction
+              (make-channel-introduction
+               "7677db76330121a901604dfbad19077893865f35"
+               (openpgp-fingerprint
+                "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7"))))))
+    (period (* 12 3600))
+    (priority 7)
+    (systems '("x86_64-linux" "i686-linux")))
+#+end_src
+
 * Web Servers
 #+begin_src scheme :noweb-ref module
   (gnu services certbot)
@@ -452,8 +600,8 @@ No need to install less used ones, prefer ‘guix shell’.
 #+begin_src scheme :noweb yes :noweb-ref service
   (service caddy-service-type
     (caddy-configuration
-     (caddy (pkg "caddy-hako"))
-     (caddyfile <<caddy-config>>)))
+      (caddy (pkg "caddy-hako"))
+      (caddyfile <<caddy-config>>)))
 #+end_src
 
 #+name: caddy-config
