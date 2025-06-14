@@ -258,7 +258,7 @@
     (background-l . "#282828")))
 
 (define gruvbox-light
-  `((primary . "#d65d0e") (primary-l . "#fe8019")
+  `((primary . "#d65d0e") (primary-l . "#d75f00")
     (text . "#1d2021")
     (text-l . "#282828")
     (background . "#ebdbb2")

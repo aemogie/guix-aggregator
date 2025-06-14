@@ -374,6 +374,9 @@ No need to install less used ones, prefer ‘guix shell’.
 
 * Continuous Integration
 #+begin_src scheme :noweb-ref module
+  (guix download)
+  (guix packages)
+  (guix build-system copy)
   (gnu system privilege)
   (rosenthal services cuirass)
   (gnu services cuirass)
@@ -430,7 +433,9 @@ Remember to open TCP port 5555 and 5556.
      #~(begin
          (use-modules (ice-9 format) (ice-9 match))
          (define %services
-           '("cuirass-remote-server"
+           '("cuirass"
+             "cuirass-remote-server"
+             "cuirass-web"
              "cuirass-worker-container"))
          (define %actions
            '("status"
@@ -736,6 +741,16 @@ Remember to open TCP port 5555 and 5556.
       (database-url (sops-str '("vaultwarden")))
       (port 23263)
       (extra-options '(("ROCKET_ADDRESS" . "127.0.0.1")))))
+#+end_src
+
+* Monitoring
+#+begin_src scheme :noweb-ref module
+  (gnu services monitoring)
+#+end_src
+
+** prometheus-node-exporter
+#+begin_src scheme :noweb-ref service
+  (service prometheus-node-exporter-service-type)
 #+end_src
 
 * Miscellaneous

@@ -8,7 +8,7 @@
 * Guix System
 #+begin_src scheme :tangle dorphine.scm :noweb yes
   (load "../common.scm")
-  (use-modules (gnu) <<module>>)
+  (use-modules (gnu) (gnu services shepherd) <<module>>)
 
   <<definition>>
 
@@ -31,6 +31,7 @@
   (gnu services guix)
   (gnu home)
   (gnu home services)
+  (gnu home services shepherd)
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref service
@@ -100,28 +101,26 @@ Btrfs subvolumes:
   @Home
 
   System/@Boot
+  System/@Build
   System/@Guix
   System/@Log
   System/@Store
   System/@Swap
-  System/@Temp
 #+end_example
 
 Root file system layout:
 #+begin_example
   /               tmpfs
-  ├─/boot         btrfs System/@Boot
   ├─/efi          fat32 ESP
+  ├─/boot         btrfs System/@Boot
   ├─/etc          btrfs @Config
   ├─/gnu/store    btrfs System/@Store
   ├─/home         btrfs @Home
   ├─/swap         btrfs System/@Swap
-  ├─/tmp          btrfs System/@Temp
   ├─/var/guix     btrfs System/@Guix
   ├─/var/lib      btrfs @Data
   └─/var/log      btrfs System/@Log
 #+end_example
-
 
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
@@ -173,7 +172,6 @@ Root file system layout:
          '(("System/@Boot"  . "/boot")
            ("System/@Store" . "/gnu/store")
            ("System/@Swap"  . "/swap")
-           ("System/@Temp"  . "/tmp")
            ("System/@Guix"  . "/var/guix")
            ("System/@Log"   . "/var/log")
            ("@Config" . "/etc")
@@ -193,6 +191,29 @@ Root file system layout:
               (filter (file-system-mount-point-predicate "/swap")
                       (operating-system-file-systems os))))))))
 #+end_src
+
+Maintenance:
+#+begin_src scheme :noweb-ref service
+  (simple-service 'btrfs-scrub
+        shepherd-root-service-type
+      (list (shepherd-timer '(btrfs-scrub)
+              #~(calendar-event #:hours '(0))
+              #~(#$(file-append (pkg "btrfs-progs") "/bin/btrfs") "scrub" "start"
+                 "/mnt/Mentha")
+              #:requirement '(user-processes))))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'btrbk
+      shepherd-root-service-type
+    (list (shepherd-timer '(btrbk)
+            #~(calendar-event #:minutes '(0))
+            #~(#$(file-append (pkg "btrbk") "/bin/btrbk")
+               "-c" #$(local-file (testament-plain "dorphine/btrbk.conf")))
+            #:requirement '(user-processes))))
+#+end_src
+
+[[file:../files/plain/dorphine/btrbk.conf][dorphine/btrbk.conf]]
 
 ** Keyboard Layout
 #+name: keyboard-layout
@@ -361,7 +382,8 @@ No need to install less used ones, prefer ‘guix shell’.
          (guix-service-type
           config => (guix-configuration
                       (inherit config)
-                      (extra-options '("--cores=24"))))))))
+                      (extra-options '("--cores=24"))
+                      (tmpdir "/mnt/Mentha/System/@Build")))))))
 #+end_src
 
 ** Shepherd
@@ -472,26 +494,9 @@ Generate passwordless ECC key:
       ("net.core.wmem_max" . "7500000")))
 #+end_src
 
-#+begin_src scheme :noweb-ref definition
-  ;; Using newer firmware will trigger an ath12k driver issue:
-  ;; https://bugzilla.kernel.org/show_bug.cgi?id=220108
-  (define %my-linux-firmware
-    (package
-      (inherit (pkg "linux-firmware"))
-      (version "20250410")
-      (source
-       (origin
-         (method url-fetch)
-         (uri (string-append "mirror://kernel.org/linux/kernel/firmware/"
-                             "linux-firmware-" version ".tar.xz"))
-         (sha256
-          (base32
-           "1y90banizlmm9mj99f1h6sy22mv2y6c59q8ayd5xa3wkv2ramria"))))))
-#+end_src
-
 #+begin_src scheme :noweb-ref transformation
   (nonguix-transformation-linux
-   #:firmware (list %my-linux-firmware)
+   #:linux (pkg "linux@6.12")
    #:initrd
    (lambda (file-systems . rest)
      (apply microcode-initrd file-systems
@@ -514,7 +519,6 @@ Generate passwordless ECC key:
   (guix modules)
   (gnu services desktop)
   (gnu services networking)
-  (gnu services shepherd)
   (rosenthal services child-error)
   (rosenthal services networking)
   (rosenthal services dns)
@@ -781,6 +785,16 @@ Remember to open TCP port 5558.
   (service navidrome-service-type
     (navidrome-configuration
       (extra-config (file-content (testament-blobs "navidrome.toml")))))
+#+end_src
+
+* Monitoring
+#+begin_src scheme :noweb-ref module
+  (gnu services monitoring)
+#+end_src
+
+** prometheus-node-exporter
+#+begin_src scheme :noweb-ref service
+  (service prometheus-node-exporter-service-type)
 #+end_src
 
 * Graphical Session
@@ -1542,43 +1556,73 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+end_src
 
 *** emacs-notmuch
+Fetch mailing lists from public-inbox instances:
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'l2md
+      home-shepherd-service-type
+    (list (shepherd-service
+            (provision '(l2md))
+            (start
+             #~(make-forkexec-constructor
+                (list #$(file-append (pkg "l2md") "/bin/l2md") "--verbose")))
+            (stop
+             #~(make-kill-destructor)))))
+#+end_src
+
+[[file:../files/dotfiles/.config/l2md/config][~/.config/l2md/config]]
+
 Fetch from mail server:
 #+begin_src scheme :noweb-ref home-service
   (simple-service 'mbsync
       home-shepherd-service-type
     (list
-     (shepherd-timer
-      '(update-mailbox)
-      #~(calendar-event #:minutes '(0 10 20 30 40 50))
-      #~(#$(program-file
-            "update-mailbox"
-            (with-imported-modules '((guix build utils))
-              #~(begin
-                  (use-modules (ice-9 match)
-                               (guix build utils))
-                  ;; Sync with mail server.
-                  (invoke #$(file-append (pkg "isync") "/bin/mbsync") "-a"
-                          "--config" #$(local-file (testament-plain "mbsync.conf")))
-                  ;; Index & tag.
-                  (let ((notmuch #$(file-append (pkg "notmuch") "/bin/notmuch")))
-                    (invoke notmuch "new")
-                    (map (match-lambda
-                           ((query . tags)
-                            (apply invoke notmuch "tag"
-                                   `(,@(map symbol->string tags) "--" ,query))))
-                         '(;; self
-                           ("tag:new AND (from:hako@ultrarare.space OR folder:Sent)"
-                            . (+sent))
-                           ("tag:new AND (tag:replied OR tag:sent)"
-                            . (-new -unread))
-                           ;; folders
-                           ("tag:new AND folder:Archive"
-                            . (+archive -inbox -new -unread))
-                           ("tag:new AND folder:Junk"
-                            . (+spam -inbox -new))
-                           ;; others
-                           ("tag:new"
-                            . (+inbox +unread -new))))))))))))
+     (shepherd-timer '(update-mailbox)
+       #~(calendar-event #:minutes '(0 15 30 45))
+       #~(#$(program-file
+             "update-mailbox"
+             (with-imported-modules '((guix build utils))
+               #~(begin
+                   (use-modules (ice-9 match)
+                                (guix build utils))
+                   ;; Sync with mail server.
+                   (invoke #$(file-append (pkg "isync") "/bin/mbsync") "-a"
+                           "--config" #$(local-file (testament-plain "mbsync.conf")))
+                   ;; Index & tag.
+                   (let ((notmuch #$(file-append (pkg "notmuch") "/bin/notmuch")))
+                     (invoke notmuch "new")
+                     (map (match-lambda
+                            ((query . tags)
+                             (apply invoke notmuch "tag"
+                                    `(,@(map symbol->string tags) "--" ,query))))
+                          '(;; self
+                            ("from:hako@ultrarare.space OR folder:Sent"
+                             . (+sent))
+                            ("tag:replied OR tag:sent"
+                             . (-unread))
+                            ;; folders
+                            ("folder:Archive"
+                             . (+archive -inbox -unread))
+                            ("folder:Junk"
+                             . (+spam -inbox))
+                            ;; mailing lists
+                            ("tag:new AND folder:Lists/emacs-devel"
+                             . (+lists +lists/emacs-devel -inbox -new))
+                            ("tag:new AND folder:Lists/guile-devel"
+                             . (+lists +lists/guile-devel -inbox -new))
+                            ("tag:new AND folder:Lists/guix-bugs"
+                             . (+lists +lists/guix-bugs -inbox -new))
+                            ("tag:new AND folder:Lists/guix-devel"
+                             . (+lists +lists/guix-devel -inbox -new))
+                            ("tag:new AND folder:Lists/guix-user"
+                             . (+lists +lists/guix-user -inbox -new))
+                            ;; patches
+                            ("tag:new AND folder:Lists/guix-patches"
+                             . (+patches +patches/guix -inbox -new))
+                            ;; others
+                            ("tag:new"
+                             . (+inbox +unread -new)))))
+                   (invoke "emacsclient"
+                           "--eval" "(smtpmail-send-queued-mail)"))))))))
 #+end_src
 
 [[file:../files/plain/mbsync.conf][mbsync.conf]]
@@ -1679,7 +1723,6 @@ Send
 #+begin_src scheme :noweb-ref module
   (rosenthal services bittorrent)
   (rosenthal services file-systems)
-  (gnu home services shepherd)
   (gnu home services syncthing)
 #+end_src
 
@@ -1698,16 +1741,6 @@ Send
    "fish-config-atuin"
    (pkg "atuin") "/bin/atuin init fish | source")
 #+end_src
-
-** btrbk
-#+begin_src scheme :noweb-ref service
-  (service btrbk-service-type
-    (btrbk-configuration
-      (config-file
-       (local-file (testament-plain "dorphine/btrbk.conf")))))
-#+end_src
-
-[[file:../files/plain/dorphine/btrbk.conf][dorphine/btrbk.conf]]
 
 ** fcitx5
 #+begin_src scheme :noweb-ref home-package
@@ -1809,10 +1842,9 @@ To use fcitx5 in QT applications, install =fcitx5-qt= and set environment variab
 #+begin_src scheme :noweb-ref home-service
   (simple-service 'modprobed-db
       home-shepherd-service-type
-    (list (shepherd-timer
-           '(update-modprobed-db)
-           #~(calendar-event #:minutes '(0))
-           #~(#$(file-append (pkg "modprobed-db") "/bin/modprobed-db") "storesilent"))))
+    (list (shepherd-timer '(update-modprobed-db)
+            #~(calendar-event #:minutes '(0))
+            #~(#$(file-append (pkg "modprobed-db") "/bin/modprobed-db") "storesilent"))))
 #+end_src
 
 [[file:../files/dotfiles/.config/modprobed-db.conf][~/.config/modprobed-db.conf]]

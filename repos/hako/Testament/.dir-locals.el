@@ -41,6 +41,7 @@
  (scheme-mode
   .
   ((eval . (put 'service 'scheme-indent-function 1))
+   (eval . (put 'shepherd-timer 'scheme-indent-function 1))
    (eval . (put 'simple-service 'scheme-indent-function 2))
 
    (eval . (put 'home-sops-service-configuration 'scheme-indent-function 0))

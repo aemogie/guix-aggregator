@@ -3,10 +3,8 @@
 #
 # SPDX-License-Identifier: CC0-1.0
 
-PRE_INST_ENV="\
-    $HOME/Workspace/Guix/pre-inst-env \
-    $HOME/Workspace/Nonguix/pre-inst-env \
-    $HOME/Workspace/Rosenthal/pre-inst-env \
-    $HOME/Workspace/sops-guix/pre-inst-env"
-
-exec $PRE_INST_ENV "$@"
+exec "$HOME/Workspace/Guix/pre-inst-env" \
+     "$HOME/Workspace/Nonguix/pre-inst-env" \
+     "$HOME/Workspace/Rosenthal/pre-inst-env" \
+     "$HOME/Workspace/sops-guix/pre-inst-env" \
+     "$@"

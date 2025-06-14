@@ -60,11 +60,6 @@
     "Adjust the base Emacs faces to my preferences.
 According to size, color and font family"
     (interactive)
-
-    (ignore-errors
-      (set-face-attribute 'window-divider nil
-                          :foreground (ef-themes-get-color-value 'bg-alt)
-                          :background (ef-themes-get-color-value 'bg-alt)))
     
     (set-face-attribute 'default nil 
 		        :height (round (tekengrootte-mk-font-size 114)) 
@@ -176,6 +171,27 @@ According to size, color and font family"
                           :height (tekengrootte-mk-font-size 0.8)))
 
     ;; ====== Theme specific tweaks ======
+
+    ;; ====== Ef theme specific tweaks =============
+    (when (string-prefix-p "ef-" (format "%s" sss-emacs-theme))
+      (ignore-errors
+        (set-face-attribute 'window-divider nil
+                            :foreground (ef-themes-get-color-value 'bg-dim)
+                            :background (ef-themes-get-color-value 'bg-dim))))
+
+    ;; ======= Gruvbox specific tweaks ===========
+
+    (when (equal sss-emacs-theme 'gruvbox-light-hard)
+      (ignore-errors
+        (set-face-attribute 'internal-border nil
+                            :background "#f9f5d7")))
+
+    (when (equal sss-emacs-theme 'gruvbox-dark-hard)
+      (ignore-errors
+        (set-face-attribute 'internal-border nil
+                            :background "#1d2021")))
+    
+    
     ;; ====== Everforest dark specific tweaks ======
     (ignore-errors
       (cond ((equal sss-emacs-theme 'everforest-hard-dark)
