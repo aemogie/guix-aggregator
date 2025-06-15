@@ -66,8 +66,7 @@
     (theme
      (grub-theme
        (inherit (grub-theme))
-       (image (local-file (testament-blobs "grub.png")))
-       (resolution '(2560 . 1440)))))
+       (image (local-file (testament-blobs "grub.png"))))))
 #+end_src
 
 ** File Systems
@@ -195,12 +194,12 @@ Root file system layout:
 Maintenance:
 #+begin_src scheme :noweb-ref service
   (simple-service 'btrfs-scrub
-        shepherd-root-service-type
-      (list (shepherd-timer '(btrfs-scrub)
-              #~(calendar-event #:hours '(0))
-              #~(#$(file-append (pkg "btrfs-progs") "/bin/btrfs") "scrub" "start"
-                 "/mnt/Mentha")
-              #:requirement '(user-processes))))
+      shepherd-root-service-type
+    (list (shepherd-timer '(btrfs-scrub)
+            #~(calendar-event #:hours '(0))
+            #~(#$(file-append (pkg "btrfs-progs") "/bin/btrfs") "scrub" "start"
+               "/mnt/Mentha")
+            #:requirement '(user-processes))))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -367,7 +366,7 @@ No need to install less used ones, prefer ‘guix shell’.
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (simple-service 'guix-extension-gokuraku
+  (simple-service 'guix-extensions
       guix-service-type
     (guix-extension
       (authorized-keys (list %guix-authorized-key-gokuraku))))
@@ -482,7 +481,6 @@ Generate passwordless ECC key:
 
 * Kernel
 #+begin_src scheme :noweb-ref module
-  (nongnu system linux-initrd)
   (gnu services sysctl)
 #+end_src
 
@@ -496,12 +494,7 @@ Generate passwordless ECC key:
 
 #+begin_src scheme :noweb-ref transformation
   (nonguix-transformation-linux
-   #:linux (pkg "linux@6.12")
-   #:initrd
-   (lambda (file-systems . rest)
-     (apply microcode-initrd file-systems
-            #:microcode-packages (pkgs "amd-microcode")
-            rest)))
+   #:linux (pkg "linux@6.12"))
 
   (lambda (os)
     (operating-system
@@ -510,13 +503,12 @@ Generate passwordless ECC key:
        (cons* "kernel.sysrq=1"
               "zswap.enabled=1"
               "zswap.max_pool_percent=90"
-              "modprobe.blacklist=pcspkr,snd_pcsp"
+              "modprobe.blacklist=pcspkr"
               (operating-system-user-kernel-arguments os)))))
 #+end_src
 
 * Networking
 #+begin_src scheme :noweb-ref module
-  (guix modules)
   (gnu services desktop)
   (gnu services networking)
   (rosenthal services child-error)
@@ -581,7 +573,8 @@ Generate passwordless ECC key:
 [[file:../files/plain/smartdns.conf][smartdns.conf]]
 
 #+begin_src scheme :noweb-ref service
-  (simple-service 'etc-resolv-conf etc-service-type
+  (simple-service 'etc-resolv-conf
+      etc-service-type
     `(("resolv.conf" ,(plain-file "resolv.conf" "nameserver 127.0.0.1\n"))))
 #+end_src
 
@@ -644,7 +637,8 @@ Generate passwordless ECC key:
 
 ** pam-uaccess
 #+begin_src scheme :noweb-ref service
-  (simple-service 'uaccess-pam-service pam-root-service-type
+  (simple-service 'uaccess-pam-service
+      pam-root-service-type
     (let ((uaccess-pam-entry
            (pam-entry
              (control "optional")
@@ -1688,12 +1682,25 @@ Send
        ;; Improve responsiveness.
        (vterm-timer-delay . 0.05)))
     (extra-init
-     (list #%(defun hako/vterm-project (&optional arg)
+     (list #%(defun hako/vterm ()
+               (interactive)
+               (let* ((parent
+                       (if (buffer-file-name)
+                           (file-name-directory (buffer-file-name))
+                           default-directory))
+                      (name (car (last (split-string parent "/" t))))
+                      (vterm-buffer-name (concat "*vterm: " name "*"))
+                      (vterm-buffer (get-buffer vterm-buffer-name)))
+                 (if (and vterm-buffer (not current-prefix-arg))
+                     (pop-to-buffer vterm-buffer)
+                     (vterm t))))
+           #%(defun hako/vterm-project (&optional arg)
                (interactive "P")
                (require 'project)
                (let* ((default-directory (project-root (project-current t)))
                       (vterm-buffer-name (project-prefixed-buffer-name "vterm")))
                  (vterm arg)))))
+    (keys-global '(("s-t" . hako/vterm)))
     (keys-local
      (list (emacs-keymap
              (name 'vterm-mode-map)

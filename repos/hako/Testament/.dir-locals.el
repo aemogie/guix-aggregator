@@ -44,6 +44,13 @@
    (eval . (put 'shepherd-timer 'scheme-indent-function 1))
    (eval . (put 'simple-service 'scheme-indent-function 2))
 
+   (eval . (put 'emacs-configuration 'scheme-indent-function 0))
+   (eval . (put 'emacs-keymap 'scheme-indent-function 0))
+   (eval . (put 'emacs-package 'scheme-indent-function 0))
+   (eval . (put 'emacs-package-serializer 'scheme-indent-function 0))
+   (eval . (put 'emacs-server 'scheme-indent-function 0))
+   (eval . (put 'home-emacs-configuration 'scheme-indent-function 0))
+   (eval . (put 'home-emacs-extension 'scheme-indent-function 0))
    (eval . (put 'home-sops-service-configuration 'scheme-indent-function 0))
    (eval . (put 'sops-secret 'scheme-indent-function 0))
    (eval . (put 'sops-service-configuration 'scheme-indent-function 0))

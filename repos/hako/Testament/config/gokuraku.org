@@ -8,7 +8,7 @@
 * Guix System
 #+begin_src scheme :tangle gokuraku.scm :noweb yes
   (load "../common.scm")
-  (use-modules (gnu) <<module>>)
+  (use-modules (gnu) (gnu services shepherd) <<module>>)
 
   <<definition>>
 
@@ -75,6 +75,18 @@
                (target (uuid "62da8bb4-d578-40f7-be9f-f76e7d7c1a91"))
                (discard? #t))))))
 #+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'btrbk
+      shepherd-root-service-type
+    (list (shepherd-timer '(btrbk)
+            #~(calendar-event #:minutes '(0))
+            #~(#$(file-append (pkg "btrbk") "/bin/btrbk")
+               "-c" #$(local-file (testament-plain "gokuraku/btrbk.conf")))
+            #:requirement '(user-processes))))
+#+end_src
+
+[[file:../files/plain/gokuraku/btrbk.conf][gokuraku/btrbk.conf]]
 
 ** Timezone
 #+name: timezone
@@ -374,7 +386,6 @@ No need to install less used ones, prefer ‘guix shell’.
 
 * Continuous Integration
 #+begin_src scheme :noweb-ref module
-  (guix download)
   (guix packages)
   (guix build-system copy)
   (gnu system privilege)
@@ -752,17 +763,3 @@ Remember to open TCP port 5555 and 5556.
 #+begin_src scheme :noweb-ref service
   (service prometheus-node-exporter-service-type)
 #+end_src
-
-* Miscellaneous
-#+begin_src scheme :noweb-ref module
-  (rosenthal services file-systems)
-#+end_src
-
-** btrbk
-#+begin_src scheme :noweb-ref service
-  (service btrbk-service-type
-    (btrbk-configuration
-      (config-file (local-file (testament-plain "gokuraku/btrbk.conf")))))
-#+end_src
-
-[[file:../files/plain/gokuraku/btrbk.conf][gokuraku/btrbk.conf]]

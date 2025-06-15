@@ -70,6 +70,16 @@
 }
 
 
+http://files.boiledscript.com {
+	import block_bots
+	import pow
+	import robots_txt
+
+	import logging files
+	root * /var/lib/webpublic/files
+	file_server browse
+}
+
 # Cuirass
 ci.boiledscript.com {
 	import block_bots
