@@ -40,10 +40,16 @@
                      (fill-column . 72)))
  (scheme-mode
   .
-  ((eval . (put 'service 'scheme-indent-function 1))
+  ((eval . (put 'computed-file 'scheme-indent-function 1))
+   (eval . (put 'mixed-text-file 'scheme-indent-function 1))
+   (eval . (put 'plain-file 'scheme-indent-function 1))
+   (eval . (put 'program-file 'scheme-indent-function 1))
+   (eval . (put 'scheme-file 'scheme-indent-function 1))
+   (eval . (put 'service 'scheme-indent-function 1))
    (eval . (put 'shepherd-timer 'scheme-indent-function 1))
    (eval . (put 'simple-service 'scheme-indent-function 2))
-
+   (eval . (put 'text-file* 'scheme-indent-function 1))
+ ;; home-emacs
    (eval . (put 'emacs-configuration 'scheme-indent-function 0))
    (eval . (put 'emacs-keymap 'scheme-indent-function 0))
    (eval . (put 'emacs-package 'scheme-indent-function 0))
@@ -51,10 +57,13 @@
    (eval . (put 'emacs-server 'scheme-indent-function 0))
    (eval . (put 'home-emacs-configuration 'scheme-indent-function 0))
    (eval . (put 'home-emacs-extension 'scheme-indent-function 0))
+ ;; SOPS
    (eval . (put 'home-sops-service-configuration 'scheme-indent-function 0))
    (eval . (put 'sops-secret 'scheme-indent-function 0))
    (eval . (put 'sops-service-configuration 'scheme-indent-function 0))
-
+ ;; Rosenthal
+   (eval . (put 'computed-substitution-with-inputs 'scheme-indent-function 1))
+
    (eval . (put 'btrbk-configuration 'scheme-indent-function 0))
    (eval . (put 'caddy-configuration 'scheme-indent-function 0))
    (eval . (put 'clash-configuration 'scheme-indent-function 0))
@@ -79,7 +88,7 @@
    (eval . (put 'smartdns-configuration 'scheme-indent-function 0))
    (eval . (put 'tailscale-configuration 'scheme-indent-function 0))
    (eval . (put 'vaultwarden-configuration 'scheme-indent-function 0))
-
+ ;; Nonguix
    ;; Note this next setting will use the current guix as the geiser binary;
    ;; one working with a local guix checkout may want something different.
    (geiser-guile-binary . ("guix" "repl"))
@@ -88,7 +97,7 @@
 
    (eval . (put 'nonguix-container 'scheme-indent-function 0))
    (eval . (put 'nvidia-configuration 'scheme-indent-function 0))
-
+ ;; Guix
    (indent-tabs-mode . nil)
 
    ;; Emacs 28 changed the behavior of 'lisp-fill-paragraph', which causes the

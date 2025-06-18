@@ -39,6 +39,7 @@
                                             ef-cyprus
                                             ef-bio
                                             ef-dream
+                                            ef-melissa-light
                                             gruvbox-dark
                                             gruvbox-light))
 
@@ -49,6 +50,7 @@
 
 (define-syntax-rule (get-color palette sym)
   (match palette
+    ('ef-melissa-light (cdr (assoc sym ef-melissa-light)))
     ('ef-bio (cdr (assoc sym ef-bio)))
     ('ef-dream (cdr (assoc sym ef-dream)))
     ('heavy-metal (cdr (assoc sym heavy-metal)))
@@ -63,6 +65,7 @@
 
 (define-syntax-rule (get-gtk-theme palette)
   (match palette
+    ('ef-melissa-light "Yaru")
     ('ef-bio "Yaru-sage-dark")
     ('ef-dream "Yaru-magenta-dark")
     ('heavy-metal "Yaru-red-dark")
@@ -77,6 +80,7 @@
 
 (define-syntax-rule (is-dark-palette palette)
   (match palette
+    ('ef-melissa-light #f)
     ('ef-bio #t)
     ('ef-dream #t)
     ('heavy-metal #t)
@@ -91,6 +95,7 @@
 
 (define-syntax-rule (get-icon-theme palette)
   (match palette
+    ('ef-melissa-light "Yaru")
     ('ef-bio "Yaru-sage-dark")
     ('ef-dream "Yaru-magenta-dark")
     ('heavy-metal "Yaru-red-dark")
@@ -105,6 +110,7 @@
 
 (define-syntax-rule (get-emacs-theme palette)
   (match palette
+    ('ef-melissa-light "'ef-melissa-light")
     ('ef-bio "'ef-bio")
     ('ef-dream "'ef-dream")
     ('heavy-metal "'ef-tritanopia-dark")
@@ -119,20 +125,22 @@
 
 (define-syntax-rule (get-fish-color palette)
   (match palette
-    ('ef-bio 'green)
-    ('ef-dream 'magenta)
-    ('heavy-metal 'red)
-    ('ef-cyprus 'green)
-    ('ef-autumn 'yellow)
-    ('solarized-light 'black)
-    ('everforest-light 'black)
-    ('everforest-dark 'green)
-    ('gruvbox-light 'black)
-    ('gruvbox-dark 'orange)
+    ('ef-melissa-light "ba5205")
+    ('ef-bio "3fb83f")
+    ('ef-dream "b0a0cf")
+    ('heavy-metal "f47360")
+    ('ef-cyprus "b3d19d")
+    ('ef-autumn "c0620e")
+    ('solarized-light "e89149")
+    ('everforest-light "b8d191")
+    ('everforest-dark "b8d191")
+    ('gruvbox-light "d75f00")
+    ('gruvbox-dark "d65d0e")
     (_ (raise-unknown-palette-exception palette))))
 
 (define-syntax-rule (get-cursor-theme palette)
   (match palette
+    ('ef-melissa-light "Yaru")
     ('ef-bio "Yaru")
     ('ef-dream "Yaru")
     ('heavy-metal "Yaru")
@@ -147,6 +155,8 @@
 
 (define-syntax-rule (get-ansi-color palette)
   (match palette
+    ('ef-melissa-light (assoc-ref ansi-color-escapes
+                                  'yellow))
     ('ef-bio (assoc-ref ansi-color-escapes
                         'green))
     ('ef-dream (assoc-ref ansi-color-escapes
@@ -193,6 +203,13 @@
     (blue . "\x1b[0;34m")
     (cyan . "\x1b[0;36m")
     (reset . "\x1b[0m")))
+
+(define ef-melissa-light
+  `((primary . "#efbf00") (primary-l . "#ba5205")
+    (text . "#484431")
+    (text-l . "#585542")
+    (background . "#fff6d8")
+    (background-l . "#f5e9cb")))
 
 (define ef-dream
   `((primary . "#675072") (primary-l . "#b0a0cf")

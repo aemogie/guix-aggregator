@@ -8,7 +8,7 @@
 * Guix System
 #+begin_src scheme :tangle gokuraku.scm :noweb yes
   (load "../common.scm")
-  (use-modules (gnu) (gnu services shepherd) <<module>>)
+  (use-modules <<module>>)
 
   <<definition>>
 
@@ -28,8 +28,6 @@
 
 * Base
 #+begin_src scheme :noweb-ref module
-  (srfi srfi-26)
-  (ice-9 match)
   (sops secrets)
   (gnu services ssh)
   (sops services sops)
@@ -146,21 +144,17 @@ Administration accounts.
   (simple-service 'add-user-ssh-keys
       openssh-service-type
     `(("deploy"
-       ,(plain-file
-         "hako.pub"
-         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2"))
+       ,(plain-file "hako.pub"
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2"))
       ("hako"
-       ,(plain-file
-         "hako.pub"
-         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2"))
+       ,(plain-file "hako.pub"
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2"))
       ("jonathan"
-       ,(plain-file
-         "jonathan.pub"
-         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHgzHvP3BRTIZ960LVglrK8w/C0+6Z5VM8/Q5Uwa0o+Z"))
+       ,(plain-file "jonathan.pub"
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHgzHvP3BRTIZ960LVglrK8w/C0+6Z5VM8/Q5Uwa0o+Z"))
       ("podiki"
-       ,(plain-file
-         "podiki.pub"
-         "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDaSmW/3uq5L6ZP6gWmRw5RiTTg0es1PrbAo/x4vkPzwIKTrMFOCBCmcuH3vOCkEZJtNy3OpXbt/a3tDW+cc6dkeq2H4WpogQvyMTXreFS2phMgDTEXW2gGZIP6fA33CHERmhd9A/m0A+NH5KGAmLDQNK8QgPgIjZuseJYtYHNCnN2TCsWQYnbZtVQF5CS6iBUILpVp6p7QlSUokiCGaPjZfrjSFCm1hUPjJYSkv0NTq8TzyDfU2quqP7TBCj4WBi9HoW9+a8tN2TQ/+GYbGqlFljeNdz3vzItcHjidHOQL/42mpvzgZx7o7dtrqX9stp+mI3oBREYSD0bMyvND/dEBRWIbpFvbyYx/leMKq9yUcFNyI2lztk17ObaQkDLxlq4ClytgEtdbP6X0gua29FYK/YlAi13NptK6uy2xB2gsEIt5P4N3u+gZCNA0U3IVd7iMRSpg6PWiL1JguvhYSD5vGOnOjiXVlBCKn+ErTO9Ey/BZqwVBZMeDwynFnU1mYnkxtA+G54VI77gj24FrHw/ClOdJOdBUGAso9P3sFjdykkAJyKd4jiFzpDTOOJNs8qKhmFFzJBnJjn7nzwjElwOCZXdDKTrKqF/51WEqpNr8Za2QjRirV4m7n6FnyyD38b24InAVa+yze3qDI9yk2vjPdtFGCeLODSEjfV3U1z1hiw=="))))
+       ,(plain-file "podiki.pub"
+          "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDaSmW/3uq5L6ZP6gWmRw5RiTTg0es1PrbAo/x4vkPzwIKTrMFOCBCmcuH3vOCkEZJtNy3OpXbt/a3tDW+cc6dkeq2H4WpogQvyMTXreFS2phMgDTEXW2gGZIP6fA33CHERmhd9A/m0A+NH5KGAmLDQNK8QgPgIjZuseJYtYHNCnN2TCsWQYnbZtVQF5CS6iBUILpVp6p7QlSUokiCGaPjZfrjSFCm1hUPjJYSkv0NTq8TzyDfU2quqP7TBCj4WBi9HoW9+a8tN2TQ/+GYbGqlFljeNdz3vzItcHjidHOQL/42mpvzgZx7o7dtrqX9stp+mI3oBREYSD0bMyvND/dEBRWIbpFvbyYx/leMKq9yUcFNyI2lztk17ObaQkDLxlq4ClytgEtdbP6X0gua29FYK/YlAi13NptK6uy2xB2gsEIt5P4N3u+gZCNA0U3IVd7iMRSpg6PWiL1JguvhYSD5vGOnOjiXVlBCKn+ErTO9Ey/BZqwVBZMeDwynFnU1mYnkxtA+G54VI77gj24FrHw/ClOdJOdBUGAso9P3sFjdykkAJyKd4jiFzpDTOOJNs8qKhmFFzJBnJjn7nzwjElwOCZXdDKTrKqF/51WEqpNr8Za2QjRirV4m7n6FnyyD38b24InAVa+yze3qDI9yk2vjPdtFGCeLODSEjfV3U1z1hiw=="))))
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
@@ -168,11 +162,10 @@ Administration accounts.
     (operating-system
       (inherit os)
       (sudoers-file
-       (plain-file
-        "sudoers"
-        (string-append
-         (plain-file-content (operating-system-sudoers-file os))
-         "deploy ALL = NOPASSWD: ALL\n")))))
+       (plain-file "sudoers"
+         (string-append
+          (plain-file-content (operating-system-sudoers-file os))
+          "deploy ALL = NOPASSWD: ALL\n")))))
 #+end_src
 
 ** Packages
@@ -401,6 +394,9 @@ Remember to open TCP port 5555 and 5556.
       (cuirass (spec->pkg "cuirass-hako"))
       ;; 6 hours
       (interval (* 6 3600))
+      (parameters
+       (plain-file "cuirass-parameters"
+         "(%cuirass-url \"https://ci.boiledscript.com\")\n"))
       (remote-server
        (cuirass-remote-server-configuration
          (trigger-url "http://localhost:49637")
@@ -440,32 +436,31 @@ Remember to open TCP port 5555 and 5556.
 #+name: manage-cuirass
 #+begin_src scheme
   (let ((script
-         (program-file
-          "manage-cuirass.scm"
-          #~(begin
-              (use-modules (ice-9 format) (ice-9 match))
-              (define %services
-                '("cuirass"
-                  "cuirass-remote-server"
-                  "cuirass-web"
-                  "cuirass-worker-container"))
-              (define %actions
-                '("status"
-                  "start"
-                  "stop"
-                  "restart"
-                  "enable"
-                  "disable"))
-              (define (service? service)
-                (member service %services))
-              (define (action? action)
-                (member action %actions))
+         (program-file "manage-cuirass.scm"
+           #~(begin
+               (use-modules (ice-9 format) (ice-9 match))
+               (define %services
+                 '("cuirass"
+                   "cuirass-remote-server"
+                   "cuirass-web"
+                   "cuirass-worker-container"))
+               (define %actions
+                 '("status"
+                   "start"
+                   "stop"
+                   "restart"
+                   "enable"
+                   "disable"))
+               (define (service? service)
+                 (member service %services))
+               (define (action? action)
+                 (member action %actions))
 
-              (match (cdr (command-line))
-                (((? service? service) (? action? action))
-                 (system* "herd" action service))
-                (_
-                 (format (current-error-port) "~
+               (match (cdr (command-line))
+                 (((? service? service) (? action? action))
+                  (system* "herd" action service))
+                 (_
+                  (format (current-error-port) "~
   Usage: manage-cuirass SERVICE ACTION
 
   SERVICE:
@@ -474,7 +469,7 @@ Remember to open TCP port 5555 and 5556.
   ACTION:
   ~{- ~a
   ~}" %services %actions)
-                 (exit 1)))))))
+                  (exit 1)))))))
     (package
       (name "manage-cuirass")
       (version "0.0.0")
@@ -621,11 +616,10 @@ Remember to open TCP port 5555 and 5556.
 
 #+name: caddy-config
 #+begin_src scheme
-  (computed-substitution-with-inputs
-   "gokuraku.caddyfile"
-   (local-file (testament-plain "gokuraku/Caddyfile"))
-   (cons (testament-plain)
-         (specs->pkgs "ai-robots-txt")))
+  (computed-substitution-with-inputs "gokuraku.caddyfile"
+    (local-file (testament-plain "gokuraku/Caddyfile"))
+    (cons (testament-plain)
+          (specs->pkgs "ai-robots-txt")))
 #+end_src
 
 [[file:../files/plain/gokuraku/Caddyfile][gokuraku/Caddyfile]]
@@ -650,8 +644,7 @@ Remember to open TCP port 5555 and 5556.
 ** docker-mailserver
 #+name: rspamd-redis-conf
 #+begin_src scheme
-  (plain-file
-   "rspamd-redis.conf" "\
+  (plain-file "rspamd-redis.conf" "\
   servers = \"127.0.0.1:6379\";
   expand_keys = true;")
 #+end_src

@@ -45,6 +45,26 @@
            " /run/current-system/profile/share/icons/Yaru/32x32/actions/dialog-yes.png"
            " \"~a\" \"~a\"" " >/dev/null 2>&1") title subtitle))
 
+(define* (hypr-session-dconf-settings #:key palette sans-font)
+  `(("/org/gnome/desktop/interface/gtk-key-theme" . "'Emacs'") ("/org/gnome/desktop/interface/cursor-theme"
+                                                                unquote
+                                                                (format #f
+                                                                 "'~a'"
+                                                                 (get-cursor-theme
+                                                                  palette)))
+    ("/org/gnome/desktop/interface/gtk-theme" unquote
+     (format #f "'~a'"
+             (get-gtk-theme palette)))
+    ("/org/gnome/desktop/interface/icon-theme" unquote
+     (format #f "'~a'"
+             (get-icon-theme palette)))
+    ("/org/gnome/desktop/interface/cursor-theme" unquote
+     (format #f "'~a'"
+             (get-cursor-theme palette)))
+    ("/org/gnome/desktop/interface/cursor-size" . "24")
+    ("/org/gnome/desktop/interface/font-name" unquote
+     (format #f "'~a'" sans-font))))
+
 (define* (hypr-startup-programs #:key palette sans-font
                                 (extra-startups '()))
   (let* ((gtk-theme-name (get-gtk-theme palette))
@@ -60,25 +80,18 @@
                        "transmission-daemon"
                        "podman system service --time=0 unix:///tmp/podman.sock"
                        "gsettings set org.gnome.desktop.interface gtk-key-theme \"Emacs\""
-                       ,(format #f
-                         "gsettings set org.gnome.desktop.interface gtk-theme '~a'"
-                         gtk-theme-name)
-                       ,(format #f
-                         "gsettings set org.gnome.desktop.interface icon-theme '~a'"
-                         icon-theme-name)
-                       ,(format #f
-                         "gsettings set org.gnome.desktop.interface cursor-theme '~a'"
-                         cursor-theme-name)
-                       "gsettings set org.gnome.desktop.interface cursor-size 24"
-                       ,(format #f
-                         "gsettings set org.gnome.desktop.interface font-name '~a'"
-                         sans-font)
                        "xdg-user-dirs-update"
                        ,(format #f "fyi \"~a\" \"~a\""
                                 (G_
                                  "Welcome to the SSS/GNU power user session")
                                 (G_
-                                 "Enter and explore, for the cosmos of computation is yours to command. As the veil thins and the echoes of the aether draw you near, you stand at the precipice of boundless creation."))))))
+                                 "Enter and explore, for the cosmos of computation is yours to command.")))
+                     (map (lambda (x)
+                            (format #f "dconf write \"~a\" \"~a\""
+                                    (car x)
+                                    (cdr x)))
+                          (hypr-session-dconf-settings #:palette palette
+                                                       #:sans-font sans-font)))))
     xs))
 
 (define* (hypr-input #:key keyboard-layout caps-to-ctrl)

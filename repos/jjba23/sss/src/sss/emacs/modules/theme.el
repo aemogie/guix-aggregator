@@ -24,18 +24,25 @@
 (use-package ef-themes
   :ensure (:host github :repo "protesilaos/ef-themes" :branch "main")
   :config
-  (setq ef-bio-palette-overrides '((variable fg-main)
-                                   (string green-faint)))
-  (setq ef-autumn-palette-overrides '((variable fg-main)
-                                      (bg-main bg-dim)))
-  (setq ef-cyprus-palette-overrides '((variable fg-main)
-                                      (bg-main bg-dim)
-                                      (string green-faint)))
   (cond ((equal sss-emacs-theme 'ef-dream) (load-theme sss-emacs-theme t))
-        ((equal sss-emacs-theme 'ef-bio) (load-theme sss-emacs-theme t))
-        ((equal sss-emacs-theme 'ef-cyprus) (load-theme sss-emacs-theme t))
+        ((equal sss-emacs-theme 'ef-bio)
+         (setq ef-bio-palette-overrides '((variable fg-main)
+                                          (string green-faint)))
+         (load-theme sss-emacs-theme t))
+        ((equal sss-emacs-theme 'ef-cyprus)
+         (setq ef-cyprus-palette-overrides '((variable fg-main)
+                                             (bg-main bg-dim)
+                                             (string green-faint)))
+         (load-theme sss-emacs-theme t))
+        ((equal sss-emacs-theme 'ef-melissa-light)
+         (setq ef-melissa-light-palette-overrides '((variable fg-main)
+                                                    (string green-warmer)))
+         (load-theme sss-emacs-theme t))
         ((equal sss-emacs-theme 'ef-tritanopia-dark) (load-theme sss-emacs-theme t))
-        ((equal sss-emacs-theme 'ef-autumn) (load-theme sss-emacs-theme t))))
+        ((equal sss-emacs-theme 'ef-autumn)
+         (setq ef-autumn-palette-overrides '((variable fg-main)
+                                             (bg-main bg-dim)))
+         (load-theme sss-emacs-theme t))))
 
 
 (use-package solarized-theme
@@ -44,7 +51,7 @@
   (cond ((equal sss-emacs-theme 'solarized-light) (load-theme sss-emacs-theme t))))
 
 (use-package everforest
-  :ensure (:host github :repo "Theory-of-Everything/everforest-emacs" :branch "master")
+  :ensure (:host github :repo "Theory-of-Everything/everforest-emacs" :branch "master2")
   :no-require t
   :config
   (cond ((equal sss-emacs-theme 'everforest-hard-dark)

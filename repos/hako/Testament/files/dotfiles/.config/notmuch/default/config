@@ -9,6 +9,9 @@ path=/home/hako/.local/share/mail
 name=Hilton Chain
 primary_email=hako@ultrarare.space
 
+[show]
+extra_headers=Message-ID;In-Reply-To;References
+
 [new]
 tags=new
 ignore=Trash

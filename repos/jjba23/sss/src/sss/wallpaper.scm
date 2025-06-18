@@ -30,6 +30,8 @@
          (digital-art-dreams-sss-wallpaper (lambda (w)
                                              (format #f "~a/~a" wall-path w))))
     (match palette
+      ('ef-melissa-light (map digital-art-dreams-sss-wallpaper
+                              '("joshua.jpg" "PXL_20250326_193029385.MP.jpg")))
       ('ef-cyprus (map digital-art-dreams-sss-wallpaper
                        '("joshua.jpg" "PXL_20250326_193029385.MP.jpg")))
       ('ef-dream (map digital-art-dreams-sss-wallpaper
@@ -52,7 +54,7 @@
       ('gruvbox-light (map digital-art-dreams-sss-wallpaper
                            '("joshua.jpg" "PXL_20250326_193029385.MP.jpg")))
       (_ (raise-exception (make-exception-with-message (format #f
-                                                        "exception ocurred! unknown palette selected: ~a"
+                                                        "exception ocurred! unknown palette selected, could not choose wallpaper for: ~a"
                                                         palette)))))))
 
 (define (mk-random-wall-cmd walls)

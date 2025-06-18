@@ -8,7 +8,7 @@
 * Guix System
 #+begin_src scheme :tangle dorphine.scm :noweb yes
   (load "../common.scm")
-  (use-modules (gnu) (gnu services shepherd) <<module>>)
+  (use-modules <<module>>)
 
   <<definition>>
 
@@ -27,13 +27,6 @@
 #+end_src
 
 * Guix Home
-#+begin_src scheme :noweb-ref module
-  (gnu services guix)
-  (gnu home)
-  (gnu home services)
-  (gnu home services shepherd)
-#+end_src
-
 #+begin_src scheme :noweb yes :noweb-ref service
   (service guix-home-service-type
     `(("hako" ,(home-environment
@@ -43,8 +36,6 @@
 
 * Base
 #+begin_src scheme :noweb-ref module
-  (srfi srfi-26)
-  (ice-9 match)
   (sops secrets)
   (rosenthal bootloader grub)
   (gnu home services dotfiles)
@@ -562,12 +553,11 @@ Generate passwordless ECC key:
 #+name: smartdns-config
 #+begin_src scheme
   (let ((conf-dir (file-append (spec->pkg "dnsmasq-china-list") "/share/dnsmasq-china-list/")))
-    (mixed-text-file
-     "smartdns.conf"
-     (file-content (testament-plain "smartdns.conf")) "\n"
-     "conf-file " (file-append conf-dir "accelerated-domains.china.smartdns.conf") "\n"
-     "conf-file " (file-append conf-dir "apple.china.smartdns.conf") "\n"
-     "conf-file " (file-append conf-dir "bogus-nxdomain.china.smartdns.conf") "\n"))
+    (mixed-text-file "smartdns.conf"
+      (file-content (testament-plain "smartdns.conf")) "\n"
+      "conf-file " (file-append conf-dir "accelerated-domains.china.smartdns.conf") "\n"
+      "conf-file " (file-append conf-dir "apple.china.smartdns.conf") "\n"
+      "conf-file " (file-append conf-dir "bogus-nxdomain.china.smartdns.conf") "\n"))
 #+end_src
 
 [[file:../files/plain/smartdns.conf][smartdns.conf]]
@@ -594,10 +584,9 @@ Generate passwordless ECC key:
     (clash-configuration
       (clash (spec->pkg "mihomo"))
       (config
-       (mixed-text-file
-        "mihomo.yaml"
-        (sops-str '("mihomo")) "\n"
-        (file-content (testament-plain "mihomo.yaml"))))))
+       (mixed-text-file "mihomo.yaml"
+         (sops-str '("mihomo")) "\n"
+         (file-content (testament-plain "mihomo.yaml"))))))
 #+end_src
 
 [[file:../files/plain/mihomo.yaml][mihomo.yaml]]
@@ -733,10 +722,9 @@ Remember to open TCP port 5558.
 
 #+name: caddy-config
 #+begin_src scheme
-  (computed-substitution-with-inputs
-   "dorphine.caddyfile"
-   (local-file (testament-plain "dorphine/Caddyfile"))
-   (specs->pkgs "ai-robots-txt"))
+  (computed-substitution-with-inputs "dorphine.caddyfile"
+    (local-file (testament-plain "dorphine/Caddyfile"))
+    (specs->pkgs "ai-robots-txt"))
 #+end_src
 
 [[file:../files/plain/dorphine/Caddyfile][dorphine/Caddyfile]]
@@ -862,15 +850,14 @@ To use NVK, mesa should be installed into a profile.
 
 #+name: niri-config
 #+begin_src scheme
-  (computed-substitution-with-inputs
-   "niri.kdl"
-   (local-file (testament-plain "niri.kdl"))
-   (cons (testament-blobs)
-         (specs->pkgs "light"
-                      "rofi-wayland"
-                      "swaylock-effects"
-                      "wireplumber"
-                      "xwayland-satellite")))
+  (computed-substitution-with-inputs "niri.kdl"
+    (local-file (testament-plain "niri.kdl"))
+    (cons (testament-blobs)
+          (specs->pkgs "light"
+                       "rofi-wayland"
+                       "swaylock-effects"
+                       "wireplumber"
+                       "xwayland-satellite")))
 #+end_src
 
 [[file:../files/plain/niri.kdl][niri.kdl]]
@@ -1516,9 +1503,8 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+end_src
 
 #+begin_src scheme :noweb-ref home-fish-config
-  (mixed-text-file
-   "fish-config-direnv"
-   (spec->pkg "direnv") "/bin/direnv hook fish | source")
+  (mixed-text-file "fish-config-direnv"
+    (spec->pkg "direnv") "/bin/direnv hook fish | source")
 #+end_src
 
 *** emacs-forge
@@ -1570,51 +1556,50 @@ Fetch from mail server:
     (list
      (shepherd-timer '(update-mailbox)
        #~(calendar-event #:minutes '(0 15 30 45))
-       #~(#$(program-file
-             "update-mailbox"
-             (with-imported-modules '((guix build utils))
-               #~(begin
-                   (use-modules (ice-9 match)
-                                (guix build utils))
-                   ;; Sync with mail server.
-                   (invoke #$(file-append (spec->pkg "isync") "/bin/mbsync") "-a"
-                           "--config" #$(local-file (testament-plain "mbsync.conf")))
-                   ;; Index & tag.
-                   (let ((notmuch #$(file-append (spec->pkg "notmuch") "/bin/notmuch")))
-                     (invoke notmuch "new")
-                     (map (match-lambda
-                            ((query . tags)
-                             (apply invoke notmuch "tag"
-                                    `(,@(map symbol->string tags) "--" ,query))))
-                          '(;; self
-                            ("from:hako@ultrarare.space OR folder:Sent"
-                             . (+sent))
-                            ("tag:replied OR tag:sent"
-                             . (-unread))
-                            ;; folders
-                            ("folder:Archive"
-                             . (+archive -inbox -unread))
-                            ("folder:Junk"
-                             . (+spam -inbox))
-                            ;; mailing lists
-                            ("tag:new AND folder:Lists/emacs-devel"
-                             . (+lists +lists/emacs-devel -inbox -new))
-                            ("tag:new AND folder:Lists/guile-devel"
-                             . (+lists +lists/guile-devel -inbox -new))
-                            ("tag:new AND folder:Lists/guix-bugs"
-                             . (+lists +lists/guix-bugs -inbox -new))
-                            ("tag:new AND folder:Lists/guix-devel"
-                             . (+lists +lists/guix-devel -inbox -new))
-                            ("tag:new AND folder:Lists/guix-user"
-                             . (+lists +lists/guix-user -inbox -new))
-                            ;; patches
-                            ("tag:new AND folder:Lists/guix-patches"
-                             . (+patches +patches/guix -inbox -new))
-                            ;; others
-                            ("tag:new"
-                             . (+inbox +unread -new)))))
-                   (invoke "emacsclient"
-                           "--eval" "(smtpmail-send-queued-mail)"))))))))
+       #~(#$(program-file "update-mailbox"
+              (with-imported-modules '((guix build utils))
+                #~(begin
+                    (use-modules (ice-9 match)
+                                 (guix build utils))
+                    ;; Sync with mail server.
+                    (invoke #$(file-append (spec->pkg "isync") "/bin/mbsync") "-a"
+                            "--config" #$(local-file (testament-plain "mbsync.conf")))
+                    ;; Index & tag.
+                    (let ((notmuch #$(file-append (spec->pkg "notmuch") "/bin/notmuch")))
+                      (invoke notmuch "new")
+                      (map (match-lambda
+                             ((query . tags)
+                              (apply invoke notmuch "tag"
+                                     `(,@(map symbol->string tags) "--" ,query))))
+                           '(;; self
+                             ("from:hako@ultrarare.space OR folder:Sent"
+                              . (+sent))
+                             ("tag:replied OR tag:sent"
+                              . (-unread))
+                             ;; folders
+                             ("folder:Archive"
+                              . (+archive -inbox -unread))
+                             ("folder:Junk"
+                              . (+spam -inbox))
+                             ;; mailing lists
+                             ("tag:new AND folder:Lists/emacs-devel"
+                              . (+lists +lists/emacs-devel -inbox -new))
+                             ("tag:new AND folder:Lists/guile-devel"
+                              . (+lists +lists/guile-devel -inbox -new))
+                             ("tag:new AND folder:Lists/guix-bugs"
+                              . (+lists +lists/guix-bugs -inbox -new))
+                             ("tag:new AND folder:Lists/guix-devel"
+                              . (+lists +lists/guix-devel -inbox -new))
+                             ("tag:new AND folder:Lists/guix-user"
+                              . (+lists +lists/guix-user -inbox -new))
+                             ;; patches
+                             ("tag:new AND folder:Lists/guix-patches"
+                              . (+patches +patches/guix -inbox -new))
+                             ;; others
+                             ("tag:new"
+                              . (+inbox +unread -new)))))
+                    (invoke "emacsclient"
+                            "--eval" "(smtpmail-send-queued-mail)"))))))))
 #+end_src
 
 [[file:../files/plain/mbsync.conf][mbsync.conf]]
@@ -1628,12 +1613,15 @@ Frontend
     (package (spec->pkg "emacs-notmuch"))
     (options
      '((mail-user-agent . notmuch-user-agent)
+       (message-hidden-headers . ("^Face:" "^X-Face:" "^X-Draft-From:"))
        (message-kill-buffer-on-exit . #t)
        (mml-secure-openpgp-encrypt-to-self . #t)
        (mml-secure-openpgp-signers . ("220F98D95E86204C0036DA7B6DEC4360408B4185"))
        (notmuch-show-logo . #f)
        (notmuch-draft-folder . "Drafts")
        (notmuch-fcc-dirs . "Sent")
+       (notmuch-message-headers
+        . ("Subject" "To" "Cc" "Date" "Message-ID" "In-Reply-To" "References"))
        (notmuch-search-oldest-first . #f)))
     (extra-after-load
      (list
@@ -1742,9 +1730,8 @@ Send
 
 ** atuin
 #+begin_src scheme :noweb-ref home-fish-config
-  (mixed-text-file
-   "fish-config-atuin"
-   (spec->pkg "atuin") "/bin/atuin init fish | source")
+  (mixed-text-file "fish-config-atuin"
+    (spec->pkg "atuin") "/bin/atuin init fish | source")
 #+end_src
 
 ** fcitx5
@@ -1947,10 +1934,9 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
 
 #+name: waybar-config
 #+begin_src scheme
-  (computed-substitution-with-inputs
-   "waybar.jsonc"
-   (local-file (testament-plain "waybar.jsonc"))
-   (specs->pkgs "light" "pavucontrol" "wireplumber"))
+  (computed-substitution-with-inputs "waybar.jsonc"
+    (local-file (testament-plain "waybar.jsonc"))
+    (specs->pkgs "light" "pavucontrol" "wireplumber"))
 #+end_src
 
 [[file:../files/plain/waybar.jsonc][waybar.jsonc]]
@@ -1961,7 +1947,6 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
 
 ** zoxide
 #+begin_src scheme :noweb-ref home-fish-config
-  (mixed-text-file
-   "fish-config-zoxide"
-   (spec->pkg "zoxide") "/bin/zoxide init --cmd cd fish | source")
+  (mixed-text-file "fish-config-zoxide"
+    (spec->pkg "zoxide") "/bin/zoxide init --cmd cd fish | source")
 #+end_src

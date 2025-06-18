@@ -59,13 +59,9 @@ msgstr "Welkom bij SSS/GNU power-user sessie"
 
 #: src/sss/hyprland/hyprland.scm:81
 msgid ""
-"Enter and explore, for the cosmos of computation is yours to command. As the "
-"veil thins and the echoes of the aether draw you near, you stand at the "
-"precipice of boundless creation."
+"Enter and explore, for the cosmos of computation is yours to command."
 msgstr ""
 "Betreed en verken, want de kosmos van berekening is de jouwe om te beheersen. "
-"Terwijl de sluier dunner wordt en de echo's van de ether je naderbij trekken, "
-"sta je op het randje van grenzeloze schepping."
 
 #: src/sss/labwc.scm:445
 msgid "Welcome to the SSS/GNU universal session"

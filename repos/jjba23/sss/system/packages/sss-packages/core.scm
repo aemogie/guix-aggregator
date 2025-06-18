@@ -70,6 +70,9 @@
                         ripgrep
                         net-tools
                         dstat
+                        gsettings-desktop-schemas
+                        glib
+                        dconf
                         dconf-editor
                         (specification->package "make")
                         nix

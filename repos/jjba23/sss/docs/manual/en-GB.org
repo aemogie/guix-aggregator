@@ -956,9 +956,9 @@ If you need more then just go for Tor.
 [[https://addons.mozilla.org/en-US/firefox/addon/multi-account-containers/?utm_source=addons.mozilla.org&utm_medium=referral&utm_content=search][Firefox Multi-Account Containers]]: Firefox Multi-Account Containers lets you keep parts of your online life separated into color-coded tabs. Cookies are separated by container, allowing you to use the web with multiple accounts and integrate Mozilla VPN for an extra layer of privacy.
 
 
-* Nyxt browser (experimental)
+* Nyxt browser
 
-Nyxt is a fantastic web browser, infinitely extensible, and in Emacs-spirit. It is a great fit for SSS. I am currently experimenting with it, since it's not production-ready yet. I for now am content with Firefox for 99% of things and Chrome for work.
+Nyxt is a fantastic web browser, infinitely extensible, and in Emacs-spirit. It is a great fit for SSS. I am currently experimenting with it, and install it as Flatpak. I am trying to use it more often day-to-day, in combination with Firefox, and I am forced to use Chrome for some work aspects.
 
 Find more about Nyxt here: https://nyxt.atlas.engineer/
 
@@ -966,11 +966,9 @@ Before you start Nyxt, you need to perform a one-time action so as to allow the 
 
 What we need is Quicklisp (refer to https://quicklisp.org for more details).
 
-You only need to load ~quicklisp.lisp~ once to install Quicklisp.
-
 Here's an example installation session on SBCL:
 #+begin_example
-curl -O https://beta.quicklisp.org/quicklisp.lisp
+cd ~ && curl -O https://beta.quicklisp.org/quicklisp.lisp
 sbcl --load quicklisp.lisp
 #+end_example
 
@@ -982,7 +980,9 @@ Here, all you need to do is type the following commands, each followed by ENTER:
   (quit)
 #+end_src
 
-You are then ready to start the Nyxt browser, all configuration should work well from then on.
+Then you can remove ~quicklisp.lisp~ as it will already be installed to ~~/quicklisp/setup.lisp~.
+
+You are then ready to start the Nyxt browser, all configuration should work well from then on.  Nyxt should be in the application launcher. If installed via flatpak, you can run it with ~flatpak run engineer.atlas.Nyxt~
 
 -----
 

@@ -5,7 +5,7 @@
 ARGS  :=
 OPTS  := --keep-going --verbosity=1 $(ARGS)
 GUIX  := guix
-EMACS := $(GUIX) shell emacs-next-minimal -- emacs
+EMACS := $(GUIX) shell emacs-minimal -- emacs
 
 %.scm: %.org
 	@$(EMACS) -Q --batch \
