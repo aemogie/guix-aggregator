@@ -65,7 +65,8 @@ https://www.gnu.org/licenses/fdl-1.3.html
 - Hyprland configuration (power user session)
 - Labwc configuration (universal session)
 - Fish shell configuration
-- Alacritty terminal emulator  
+- Alacritty terminal emulator
+- Nyxt web browser (configured in Common Lisp)  
 - Firefox custom declarative configuration inspired on BetterFox
 - Waybar configuration and style
 - Rofi application launcher
@@ -882,6 +883,8 @@ You can find these scripts and the list file at ~system/scripts~ in this repo an
 
 Installing all wanted Flatpak packages can be done with ~make fpi~ for example and updating them with ~make fpu~.
 
+Bear in mind you might need to use ~Flatseal~ in order to grant additional permissions to some of your Flatpak packages.
+
 
 -----
 * System audio
@@ -1287,6 +1290,10 @@ Labwc session has a a more windows-like style of bindings.
 ----------
 
 * On Software engineering
+
+** Database management
+
+I'd personally recommend to use Beekeeper Studio for a really nice GUI to your database in most cases. I was big into DBeaver once, but it's now a little /demodé/. You can also use the Emacs ~sqlite-mode-open-file~ to browse the contents of a SQLite database quickly. Alternatively you can of course use ~sqlite3~ or ~psql~ at your convenience. You can also install via Guix, Nix, or Flatpak any other database management tool.
 
 ** Development environments, manifests and flakes
 

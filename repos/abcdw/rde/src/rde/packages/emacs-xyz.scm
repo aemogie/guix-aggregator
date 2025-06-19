@@ -23,6 +23,7 @@
 (define-module (rde packages emacs-xyz)
   #:use-module (rde packages messaging)
   #:use-module (gnu packages emacs)
+  #:use-module (gnu packages emacs-build)
   #:use-module (gnu packages emacs-xyz)
   #:use-module (gnu packages mail)
   #:use-module (gnu packages texinfo)
@@ -60,26 +61,27 @@
       (build-system emacs-build-system))))
 
 (define-public emacs-justify-kp
- (let ((commit "385e6b8b909ae0f570f30101cec3677e21c9e0a0"))
-  (package
-   (name "emacs-justify-kp")
-   (version "20171119")
-   (home-page "https://github.com/qzdl/justify-kp")
-   (source
-    (origin
-     (method git-fetch)
-     (uri (git-reference
-           (url home-page)
-           (commit commit)))
-     (file-name (git-file-name name version))
-     (sha256
-      (base32 "13fylx4mvw7cgzd2mq060x43b1x7g5vdf16jm49c31f6b3jj1qi0"))))
-   (build-system emacs-build-system)
-   (inputs (list emacs-dash emacs-s))
-   (synopsis "Paragraph justification for emacs using Knuth/Plass algorithm ")
-   (description
-    "Paragraph justification for emacs using Knuth/Plass algorithm ")
-   (license license:gpl3+))))
+  (let ((commit "33a186e297c0359547820088669486afd7b5fddb")
+        (revision "1"))
+    (package
+      (name "emacs-justify-kp")
+      (version (git-version "0.0.1" revision commit))
+      (home-page "https://github.com/Fuco1/justify-kp")
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url home-page)
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "14k75m10lxfknij5np5s4hhl9d7qbmkdcqkq145hkhgp81qgld73"))))
+      (build-system emacs-build-system)
+      (inputs (list emacs-dash emacs-s))
+      (synopsis "Paragraph justification for emacs using Knuth/Plass algorithm")
+      (description
+       "Paragraph justification for emacs using Knuth/Plass algorithm ")
+      (license license:gpl3+))))
 
 (define-public emacs-eslint-fix
  (let ((commit "636bf8d8797bdd58f1b543c9d3f4910e3ce879ab"))
@@ -164,14 +166,14 @@ parser.")
   (package
     (inherit emacs-minions)
     (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (add-after 'unpack 'make-it-update-header-line
-           (lambda* (#:key outputs #:allow-other-keys)
-             (substitute* "minions.el"
-	       (("mode-line-format")
-                "header-line-format"))
-             #t)))))))
+     (substitute-keyword-arguments (package-arguments emacs-minions)
+       ((#:phases phases #~%standard-phases)
+        #~(modify-phases #$phases
+            (add-after 'unpack 'make-it-update-header-line
+              (lambda* (#:key outputs #:allow-other-keys)
+                (substitute* "minions.el"
+	          (("mode-line-format")
+                   "header-line-format"))))))))))
 
 (define-public emacs-git-email-sans-mu4e
   (package
@@ -398,31 +400,3 @@ programming language, powered by the tree-sitter-clojure tree-sitter grammar."))
     (description "arei-shepherd is an extension for Arei that allows to interract with
 the shepherd via the ares-shepherd extension for the nREPL.")
     (license license:gpl3+)))
-
-(define-public emacs-gptel-latest
-  (package
-    (inherit emacs-gptel)
-    (name "emacs-gptel")
-    (version "0.9.8.5")
-    (source (origin
-              (method git-fetch)
-              (uri (git-reference
-                    (url "https://github.com/karthink/gptel")
-                    (commit (string-append "v" version))))
-              (file-name (git-file-name name version))
-              (sha256
-               (base32
-                "0ix0k9dv91mbibwih1s5wzx9hj5nkr3cz799m6gb52vpwf9gixg7"))))
-    (arguments
-     (list
-      #:phases
-      #~(modify-phases %standard-phases
-          (add-after 'unpack 'use-appropriate-curl
-            (lambda* (#:key inputs #:allow-other-keys)
-              (emacs-substitute-variables "gptel.el"
-                ("gptel-use-curl" (search-input-file inputs "/bin/curl"))))))))))
-
-(define-public emacs-gptel-quick-latest
-  ((package-input-rewriting/spec
-    `(("emacs-gptel" . ,(const emacs-gptel-latest))))
-   emacs-gptel-quick))

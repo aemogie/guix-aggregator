@@ -124,7 +124,7 @@
   (setq initial-buffer-choice
         (lambda () (ignore-errors
                 (welkomscherm)
-                (get-buffer welkomscherm-buffer-name))))
+                (get-buffer welkomscherm/buffer-name))))
   
   (recentf-mode 1)
   (setq recentf-max-menu-items 100

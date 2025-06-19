@@ -22,8 +22,8 @@
 ;;; Code:
 
 ;; TODO? the bookmarks could be managed by SSS in Scheme and not in Emacs?
-(defvar joe-bookmarks-personal)
-(setq joe-bookmarks-personal
+(defvar joe-welkomscherm/bookmarks-list)
+(setq joe-welkomscherm/bookmarks-list
       `((("sss" . ,(string-replace "$HOME" "~" sss-clone-dir))
          ("emacs cfg" . ,(format "%s/src/sss/emacs/init.el" (string-replace "$HOME" "~" sss-clone-dir)))
          ("hyprland" . ,(format "%s/src/sss/hyprland/" (string-replace "$HOME" "~" sss-clone-dir))))
@@ -43,28 +43,30 @@
          ("oculuslambda" . "~/hacking/oculuslambda"))
         ))
 
-(defvar joe-bookmarks-work)
-(setq joe-bookmarks-work
+(defvar joe-welkomscherm/work-list)
+(setopt joe-welkomscherm/work-list
       '((("VDB" . "~/work/Vandebron/")
          ("mobile" . "~/work/mobile")
          ("onboarding" . "~/work/onboarding/"))          
         ))
+
+(defvar joe-welkomscherm/actions-list)
+(setopt joe-welkomscherm/actions-list
+	'((("*scratch*" . (lambda(btn) (switch-to-buffer "*scratch*")))
+           ("*Messages*" . (lambda(btn) (switch-to-buffer "*Messages*")))
+           ("re-render me" . (lambda(btn) (welkomscherm))))
+          (("system-rebuild  (sr)" . (lambda(btn) (sss-sys-reconfigure)))
+           ("joe-rebuild (jr)" . (lambda(btn) (sss-joe-reconfigure))))
+          ))
 
 (use-package welkomscherm
   :ensure (:host codeberg :repo "jjba23/welkomscherm.el" :branch "trunk")
   :bind (("C-c SPC SPC" . welkomscherm)
          )
   :init
-  (setq welkomscherm-bookmarks-personal joe-bookmarks-personal)
-  (setq welkomscherm-bookmarks-work joe-bookmarks-work)
-
-  (setq welkomscherm-buttons-actions
-        '((("*scratch*" . (lambda(btn) (switch-to-buffer "*scratch*")))
-           ("*Messages*" . (lambda(btn) (switch-to-buffer "*Messages*")))
-           ("re-render me" . (lambda(btn) (welkomscherm))))
-          (("system-rebuild  (sr)" . (lambda(btn) (sss-sys-reconfigure)))
-           ("joe-rebuild (jr)" . (lambda(btn) (sss-joe-reconfigure))))
-          )))
+  (setopt welkomscherm/bookmarks-list joe-welkomscherm/bookmarks-list)
+  (setopt welkomscherm/work-list joe-welkomscherm/work-list)
+  (setopt welkomscherm/actions-list joe-welkomscherm/actions-list))
 
 (provide 'sss/dashboard)
 

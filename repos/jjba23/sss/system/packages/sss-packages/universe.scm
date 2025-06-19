@@ -217,7 +217,6 @@
         qemu
         reaper
         remmina
-        sqlitebrowser
         stellarium
         stress
         stress-ng

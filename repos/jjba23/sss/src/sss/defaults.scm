@@ -190,7 +190,6 @@
     "mermaid-cli"
     "jetbrains.idea-community"
     "nixfmt"
-    "dbeaver-bin"
     "rustfmt"
     "way-displays"
     "deadnix"
@@ -202,8 +201,13 @@
 
 ;; Flatpak packages to install to the user
 (define default-flatpak-pkgs
-  '("app.drey.Warp" "com.usebottles.bottles" "com.ktechpit.whatsie"
-    "com.anydesk.Anydesk" "app.zen_browser.zen" "engineer.atlas.Nyxt"))
+  '("app.drey.Warp" "com.usebottles.bottles"
+    "com.ktechpit.whatsie"
+    "com.anydesk.Anydesk"
+    "app.zen_browser.zen"
+    "engineer.atlas.Nyxt"
+    "com.github.tchx84.Flatseal"
+    "io.beekeeperstudio.Studio"))
 
 ;; Additional Hyprland startup commands on per-host basis
 (define default-hyprland-extra-startups

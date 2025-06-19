@@ -86,8 +86,8 @@ discussions, prettifying and spelling correction."
 
 (define* (feature-emacs-gptel
           #:key
-          (emacs-gptel emacs-gptel-latest)
-          (emacs-gptel-quick emacs-gptel-quick-latest)
+          (emacs-gptel emacs-gptel)
+          (emacs-gptel-quick emacs-gptel-quick)
           (emacs-gptel-default-mode 'org-mode))
   "Configure Gptel, a simple and unintrusive LLM client for Emacs.
 EMACS-GPTEL-API-KEY is a list of program and arguments that are called by
@@ -109,6 +109,8 @@ the password-store."
       emacs-f-name
       config
       `((with-eval-after-load 'gptel
+          (setopt gptel-use-tools t)
+          (setopt gptel-confirm-tool-calls t)
           ,@(if (get-value 'emacs-embark config #f)
                 '((with-eval-after-load 'embark
                     (keymap-set embark-general-map "?" 'gptel-quick)))

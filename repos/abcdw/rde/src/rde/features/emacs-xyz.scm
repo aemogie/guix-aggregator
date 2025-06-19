@@ -397,9 +397,7 @@ different level headings will have different size."
                     :after 'rde-modus-themes-run-after-enable-theme-hook)
         ,@(map (lambda (hook)
                  `(add-hook 'rde-modus-themes-after-enable-theme-hook ',hook))
-               (append
-                '(rde-modus-themes-set-custom-faces)
-                 extra-after-enable-theme-hooks))
+               extra-after-enable-theme-hooks)
 
         (with-eval-after-load 'rde-keymaps
           (define-key rde-toggle-map (kbd "t") 'modus-themes-toggle))
@@ -465,8 +463,9 @@ different level headings will have different size."
         (load-theme ',theme t (not (display-graphic-p)))
         ,@(if (get-value 'emacs-server-mode? config #f)
               `((add-hook 'server-after-make-frame-hook
-                             (lambda ()
-                               (enable-theme ',theme))))
+                          (lambda ()
+                            (when (null custom-enabled-themes)
+                              (enable-theme ',theme)))))
               '()))
       #:elisp-packages (list emacs-modus-themes)
       #:summary "Modus Themes extensions"
@@ -2690,7 +2689,7 @@ just start typing `tempel-trigger-prefix' (default is \"<\") and use
 
 (define* (feature-emacs-monocle
           #:key
-          (olivetti-body-width 85))
+          (olivetti-body-width 'nil))
   "Configure olivetti and helper functions for focused editing/reading."
   (define emacs-f-name 'monocle)
   (define f-name (symbol-append 'emacs- emacs-f-name))
@@ -3672,7 +3671,6 @@ and references in your programs."
 
         (with-eval-after-load 'tex
           (setopt TeX-view-program-selection '((output-pdf "PDF Tools")))
-          (setopt TeX-source-correlate-start-server t)
           (add-hook 'TeX-mode-hook 'TeX-source-correlate-mode))
 
         (defun rde-pdf-tools--list-buffers ()
@@ -3934,14 +3932,14 @@ built-in help that provides much more contextual information."
 
   (define (get-home-services config)
     "Return home services related to Info."
-    (define theme (get-value 'emacs-light-theme config))
-    (define emacs-modus-themes (get-value 'emacs-modus-themes config))
+    (define theme (get-value 'emacs-light-theme config #f))
+    (define emacs-modus-themes (get-value 'emacs-modus-themes config #f))
 
     (list
      (rde-elisp-configuration-service
       emacs-f-name
       config
-      `(,@(if emacs-modus-themes
+      `(,@(if (and theme emacs-modus-themes)
               `((eval-when-compile
                  (require 'modus-themes)
                  (require 'cl-seq))
@@ -4477,7 +4475,9 @@ result is longer than LEN."
           (setq org-agenda-custom-commands ,org-agenda-custom-commands)
           (setq org-agenda-tags-column
                 ;; TODO: Name this value better
-                ,(- (get-value 'olivetti-body-width config 85)))
+                ,(if (number? (get-value 'olivetti-body-width config 'nil))
+                     (- (get-value 'olivetti-body-width config 'nil))
+                     'auto))
           (setq org-agenda-window-setup 'current-window)
           ,@(if org-agenda-files
                 `((setq org-agenda-files ',org-agenda-files))

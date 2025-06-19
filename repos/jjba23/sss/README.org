@@ -45,7 +45,8 @@ It is recommended to use tagged releases of SSS, as those are considered as stab
 - Hyprland configuration (power user session)
 - Labwc configuration (universal session)
 - Fish shell configuration
-- Alacritty terminal emulator  
+- Alacritty terminal emulator
+- Nyxt web browser (configured in Common Lisp)
 - Firefox custom declarative configuration inspired on BetterFox
 - Waybar configuration and style
 - Rofi application launcher
