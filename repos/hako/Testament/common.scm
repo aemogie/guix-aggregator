@@ -18,10 +18,13 @@
              (sops secrets)
 
              (gnu)
+             (gnu services desktop)
              (gnu services guix)
              (gnu services shepherd)
+             (rosenthal services desktop)
              (gnu home)
              (gnu home services)
+             (gnu home services desktop)
              (gnu home services shepherd))
 
 ;;;

@@ -20,7 +20,7 @@
       (host-name "dorphine")
       (users (cons* <<user>> %base-user-accounts))
       (packages (replace-mesa (append (specs->pkgs+out <<package>>) %base-packages)))
-      (services (cons* <<service>> %base-services))))
+      (services (cons* <<service>> %rosenthal-desktop-services))))
 
   ((compose <<transformation>>)
    %os)
@@ -187,8 +187,7 @@ Maintenance:
       shepherd-root-service-type
     (list (shepherd-timer '(btrfs-scrub)
             #~(calendar-event #:hours '(0))
-            #~(#$(file-append (spec->pkg "btrfs-progs") "/bin/btrfs") "scrub" "start"
-               "/mnt/Mentha")
+            #~(#$(file-append (spec->pkg "btrfs-progs") "/bin/btrfs") "scrub" "start" "/mnt/Mentha")
             #:requirement '(user-processes))))
 #+end_src
 
@@ -207,8 +206,7 @@ Maintenance:
 ** Keyboard Layout
 #+name: keyboard-layout
 #+begin_src scheme
-  (keyboard-layout "us" "dvorak"
-                   #:options '("ctrl:nocaps"))
+  (keyboard-layout "us" "dvorak" #:options '("ctrl:nocaps"))
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref transformation
@@ -220,22 +218,6 @@ Maintenance:
 
 #+begin_src scheme :noweb yes :noweb-ref home-service
   (service home-keyboard-service-type <<keyboard-layout>>)
-#+end_src
-
-** Console Font
-#+begin_src scheme :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (services
-       (modify-services (operating-system-user-services os)
-         (console-font-service-type
-          _ => (map (lambda (num)
-                      (let* ((path "/share/consolefonts/ter-132n")
-                             (font (file-append (spec->pkg "font-terminus") path))
-                             (tty (string-append "tty" (number->string num))))
-                        (cons tty font)))
-                    (iota 6 1)))))))
 #+end_src
 
 ** Timezone
@@ -258,12 +240,14 @@ Maintenance:
 ** Users
 Generate password hash:
 #+begin_src shell
-  echo <password> | guix shell openssl -- openssl passwd -6 -stdin
+  guix shell openssl
+  echo <password> | openssl passwd -6 -stdin
 #+end_src
 
 Generate random password hash:
 #+begin_src shell
-  guix shell pwgen -- pwgen -sync 16 1 | guix shell openssl -- openssl passwd -6 -stdin
+  guix shell openssl pwgen
+  pwgen -sync 16 1 | openssl passwd -6 -stdin
 #+end_src
 
 Personal account.
@@ -300,9 +284,8 @@ Administration accounts.
   (simple-service 'add-user-ssh-keys
       openssh-service-type
     `(("deploy"
-       ,(plain-file
-         "hako.pub"
-         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2"))))
+       ,(plain-file "hako.pub"
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2"))))
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
@@ -310,19 +293,17 @@ Administration accounts.
     (operating-system
       (inherit os)
       (sudoers-file
-       (plain-file
-        "sudoers"
-        (string-append
-         (plain-file-content (operating-system-sudoers-file os))
-         "deploy ALL = NOPASSWD: ALL\n")))))
+       (plain-file "sudoers"
+         (string-append
+          (plain-file-content (operating-system-sudoers-file os))
+          "deploy ALL = NOPASSWD: ALL\n")))))
 #+end_src
 
 ** Packages
 No need to install less used ones, prefer ‘guix shell’.
-#+begin_src scheme :noweb-ref home-package
+#+begin_src scheme :noweb-ref package
   "rsync"
   "unzip"
-  "zstd"
 #+end_src
 
 ** Files
@@ -380,7 +361,8 @@ No need to install less used ones, prefer ‘guix shell’.
   (service home-shepherd-service-type
     (home-shepherd-configuration
       ;; Start by WM to inherit environment variables for graphical session.
-      (auto-start? #f)))
+      (auto-start? #f)
+      (daemonize? #f)))
 #+end_src
 
 ** SOPS Secrets
@@ -472,7 +454,6 @@ Generate passwordless ECC key:
 * Kernel
 #+begin_src scheme :noweb-ref module
   (gnu services sysctl)
-  (nongnu packages linux)
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -484,8 +465,7 @@ Generate passwordless ECC key:
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
-  (nonguix-transformation-linux
-   #:linux linux-lts)
+  (nonguix-transformation-linux)
 
   (lambda (os)
     (operating-system
@@ -498,11 +478,19 @@ Generate passwordless ECC key:
               (operating-system-user-kernel-arguments os)))))
 #+end_src
 
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'modprobed-db
+      home-shepherd-service-type
+    (list (shepherd-timer '(update-modprobed-db)
+            #~(calendar-event #:minutes '(0))
+            #~(#$(file-append (spec->pkg "modprobed-db") "/bin/modprobed-db") "storesilent"))))
+#+end_src
+
+[[file:../files/dotfiles/.config/modprobed-db.conf][~/.config/modprobed-db.conf]]
+
 * Networking
 #+begin_src scheme :noweb-ref module
-  (gnu services desktop)
   (gnu services networking)
-  (rosenthal services child-error)
   (rosenthal services networking)
   (rosenthal services dns)
 #+end_src
@@ -515,26 +503,6 @@ Generate passwordless ECC key:
 #+end_src
 
 [[file:../files/plain/dorphine/nftables.conf][dorphine/nftables.conf]]
-
-** iwd
-#+begin_src scheme :noweb-ref service
-  (service iwd-service-type
-    (iwd-configuration
-      (address-randomization 'network)
-      ;; Required by Qualcomm FastConnect 7800 / WCN785x.
-      (control-port-over-nl80211? #f)))
-#+end_src
-
-** connman
-#+begin_src scheme :noweb-ref service
-  (service connman-service-type
-    (connman-configuration
-      (general-configuration
-       (connman-general-configuration
-         (allow-hostname-updates? #f)
-         (resolv-conf "/dev/null")))
-      (shepherd-requirement '(iwd))))
-#+end_src
 
 ** bluez
 #+begin_src scheme :noweb-ref service
@@ -568,11 +536,6 @@ Generate passwordless ECC key:
     `(("resolv.conf" ,(plain-file "resolv.conf" "nameserver 127.0.0.1\n"))))
 #+end_src
 
-** ntp
-#+begin_src scheme :noweb-ref service
-  (service ntp-service-type)
-#+end_src
-
 ** tailscale
 #+begin_src scheme :noweb-ref service
   (service tailscale-service-type)
@@ -591,59 +554,10 @@ Generate passwordless ECC key:
 
 [[file:../files/plain/mihomo.yaml][mihomo.yaml]]
 
-* Session and Seat Management
-#+begin_src scheme :noweb-ref module
-  (gnu services dbus)
-  (gnu services desktop)
-  (rosenthal services file-systems)
-  (gnu home services desktop)
-#+end_src
-
+* Session Management
 ** dbus
-#+begin_src scheme :noweb-ref service
-  (service dbus-root-service-type)
-#+end_src
-
 #+begin_src scheme :noweb-ref home-service
   (service home-dbus-service-type)
-#+end_src
-
-** seatd
-#+begin_src scheme :noweb-ref group
-  "seat"
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (service seatd-service-type
-    (seatd-configuration
-      (seatd (spec->pkg "seatd-sans-logind"))))
-#+end_src
-
-** dumb-runtime-dir
-#+begin_src scheme :noweb-ref service
-  (service dumb-runtime-dir-service-type)
-#+end_src
-
-** pam-uaccess
-#+begin_src scheme :noweb-ref service
-  (simple-service 'uaccess-pam-service
-      pam-root-service-type
-    (let ((uaccess-pam-entry
-           (pam-entry
-             (control "optional")
-             (module (file-append (spec->pkg "pam-uaccess") "/lib/security/pam_uaccess.so"))
-             (arguments '("skip_ungrant")))))
-      (list (pam-extension
-              (transformer
-               (lambda (pam)
-                 (if (member (pam-service-name pam)
-                             '("login" "sudo"))
-                     (pam-service
-                       (inherit pam)
-                       (session
-                        (append (pam-service-session pam)
-                                (list uaccess-pam-entry))))
-                     pam)))))))
 #+end_src
 
 * SSH
@@ -739,7 +653,6 @@ Remember to open TCP port 5558.
 
 * Web Services
 #+begin_src scheme :noweb-ref module
-  (rosenthal services child-error)
   (rosenthal services web)
 #+end_src
 
@@ -781,9 +694,7 @@ Remember to open TCP port 5558.
 
 * Graphical Session
 #+begin_src scheme :noweb-ref module
-  (gnu services desktop)
   (gnu services xorg)
-  (gnu home services desktop)
   (gnu home services fontutils)
 #+end_src
 
@@ -797,55 +708,20 @@ Remember to open TCP port 5558.
 
 *** nouveau
 To use NVK, mesa should be installed into a profile.
-#+begin_src scheme :noweb-ref home-package
+#+begin_src scheme :noweb-ref package
   #;"mesa"
 #+end_src
 
 ** Wayland
-#+begin_src scheme :noweb-ref home-package
+*** niri
+#+begin_src scheme :noweb-ref package
+  "niri"
   "qtwayland@5"
   "wl-clipboard"
 #+end_src
 
-*** Startup in TTY
-#+begin_src scheme :noweb-ref home-fish-config
-  (plain-file
-   "fish-config-niri" "\
-  if status is-login
-      if test -z \"$WAYLAND_DISPLAY\" -a \"$(tty)\" = /dev/tty1
-          exec niri --session
-      end
-  end")
-#+end_src
-
-*** Display Target
-#+begin_src scheme :noweb-ref home-service
-  (service home-graphical-session-service-type
-    (home-graphical-session-configuration
-      (wayland? #t)
-      (x11? #t)))
-#+end_src
-
-*** Screen Locker
-#+begin_src scheme :noweb-ref service
-  (service screen-locker-service-type
-    (screen-locker-configuration
-      (name "swaylock")
-      (program (file-append (spec->pkg "swaylock-effects") "/bin/swaylock"))
-      (using-setuid? #f)))
-#+end_src
-
-*** niri
-#+begin_src scheme :noweb-ref home-package
-  "niri"
-#+end_src
-
 #+begin_src scheme :noweb yes :noweb-ref home-xdg-configuration-file
   ("niri/config.kdl" ,<<niri-config>>)
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (service x11-socket-directory-service-type)
 #+end_src
 
 #+name: niri-config
@@ -856,11 +732,111 @@ To use NVK, mesa should be installed into a profile.
           (specs->pkgs "light"
                        "rofi-wayland"
                        "swaylock-effects"
-                       "wireplumber"
-                       "xwayland-satellite")))
+                       "wireplumber")))
+#+end_src
+
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'xwayland-satellite
+      home-shepherd-service-type
+    (list (shepherd-service
+            (provision '(xwayland-satellite))
+            (start
+             #~(make-forkexec-constructor
+                (list #$(file-append (spec->pkg "xwayland-satellite") "/bin/xwayland-satellite") ":233")))
+            (stop
+             #~(make-kill-destructor)))))
 #+end_src
 
 [[file:../files/plain/niri.kdl][niri.kdl]]
+
+#+begin_src scheme :noweb-ref home-service
+  (service home-graphical-session-service-type
+    (home-graphical-session-configuration
+      (wayland? #t)
+      (x11? #t)
+      (shepherd-requirements '(xwayland-satellite))))
+#+end_src
+
+*** xdg-desktop-portal
+#+begin_src scheme :noweb-ref package
+  "xdg-desktop-portal"
+  "xdg-desktop-portal-gnome"
+  "xdg-desktop-portal-gtk"
+#+end_src
+
+*** waybar
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'waybar
+      home-shepherd-service-type
+    (list (shepherd-service
+            (provision '(waybar))
+            (requirement '(graphical-session wayland-display))
+            (start
+             #~(make-forkexec-constructor
+                (list #$(file-append (spec->pkg "waybar") "/bin/waybar"))))
+            (stop #~(make-kill-destructor)))))
+#+end_src
+
+#+begin_src scheme :noweb yes :noweb-ref home-xdg-configuration-file
+  ("waybar/config.jsonc" ,<<waybar-config>>)
+  ("waybar/colors.css" ,(local-file (testament-plain "dorphine/waybar-colors.css")))
+  ("waybar/style.css" ,(local-file (testament-plain "waybar.css")))
+#+end_src
+
+#+name: waybar-config
+#+begin_src scheme
+  (computed-substitution-with-inputs "waybar.jsonc"
+    (local-file (testament-plain "waybar.jsonc"))
+    (specs->pkgs "light" "pavucontrol" "wireplumber"))
+#+end_src
+
+[[file:../files/plain/waybar.jsonc][waybar.jsonc]]
+
+[[file:../files/plain/waybar.css][waybar.css]]
+
+[[file:../files/plain/dorphine/waybar-colors.css][dorphine/waybar-colors.css]]
+
+*** swaybg
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'swaybg
+      home-shepherd-service-type
+    (list (shepherd-service
+            (provision '(swaybg))
+            (requirement '(graphical-session wayland-display))
+            (start
+             #~(make-forkexec-constructor
+                (list #$(file-append (spec->pkg "swaybg") "/bin/swaybg") "--mode" "fill"
+                      "--image" #$(local-file (testament-blobs "101361103_p0.jpg")))))
+            (stop #~(make-kill-destructor)))))
+#+end_src
+
+*** mako
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'mako
+      home-shepherd-service-type
+    (list (shepherd-service
+            (provision '(mako))
+            (requirement '(graphical-session wayland-display))
+            (start
+             #~(make-forkexec-constructor
+                (list #$(file-append (spec->pkg "mako") "/bin/mako"))))
+            (stop #~(make-kill-destructor)))))
+#+end_src
+
+*** gammastep
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'gammastep
+      home-shepherd-service-type
+    (list (shepherd-service
+            (provision '(gammastep))
+            (requirement '(graphical-session wayland-display home-sops-secrets))
+            (start
+             #~(make-forkexec-constructor
+                (list #$(file-append (spec->pkg "bash-minimal") "/bin/sh") "-c"
+                      #$(file-append (spec->pkg "gammastep") "/bin/gammastep "
+                                     "$(cat $XDG_RUNTIME_DIR/secrets/gammastep)"))))
+            (stop #~(make-kill-destructor)))))
+#+end_src
 
 ** light
 #+begin_src scheme :noweb-ref group
@@ -871,8 +847,19 @@ To use NVK, mesa should be installed into a profile.
   (udev-rules-service 'backlight (spec->pkg "light"))
 #+end_src
 
+** qogir-icon-theme
+#+begin_src scheme :noweb-ref package
+  "adwaita-icon-theme"
+  "hicolor-icon-theme"
+  "qogir-icon-theme"
+#+end_src
+
+[[file:../files/dotfiles/.config/gtk-3.0/settings.ini][~/.config/gtk-3.0/settings.ini]]
+
+[[file:../files/dotfiles/.icons/default/index.theme][~/.icons/default/index.theme]]
+
 ** fontconfig
-#+begin_src scheme :noweb-ref home-package
+#+begin_src scheme :noweb-ref package
   "font-awesome-nonfree"
   "font-adobe-source-serif"
   "font-apple-new-york"
@@ -932,24 +919,6 @@ To use NVK, mesa should be installed into a profile.
           (family "monospace"))))))
 #+end_src
 
-** qogir-icon-theme
-#+begin_src scheme :noweb-ref home-package
-  "adwaita-icon-theme"
-  "hicolor-icon-theme"
-  "qogir-icon-theme"
-#+end_src
-
-[[file:../files/dotfiles/.config/gtk-3.0/settings.ini][~/.config/gtk-3.0/settings.ini]]
-
-[[file:../files/dotfiles/.icons/default/index.theme][~/.icons/default/index.theme]]
-
-** xdg-desktop-portal
-#+begin_src scheme :noweb-ref home-package
-  "xdg-desktop-portal"
-  "xdg-desktop-portal-gnome"
-  "xdg-desktop-portal-gtk"
-#+end_src
-
 * Multimedia
 #+begin_src scheme :noweb-ref module
   (gnu home services sound)
@@ -964,7 +933,32 @@ To use NVK, mesa should be installed into a profile.
   (service home-pipewire-service-type)
 #+end_src
 
-* OpenPGP
+** jellyfin-mpv-shim
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'jellyfin-mpv-shim
+      home-shepherd-service-type
+    (list (shepherd-service
+            (provision '(jellyfin-mpv-shim))
+            (requirement '(graphical-session x11-display))
+            (start
+             #~(make-forkexec-constructor
+                '(#$(file-append (spec->pkg "jellyfin-mpv-shim") "/bin/jellyfin-mpv-shim"))))
+            (stop #~(make-kill-destructor)))))
+#+end_src
+
+** mpv
+#+begin_src scheme :noweb-ref package
+  "mpv-nvidia"
+#+end_src
+
+[[../files/dotfiles/.config/mpv/mpv.conf][~/.config/mpv/mpv.conf]]
+
+** obs
+#+begin_src scheme :noweb-ref package
+  "obs"
+#+end_src
+
+* OpenPGP & Security Token
 #+begin_src scheme :noweb-ref module
   (gnu services security-token)
   (gnu home services gnupg)
@@ -985,6 +979,15 @@ To use NVK, mesa should be installed into a profile.
       (extra-content "allow-loopback-pinentry")))
 #+end_src
 
+** libfido2
+#+begin_src scheme :noweb-ref group
+  "plugdev"
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (udev-rules-service 'u2f (spec->pkg "libfido2") #:groups '("plugdev"))
+#+end_src
+
 * Emacs
 #+begin_src scheme :noweb-ref module
   (guix packages)
@@ -998,23 +1001,21 @@ To use NVK, mesa should be installed into a profile.
 
 home-emacs-service-type from [[https://issues.guix.gnu.org/64620][#64620]]
 
-#+begin_src scheme :noweb-ref home-package
-  "emacs-gcmh"
-  "emacs-no-littering"
-
-  "emacs-caddyfile-mode"
-  "emacs-edit-indirect"
-  "emacs-fish-mode"
-  "emacs-json-mode"
-  "emacs-markdown-mode"
-  "emacs-nftables-mode"
-  "emacs-zig-mode"
-#+end_src
-
 #+begin_src scheme :noweb-ref home-service :noweb yes
   (service home-emacs-service-type
     (home-emacs-configuration
       (emacs (spec->pkg "emacs-pgtk"))
+      (extra-packages
+       (specs->pkgs "emacs-gcmh"
+                    "emacs-no-littering"
+
+                    "emacs-caddyfile-mode"
+                    "emacs-edit-indirect"
+                    "emacs-fish-mode"
+                    "emacs-json-mode"
+                    "emacs-markdown-mode"
+                    "emacs-nftables-mode"
+                    "emacs-zig-mode"))
       (package-serializer %emacs-use-package-serializer)
       (native-compile? #f)
       (default-init
@@ -1204,7 +1205,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+end_src
 
 *** emacs eglot
-#+begin_src scheme :noweb-ref home-package
+#+begin_src scheme :noweb-ref package
   "python-next"
   "rust"
   "rust:cargo"
@@ -1735,7 +1736,7 @@ Send
 #+end_src
 
 ** fcitx5
-#+begin_src scheme :noweb-ref home-package
+#+begin_src scheme :noweb-ref package
   "fcitx5"
   "fcitx5-configtool"
   "fcitx5-material-color-theme"
@@ -1754,59 +1755,22 @@ To use fcitx5 in QT applications, install =fcitx5-qt= and set environment variab
       home-shepherd-service-type
     (list (shepherd-service
             (provision '(fcitx5))
-            (requirement '(dbus))
+            (requirement '(dbus graphical-session))
             (start
              #~(make-forkexec-constructor
                 (list #$(file-append (spec->pkg "fcitx5") "/bin/fcitx5"))))
             (stop #~(make-kill-destructor)))))
 #+end_src
 
-** gammastep
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'gammastep
-      home-shepherd-service-type
-    (list (shepherd-service
-            (provision '(gammastep))
-            (requirement '(graphical-session wayland-display home-sops-secrets))
-            (start
-             #~(make-forkexec-constructor
-                (list #$(file-append (spec->pkg "bash-minimal") "/bin/sh") "-c"
-                      #$(file-append (spec->pkg "gammastep") "/bin/gammastep "
-                                     "$(cat $XDG_RUNTIME_DIR/secrets/gammastep)"))))
-            (stop #~(make-kill-destructor)))))
-#+end_src
-
 ** git
-#+begin_src scheme :noweb-ref home-package
+#+begin_src scheme :noweb-ref package
   "git"
 #+end_src
 
 [[file:../files/dotfiles/.config/git/config][~/.config/git/config]]
 
-** jellyfin-mpv-shim
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'jellyfin-mpv-shim
-      home-shepherd-service-type
-    (list (shepherd-service
-            (provision '(jellyfin-mpv-shim))
-            (requirement '(graphical-session x11-display))
-            (start
-             #~(make-forkexec-constructor
-                '(#$(file-append (spec->pkg "jellyfin-mpv-shim") "/bin/jellyfin-mpv-shim"))))
-            (stop #~(make-kill-destructor)))))
-#+end_src
-
-** libfido2
-#+begin_src scheme :noweb-ref group
-  "plugdev"
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (udev-rules-service 'u2f (spec->pkg "libfido2") #:groups '("plugdev"))
-#+end_src
-
 ** librewolf
-#+begin_src scheme :noweb-ref home-package
+#+begin_src scheme :noweb-ref package
   "librewolf"
   "adaptive-tab-bar-colour-icecat"
   "bitwarden-icecat"
@@ -1815,43 +1779,6 @@ To use fcitx5 in QT applications, install =fcitx5-qt= and set environment variab
   "ohmyech-icecat"
   "privacy-redirect-icecat"
   "ublock-origin-icecat"
-#+end_src
-
-** mako
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'mako
-      home-shepherd-service-type
-    (list (shepherd-service
-            (provision '(mako))
-            (requirement '(graphical-session wayland-display))
-            (start
-             #~(make-forkexec-constructor
-                (list #$(file-append (spec->pkg "mako") "/bin/mako"))))
-            (stop #~(make-kill-destructor)))))
-#+end_src
-
-** modprobed-db
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'modprobed-db
-      home-shepherd-service-type
-    (list (shepherd-timer '(update-modprobed-db)
-            #~(calendar-event #:minutes '(0))
-            #~(#$(file-append (spec->pkg "modprobed-db") "/bin/modprobed-db") "storesilent"))))
-#+end_src
-
-[[file:../files/dotfiles/.config/modprobed-db.conf][~/.config/modprobed-db.conf]]
-
-** mpv
-#+begin_src scheme :noweb-ref home-package
-  "mpv-nvidia"
-#+end_src
-
-[[../files/dotfiles/.config/mpv/mpv.conf][~/.config/mpv/mpv.conf]]
-
-** obs
-#+begin_src scheme :noweb-ref home-package
-  "obs"
-  "obs-wlrobs"
 #+end_src
 
 ** qbittorrent
@@ -1863,7 +1790,7 @@ To use fcitx5 in QT applications, install =fcitx5-qt= and set environment variab
 #+end_src
 
 ** steam
-#+begin_src scheme :noweb-ref home-package
+#+begin_src scheme :noweb-ref package
   "steam-nvidia"
 #+end_src
 
@@ -1873,8 +1800,13 @@ To use fcitx5 in QT applications, install =fcitx5-qt= and set environment variab
 #+end_src
 
 My game controller provides both Xbox and Nintendo interfaces but doesn't offer a toggle.
-#+begin_src scheme :noweb-ref disabled-module
-  "hid_nintendo"
+#+begin_src scheme :noweb-ref transformation
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (kernel-arguments
+       (cons "modprobe.blacklist=hid_nintendo"
+             (operating-system-user-kernel-arguments os)))))
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref service
@@ -1890,21 +1822,6 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
   MODE=\"0660\", GROUP=\"users\"")
 #+end_src
 
-** swaybg
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'swaybg
-      home-shepherd-service-type
-    (list (shepherd-service
-            (provision '(swaybg))
-            (requirement '(graphical-session wayland-display))
-            (start
-             #~(make-forkexec-constructor
-                (list #$(file-append (spec->pkg "swaybg") "/bin/swaybg")
-                      "--image" #$(local-file (testament-blobs "101361103_p0.jpg"))
-                      "--mode" "fill")))
-            (stop #~(make-kill-destructor)))))
-#+end_src
-
 ** syncthing
 #+begin_src scheme :noweb-ref home-service
   (service home-syncthing-service-type
@@ -1912,38 +1829,6 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
      (syncthing-configuration
        (user "hako"))))
 #+end_src
-
-** waybar
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'waybar
-      home-shepherd-service-type
-    (list (shepherd-service
-            (provision '(waybar))
-            (requirement '(graphical-session wayland-display))
-            (start
-             #~(make-forkexec-constructor
-                (list #$(file-append (spec->pkg "waybar") "/bin/waybar"))))
-            (stop #~(make-kill-destructor)))))
-#+end_src
-
-#+begin_src scheme :noweb yes :noweb-ref home-xdg-configuration-file
-  ("waybar/config.jsonc" ,<<waybar-config>>)
-  ("waybar/colors.css" ,(local-file (testament-plain "dorphine/waybar-colors.css")))
-  ("waybar/style.css" ,(local-file (testament-plain "waybar.css")))
-#+end_src
-
-#+name: waybar-config
-#+begin_src scheme
-  (computed-substitution-with-inputs "waybar.jsonc"
-    (local-file (testament-plain "waybar.jsonc"))
-    (specs->pkgs "light" "pavucontrol" "wireplumber"))
-#+end_src
-
-[[file:../files/plain/waybar.jsonc][waybar.jsonc]]
-
-[[file:../files/plain/waybar.css][waybar.css]]
-
-[[file:../files/plain/dorphine/waybar-colors.css][dorphine/waybar-colors.css]]
 
 ** zoxide
 #+begin_src scheme :noweb-ref home-fish-config

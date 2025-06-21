@@ -314,7 +314,6 @@ No need to install less used ones, prefer ‘guix shell’.
 * Session and Seat Management
 #+begin_src scheme :noweb-ref module
   (gnu services dbus)
-  (gnu services desktop)
 #+end_src
 
 ** dbus
@@ -702,7 +701,7 @@ Remember to open TCP port 5555 and 5556.
   (service miniflux-service-type
     (miniflux-configuration
       (options
-       `(("BASE_URL" . ,(sops-str '("miniflux" "url")))
+       `(("BASE_URL" . "https://reader.boiledscript.com/")
          ("CLEANUP_ARCHIVE_READ_DAYS" . -1)
          ("CLEANUP_ARCHIVE_UNREAD_DAYS" . -1)
          ("DATABASE_URL" . ,(sops-str '("miniflux" "database")))
@@ -716,7 +715,7 @@ Remember to open TCP port 5555 and 5556.
     (misskey-configuration
       (image "ghcr.io/rakino/misskey:latest")
       (config
-       `((url . ,(sops-str '("misskey" "url")))
+       `((url . "https://social.boiledscript.com")
          (port . 54493)
          (db
           . ((host . localhost)
