@@ -1,9 +1,4 @@
-;; -*- mode: emacs-lisp;-*-
-;; -*- lexical-binding: t; -*-
-
 scheme-mode
-
-(defk "(begin " n "(define* (" p "#:key)" n> "\"TBD\")" n "(export " p "))")
 
 (package...
  "(define-public " (s name)

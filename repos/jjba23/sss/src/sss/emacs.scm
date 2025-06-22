@@ -21,7 +21,8 @@
   #:use-module (ice-9 string-fun)
   #:use-module (sss palette)
   #:use-module (srfi srfi-64)
-  #:export (bridge-emacs emacs-capability serialize-emacs-module emacs-modules))
+  #:export (bridge-emacs emacs-capability serialize-emacs-module emacs-modules
+                         emacs-tempel-snippets serialize-emacs-tempel-snippet))
 
 (define* (bridge-emacs #:key palette
                        user-name
@@ -113,13 +114,30 @@
                                 theme
                                 ui)))
 
+(define emacs-tempel-snippets
+  (make-parameter '(emacs-lisp fundamental
+                               guix-scheme
+                               guix-text
+                               js-ts-base
+                               lisp
+                               markdown
+                               nix
+                               org
+                               rust
+                               sh-base
+                               text)))
+
 (define* (serialize-emacs-module #:key clone-dir mod)
-  `(,(format #f ".emacs.d/modules/~a.el" mod) ,(local-file (format #f
-                                                            "~a/src/sss/emacs/modules/~a.el"
-                                                            (string-replace-substring
-                                                             clone-dir "$HOME"
-                                                             (getenv "HOME"))
-                                                            mod))))
+  (list (format #f ".emacs.d/modules/~a.el" mod)
+        (local-file (format #f "~a/src/sss/emacs/modules/~a.el"
+                            (string-replace-substring clone-dir "$HOME"
+                                                      (getenv "HOME")) mod))))
+
+(define* (serialize-emacs-tempel-snippet #:key clone-dir snippet)
+  (list (format #f ".emacs.d/snippets/~a.eld" snippet)
+        (local-file (format #f "~a/src/sss/emacs/snippets/~a.eld"
+                            (string-replace-substring clone-dir "$HOME"
+                                                      (getenv "HOME")) snippet))))
 
 (define* (emacs-capability #:key palette
                            user-name
@@ -158,8 +176,11 @@
                                                                    #:mono-font
                                                                    mono-font))))
 
-            (".emacs.d/early-init.el" ,(local-file "./emacs/early-init.el"))
-            (".emacs.d/templates" ,(local-file "./emacs/templates")))
+            (".emacs.d/early-init.el" ,(local-file "./emacs/early-init.el")))
+          (map (lambda (s)
+                 (serialize-emacs-tempel-snippet #:snippet s
+                                                 #:clone-dir clone-dir))
+               (emacs-tempel-snippets))
           (map (lambda (m)
                  (serialize-emacs-module #:mod m
                                          #:clone-dir clone-dir))

@@ -10,6 +10,7 @@
   #:use-module ((misako home-environments look ssh)
                 #:prefix ssh-host:)
   #:use-module (misako home-environments look tokens)
+  #:use-module (misako home-environments look packages)
   #|GNU Services|#
   #:use-module (gnu services)
   #|GNU Home Services|#
@@ -117,11 +118,6 @@
   #:use-module (sops home services sops)
   #:export (look))
 
-(define ghostty-tip
-  ((options->transformation
-     '((with-commit . "ghostty=9d9d781a0b7142ddc176167ef5e889618d295ef5")))
-   ghostty))
-
 (define look
   (nvidia-home-environment
     (packages
@@ -142,6 +138,7 @@
         #|                |# zen-browser-bin
         #|Games           |# (nvidia?* (steam-for nvda)
                                        (heroic-for nvda)
+                                       (lutris-wrapped-for nvda)
                                        mangohud
                                        prismlauncher
                                        path-of-building-bin
@@ -152,7 +149,7 @@
         #|Sound           |# wireplumber-minimal ncpamixer helvum easyeffects
         #|Password Manager|# keepassxc password-store passff-host
         #|PDF             |# sioyek ;zaread
-        #|Window Manager  |# hyprland hyprpaper hyprlock hypridle hyprcursor
+        #|Window Manager  |# hyprpaper hyprlock hypridle hyprcursor
         #|                |# hyprland-qtutils hyprsunset eww/wayland
         #|                |# mako waybar grim slurp bemenu fuzzel
         #|                |# wl-clipboard wlsunset dbus qtwayland cursor-mcmojave
@@ -201,6 +198,7 @@
                     ssh-host:sourcehut
                     ssh-host:gitlab
                     ssh-host:forgejo
+                    ; HERE !!!
                     ssh-host:shadow-primary
                     ssh-host:shadow-secondary
                     ssh-host:yumiko))))
@@ -220,7 +218,9 @@
 
         (service home-log-rotation-service-type)
 
-        (service home-hyprland-service-type)
+        (service home-hyprland-service-type
+          (home-hyprland-configuration
+            (package hyprland)))
 
         (service home-dotfiles-service-type
           (home-dotfiles-configuration
@@ -411,7 +411,11 @@
                   (abbreviation
                     (name 'z)
                     (expansion
-                      "curl -F file=% https://0x0.st | wl-copy"))
+                      "curl -F file=@% https://0x0.st | wl-copy"))
+                  (abbreviation
+                    (name 'h)
+                    (expansion
+                      "WF=% ln -sf /home/look/projects/guile/misako/misako/home-environments/look/files/.config/hypr/\\$WF.conf /home/look/.config/hypr/\\$WF.conf"))
                   (map (lambda (channel)
                          (abbreviation
                            (name (symbol-append '@ channel))

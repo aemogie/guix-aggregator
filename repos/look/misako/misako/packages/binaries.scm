@@ -61,7 +61,7 @@
 (define path-of-building-bin
   (package
     (name "path-of-building-bin")
-    (version "2.52.3")
+    (version "2.54.0")
     (source
       (origin
         (method url-fetch/zipbomb)
@@ -70,7 +70,7 @@
                         "/releases/download/v" version
                         "/PathOfBuildingCommunity-Portable.zip"))
         (sha256
-          (base32 "15acf0k71lrfcbv7m9bkghsj84wv53s35i809w0i2iazk7ykv06a"))))
+          (base32 "0vwa1v0npbrshf87ajp134icb0lmar3k0rj7kbfdhpwcgxl08bsf"))))
     (build-system copy-build-system)
     (arguments
       (list #:install-plan
