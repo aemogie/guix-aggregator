@@ -178,11 +178,11 @@
           (associate-right
             (%default-console-font `("tty1" "tty2" "tty3"))))
 
-        (service seatd-service-type)
+        (service elogind-service-type)
 
         (service greetd-service-type
           (greetd-configuration
-            (greeter-supplementary-groups `("seat" "video"))
+            (greeter-supplementary-groups `("video"))
             (terminals
               (map (lambda (x)
                      (greetd-terminal-configuration
@@ -214,10 +214,7 @@
             (jobs (list #~(job "5 0 * * *" "guix gc -F 5G")))))
 
         #|Device management services|#
-        (service udev-service-type
-          (udev-configuration
-            (udev eudev)
-            (rules (list lvm2 fuse crda light steam-devices-udev-rules))))
+        (service udev-service-type)
 
         #|Hosts|#
         (simple-service 'extra-hosts hosts-service-type

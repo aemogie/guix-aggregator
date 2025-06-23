@@ -51,6 +51,7 @@
   #:use-module (gnu packages linux)
   #:use-module (gnu packages mail)
   #:use-module (gnu packages messaging)
+  #:use-module (gnu packages music)
   #:use-module (gnu packages ncurses)
   #:use-module (gnu packages password-utils)
   #:use-module (gnu packages pciutils)
@@ -64,7 +65,6 @@
   #:use-module (gnu packages text-editors)
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages video)
-  #:use-module (gnu packages music)
   #:use-module (gnu packages vim)
   #:use-module (gnu packages web-browsers)
   #:use-module (gnu packages wm)
@@ -131,10 +131,10 @@
         #|Terminal        |# foot ghostty-tip ydotool
         #|Guile           |# guile-next guile-readline guile-colorized guile-gcrypt
         #|Text Editor     |# helix #|optional|# guile-lsp-server parinfer-rust
-        #|Emacs           |# emacs-next emacs-geiser emacs-geiser-guile emacs-magit
+        #|Emacs           |# emacs-pgtk emacs-geiser emacs-geiser-guile emacs-magit
         #|                |# emacs-paredit emacs-yasnippet emacs-which-key
         #|                |# emacs-vertico emacs-modus-themes emacs-debbugs
-        #|                |# emacs-meow
+        #|                |# emacs-meow emacs-multiple-cursors
         #|                |# zen-browser-bin
         #|Games           |# (nvidia?* (steam-for nvda)
                                        (heroic-for nvda)

@@ -16,6 +16,7 @@
   #:use-module (gnu packages admin)
   #:use-module (gnu packages databases)
   #:use-module (gnu packages linux)
+  #:use-module (gnu packages games)
   #|GNU Services|#
   #:use-module (gnu services)
   #:use-module (gnu services avahi)
@@ -84,6 +85,8 @@
                    (local-file
                      (string-append yumiko-dir "/udev/" rules))))
                #:groups '("usb"))
+
+             (udev-rules-service 'controller steam-devices-udev-rules)
 
              #|SSH services|#
              (service openssh-service-type

@@ -20,6 +20,7 @@
   #:use-module (nongnu packages video)
   #:use-module (nongnu system linux-initrd)
   #:use-module (nonguix utils)
+  #:use-module (nonguix transformations)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-43)
@@ -125,20 +126,9 @@
       (home-environment exp ...)))
 
 (define-syntax nvidia-operating-system
-  (syntax-rules (driver x11-system?)
-    ((nvidia-operating-system #:driver dri #:x11-system? x11 exp ...)
-     ((nvidia-system-transformation #:driver dri
-                                    #:x11-display? x11)
-      (operating-system exp ...)))
-    ((nvidia-operating-system #:x11-system? x11 #:driver dri exp ...)
-     ((nvidia-system-transformation #:driver dri
-                                    #:x11-display? x11)
-      (operating-system exp ...)))
+  (syntax-rules (driver)
     ((nvidia-operating-system #:driver dri exp ...)
-     ((nvidia-system-transformation #:driver dri)
-      (operating-system exp ...)))
-    ((nvidia-operating-system #:x11-system? x11 exp ...)
-     ((nvidia-system-transformation #:x11-display? x11)
+     ((nonguix-transformation-nvidia #:driver dri)
       (operating-system exp ...)))
     ((nvidia-operating-system exp ...)
-     ((nvidia-system-transformation) (operating-system exp ...)))))
+     ((nonguix-transformation-nvidia) (operating-system exp ...)))))
