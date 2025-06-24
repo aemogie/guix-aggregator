@@ -2,6 +2,11 @@
 ;;;
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
+(define %channel-guix
+  (channel
+    (inherit %default-guix-channel)
+    (url "https://codeberg.org/guix/guix.git")))
+
 (define %channel-guixcn
   (channel
     (name 'guixcn)
@@ -44,7 +49,7 @@
       (openpgp-fingerprint
        "8D10 60B9 6BB8 292E 829B  7249 AED4 1CC1 93B7 01E2")))))
 
-(cons* %channel-nonguix
-       %channel-rosenthal
-       %channel-sops-guix
-       %default-channels)
+(list %channel-guix
+      %channel-nonguix
+      %channel-rosenthal
+      %channel-sops-guix)

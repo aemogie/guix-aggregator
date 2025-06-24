@@ -1,8 +1,8 @@
 /* SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space> */
 /* SPDX-License-Identifier: CC0-1.0 */
 
-@define-color bg1    #FEFEFE;
-@define-color bg2    #4D5072;
+@define-color bg1    #E8E3E9;
+@define-color bg2    #2E3044;
 
 @define-color red    #EC7875;
 @define-color green  #A3BE8C;
@@ -11,10 +11,10 @@
 /* Execute ‘guix shell python-pywal imagemagick -- wal -nstei <image>’, */
 /* then select colors from ‘~/.cache/wal/colors-waybar.css’. */
 @define-color color0 #D0CAD9;
-@define-color color1 #CAB9CE;
-@define-color color2 #DEB8D7;
-@define-color color3 #B2C8E0;
+@define-color color1 #E2D2DD;
+@define-color color2 #CAB9CE;
+@define-color color3 #DEB8D7;
 @define-color color4 #D0CAD9;
-@define-color color5 #E2D2DD;
-@define-color color6 #D7D5E3;
-@define-color color7 #CAB9CE;
+@define-color color5 #D7D5E3;
+@define-color color6 #CAB9CE;
+@define-color color7 #A29EA3;

@@ -2,6 +2,43 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 
+prefer-no-csd
+screenshot-path "/mnt/Mentha/@Library/Pictures/Screenshots/%Y%m%d-%H%M%S.png"
+
+spawn-at-startup "sh" "-c" "pgrep --uid $USER shepherd > /dev/null || shepherd"
+spawn-at-startup "$$bin/xwayland-satellite$$" ":233"
+environment {
+    DISPLAY ":233"
+}
+
+window-rule {
+    match app-id="librewolf" title="^Picture-in-Picture$"
+    open-floating true
+}
+
+window-rule {
+    match app-id="steam" title=r#"^notificationtoasts_\d+_desktop$"#
+    default-floating-position x=10 y=10 relative-to="bottom-right"
+}
+
+window-rule {
+    geometry-corner-radius 12
+    clip-to-geometry true
+}
+
+overview {
+    backdrop-color "#E8E3E9"
+}
+
+layout {
+    focus-ring {
+        off
+    }
+    border {
+        off
+    }
+}
+
 input {
     keyboard {
         repeat-delay 300
@@ -14,26 +51,18 @@ input {
     warp-mouse-to-focus
 }
 
-layout {
-    focus-ring {
-        off
-    }
-    border {
-        off
-    }
-}
-
-window-rule {
-    geometry-corner-radius 12
-    clip-to-geometry true
-}
-
-window-rule {
-    match app-id=r#"LibreWolf"# title="^Picture-in-Picture$"
-    open-floating true
-}
-
 binds {
+    XF86AudioRaiseVolume  allow-when-locked=true { spawn "$$bin/wpctl$$" "set-volume" "@DEFAULT_AUDIO_SINK@"   "0.1+" "--limit" "1.0"; }
+    XF86AudioLowerVolume  allow-when-locked=true { spawn "$$bin/wpctl$$" "set-volume" "@DEFAULT_AUDIO_SINK@"   "0.1-"; }
+    XF86AudioMute         allow-when-locked=true { spawn "$$bin/wpctl$$" "set-mute"   "@DEFAULT_AUDIO_SINK@"   "toggle"; }
+    XF86AudioMicMute      allow-when-locked=true { spawn "$$bin/wpctl$$" "set-mute"   "@DEFAULT_AUDIO_SOURCE@" "toggle"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn "$$bin/light$$" "-U" "5"; }
+    XF86MonBrightnessUp   allow-when-locked=true { spawn "$$bin/light$$" "-A" "5"; }
+
+    Mod+Space   { spawn "$$bin/rofi$$" "-show" "drun"; }
+    Mod+L       { spawn "$$bin/swaylock$$" "--clock" "--daemonize" "--ignore-empty-password" "--image" "$$115008128_p0.jpg$$"; }
+    Mod+Return  { spawn "emacsclient" "--create-frame" "--no-wait"; }
+
     Mod+Shift+Q               { close-window; }
     Mod+Left                  { focus-column-left; }
     Mod+Down                  { focus-window-down; }
@@ -58,22 +87,7 @@ binds {
     Ctrl+Print                { screenshot-screen; }
     Alt+Print                 { screenshot-window; }
 
-    XF86AudioRaiseVolume  allow-when-locked=true { spawn "$$bin/wpctl$$" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1+" "--limit" "1.0"; }
-    XF86AudioLowerVolume  allow-when-locked=true { spawn "$$bin/wpctl$$" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1-"; }
-    XF86AudioMute         allow-when-locked=true { spawn "$$bin/wpctl$$" "set-mute"   "@DEFAULT_AUDIO_SINK@" "toggle"; }
-    XF86AudioMicMute      allow-when-locked=true { spawn "$$bin/wpctl$$" "set-mute"   "@DEFAULT_AUDIO_SOURCE@" "toggle"; }
-    XF86MonBrightnessDown allow-when-locked=true { spawn "$$bin/light$$" "-U" "5"; }
-    XF86MonBrightnessUp   allow-when-locked=true { spawn "$$bin/light$$" "-A" "5"; }
-
-    Mod+Space   { spawn "$$bin/rofi$$" "-modes" "combi" "-show" "combi"; }
-    Mod+L       { spawn "$$bin/swaylock$$" "--clock" "--daemonize" "--ignore-empty-password" "--image" "$$115008128_p0.jpg$$"; }
-    Mod+Return  { spawn "emacsclient" "--create-frame" "--no-wait"; }
     Mod+Shift+E { quit; }
-}
-
-prefer-no-csd
-screenshot-path "/mnt/Mentha/@Library/Pictures/Screenshots/%Y%m%d-%H%M%S.png"
-spawn-at-startup "/bin/sh" "-c" "pgrep --uid $USER shepherd > /dev/null || shepherd"
-environment {
-    DISPLAY ":233"
+    Ctrl+Alt+Delete { quit; }
+    Mod+Shift+P { power-off-monitors; }
 }

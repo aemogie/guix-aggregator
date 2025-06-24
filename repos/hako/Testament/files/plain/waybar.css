@@ -1,13 +1,16 @@
 /* SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space> */
 /* SPDX-License-Identifier: CC0-1.0 */
 
-@import "colors.css";
+@import "$$waybar-colors.css$$";
 
 * {
-    font-family: "SF Pro Text";
     font-size: 1.2rem;
     background-color: transparent;
     border-radius: 5px;
+}
+
+window {
+    color: @bg2;
 }
 
 tooltip {
@@ -16,6 +19,7 @@ tooltip {
 }
 
 tooltip label {
+    color: @bg1;
     text-shadow: none;
 }
 
@@ -29,13 +33,11 @@ tooltip label {
     margin: 10px 0 0 10px;
 }
 
-#tray,
 #cpu,
 #memory,
 #temperature,
 #clock,
-#network,
-#bluetooth,
+#tray,
 #wireplumber,
 #backlight,
 #battery {
@@ -45,11 +47,18 @@ tooltip label {
 }
 
 #workspaces button {
+    color: @bg2;
     padding: 0 5px;
 }
 
 #tray menu {
+    color: @bg2;
     background-color: @bg1;
+}
+
+#tray menu menuitem:hover {
+    color: @bg1;
+    background-color: @bg2;
 }
 
 #tray > .passive {
@@ -67,8 +76,6 @@ tooltip label {
 #cpu.full,
 #memory.full,
 #temperature.critical,
-#network.disabled, #network.disconnected,
-#bluetooth.disabled, #bluetooth.off, #bluetooth.no-controller,
 #wireplumber.muted,
 #battery.warning, #battery.critical {
     background-color: @red;
@@ -98,22 +105,14 @@ tooltip label {
     background-color: @color4;
 }
 
-#network {
+#wireplumber {
     background-color: @color5;
 }
 
-#bluetooth {
+#backlight {
     background-color: @color6;
 }
 
-#wireplumber {
-    background-color: @color7;
-}
-
-#backlight {
-    background-color: @color0;
-}
-
 #battery {
-    background-color: @color1;
+    background-color: @color7;
 }

@@ -4,7 +4,7 @@
 
 ARGS  :=
 OPTS  := --keep-going --verbosity=1 $(ARGS)
-GUIX  := guix
+GUIX  := guix time-machine --channels=channels.lock --
 EMACS := $(GUIX) shell emacs-minimal -- emacs
 
 %.scm: %.org
@@ -21,12 +21,12 @@ pull:
 .PHONY: build
 build: build-dorphine build-gokuraku
 build-%: config/%.scm
-	$(GUIX) system build $< $(OPTS)
+	guix system build $< $(OPTS)
 
 .PHONY: deploy
 deploy: deploy-dorphine deploy-gokuraku
 deploy-%: config/%.scm
-	$(GUIX) deploy files/deploy/$(notdir $<) $(OPTS)
+	guix deploy files/deploy/$(notdir $<) $(OPTS)
 
 .PHONY: authenticate
 # Authenticate commits.

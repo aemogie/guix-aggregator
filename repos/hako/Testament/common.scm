@@ -8,24 +8,11 @@
              (ice-9 popen)
              (ice-9 textual-ports)
              (guix diagnostics)
-             (guix gexp)
              (guix i18n)
              (guix store)
              (nonguix transformations)
-             (rosenthal utils file)
-             (rosenthal utils packages)
-             (rosenthal utils transformations)
-             (sops secrets)
-
-             (gnu)
-             (gnu services desktop)
-             (gnu services guix)
-             (gnu services shepherd)
-             (rosenthal services desktop)
-             (gnu home)
-             (gnu home services)
-             (gnu home services desktop)
-             (gnu home services shepherd))
+             (rosenthal)
+             (sops secrets))
 
 ;;;
 ;;; Common

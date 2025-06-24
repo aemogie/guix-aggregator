@@ -3,23 +3,15 @@
 
 #+TITLE: Testament - Personal dot(?)files
 
-This repository contains my dotfiles and Guix System literate configurations (with Guix Home configured via ~guix-home-service-type~).
-
-* Screenshot
-[[file:files/plain/assets/screenshot.png]]
+This repository contains my dotfiles and Guix System literate configurations.
 
 * Structure
+[[file:files/plain/assets/screenshot.png]]
 + [[file:config][config]] :: Guix System configurations.
 + [[file:files/deploy][files/deploy]] :: Configurations for ~guix deploy~.
 + [[file:files/dotfiles][files/dotfiles]] :: Dotfiles for =home-dotfiles-service-type=.
 + [[file:files/plain][files/plain]] :: Files to be referenced in configurations.
 + [[file:files/blobs][files/blobs]] :: Likewise but private.
-
-Guix channels in use:
-+ [[https://git.boiledscript.com/hako/guix.git][guix]] (Personal fork)
-+ [[https://git.boiledscript.com/hako/nonguix.git][nonguix]] (Personal fork)
-+ [[https://codeberg.org/hako/rosenthal.git][rosenthal]]
-+ [[https://github.com/fishinthecalculator/sops-guix][sops-guix]]
 
 Systems:
 + [[file:config/dorphine.org][dorphine]] (x86_64-linux, laptop)
@@ -27,10 +19,18 @@ Systems:
 
 See [[file:Makefile][Makefile]] for usage.
 
+Guix channels I use are available in [[file:channels.scm][channels.scm]].  Currently I'm using local
+forks of [[https://git.boiledscript.com/hako/guix.git][Guix]] and [[https://git.boiledscript.com/hako/nonguix.git][Nonguix]] (Although they are public, I won't ensure them
+up-to-date).
+
 * Resources
 + [[https://files.spritely.institute/papers/scheme-primer.html][A Scheme Primer]] :: Nice short guide to get you started with Scheme.
-+ [[https://guix.gnu.org/manual/devel/en/guix.html][GNU Guix Reference Manual]] (~info guix~) :: See [[https://guix.gnu.org/manual/devel/en/html_node/Getting-Started.html][Getting Started]] if you want an entry point.
-+ [[https://guix.gnu.org/cookbook/en/guix-cookbook.html][GNU Guix Cookbook]] (~info guix-cookbook~) :: Tutorials and detailed examples.  Some entries may be outdated, contribution is welcome ;)
++ [[https://guix.gnu.org/manual/devel/en/guix.html][GNU Guix Reference Manual]] (~info guix~) :: See [[https://guix.gnu.org/manual/devel/en/html_node/Getting-Started.html][Getting Started]] if you want an
+  entry point.
++ [[https://guix.gnu.org/cookbook/en/guix-cookbook.html][GNU Guix Cookbook]] (~info guix-cookbook~) :: Tutorials and detailed examples.
+  Some entries may be outdated, contribution is welcome ;)
 + [[https://guix.gnu.org/en/contact/][Contact — GNU Guix]] :: Official communication channels.
-+ [[https://packages.guix.gnu.org/][Packages — GNU Guix]] :: Official package index, =guix= channel only (see [[https://guix.gnu.org/manual/devel/en/html_node/Channels.html][Channels]] in /GNU Guix Reference Manual/).
-+ [[https://toys.whereis.social/][Toys / Webring for GNU Guix channels]] :: Unofficial package index, including most known Guix channels.
++ [[https://packages.guix.gnu.org/][Packages — GNU Guix]] :: Official package index, =guix= channel only (see
+  [[https://guix.gnu.org/manual/devel/en/html_node/Channels.html][Channels]] in Guix manual).
++ [[https://toys.whereis.social/][Toys / Webring for GNU Guix channels]] :: Unofficial package index, including
+  most known Guix channels.

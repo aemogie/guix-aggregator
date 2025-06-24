@@ -14,12 +14,12 @@
 
   (define %os
     (operating-system
+      (host-name "dorphine")
       (bootloader <<bootloader>>)
       (mapped-devices (list <<mapped-device>>))
       (file-systems (append <<file-systems>> %base-file-systems))
-      (host-name "dorphine")
       (users (cons* <<user>> %base-user-accounts))
-      (packages (replace-mesa (append (specs->pkgs+out <<package>>) %base-packages)))
+      (packages (append (specs->pkgs+out <<package>>) %base-packages))
       (services (cons* <<service>> %rosenthal-desktop-services))))
 
   ((compose <<transformation>>)
@@ -30,8 +30,20 @@
 #+begin_src scheme :noweb yes :noweb-ref service
   (service guix-home-service-type
     `(("hako" ,(home-environment
-                 (packages (replace-mesa (specs->pkgs+out <<home-package>>)))
-                 (services (cons* <<home-service>> %base-home-services))))))
+                 (services (cons* <<home-service>> %rosenthal-desktop-home-services))))))
+#+end_src
+
+#+begin_src scheme :noweb yes :noweb-ref home-service
+  (service home-dotfiles-service-type
+    (home-dotfiles-configuration
+      (directories '("../files/dotfiles"))))
+#+end_src
+
+#+begin_src scheme :noweb yes :noweb-ref home-service
+  (simple-service 'extra-environment-variables
+      home-environment-variables-service-type
+    `(,@%testament-xdg-base-directory-env-vars
+      <<home-environment-variable>>))
 #+end_src
 
 * Base
@@ -52,6 +64,7 @@
   (bootloader-configuration
     (bootloader grub-efi-luks2-removable-bootloader)
     (targets '("/efi"))
+    (extra-initrd "/System/@Boot/cryptroot.cpio")
     (keyboard-layout <<keyboard-layout>>)
     (theme
      (grub-theme
@@ -135,7 +148,7 @@ Root file system layout:
   (mapped-device
     (source (uuid "c1800987-36b0-4b50-b046-7840be5c3aa1"))
     (target "Mentha-LUKS")
-    (type luks-device-mapping))
+    (type (luks-device-mapping-with-options #:key-file "/cryptroot.key")))
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref file-systems
@@ -149,7 +162,7 @@ Root file system layout:
     (map (match-lambda
            ((subvolume . mount-point)
             (file-system
-              (device "/dev/mapper/Mentha-LUKS")
+              (device (uuid "990c529e-33e0-4beb-9f61-7c7704e169af"))
               (mount-point mount-point)
               (type "btrfs")
               (options (options-for-subvolume subvolume))
@@ -256,7 +269,7 @@ Personal account.
     (name "hako")
     (password "$6$KC5RtFkRZBpkNFHg$tnl.h.9tzVMOxFy37WTGl8QBBmt.ZiZmxuLD8/9YCimYvFkU26xR6YTcHqhUeMQPiQZxZA3yEjeDBi6nST8ue/")
     (group "users")
-    (supplementary-groups '(<<group>> "wheel"))
+    (supplementary-groups '(<<group>> "audio" "video" "wheel"))
     (shell (file-append (spec->pkg "fish") "/bin/fish")))
 #+end_src
 
@@ -270,11 +283,11 @@ Administration accounts.
 #+begin_src scheme :noweb-ref user
   (user-account
     (inherit %root-account)
-    (password "$6$KGxgY56Yzwn1vU6l$F3/7C4UA3PtqHPTs5qbwUyruV9qMC.MZ0SzwPteegfL/oj/DHBSHf0/1znMpdCi3jiAnR74D.A.lnaLsUIljA0"))
+    (password #f))
 
   (user-account
     (name "deploy")
-    (password "$6$U2m1GLm8ETSZpLXw$jaItvEaziaOWqDlaKIIogWWXoll631h.VxnIN2Pl4q/fbcr4OW4dDoOnOFOendkt2Jg8KMAPTOoa6L3y0MjT00")
+    (password #f)
     (group "users")
     (comment "User for 'guix deploy'")
     (create-home-directory? #f))
@@ -299,40 +312,9 @@ Administration accounts.
           "deploy ALL = NOPASSWD: ALL\n")))))
 #+end_src
 
-** Packages
-No need to install less used ones, prefer ‘guix shell’.
-#+begin_src scheme :noweb-ref package
-  "rsync"
-  "unzip"
-#+end_src
-
-** Files
-#+begin_src scheme :noweb yes :noweb-ref home-service
-  (service home-dotfiles-service-type
-    (home-dotfiles-configuration
-      (directories '("../files/dotfiles"))))
-
-  (service home-files-service-type
-    `((".guile" ,%default-dotguile)
-      <<home-file>>))
-
-  (service home-xdg-configuration-files-service-type
-    `(("gdb/gdbinit" ,%default-gdbinit)
-      ("nano/nanorc" ,%default-nanorc)
-      <<home-xdg-configuration-file>>))
-#+end_src
-
-** Environment variables
-#+begin_src scheme :noweb yes :noweb-ref home-service
-  (simple-service 'extra-environment-variables
-      home-environment-variables-service-type
-    `(,@%testament-xdg-base-directory-env-vars
-      <<home-environment-variable>>))
-#+end_src
-
 ** Guix Daemon
 #+begin_src scheme :noweb-ref transformation
-  (nonguix-transformation-guix #:substitutes? #f)
+  (nonguix-transformation-guix)
   (rosenthal-transformation-guix)
 #+end_src
 
@@ -354,15 +336,6 @@ No need to install less used ones, prefer ‘guix shell’.
                       (inherit config)
                       (extra-options '("--cores=24"))
                       (tmpdir "/mnt/Mentha/System/@Build")))))))
-#+end_src
-
-** Shepherd
-#+begin_src scheme :noweb-ref home-service
-  (service home-shepherd-service-type
-    (home-shepherd-configuration
-      ;; Start by WM to inherit environment variables for graphical session.
-      (auto-start? #f)
-      (daemonize? #f)))
 #+end_src
 
 ** SOPS Secrets
@@ -465,7 +438,8 @@ Generate passwordless ECC key:
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
-  (nonguix-transformation-linux)
+  (nonguix-transformation-linux
+   #:linux (spec->pkg "linux@6.12"))
 
   (lambda (os)
     (operating-system
@@ -495,22 +469,6 @@ Generate passwordless ECC key:
   (rosenthal services dns)
 #+end_src
 
-** nftables
-#+begin_src scheme :noweb-ref service
-  (service nftables-service-type
-    (nftables-configuration
-      (ruleset (local-file (testament-plain "dorphine/nftables.conf")))))
-#+end_src
-
-[[file:../files/plain/dorphine/nftables.conf][dorphine/nftables.conf]]
-
-** bluez
-#+begin_src scheme :noweb-ref service
-  (service bluetooth-service-type
-    (bluetooth-configuration
-      (auto-enable? #t)))
-#+end_src
-
 ** smartdns
 #+begin_src scheme :noweb yes :noweb-ref service
   (service smartdns-service-type
@@ -536,6 +494,15 @@ Generate passwordless ECC key:
     `(("resolv.conf" ,(plain-file "resolv.conf" "nameserver 127.0.0.1\n"))))
 #+end_src
 
+** nftables
+#+begin_src scheme :noweb-ref service
+  (service nftables-service-type
+    (nftables-configuration
+      (ruleset (local-file (testament-plain "dorphine/nftables.conf")))))
+#+end_src
+
+[[file:../files/plain/dorphine/nftables.conf][dorphine/nftables.conf]]
+
 ** tailscale
 #+begin_src scheme :noweb-ref service
   (service tailscale-service-type)
@@ -553,12 +520,6 @@ Generate passwordless ECC key:
 #+end_src
 
 [[file:../files/plain/mihomo.yaml][mihomo.yaml]]
-
-* Session Management
-** dbus
-#+begin_src scheme :noweb-ref home-service
-  (service home-dbus-service-type)
-#+end_src
 
 * SSH
 #+begin_src scheme :noweb-ref module
@@ -704,6 +665,11 @@ Remember to open TCP port 5558.
 *** nvidia-driver
 #+begin_src scheme :noweb-ref transformation
   (nonguix-transformation-nvidia)
+
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (packages (replace-mesa (operating-system-packages os)))))
 #+end_src
 
 *** nouveau
@@ -716,46 +682,26 @@ To use NVK, mesa should be installed into a profile.
 *** niri
 #+begin_src scheme :noweb-ref package
   "niri"
-  "qtwayland@5"
   "wl-clipboard"
 #+end_src
 
-#+begin_src scheme :noweb yes :noweb-ref home-xdg-configuration-file
-  ("niri/config.kdl" ,<<niri-config>>)
-#+end_src
-
-#+name: niri-config
-#+begin_src scheme
-  (computed-substitution-with-inputs "niri.kdl"
-    (local-file (testament-plain "niri.kdl"))
-    (cons (testament-blobs)
-          (specs->pkgs "light"
-                       "rofi-wayland"
-                       "swaylock-effects"
-                       "wireplumber")))
-#+end_src
-
 #+begin_src scheme :noweb-ref home-service
-  (simple-service 'xwayland-satellite
-      home-shepherd-service-type
-    (list (shepherd-service
-            (provision '(xwayland-satellite))
-            (start
-             #~(make-forkexec-constructor
-                (list #$(file-append (spec->pkg "xwayland-satellite") "/bin/xwayland-satellite") ":233")))
-            (stop
-             #~(make-kill-destructor)))))
+  (service home-niri-service-type
+    (home-niri-configuration
+      (config
+       (computed-substitution-with-inputs "niri.kdl"
+         (local-file (testament-plain "niri.kdl"))
+         (cons (testament-blobs)
+               (specs->pkgs "light"
+                            "rofi-wayland"
+                            "swaylock-effects"
+                            "wireplumber"
+                            "xwayland-satellite"))))))
+
+  (service home-rofi-service-type)
 #+end_src
 
 [[file:../files/plain/niri.kdl][niri.kdl]]
-
-#+begin_src scheme :noweb-ref home-service
-  (service home-graphical-session-service-type
-    (home-graphical-session-configuration
-      (wayland? #t)
-      (x11? #t)
-      (shepherd-requirements '(xwayland-satellite))))
-#+end_src
 
 *** xdg-desktop-portal
 #+begin_src scheme :noweb-ref package
@@ -766,28 +712,16 @@ To use NVK, mesa should be installed into a profile.
 
 *** waybar
 #+begin_src scheme :noweb-ref home-service
-  (simple-service 'waybar
-      home-shepherd-service-type
-    (list (shepherd-service
-            (provision '(waybar))
-            (requirement '(graphical-session wayland-display))
-            (start
-             #~(make-forkexec-constructor
-                (list #$(file-append (spec->pkg "waybar") "/bin/waybar"))))
-            (stop #~(make-kill-destructor)))))
-#+end_src
-
-#+begin_src scheme :noweb yes :noweb-ref home-xdg-configuration-file
-  ("waybar/config.jsonc" ,<<waybar-config>>)
-  ("waybar/colors.css" ,(local-file (testament-plain "dorphine/waybar-colors.css")))
-  ("waybar/style.css" ,(local-file (testament-plain "waybar.css")))
-#+end_src
-
-#+name: waybar-config
-#+begin_src scheme
-  (computed-substitution-with-inputs "waybar.jsonc"
-    (local-file (testament-plain "waybar.jsonc"))
-    (specs->pkgs "light" "pavucontrol" "wireplumber"))
+  (service home-waybar-service-type
+    (home-waybar-configuration
+      (config
+       (computed-substitution-with-inputs "config.jsonc"
+         (local-file (testament-plain "waybar.jsonc"))
+         (specs->pkgs "light" "pavucontrol" "wireplumber")))
+      (style
+       (computed-substitution-with-inputs "style.css"
+         (local-file (testament-plain "waybar.css"))
+         (list (local-file "../files/plain/dorphine" #:recursive? #t))))))
 #+end_src
 
 [[file:../files/plain/waybar.jsonc][waybar.jsonc]]
@@ -798,30 +732,19 @@ To use NVK, mesa should be installed into a profile.
 
 *** swaybg
 #+begin_src scheme :noweb-ref home-service
-  (simple-service 'swaybg
-      home-shepherd-service-type
-    (list (shepherd-service
-            (provision '(swaybg))
-            (requirement '(graphical-session wayland-display))
-            (start
-             #~(make-forkexec-constructor
-                (list #$(file-append (spec->pkg "swaybg") "/bin/swaybg") "--mode" "fill"
-                      "--image" #$(local-file (testament-blobs "101361103_p0.jpg")))))
-            (stop #~(make-kill-destructor)))))
+  (service home-swaybg-service-type
+    (home-swaybg-configuration
+      (background (local-file (testament-blobs "101361103_p0.jpg")))))
 #+end_src
 
 *** mako
 #+begin_src scheme :noweb-ref home-service
-  (simple-service 'mako
-      home-shepherd-service-type
-    (list (shepherd-service
-            (provision '(mako))
-            (requirement '(graphical-session wayland-display))
-            (start
-             #~(make-forkexec-constructor
-                (list #$(file-append (spec->pkg "mako") "/bin/mako"))))
-            (stop #~(make-kill-destructor)))))
+  (service home-mako-service-type
+    (home-mako-configuration
+      (config (local-file (testament-plain "dorphine/mako.conf")))))
 #+end_src
+
+[[file:../files/plain/dorphine/mako.conf][dorphine/mako.conf]]
 
 *** gammastep
 #+begin_src scheme :noweb-ref home-service
@@ -829,7 +752,7 @@ To use NVK, mesa should be installed into a profile.
       home-shepherd-service-type
     (list (shepherd-service
             (provision '(gammastep))
-            (requirement '(graphical-session wayland-display home-sops-secrets))
+            (requirement '(home-sops-secrets))
             (start
              #~(make-forkexec-constructor
                 (list #$(file-append (spec->pkg "bash-minimal") "/bin/sh") "-c"
@@ -838,29 +761,19 @@ To use NVK, mesa should be installed into a profile.
             (stop #~(make-kill-destructor)))))
 #+end_src
 
-** light
-#+begin_src scheme :noweb-ref group
-  "video"
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (udev-rules-service 'backlight (spec->pkg "light"))
-#+end_src
-
 ** qogir-icon-theme
-#+begin_src scheme :noweb-ref package
-  "adwaita-icon-theme"
-  "hicolor-icon-theme"
-  "qogir-icon-theme"
+#+begin_src scheme :noweb-ref home-service
+  (service home-theme-service-type
+    (home-theme-configuration
+      (packages (specs->pkgs "qogir-icon-theme"))
+      (icon-theme "Qogir")
+      (cursor-theme "Qogir")
+      (key-theme "Emacs")))
 #+end_src
-
-[[file:../files/dotfiles/.config/gtk-3.0/settings.ini][~/.config/gtk-3.0/settings.ini]]
-
-[[file:../files/dotfiles/.icons/default/index.theme][~/.icons/default/index.theme]]
 
 ** fontconfig
 #+begin_src scheme :noweb-ref package
-  "font-awesome-nonfree"
+  "font-awesome"
   "font-adobe-source-serif"
   "font-apple-new-york"
   "font-apple-sf-pro"
@@ -920,26 +833,12 @@ To use NVK, mesa should be installed into a profile.
 #+end_src
 
 * Multimedia
-#+begin_src scheme :noweb-ref module
-  (gnu home services sound)
-#+end_src
-
-#+begin_src scheme :noweb-ref group
-  "audio"
-#+end_src
-
-** pipewire
-#+begin_src scheme :noweb-ref home-service
-  (service home-pipewire-service-type)
-#+end_src
-
 ** jellyfin-mpv-shim
 #+begin_src scheme :noweb-ref home-service
   (simple-service 'jellyfin-mpv-shim
       home-shepherd-service-type
     (list (shepherd-service
             (provision '(jellyfin-mpv-shim))
-            (requirement '(graphical-session x11-display))
             (start
              #~(make-forkexec-constructor
                 '(#$(file-append (spec->pkg "jellyfin-mpv-shim") "/bin/jellyfin-mpv-shim"))))
@@ -1022,17 +921,11 @@ home-emacs-service-type from [[https://issues.guix.gnu.org/64620][#64620]]
         (emacs-configuration
           (extra-init-files
            `(("font.el" . ,(local-file (testament-plain "emacs-font.el")))))
-          (variables
-           '((no-littering-etc-directory . "~/.config")
-             (no-littering-var-directory . "~/.local/share")))
           (modes '((gcmh-mode . #t)))
           (extra-init (list #%(no-littering-theme-backups)))))
       (configured-packages
        (list <<emacs-package>>))
-      (servers
-       (list (emacs-server
-               (name "server")
-               (shepherd-requirements '(graphical-session)))))))
+      (servers (list (emacs-server (name "server"))))))
 #+end_src
 
 [[file:../files/plain/emacs-font.el][emacs-font.el]]
@@ -1100,28 +993,14 @@ Arei requires a nREPL server, which can be started with:
   guix shell guile-next guile-ares-rs -- guile -c '((@ (ares server) run-nrepl-server))'
 #+end_src
 
-Load paths are inherited from the server's environment.  If reader extensions are needed, relevant modules should be loaded before starting the server.  See =ares= target in Makefile for example.
+Load paths are inherited from the server's environment.  If reader extensions
+are needed, relevant modules should be loaded before starting the server.  See
+=ares= target in Makefile for example.
 
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'ares-rs
-      home-shepherd-service-type
-    (list (shepherd-service
-            (provision '(ares))
-            (start
-             #~(make-forkexec-constructor
-                (list "/home/hako/Workspace/Testament/pre-inst-env"
-                      "guix" "shell" "guile-next" "guile-ares-rs" "--"
-                      "guile" "-c" (format #f "~
-  (begin ~
-     (use-modules (guix gexp) ~
-                  (gnu home services emacs)) ~
-     ((@ (ares server) run-nrepl-server)))"))))
-            (stop #~(make-kill-destructor)))))
-#+end_src
-
-Custom xref backend for Citre.  Arei's builtin xref backend provides =xref-buffer-location= but Citre expects =xref-file-location=.
+Custom xref backend for Citre.  Arei's builtin xref backend provides
+=xref-buffer-location= but Citre expects =xref-file-location=.
 #+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
+  #;(emacs-package
     (name 'arei)
     (package (spec->pkg "emacs-arei"))
     (load-after-packages '(xref))
@@ -1142,7 +1021,8 @@ Custom xref backend for Citre.  Arei's builtin xref backend provides =xref-buffe
                                         (list (xref-make identifier loc))))))))
 #+end_src
 
-In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to connect to the server.
+In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to
+connect to the server.
 
 *** emacs-citre
 #+begin_src scheme :noweb-ref emacs-package
@@ -1164,7 +1044,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
     (load-after-packages '(citre))
     (load-force? #t)
     (extra-after-load
-     (list #%(defvar citre-arei-backend
+     (list #;#%(defvar citre-arei-backend
                (citre-xref-backend-to-citre-backend
                 'hako/arei
                 (lambda () (derived-mode-p 'scheme-mode))))
@@ -1176,7 +1056,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
                (citre-xref-backend-to-citre-backend
                 'elisp
                 (lambda () (derived-mode-p 'scheme-mode))))
-           #%(citre-register-backend 'arei citre-arei-backend)
+           #;#%(citre-register-backend 'arei citre-arei-backend)
            #%(citre-register-backend 'dumb-jump citre-dumb-jump-backend)
            #%(citre-register-backend 'elisp citre-elisp-backend))))
 
@@ -1184,7 +1064,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
     (name 'citre-backend-interface)
     (options
      '((citre-find-definition-backends
-        . (eglot arei elisp tags dumb-jump))
+        . (eglot #;arei elisp tags dumb-jump))
        (citre-find-reference-backends
         . (eglot elisp dumb-jump)))))
 
@@ -1398,20 +1278,18 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+end_src
 
 *** emacs-treesit-auto
-#+begin_src scheme :noweb-ref home-package
-  "tree-sitter-cmake"
-  "tree-sitter-dockerfile"
-  "tree-sitter-go"
-  "tree-sitter-gomod"
-  "tree-sitter-rust"
-  "tree-sitter-typescript"
-  "tree-sitter-yaml"
-#+end_src
-
 #+begin_src scheme :noweb-ref emacs-package
   (emacs-package
     (name 'treesit-auto)
     (package (spec->pkg "emacs-treesit-auto"))
+    (extra-packages
+     (specs->pkgs "tree-sitter-cmake"
+                  "tree-sitter-dockerfile"
+                  "tree-sitter-go"
+                  "tree-sitter-gomod"
+                  "tree-sitter-rust"
+                  "tree-sitter-typescript"
+                  "tree-sitter-yaml"))
     (extra-after-load
      ;; FIXME: These modes aren't loaded automatically.
      (list #%(require 'cmake-ts-mode)
@@ -1504,7 +1382,7 @@ In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to co
 #+end_src
 
 #+begin_src scheme :noweb-ref home-fish-config
-  (mixed-text-file "fish-config-direnv"
+  (mixed-text-file "direnv.fish"
     (spec->pkg "direnv") "/bin/direnv hook fish | source")
 #+end_src
 
@@ -1706,8 +1584,7 @@ Send
 #+end_src
 
 #+begin_src scheme :noweb-ref home-fish-config
-  (plain-file
-   "fish-config-vterm" "\
+  (plain-file "vterm.fish" "\
   if test \"$INSIDE_EMACS\" = 'vterm'
       source $EMACS_VTERM_PATH/etc/emacs-vterm.fish
   end")
@@ -1731,35 +1608,16 @@ Send
 
 ** atuin
 #+begin_src scheme :noweb-ref home-fish-config
-  (mixed-text-file "fish-config-atuin"
+  (mixed-text-file "atuin.fish"
     (spec->pkg "atuin") "/bin/atuin init fish | source")
 #+end_src
 
 ** fcitx5
-#+begin_src scheme :noweb-ref package
-  "fcitx5"
-  "fcitx5-configtool"
-  "fcitx5-material-color-theme"
-  "fcitx5-rime"
-#+end_src
-
-#+begin_src scheme :noweb-ref home-environment-variable
-  ;; For X11 environment.
-  ("XMODIFIERS" . "@im=fcitx")
-#+end_src
-
-To use fcitx5 in QT applications, install =fcitx5-qt= and set environment variable =QT_IM_MODULE= to =fcitx=.
-
 #+begin_src scheme :noweb-ref home-service
-  (simple-service 'fcitx5
-      home-shepherd-service-type
-    (list (shepherd-service
-            (provision '(fcitx5))
-            (requirement '(dbus graphical-session))
-            (start
-             #~(make-forkexec-constructor
-                (list #$(file-append (spec->pkg "fcitx5") "/bin/fcitx5"))))
-            (stop #~(make-kill-destructor)))))
+  (service home-fcitx5-service-type
+    (home-fcitx5-configuration
+      (themes (specs->pkgs "fcitx5-material-color-theme"))
+      (input-method-editors (specs->pkgs "fcitx5-rime"))))
 #+end_src
 
 ** git
@@ -1768,6 +1626,15 @@ To use fcitx5 in QT applications, install =fcitx5-qt= and set environment variab
 #+end_src
 
 [[file:../files/dotfiles/.config/git/config][~/.config/git/config]]
+
+** guix-label-teams
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'guix-label-teams
+      home-shepherd-service-type
+    (list (shepherd-timer '(guix-label-teams)
+            #~(calendar-event #:minutes '(0))
+            #~("/home/hako/Workspace/guix-label-teams.scm"))))
+#+end_src
 
 ** librewolf
 #+begin_src scheme :noweb-ref package
@@ -1832,6 +1699,13 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
 
 ** zoxide
 #+begin_src scheme :noweb-ref home-fish-config
-  (mixed-text-file "fish-config-zoxide"
+  (mixed-text-file "zoxide.fish"
     (spec->pkg "zoxide") "/bin/zoxide init --cmd cd fish | source")
+#+end_src
+
+** Extra Packages
+No need to install less used ones, prefer ‘guix shell’.
+#+begin_src scheme :noweb-ref package
+  "rsync"
+  "unzip"
 #+end_src

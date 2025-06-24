@@ -14,10 +14,10 @@
 
   (define %os
     (operating-system
+      (host-name "gokuraku")
       (bootloader <<bootloader>>)
       (mapped-devices (list <<mapped-device>>))
       (file-systems (append <<file-systems>> %base-file-systems))
-      (host-name "gokuraku")
       (users (cons* <<user>> %base-user-accounts))
       (packages (append (specs->pkgs+out <<package>>) %base-packages))
       (services (cons* <<service>> %base-services))))
@@ -114,14 +114,14 @@ Nonguix sysadmins:
 #+begin_src scheme :noweb-ref user
   (user-account
     (name "jonathan")
-    (password "$6$0UzuLvTjtcBQGxke$5hUTyIJOumsgaG3y2QvD65SWWG3pqlj5FujOmSCFItoN74G5VpUOgWEPt4VVMIKe0UCV4L5pMpev8CVXl6hLn/")
+    (password #f)
     (group "users")
     (shell (file-append (spec->pkg "fish") "/bin/fish"))
     (comment "Jonathan Brielmaier"))
 
   (user-account
     (name "podiki")
-    (password "$6$FJMvZ5TbFamapsiC$kODPSRELkpXH1BauLekqbyiKTWwtxfTyYM0sbNUd32BYpw9ZWxVxfBRx2BXF.6anynMciqcPuWYtsbVE0P7mN/")
+    (password #f)
     (group "users")
     (shell (file-append (spec->pkg "fish") "/bin/fish")))
 #+end_src
@@ -130,11 +130,11 @@ Administration accounts.
 #+begin_src scheme :noweb-ref user
   (user-account
     (inherit %root-account)
-    (password "$6$d8f88gM9iuPYdXyB$bbRdv9MchAZ1RJOXN4PpvB/CgJ4IqOBKsmzrus8WyLscy7D/ZUucGalLnlvN5zndkZKosd7Y7wFtEX8yPMR3c."))
+    (password #f))
 
   (user-account
     (name "deploy")
-    (password "$6$7Gxaa7QJDruyGqOP$BWqPRPh8sqwHxfbWamR6pRdD41pvrZswQf4VFRaURK4OxpP30ziSP5RREzvzLJF3IBce5bagTp3MDTi8yW38a0")
+    (password #f)
     (group "users")
     (comment "User for 'guix deploy'")
     (create-home-directory? #f))
@@ -175,10 +175,6 @@ No need to install less used ones, prefer ‘guix shell’.
 #+end_src
 
 ** Guix Daemon
-#+begin_src scheme :noweb-ref transformation
-  (nonguix-transformation-guix #:substitutes? #f)
-#+end_src
-
 #+begin_src scheme :noweb-ref service
   (simple-service 'guix-extension-dorphine
       guix-service-type
@@ -518,6 +514,19 @@ Remember to open TCP port 5555 and 5556.
 ** cuirass specifications
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification
+    (name "guix-rusty-packages")
+    (build '(manifests "etc/teams/rust/rusty-packages.scm"))
+    (channels
+     (list (channel
+             (inherit %default-guix-channel)
+             (url "https://codeberg.org/guix/guix.git")
+             (branch "rust-team"))))
+    (priority 9)
+    (systems '("x86_64-linux")))
+#+end_src
+
+#+begin_src scheme :noweb-ref cuirass-spec
+  (specification
     (name "guixcn")
     (build '(channels guixcn))
     (channels
@@ -532,7 +541,7 @@ Remember to open TCP port 5555 and 5556.
                "993d200265630e9c408028a022f32f34acacdf29"
                (openpgp-fingerprint
                 "7EBE A494 60CE 5E2C 0875  7FDB 3B5A A993 E1A2 DFF0"))))))
-    (priority 5)
+    (priority 7)
     (systems '("x86_64-linux" "i686-linux")))
 #+end_src
 

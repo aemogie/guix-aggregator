@@ -8,7 +8,6 @@
     "spacing": 5,
     "modules-left": [
         "niri/workspaces",
-        "tray",
         "cpu",
         "memory",
         "temperature",
@@ -17,8 +16,7 @@
         "clock",
     ],
     "modules-right": [
-        "network",
-        "bluetooth",
+        "tray",
         "wireplumber",
         "backlight",
         "battery",
@@ -33,18 +31,15 @@
 	    "default": "\uF111",
 	}
     },
-    "tray": {
-        "spacing": 10,
-    },
     "cpu": {
-        "format": "{usage}% \uF2DB",
+        "format": "CPU {usage}%",
         "states": {
             "full": 90,
         },
         "interval": 2,
     },
     "memory": {
-        "format": "{percentage}% \uF538",
+        "format": "RAM {percentage}%",
         "states": {
             "full": 90,
         },
@@ -52,8 +47,7 @@
     },
     "temperature": {
         "critical-threshold": 80,
-        "format-critical": "{temperatureC}\u00B0C \uF769",
-        "format": "{temperatureC}\u00B0C \uF2CA",
+        "format": "{temperatureC}\u00B0C",
         "interval": 2,
         "tooltip": false,
     },
@@ -83,29 +77,14 @@
         }
     },
     // right
-    "network": {
-        "format-disabled": "\uF071 Disabled",
-        "format-disconnected": "\uF071 Disconnected",
-        "format-linked": "\uF071 {ifname} (No IP)",
-        "format-ethernet": "\uF6FF {ipaddr}/{cidr} {bandwidthDownBytes} \uF175 {bandwidthUpBytes} \uF176",
-        "format-wifi": "\uF1EB {essid} ({signalStrength}%) {bandwidthDownBytes} \uF175 {bandwidthUpBytes} \uF176",
-        "tooltip-format": "{ifname}: {ipaddr}/{cidr}",
-        "interval": 2,
-    },
-    "bluetooth": {
-	"format": "\uF294 {status}",
-	"format-connected": "\uF294 {device_alias}",
-	"format-connected-battery": "\uF294 {device_alias} {device_battery_percentage}%",
-	"tooltip-format": "{controller_alias}\t{controller_address}\n\n{num_connections} connected",
-	"tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{num_connections} connected\n\n{device_enumerate}",
-	"tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
-	"tooltip-format-enumerate-connected-battery": "{device_alias}\t{device_address}\t{device_battery_percentage}%",
+    "tray": {
+        "spacing": 10,
     },
     "wireplumber": {
         "scroll-step": 5,
         "format": "{icon} {volume}%",
         "format-icons": ["\uF026", "\uF027", "\uF028"],
-        "format-muted": "\uF6A9 {volume}%",
+        "format-muted": "Muted {volume}%",
         "on-click": "$$bin/wpctl$$ set-mute @DEFAULT_AUDIO_SINK@ toggle",
         "on-click-right": "$$bin/pavucontrol$$",
     },
