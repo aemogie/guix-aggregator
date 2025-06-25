@@ -54,11 +54,13 @@
   (gnu home services shells)
   (sops home services sops)
   (gnu services ssh)
+  (gnu services sysctl)
   (rosenthal services keyboard)
+  (rosenthal services shellutils)
   (sops services sops)
 #+end_src
 
-** Bootloader
+** Bootloader & Kernel
 #+name: bootloader
 #+begin_src scheme :noweb yes
   (bootloader-configuration
@@ -71,6 +73,38 @@
        (inherit (grub-theme))
        (image (local-file (testament-blobs "grub.png"))))))
 #+end_src
+
+#+begin_src scheme :noweb-ref service
+  ;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
+  (simple-service 'udp-buffer-size
+      sysctl-service-type
+    '(("net.core.rmem_max" . "7500000")
+      ("net.core.wmem_max" . "7500000")))
+#+end_src
+
+#+begin_src scheme :noweb-ref transformation
+  (nonguix-transformation-linux)
+
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (kernel-arguments
+       (cons* "kernel.sysrq=1"
+              "zswap.enabled=1"
+              "zswap.max_pool_percent=90"
+              "modprobe.blacklist=pcspkr"
+              (operating-system-user-kernel-arguments os)))))
+#+end_src
+
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'modprobed-db
+      home-shepherd-service-type
+    (list (shepherd-timer '(update-modprobed-db)
+            #~(calendar-event #:minutes '(0))
+            #~(#$(file-append (spec->pkg "modprobed-db") "/bin/modprobed-db") "storesilent"))))
+#+end_src
+
+[[file:../files/dotfiles/.config/modprobed-db.conf][~/.config/modprobed-db.conf]]
 
 ** File Systems
 Disk layout:
@@ -273,10 +307,14 @@ Personal account.
     (shell (file-append (spec->pkg "fish") "/bin/fish")))
 #+end_src
 
-#+begin_src scheme :noweb yes :noweb-ref home-service
-  (service home-fish-service-type
-    (home-fish-configuration
-      (config (list <<home-fish-config>>))))
+#+begin_src scheme :noweb-ref home-service
+  (service home-fish-service-type)
+
+  ;; Disable fish greeting.
+  (simple-service 'fish-greeting
+      home-xdg-configuration-files-service-type
+    `(("fish/functions/fish_greeting.fish"
+       ,(plain-file "fish_greeting.fish" ""))))
 #+end_src
 
 Administration accounts.
@@ -312,9 +350,52 @@ Administration accounts.
           "deploy ALL = NOPASSWD: ALL\n")))))
 #+end_src
 
+** Shell Utilities
+*** atuin
+#+begin_src scheme :noweb-ref home-service
+  (service home-atuin-service-type
+    (home-atuin-configuration
+      (shells '(fish))))
+#+end_src
+
+*** direnv
+#+begin_src scheme :noweb-ref home-service
+  (service home-direnv-service-type
+    (home-direnv-configuration
+      (shells '(fish))))
+#+end_src
+
+*** vterm
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'fish-vterm
+      home-fish-service-type
+    (home-fish-extension
+      (config
+       (list (plain-file "vterm.fish" "\
+  if test \"$INSIDE_EMACS\" = 'vterm'
+      source $EMACS_VTERM_PATH/etc/emacs-vterm.fish
+  end")))))
+#+end_src
+
+*** zoxide
+#+begin_src scheme :noweb-ref home-service
+  (service home-zoxide-service-type
+    (home-zoxide-configuration
+      (shells '(fish))))
+#+end_src
+
+** Packages
+Frequently used packages.
+#+begin_src scheme :noweb-ref package
+  "rsync"
+  "unzip"
+#+end_src
+
 ** Guix Daemon
 #+begin_src scheme :noweb-ref transformation
-  (nonguix-transformation-guix)
+  ;; Nonguix substitute server currently unavailable for IPv4.
+  ;; https://gitlab.com/nonguix/nonguix/-/issues/395
+  (nonguix-transformation-guix #:substitutes? #f)
   (rosenthal-transformation-guix)
 #+end_src
 
@@ -424,66 +505,48 @@ Generate passwordless ECC key:
 
 [[file:../files/plain/sops.yaml][sops.yaml]]
 
-* Kernel
+* Networking & SSH
 #+begin_src scheme :noweb-ref module
-  (gnu services sysctl)
+  (gnu services networking)
+  (gnu services ssh)
+  (rosenthal services networking)
+  (rosenthal services dns)
 #+end_src
 
-#+begin_src scheme :noweb-ref service
-  ;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
-  (simple-service 'udp-buffer-size
-      sysctl-service-type
-    '(("net.core.rmem_max" . "7500000")
-      ("net.core.wmem_max" . "7500000")))
-#+end_src
-
+** network-manager
 #+begin_src scheme :noweb-ref transformation
-  (nonguix-transformation-linux
-   #:linux (spec->pkg "linux@6.12"))
-
   (lambda (os)
     (operating-system
       (inherit os)
-      (kernel-arguments
-       (cons* "kernel.sysrq=1"
-              "zswap.enabled=1"
-              "zswap.max_pool_percent=90"
-              "modprobe.blacklist=pcspkr"
-              (operating-system-user-kernel-arguments os)))))
-#+end_src
-
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'modprobed-db
-      home-shepherd-service-type
-    (list (shepherd-timer '(update-modprobed-db)
-            #~(calendar-event #:minutes '(0))
-            #~(#$(file-append (spec->pkg "modprobed-db") "/bin/modprobed-db") "storesilent"))))
-#+end_src
-
-[[file:../files/dotfiles/.config/modprobed-db.conf][~/.config/modprobed-db.conf]]
-
-* Networking
-#+begin_src scheme :noweb-ref module
-  (gnu services networking)
-  (rosenthal services networking)
-  (rosenthal services dns)
+      (services
+       (modify-services (operating-system-user-services os)
+         (network-manager-service-type
+          config => (network-manager-configuration
+                      (inherit config)
+                      (dns "none")
+                      (extra-configuration-files
+                       `(("wifi_rand_mac.conf"
+                          ,(plain-file "wifi_rand_mac.conf" "\
+  # Generate a random MAC for each network connection and associate the two
+  # permanently.
+  [connection-mac-randomization]
+  ethernet.cloned-mac-address=stable
+  wifi.cloned-mac-address=stable\n"))
+                         ("ip6-privacy.conf"
+                          ,(plain-file "ip6-privacy.conf" "\
+  # Use IPv6 Privacy Extensions.
+  [connection]
+  ipv6.ip6-privacy=2\n"))))))))))
 #+end_src
 
 ** smartdns
 #+begin_src scheme :noweb yes :noweb-ref service
   (service smartdns-service-type
     (smartdns-configuration
-      (config-file <<smartdns-config>>)))
-#+end_src
-
-#+name: smartdns-config
-#+begin_src scheme
-  (let ((conf-dir (file-append (spec->pkg "dnsmasq-china-list") "/share/dnsmasq-china-list/")))
-    (mixed-text-file "smartdns.conf"
-      (file-content (testament-plain "smartdns.conf")) "\n"
-      "conf-file " (file-append conf-dir "accelerated-domains.china.smartdns.conf") "\n"
-      "conf-file " (file-append conf-dir "apple.china.smartdns.conf") "\n"
-      "conf-file " (file-append conf-dir "bogus-nxdomain.china.smartdns.conf") "\n"))
+      (config-file
+       (computed-substitution-with-inputs "smartdns.conf"
+         (local-file (testament-plain "smartdns.conf"))
+         (specs->pkgs "dnsmasq-china-list")))))
 #+end_src
 
 [[file:../files/plain/smartdns.conf][smartdns.conf]]
@@ -521,11 +584,7 @@ Generate passwordless ECC key:
 
 [[file:../files/plain/mihomo.yaml][mihomo.yaml]]
 
-* SSH
-#+begin_src scheme :noweb-ref module
-  (gnu services ssh)
-#+end_src
-
+** openssh
 #+begin_src scheme :noweb-ref package
   "mosh"
 #+end_src
@@ -535,6 +594,36 @@ Generate passwordless ECC key:
     (openssh-configuration
       (openssh (spec->pkg "openssh-sans-x"))
       (password-authentication? #f)))
+#+end_src
+
+* OpenPGP & Security Token
+#+begin_src scheme :noweb-ref module
+  (gnu services security-token)
+  (gnu home services gnupg)
+#+end_src
+
+** pcscd
+#+begin_src scheme :noweb-ref service
+  (service pcscd-service-type)
+#+end_src
+
+** gnupg
+#+begin_src scheme :noweb-ref home-service
+  (service home-gpg-agent-service-type
+    (home-gpg-agent-configuration
+      (pinentry-program
+       (file-append (spec->pkg "pinentry-emacs") "/bin/pinentry-emacs"))
+      (ssh-support? #t)
+      (extra-content "allow-loopback-pinentry")))
+#+end_src
+
+** libfido2
+#+begin_src scheme :noweb-ref group
+  "plugdev"
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (udev-rules-service 'u2f (spec->pkg "libfido2") #:groups '("plugdev"))
 #+end_src
 
 * Containers & Virtualization
@@ -683,6 +772,9 @@ To use NVK, mesa should be installed into a profile.
 #+begin_src scheme :noweb-ref package
   "niri"
   "wl-clipboard"
+  "xdg-desktop-portal"
+  "xdg-desktop-portal-gnome"
+  "xdg-desktop-portal-gtk"
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
@@ -702,13 +794,6 @@ To use NVK, mesa should be installed into a profile.
 #+end_src
 
 [[file:../files/plain/niri.kdl][niri.kdl]]
-
-*** xdg-desktop-portal
-#+begin_src scheme :noweb-ref package
-  "xdg-desktop-portal"
-  "xdg-desktop-portal-gnome"
-  "xdg-desktop-portal-gtk"
-#+end_src
 
 *** waybar
 #+begin_src scheme :noweb-ref home-service
@@ -832,7 +917,33 @@ To use NVK, mesa should be installed into a profile.
           (family "monospace"))))))
 #+end_src
 
-* Multimedia
+** fcitx5
+#+begin_src scheme :noweb-ref home-service
+  (service home-fcitx5-service-type
+    (home-fcitx5-configuration
+      (themes (specs->pkgs "fcitx5-material-color-theme"))
+      (input-method-editors (specs->pkgs "fcitx5-rime"))))
+#+end_src
+
+** librewolf
+#+begin_src scheme :noweb-ref package
+  "librewolf"
+  "adaptive-tab-bar-colour-icecat"
+  "bitwarden-icecat"
+  "livemarks-icecat"
+  "miniflux-injector-icecat"
+  "ohmyech-icecat"
+  "privacy-redirect-icecat"
+  "ublock-origin-icecat"
+#+end_src
+
+* Multimedia & Miscellaneous
+#+begin_src scheme :noweb-ref module
+  (rosenthal services bittorrent)
+  (rosenthal services file-systems)
+  (gnu home services syncthing)
+#+end_src
+
 ** jellyfin-mpv-shim
 #+begin_src scheme :noweb-ref home-service
   (simple-service 'jellyfin-mpv-shim
@@ -857,562 +968,121 @@ To use NVK, mesa should be installed into a profile.
   "obs"
 #+end_src
 
-* OpenPGP & Security Token
-#+begin_src scheme :noweb-ref module
-  (gnu services security-token)
-  (gnu home services gnupg)
+** steam
+#+begin_src scheme :noweb-ref package
+  "steam-nvidia"
 #+end_src
 
-** pcscd
-#+begin_src scheme :noweb-ref service
-  (service pcscd-service-type)
+#+begin_src scheme :noweb-ref home-environment-variable
+  ("GUIX_SANDBOX_HOME" . "/mnt/Mentha/@Sandbox")
+  ("GUIX_SANDBOX_EXTRA_SHARES" . "$HOME/Downloads:/mnt/Mentha/@Library/Pictures/Screenshots")
 #+end_src
 
-** gnupg
-#+begin_src scheme :noweb-ref home-service
-  (service home-gpg-agent-service-type
-    (home-gpg-agent-configuration
-      (pinentry-program
-       (file-append (spec->pkg "pinentry-emacs") "/bin/pinentry-emacs"))
-      (ssh-support? #t)
-      (extra-content "allow-loopback-pinentry")))
+My game controller provides both Xbox and Nintendo interfaces but doesn't offer a toggle.
+#+begin_src scheme :noweb-ref transformation
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (kernel-arguments
+       (cons "modprobe.blacklist=hid_nintendo"
+             (operating-system-user-kernel-arguments os)))))
 #+end_src
 
-** libfido2
+#+begin_src scheme :noweb yes :noweb-ref service
+  (udev-rules-service 'steam-devices (spec->pkg "steam-devices-udev-rules"))
+  (udev-rules-service 'controller <<controller-permission-udev-rule>>)
+#+end_src
+
+See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
+#+name: controller-permission-udev-rule
+#+begin_src scheme
+  (udev-rule "60-controller-permission.rules" "\
+  KERNEL==\"event*\", ATTRS{idVendor}==\"045e\", ATTRS{idProduct}==\"028e\", \
+  MODE=\"0660\", GROUP=\"users\"")
+#+end_src
+
+** adb
 #+begin_src scheme :noweb-ref group
-  "plugdev"
+  "adbusers"
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (udev-rules-service 'u2f (spec->pkg "libfido2") #:groups '("plugdev"))
+  (udev-rules-service 'android (spec->pkg "android-udev-rules") #:groups '("adbusers"))
 #+end_src
 
-* Emacs
-#+begin_src scheme :noweb-ref module
-  (guix packages)
-  (gnu home services emacs)
-#+end_src
-
+** emacs
 #+begin_src scheme :noweb-ref home-environment-variable
   ("EDITOR" . "emacsclient")
   ("VISUAL" . "$EDITOR")
 #+end_src
 
-home-emacs-service-type from [[https://issues.guix.gnu.org/64620][#64620]]
+#+begin_src scheme :noweb yes :noweb-ref package
+  "emacs-pgtk"
 
-#+begin_src scheme :noweb-ref home-service :noweb yes
-  (service home-emacs-service-type
-    (home-emacs-configuration
-      (emacs (spec->pkg "emacs-pgtk"))
-      (extra-packages
-       (specs->pkgs "emacs-gcmh"
-                    "emacs-no-littering"
+  "emacs-caddyfile-mode"
+  "emacs-edit-indirect"
+  "emacs-fish-mode"
+  "emacs-json-mode"
+  "emacs-markdown-mode"
+  "emacs-nftables-mode"
+  "emacs-zig-mode"
 
-                    "emacs-caddyfile-mode"
-                    "emacs-edit-indirect"
-                    "emacs-fish-mode"
-                    "emacs-json-mode"
-                    "emacs-markdown-mode"
-                    "emacs-nftables-mode"
-                    "emacs-zig-mode"))
-      (package-serializer %emacs-use-package-serializer)
-      (native-compile? #f)
-      (default-init
-        (emacs-configuration
-          (extra-init-files
-           `(("font.el" . ,(local-file (testament-plain "emacs-font.el")))))
-          (modes '((gcmh-mode . #t)))
-          (extra-init (list #%(no-littering-theme-backups)))))
-      (configured-packages
-       (list <<emacs-package>>))
-      (servers (list (emacs-server (name "server"))))))
+  <<emacs-packages()>>
 #+end_src
 
-[[file:../files/plain/emacs-font.el][emacs-font.el]]
-
-For consistency, use this field order:
-#+begin_example
-  load-after-packages
-  load-force?
-  options
-  autoloads
-  autoloads-interactive
-  extra-init
-  extra-after-load
-  hooks
-  keys-global
-  keys-local
-#+end_example
-
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'emacs)
-    (options
-     '((auth-source-gpg-encrypt-to . ("220F98D95E86204C0036DA7B6DEC4360408B4185"))
-       (auth-sources . ("~/.local/share/authinfo.gpg"))
-       (blink-cursor-mode . #f)
-       (browse-url-firefox-program . "librewolf")
-       (compile-command . "make -k -j$(nproc)")
-       (completion-ignore-case . #t)
-       (enable-recursive-minibuffers . #t)
-       (fill-column . 80)
-       (fringe-mode . 0)
-       (global-completion-preview-mode . #t)
-       (indent-tabs-mode . #f)
-       (inhibit-startup-screen . #t)
-       (initial-major-mode . org-mode)
-       (initial-scratch-message . "# ‘M-x butterfly’\n\n")
-       (pixel-scroll-precision-mode . #t)
-       (read-buffer-completion-ignore-case . #t)
-       (read-extended-command-predicate . command-completion-default-include-p)
-       (read-file-name-completion-ignore-case . #t)
-       (scroll-bar-mode . #f)
-       (shell-file-name . "/bin/sh")
-       (tool-bar-mode . #f)
-       (tooltip-mode . #f)
-       (user-full-name . "Hilton Chain")
-       (user-mail-address . "hako@ultrarare.space")
-       (word-wrap-by-category . #t)))
-    (extra-after-load
-     (list #%(setopt electric-indent-inhibit t)))
-    (hooks
-     '((after-init . electric-pair-mode)
-       (after-init . menu-bar-mode)
-       (after-init . minibuffer-depth-indicate-mode)
-       (after-init . savehist-mode)
-       (before-save . delete-trailing-whitespace)
-       (prog-mode . display-fill-column-indicator-mode)))
-    (keys-global
-     '(("<remap> <list-buffers>" . switch-to-buffer))))
+#+name: emacs-packages
+#+begin_src shell :results output
+  grep '^;;guix:' ../files/plain/emacs/init.el | sed -E 's/^;;guix:(.*)/"\1"/g'
 #+end_src
 
-** Editing
-*** emacs-arei
-Arei requires a nREPL server, which can be started with:
-#+begin_src shell
-  guix shell guile-next guile-ares-rs -- guile -c '((@ (ares server) run-nrepl-server))'
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'emacs-configuration
+      home-xdg-configuration-files-service-type
+    `(("emacs/init.el"
+       ,(computed-substitution-with-inputs "init.el"
+          (local-file (testament-plain "emacs/init.el"))
+          (cons (testament-plain)
+                (specs->pkgs "ccls"
+                             "fish"
+                             "python-lsp-server"
+                             "rust-analyzer"
+                             "zig-zls"))))))
 #+end_src
 
-Load paths are inherited from the server's environment.  If reader extensions
-are needed, relevant modules should be loaded before starting the server.  See
-=ares= target in Makefile for example.
-
-Custom xref backend for Citre.  Arei's builtin xref backend provides
-=xref-buffer-location= but Citre expects =xref-file-location=.
-#+begin_src scheme :noweb-ref emacs-package
-  #;(emacs-package
-    (name 'arei)
-    (package (spec->pkg "emacs-arei"))
-    (load-after-packages '(xref))
-    (load-force? #t)
-    (extra-after-load
-     (list #%(defun hako/arei--xref-backend () 'hako/arei)
-           #%(defun hako/arei-xref--make-xref-loc (identifier)
-               (when-let* ((info (arei-xref--request-lookup identifier))
-                           (file (arei-nrepl-dict-get info "file"))
-                           (line (arei-nrepl-dict-get info "line"))
-                           (column (arei-nrepl-dict-get info "column")))
-                          (xref-make-file-location file line column)))
-           #%(cl-defmethod xref-backend-identifier-at-point ((_backend (eql hako/arei)))
-                           (thing-at-point 'symbol t))
-           #%(cl-defmethod xref-backend-definitions ((_backend (eql hako/arei)) identifier)
-                           (when (arei-connected-p)
-                             (when-let* ((loc (hako/arei-xref--make-xref-loc identifier)))
-                                        (list (xref-make identifier loc))))))))
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'home-emacs
+      home-shepherd-service-type
+    (list (shepherd-service
+            (provision '(emacs-daemon))
+            (start
+             #~(make-forkexec-constructor
+                '("emacs" "--fg-daemon")))
+            (stop
+             #~(make-forkexec-constructor
+                '("emacsclient" "--eval" "(kill-emacs)"))))))
 #+end_src
 
-In Emacs, run ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to
-connect to the server.
+[[file:../files/plain/emacs/init.el][emacs/init.el]]
 
-*** emacs-citre
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'citre)
-    (package (spec->pkg "emacs-citre"))
-    (options
-     '((citre-default-create-tags-file-location . global-cache)
-       (citre-edit-ctags-options-manually . #f)))
-    (keys-global
-     '(("<remap> <xref-find-definitions>" . citre-jump)
-       ("<remap> <xref-find-references>"  . citre-jump-to-reference)
-       ("<remap> <xref-go-back>"          . citre-jump-back)
-       ("C-x c p" . citre-ace-peek)
-       ("C-x c u" . citre-update-this-tags-file))))
+[[file:../files/plain/emacs/fonts.el][emacs/fonts.el]]
 
-  (emacs-package
-    (name 'citre-xref-adapter)
-    (load-after-packages '(citre))
-    (load-force? #t)
-    (extra-after-load
-     (list #;#%(defvar citre-arei-backend
-               (citre-xref-backend-to-citre-backend
-                'hako/arei
-                (lambda () (derived-mode-p 'scheme-mode))))
-           #%(defvar citre-dumb-jump-backend
-               (citre-xref-backend-to-citre-backend
-                'dumb-jump
-                (lambda () t)))
-           #%(defvar citre-elisp-backend
-               (citre-xref-backend-to-citre-backend
-                'elisp
-                (lambda () (derived-mode-p 'scheme-mode))))
-           #;#%(citre-register-backend 'arei citre-arei-backend)
-           #%(citre-register-backend 'dumb-jump citre-dumb-jump-backend)
-           #%(citre-register-backend 'elisp citre-elisp-backend))))
-
-  (emacs-package
-    (name 'citre-backend-interface)
-    (options
-     '((citre-find-definition-backends
-        . (eglot #;arei elisp tags dumb-jump))
-       (citre-find-reference-backends
-        . (eglot elisp dumb-jump)))))
-
-  (emacs-package
-    (name 'citre-config)
-    (load-force? #t))
-#+end_src
-
-*** emacs-dumb-jump
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'dumb-jump)
-    (package (spec->pkg "emacs-dumb-jump"))
-    (load-after-packages '(xref))
-    (load-force? #t)
-    (extra-after-load
-     (list #%(add-hook 'xref-backend-functions #'dumb-jump-xref-activate))))
-#+end_src
-
-*** emacs eglot
+** git
 #+begin_src scheme :noweb-ref package
-  "python-next"
-  "rust"
-  "rust:cargo"
-  "zig"
+  "git"
 #+end_src
 
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'eglot)
-    (extra-after-load
-     (list #%(dolist
-              (program
-               `(((rust-ts-mode rust-mode)
-                  . (#$(file-append (spec->pkg "rust-analyzer") "/bin/rust-analyzer")))
-                 ((python-mode python-ts-mode)
-                  . (#$(file-append (spec->pkg "python-lsp-server") "/bin/pylsp")))
-                 ((c-mode c-ts-mode c++-mode c++-ts-mode)
-                  . (#$(file-append (spec->pkg "ccls") "/bin/ccls")
-                     ,(concat "--init="
-                              (json-serialize
-                               `((cache
-                                  . ((directory
-                                      . ,(concat (getenv "XDG_CACHE_HOME")
-                                                 "/ccls-cache")))))))))
-                 ((zig-mode)
-                  . (#$(file-append (spec->pkg "zig-zls") "/bin/zls")))))
-              (add-to-list 'eglot-server-programs program)))))
+[[file:../files/dotfiles/.config/git/config][~/.config/git/config]]
+
+** guix-label-teams
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'guix-label-teams
+      home-shepherd-service-type
+    (list (shepherd-timer '(guix-label-teams)
+            #~(calendar-event #:minutes '(0))
+            #~("/home/hako/Workspace/guix-label-teams.scm"))))
 #+end_src
 
-*** emacs-macrostep
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'macrostep)
-    (package (spec->pkg "emacs-macrostep"))
-    (keys-global '(("C-c e" . macrostep-expand))))
-#+end_src
-
-*** emacs org
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'org)
-    (options
-     '((org-babel-load-languages
-        . ((scheme . #t)
-           (python . #t)
-           (scheme . #t)
-           (shell . #t)))
-       (org-id-track-globally . #t)
-       (org-insert-heading-respect-content . #t)
-       (org-link-file-path-type . relative)
-       (org-log-into-drawer . #t)
-       (org-special-ctrl-a/e . #t)
-       (org-special-ctrl-k . #t)
-       (org-startup-folded . content)
-       (org-todo-keywords . ((sequence "TODO(t!)" "DOING(g!)" "|" "DONE(d!)"))))))
-#+end_src
-
-*** emacs-ox-hugo
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'ox-hugo)
-    (package (spec->pkg "emacs-ox-hugo"))
-    (load-after-packages '(ox))
-    (load-force? #t))
-#+end_src
-
-*** emacs-puni
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'puni)
-    (package (spec->pkg "emacs-puni"))
-    (hooks
-     (map (cut cons <> 'puni-mode)
-          '(eval-expression-minibuffer-setup
-            nxml-mode
-            prog-mode
-            sgml-mode
-            tex-mode))))
-#+end_src
-
-** Appearance & Interface
-*** emacs-adaptive-wrap
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'adaptive-wrap)
-    (package (spec->pkg "emacs-adaptive-wrap"))
-    (hooks '((visual-line-mode . adaptive-wrap-prefix-mode))))
-#+end_src
-
-*** emacs-doom-modeline
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'doom-modeline)
-    (package (spec->pkg "emacs-doom-modeline"))
-    (options
-     '((doom-modeline-icon . #f)
-       (doom-modeline-height . 18)))
-    (hooks '((after-init . doom-modeline-mode))))
-#+end_src
-
-*** emacs-helpful
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'helpful)
-    (package (spec->pkg "emacs-helpful"))
-    (keys-global
-     '(("<remap> <describe-function>" . helpful-callable)
-       ("<remap> <describe-variable>" . helpful-variable)
-       ("<remap> <describe-key>"      . helpful-key)
-       ("<remap> <describe-command>"  . helpful-command)
-       ("<remap> <describe-symbol>"   . helpful-symbol)
-       ("C-c C-d" . helpful-at-point))))
-#+end_src
-
-*** emacs-hl-todo
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'hl-todo)
-    (package (spec->pkg "emacs-hl-todo"))
-    (options '((hl-todo-highlight-punctuation . ":")))
-    (hooks '((prog-mode . hl-todo-mode))))
-#+end_src
-
-*** emacs isearch
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'isearch)
-    (options
-     '((isearch-lazy-count . #t)
-       (isearch-wrap-pause . no-ding)
-       (regexp-search-ring-max . 200)
-       (search-ring-max . 200))))
-#+end_src
-
-*** emacs-modus-themes
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'emacs)
-    (options '((modus-themes-italic-constructs . #t)))
-    (extra-after-load
-     (list #%(load-theme 'modus-operandi-tinted :no-confirm))))
-#+end_src
-
-*** emacs-mwim
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'mwim)
-    (package (spec->pkg "emacs-mwim"))
-    (keys-global
-     '(("<remap> <move-beginning-of-line>" . mwim-beginning)
-       ("<remap> <move-end-of-line>" . mwim-end))))
-#+end_src
-
-*** emacs-orderless
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'orderless)
-    (package (spec->pkg "emacs-orderless"))
-    (options
-     '((completion-styles . (orderless basic))
-       (completion-category-overrides . ((file (styles basic partial-completion))))
-       (orderless-matching-styles
-        . (orderless-literal
-           orderless-flex
-           orderless-regexp)))))
-#+end_src
-
-*** emacs-org-rainbow-tags
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'org-rainbow-tags)
-    (package (spec->pkg "emacs-org-rainbow-tags"))
-    (hooks '((org-mode . org-rainbow-tags-mode))))
-#+end_src
-
-*** emacs paren
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'paren)
-    (options '((show-paren-context-when-offscreen . overlay)))
-    (hooks '((after-init . show-paren-mode))))
-#+end_src
-
-*** emacs-rainbow-delimiters
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'rainbow-delimiters)
-    (package (spec->pkg "emacs-rainbow-delimiters"))
-    (hooks '((prog-mode . rainbow-delimiters-mode))))
-#+end_src
-
-*** emacs-treesit-auto
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'treesit-auto)
-    (package (spec->pkg "emacs-treesit-auto"))
-    (extra-packages
-     (specs->pkgs "tree-sitter-cmake"
-                  "tree-sitter-dockerfile"
-                  "tree-sitter-go"
-                  "tree-sitter-gomod"
-                  "tree-sitter-rust"
-                  "tree-sitter-typescript"
-                  "tree-sitter-yaml"))
-    (extra-after-load
-     ;; FIXME: These modes aren't loaded automatically.
-     (list #%(require 'cmake-ts-mode)
-           #%(require 'dockerfile-ts-mode)
-           #%(require 'go-ts-mode)
-           #%(require 'rust-ts-mode)
-           #%(require 'typescript-ts-mode)
-           #%(require 'yaml-ts-mode)
-           ;; https://github.com/renzmann/treesit-auto/issues/32#issuecomment-1826270447
-           #%(defun hako/get-tree-sitter-mode (mode)
-               (treesit-auto--set-major-remap)
-               (alist-get mode major-mode-remap-alist mode))
-           #%(define-advice org-src-get-lang-mode (:filter-return (mode) tree-sitter)
-               (hako/get-tree-sitter-mode mode))))
-    (hooks '((after-init . global-treesit-auto-mode))))
-#+end_src
-
-*** emacs-vertico
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'vertico)
-    (package (spec->pkg "emacs-vertico"))
-    (hooks '((after-init . vertico-mode))))
-
-  (emacs-package
-    (name 'vertico-directory)
-    (load-after-packages '(vertico))
-    ;; Tidy shadowed file names
-    (hooks '((rfn-eshadow-update-overlay . vertico-directory-tidy)))
-    (keys-local
-     (list (emacs-keymap
-             (name 'vertico-map)
-             ;; More convenient directory navigation commands
-             (keys
-              '(("RET" . vertico-directory-enter)
-                ("DEL" . vertico-directory-delete-char)
-                ("M-DEL" . vertico-directory-delete-word)))))))
-#+end_src
-
-*** emacs-visual-fill-column
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'visual-fill-column)
-    (package (spec->pkg "emacs-visual-fill-column"))
-    (options '((visual-fill-column-center-text . #t)))
-    (hooks '((visual-line-mode . visual-fill-column-mode))))
-#+end_src
-
-*** emacs which-key
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'which-key)
-    (extra-after-load (list #%(which-key-setup-side-window-right-bottom)))
-    (hooks '((after-init . which-key-mode))))
-#+end_src
-
-** Miscellaneous
-*** emacs-daemons
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'daemons)
-    (package (spec->pkg "emacs-daemons"))
-    (options '((daemons-list-fill-frame . #t))))
-#+end_src
-
-*** emacs dired
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'dired)
-    (options
-     '((dired-listing-switches
-        . "-lv --all --group-directories-first --human-readable")))
-    (keys-global '(("<remap> <list-directory>" . dired))))
-
-  (emacs-package
-    (name 'dired-aux)
-    (options
-     '((dired-compress-directory-default-suffix . ".tar.zst")
-       (dired-create-destination-dirs . ask)
-       (dired-create-destination-dirs-on-trailing-dirsep . #t)
-       (dired-vc-rename-file . #t))))
-#+end_src
-
-*** emacs-envrc
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'envrc)
-    (package (spec->pkg "emacs-envrc"))
-    (hooks '((after-init . envrc-global-mode))))
-#+end_src
-
-#+begin_src scheme :noweb-ref home-fish-config
-  (mixed-text-file "direnv.fish"
-    (spec->pkg "direnv") "/bin/direnv hook fish | source")
-#+end_src
-
-*** emacs-forge
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'forge)
-    (package (spec->pkg "emacs-forge"))
-    (load-after-packages '(magit))
-    (load-force? #t))
-#+end_src
-
-*** emacs-magit
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'magit)
-    (package (spec->pkg "emacs-magit"))
-    (options '((git-commit-cd-to-toplevel . #t))))
-
-  (emacs-package
-    (name 'project)
-    (extra-after-load
-     (list #%(add-to-list 'project-switch-commands '(magit-project-status "Magit") t)))
-    (keys-local
-     (list (emacs-keymap
-             (name 'project-prefix-map)
-             (keys '(("m" . magit-project-status)))))))
-#+end_src
-
-*** emacs-notmuch
+** l2md
 Fetch mailing lists from public-inbox instances:
 #+begin_src scheme :noweb-ref home-service
   (simple-service 'l2md
@@ -1428,6 +1098,7 @@ Fetch mailing lists from public-inbox instances:
 
 [[file:../files/dotfiles/.config/l2md/config][~/.config/l2md/config]]
 
+** notmuch
 Fetch from mail server:
 #+begin_src scheme :noweb-ref home-service
   (simple-service 'mbsync
@@ -1485,169 +1156,6 @@ Fetch from mail server:
 
 [[file:../files/dotfiles/.config/notmuch/default/config][~/.config/notmuch/default/config]]
 
-Frontend
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'notmuch)
-    (package (spec->pkg "emacs-notmuch"))
-    (options
-     '((mail-user-agent . notmuch-user-agent)
-       (message-hidden-headers . ("^Face:" "^X-Face:" "^X-Draft-From:"))
-       (message-kill-buffer-on-exit . #t)
-       (mml-secure-openpgp-encrypt-to-self . #t)
-       (mml-secure-openpgp-signers . ("220F98D95E86204C0036DA7B6DEC4360408B4185"))
-       (notmuch-show-logo . #f)
-       (notmuch-draft-folder . "Drafts")
-       (notmuch-fcc-dirs . "Sent")
-       (notmuch-message-headers
-        . ("Subject" "To" "Cc" "Date" "Message-ID" "In-Reply-To" "References"))
-       (notmuch-search-oldest-first . #f)))
-    (extra-after-load
-     (list
-      #%(remove-hook 'notmuch-show-hook
-                     'notmuch-show-turn-on-visual-line-mode)
-      #%(remove-hook 'notmuch-show-insert-text/plain-hook
-                     'notmuch-wash-excerpt-citations)))
-    (hooks
-     '((notmuch-show-insert-text/plain . notmuch-wash-convert-inline-patch-to-part)))
-    (keys-global
-     '(("C-c M-m" . message-mark-inserted-region))))
-#+end_src
-
-Send
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'smtpmail)
-    (options
-     '((smtpmail-default-smtp-server . "mail.boiledscript.com")
-       (smtpmail-smtp-service . 465)
-       (smtpmail-stream-type . ssl)
-       (smtpmail-queue-mail . #t)
-       (smtpmail-queue-dir . "~/.local/share/queued-mail"))))
-#+end_src
-
-*** emacs-pinentry
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'pinentry)
-    (package (spec->pkg "emacs-pinentry"))
-    (options '((epg-pinentry-mode . loopback)))
-    (hooks '((after-init . pinentry-start))))
-#+end_src
-
-*** emacs-vterm
-#+begin_src scheme :noweb-ref emacs-package
-  (emacs-package
-    (name 'vterm)
-    (package (spec->pkg "emacs-vterm"))
-    (options
-     `((vterm-enable-manipulate-selection-data-by-osc52 . #t)
-       (vterm-max-scrollback . 100000)
-       (vterm-shell . ,(file-append (spec->pkg "fish") "/bin/fish"))
-       ;; Improve responsiveness.
-       (vterm-timer-delay . 0.05)))
-    (extra-init
-     (list #%(defun hako/vterm ()
-               (interactive)
-               (let* ((parent
-                       (if (buffer-file-name)
-                           (file-name-directory (buffer-file-name))
-                           default-directory))
-                      (name (car (last (split-string parent "/" t))))
-                      (vterm-buffer-name (concat "*vterm: " name "*"))
-                      (vterm-buffer (get-buffer vterm-buffer-name)))
-                 (if (and vterm-buffer (not current-prefix-arg))
-                     (pop-to-buffer vterm-buffer)
-                     (vterm t))))
-           #%(defun hako/vterm-project (&optional arg)
-               (interactive "P")
-               (require 'project)
-               (let* ((default-directory (project-root (project-current t)))
-                      (vterm-buffer-name (project-prefixed-buffer-name "vterm")))
-                 (vterm arg)))))
-    (keys-global '(("s-t" . hako/vterm)))
-    (keys-local
-     (list (emacs-keymap
-             (name 'vterm-mode-map)
-             (keys '(("C-q" . vterm-send-next-key)))))))
-
-  (emacs-package
-    (name 'project)
-    (extra-after-load
-     (list
-      #%(add-to-list 'project-switch-commands '(hako/vterm-project "Vterm") t)
-      #%(add-to-list 'project-kill-buffer-conditions  '(major-mode . vterm-mode))))
-    (keys-local
-     (list (emacs-keymap
-             (name 'project-prefix-map)
-             (keys '(("t" . hako/vterm-project)))))))
-#+end_src
-
-#+begin_src scheme :noweb-ref home-fish-config
-  (plain-file "vterm.fish" "\
-  if test \"$INSIDE_EMACS\" = 'vterm'
-      source $EMACS_VTERM_PATH/etc/emacs-vterm.fish
-  end")
-#+end_src
-
-* Miscellaneous
-#+begin_src scheme :noweb-ref module
-  (rosenthal services bittorrent)
-  (rosenthal services file-systems)
-  (gnu home services syncthing)
-#+end_src
-
-** adb
-#+begin_src scheme :noweb-ref group
-  "adbusers"
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (udev-rules-service 'android (spec->pkg "android-udev-rules") #:groups '("adbusers"))
-#+end_src
-
-** atuin
-#+begin_src scheme :noweb-ref home-fish-config
-  (mixed-text-file "atuin.fish"
-    (spec->pkg "atuin") "/bin/atuin init fish | source")
-#+end_src
-
-** fcitx5
-#+begin_src scheme :noweb-ref home-service
-  (service home-fcitx5-service-type
-    (home-fcitx5-configuration
-      (themes (specs->pkgs "fcitx5-material-color-theme"))
-      (input-method-editors (specs->pkgs "fcitx5-rime"))))
-#+end_src
-
-** git
-#+begin_src scheme :noweb-ref package
-  "git"
-#+end_src
-
-[[file:../files/dotfiles/.config/git/config][~/.config/git/config]]
-
-** guix-label-teams
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'guix-label-teams
-      home-shepherd-service-type
-    (list (shepherd-timer '(guix-label-teams)
-            #~(calendar-event #:minutes '(0))
-            #~("/home/hako/Workspace/guix-label-teams.scm"))))
-#+end_src
-
-** librewolf
-#+begin_src scheme :noweb-ref package
-  "librewolf"
-  "adaptive-tab-bar-colour-icecat"
-  "bitwarden-icecat"
-  "livemarks-icecat"
-  "miniflux-injector-icecat"
-  "ohmyech-icecat"
-  "privacy-redirect-icecat"
-  "ublock-origin-icecat"
-#+end_src
-
 ** qbittorrent
 #+begin_src scheme :noweb-ref home-service
   (service home-qbittorrent-service-type
@@ -1656,56 +1164,10 @@ Send
       (webui-port 35951)))
 #+end_src
 
-** steam
-#+begin_src scheme :noweb-ref package
-  "steam-nvidia"
-#+end_src
-
-#+begin_src scheme :noweb-ref home-environment-variable
-  ("GUIX_SANDBOX_HOME" . "/mnt/Mentha/@Sandbox")
-  ("GUIX_SANDBOX_EXTRA_SHARES" . "$HOME/Downloads:/mnt/Mentha/@Library/Pictures/Screenshots")
-#+end_src
-
-My game controller provides both Xbox and Nintendo interfaces but doesn't offer a toggle.
-#+begin_src scheme :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (kernel-arguments
-       (cons "modprobe.blacklist=hid_nintendo"
-             (operating-system-user-kernel-arguments os)))))
-#+end_src
-
-#+begin_src scheme :noweb yes :noweb-ref service
-  (udev-rules-service 'steam-devices (spec->pkg "steam-devices-udev-rules"))
-  (udev-rules-service 'controller <<controller-permission-udev-rule>>)
-#+end_src
-
-See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
-#+name: controller-permission-udev-rule
-#+begin_src scheme
-  (udev-rule "60-controller-permission.rules" "\
-  KERNEL==\"event*\", ATTRS{idVendor}==\"045e\", ATTRS{idProduct}==\"028e\", \
-  MODE=\"0660\", GROUP=\"users\"")
-#+end_src
-
 ** syncthing
 #+begin_src scheme :noweb-ref home-service
   (service home-syncthing-service-type
     (for-home
      (syncthing-configuration
        (user "hako"))))
-#+end_src
-
-** zoxide
-#+begin_src scheme :noweb-ref home-fish-config
-  (mixed-text-file "zoxide.fish"
-    (spec->pkg "zoxide") "/bin/zoxide init --cmd cd fish | source")
-#+end_src
-
-** Extra Packages
-No need to install less used ones, prefer ‘guix shell’.
-#+begin_src scheme :noweb-ref package
-  "rsync"
-  "unzip"
 #+end_src

@@ -6,22 +6,27 @@
 This repository contains my dotfiles and Guix System literate configurations.
 
 * Structure
-[[file:files/plain/assets/screenshot.png]]
 + [[file:config][config]] :: Guix System configurations.
 + [[file:files/deploy][files/deploy]] :: Configurations for ~guix deploy~.
 + [[file:files/dotfiles][files/dotfiles]] :: Dotfiles for =home-dotfiles-service-type=.
 + [[file:files/plain][files/plain]] :: Files to be referenced in configurations.
 + [[file:files/blobs][files/blobs]] :: Likewise but private.
 
-Systems:
-+ [[file:config/dorphine.org][dorphine]] (x86_64-linux, laptop)
-+ [[file:config/gokuraku.org][gokuraku]] (x86_64-linux, server)
-
 See [[file:Makefile][Makefile]] for usage.
 
-Guix channels I use are available in [[file:channels.scm][channels.scm]].  Currently I'm using local
-forks of [[https://git.boiledscript.com/hako/guix.git][Guix]] and [[https://git.boiledscript.com/hako/nonguix.git][Nonguix]] (Although they are public, I won't ensure them
-up-to-date).
+Guix channels in use:
++ [[https://codeberg.org/guix/guix.git][guix]]
++ [[https://gitlab.com/nonguix/nonguix][nonguix]]
++ [[https://codeberg.org/hako/rosenthal.git][rosenthal]]
++ [[https://github.com/fishinthecalculator/sops-guix][sops-guix]]
+
+* Systems
+** [[file:config/dorphine.org][dorphine]] (x86_64-linux, laptop)
+[[file:files/plain/assets/dorphine-1.png]]
+[[file:files/plain/assets/dorphine-2.png]]
+
+** [[file:config/gokuraku.org][gokuraku]] (x86_64-linux, server)
+[[file:files/plain/assets/gokuraku-1.png]]
 
 * Resources
 + [[https://files.spritely.institute/papers/scheme-primer.html][A Scheme Primer]] :: Nice short guide to get you started with Scheme.

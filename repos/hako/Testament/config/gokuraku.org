@@ -30,15 +30,36 @@
 #+begin_src scheme :noweb-ref module
   (sops secrets)
   (gnu services ssh)
+  (gnu services sysctl)
   (sops services sops)
 #+end_src
 
-** Bootloader
+** Bootloader & Kernel
 #+name: bootloader
 #+begin_src scheme
   (bootloader-configuration
     (bootloader grub-bootloader)
     (targets '("/dev/nvme1n1")))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  ;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
+  (simple-service 'udp-buffer-size
+      sysctl-service-type
+    '(("net.core.rmem_max" . "7500000")
+      ("net.core.wmem_max" . "7500000")))
+#+end_src
+
+#+begin_src scheme :noweb-ref transformation
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (kernel (spec->pkg "linux-libre@6.12"))
+      (kernel-arguments
+       (cons* "kernel.sysrq=0"
+              "zswap.enabled=1"
+              "zswap.max_pool_percent=90"
+              (operating-system-user-kernel-arguments os)))))
 #+end_src
 
 ** File Systems
@@ -169,7 +190,7 @@ Administration accounts.
 #+end_src
 
 ** Packages
-No need to install less used ones, prefer ‘guix shell’.
+Frequently used packages.
 #+begin_src scheme :noweb-ref package
   "rsync"
 #+end_src
@@ -232,45 +253,12 @@ No need to install less used ones, prefer ‘guix shell’.
 
 [[file:../files/plain/sops.yaml][sops.yaml]]
 
-* Kernel
-#+begin_src scheme :noweb-ref module
-  (gnu services sysctl)
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  ;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
-  (simple-service 'udp-buffer-size
-      sysctl-service-type
-    '(("net.core.rmem_max" . "7500000")
-      ("net.core.wmem_max" . "7500000")))
-#+end_src
-
-#+begin_src scheme :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (kernel (spec->pkg "linux-libre@6.12"))
-      (kernel-arguments
-       (cons* "kernel.sysrq=0"
-              "zswap.enabled=1"
-              "zswap.max_pool_percent=90"
-              (operating-system-user-kernel-arguments os)))))
-#+end_src
-
-* Networking
+* Networking & SSH
 #+begin_src scheme :noweb-ref module
   (gnu services networking)
+  (gnu services ssh)
   (rosenthal services networking)
 #+end_src
-
-** nftables
-#+begin_src scheme :noweb-ref service
-  (service nftables-service-type
-    (nftables-configuration
-      (ruleset (local-file (testament-plain "gokuraku/nftables.conf")))))
-#+end_src
-
-[[file:../files/plain/gokuraku/nftables.conf][gokuraku/nftables.conf]]
 
 ** static-networking
 #+begin_src scheme :noweb-ref service
@@ -302,9 +290,30 @@ No need to install less used ones, prefer ‘guix shell’.
   (service ntp-service-type)
 #+end_src
 
+** nftables
+#+begin_src scheme :noweb-ref service
+  (service nftables-service-type
+    (nftables-configuration
+      (ruleset (local-file (testament-plain "gokuraku/nftables.conf")))))
+#+end_src
+
+[[file:../files/plain/gokuraku/nftables.conf][gokuraku/nftables.conf]]
+
 ** tailscale
 #+begin_src scheme :noweb-ref service
   (service tailscale-service-type)
+#+end_src
+
+** openssh
+#+begin_src scheme :noweb-ref package
+  "mosh"
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (service openssh-service-type
+    (openssh-configuration
+      (openssh (spec->pkg "openssh-sans-x"))
+      (password-authentication? #f)))
 #+end_src
 
 * Session and Seat Management
@@ -322,23 +331,7 @@ No need to install less used ones, prefer ‘guix shell’.
   (service elogind-service-type)
 #+end_src
 
-* SSH
-#+begin_src scheme :noweb-ref module
-  (gnu services ssh)
-#+end_src
-
-#+begin_src scheme :noweb-ref package
-  "mosh"
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (service openssh-service-type
-    (openssh-configuration
-      (openssh (spec->pkg "openssh-sans-x"))
-      (password-authentication? #f)))
-#+end_src
-
-* Containers
+* Containers & Virtualization
 #+begin_src scheme :noweb-ref module
   (gnu services docker)
 #+end_src
