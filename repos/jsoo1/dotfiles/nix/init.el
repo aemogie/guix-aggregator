@@ -744,7 +744,6 @@ Take newline delimited `STRING' and return list of all
 ;; Line numbers
 (add-hook 'prog-mode-hook #'display-line-numbers-mode)
 (setq-default display-line-numbers-type nil)
-(global-hl-line-mode +1)
 (defun toggle-global-hl-line ()
   "Toggle function `global-hl-line-mode'."
   (interactive)
@@ -1287,7 +1286,7 @@ See URL `http://pypi.python.org/pypi/ruff'."
 (add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-mode))
 (setf
  (alist-get 'rust-mode eglot-server-programs)
- '("rust-analyzer"))
+ '("rust-analyzer" :initializationOptions (:check (:command "clippy" :extraArgs "-D clippy::all"))))
 (evil-define-key 'normal rust-mode-map (kbd ",") 'my-eglot-mode-map)
 (add-hook 'rust-mode-hook #'eglot-ensure)
 (add-hook 'rust-mode-hook #'eldoc-mode)
@@ -1425,6 +1424,13 @@ when send commands with redis protocol."
 ;; Groovy
 (require 'groovy-mode)
 (add-to-list 'auto-mode-alist '("Jenkinsfile\\'" . groovy-mode))
+(setf (alist-get 'groovy-mode eglot-server-programs)
+      `("groovyls"
+        :initializationOptions
+        (:groovy
+         (:classpath ,(vconcat
+                       (directory-files-recursively "~/.groovy/grapes" "\\.jar$"))))))
+(evil-define-key 'normal groovy-mode-map (kbd ",") 'my-eglot-mode-map)
 
 ;; Shellcheck
 (add-hook 'sh-mode-hook #'flycheck-mode)

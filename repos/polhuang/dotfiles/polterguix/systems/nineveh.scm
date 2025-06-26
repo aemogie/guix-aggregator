@@ -8,6 +8,7 @@
              (gnu packages emacs-xyz)
              (gnu packages fcitx5)
              (gnu packages fonts)
+             (gnu packages gnome)
              (gnu packages gnome-xyz)
              (gnu packages guile)
              (gnu packages ibus)
@@ -16,6 +17,7 @@
              (gnu packages shells)
              (gnu packages shellutils)
              (gnu packages terminals)
+             (gnu packages vpn)
              (gnu services)
              (gnu home services)
              (gnu home services shells)
@@ -26,6 +28,7 @@
 
 (home-environment
  (packages (list
+             ;; ddcci-driver-linux ;; only if =ddcutil detect= reports no displays found
              emacs-next-pgtk
              emacs-guix
              fcitx5
@@ -34,7 +37,8 @@
              fcitx5-material-color-theme
              fcitx5-qt 
              fcitx5-rime
-             firefox
+             firefox ;; Use "guix build firefox --substitute-urls='https://ci.guix.gnu.org https://bordeaux.guix.gnu.org https://substitutes.nonguix.org'" to build from substitute
+             ;; mirror available at https://nonguix-proxy.ditigal.xyz
              font-aporetic
              guile-next
              ibus  ;; required for fcitx for some reason
@@ -42,7 +46,10 @@
              kitty ;; locale errors (tab-completion problem with unicode characters) when kitty isn't installed with guix package manager
              ;; libime
              librewolf
+             network-manager
+             network-manager-applet
              papirus-icon-theme
+             wireguard-tools
              zsh
              zsh-completions
              zsh-autosuggestions

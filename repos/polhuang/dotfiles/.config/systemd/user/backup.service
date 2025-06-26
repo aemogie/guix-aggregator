@@ -1,0 +1,9 @@
+[Unit]
+Description = Run backup script
+
+[Service]
+Type=oneshot
+ExecStart=/home/polhuang/.dotfiles/.bin/backup.sh 
+
+[Install]
+WantedBy=default.target

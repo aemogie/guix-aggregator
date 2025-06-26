@@ -543,6 +543,23 @@ Use prefix argument ARG for number of lines, otherwise use default."
                  (window-height . fit-window-to-buffer)))
   (display-line-numbers-mode 1)
 
+  ;; Kill the frame if one was created for the capture
+  (defvar my/delete-frame-after-capture 0 "Whether to delete the last frame after the current capture")
+
+  ;; delete pop-up capture frames after finalize/kill/refile. at popup, set `my/delete-frame-after-capture' to 1
+  (defun my/delete-frame-if-necessary (&rest r)
+    (cond
+     ((= my/delete-frame-after-capture 0) nil)
+     ((> my/delete-frame-after-capture 1)
+      (setq my/delete-frame-after-capture (- my/delete-frame-after-capture 1)))
+     (t
+      (setq my/delete-frame-after-capture 0)
+      (delete-frame))))
+  
+  (advice-add 'org-capture-finalize :after 'my/delete-frame-if-necessary)
+  (advice-add 'org-capture-kill :after 'my/delete-frame-if-necessary)
+  (advice-add 'org-capture-refile :after 'my/delete-frame-if-necessary)
+  
   :custom
   (org-directory "~/org")
   (org-indent-mode-turns-off-org-adapt-indentation nil)
@@ -633,11 +650,11 @@ Use prefix argument ARG for number of lines, otherwise use default."
   (org-startup-folded 'content)
   (org-capture-templates
         `(("p" "Protocol Text" entry
-           (file+headline ,(concat org-directory "/roam/captures.org") "Captures")
-	   "* %^{Title}\nSource: %u, %c\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n")
-	  ("L" "Protocol Link" entry
-           (file+headline ,(concat org-directory "/roam/captures.org") "Captures")
-	   "* %? [[%:link][%:description]] \nCaptured On: %U")
+           (file+headline ,(concat org-directory "/captures.org") "Captures")
+	   "* %^{Title}\nSource: [[%:link][%:description]] %(progn (setq my/delete-frame-after-capture 1) \"\") \nCaptured on: %U\n\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n")
+	  ("L" "Protocol Link" entry (file+headline ,(concat org-directory "notes.org") "Inbox")
+ "* [[%:link][%:description]] %(progn (setq my/delete-frame-after-capture 1) \"\")\nCaptured on: %U"
+ :empty-lines 1)
           ("s")
           ("t" "Task" entry
            (file ,(concat org-directory "/tasks.org"))
@@ -701,8 +718,7 @@ Use prefix argument ARG for number of lines, otherwise use default."
     (delete-frame)))
 
 (use-package org-protocol
-  :init
-  (add-to-list 'org-modules 'org-protocol))
+  :ensure nil)
 
 (use-package org-roam
   :ensure t

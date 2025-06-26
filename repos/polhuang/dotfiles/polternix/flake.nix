@@ -12,8 +12,8 @@
   outputs = { self, nixpkgs, home-manager, ... }:
     let
       system = "x86_64-linux";
-      username = "pol";
-      homeDirectory = "/home/pol";
+      username = "polhuang";
+      homeDirectory = "/home/polhuang";
     in {
       homeConfigurations.pol = home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs {

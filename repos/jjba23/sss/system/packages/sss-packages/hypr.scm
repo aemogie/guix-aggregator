@@ -22,4 +22,4 @@
   #:export (hypr-packages))
 
 (define hypr-packages
-  (make-parameter (list hyprland hypridle hyprcursor hyprlock)))
+  (make-parameter (list hyprland hypridle hyprcursor hyprlock hyprpicker)))

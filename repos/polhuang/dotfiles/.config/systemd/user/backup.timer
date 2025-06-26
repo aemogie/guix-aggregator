@@ -1,0 +1,10 @@
+[Unit]
+Description=Timer to run bacup
+
+[Timer]
+OnCalendar=*-*-* 02:00:00
+Persistent=true
+WakeSystem=true
+
+[Install]
+WantedBy=timers.target
