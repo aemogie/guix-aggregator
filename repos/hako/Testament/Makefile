@@ -14,13 +14,15 @@ EMACS := $(GUIX) shell emacs-minimal -- emacs
 	--eval "(setopt org-confirm-babel-evaluate nil)" \
 	--eval "(org-babel-tangle-file \"$<\")"
 
+.PHONY: update-channels
+update-channels:
+	guix time-machine --channels=channels.scm -- \
+		describe --format=channels > channels.tmp && \
+	mv channels.tmp channels.lock
 
 .PHONY: pull
-# Run ‘guix time-machine’ once to make cache of the build output.
 pull:
-	guix pull --channels=channels.scm $(OPTS) && \
-	guix describe --format=channels > channels.lock && \
-	guix time-machine --channels=channels.lock
+	guix pull --channels=channels.lock $(OPTS)
 
 .PHONY: build
 build: build-dorphine build-gokuraku
@@ -31,6 +33,13 @@ build-%: config/%.scm
 deploy: deploy-dorphine deploy-gokuraku
 deploy-%: config/%.scm
 	$(GUIX) deploy files/deploy/$(notdir $<) $(OPTS)
+
+.PHONY: live
+live: live-console live-desktop
+live-%: config/live-%.scm
+	@mkdir --parents dist
+	@cp "$(shell $(GUIX) system image --image-type=iso9660 $< $(OPTS))" \
+	"dist/guix-system-$(shell date +%Y%m%d)-$(notdir $(basename $<)).iso"
 
 .PHONY: authenticate
 # Authenticate commits.

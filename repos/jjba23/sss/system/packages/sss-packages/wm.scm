@@ -55,7 +55,7 @@
                         xorg-server-xwayland
 
                         polkit-gnome
-
+                        wvkbd
                         ;; Flatpak and XDG utilities
                         flatpak-xdg-utils
                         xdg-utils

@@ -167,6 +167,8 @@
   '("yaml-language-server" "bash-language-server"
     "discord"
     "azure-cli"
+    "stylelint"
+    "stylelint-lsp"
     "typescript-language-server"
     "spotify"
     "jdt-language-server"

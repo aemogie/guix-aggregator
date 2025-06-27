@@ -1,0 +1,65 @@
+;; This is an operating system configuration template for a "bare bones"
+;; setup, with no X11 display server.
+
+(use-modules (nonguix transformations)
+             (rosenthal)
+
+             (gnu services networking)
+             (gnu services ssh)
+
+             (nongnu packages linux))
+
+(define %my-os
+  (operating-system
+    (host-name "komputilo")
+    (timezone "Europe/Berlin")
+    (locale "en_US.utf8")
+
+    ;; Boot in "legacy" BIOS mode, assuming /dev/sdX is the
+    ;; target hard disk, and "my-root" is the label of the target
+    ;; root file system.
+    (bootloader (bootloader-configuration
+                  (bootloader grub-bootloader)
+                  (targets '("/dev/sdX"))))
+    ;; It's fitting to support the equally bare bones ‘-nographic’
+    ;; QEMU option, which also nicely sidesteps forcing QWERTY.
+    (kernel-arguments (list "console=ttyS0,115200"))
+    (file-systems (cons (file-system
+                          (device (file-system-label "my-root"))
+                          (mount-point "/")
+                          (type "ext4"))
+                        %base-file-systems))
+
+    ;; This is where user accounts are specified.  The "root"
+    ;; account is implicit, and is initially created with the
+    ;; empty password.
+    (users (cons (user-account
+                   (name "alice")
+                   (comment "Bob's sister")
+                   (group "users")
+
+                   ;; Adding the account to the "wheel" group
+                   ;; makes it a sudoer.  Adding it to "audio"
+                   ;; and "video" allows the user to play sound
+                   ;; and access the webcam.
+                   (supplementary-groups '("wheel" "audio" "video")))
+                 %base-user-accounts))
+
+    ;; Globally-installed packages.
+    (packages (cons (spec->pkg "screen") %base-packages))
+
+    ;; Add services to the baseline: a DHCP client and an SSH
+    ;; server.  You may wish to add an NTP service here.
+    (services (append (list (service dhcpcd-service-type)
+                            (service openssh-service-type
+                              (openssh-configuration
+                                (openssh (spec->pkg "openssh-sans-x"))
+                                (port-number 2222))))
+                      %base-services))))
+
+((compose (nonguix-transformation-linux)
+          ;; Nonguix substitute server currently unavailable for IPv4.
+          ;; https://gitlab.com/nonguix/nonguix/-/issues/395
+          (nonguix-transformation-guix #:substitutes? #f)
+          (rosenthal-transformation-guix))
+ %my-os)

@@ -8,7 +8,7 @@
     (make-empty-file custom-file)
   (load custom-file))
 
-(load-file (locate-user-emacs-file "$$emacs/fonts.el$$"))
+(load-file "$$emacs/fonts.el$$")
 
 ;; Tweak garbage collection strategy.
 ;;guix:emacs-gcmh
@@ -27,8 +27,6 @@
   (auth-source-gpg-encrypt-to '("220F98D95E86204C0036DA7B6DEC4360408B4185"))
   (auth-sources '("~/.local/share/authinfo.gpg"))
   (compile-command "make -k -j$(nproc)")
-  (inhibit-startup-screen t)
-  (initial-scratch-message ";; `M-x butterfly'\n\n")
   (user-full-name "Hilton Chain")
   (user-mail-address "hako@ultrarare.space")
   ;; Workaround to use fish as login shell.
@@ -46,8 +44,9 @@
   (blink-cursor-mode nil)
   (browse-url-firefox-program "librewolf")
   (enable-recursive-minibuffers t)
-  ;; Scrolling enhancement.
-  (pixel-scroll-precision-mode t)
+  (inhibit-startup-screen t)
+  (initial-scratch-message ";; `M-x butterfly'\n\n")
+  (uniquify-buffer-name-style 'forward)
   ;; Exclude unavailable completions.
   (read-extended-command-predicate 'command-completion-default-include-p)
   ;; Case-insensitive completion.
@@ -57,6 +56,8 @@
   :bind
   ([remap list-buffers] . switch-to-buffer)
   :hook
+  ;; Scrolling enhancement.
+  (after-init . pixel-scroll-precision-mode)
   ;; Indicatior for recursive minibuffers.
   (after-init . minibuffer-depth-indicate-mode)
   ;; Save minibuffer history.
@@ -272,6 +273,45 @@
               "$$bin/zls$$")))
     (add-to-list 'eglot-server-programs program)))
 
+;; Check syntax on the fly.
+;;guix:emacs-flycheck
+(use-package flycheck
+  :hook
+  (after-init . global-flycheck-mode))
+
+;;guix:emacs-flycheck-guile
+(use-package flycheck-guile
+  :after (flycheck geiser-guile))
+
+;;guix:emacs-geiser
+(use-package geiser
+  :custom
+  (geiser-autodoc-identifier-format "%s → %s")
+  (geiser-mode-smart-tab-p t)
+  (geiser-mode-start-repl-p t)
+  (geiser-repl-query-on-kill-p nil))
+
+;;guix:emacs-geiser-guile
+(use-package geiser-guile
+  :after (geiser)
+  :custom
+  (geiser-default-implementation 'guile)
+  (geiser-active-implementation '(guile))
+  :config
+  ;; TODO: Make `flycheck-guile' support `guix repl'.
+  (dolist (path
+           (mapcar
+            #'expand-file-name
+            '("~/.config/guix/current/lib/guile/3.0/site-ccache"
+              "~/.config/guix/current/share/guile/site/3.0"
+              "~/.guix-profile/lib/guile/3.0/site-ccache"
+              "~/.guix-profile/share/guile/site/3.0"
+              "~/.guix-home/profile/lib/guile/3.0/site-ccache"
+              "~/.guix-home/profile/share/guile/site/3.0"
+              "/run/current-system/profile/lib/guile/3.0/site-ccache"
+              "/run/current-system/profile/share/guile/site/3.0")))
+    (add-to-list 'geiser-guile-load-path path t)))
+
 ;;guix:emacs-macrostep
 (use-package macrostep
   :bind
@@ -348,25 +388,28 @@
 (use-package forge
   :after (magit))
 
-;;guix:emacs-notmuch
-(use-package notmuch
+;;guix:mu
+(use-package mu4e
   :custom
-  (mail-user-agent 'notmuch-user-agent)
-  (message-hidden-headers '("^Face:" "^X-Face:" "^X-Draft-From:"))
+  (mu4e-sent-folder "/Sent")
+  (mu4e-drafts-folder "/Drafts")
+  (mu4e-trash-folder "/Trash")
+  (mu4e-refile-folder "/Archive")
+  (mu4e-change-filenames-when-moving t)
+  ;; Search.
+  (mu4e-query-rewrite-function
+   (lambda (expr)
+     (if (string-match "maildir:\"/\\(Junk\\|Trash\\)\"" expr)
+         expr
+       (concat expr " AND NOT (maildir:/Junk OR maildir:/Trash)"))))
+  ;; Compose.
+  (message-dont-reply-to-names mu4e-personal-or-alternative-address-p)
   (message-kill-buffer-on-exit t)
   (mml-secure-openpgp-encrypt-to-self t)
   (mml-secure-openpgp-signers '("220F98D95E86204C0036DA7B6DEC4360408B4185"))
-  (notmuch-show-logo nil)
-  (notmuch-draft-folder "Drafts")
-  (notmuch-fcc-dirs "Sent")
-  (notmuch-message-headers
-   '("Subject" "To" "Cc" "Date" "Message-ID" "In-Reply-To" "References"))
-  (notmuch-search-oldest-first nil)
   :config
-  (remove-hook 'notmuch-show-hook 'notmuch-show-turn-on-visual-line-mode)
-  (remove-hook 'notmuch-show-insert-text/plain-hook 'notmuch-wash-excerpt-citations)
-  :hook
-  (notmuch-show-insert-text/plain . notmuch-wash-convert-inline-patch-to-part)
+  (dolist (format '("text/html" "text/richtext"))
+    (add-to-list 'mm-discouraged-alternatives format))
   :bind
   ("C-c M-m" . message-mark-inserted-region))
 

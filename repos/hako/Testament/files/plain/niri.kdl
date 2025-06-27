@@ -52,6 +52,8 @@ input {
 }
 
 binds {
+    Mod+Shift+Slash { show-hotkey-overlay; }
+
     XF86AudioRaiseVolume  allow-when-locked=true { spawn "$$bin/wpctl$$" "set-volume" "@DEFAULT_AUDIO_SINK@"   "0.1+" "--limit" "1.0"; }
     XF86AudioLowerVolume  allow-when-locked=true { spawn "$$bin/wpctl$$" "set-volume" "@DEFAULT_AUDIO_SINK@"   "0.1-"; }
     XF86AudioMute         allow-when-locked=true { spawn "$$bin/wpctl$$" "set-mute"   "@DEFAULT_AUDIO_SINK@"   "toggle"; }
@@ -59,9 +61,9 @@ binds {
     XF86MonBrightnessDown allow-when-locked=true { spawn "$$bin/light$$" "-U" "5"; }
     XF86MonBrightnessUp   allow-when-locked=true { spawn "$$bin/light$$" "-A" "5"; }
 
-    Mod+Space   { spawn "$$bin/rofi$$" "-show" "drun"; }
-    Mod+L       { spawn "$$bin/swaylock$$" "--clock" "--daemonize" "--ignore-empty-password" "--image" "$$115008128_p0.jpg$$"; }
-    Mod+Return  { spawn "emacsclient" "--create-frame" "--no-wait"; }
+    Mod+Space  hotkey-overlay-title="Run an Application: rofi"     { spawn "$$bin/rofi$$" "-show" "drun"; }
+    Mod+L      hotkey-overlay-title="Lock the Screen: swaylock"    { spawn "$$bin/swaylock$$" "--clock" "--daemonize" "--ignore-empty-password" "--image" "$$115008128_p0.jpg$$"; }
+    Mod+Return hotkey-overlay-title="Open the Editor: emacsclient" { spawn "emacsclient" "--create-frame" "--no-wait"; }
 
     Mod+Shift+Q               { close-window; }
     Mod+Left                  { focus-column-left; }

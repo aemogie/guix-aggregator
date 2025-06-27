@@ -1,0 +1,312 @@
+# SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space>
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: CC-BY-SA-4.0
+
+#+TITLE: live-desktop
+#+PROPERTY: header-args :noweb-prefix no
+
+* Guix System
+#+name: guix-system
+#+begin_src scheme :tangle live-desktop.scm :noweb yes
+  (use-modules (nonguix transformations)
+               (rosenthal)
+               <<module>>)
+
+  (define %os
+    (operating-system
+      (host-name "live-system")
+      (bootloader <<bootloader>>)
+      (file-systems %base-file-systems)
+      (users (cons* <<user>> %base-user-accounts))
+      (skeletons %rosenthal-skeletons)
+      (packages
+       (append (specs->pkgs+out <<package>>)
+               (@@ (gnu system install) %installer-disk-utilities)
+               %base-packages))
+      (services
+       (cons* <<service>>
+              ((@@ (gnu system install) cow-store-service))
+              %rosenthal-desktop-services))))
+
+  ((compose <<transformation>>)
+   %os)
+#+end_src
+
+* Guix Home
+#+begin_src scheme :noweb yes :noweb-ref service
+  (service guix-home-service-type
+    `(("live" ,(home-environment
+                 (services (cons* <<home-service>> %rosenthal-desktop-home-services))))))
+#+end_src
+
+* Bootloader & Kernel
+#+name: bootloader
+#+begin_src scheme :noweb yes
+  (bootloader-configuration
+    (bootloader grub-bootloader)
+    (targets '("/dev/sda")))
+#+end_src
+
+FIXME: Using =microcode-initrd= will make the system image unbootable.
+#+begin_src scheme :noweb-ref transformation
+  (nonguix-transformation-linux
+   #:initrd base-initrd)
+#+end_src
+
+* Users
+#+begin_src scheme :noweb-ref module
+  (gnu home services shells)
+#+end_src
+
+Empty password
+#+begin_src scheme :noweb-ref user
+  (user-account
+    (name "live")
+    (password "")
+    (group "users")
+    (supplementary-groups '("audio" "video" "wheel"))
+    (shell (file-append (spec->pkg "fish") "/bin/fish")))
+#+end_src
+
+#+begin_src scheme :noweb-ref user
+  (user-account
+    (inherit %root-account)
+    ;; Don't initialize password for root.
+    (password #f))
+#+end_src
+
+#+begin_src scheme :noweb-ref transformation
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (sudoers-file
+       (plain-file "sudoers"
+         (string-append
+          (plain-file-content (operating-system-sudoers-file os))
+          "live ALL = NOPASSWD: ALL\n")))))
+#+end_src
+
+#+begin_src scheme :noweb-ref home-service
+  (service home-fish-service-type)
+#+end_src
+
+* Shell Utilities
+#+begin_src scheme :noweb-ref module
+  (rosenthal services shellutils)
+#+end_src
+
+** atuin
+#+begin_src scheme :noweb-ref home-service
+  (service home-atuin-service-type
+    (home-atuin-configuration
+      (shells '(fish))))
+#+end_src
+
+** direnv
+#+begin_src scheme :noweb-ref home-service
+  (service home-direnv-service-type
+    (home-direnv-configuration
+      (shells '(fish))))
+#+end_src
+
+** zoxide
+#+begin_src scheme :noweb-ref home-service
+  (service home-zoxide-service-type
+    (home-zoxide-configuration
+      (shells '(fish))))
+#+end_src
+
+* Guix Daemon
+#+begin_src scheme :noweb-ref module
+  (guix scripts pull)
+  (gnu packages package-management)
+#+end_src
+
+#+begin_src scheme :noweb-ref transformation
+  ;; Nonguix substitute server currently unavailable for IPv4.
+  ;; https://gitlab.com/nonguix/nonguix/-/issues/395
+  (nonguix-transformation-guix #:substitutes? #f)
+  (rosenthal-transformation-guix)
+
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (services
+       (modify-services (operating-system-user-services os)
+         (guix-service-type
+          config => (guix-configuration
+                      (inherit config)
+                      (guix (guix-for-channels
+                             (channel-list '(file . "../channels.lock"))))))))))
+#+end_src
+
+* Graphical Session
+#+begin_src scheme :noweb-ref module
+  (gnu home services fontutils)
+#+end_src
+
+#+begin_src scheme :noweb-ref package
+  "niri"
+  "wl-clipboard"
+
+  "foot"                                  ;terminal emulator
+  "imv"                                   ;image viewer
+  "light"                                 ;brightness control
+  "pavucontrol"                           ;sound settings
+  "rofi-wayland"                          ;application launcher
+  "wireplumber"                           ;PipeWire session manager
+  "xwayland-satellite"                    ;rootless XWayland integration
+
+  ;; File manager.
+  "exo"
+  "file-roller"
+  "thunar"
+  "thunar-archive-plugin"
+  "thunar-media-tags-plugin"
+  "thunar-vcs-plugin"
+  "thunar-volman"
+  "unzip"
+
+  ;; Web browser.
+  "librewolf"
+  "adaptive-tab-bar-colour-icecat"
+  "ohmyech-icecat"
+  "ublock-origin-icecat"
+
+  ;; XDG Desktop Portal packages for niri.
+  "xdg-desktop-portal"
+  "xdg-desktop-portal-gtk"
+  "xdg-desktop-portal-gnome"
+#+end_src
+
+#+begin_src scheme :noweb-ref home-service
+  (service home-swaybg-service-type)
+  (service home-waybar-service-type)
+  (service home-mako-service-type)
+
+  (service home-fcitx5-service-type
+    (home-fcitx5-configuration
+      (themes (specs->pkgs "fcitx5-material-color-theme"))
+      (input-method-editors (specs->pkgs "fcitx5-chinese-addons" "fcitx5-rime"))))
+#+end_src
+
+** Theme
+#+begin_src scheme :noweb-ref home-service
+  (service home-theme-service-type
+    (home-theme-configuration
+      (packages (specs->pkgs "qogir-icon-theme"))
+      (icon-theme "Qogir")
+      (cursor-theme "Qogir")))
+#+end_src
+
+** Fonts
+#+begin_src scheme :noweb-ref package
+  ;; Fonts
+  "font-adobe-source-serif"
+  "font-awesome"
+  "font-google-noto"
+  "font-google-noto-emoji"
+  "font-google-noto-sans-cjk"
+  "font-google-noto-serif-cjk"
+  "font-victor-mono"
+#+end_src
+
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'extra-fontconfig
+      home-fontconfig-service-type
+    (let ((sans  "Noto Sans")
+          (serif "Noto Serif")
+          (mono  "Victor Mono")
+          (emoji "Noto Color Emoji"))
+      `((alias
+         (family "sans-serif")
+         (prefer
+          (family ,sans)
+          (family "Noto Sans CJK CN")
+          (family ,emoji)))
+        (alias
+         (family "serif")
+         (prefer
+          (family ,serif)
+          (family "Noto Serif CJK CN")
+          (family ,emoji)))
+        (alias
+         (family "monospace")
+         (prefer
+          (family ,mono)
+          (family "Noto Serif CJK CN")
+          (family ,emoji)))
+
+        ,@(map (lambda (name)
+                 `(alias
+                   (family ,name)
+                   (prefer
+                    (family ,sans)
+                    (family "sans-serif"))))
+               '("BlinkMacSystemFont"
+                 "-apple-system"
+                 "system-ui"
+                 "ui-sans-serif"))
+        (alias
+         (family "ui-serif")
+         (prefer
+          (family ,serif)
+          (family "serif")))
+        (alias
+         (family "ui-monospace")
+         (prefer
+          (family ,mono)
+          (family "monospace"))))))
+#+end_src
+
+* Emacs
+#+begin_src scheme :noweb-ref package
+  ;; Text editors
+  "emacs-pgtk"
+  "neovim"
+
+  "emacs-corfu"
+  "emacs-daemons"
+  "emacs-doom-modeline"
+  "emacs-envrc"
+  "emacs-flycheck"
+  "emacs-flycheck-guile"
+  "emacs-forge"
+  "emacs-gcmh"
+  "emacs-geiser"
+  "emacs-geiser-guile"
+  "emacs-helpful"
+  "emacs-hl-todo"
+  "emacs-macrostep"
+  "emacs-magit"
+  "emacs-mwim"
+  "emacs-no-littering"
+  "emacs-orderless"
+  "emacs-puni"
+  "emacs-rainbow-delimiters"
+  "emacs-vertico"
+#+end_src
+
+* Extra Packages
+#+begin_src scheme :noweb-ref package
+  ;; Commonly-used utilities.
+  "curl"
+  "git"
+  "rsync"
+#+end_src
+
+* LiveCD specific
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'fish-greeting
+      home-xdg-configuration-files-service-type
+    `(("fish/functions/fish_greeting.fish"
+       ,(plain-file "fish_greeting.fish" "\
+  echo \"\nWelcome to the LiveCD!\n
+  Configuration examples are under the `/etc/configuration' directory.\n\n\""))))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'configuration-template
+      etc-service-type
+    `(("configuration" ,(local-file "../files/plain/live/examples" #:recursive? #t))))
+#+end_src

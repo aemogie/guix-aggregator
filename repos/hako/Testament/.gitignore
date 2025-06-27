@@ -4,4 +4,6 @@
 # SPDX-License-Identifier: CC0-1.0
 
 /config/*.scm
+/dist/livecd-*
 /channels.lock
+/channels.tmp

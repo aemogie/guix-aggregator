@@ -388,7 +388,6 @@ Administration accounts.
 Frequently used packages.
 #+begin_src scheme :noweb-ref package
   "rsync"
-  "unzip"
 #+end_src
 
 ** Guix Daemon
@@ -772,9 +771,7 @@ To use NVK, mesa should be installed into a profile.
 #+begin_src scheme :noweb-ref package
   "niri"
   "wl-clipboard"
-  "xdg-desktop-portal"
-  "xdg-desktop-portal-gnome"
-  "xdg-desktop-portal-gtk"
+  "imv"
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
@@ -794,6 +791,12 @@ To use NVK, mesa should be installed into a profile.
 #+end_src
 
 [[file:../files/plain/niri.kdl][niri.kdl]]
+*** xdg-desktop-portal
+#+begin_src scheme :noweb-ref package
+  "xdg-desktop-portal"
+  "xdg-desktop-portal-gnome"
+  "xdg-desktop-portal-gtk"
+#+end_src
 
 *** waybar
 #+begin_src scheme :noweb-ref home-service
@@ -852,8 +855,7 @@ To use NVK, mesa should be installed into a profile.
     (home-theme-configuration
       (packages (specs->pkgs "qogir-icon-theme"))
       (icon-theme "Qogir")
-      (cursor-theme "Qogir")
-      (key-theme "Emacs")))
+      (cursor-theme "Qogir")))
 #+end_src
 
 ** fontconfig
@@ -1010,6 +1012,11 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
   (udev-rules-service 'android (spec->pkg "android-udev-rules") #:groups '("adbusers"))
 #+end_src
 
+** dino
+#+begin_src scheme :noweb-ref package
+  "dino"
+#+end_src
+
 ** emacs
 #+begin_src scheme :noweb-ref home-environment-variable
   ("EDITOR" . "emacsclient")
@@ -1101,7 +1108,7 @@ Fetch mailing lists from public-inbox instances:
 ** notmuch
 Fetch from mail server:
 #+begin_src scheme :noweb-ref home-service
-  (simple-service 'mbsync
+  (simple-service 'update-mailbox
       home-shepherd-service-type
     (list
      (shepherd-timer '(update-mailbox)
@@ -1114,47 +1121,15 @@ Fetch from mail server:
                     ;; Sync with mail server.
                     (invoke #$(file-append (spec->pkg "isync") "/bin/mbsync") "-a"
                             "--config" #$(local-file (testament-plain "mbsync.conf")))
-                    ;; Index & tag.
-                    (let ((notmuch #$(file-append (spec->pkg "notmuch") "/bin/notmuch")))
-                      (invoke notmuch "new")
-                      (map (match-lambda
-                             ((query . tags)
-                              (apply invoke notmuch "tag"
-                                     `(,@(map symbol->string tags) "--" ,query))))
-                           '(;; self
-                             ("from:hako@ultrarare.space OR folder:Sent"
-                              . (+sent))
-                             ("tag:replied OR tag:sent"
-                              . (-unread))
-                             ;; folders
-                             ("folder:Archive"
-                              . (+archive -inbox -unread))
-                             ("folder:Junk"
-                              . (+spam -inbox))
-                             ;; mailing lists
-                             ("tag:new AND folder:Lists/emacs-devel"
-                              . (+lists +lists/emacs-devel -inbox -new))
-                             ("tag:new AND folder:Lists/guile-devel"
-                              . (+lists +lists/guile-devel -inbox -new))
-                             ("tag:new AND folder:Lists/guix-bugs"
-                              . (+lists +lists/guix-bugs -inbox -new))
-                             ("tag:new AND folder:Lists/guix-devel"
-                              . (+lists +lists/guix-devel -inbox -new))
-                             ("tag:new AND folder:Lists/guix-user"
-                              . (+lists +lists/guix-user -inbox -new))
-                             ;; patches
-                             ("tag:new AND folder:Lists/guix-patches"
-                              . (+patches +patches/guix -inbox -new))
-                             ;; others
-                             ("tag:new"
-                              . (+inbox +unread -new)))))
-                    (invoke "emacsclient"
+                    ;; Index.
+                    (false-if-exception
+                     (invoke #$(file-append (spec->pkg "mu") "/bin/mu") "index"))
+                    ;; Send queued mail.
+                    (invoke #$(file-append (spec->pkg "emacs-pgtk") "/bin/emacsclient")
                             "--eval" "(smtpmail-send-queued-mail)"))))))))
 #+end_src
 
 [[file:../files/plain/mbsync.conf][mbsync.conf]]
-
-[[file:../files/dotfiles/.config/notmuch/default/config][~/.config/notmuch/default/config]]
 
 ** qbittorrent
 #+begin_src scheme :noweb-ref home-service
@@ -1170,4 +1145,16 @@ Fetch from mail server:
     (for-home
      (syncthing-configuration
        (user "hako"))))
+#+end_src
+
+** thunar
+#+begin_src scheme :noweb-ref package
+  "exo"
+  "file-roller"
+  "thunar"
+  "thunar-archive-plugin"
+  "thunar-media-tags-plugin"
+  "thunar-vcs-plugin"
+  "thunar-volman"
+  "unzip"
 #+end_src

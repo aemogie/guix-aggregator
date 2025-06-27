@@ -71,7 +71,11 @@
                                (suspend . "sudo loginctl suspend")
                                (hibernate . "sudo loginctl hibernate"))))
 
-;;- SSS/GNU
+(define waybar-vkbd
+  `(custom/vkbd (format . "vkbd")
+                (tooltip-format . "Toggle a virtual on-screen keyboard")
+                (on-click . "pgrep wvkbd-mobintl && pkill wvkbd-mobintl || wvkbd-mobintl")))
+
 (define* (waybar-start-button #:key (content "λ  SSS/GNU"))
   `(custom/waybar-start-button (format unquote content)
                                (on-click . "rofi -show drun")))
@@ -161,8 +165,8 @@
                           #(custom/waybar-start-button clock wlr/taskbar)
                           #(custom/waybar-start-button clock hyprland/workspaces custom/media)))
         (modules-right (if labwc-session
-                           #(pulseaudio power-profiles-daemon cpu memory backlight keyboard-state battery custom/power tray)
-                           #(pulseaudio power-profiles-daemon cpu memory backlight keyboard-state battery custom/power tray))))
+                           #(pulseaudio power-profiles-daemon custom/vkbd cpu memory backlight keyboard-state battery custom/power tray)
+                           #(pulseaudio power-profiles-daemon custom/vkbd cpu memory backlight keyboard-state battery custom/power tray))))
     `((position . bottom) (height . 38)
       (modules-left unquote modules-left)
       (modules-center)
@@ -190,6 +194,7 @@
       ,waybar-battery
       ,waybar-battery-2
       ,waybar-power-profiles
+      ,waybar-vkbd
       ,(waybar-taskbar #:palette palette)
       ,waybar-audio-icon
       ,waybar-power-button)))
@@ -244,6 +249,8 @@
     ("#custom-power" unquote
      (waybar-button-css #:palette palette))
     ("#battery" unquote
+     (waybar-button-css #:palette palette))
+    ("#custom-vkbd" unquote
      (waybar-button-css #:palette palette))
     ("#backlight" unquote
      (waybar-button-css #:palette palette))
