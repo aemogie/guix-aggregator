@@ -768,6 +768,15 @@ Use prefix argument ARG for number of lines, otherwise use default."
                            (eq major-mode 'org-mode)
                          (org-roam-link-replace-all)))))
 
+(use-package org-roam-ui
+  :ensure t
+  :after org-roam
+  :custom
+  (org-roam-ui-sync-theme t)
+  (org-roam-ui-follow t)
+  (org-roam-ui-update-on-save t)
+  (org-roam-ui-open-on-start t))
+
 (use-package org-super-agenda ;; if there's a problem with loading the package, it could be because of dash conflicts - needs to be installed internally, not externally
   :ensure t
   :after org-agenda
@@ -1658,10 +1667,10 @@ T - tag prefix
    (put cmd 'repeat-map 'emacs-styling-map)) emacs-styling-map)
 
 ;; persistent scratch
-(use-package persistent-scratch
-  :ensure t
-  :config
-  (persistent-scratch-setup-default))
+;; (use-package persistent-scratch
+;;   :ensure t
+;;   :config
+;;   (persistent-scratch-setup-default))
 
 (add-hook 'server-after-make-frame-hook
           (lambda ()
@@ -1945,7 +1954,7 @@ Otherwise, call eat."
 ;;;;;;;;;;;
 
 ;; mu4e
-(use-package mu4e
+(use-package  mu4e
   :ensure nil
   :load-path "/usr/share/emacs/site-lisp/mu4e/"
   :custom
@@ -2302,6 +2311,16 @@ in HEADINGS-TO-DELETE."
   :config
   (setq jiralib-url "https://polhuang.atlassian.net")
   (setq org-jira-working-dir "~/jira"))
+
+(load "~/projects/ticktick/ticktick.el")
+
+(use-package ticktick
+  :load-path "~/projects/ticktick/ticktick.el"
+  :custom
+  (ticktick-client-id "uxXCDqEv3nV3C2M1hn")
+  (ticktick-client-secret "6eh+gE#66+3lKHJv56d)EU8&eru_k$*8")
+  (ticktick-sync-file "~/org/ticktick.org")
+  (ticktick-autosync nil))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.

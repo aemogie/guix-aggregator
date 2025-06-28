@@ -67,7 +67,7 @@
                    %base-groups))
 
     ;; This is where we specify system-wide packages.
-    (packages (append (specs->pkgs+out "gvfs") ;for user mounts
+    (packages (append (specifications->packages '("gvfs")) ;for user mounts
                       %base-packages))
 
     ;; Add GNOME and Xfce---we can choose at the log-in screen

@@ -1,7 +1,7 @@
-# to reconfigure: home-manager --flake .#pol switch
+# to reconfigure: home-manager --flake .#nineveh switch
 
 {
-  description = "polternix";
+  description = "Nix Home Manager config";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -9,20 +9,23 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
 
+
+
   outputs = { self, nixpkgs, home-manager, ... }:
     let
       system = "x86_64-linux";
-      username = "polhuang";
-      homeDirectory = "/home/polhuang";
+      username = "pol";
+      homeDirectory = "/home/pol";
     in {
-      homeConfigurations.pol = home-manager.lib.homeManagerConfiguration {
+      homeConfigurations.nineveh = home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs {
           inherit system;
           config.allowUnfree = true;
         };
 
+
         modules = [
-          ./home/default.nix     
+          ./home/default.nix
         ];
       };
     };

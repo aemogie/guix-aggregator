@@ -29,17 +29,32 @@ Guix channels in use:
 [[file:files/plain/assets/gokuraku-1.png]]
 
 * LiveCDs
-I'm providing two LiveCDs for the [[https://guix.gnu.org/manual/devel/en/html_node/Manual-Installation.html][manual installation]] of Guix System.  Pre-built
+I provide two LiveCDs for the [[https://guix.gnu.org/manual/devel/en/html_node/Manual-Installation.html][manual installation]] of Guix System.  Pre-built
 images are available for x86_64-linux: https://files.boiledscript.com/livecd/
 
-These LiveCDs use [[https://fishshell.com/][fish]] as the login shell, they also include the =cow-store= and
-=NetworkManager= services.
+These LiveCDs use [[https://fishshell.com/][fish]] as the login shell.  NetworkManager is available for
+network configuration.  A ~set-keymap~ script is provided for keyboard setup of
+both LiveCDs.
 
-Guix System configuration examples are available [[file:files/plain/live/examples][in this repository]], they are
-also added to the LiveCDs under the =/etc/configuration= directory.  Most of the
-examples are based on the templates included in Guix source tree.
+#+begin_example
+  Usage: set-keymap LAYOUT [VARIANT] [-m MODEL] [-o OPTIONS]
 
-Two external channels, [[https://gitlab.com/nonguix/nonguix][Nonguix]] and [[https://codeberg.org/hako/rosenthal.git][Rosenthal]], are configured via the
+  OPTIONS are comma-separated e.g. "ctrl:nocaps,grp:alt_shift_toggle"
+#+end_example
+
+Example usage below:
+#+begin_example
+  $ set-keymap us dvorak -o ctrl:nocaps
+#+end_example
+
+For a full list of available layouts, variants, models and options, refer to the
+[[https://man.archlinux.org/man/extra/xkeyboard-config/xkeyboard-config.7.en][xkeyboard-config.7]] manual page.
+
+This repository includes several [[file:files/plain/live/examples][Guix System configuration examples]], they are
+available in the LiveCDs as well, under the =/etc/configuration= directory.
+Most of the examples are based on the templates included in Guix source tree.
+
+Two external channels, [[https://gitlab.com/nonguix/nonguix][Nonguix]] and [[https://codeberg.org/hako/rosenthal.git][Rosenthal]], are configured via their
 transformation interfaces (TODO documentation), so you can add and remove these
 channels from the configurations easily.
 
@@ -48,42 +63,24 @@ from the LiveCD(s) and they have hard dependency on the Rosenthal channel.
 Since Rosenthal is still unstable, they are considered experimental.
 
 ** [[file:config/live-console.org][console]]
-Username: =live=, password: =rosenthal=
+Username: =live=, password: =rosenthal=.
 
-This LiveCD starts a SSH daemon listening on port =20202=.  For network
-configuration, =NetworkManager= is available (~sudo nmtui~, ~sudo~ is required
-because Polkit is not configured).
+This LiveCD starts a SSH daemon listening on port =20202=.
 
 [[file:files/plain/assets/live-console-1.jpg]]
 
 ** [[file:config/live-desktop.org][desktop]]
 Username: =live=, no password.
 
-This live system provides a pre-configured Emacs and a desktop environment built
-around the [[https://github.com/YaLTeR/niri][niri compositor]].  Their configurations are managed [[https://codeberg.org/hako/Rosenthal/src/branch/trunk/modules/rosenthal/examples][in the Rosenthal
-channel]].
+This LiveCD provides a pre-configured Emacs text editor and a desktop
+environment built around the [[https://github.com/YaLTeR/niri][niri]] Wayland compositor.  [[https://codeberg.org/hako/Rosenthal/src/branch/trunk/modules/rosenthal/examples][Configurations files for
+the environment]] are managed in the Rosenthal channel and exposed as the
+=%rosenthal-skeletons= variable.
 
 Default keybindings:
 + =Super + Shift + /= :: Open an overlay for available hotkeys.
 + =Super + T= :: Open terminal emulator, [[https://codeberg.org/dnkl/foot][foot]] is used.
 + =Super + D= :: Open application launcher, [[https://github.com/lbonn/rofi][rofi-wayland]] is used.
-
-To change keyboard layout, edit niri configuration at
-=~/.config/niri/config.kdl= (see [[https://github.com/YaLTeR/niri/wiki/Configuration:-Input#keyboard][its documentation for keyboard layout]]).
-Changes to the configuration file will be applied immediately.
-
-#+begin_src shell
-  # Open terminal emulator (Super + T)
-
-  # Make the configuration file writable.
-  $ cd ~/.config/niri
-  $ chmod +w config.kdl
-
-  # Edit the configuration using editor of your choice.
-  $ nano config.kdl
-  $ nvim config.kdl
-  $ emacs config.kdl
-#+end_src
 
 [[file:files/plain/assets/live-desktop-1.png]]
 [[file:files/plain/assets/live-desktop-2.png]]

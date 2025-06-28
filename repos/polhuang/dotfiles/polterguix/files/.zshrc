@@ -16,6 +16,7 @@ zstyle ':completion:*:default' menu select=1
 
 # emacs bindings
 bindkey -e
+bindkey "^[[3~" delete-char
 
 # env variables
 export PATH="$PATH:$HOME/.local/bin"

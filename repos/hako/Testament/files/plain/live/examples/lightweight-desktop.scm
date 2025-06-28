@@ -40,12 +40,12 @@
 
     ;; Add a bunch of window managers; we can choose one at
     ;; the log-in screen with F1.
-    (packages (append (specs->pkgs+out
-                       ;; window managers
-                       "ratpoison" "i3-wm" "i3status" "dmenu"
-                       "emacs" "emacs-exwm" "emacs-desktop-environment"
-                       ;; terminal emulator
-                       "xterm")
+    (packages (append (specifications->packages
+                       '(;; window managers
+                         "ratpoison" "i3-wm" "i3status" "dmenu"
+                         "emacs" "emacs-exwm" "emacs-desktop-environment"
+                         ;; terminal emulator
+                         "xterm"))
                       %base-packages))
 
     ;; Use the "desktop" services, which include the X11

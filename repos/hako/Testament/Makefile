@@ -47,16 +47,6 @@ authenticate:
 	@$(GUIX) git authenticate c5d46fdfdfbc84fe413f1d930049d1f703f9a0ff \
 		"F4C2 D1DF 3FDE EA63 D1D3  0776 ACC6 6D09 CA52 8292"
 
-.PHONY: ares
-# Start nREPL server for Guile.
-# NOTE: Load reader extensions before starting nREPL server.
-ares:
-	@$(GUIX) shell guile-next guile-ares-rs -- guile -c \
-	"(begin \
-	   (use-modules (guix gexp) \
-	                (gnu home services emacs)) \
-	   ((@ (ares server) run-nrepl-server)))"
-
 .PHONY: clean
 clean:
 	-$(RM) config/*.scm channels.lock

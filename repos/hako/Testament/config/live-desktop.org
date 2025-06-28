@@ -18,9 +18,27 @@
       (bootloader <<bootloader>>)
       (file-systems %base-file-systems)
       (users (cons* <<user>> %base-user-accounts))
-      (skeletons %rosenthal-skeletons)
+      (skeletons
+       (append `(;; Hide a few desktop entries from the application launcher.
+                 (".local/share/applications/emacsclient.desktop"
+                  ,(hidden-desktop-entry "emacsclient.desktop"
+                     (file-append (specification->package "emacs-pgtk") "/share/applications/emacsclient.desktop")))
+                 (".local/share/applications/foot-server.desktop"
+                  ,(hidden-desktop-entry "foot-server.desktop"
+                     (file-append (specification->package "foot") "/share/applications/foot-server.desktop")))
+                 (".local/share/applications/footclient.desktop"
+                  ,(hidden-desktop-entry "footclient.desktop"
+                     (file-append (specification->package "foot") "/share/applications/footclient.desktop")))
+                 (".local/share/applications/rofi.desktop"
+                  ,(hidden-desktop-entry "rofi.desktop"
+                     (file-append (specification->package "rofi") "/share/applications/rofi.desktop")))
+                 (".local/share/applications/rofi-theme-selector.desktop"
+                  ,(hidden-desktop-entry "rofi-theme-selector.desktop"
+                     (file-append (specification->package "rofi") "/share/applications/rofi-theme-selector.desktop"))))
+               %rosenthal-skeletons))
       (packages
-       (append (specs->pkgs+out <<package>>)
+       (append (specifications->packages '(<<package>>))
+               (list %rosenthal-set-keymap)
                (@@ (gnu system install) %installer-disk-utilities)
                %base-packages))
       (services
@@ -65,7 +83,7 @@ Empty password
     (password "")
     (group "users")
     (supplementary-groups '("audio" "video" "wheel"))
-    (shell (file-append (spec->pkg "fish") "/bin/fish")))
+    (shell (file-append (specification->package "fish") "/bin/fish")))
 #+end_src
 
 #+begin_src scheme :noweb-ref user
@@ -95,25 +113,10 @@ Empty password
   (rosenthal services shellutils)
 #+end_src
 
-** atuin
 #+begin_src scheme :noweb-ref home-service
-  (service home-atuin-service-type
-    (home-atuin-configuration
-      (shells '(fish))))
-#+end_src
-
-** direnv
-#+begin_src scheme :noweb-ref home-service
-  (service home-direnv-service-type
-    (home-direnv-configuration
-      (shells '(fish))))
-#+end_src
-
-** zoxide
-#+begin_src scheme :noweb-ref home-service
-  (service home-zoxide-service-type
-    (home-zoxide-configuration
-      (shells '(fish))))
+  (service home-fish-plugin-atuin-service-type)
+  (service home-fish-plugin-direnv-service-type)
+  (service home-fish-plugin-zoxide-service-type)
 #+end_src
 
 * Guix Daemon
@@ -122,11 +125,15 @@ Empty password
   (gnu packages package-management)
 #+end_src
 
+Lock channels to avoid building Guix when using the LiveCD.
 #+begin_src scheme :noweb-ref transformation
   ;; Nonguix substitute server currently unavailable for IPv4.
   ;; https://gitlab.com/nonguix/nonguix/-/issues/395
-  (nonguix-transformation-guix #:substitutes? #f)
-  (rosenthal-transformation-guix)
+  (nonguix-transformation-guix
+   #:substitutes? #f
+   #:channel? #f)
+  (rosenthal-transformation-guix
+   #:channel? #f)
 
   (lambda (os)
     (operating-system
@@ -136,8 +143,8 @@ Empty password
          (guix-service-type
           config => (guix-configuration
                       (inherit config)
-                      (guix (guix-for-channels
-                             (channel-list '(file . "../channels.lock"))))))))))
+                      (channels (channel-list '((channel-file . "channels.lock"))))
+                      (guix (guix-for-channels channels))))))))
 #+end_src
 
 * Graphical Session
@@ -186,8 +193,12 @@ Empty password
 
   (service home-fcitx5-service-type
     (home-fcitx5-configuration
-      (themes (specs->pkgs "fcitx5-material-color-theme"))
-      (input-method-editors (specs->pkgs "fcitx5-chinese-addons" "fcitx5-rime"))))
+      (themes
+       (map specification->package
+            '("fcitx5-material-color-theme")))
+      (input-method-editors
+       (map specification->package
+            '("fcitx5-chinese-addons" "fcitx5-rime")))))
 #+end_src
 
 ** Theme
@@ -300,9 +311,13 @@ Empty password
   (simple-service 'fish-greeting
       home-xdg-configuration-files-service-type
     `(("fish/functions/fish_greeting.fish"
-       ,(plain-file "fish_greeting.fish" "\
-  echo \"\nWelcome to the LiveCD!\n
-  Configuration examples are under the `/etc/configuration' directory.\n\n\""))))
+       ,(plain-file "fish_greeting.fish" "echo \"
+  Welcome to the LiveCD!  You can use `set-keymap' to set up keyboard
+  layout.
+
+  Configuration examples are under the `/etc/configuration' directory.
+
+  \""))))
 #+end_src
 
 #+begin_src scheme :noweb-ref service

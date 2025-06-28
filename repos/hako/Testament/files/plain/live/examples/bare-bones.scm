@@ -5,9 +5,7 @@
              (rosenthal)
 
              (gnu services networking)
-             (gnu services ssh)
-
-             (nongnu packages linux))
+             (gnu services ssh))
 
 (define %my-os
   (operating-system
@@ -46,14 +44,14 @@
                  %base-user-accounts))
 
     ;; Globally-installed packages.
-    (packages (cons (spec->pkg "screen") %base-packages))
+    (packages (cons (specification->package "screen") %base-packages))
 
     ;; Add services to the baseline: a DHCP client and an SSH
     ;; server.  You may wish to add an NTP service here.
     (services (append (list (service dhcpcd-service-type)
                             (service openssh-service-type
                               (openssh-configuration
-                                (openssh (spec->pkg "openssh-sans-x"))
+                                (openssh (specification->package "openssh-sans-x"))
                                 (port-number 2222))))
                       %base-services))))
 

@@ -24,7 +24,7 @@
     (comment "Bob's sister")
     (group "users")
     (supplementary-groups '("wheel" "audio" "video"))
-    (shell (file-append (spec->pkg "fish") "/bin/fish"))))
+    (shell (file-append (specification->package "fish") "/bin/fish"))))
 
 (define %my-os
   (operating-system
@@ -67,76 +67,77 @@
 
     (packages
      (replace-mesa
-      (append (specs->pkgs+out "niri"
-                               "wl-clipboard"
+      (append (specifications->packages
+               '("niri"
+                 "wl-clipboard"
 
-                               "foot"               ;terminal emulator
-                               "imv"                ;image viewer
-                               "light"              ;brightness control
-                               "pavucontrol"        ;sound settings
-                               "rofi-wayland"       ;application launcher
-                               "wireplumber"        ;PipeWire session manager
-                               "xwayland-satellite" ;rootless XWayland integration
+                 "foot"               ;terminal emulator
+                 "imv"                ;image viewer
+                 "light"              ;brightness control
+                 "pavucontrol"        ;sound settings
+                 "rofi-wayland"       ;application launcher
+                 "wireplumber"        ;PipeWire session manager
+                 "xwayland-satellite" ;rootless XWayland integration
 
-                               ;; File manager.
-                               "exo"
-                               "file-roller"
-                               "thunar"
-                               "thunar-archive-plugin"
-                               "thunar-media-tags-plugin"
-                               "thunar-vcs-plugin"
-                               "thunar-volman"
-                               "unzip"
+                 ;; File manager.
+                 "exo"
+                 "file-roller"
+                 "thunar"
+                 "thunar-archive-plugin"
+                 "thunar-media-tags-plugin"
+                 "thunar-vcs-plugin"
+                 "thunar-volman"
+                 "unzip"
 
-                               ;; Web browser.
-                               "librewolf"
-                               "adaptive-tab-bar-colour-icecat"
-                               "ohmyech-icecat"
-                               "ublock-origin-icecat"
+                 ;; Web browser.
+                 "librewolf"
+                 "adaptive-tab-bar-colour-icecat"
+                 "ohmyech-icecat"
+                 "ublock-origin-icecat"
 
-                               ;; XDG Desktop Portal packages for niri.
-                               "xdg-desktop-portal"
-                               "xdg-desktop-portal-gtk"
-                               "xdg-desktop-portal-gnome"
+                 ;; XDG Desktop Portal packages for niri.
+                 "xdg-desktop-portal"
+                 "xdg-desktop-portal-gtk"
+                 "xdg-desktop-portal-gnome"
 
-                               ;; Fonts
-                               "font-adobe-source-serif"
-                               "font-awesome"
-                               "font-google-noto"
-                               "font-google-noto-emoji"
-                               "font-google-noto-sans-cjk"
-                               "font-google-noto-serif-cjk"
-                               "font-victor-mono"
+                 ;; Fonts
+                 "font-adobe-source-serif"
+                 "font-awesome"
+                 "font-google-noto"
+                 "font-google-noto-emoji"
+                 "font-google-noto-sans-cjk"
+                 "font-google-noto-serif-cjk"
+                 "font-victor-mono"
 
-                               ;; Text editors
-                               "emacs-pgtk"
-                               "neovim"
+                 ;; Text editors
+                 "emacs-pgtk"
+                 "neovim"
 
-                               "emacs-corfu"
-                               "emacs-daemons"
-                               "emacs-doom-modeline"
-                               "emacs-envrc"
-                               "emacs-flycheck"
-                               "emacs-flycheck-guile"
-                               "emacs-forge"
-                               "emacs-gcmh"
-                               "emacs-geiser"
-                               "emacs-geiser-guile"
-                               "emacs-helpful"
-                               "emacs-hl-todo"
-                               "emacs-macrostep"
-                               "emacs-magit"
-                               "emacs-mwim"
-                               "emacs-no-littering"
-                               "emacs-orderless"
-                               "emacs-puni"
-                               "emacs-rainbow-delimiters"
-                               "emacs-vertico"
+                 "emacs-corfu"
+                 "emacs-daemons"
+                 "emacs-doom-modeline"
+                 "emacs-envrc"
+                 "emacs-flycheck"
+                 "emacs-flycheck-guile"
+                 "emacs-forge"
+                 "emacs-gcmh"
+                 "emacs-geiser"
+                 "emacs-geiser-guile"
+                 "emacs-helpful"
+                 "emacs-hl-todo"
+                 "emacs-macrostep"
+                 "emacs-magit"
+                 "emacs-mwim"
+                 "emacs-no-littering"
+                 "emacs-orderless"
+                 "emacs-puni"
+                 "emacs-rainbow-delimiters"
+                 "emacs-vertico"
 
-                               ;; Commonly-used utilities.
-                               "curl"
-                               "git"
-                               "rsync")
+                 ;; Commonly-used utilities.
+                 "curl"
+                 "git"
+                 "rsync"))
               %base-packages)))
 
     (services
@@ -147,18 +148,9 @@
                      (cons* (service home-keyboard-service-type %my-keyboard-layout)
 
                             (service home-fish-service-type)
-
-                            (service home-atuin-service-type
-                              (home-atuin-configuration
-                                (shells '(fish))))
-
-                            (service home-direnv-service-type
-                              (home-direnv-configuration
-                                (shells '(fish))))
-
-                            (service home-zoxide-service-type
-                              (home-zoxide-configuration
-                                (shells '(fish))))
+                            (service home-fish-plugin-atuin-service-type)
+                            (service home-fish-plugin-direnv-service-type)
+                            (service home-fish-plugin-zoxide-service-type)
 
                             ;; Disable fish greeting.
                             (simple-service 'fish-greeting
@@ -173,15 +165,21 @@
                             ;; Default cursor theme.
                             (service home-theme-service-type
                               (home-theme-configuration
-                                (packages (specs->pkgs "qogir-icon-theme"))
+                                (packages
+                                 (map specification->package
+                                      '("qogir-icon-theme")))
                                 (icon-theme "Qogir")
                                 (cursor-theme "Qogir")))
 
                             ;; Input method.
                             (service home-fcitx5-service-type
                               (home-fcitx5-configuration
-                                (themes (specs->pkgs "fcitx5-material-color-theme"))
-                                (input-method-editors (specs->pkgs "fcitx5-chinese-addons" "fcitx5-rime"))))
+                                (themes
+                                 (map specification->package
+                                      '("fcitx5-material-color-theme")))
+                                (input-method-editors
+                                 (map specification->package
+                                      '("fcitx5-chinese-addons" "fcitx5-rime")))))
 
                             ;; Font config.
                             (simple-service 'extra-fontconfig
