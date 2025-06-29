@@ -65,7 +65,8 @@ Since Rosenthal is still unstable, they are considered experimental.
 ** [[file:config/live-console.org][console]]
 Username: =live=, password: =rosenthal=.
 
-This LiveCD starts a SSH daemon listening on port =20202=.
+To facilitate remote installation, this LiveCD starts a SSH daemon.  Remember to
+change the password when logged in if the machine is exposed to the Internet ;)
 
 [[file:files/plain/assets/live-console-1.jpg]]
 
@@ -74,8 +75,9 @@ Username: =live=, no password.
 
 This LiveCD provides a pre-configured Emacs text editor and a desktop
 environment built around the [[https://github.com/YaLTeR/niri][niri]] Wayland compositor.  [[https://codeberg.org/hako/Rosenthal/src/branch/trunk/modules/rosenthal/examples][Configurations files for
-the environment]] are managed in the Rosenthal channel and exposed as the
-=%rosenthal-skeletons= variable.
+the environment]] are managed in the Rosenthal channel, exposed as the
+=%rosenthal-skeletons= variable and available under =/etc/skel= in LiveCD and
+the final system if configured.
 
 Default keybindings:
 + =Super + Shift + /= :: Open an overlay for available hotkeys.
@@ -84,6 +86,7 @@ Default keybindings:
 
 [[file:files/plain/assets/live-desktop-1.png]]
 [[file:files/plain/assets/live-desktop-2.png]]
+[[file:files/plain/assets/live-desktop-3.png]]
 
 * Resources
 + [[https://files.spritely.institute/papers/scheme-primer.html][A Scheme Primer]] :: Nice short guide to get you started with Scheme.

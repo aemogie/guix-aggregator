@@ -76,7 +76,6 @@ FIXME: Using =microcode-initrd= will make the system image unbootable.
   (service openssh-service-type
     (openssh-configuration
       (openssh (specification->package "openssh-sans-x"))
-      (port-number 20202)
       (password-authentication? #t)))
 #+end_src
 
