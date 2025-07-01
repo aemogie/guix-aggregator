@@ -266,8 +266,7 @@
     (mpv-conf
      `((global
         ((keep-open . yes)
-         (ytdl-format . "bestvideo[height<=?720][fps<=?30][vcodec!=?vp9]+bestaudio/best
-")
+         (ytdl-format . "bestvideo[height<=?720][fps<=?30][vcodec!=?vp9]+bestaudio/best")
          (save-position-on-quit . yes)
          (speed . 1.61))))))))
 
@@ -348,8 +347,8 @@ if [ -f $GUIX_PROFILE/etc/profile ]; then source $GUIX_PROFILE/etc/profile; fi
     sway-extra-config-service
     ssh-extra-config-service
     i2pd-add-ilita-irc-service
-    mpv-add-user-settings-service
-    rde-guix-add-to-shell-profile-service)))
+    ;; rde-guix-add-to-shell-profile-service
+    mpv-add-user-settings-service)))
 
 ;;; User-specific features with personal preferences
 
@@ -581,7 +580,7 @@ if [ -f $GUIX_PROFILE/etc/profile ]; then source $GUIX_PROFILE/etc/profile; fi
      #:elfeed-org-files '("/data/abcdw/work/abcdw/private/rss.org"))
 
     (feature-android)
-    (feature-javascript)
+    ;; (feature-javascript)
     (feature-ocaml #:opam? #t)
 
     (feature-emacs-piem
