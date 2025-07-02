@@ -22,6 +22,7 @@
   #:use-module (gnu services cups)
   #:use-module (gnu services dbus)
   #:use-module (gnu services desktop)
+  #:use-module (gnu services pm)
   #:use-module (gnu services ssh)
   #:use-module (gnu services xorg)
   ;; #:use-module (gnu services guix)
@@ -33,7 +34,8 @@
   #:use-module (gnu system)
   #:use-module (gnu system privilege)  
   #:use-module (nongnu packages linux)
-  #:use-module (nongnu system linux-initrd))
+  #:use-module (nongnu system linux-initrd)
+  #:export (core-operating-system))
 
 (define-public core-operating-system
   (operating-system
@@ -114,17 +116,11 @@
                                      (auto-enable? #t)))
                            (service nix-service-type)
 
-                           ;; Configure swaylock as a setuid program
-                           (service screen-locker-service-type
-                                    (screen-locker-configuration
-                                     (name "swaylock")
-                                     (program (file-append swaylock "/bin/swaylock"))
-                                     (using-pam? #t)
-                                     (using-setuid? #f)))
-                           
                            (service openssh-service-type
                                     (openssh-configuration
                                      (port-number 2222)))
+
+                           (service tlp-service-type)
 
                            (udev-rules-service 'pipewire-add-udev-rules pipewire)
                            (udev-rules-service 'brightnessctl-udev-rules brightnessctl)
@@ -132,20 +128,25 @@
                                            guix-service-type
                                            (guix-extension
                                             (substitute-urls
-                                             (append (list "https://substitutes.nonguix.org")
+                                             (append (list "https://substitutes.nonguix.org" "https://nonguix-proxy.ditigal.xyz")
                                                      %default-substitute-urls))
                                             (authorized-keys
                                              (append (list (plain-file "nonguix.pub"
                                                                        "(public-key (ecc (curve Ed25519) (q #C1FD53E5D4CE971933EC50C9F307AE2171A2D3B52C804642A7A35F84F3A4EA98#)))"))
                                          %default-authorized-guix-keys))))
                            (set-xorg-configuration
-                            (xorg-configuration (keyboard-layout keyboard-layout))))
+                            (xorg-configuration (keyboard-layout keyboard-layout)
+                                                (extra-config
+                                                 '((Section "InputClass"
+                                                            Identifier "Trackpoint"
+                                                            MatchProduct "TPPS/2 IBM TrackPoint"
+                                                            Option "AccelProfile" "flat"
+                                                            Option "Sensitivity" "200"
+                                                            Option "Speed" "1.0"
+                                                            EndSection))))))
                      (modify-services %desktop-services
 				      (network-manager-service-type config => (network-manager-configuration
+                                                                               (inherit config)
 									       (vpn-plugins
-										(list network-manager-openvpn))))
-				      (elogind-service-type config => (elogind-configuration
-								       (handle-lid-switch 'hibernate)))
-				      (upower-service-type config => (upower-configuration
-								      (critical-power-action 'hibernate))))))))
+										(list network-manager-openvpn)))))))))
 

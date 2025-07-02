@@ -64,9 +64,8 @@
 #+name: bootloader
 #+begin_src scheme :noweb yes
   (bootloader-configuration
-    (bootloader grub-efi-luks2-removable-bootloader)
+    (bootloader grub-efi-removable-bootloader)
     (targets '("/efi"))
-    (extra-initrd "/System/@Boot/cryptroot.cpio")
     (keyboard-layout <<keyboard-layout>>)
     (theme
      (grub-theme
@@ -109,21 +108,16 @@
 ** File Systems
 Disk layout:
 #+begin_example
-  +---------+-----------------------+
-  | ESP     | Btrfs subvolumes      |
-  | /efi    |_ _ _ _ _ _ _ _ _ _ _ _|
-  |         |                       |
-  |         | LUKS encrypted volume |
-  |         |_ _ _ _ _ _ _ _ _ _ _ _|
-  |         |                       |
-  |         | LVM Logical volume    |
-  |_ _ _ _ _|_ _ _ _ _ _ _ _ _ _ _ _|
-  |         |         |             |
-  | part. 1 | part. 2 |             |
-  |_ _ _ _ _| _ _ _ _ | disk 2      |
-  |                   |             |
-  | disk 1            |             |
-  +-------------------+-------------+
+  +---------+-------------------------------------+
+  |         |                                     |
+  |  ESP    | Btrfs subvolumes                    |
+  |_ _ _ _ _|_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _|
+  |         |         |                           |
+  | part. 1 | part. 2 |                           |
+  |_ _ _ _ _| _ _ _ _ |          disk 2           |
+  |                   |                           |
+  | disk 1            |                           |
+  +-------------------+---------------------------+
 #+end_example
 
 Btrfs subvolumes:
@@ -142,6 +136,7 @@ Btrfs subvolumes:
   System/@Log
   System/@Store
   System/@Swap
+  System/@Tmp
 #+end_example
 
 Root file system layout:
@@ -155,7 +150,8 @@ Root file system layout:
   ├─/swap         btrfs System/@Swap
   ├─/var/guix     btrfs System/@Guix
   ├─/var/lib      btrfs @Data
-  └─/var/log      btrfs System/@Log
+  ├─/var/log      btrfs System/@Log
+  └─/var/tmp      btrfs System/@Tmp
 #+end_example
 
 #+begin_src scheme :noweb-ref file-systems
@@ -173,18 +169,6 @@ Root file system layout:
           (create-mount-point? #t)))
 #+end_src
 
-#+begin_src scheme :noweb-ref mapped-device
-  (mapped-device
-    (source "MenthaVG")
-    (target "MenthaVG-LV")
-    (type lvm-device-mapping))
-
-  (mapped-device
-    (source (uuid "c1800987-36b0-4b50-b046-7840be5c3aa1"))
-    (target "Mentha-LUKS")
-    (type (luks-device-mapping-with-options #:key-file "/cryptroot.key")))
-#+end_src
-
 #+begin_src scheme :noweb yes :noweb-ref file-systems
   (let ((options-for-subvolume
          (lambda (subvolume)
@@ -196,7 +180,7 @@ Root file system layout:
     (map (match-lambda
            ((subvolume . mount-point)
             (file-system
-              (device (uuid "990c529e-33e0-4beb-9f61-7c7704e169af"))
+              (device (file-system-label "Mentha"))
               (mount-point mount-point)
               (type "btrfs")
               (options (options-for-subvolume subvolume))
@@ -210,6 +194,7 @@ Root file system layout:
            ("System/@Swap"  . "/swap")
            ("System/@Guix"  . "/var/guix")
            ("System/@Log"   . "/var/log")
+           ("System/@Tmp"   . "/var/tmp")
            ("@Config" . "/etc")
            ("@Home"   . "/home")
            ("@Data"   . "/var/lib")

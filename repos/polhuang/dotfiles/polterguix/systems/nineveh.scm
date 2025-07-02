@@ -13,6 +13,7 @@
              (gnu packages guile)
              (gnu packages ibus)
              (gnu packages librewolf)
+             (gnu packages mail)
              (gnu packages qt)
              (gnu packages shells)
              (gnu packages shellutils)
@@ -23,8 +24,7 @@
              (gnu home services shells)
              (guix gexp)
              (nongnu packages mozilla)
-             (polterguix packages cli)
-             )
+             (polterguix packages cli))
 
 (home-environment
  (packages (list
@@ -46,6 +46,7 @@
              kitty ;; locale errors (tab-completion problem with unicode characters) when kitty isn't installed with guix package manager
              ;; libime
              librewolf
+             mu
              network-manager
              network-manager-applet
              papirus-icon-theme
@@ -81,6 +82,12 @@
                           home-xdg-configuration-files-service-type
                           `(("hypr/hyprland.conf"  ,(local-file "../files/hypr/hyprland-nineveh.conf"))
                             ("hypr/hyprland-base.conf"  ,(local-file "../files/hypr/hyprland-base.conf"))))
+
+         (simple-service 'dotfiles
+                          home-xdg-configuration-files-service-type
+                          `(("waybar/style.css"  ,(local-file "../files/waybar/style-nineveh.css"))
+                            ("waybar/theme.css"  ,(local-file "../files/waybar/theme.css"))
+                            ("waybar/config"  ,(local-file "../files/waybar/config"))))
 
          ;; for nineveh only, run "guix build firefox --substitute-urls='https://ci.guix.gnu.org https://bordeaux.guix.gnu.org https://substitutes.nonguix.org'" to guix home reconfigure... not sure if the below does anything
          (simple-service 'guix-substitute-env-vars-service

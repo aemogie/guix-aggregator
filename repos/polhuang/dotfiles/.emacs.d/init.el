@@ -120,7 +120,7 @@
 ;;   :load-path "~/.emacs.d/everforest-emacs/")
 
 (use-package cherry-seoul256-theme
-  :load-path "~/projects/cherry-seoul256/"
+  :straight (cherry-seoul256 :type git :host github :repo "polhuang/cherry-seoul256")
   :custom
   (cherry-seoul256-background 233)
   :config
@@ -1956,7 +1956,7 @@ Otherwise, call eat."
 ;; mu4e
 (use-package  mu4e
   :ensure nil
-  :load-path "/usr/share/emacs/site-lisp/mu4e/"
+  :load-path "~/.guix-home/profile/share/emacs/site-lisp/mu4e"
   :custom
   (mu4e-use-fancy-chars t)
   (mu4e-bookmarks
@@ -2086,7 +2086,7 @@ Otherwise, call eat."
 (use-package zone
   :commands zone-when-idle
   :config
-  (zone-when-idle 600))
+  (zone-when-idle 300))
 
 ;; dashboard
 (use-package dashboard
@@ -2312,10 +2312,10 @@ in HEADINGS-TO-DELETE."
   (setq jiralib-url "https://polhuang.atlassian.net")
   (setq org-jira-working-dir "~/jira"))
 
-(load "~/projects/ticktick/ticktick.el")
+(load "~/projects/ticktick.el/ticktick.el")
 
 (use-package ticktick
-  :load-path "~/projects/ticktick/ticktick.el"
+  :load-path "~/projects/ticktick.el/ticktick.el"
   :custom
   (ticktick-client-id "uxXCDqEv3nV3C2M1hn")
   (ticktick-client-secret "6eh+gE#66+3lKHJv56d)EU8&eru_k$*8")

@@ -1,16 +1,17 @@
 (define-module (polterguix systems akhetaten)
   #:use-module (gnu)
   #:use-module (gnu home)
+  #:use-module (gnu home services)
+  #:use-module (gnu home services shells)
+  #:use-module (gnu home services 
+  #:use-module (gnu home services gnupg)
   ;;  #:use-module (gnu packages)
   ;;  #:use-module (gnu packages autotools)
   #:use-module (gnu packages admin)
   #:use-module (gnu packages base)
   #:use-module (gnu packages emacs)
   #:use-module (gnu packages emacs-xyz)
-  ;;  #:use-module (gnu packages librewolf)
   #:use-module (gnu packages fonts)
-  ;;  #:use-module (gnu packages base)
-  ;;  #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages ghostscript)
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages gnupg)
@@ -34,59 +35,38 @@
   #:use-module (polterguix packages cli)
   #:use-module (polterguix packages desktop)
   #:use-module (polterguix packages fonts-extra)
-  ;;  #:use-module (gnu services)
-  ;;  #:use-module (gnu services networking)
-   
-  ;;  #:use-module (gnu services ssh)
-  
-  ;; #:use-module (gnu services xorg)
-
-   
-  ;;  #:use-module (guix gexp)
-  ;;  #:use-module (polterguix packages desktop)
-  ;;  #:use-module (polterguix packages security)
-  #:use-module (gnu home services)
-  #:use-module (gnu home services shells)
-  #:use-module (gnu home services ssh)
-  
-  #:use-module (polterguix systems core-system))
+  #:use-module (polterguix systems core-system)
+  #:use-module (rosenthal services desktop)
+  #:use-module (rosenthal services networking))
 
 (define system
   (operating-system
    (inherit core-operating-system)
-   (host-name "akhetaten"
-              )
+   (host-name "akhetaten")
 
-   ;; (firmware (list linux-firmware radeon-firmware))
+   (firmware (list linux-firmware amdgpu-firmware))
 
    (mapped-devices (list (mapped-device
                           (source (uuid
-                                   "6d1b69cb-10b9-43a0-8eee-6a186c73bb5b"))
+                                   "ce94eff8-f142-403f-96e0-208784bb7892"))
                           (target "cryptakhetaten")
                           (type luks-device-mapping))))
 
    (swap-devices (list (swap-space (target "/swap/swapfile")
                                    (dependencies mapped-devices))))
-
-   (kernel-arguments
-    (cons* "resume=/dev/mapper/cryptakhetaten"
-           "resume_offset=4385429"
-           %default-kernel-arguments))
    
    ;; placeholder file system
    (file-systems (cons* (file-system
                          (mount-point "/")
                          (device "/dev/mapper/cryptakhetaten")
-                         (type "btrfs")
+                         (type "ext4")
                          (dependencies mapped-devices))
-                        (file-system
-                         (device (uuid "2322-F702"
-                                       'fat32))
+                       (file-system
                          (mount-point "/boot/efi")
-                         (type "vfat"))
-                        %base-file-systems))))
-
-
+                         (device (uuid "A1B9-69BE"
+                                       'fat32))
+                         (type "vfat")) %base-file-systems))))
+   
 (define home
   (home-environment
    (packages (list asciiquarium
@@ -102,6 +82,7 @@
                    font-google-noto
                    font-google-noto-emoji
                    font-google-noto-sans-cjk
+                   font-google-noto-serif-cjk
                    font-jetbrains-mono
                    font-jetbrains-mono-nerd
 		   flatpak
@@ -110,8 +91,6 @@
 		   font-ghostscript
 		   font-gnu-freefont
                    fzf
-                   gcc
-                   glibc
                    hunspell
                    hyprpaper
                    kitty
@@ -123,8 +102,6 @@
                    obs
                    qutebrowser
 		   password-store
-                   pinentry
-                   pinentry-emacs
                    ripgrep
                    rofi-wayland
                    rust
@@ -133,6 +110,7 @@
                    starship-bin
                    swaynotificationcenter
                    waybar
+                   wl-clipboard
                    zsh-autosuggestions
                    zsh-completions
                    zsh-syntax-highlighting
@@ -153,7 +131,13 @@
                     (zprofile (list (local-file
                                      "../files/.zprofile"
                                      "zprofile")))))
-           
+          (service home-gpg-agent-service-type
+                   (home-gpg-agent-configuration
+                    (pinentry-program
+                     (file-append (spec->pkg "pinentry-emacs") "/bin/pinentry-emacs"))
+                    (ssh-support? #t)
+                    (extra-content "allow-loopback-pinentry")))
+          
           (service home-openssh-service-type   ;; move identity-files to polterguix/
                    (home-openssh-configuration
                     (hosts
@@ -171,6 +155,11 @@
                           home-xdg-configuration-files-service-type
                           `(("hypr/hyprland.conf"  ,(local-file "../files/hypr/hyprland-akhetaten.conf"))
                             ("hypr/hyprland-base.conf"  ,(local-file "../files/hypr/hyprland-base.conf"))))
+
+          (service home-fcitx5-servicetype
+                   (home-fcitx5-configuration
+                    (themes (map specification->package '("fcitx5-material-color-theme")))
+                    (input-method-editors (map specification->package '("fcitx5-chinese-addons" "fcitx-rime")))))
 
           (simple-service 'dotfiles
                           home-xdg-configuration-files-service-type

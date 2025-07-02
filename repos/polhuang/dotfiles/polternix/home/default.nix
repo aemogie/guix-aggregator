@@ -10,7 +10,6 @@
     pkgs.activitywatch
     pkgs.google-chrome
     pkgs.morewaita-icon-theme
-    pkgs.mu
     pkgs.protonmail-bridge-gui
     pkgs.slack
     pkgs.ticktick
