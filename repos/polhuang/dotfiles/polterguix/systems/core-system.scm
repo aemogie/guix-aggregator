@@ -6,6 +6,8 @@
   #:use-module (gnu packages emacs-xyz)
   #:use-module (gnu packages file-systems)
   #:use-module (gnu packages fonts)
+  #:use-module (gnu packages freedesktop)
+  #:use-module (gnu packages gcc)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages libusb)
   #:use-module (gnu packages linux)
@@ -34,8 +36,7 @@
   #:use-module (gnu system)
   #:use-module (gnu system privilege)  
   #:use-module (nongnu packages linux)
-  #:use-module (nongnu system linux-initrd)
-  #:export (core-operating-system))
+  #:use-module (nongnu system linux-initrd))
 
 (define-public core-operating-system
   (operating-system
@@ -90,21 +91,19 @@
                  %base-groups))
 
    ;; essential system packages
-   (packages (cons* bluez
-                    bluez-alsa
-                    brightnessctl
+   (packages (cons* brightnessctl
                     emacs-no-x-toolkit
                     emacs-desktop-environment
                     exfat-utils
-                    font-awesome
                     fuse-exfat
                     git
                     hyprland
                     libva-utils
-                    nix
                     ntfs-3g
                     stow
                     vim
+                    xdg-desktop-portal-wlr
+                    xdg-desktop-portal-hyprland
                     zsh
                     %base-packages))
    
@@ -121,9 +120,8 @@
                                      (port-number 2222)))
 
                            (service tlp-service-type)
-
+                           (service gvfs-service-type)
                            (udev-rules-service 'pipewire-add-udev-rules pipewire)
-                           (udev-rules-service 'brightnessctl-udev-rules brightnessctl)
 			   (simple-service 'add-nonguix-substitutes
                                            guix-service-type
                                            (guix-extension
@@ -149,4 +147,3 @@
                                                                                (inherit config)
 									       (vpn-plugins
 										(list network-manager-openvpn)))))))))
-

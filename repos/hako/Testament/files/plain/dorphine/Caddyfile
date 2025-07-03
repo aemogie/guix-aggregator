@@ -61,16 +61,6 @@
 }
 
 
-http://files.ultrarare.space {
-	import block_bots
-	import pow
-	import robots_txt
-
-	import logging files
-	root * /var/lib/webpublic/files
-	file_server browse
-}
-
 # Komga
 http://manga.boiledscript.com {
 	import block_bots

@@ -33,9 +33,9 @@ tooltip label {
     margin: 10px 0 0 10px;
 }
 
+#temperature,
 #cpu,
 #memory,
-#temperature,
 #clock,
 #tray,
 #wireplumber,
@@ -46,9 +46,20 @@ tooltip label {
     opacity: 0.95;
 }
 
-#workspaces button {
+#taskbar {
     color: @bg2;
-    padding: 0 5px;
+    background-color: @bg1;
+}
+
+#taskbar.empty {
+    background: transparent;
+}
+
+#taskbar button {
+    /* https://github.com/Alexays/Waybar/issues/3334 */
+    padding: 0;
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 #tray menu {
@@ -85,7 +96,7 @@ tooltip label {
     background-color: @green;
 }
 
-#workspaces {
+#temperature {
     background-color: @color0;
 }
 
@@ -97,22 +108,18 @@ tooltip label {
     background-color: @color2;
 }
 
-#temperature {
+#clock {
     background-color: @color3;
 }
 
-#clock {
+#wireplumber {
     background-color: @color4;
 }
 
-#wireplumber {
+#backlight {
     background-color: @color5;
 }
 
-#backlight {
-    background-color: @color6;
-}
-
 #battery {
-    background-color: @color7;
+    background-color: @color6;
 }

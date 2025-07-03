@@ -80,6 +80,26 @@ files.boiledscript.com {
 	file_server browse
 }
 
+ultrarare.space {
+	import block_bots
+	import logging blog
+
+	root * /var/lib/webpublic/blog
+	file_server
+
+	handle_errors {
+		rewrite * /{err.status_code}.html
+		file_server
+	}
+	handle_path /comments/* {
+		reverse_proxy localhost:42174
+	}
+}
+
+www.ultrarare.space {
+	redir https://ultrarare.space{uri} permanent
+}
+
 # Cuirass
 ci.boiledscript.com {
 	import block_bots
