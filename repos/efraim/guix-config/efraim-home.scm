@@ -230,6 +230,9 @@
 (define %email-password-base64
   "hQIMA7NiANSDITKgAQ//cCXlvhNge4cA2zg/ZQFZhbBMYJJXWi1YdEMWc+8tJVDJHNqJDZOct3igmfILo6bVAQywXn3E7zgiNiPiqIIqMWDSwhIuTzdw3hNZEQmiaikpeLGIphLtPkKAH3maMMVWxQquDvYYuXdbYLiww/0POtbOeqcjfo+GRY5LQpsjOrX7pzwvxh5VQJFEUQ9GvdVwRJP9JOHxLSgrzhg0HzHVdnZQzrMpIykfG3qoUsQzgQxgnH1R0lhj7F4vffyWdPiArVV+33rVtW9+GDPO1VlUG2B6mWsjt/LPX3No/dByilmLapGYhFtJiRKaEWOJE/S4ApsAnAli4wLwe/YM1dLv5WOWFKn9XEQRBwB+QM56xL7FZIA5sWUQXVICPxnDrSGKXXQkQJSBGtGadAMwuGTgb3sSNVGc0s65MKZ2BGgol6BjxFqNBwO2+g5oGzKJTmo6vGHcEn3JpKPop0QX76MfCCyA8vujPD03ejVk/0G+mkGY8x4Vnb5zXG7OwEax6p6U+Tu/127/FJ+BRbxPxtqpGP/6jHeqjl9jNl/tVibNjhsxpeLzFkMzL3WU0nD3cnB8ZYgdC78f+sZ773Uzo87pFi5gKzh7cfULUxkiHeBO1HY+KH6bm/qxEj9Sjt3kbkhXmjnjMDOg9AI+izXupfIs+EVT02p0z6qr1QHGHCWPvSrSUgHmO71SpZcMkBs6X95lNsanMeHXNYg9EAm6zSZqrQQ9z8AcufAOWxoXS5hmaIMtef+zqKn3oQ0qvWtYXvpswlVuQgqxeZS/ndoTjnUUJj/Ngq4=")
 
+(define %fastmail-email-password-base64
+  "hQIMA7NiANSDITKgARAAjIDxAG2Y2Zr5pX6XEjN4XQFZXQUAoB+BKrlYBLttkG2unC21i9biC6AVqGKMk+ZdZP4J84zSVpxo+0xAPF/cGhsuziB2dFb0GLv1EfB91eaGS0/Xpd5vlWBM41Ud0O3xguTN6N/qqYFY6Khj3JP6ajSzdU+WCNIqVg1Np++eQ0oWom2ODVqbt6xE4X/oJ6krXfdx5Rsxn42ZXL4PRmPmAEfVtkmNc/0CgaCbgpJCLxZhbIQSVJcISLTDMJtr41+E/oEv2mkOmlE4AgOMImkBGN4gUZBU1XNRMEwvdDjpTOZfmZkVQ7AGTuQkY3ECADppBLr4xpGPlGSSNDkPAbZ33K98Qz+oXNU6x3RDUrItWS3Ui+ILgUijycCr+OGk+/WO3nkaymX6H6Ksinb57t097N2d4BBVwBTF2dMGGm+mzXQr+1CHAMKHh+5cUeVdNGs2QCUAbJBsLVsCCLFsVOL25a9KPYTJhiVOZKQXFAoklMNcDTXYW7bPF1k0wqvRR3OlAVsJg0acHCMMakd6VebSs5XSc8yyonDCW37x+fMO3Un2ylrOtwkj/HEMZ/zbUNj725oMnkjSUqQMkj0zUFp1qDgc+LDG3KHm5oFu1qRZccHZbuJfBs4j9rg/x3+o+tZzKtil8J2ExAS9tbDcaCFOaPnXlOYKZLI+aCE9cDLdBtzSTAHob3KiVkIehY5BWXVm93O5ZIaZ0P0CfMPgEDRO92rWN14U4bnK5P0+J6IZR8kQn+2YmJIavwjDAVOrX0ZlDimd8yB7JAt9TvjpSDU=")
+
 (define %newsboat-password-base64
   "hQIMA7NiANSDITKgAQ//RJqPOSSxwnLeabuPpWWcirIZpYM1K4U0qRXwE/BSQCO3ZdIBC2Kbk9xCG8dD+kd9NtEbqItbb+ZOz+JCAM3/r5a3mEkXwaEsKRhs3in+7i/EBsmUGidaf7m37g8VZDXGzBMn0KSKtnT9r7vVE9F8goAkWAyD5VewuPS5YIm80nzHrppC2GTYc3Al+wG6OseloyWgh4nQQaeCcv7e2I1H+fkZHAZRTZiqsoMiA4913kcL1cebExPUa8KpzE+0ZsHUZbRYhaPULKXdplTZRxXHSRQaJI/gzTm9tpCrjE7trZABXmiQAATZvgAp+n0Wvm2kF6QUy684fqETiVibEXBV2gKAibbD+ldTIUk7X1VQJdFfVtXeAmrxQKsxXqNZ1D7bjnbhpRFA81TvwH1Ka0QXB1Ga7TK/RHSB8AzSYFSoSroms+qzs36BniRKJt+jtgrTAwWtbG2iaYzvAxsZfPJTpUt6iavyB20tjNqINiIXEwPf1GGbFOt34l+FCnuLr2PeW1mVwno0zSMc+fE5El0gbMrBJ4wJAZoYFhyw7KpppRm8AS5RvbKHx1wS5pTz3Nn901hOXenJQ2As/NmOqK9QByqOzF4UWx/htVNQlDtJr/nJEapGAqO+xZ2Hg2wv9TV39whrigT9xy7UhM2AsmuiBxxMD7JOexREEg3vuTu5pOjSdAFu1HTG87upUby/J8X64ULbGWWDPQzbALnSf1NAd+n6cW62HN6cUJOuKGM3M3q1T3W4iCQtztgQK3pC4ggHrUdRLbRr2vbgHnqRyIHjeP9Q4S/2uJ806fX2p2ns0jDjh/YTZZm/q/0AeTjUEdyloCjspULH")
 
@@ -256,6 +259,9 @@
 
 (define %email-password
   (decrypt-password %email-password-base64))
+
+(define %fastmail-email-password
+  (decrypt-password %fastmail-email-password-base64))
 
 (define %newsboat-password
   (decrypt-password %newsboat-password-base64))
@@ -752,18 +758,14 @@
     "Flatten .\n"
     ;"SubFolders Verbatim\n"
     "\n"
-    "IMAPStore flashner\n"
-    "Host flashner.co.il\n"
-    ;; Use the tunnel instead.
-    ;"PassCmd \"" (S "gnupg") "/bin/gpg --quiet --for-your-eyes-only --decrypt $HOME/.msmtp.password.gpg\"\n"
-    ;"PassCmd " %email-password "\n"
-    ;"SSLType IMAPS\n"
-    ;"CertificateFile /etc/ssl/certs/ca-certificates.crt\n"
-    "Timeout 120\n" ; 25 MB * 8 (bytes to bits) / 2 Mb/s = 100 s, add 20% for safety.
-    "Tunnel \"" (S "openssh") "/bin/ssh -o Compression=yes -q do1.unicorn-typhon.ts.net 'MAIL=maildir:~/Maildir exec /usr/lib/dovecot/imap'\"\n"
+    "IMAPStore fastmail\n"
+    "Host imap.fastmail.com\n"
+    "User efraim@flashner.co.il\n"
+    "PassCmd " %fastmail-email-password "\n"
+    "TLSType IMAPS\n"
     "\n"
-    "Channel flashner\n"
-    "Far :flashner:\n"
+    "Channel fastmail\n"
+    "Far :fastmail:\n"
     "Near :local:\n"
     "Patterns * !work\n"))
 
@@ -793,6 +795,15 @@
           ;(password-eval %email-password)
           (tls-starttls? #f)
           (extra-content "tls_fingerprint 49:08:49:DF:A5:E9:73:8F:72:DA:BD:2D:2C:C4:C0:24:34:2B:66:D6"))))
+    (msmtp-account
+      (name "fastmail")
+      (configuration
+        (msmtp-configuration
+          (host "smtp.fastmail.com")
+          (port 465)
+          (user "efraim@flashner.co.il")
+          (from "efraim@flashner.co.il")
+          #;(password-eval %fastmail-email-password))))
     (msmtp-account
       (name "gmail-efraim")
       (configuration
