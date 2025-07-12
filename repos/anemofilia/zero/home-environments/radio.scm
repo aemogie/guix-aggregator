@@ -73,6 +73,7 @@
              #|C|# packages:calendar
              #|D|# packages:databases packages:desktop packages:development
                    packages:documentation packages:downloads
+             #|E|# packages:emacs
              #|F|# packages:file-managing
              #|G|# packages:guix-contrib
              #|I|# packages:image
@@ -385,7 +386,9 @@
 
           (simple-service 'home-applications-environment-variables
                           home-environment-variables-service-type
-                          `(("MINETEST_USER_PATH" . "$XDG_DATA_HOME/minetest")
+                          `(("EMACSLOADPATH"
+                             . "$HOME/.guix-home/profile/share/emacs/site-lisp")
+                            ("MINETEST_USER_PATH" . "$XDG_DATA_HOME/minetest")
                             ("PASSWORD_STORE_DIR" . "$XDG_DATA_HOME/pass")))
 
           #|SSH service|#

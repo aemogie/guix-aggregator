@@ -161,13 +161,10 @@ riverctl map normal Super d spawn "$TERMINAL -e lf"
 # btop
 riverctl map normal Super b spawn "$TERMINAL -e btop"
 
-# senpai
-riverctl map normal Super s spawn "$TERMINAL -e senpai"
-
 # application launcher
 riverctl map normal Super Semicolon spawn fuzzel
 
-# webcam (TODO: fix)
+# webcam
 riverctl map normal None XF86WebCam spawn "cam"
 riverctl map normal None XF86Sleep spawn "doas zzz"
 

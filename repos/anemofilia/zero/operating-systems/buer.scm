@@ -110,7 +110,7 @@
                                  "/backgrounds/guix-silver-16-9.svg"))
              (gfxmode `("1280x720x32"))))))
 
-   (kernel linux-libre-6.14)
+   (kernel linux-libre-6.15)
    (kernel-arguments
     `("console=tty1"
       "modprobe.blacklist=usbmouse,usbkbd,pcspkr"
@@ -232,9 +232,7 @@
                     (config-file "/etc/wpa-supplicant.conf")
                     (interface "wlp2s0")
                     (extra-options `("-B"))))
-          (service dhcp-client-service-type
-                   (dhcp-client-configuration
-                    (interfaces 'all)))
+          (service dhcpcd-service-type)
 
           #|Power management services|#
           (service tlp-service-type
