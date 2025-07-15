@@ -3,36 +3,53 @@
 ;; need to capture the channels being used, as returned by "guix describe".
 ;; See the "Replicating Guix" section in the manual.
 
-(define-module (home home-conf)
+(define-module (anon home home-conf)
+  #:use-module (guix gexp)
+  #:use-module (guix channels)
+
   #:use-module (gnu)
-  #:use-module (gnu home)
+
   #:use-module (gnu packages)
 
+  #:use-module (gnu home)
   #:use-module (gnu home services)
   #:use-module (gnu home services desktop)
-  ;; #:use-module (gnu home services dotfiles)
+  ; #:use-module (gnu home services dotfiles)
   #:use-module (gnu home services gnupg)
   #:use-module (gnu home services guix)
   #:use-module (gnu home services shells)
   #:use-module (gnu home services shepherd)
   #:use-module (gnu home services sound)
 
-  #:use-module (guix gexp)
-  #:use-module (guix channels)
+  #:use-module (nongnu packages)
+  #:use-module (nongnu packages editors)
 
-  #:use-module (home services dotfiles)
-  #:use-module (home services texlive)
-  #:use-module (packages fonts)
-  #:use-module (packages texlab))
+
+  ; #:use-module (anon home services)
+  #:use-module (anon home services dotfiles)
+  #:use-module (anon home services texlive)
+
+  #:use-module (anon packages fonts)
+  #:use-module (anon packages neovim)
+  #:use-module (anon packages texlab)
+  #:use-module (anon packages textutils)
+  #:use-module (anon packages tree-sitter)
+  #:use-module (anon packages xdg-desktop-portal-gtk-sway))
+
+  ; #:export (my-home-environment))
 
 (use-package-modules admin
                      chromium
+                     compression
+                     cups
                      ebook
                      fcitx5
                      fonts
                      freedesktop
+                     glib
                      gnome
                      gnupg
+                     image-viewers
                      inkscape
                      kde
                      librewolf
@@ -49,14 +66,12 @@
                      terminals
                      tree-sitter
                      vim
+                     web-browsers
                      wm
                      xdisorg
                      xorg)
 
-;; (define packages:desktop
-;;   (list #|freedesktop|# xdg-utils xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr))
-
-(define-public my-home-environment
+(define my-home-environment
   (home-environment
     ;; Below is the list of packages that will show up in your
     ;; Home profile, under ~/.guix-home/profile.
@@ -72,16 +87,30 @@
                mako
                grimshot
 
+               unzip
+
                ;; text editor
-               neovim
-               tree-sitter-cli
+               neovim-0.11.1
+               tree-sitter-cli-0.25.3
                texlab
+
+               ;; vscodium
 
                inkscape
 
+               ;; image viewer
+               imv
+
                ;; flatpak
                flatpak
+               xdg-desktop-portal
+               xdg-desktop-portal-gtk-sway
+               xdg-desktop-portal-wlr
+               xdg-utils ;For xdg-open, etc
                flatpak-xdg-utils
+               xdg-dbus-proxy
+               shared-mime-info
+               (list glib "bin")
 
                ;; xwayland
                xorg-server-xwayland
@@ -114,6 +143,7 @@
                ;; browsers
                ungoogled-chromium
                librewolf
+               qutebrowser
 
                ;; clipboard
                ;; xclip
@@ -136,7 +166,10 @@
                fcitx5-chinese-addons
                fcitx5-configtool
                fcitx5-gtk
-               fcitx5-qt))
+               fcitx5-qt
+
+               ;; printers & scanners
+               hplip))
 
     ;; Below is the list of Home services.  To search for available
     ;; services, run 'guix home search KEYWORD' in a terminal.
@@ -155,7 +188,7 @@
                              ("PASSWORD_STORE_DIR" . "$XDG_DATA_HOME/pass")
 
                              ;; Fcitx5
-                             ;; ("XMODIFIERS" . "@im" . "fcitx")
+                             ("XMODIFIERS" . "@im=fcitx")
                              ("GTK_IM_MODULE" . "fcitx")
                              ("QT_IM_MODULE" . "fcitx")
 
@@ -174,7 +207,7 @@
 
            (service home-dotfiles-service-type
                     (home-dotfiles-configuration (directories (list (format #f
-                                                                            "~a/anon/files"
+                                                                            "~a/src/anon/files"
                                                                             (getenv
                                                                              "HOME"))))))
            ;; (excluded '(".*~" ".*\\.swp" "\\.git/.*" ".*/\\.git/.*" "\\.gitignore"))))
@@ -193,9 +226,18 @@
 
            (service home-texlive-service-type)
 
-           (simple-service 'nonguix-channel-service
-                           home-channels-service-type
-                           (list (channel
+           (simple-service 'additional-channels-service home-channels-service-type
+                           (list 
+                             ;; (channel
+                             ;;       (name 'guix)
+                             ;;       (url "https://codeberg.org/guix/guix.git")
+                             ;;       (branch "master")
+                             ;;       (introduction
+                             ;;        (make-channel-introduction
+                             ;;         "9edb3f66fd807b096b48283debdcddccfea34bad"
+                             ;;         (openpgp-fingerprint
+                             ;;          "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA"))))
+                                 (channel
                                    (name 'nonguix)
                                    (url "https://gitlab.com/nonguix/nonguix")
                                    ;; Enable signature verification

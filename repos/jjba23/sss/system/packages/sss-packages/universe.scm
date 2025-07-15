@@ -200,6 +200,7 @@
         mpv
         mpv-mpris
         nemo
+        nautilus
         netcat
         nginx
         obs

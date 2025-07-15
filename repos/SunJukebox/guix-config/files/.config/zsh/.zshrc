@@ -1,5 +1,5 @@
 # Lines configured by zsh-newuser-install
-HISTFILE=~/.histfile
+HISTFILE="$XDG_STATE_HOME"/zsh/history
 HISTSIZE=1000
 SAVEHIST=1000
 setopt extendedglob notify
@@ -8,13 +8,15 @@ bindkey -v
 
 # End of lines configured by zsh-newuser-install
 # The following lines were added by compinstall
-zstyle :compinstall filename '$ZDOTDIR/.zshrc'
+# zstyle :compinstall filename '$ZDOTDIR/.zshrc'
 
 autoload -Uz compinit
-compinit
+# Completion files: Use XDG dirs
+[ -d "$XDG_CACHE_HOME"/zsh ] || mkdir -p "$XDG_CACHE_HOME"/zsh
+zstyle ':completion:*' cache-path "$XDG_CACHE_HOME"/zsh/zcompcache
+compinit -d "$XDG_CACHE_HOME"/zsh/zcompdump-$ZSH_VERSION
 
-autoload -Uz promptinit
-promptinit
+autoload -Uz promptinit && promptinit
 prompt redhat
 # End of lines added by compinstall
 

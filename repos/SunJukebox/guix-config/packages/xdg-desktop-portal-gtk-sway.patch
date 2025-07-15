@@ -1,0 +1,8 @@
+--- xdg-desktop-portal-gtk/data/gtk.portal.in	2025-01-21 02:21:08.046295507 -0500
++++ xdg-desktop-portal-gtk/data/gtk.portal.in	2025-01-21 02:21:32.334745954 -0500
+@@ -1,4 +1,4 @@
+ [portal]
+ DBusName=org.freedesktop.impl.portal.desktop.gtk
+ Interfaces=org.freedesktop.impl.portal.FileChooser;@appchooser_iface@org.freedesktop.impl.portal.Print;@screenshot_iface@org.freedesktop.impl.portal.Notification;org.freedesktop.impl.portal.Inhibit;org.freedesktop.impl.portal.Access;org.freedesktop.impl.portal.Account;org.freedesktop.impl.portal.Email;org.freedesktop.impl.portal.DynamicLauncher;@screencast_iface@@remotedesktop_iface@@lockdown_iface@@background_iface@@settings_iface@@wallpaper_iface@
+-UseIn=gnome
++UseIn=gnome;sway

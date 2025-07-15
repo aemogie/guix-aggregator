@@ -1,4 +1,4 @@
-(define-module (home services texlive)
+(define-module (anon home services texlive)
   #:use-module (gnu)
   #:use-module (gnu home)
   #:use-module (gnu home services)

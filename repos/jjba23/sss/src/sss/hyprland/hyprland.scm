@@ -61,6 +61,8 @@
     ("/org/gnome/desktop/interface/cursor-theme" unquote
      (format #f "'~a'"
              (get-cursor-theme palette)))
+    ("/org/gnome/desktop/interface/color-scheme" unquote
+     (if (is-dark-palette palette) "'prefer-dark'" "'prefer-light'"))
     ("/org/gnome/desktop/interface/cursor-size" . "24")
     ("/org/gnome/desktop/interface/font-name" unquote
      (format #f "'~a'" sans-font))))
@@ -79,7 +81,6 @@
                        "emacs --daemon"
                        "transmission-daemon"
                        "podman system service --time=0 unix:///tmp/podman.sock"
-                       "gsettings set org.gnome.desktop.interface gtk-key-theme \"Emacs\""
                        "xdg-user-dirs-update"
                        ,(format #f "fyi \"~a\" \"~a\""
                                 (G_

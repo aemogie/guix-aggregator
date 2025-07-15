@@ -45,14 +45,11 @@
                     (get-gtk-theme palette))
     (gtk-font-name unquote
                    (format #f "~a 11" sans-font))
-    (gtk-key-theme-name . Emacs)
     (gtk-enable-event-sounds . 0)
     (gtk-cursor-theme-name unquote
                            (get-cursor-theme palette))
     (gtk-cursor-theme-size . 24)
-    (gtk-enable-input-feedback-sounds . 0)
-    (gtk-application-prefer-dark-theme unquote
-                                       (if (is-dark-palette palette) 1 0))))
+    (gtk-enable-input-feedback-sounds . 0)))
 
 (define* (gtk3-capability #:key palette sans-font)
   `((".config/gtk-3.0/settings.ini" ,(plain-file "settings.ini"

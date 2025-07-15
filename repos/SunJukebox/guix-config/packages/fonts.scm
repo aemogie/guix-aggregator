@@ -1,4 +1,4 @@
-(define-module (packages fonts)
+(define-module (anon packages fonts)
   #:use-module (guix download)
   #:use-module (guix packages)
   #:use-module (guix build-system font)

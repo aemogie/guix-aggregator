@@ -1,4 +1,4 @@
-(define-module (packages texlab)
+(define-module (anon packages texlab)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages gcc)
   #:use-module (guix download)
