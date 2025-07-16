@@ -26,6 +26,10 @@
   (log-info (G_ "Installing Flatpak package: ~a") x)
   (syscall (format #f "flatpak --user install -y ~a" x)))
 
+(define (flatpak-font-cache-clean x)
+  (log-info (G_ "Cleaning font caches for package: ~a") x)
+  (syscall (format #f "flatpak run --command=fc-cache ~a -f -v" x)))
+
 (define (flatpak-remote-install x)
   (log-info (G_ "Installing Flatpak remote: ~a") x)
   (syscall (format #f "flatpak --user remote-add --if-not-exists ~a ~a"
@@ -36,4 +40,7 @@
           (get-setting 'flatpak-user-remotes))
 
 (for-each flatpak-profile-install
+          (get-setting 'flatpak-pkgs))
+
+(for-each flatpak-font-cache-clean
           (get-setting 'flatpak-pkgs))

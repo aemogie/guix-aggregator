@@ -25,7 +25,7 @@
   :ensure (:host github :repo "vifon/fretboard.el" :branch "master"))
 
 (use-package smudge
-  :ensure t  
+  :ensure t
   :after (f)
   :custom
   (smudge-oauth2-client-secret (f-read-text "~/secrets/smudge-oauth2-client-secret"))

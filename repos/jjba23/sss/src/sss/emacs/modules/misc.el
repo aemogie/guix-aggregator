@@ -24,7 +24,7 @@
 (use-package prodigy
   :ensure t)
 
-(use-package git-riddance 
+(use-package git-riddance
   :ensure (:host codeberg :repo "jjba23/git-riddance.el" :branch "trunk"))
 
 (use-package dagboek
@@ -45,7 +45,8 @@
                    :stream t)))
 
 
-(use-package speed-type :ensure t)
+(use-package speed-type
+  :ensure (:host github :repo "dakra/speed-type"))
 
 (use-package guix :ensure t :demand t)
 
@@ -71,4 +72,3 @@
 (provide 'sss/misc)
 
 ;;; misc.el ends here
-

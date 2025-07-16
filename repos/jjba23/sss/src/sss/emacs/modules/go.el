@@ -21,7 +21,6 @@
 
 ;;; Code:
 
-
 (use-package go-mode
   :ensure (:host github :repo "dominikh/go-mode.el" :branch "master")
   :demand t

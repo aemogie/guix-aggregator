@@ -36,8 +36,8 @@
 ;;
 ;; if you're a beginner, consider setting these to 1
 ;;
-(tool-bar-mode -1) 
-(scroll-bar-mode -1) 
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
 (menu-bar-mode -1)
 
 (setq inhibit-startup-message t
@@ -45,3 +45,5 @@
 
 ;; tweak native compilation settings
 (setq native-comp-speed 2)
+
+;;; early-init.el ends here

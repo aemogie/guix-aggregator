@@ -47,4 +47,3 @@ Useful for libraries where you want to allow users to redefine values."
 (provide 'sss/macros)
 
 ;;; macros.el ends here
-

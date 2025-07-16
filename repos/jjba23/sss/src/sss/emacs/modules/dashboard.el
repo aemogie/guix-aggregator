@@ -45,10 +45,10 @@
 
 (defvar joe-welkomscherm/work-list)
 (setopt joe-welkomscherm/work-list
-      '((("VDB" . "~/work/Vandebron/")
-         ("mobile" . "~/work/mobile")
-         ("onboarding" . "~/work/onboarding/"))          
-        ))
+        '((("VDB" . "~/work/Vandebron/")
+           ("mobile" . "~/work/mobile")
+           ("onboarding" . "~/work/onboarding/"))
+          ))
 
 (defvar joe-welkomscherm/actions-list)
 (setopt joe-welkomscherm/actions-list

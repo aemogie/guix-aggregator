@@ -32,4 +32,3 @@
 (provide 'sss/search)
 
 ;;; search.el ends here
-

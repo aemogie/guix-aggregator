@@ -24,4 +24,4 @@
 
 (define theme-packages
   (make-parameter (list adwaita-icon-theme gnome-themes-standard
-                        numix-gtk-theme papirus-icon-theme yaru-theme)))
+                        hicolor-icon-theme)))

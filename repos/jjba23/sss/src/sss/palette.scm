@@ -23,6 +23,7 @@
   #:export (raise-unknown-palette-exception get-color
                                             get-gtk-theme
                                             is-dark-palette
+                                            get-gtk-accent-color
                                             get-icon-theme
                                             get-emacs-theme
                                             get-fish-color
@@ -64,19 +65,7 @@
     (_ (raise-unknown-palette-exception palette))))
 
 (define-syntax-rule (get-gtk-theme palette)
-  (match palette
-    ('ef-melissa-light "Yaru")
-    ('ef-bio "Yaru-sage-dark")
-    ('ef-dream "Yaru-magenta-dark")
-    ('heavy-metal "Yaru-red-dark")
-    ('ef-cyprus "Yaru-sage")
-    ('ef-autumn "Yaru-dark")
-    ('solarized-light "Yaru")
-    ('everforest-light "Yaru-sage")
-    ('everforest-dark "Yaru-sage-dark")
-    ('gruvbox-light "Yaru")
-    ('gruvbox-dark "Yaru-dark")
-    (_ (raise-unknown-palette-exception palette))))
+  "Adwaita")
 
 (define-syntax-rule (is-dark-palette palette)
   (match palette
@@ -94,19 +83,7 @@
     (_ (raise-unknown-palette-exception palette))))
 
 (define-syntax-rule (get-icon-theme palette)
-  (match palette
-    ('ef-melissa-light "Yaru")
-    ('ef-bio "Yaru-sage-dark")
-    ('ef-dream "Yaru-magenta-dark")
-    ('heavy-metal "Yaru-red-dark")
-    ('ef-cyprus "Yaru-sage")
-    ('ef-autumn "Yaru-dark")
-    ('solarized-light "Yaru")
-    ('everforest-light "Yaru-sage")
-    ('everforest-dark "Yaru-sage-dark")
-    ('gruvbox-light "Yaru")
-    ('gruvbox-dark "Yaru-dark")
-    (_ (raise-unknown-palette-exception palette))))
+  "Adwaita")
 
 (define-syntax-rule (get-emacs-theme palette)
   (match palette
@@ -138,20 +115,23 @@
     ('gruvbox-dark "d65d0e")
     (_ (raise-unknown-palette-exception palette))))
 
-(define-syntax-rule (get-cursor-theme palette)
+(define-syntax-rule (get-gtk-accent-color palette)
   (match palette
-    ('ef-melissa-light "Yaru")
-    ('ef-bio "Yaru")
-    ('ef-dream "Yaru")
-    ('heavy-metal "Yaru")
-    ('ef-cyprus "Yaru")
-    ('ef-autumn "Yaru")
-    ('solarized-light "Yaru")
-    ('everforest-light "Yaru")
-    ('everforest-dark "Yaru")
-    ('gruvbox-light "Yaru")
-    ('gruvbox-dark "Yaru")
+    ('ef-melissa-light "'yellow'")
+    ('ef-bio "'green'")
+    ('ef-dream "'purple'")
+    ('heavy-metal "'red'")
+    ('ef-cyprus "'green'")
+    ('ef-autumn "'orange'")
+    ('solarized-light "'pink'")
+    ('everforest-light "'green'")
+    ('everforest-dark "'green'")
+    ('gruvbox-light "'orange'")
+    ('gruvbox-dark "'orange'")
     (_ (raise-unknown-palette-exception palette))))
+
+(define-syntax-rule (get-cursor-theme palette)
+  "Adwaita")
 
 (define-syntax-rule (get-ansi-color palette)
   (match palette

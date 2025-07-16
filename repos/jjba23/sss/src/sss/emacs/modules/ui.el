@@ -41,30 +41,30 @@
 (use-package olivetti
   :ensure t)
 
-(use-package tekengrootte 
+(use-package tekengrootte
   :ensure (:host codeberg :repo "jjba23/tekengrootte.el" :branch "trunk")
   :demand t
-  :bind (("C-c f c" . tekengrootte-set-scale-colossal) 
-         ("C-c f j" . tekengrootte-set-scale-jumbo) 
-         ("C-c f x" . tekengrootte-set-scale-larger) 
-         ("C-c f l" . tekengrootte-set-scale-large) 
-         ("C-c f r" . tekengrootte-set-scale-regular) 
-         ("C-c f s" . tekengrootte-set-scale-small) 
+  :bind (("C-c f c" . tekengrootte-set-scale-colossal)
+         ("C-c f j" . tekengrootte-set-scale-jumbo)
+         ("C-c f x" . tekengrootte-set-scale-larger)
+         ("C-c f l" . tekengrootte-set-scale-large)
+         ("C-c f r" . tekengrootte-set-scale-regular)
+         ("C-c f s" . tekengrootte-set-scale-small)
          ("C-c f t" . tekengrootte-set-scale-tiny)
-	 ("C-c f n" . tekengrootte-set-scale-nano)) 
-  :hook ((tekengrootte-set-scale . (lambda () 
-                                     (sss-set-base-faces)))) 
+	 ("C-c f n" . tekengrootte-set-scale-nano))
+  :hook ((tekengrootte-set-scale . (lambda ()
+                                     (sss-set-base-faces))))
   :after (ef-themes solarized-theme gruvbox-theme)
   :config
   (defun sss-set-base-faces ()
     "Adjust the base Emacs faces to my preferences.
 According to size, color and font family"
     (interactive)
-    
-    (set-face-attribute 'default nil 
-		        :height (round (tekengrootte-mk-font-size 114)) 
+
+    (set-face-attribute 'default nil
+		        :height (round (tekengrootte-mk-font-size 114))
 		        :font sss-font-mono)
-    
+
     (ignore-errors
       (set-face-attribute 'mode-line nil
                           :box `(:line-width 3 :color ,(face-attribute 'mode-line :background))
@@ -73,18 +73,18 @@ According to size, color and font family"
     (ignore-errors
       (set-face-attribute 'mode-line-active nil
                           :box `(:line-width 3 :color ,(face-attribute 'mode-line :background))
-		          :height (tekengrootte-mk-font-size 0.7) 
+		          :height (tekengrootte-mk-font-size 0.7)
 		          :font sss-font-sans))
     (ignore-errors
       (set-face-attribute 'mode-line-inactive nil
                           :box `(:line-width 3 :color ,(face-attribute 'mode-line-inactive :background))
-		          :height (tekengrootte-mk-font-size 0.7) 
+		          :height (tekengrootte-mk-font-size 0.7)
 		          :font sss-font-sans))
-    
-    (set-face-attribute 'variable-pitch nil 
+
+    (set-face-attribute 'variable-pitch nil
 		        :font sss-font-sans
                         :height (tekengrootte-mk-font-size 1.05))
-    
+
     (set-face-attribute 'button nil :background 'unspecified
                         :weight 'bold)
 
@@ -95,10 +95,10 @@ According to size, color and font family"
       (set-face-attribute 'markdown-pre-face nil
 		          :font sss-font-mono
                           :height (tekengrootte-mk-font-size 0.95))
-      (set-face-attribute 'markdown-code-face nil                       
+      (set-face-attribute 'markdown-code-face nil
 		          :font sss-font-mono
                           :height (tekengrootte-mk-font-size 0.95))
-      (set-face-attribute 'markdown-inline-code-face nil                       
+      (set-face-attribute 'markdown-inline-code-face nil
 		          :font sss-font-mono
                           :height (tekengrootte-mk-font-size 0.95))
       (set-face-attribute 'markdown-header-face-1 nil
@@ -121,24 +121,24 @@ According to size, color and font family"
                           :font sss-font-sans
                           :weight 'bold
 		          :height (tekengrootte-mk-font-size 1.0)))
-    
+
     (ignore-errors
-      (set-face-attribute 'org-table nil 
+      (set-face-attribute 'org-table nil
 		          :height (tekengrootte-mk-font-size 1.05)
 		          :font sss-font-mono)
-      (set-face-attribute 'org-default nil 
+      (set-face-attribute 'org-default nil
 		          :height (tekengrootte-mk-font-size 1.05)
 		          :font sss-font-mono)
       (set-face-attribute 'org-block nil
 		          :font sss-font-mono
                           :height (tekengrootte-mk-font-size 0.95))
-      (set-face-attribute 'org-code nil                       
+      (set-face-attribute 'org-code nil
 		          :font sss-font-mono
                           :height (tekengrootte-mk-font-size 0.95))
-      (set-face-attribute 'org-verbatim nil                       
+      (set-face-attribute 'org-verbatim nil
 		          :font sss-font-mono
                           :height (tekengrootte-mk-font-size 1.05))
-      (set-face-attribute 'org-document-title nil 
+      (set-face-attribute 'org-document-title nil
 		          :height (tekengrootte-mk-font-size 1.2))
       (set-face-attribute 'org-level-1 nil
                           :font sss-font-sans
@@ -161,12 +161,12 @@ According to size, color and font family"
                           :weight 'bold
 		          :height (tekengrootte-mk-font-size 1.0)))
     (ignore-errors
-      (set-face-attribute 'keycast-key nil                       
+      (set-face-attribute 'keycast-key nil
 		          :font sss-font-mono
                           :background 'unspecified
                           :box nil
                           :height (tekengrootte-mk-font-size 0.8))
-      (set-face-attribute 'keycast-command nil                       
+      (set-face-attribute 'keycast-command nil
 		          :font sss-font-sans
                           :height (tekengrootte-mk-font-size 0.8)))
 
@@ -190,8 +190,8 @@ According to size, color and font family"
       (ignore-errors
         (set-face-attribute 'internal-border nil
                             :background "#1d2021")))
-    
-    
+
+
     ;; ====== Everforest dark specific tweaks ======
     (ignore-errors
       (cond ((equal sss-emacs-theme 'everforest-hard-dark)
@@ -222,30 +222,30 @@ According to size, color and font family"
                (set-face-attribute 'dired-directory nil
                                    :inherit '(font-lock-string-face))))))
     )
-  
+
   (sss-set-base-faces))
 
 (use-package nerd-icons :ensure t)
 
-(use-package nerd-icons-completion 
-  :ensure t  
-  :after (nerd-icons marginalia) 
-  :hook ((marginalia-mode . nerd-icons-completion-marginalia-setup)) 
+(use-package nerd-icons-completion
+  :ensure t
+  :after (nerd-icons marginalia)
+  :hook ((marginalia-mode . nerd-icons-completion-marginalia-setup))
   :config (nerd-icons-completion-mode))
 
-(use-package spacious-padding 
+(use-package spacious-padding
   :ensure (:host github :repo "protesilaos/spacious-padding" :branch "main")
   :init
   (setq spacious-padding-widths
-        '( :internal-border-width 18 
-           :header-line-width 2 
-           :mode-line-width 2 
-           :tab-width 4 
-           :right-divider-width 2 
-           :scroll-bar-width 8 
-           :left-fringe-width 16 
-           :right-fringe-width 16)) 
-  (setq spacious-padding-subtle-mode-line nil) 
+        '( :internal-border-width 18
+           :header-line-width 2
+           :mode-line-width 2
+           :tab-width 4
+           :right-divider-width 2
+           :scroll-bar-width 8
+           :left-fringe-width 16
+           :right-fringe-width 16))
+  (setq spacious-padding-subtle-mode-line nil)
   :config
   (spacious-padding-mode))
 
@@ -280,8 +280,8 @@ According to size, color and font family"
   (ignore-errors (keycast-mode)))
 
 
-(use-package vertico 
-  :ensure t 
+(use-package vertico
+  :ensure t
   :init
   (setq vertico-cycle t
         vertico-resize t)
@@ -289,9 +289,9 @@ According to size, color and font family"
   :config
   (vertico-mode))
 
-(use-package marginalia 
-  :ensure t 
-  :after (vertico compat) 
+(use-package marginalia
+  :ensure t
+  :after (vertico compat)
   :config (marginalia-mode))
 
 
@@ -299,9 +299,34 @@ According to size, color and font family"
   :ensure (:host github :repo "jdtsmith/ultra-scroll" :branch "main")
   :init
   (setq scroll-conservatively 101 ; important!
-        scroll-margin 0) 
+        scroll-margin 0)
   :config
   (ultra-scroll-mode 1))
+
+(use-package embark
+  :ensure (:host github :repo "oantolin/embark" :branch "master")
+  :bind
+  (("C-." . embark-act)         ;; pick some comfortable binding
+   ("C-;" . embark-dwim)        ;; good alternative: M-.
+   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+  :init
+  ;; Optionally replace the key help with a completing-read interface
+  (setq prefix-help-command #'embark-prefix-help-command)
+
+  ;; Add Embark to the mouse context menu. Also enable `context-menu-mode'.
+  (context-menu-mode 1)
+  (add-hook 'context-menu-functions #'embark-context-menu 100)
+  :config
+  ;; Hide the mode line of the Embark live/completions buffers
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
+
+(use-package embark-consult
+  :ensure (:host github :repo "oantolin/embark" :branch "master")
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
 
 (provide 'sss/ui)
 

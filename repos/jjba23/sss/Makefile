@@ -94,6 +94,8 @@ define sss-user-reconfigure
 	$(call sss-log-complete,"$(1)-reconfigure")
 	$(call sss-notify-success,"SSS $(1)-reconfigure",$(call G_,"Task was completed successfully!"))
 	@-fc-cache -frv >/dev/null 2>&1 &
+	@-sh $(HOME)/.local/bin/write-gtk-dconf-settings.sh
+	@-herd trigger set-random-wallpaper
 endef
 
 

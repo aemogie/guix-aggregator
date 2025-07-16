@@ -22,7 +22,7 @@
 ;;; Code:
 
 (defun git-prompt-branch-name ()
-  "Get current git branch name"
+  "Get current git branch name."
   (let ((args '("symbolic-ref" "HEAD" "--short")))
     (with-temp-buffer
       (apply #'process-file "git" nil (list t nil) nil args)
@@ -32,7 +32,7 @@
 
 (defun eshell-here ()
   "Opens up a new shell in the directory associated with the
-current buffer's file. The eshell is renamed to match that
+current buffer's file.  The eshell is renamed to match that
 directory to make multiple eshell windows easier."
   (interactive)
   (let* ((parent (if (buffer-file-name)
@@ -105,14 +105,14 @@ length of PATH (sans directory slashes) down to MAX-LEN."
 
 (setq sss/eshell-aliases
       '((g  . magit)
-	(gl . magit-log)
-	(d  . dired)
+	      (gl . magit-log)
+	      (d  . dired)
         (h . eshell/history)
-	(o  . find-file)	
-	(oo . find-file-other-window)
-	(l  . (lambda () (eshell/ls '-lAh '--group-directories-first)))
+	      (o  . find-file)
+	      (oo . find-file-other-window)
+	      (l  . (lambda () (eshell/ls '-lAh '--group-directories-first)))
         (ll  . (lambda () (eshell/ls '-lAh '--group-directories-first)))
-	(eshell/clear . eshell/clear-scrollback)))
+	      (eshell/clear . eshell/clear-scrollback)))
 
 (mapc (lambda (alias)
 	(defalias (car alias) (cdr alias)))
@@ -121,4 +121,3 @@ length of PATH (sans directory slashes) down to MAX-LEN."
 (provide 'sss/shell)
 
 ;;; shell.el ends here
-

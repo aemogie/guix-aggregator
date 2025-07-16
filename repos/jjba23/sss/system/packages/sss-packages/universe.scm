@@ -178,11 +178,27 @@
         ghcid
         gimp
         gnome-calculator
+        gnome-tweaks
+        gnome-mime-data
+        gnome-music
+        gnome-photos
+        gnome-control-center
+        gnome-builder
+        gnome-bluetooth
+        gnome-console
+        gnome-disk-utility
+        gnome-contacts
+        gnome-online-accounts
+        gnome-autoar
+        gnome-terminal
+        gnome-sudoku
+        gnome-recipes
         gnome-calendar
         gnome-characters
         gnome-clocks
         gnome-font-viewer
         gnome-system-monitor
+        gnome-themes-extra
         gparted
         gthumb
         gtk

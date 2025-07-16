@@ -24,9 +24,9 @@
 (use-package eglot
   :ensure nil
   :hook ((scala-ts-mode . eglot-ensure)
-	 (sh-mode . eglot-ensure)
-	 (haskell-mode . eglot-ensure)
-	 (markdown-mode . eglot-ensure)
+	       (sh-mode . eglot-ensure)
+	       (haskell-mode . eglot-ensure)
+	       (markdown-mode . eglot-ensure)
          (nix-ts-mode . eglot-ensure)
          (go-mode . eglot-ensure)
          (python-mode . eglot-ensure)
@@ -35,14 +35,14 @@
          (yaml-ts-mode . eglot-ensure)
          (before-save . eglot-format-buffer))
   :bind (("C-c i i" . eglot-find-implementation)
-	 ("C-c i e" . eglot)
-	 ("C-c i k" . eglot-shutdown-all)
-	 ("C-c i r" . eglot-rename)
-	 ("C-c i x" . eglot-reconnect)
-	 ("C-c i a" . eglot-code-actions)
-	 ("C-c i m" . eglot-menu)
-	 ("C-c i f" . eglot-format-buffer)
-	 ("C-c i h" . eglot-inlay-hints-mode))
+	       ("C-c i e" . eglot)
+	       ("C-c i k" . eglot-shutdown-all)
+	       ("C-c i r" . eglot-rename)
+	       ("C-c i x" . eglot-reconnect)
+	       ("C-c i a" . eglot-code-actions)
+	       ("C-c i m" . eglot-menu)
+	       ("C-c i f" . eglot-format-buffer)
+	       ("C-c i h" . eglot-inlay-hints-mode))
   :init
   (setq eglot-autoshutdown t
         eglot-confirm-server-edits nil
@@ -56,7 +56,7 @@
   (add-to-list 'eglot-server-programs '(scala-ts-mode . ("metals" "-Dmetals.http=on")))
   (add-to-list 'eglot-server-programs '(nix-ts-mode . ("nil")))
   (add-to-list 'eglot-server-programs '(markdown-mode . ("marksman")))
-  
+
   (setq-default eglot-workspace-configuration
                 '(
                   :metals ( :autoImportBuild "all"
@@ -105,12 +105,12 @@
               ;; Show all eldoc feedback.
               (setq eldoc-documentation-strategy #'eldoc-documentation-compose)))
 
-  (setq python-flymake-command '("~/.local/bin/flake8" "-") )           
+  (setq python-flymake-command '("~/.local/bin/flake8" "-") )
   (add-hook 'eglot-managed-mode-hook
             (lambda ()
               (when (or (derived-mode-p 'python-mode)
                         (derived-mode-p 'python-ts-mode))
-                (add-hook 'flymake-diagnostic-functions 
+                (add-hook 'flymake-diagnostic-functions
                           'python-flymake nil t)
                 (flymake-start))))
 

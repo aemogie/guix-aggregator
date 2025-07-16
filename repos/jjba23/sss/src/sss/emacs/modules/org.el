@@ -24,7 +24,7 @@
 (use-package org
   :ensure nil
   :hook ((org-mode . sss-org-mode))
-  :bind (:map org-mode-map 
+  :bind (:map org-mode-map
               ("C-c #" . nil))
   :bind (("C-c l v" . org-toggle-link-display))
   :custom

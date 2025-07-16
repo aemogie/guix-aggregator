@@ -164,38 +164,39 @@
 
 ;; Nix packages to install
 (define default-nixpkgs
-  '("yaml-language-server" "bash-language-server"
-    "discord"
-    "azure-cli"
-    "stylelint"
-    "stylelint-lsp"
-    "typescript-language-server"
-    "spotify"
-    "jdt-language-server"
-    "nil"
-    "black"
-    "pyright"
-    "marksman"
-    "_1password-gui"
-    "_1password-cli"
-    "gh"
-    "stack"
-    "sbt"
-    "scala_2_13"
-    "scala-cli"
-    "onefetch"
-    "postman"
-    "vscode-langservers-extracted"
-    "nwg-look"
-    "krew"
-    "cloudflare-warp"
-    "mermaid-cli"
-    "jetbrains.idea-community"
-    "nixfmt"
-    "rustfmt"
-    "way-displays"
-    "deadnix"
-    "awscli"))
+  '(_1password-cli _1password-gui
+                   awscli
+                   azure-cli
+                   bash-language-server
+                   black
+                   cloudflare-warp
+                   deadnix
+                   discord
+                   gh
+                   ibm-plex
+                   jdt-language-server
+                   jetbrains.idea-community
+                   krew
+                   marksman
+                   mermaid-cli
+                   nil
+                   nixfmt
+                   nwg-look
+                   onefetch
+                   postman
+                   pyright
+                   rustfmt
+                   sbt
+                   scala-cli
+                   scala_2_13
+                   spotify
+                   stack
+                   stylelint
+                   stylelint-lsp
+                   typescript-language-server
+                   vscode-langservers-extracted
+                   way-displays
+                   yaml-language-server))
 
 ;; Flatpak remotes to add to a user
 (define default-flatpak-user-remotes
@@ -203,13 +204,32 @@
 
 ;; Flatpak packages to install to the user
 (define default-flatpak-pkgs
-  '("app.drey.Warp" "com.usebottles.bottles"
-    "com.ktechpit.whatsie"
-    "com.anydesk.Anydesk"
-    "app.zen_browser.zen"
-    "engineer.atlas.Nyxt"
-    "com.github.tchx84.Flatseal"
-    "io.beekeeperstudio.Studio"))
+  '(app.drey.Dialect app.drey.Warp
+                     app.zen_browser.zen
+                     com.anydesk.Anydesk
+                     com.belmoussaoui.Decoder
+                     com.github.hugolabe.Wike
+                     com.github.tchx84.Flatseal
+                     com.ktechpit.whatsie
+                     com.mardojai.ForgeSparks
+                     com.rafaelmardojai.Blanket
+                     com.usebottles.bottles
+                     de.haeckerfelix.Fragments
+                     dev.Cogitri.Health
+                     dev.bragefuglseth.Fretboard
+                     dev.geopjr.Collision
+                     engineer.atlas.Nyxt
+                     io.bassi.Amberol
+                     io.beekeeperstudio.Studio
+                     io.github.fizzyizzy05.binary
+                     io.github.idevecore.Valuta
+                     io.github.revisto.drum-machine
+                     io.github.seadve.Mousai
+                     io.gitlab.adhami3310.Converter
+                     org.gaphor.Gaphor
+                     org.gnome.design.Emblem
+                     org.gnome.design.Lorem
+                     se.sjoerd.Graphs))
 
 ;; Additional Hyprland startup commands on per-host basis
 (define default-hyprland-extra-startups

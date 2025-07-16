@@ -21,7 +21,7 @@
 
 ;;; Code:
 
-
+;; Configure the Sly REPL for Common Lisp development
 (use-package sly
   :ensure (:host github :repo "joaotavora/sly" :branch "master")
   :demand t

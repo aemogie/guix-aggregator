@@ -60,18 +60,27 @@
 (define (mk-random-wall-cmd walls)
   (let* ((wall-idx -1))
     (format #f
-            (string-append "case $(( $(date +%s) % ~a )) in ~a esac; "
-             "pkill swaybg || true "
-             " && echo \"setting current wallpaper: $WALL\" "
-             "&& WAYLAND_DISPLAY=wayland-0 swaybg -i \"$WALL\" || true "
-             "&& WAYLAND_DISPLAY=wayland-1 swaybg -i \"$WALL\" || true "
-             "&& WAYLAND_DISPLAY=wayland-2 swaybg -i \"$WALL\" || true ")
+            (string-join '("#!/usr/bin/env sh" ""
+                           "# ====== SSS wallpaper setter ======"
+                           "#"
+                           "# auto-generated file, DO NOT EDIT!"
+                           ""
+                           "case $(( $(date +%s) % ~a )) in"
+                           "~a"
+                           "esac;"
+                           ""
+                           "pkill swaybg || true \\"
+                           "\t&& echo \"setting current wallpaper: $WALL\" \\"
+                           "\t&& WAYLAND_DISPLAY=wayland-0 swaybg -i \"$WALL\" || true \\"
+                           "\t&& WAYLAND_DISPLAY=wayland-1 swaybg -i \"$WALL\" || true \\"
+                           "\t&& WAYLAND_DISPLAY=wayland-2 swaybg -i \"$WALL\" || true ")
+                         "\n")
             (length walls)
             (string-join (map (lambda (w)
                                 (set! wall-idx
                                       (+ 1 wall-idx))
-                                (format #f "~a) WALL=\"~a\";;" wall-idx w))
-                              walls) " "))))
+                                (format #f "\t~a) WALL=\"~a\";;" wall-idx w))
+                              walls) "\n"))))
 
 (define* (random-wallpaper-capability #:key clone-dir palette)
   (let* ((walls (wallpapers #:clone-dir clone-dir

@@ -23,7 +23,7 @@
   #:export (rofi-capability rofi-theme rofi-icon-theme rofi-configuration))
 
 (define rofi-icon-theme
-  (make-parameter "Papirus"))
+  (make-parameter "Adwaita"))
 
 (define* (rofi-configuration #:key sans-font)
   (format #f "configuration {

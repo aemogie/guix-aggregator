@@ -18,7 +18,7 @@
 ;;; Commentary:
 
 ;; This Emacs configuration was last tested to work properly with:
-;;   - GNU Emacs 30.0.92 (build 1, x86_64-pc-linux-gnu, GTK+ Version 3.24.41, cairo version 1.18.0)
+;;   - GNU Emacs 30.1 (build 1, x86_64-pc-linux-gnu, GTK+ Version 3.24.43, cairo version 1.18.2)
 
 ;;; Code:
 

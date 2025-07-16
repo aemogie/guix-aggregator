@@ -19,6 +19,7 @@
   #:declarative? #t
   #:use-module (gnu)
   #:use-module (sss palette)
+  #:use-module (sss gtk)
   #:use-module (sss prelude)
   #:use-module (sss hyprland hyprlang)
   #:export (notify-cmd hypr-startup-programs
@@ -42,32 +43,10 @@
 (define* (notify-cmd #:key title subtitle)
   (format #f
           (string-append "fyi -i"
-           " /run/current-system/profile/share/icons/Yaru/32x32/actions/dialog-yes.png"
+           " /run/current-system/profile/share/icons/Adwaita/16x16/mimetypes/application-x-sharedlib.png"
            " \"~a\" \"~a\"" " >/dev/null 2>&1") title subtitle))
 
-(define* (hypr-session-dconf-settings #:key palette sans-font)
-  `(("/org/gnome/desktop/interface/gtk-key-theme" . "'Emacs'") ("/org/gnome/desktop/interface/cursor-theme"
-                                                                unquote
-                                                                (format #f
-                                                                 "'~a'"
-                                                                 (get-cursor-theme
-                                                                  palette)))
-    ("/org/gnome/desktop/interface/gtk-theme" unquote
-     (format #f "'~a'"
-             (get-gtk-theme palette)))
-    ("/org/gnome/desktop/interface/icon-theme" unquote
-     (format #f "'~a'"
-             (get-icon-theme palette)))
-    ("/org/gnome/desktop/interface/cursor-theme" unquote
-     (format #f "'~a'"
-             (get-cursor-theme palette)))
-    ("/org/gnome/desktop/interface/color-scheme" unquote
-     (if (is-dark-palette palette) "'prefer-dark'" "'prefer-light'"))
-    ("/org/gnome/desktop/interface/cursor-size" . "24")
-    ("/org/gnome/desktop/interface/font-name" unquote
-     (format #f "'~a'" sans-font))))
-
-(define* (hypr-startup-programs #:key palette sans-font
+(define* (hypr-startup-programs #:key palette sans-font mono-font
                                 (extra-startups '()))
   (let* ((gtk-theme-name (get-gtk-theme palette))
          (icon-theme-name (get-icon-theme palette))
@@ -86,13 +65,8 @@
                                 (G_
                                  "Welcome to the SSS/GNU power user session")
                                 (G_
-                                 "Enter and explore, for the cosmos of computation is yours to command.")))
-                     (map (lambda (x)
-                            (format #f "dconf write \"~a\" \"~a\""
-                                    (car x)
-                                    (cdr x)))
-                          (hypr-session-dconf-settings #:palette palette
-                                                       #:sans-font sans-font)))))
+                                 "Enter and explore, for the cosmos of computation is yours to command."))
+                       "sh ~/.local/bin/write-gtk-dconf-settings.sh"))))
     xs))
 
 (define* (hypr-input #:key keyboard-layout caps-to-ctrl)
@@ -276,7 +250,7 @@
               "emacsclient -ce '(eshell \"new\")(rename-buffer (concat \"*eshell: \" (float-time) \"*\"))'")
              (exec-bind #:mod "s"
                         #:bind "slash"
-                        #:cmd "rofi -show drun -icon-theme \"Papirus\"")
+                        #:cmd "rofi -show drun")
              (exec-bind #:mod "s"
                         #:bind "E"
                         #:cmd "emacsclient -c")
@@ -319,8 +293,7 @@
                         #:cmd "google-chrome-beta")
              (exec-bind #:mod "s"
                         #:bind "B"
-                        #:cmd "nemo")
-
+                        #:cmd "nautilus")
              (hypr-bind #:mod "s-S"
                         #:bind "space"
                         #:dispatch "togglefloating"
@@ -355,12 +328,14 @@
                           palette
                           monitors
                           sans-font
+                          mono-font
                           (extra-startups '())
                           (with-blur #f)
                           (with-shadow #f)
                           (startup-programs (hypr-startup-programs #:palette
                                              palette
                                              #:sans-font sans-font
+                                             #:mono-font mono-font
                                              #:extra-startups extra-startups))
                           (window-rules (list (hypr-window-rule #:action 'float
                                                                 #:class
@@ -433,6 +408,7 @@
                               caps-to-ctrl
                               monitors
                               sans-font
+                              mono-font
                               extra-startups
                               with-blur
                               with-shadow)
@@ -444,6 +420,7 @@
                                                 #:caps-to-ctrl caps-to-ctrl
                                                 #:palette palette
                                                 #:sans-font sans-font
+                                                #:mono-font mono-font
                                                 #:monitors monitors
                                                 #:extra-startups
                                                 extra-startups

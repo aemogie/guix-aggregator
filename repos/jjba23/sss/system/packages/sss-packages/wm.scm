@@ -53,7 +53,6 @@
 
                         ;; Compatibility for older Xorg applications
                         xorg-server-xwayland
-
                         polkit-gnome
                         wvkbd
                         ;; Flatpak and XDG utilities

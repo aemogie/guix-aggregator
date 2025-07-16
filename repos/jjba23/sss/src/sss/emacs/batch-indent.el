@@ -34,3 +34,5 @@
 
 (defun indent-and-save ()
   (indent-file t))
+
+;;; batch-indent.el ends here

@@ -61,43 +61,47 @@
 
 (define sss-home-files-service
   (service home-files-service-type
-           (append (gtk3-capability #:palette (get-setting 'palette)
-                                    #:sans-font (get-setting 'sans-font))
-                   (gtk4-capability #:palette (get-setting 'palette)
-                                    #:sans-font (get-setting 'sans-font))
+           (append (gtk3-capability #:palette ($$$ 'palette)
+                                    #:sans-font ($$$ 'sans-font))
+                   (gtk4-capability #:palette ($$$ 'palette)
+                                    #:sans-font ($$$ 'sans-font)
+                                    #:mono-font ($$$ 'mono-font))
                    (nix-capability)
-                   (rofi-capability #:palette (get-setting 'palette)
-                                    #:sans-font (get-setting 'sans-font))
+                   (rofi-capability #:palette ($$$ 'palette)
+                                    #:sans-font ($$$ 'sans-font))
                    (mime-capability)
-                   (waybar-capability #:palette (get-setting 'palette)
-                                      #:sans-font (get-setting 'sans-font)
+                   (waybar-capability #:palette ($$$ 'palette)
+                                      #:sans-font ($$$ 'sans-font)
                                       #:with-memory #f
                                       #:labwc-session #t
-                                      #:sans-font (get-setting 'sans-font))
+                                      #:sans-font ($$$ 'sans-font))
                    (portals-capability)
-                   (mako-capability #:palette (get-setting 'palette)
-                                    #:sans-font (get-setting 'sans-font))
+                   (mako-capability #:palette ($$$ 'palette)
+                                    #:sans-font ($$$ 'sans-font))
                    (containers-capability)
-                   (hyprlock-capability #:clone-dir (get-setting 'clone-dir))
+                   (hyprlock-capability #:clone-dir ($$$ 'clone-dir))
                    (dirs-capability)
-                   (random-wallpaper-capability #:clone-dir (get-setting 'clone-dir)
-                                                #:palette (get-setting 'palette))
-                   (labwc-capability #:sans-font (get-setting 'sans-font)
-                                     #:extra-startups (get-setting 'labwc-extra-startups)))))
+                   (gtk-dconf-capability #:palette ($$$ 'palette)
+                                         #:sans-font ($$$ 'sans-font)
+                                         #:mono-font ($$$ 'mono-font))
+                   (random-wallpaper-capability #:clone-dir ($$$ 'clone-dir)
+                                                #:palette ($$$ 'palette))
+                   (labwc-capability #:sans-font ($$$ 'sans-font)
+                                     #:extra-startups ($$$ 'labwc-extra-startups)))))
 
 (log-info (G_ "Configuring home environment for user: ~a") "manon")
 
 (home-environment
   (services
    (append (list sss-home-files-service
-                 (env-variables-capability #:palette (get-setting 'palette)
-                                           #:clone-dir (get-setting 'clone-dir)
-                                           #:lang (get-setting 'lang))
-                 (bash-capability #:clone-dir (get-setting 'clone-dir)
+                 (env-variables-capability #:palette ($$$ 'palette)
+                                           #:clone-dir ($$$ 'clone-dir)
+                                           #:lang ($$$ 'lang))
+                 (bash-capability #:clone-dir ($$$ 'clone-dir)
                                   #:gui-cmd "labwc")
                  openpgp-capability
                  (service home-dbus-service-type)
                  (service home-pipewire-service-type)
-                 (fontconfig-capability #:mono-font (get-setting 'mono-font))
+                 (fontconfig-capability #:mono-font ($$$ 'mono-font))
                  channels-capability) %base-home-services)))
 
