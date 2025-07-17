@@ -1,5 +1,4 @@
 ;;; -*- lexical-binding: t -*-
-
 (use-package emacs
   :config
   ;; who am I?
@@ -9,21 +8,20 @@
                                        user-full-name
                                        user-mail-address))
 
-  (dolist (item '((ns-transparent-titlebar . t)
-                  (ns-appearance . dark)
-                  (undecorated . t)))
-    (add-to-list 'default-frame-alist item))
-
   ;; load-path
   (add-to-list 'load-path
                "~/.guix-home/profile/share/emacs/site-lisp")
 
-  ;; display-line-numbers variables
-  (setq display-line-numbers-current-absolute t
-        display-line-numbers-grow-only        t
-        display-line-numbers-type             'relative
-        display-line-numbers-width            4
-        display-line-numbers-width-start      t)
+
+  (setq truncate-string-ellipsis "…")
+  (setq completions-detailed t)
+
+  (setq ;; display-line-numbers variables
+        display-line-numbers-current-absolute t
+        display-line-numbers-grow-only t
+        display-line-numbers-type 'relative
+        display-line-numbers-width 4
+        display-line-numbers-width-start t)
 
   ;; guix stuff
   (load-file "~/resources/code/scm/guix/etc/copyright.el")
@@ -82,47 +80,45 @@
          (after-init . save-place-mode)
          (after-init . savehist-mode)
 
+         ;; modes enabled in "writting" modes
          ((text-mode prog-mode conf-mode) . display-line-numbers-mode)
          ((text-mode prog-mode conf-mode) . electric-pair-local-mode)
-         ((text-mode prog-mode conf-mode) . whitespace-mode)))
+         ((text-mode prog-mode conf-mode) . whitespace-mode)
 
-;; diminish
+         ;; Before save hooks
+         (before-save . delete-trailing-whitespace)))
+
 (use-package diminish)
 
-;; server
 (use-package server
   :config (unless (server-running-p)
             (server-start)))
 
-;; garbage collector
 (use-package gcmh
   :diminish gcmh-mode
   :init (gcmh-mode))
 
-;; no-littering
 (use-package no-littering)
 
-;; eldoc
 (use-package eldoc
   :diminish eldoc-mode)
 
-;; keys
 (use-package which-key
   :diminish which-key-mode
   :custom ((which-key-idle-delay 0.3)
            (which-key-enable-extended-define-key nil))
   :init (which-key-mode))
 
-;; auto-revert
+(use-package recentf
+  :hook (after-init . recentf-mode))
+
 (use-package autorevert
   :diminish auto-revert-mode
-  :hook((text-mode prog-mode conf-mode) . auto-revert-mode))
+  :hook ((text-mode prog-mode conf-mode) . auto-revert-mode))
 
-;; rainbow-delimiters
 (use-package rainbow-delimiters
   :hook ((text-mode prog-mode conf-mode) . rainbow-delimiters-mode))
 
-;; helpful
 (use-package helpful
   :custom
   (help-select-window t)
@@ -132,7 +128,6 @@
    ("C-h k" . helpful-key)
    ("C-h C-." . helpful-at-point)))
 
-;; anzu-mode
 (use-package anzu
   :diminish anzu-mode
   :bind
@@ -143,32 +138,26 @@
    ([remap isearch-query-replace-regexp] . anzu-isearch-query-replace-regexp))
   :init (global-anzu-mode))
 
-;; whitespace
 (use-package whitespace
   :diminish whitespace-mode
   :custom ((whitespace-display-mappings
             '((space-mark    ?\   [?⋅])
               ;; fix strange behaviour with hl-fill-column-mode
-              (newline-mark  ?\n  [?↩ ?\n])
+              (newline-mark  ?\n  [?¬ ?\n])
               (tab-mark      ?\t  [?→ ?\t])))))
 
-;; org
 (use-package org
   :custom ((org-hide-emphasis-markers t))
-  :hook (org-mode . (lambda ()
-                      (interactive)
-                      (whitespace-mode 0)
-                      (display-fill-column-indicator-mode 0)
-                      (add-hook 'completion-at-point-functions #'cape-tex))))
+  :hook ((org-src-mode . display-line-numbers-mode)
+         (org-mode . (lambda ()
+                       (display-fill-column-indicator-mode 0)
+                       (add-hook 'completion-at-point-functions #'cape-tex)))))
 
-;; origami
 (use-package origami)
 
-;; eat
 (use-package eat
   :hook (eat-mode . meow-insert-mode))
 
-;; pdf-view
 (use-package pdf-tools
   :custom
   (pdf-outline-imenu-use-flat-menus t)
@@ -185,9 +174,8 @@
 
 (dolist (module '("guix.el"
                   "meow.el"
-                  "communication.el"
-                  "completion.el"
-                  "dirvish.el"
                   "languages.el"
-                  "perspective.el"))
+                  "misc.el"
+                  "ui.el"
+                  "wm.el"))
   (load-file (concat "~/.config/emacs/modules/" module)))

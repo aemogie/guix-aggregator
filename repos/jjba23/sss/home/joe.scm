@@ -47,6 +47,7 @@
              (sss hyprland hyprlang)
              (sss hyprland hyprland)
              (sss hyprland hyprlock)
+             (sss hyprland hypridle)
              (sss wallpaper)
              (sss bash)
              (sss containers)
@@ -95,6 +96,9 @@
                                         #:with-blur #t
                                         #:with-shadow #t)
                    (hyprlock-capability #:clone-dir ($$$ 'clone-dir))
+                   (hypridle-capability #:brightness-timeout-seconds ($$$ 'brightness-timeout-seconds)
+                                        #:lock-screen-seconds ($$$ 'lock-screen-seconds)
+                                        #:monitor-power-seconds ($$$ 'monitor-power-seconds))
                    (random-wallpaper-capability #:clone-dir ($$$ 'clone-dir)
                                                 #:palette ($$$ 'palette))
                    (mime-capability)

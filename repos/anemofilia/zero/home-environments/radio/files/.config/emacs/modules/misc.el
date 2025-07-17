@@ -12,4 +12,4 @@
   (mastodon-active-user  "anemofilia")
   :hook (mastodon-mode . mastodon-async-mode))
 
-(provide 'anemofilia/communication)
+(provide 'anemofilia/miscl)

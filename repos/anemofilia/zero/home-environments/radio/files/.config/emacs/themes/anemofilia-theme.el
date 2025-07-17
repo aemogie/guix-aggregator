@@ -21,6 +21,23 @@
 (deftheme anemofilia
   "Created 2022-01-11.")
 
+(defface tab-bar-tab-focused-occupied
+  `((t :inherit tab-bar-tab :overline t))
+    "Tab bar face for focused tabs that are occupied."
+   :group 'tab-bar-faces)
+(defface tab-bar-tab-unfocused-occupied
+  `((t :inherit tab-bar-tab-inactive :overline t))
+    "Tab bar face for unfocused tabs that are occupied."
+    :group 'tab-bar-faces)
+(defface tab-bar-tab-focused-empty
+  `((t :inherit tab-bar-tab))
+    "Tab bar face for focused tabs that are empty."
+    :group 'tab-bar-faces)
+(defface tab-bar-tab-unfocused-empty
+  `((t :inherit tab-bar-tab-inactive))
+    "Tab bar face for unfocused tabs that are empty."
+    :group 'tab-bar-faces)
+
 (custom-theme-set-variables
  'anemofilia
  '(overline-margin 0))
@@ -28,16 +45,16 @@
 (custom-theme-set-faces
  'anemofilia
 
+ `(mode-line ((t (:background ,darker-gray :foreground ,blue :box (:color ,dark-gray)))))
+ `(mode-line-buffer-id ((t (:weight normal))))
+ `(mode-line-emphasis ((t (:weight bold))))
+ `(mode-line-highlight ((t (:background ,darker-gray))))
+ `(mode-line-inactive ((t (:background ,darker-gray :foreground "dim gray"))))
+
+ `(tab-bar ((t (:background ,normal-bg :foreground ,normal-bg :box (:line-width -1 :color ,dark-gray)))))
  `(tab-bar-tab ((t (:background ,focused-bg :foreground ,focused-fg))))
- `(tab-bar ((t (:background ,normal-bg :foreground ,normal-bg))))
  `(tab-bar-tab-inactive ((t (:background ,normal-bg :foreground ,normal-fg))))
  `(tab-bar-tab-highlight ((t (:background ,focused-bg))))
-
- `(tab-line-tab ((t (:background ,focused-bg :foreground ,focused-fg))))
- `(tab-line-tab-current ((t (:background ,focused-bg :foreground ,focused-fg))))
- `(tab-line ((t (:background ,normal-bg :foreground ,normal-bg))))
- `(tab-line-tab-inactive ((t (:background ,normal-bg :foreground ,normal-fg))))
- `(tab-line-highlight ((t (:background ,focused-bg))))
 
  `(eat-term-color-0 ((t (:background ,black :foreground ,black))))
  `(eat-term-color-1 ((t (:background ,red :foreground ,red))))
@@ -102,11 +119,6 @@
  `(org-scheduled-today ((t (:foreground ,yellow :weight ultra-bold))))
  `(org-time-grid ((t (:foreground ,blue))))
 
- `(mode-line ((t (:background ,dark-gray :foreground ,blue))))
- `(mode-line-buffer-id ((t (:weight bold :box nil))))
- `(mode-line-emphasis ((t (:weight bold))))
- `(mode-line-highlight ((t (:box nil))))
- `(mode-line-inactive ((t (:background ,darker-gray :foreground "dim gray"))))
 
  `(cursor ((t (:background ,blue :foreground ,white))))
  `(fixed-pitch ((t (:family "Monospace"))))

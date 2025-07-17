@@ -66,7 +66,8 @@
                                  "Welcome to the SSS/GNU power user session")
                                 (G_
                                  "Enter and explore, for the cosmos of computation is yours to command."))
-                       "sh ~/.local/bin/write-gtk-dconf-settings.sh"))))
+                       "sh ~/.local/bin/write-gtk-dconf-settings.sh"
+                       "hypridle"))))
     xs))
 
 (define* (hypr-input #:key keyboard-layout caps-to-ctrl)
@@ -113,10 +114,10 @@
 (define hypr-animations
   `((enabled . true) (first_launch_animation . true)))
 
-(define hypr-misc
+(define* (hypr-misc #:key sans-font)
   `((disable_hyprland_logo . true) (force_default_wallpaper . 0)
     (disable_splash_rendering . true)
-    (font_family . "Adwaita Sans")))
+    (font_family unquote sans-font)))
 
 (define hypr-media-binds
   (map (lambda (kb)
@@ -293,7 +294,7 @@
                         #:cmd "google-chrome-beta")
              (exec-bind #:mod "s"
                         #:bind "B"
-                        #:cmd "nautilus")
+                        #:cmd "nautilus -w")
              (hypr-bind #:mod "s-S"
                         #:bind "space"
                         #:dispatch "togglefloating"
@@ -354,7 +355,9 @@
                                                                  #:palette
                                                                  palette)))
          (serialized-misc (serialize-hypr-section #:section 'misc
-                                                  #:settings hypr-misc))
+                                                  #:settings (hypr-misc
+                                                              #:sans-font
+                                                              sans-font)))
          (serialized-decoration (serialize-hypr-section #:section 'decoration
                                                         #:settings (hypr-decoration
                                                                     #:with-blur

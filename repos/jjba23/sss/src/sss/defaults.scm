@@ -248,3 +248,15 @@
 (define default-hyprland-monitors
   '("monitor = , preferred, auto, 1"))
 
+;; Seconds after which we will decrease the screen brightness.
+(define default-brightness-timeout-seconds
+  480)
+
+;; Seconds after which we will lock the screen.
+(define default-lock-screen-seconds
+  600)
+
+;; Seconds after which we will power off the monitor.
+(define default-monitor-power-seconds
+  900)
+

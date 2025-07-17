@@ -75,6 +75,7 @@
                      databases
                      disk
                      emacs
+                     emacs-xyz
                      engineering
                      firmware
                      fonts
@@ -165,6 +166,7 @@
         cmatrix
         drill
         evince
+        emacs-jinx
         fastfetch
         feh
         (specification->package "ffmpegthumbs")
@@ -198,6 +200,8 @@
         gnome-clocks
         gnome-font-viewer
         gnome-system-monitor
+        gnome-keyring
+        evolution-data-server
         gnome-themes-extra
         gparted
         gthumb
@@ -229,6 +233,7 @@
         pinentry-tty
         pipewire
         pkg-config
+        pkgconf
         power-profiles-daemon
         powertop
         qemu

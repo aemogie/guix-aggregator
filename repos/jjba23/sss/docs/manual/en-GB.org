@@ -1011,7 +1011,15 @@ This means rejecting any incoming network calls by default, only accepting ~ping
 
 Adding SSH access or other network capabilities is done by tweaking the ~iptables~ of SSS (in Scheme code).
 
-------
+----------------
+
+* Idleness and power-saving
+
+We try to push users and people of the world towards more efficient and responsible consumption of energy. Therefore, we include automatic mechanisms in SSS to lower screen brightness, lock the screen and eventually turn the screen off entirely, when no activity is detected. This is currently done with hypridle.
+
+Some of the settings you can override are ~monitor-power-seconds~, ~lock-screen-seconds~ and ~brightness-timeout-seconds~.
+
+-----------------
 
 * Disk space
 
