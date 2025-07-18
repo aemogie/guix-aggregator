@@ -233,7 +233,8 @@
         emacs-helpful))
 
 (define emacs:buffer-management
-  (list emacs-perspective
+  (list emacs-activities
+        emacs-perspective
         emacs-perspective-tabs))
 
 (define emacs:modeline
@@ -244,7 +245,8 @@
         emacs-embark emacs-marginalia emacs-orderless emacs-vertico))
 
 (define emacs:file-managing
-  (list emacs-dirvish emacs-dired-hide-dotfiles emacs-all-the-icons imagemagick))
+  (list emacs-all-the-icons emacs-dired-git-info emacs-dired-hacks
+        emacs-dired-hide-dotfiles emacs-dired-preview imagemagick))
 
 (define emacs:ide
   (list emacs-magit emacs-hl-fill-column emacs-origami))
@@ -252,7 +254,7 @@
 (define emacs:guile
   (list emacs-arei guile-ares-rs emacs-macrostep-geiser emacs-geiser-eros
         emacs-flycheck emacs-flycheck-guile emacs-lispy emacs-rainbow-delimiters
-        emacs-lispyville emacs-isayt emacs-puni))
+        emacs-isayt emacs-puni))
 
 (define emacs:guix
   (cons emacs-guix emacs:guile))

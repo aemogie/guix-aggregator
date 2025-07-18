@@ -79,6 +79,9 @@
          (after-init . prettify-symbols-mode)
          (after-init . save-place-mode)
          (after-init . savehist-mode)
+         (after-init . (lambda ()
+                         (setq gc-cons-threshold
+                               (* 50 1000 1000))))
 
          ;; modes enabled in "writting" modes
          ((text-mode prog-mode conf-mode) . display-line-numbers-mode)

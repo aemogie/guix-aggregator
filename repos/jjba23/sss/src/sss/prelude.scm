@@ -178,14 +178,16 @@
                                 (string-replace-substring mm "quote " "'")))
                             'post))
 
-(define (syscall cmd)
+(define* (syscall cmd
+                  #:key (silent? #f))
   "Executes a system command and returns its output as a string.
  Be cautious with input: Passing untrusted or unsanitized strings can lead to
 security vulnerabilities (e.g. shell injection attacks)."
   (let* ((process (open-input-pipe cmd))
          (process-output (get-string-all process)))
     (close-pipe process)
-    (display process-output) process-output))
+    (unless silent?
+      (display process-output)) process-output))
 
 (define (mk-lines items)
   (with-output-to-string (lambda ()

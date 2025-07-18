@@ -67,6 +67,7 @@
                                 (G_
                                  "Enter and explore, for the cosmos of computation is yours to command."))
                        "sh ~/.local/bin/write-gtk-dconf-settings.sh"
+                       "sh ~/.local/bin/write-sss-dconf-settings.sh"
                        "hypridle"))))
     xs))
 

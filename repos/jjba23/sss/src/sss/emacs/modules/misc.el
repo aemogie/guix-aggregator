@@ -54,6 +54,7 @@
 
 (use-package jinx
   :ensure nil
+  :demand t
   :bind (("M-$" . jinx-correct)
          ([remap ispell-word] . #'jinx-correct)
          ("C-M-$" . jinx-languages))

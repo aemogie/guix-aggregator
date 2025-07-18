@@ -42,6 +42,7 @@ It is recommended to use tagged releases of SSS, as those are considered as stab
 - GNU Guix home configurations
 - Guix channel so you can cherry-pick parts of SSS to your liking    
 - 🎨 Theme palettes that affect the entire system (ef-themes, solarized-light, everforest dark and light)
+- A custom [[https://codeberg.org/jjba23/sss-help-center-gtk][tailor made help assistant for SSS - sss-help-center-gtk]]     
 - Hyprland configuration (power user session)
 - Labwc configuration (universal session)
 - Fish shell configuration

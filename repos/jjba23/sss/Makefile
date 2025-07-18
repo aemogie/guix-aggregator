@@ -95,7 +95,9 @@ define sss-user-reconfigure
 	$(call sss-notify-success,"SSS $(1)-reconfigure",$(call G_,"Task was completed successfully!"))
 	@-fc-cache -frv >/dev/null 2>&1 &
 	@-sh $(HOME)/.local/bin/write-gtk-dconf-settings.sh
+	@-sh $(HOME)/.local/bin/write-sss-dconf-settings.sh
 	@-herd trigger set-random-wallpaper
+	@-make document-keybindings-dconf
 endef
 
 
@@ -170,6 +172,12 @@ install-flatpak-packages:
 update-flatpak-packages:
 	$(call sss-log-info,"Updating Flatpak packages for SSS")
 	@flatpak update --user -y
+
+# document-keybindings-dconf: Write keybinding documentation to dconf for posterior retrieval.
+document-keybindings-dconf:
+	$(call sss-log-starting,"document-keybindings-dconf")
+	@guile --fresh-auto-compile -L ./per-host -L ./src system/scripts/document-keybindings-dconf.scm
+	$(call sss-log-complete,"document-keybindings-dconf")
 
 # Aliases for common tasks
 

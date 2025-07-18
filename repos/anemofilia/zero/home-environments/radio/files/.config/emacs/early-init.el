@@ -14,7 +14,7 @@
       ;; Warnings
       warning-suppress-log-types '((comp) (bytecomp))
       native-comp-async-report-warnings-errors 'silent
-      warning-minimum-level :emergency 
+      warning-minimum-level :emergency
       byte-compile-warnings '(not obsolete)
       native-comp-async-report-warnings-errors nil
 
@@ -67,8 +67,9 @@
 ;; Profile emacs startup
 (add-hook 'emacs-startup-hook
           (lambda () (message
-                 "*:** Emacs loaded in %s seconds with %d garbage collections."
+                 "*:** Emacs loaded in %s seconds with %d garbage collection%s."
                  (emacs-init-time "%.2f")
-                 gcs-done)))
+                 gcs-done
+                 (if (= gcs-done 1) "" "s"))))
 
 (load-theme 'anemofilia t)

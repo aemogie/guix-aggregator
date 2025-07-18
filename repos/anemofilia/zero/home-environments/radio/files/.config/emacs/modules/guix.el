@@ -8,18 +8,22 @@
       (call-interactively 'find-file))))
 
 (defun radix-packages ()
+  "Find files in ~/areas/code/scm/radix/radix/packages."
   (interactive)
   (funcall (radix "packages")))
 
 (defun radix-services ()
+  "Find files in ~/areas/code/scm/radix/radix/services."
   (interactive)
   (funcall (radix "services")))
 
 (defun radix-home-services ()
+  "Find files in ~/areas/code/scm/radix/radix/home/services."
   (interactive)
   (funcall (radix "home/services")))
 
 (defun radix-system ()
+  "Find files in ~/areas/code/scm/radix/radix/system."
   (interactive)
   (funcall (radix "system")))
 
@@ -31,29 +35,28 @@
            (default-directory (concat zero "/" dir "/")))
       (call-interactively 'find-file))))
 
-(defun home ()
+(defun home-environments ()
+  "Find files in ~/areas/code/scm/zero/home-environments."
   (interactive)
   (funcall (zero "home-environments")))
 
-(defun system ()
+(defun operating-systems ()
+  "Find files in ~/areas/code/scm/zero/operating-systems."
   (interactive)
   (funcall (zero "operating-systems")))
 
-(defun files ()
+(defun user-files ()
+  "Find files in ~/areas/code/scm/zero/home-environments/(user-login-name)/files."
   (interactive)
-  (funcall (zero "home-environments/radio/files")))
+  (let* ((user (user-login-name))
+         (dir (format "home-environments/%s/files" user)))
+    (funcall (zero dir))))
 
-(defun config ()
+(defun user-emacs-config ()
+  "Find files in ~/areas/code/scm/zero/home-environments/radio/files/.config/emacs."
   (interactive)
-  (let* ((default-directory "~/.config/emacs/"))
-    (call-interactively 'find-file)))
-
-(defun radio-manifests ()
-  (interactive)
-  (funcall (zero "home-environments/radio/manifests")))
-
-(defun radio-packages ()
-  (interactive)
- (funcall (zero "home-environments/radio/packages")))
+  (let* ((user (user-login-name))
+         (dir (format "home-environments/%s/files/.config/emacs" user)))
+    (funcall (zero dir))))
 
 (provide 'anemofilia/guix)
