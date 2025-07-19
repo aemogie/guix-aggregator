@@ -21,6 +21,7 @@
 
 ;;; Code:
 
+
 (defgroup sss ()
   "SSS customization group."
   :group 'tools)
@@ -40,6 +41,26 @@
 (defcustom sss-emacs-theme nil
   "The name of the Emacs theme to use, acording to SSS palette."
   :type 'symbol)
+
+(defcustom sss-standup-people '("Arnav"
+                                "Dan"
+                                "David"
+                                "Joe"
+                                "John"
+                                "Jordy"
+                                "Judy"
+                                "Laco"
+                                "Mahshid"
+                                "Michael"
+                                "Sabina"
+                                "Thomas"
+                                "Tom")
+  "The people's names to be used for random standup order."
+  :type 'list)
+
+(defcustom sss-standup-buffer-name "*Random Standup Order*"
+  "The name of the buffer where we should show a random standup order."
+  :type 'string)
 
 (defun sss-joe-reconfigure ()
   "Rebuild GNU Guix Joe's configs."
@@ -290,7 +311,41 @@ DATA: A string containing JSON data."
                       (format "Found package %s at: %s" target-package (car (string-split loc ":"))))))
     (message clean-loc)))
 
+(defun hugot-shuffle (ls)
+  "Method from hugot, tweaked to avoid converting vecs back into lists when not needed."
+  (let* ((vec (seq-into ls 'vector))
+         (length (length vec))
+         (n 0))
+    (while (< n length)
+      (let ((i (+ n (random (- length n))))
+            (tmp (aref vec n)))
+        (setf (aref vec n) (aref vec i)
+              (aref vec i) tmp))
+      (cl-incf n))
+    (if (vectorp ls)
+        vec
+      (seq-into vec 'list))))
+
+(defun sss-print-random-standup-order ()
+  "Prints a random order of names from `sss-standup-people` in a new buffer."
+  (interactive)
+  (unless sss-standup-people
+    (error "sss-standup-people is not a list.  Please check its definition."))
+  (when (> 0 (length sss-standup-people))
+    (error "The list of standup people is empty"))
+  (ignore-errors (kill-buffer sss-standup-buffer-name))
+
+  (let ((shuffled-people (hugot-shuffle (copy-sequence sss-standup-people))))
+    (get-buffer-create sss-standup-buffer-name)
+    (with-current-buffer sss-standup-buffer-name
+      (insert "* Random Standup Order\n\n")
+      (insert "Generated on: " (format-time-string "%Y-%m-%d %H:%M:%S") "\n\n")
+
+      (dolist (person shuffled-people)
+        (insert (format "%s\n" person)))
+      (org-mode))
+    (switch-to-buffer sss-standup-buffer-name)))
+
 (provide 'sss/sss)
 
 ;;; sss.el ends here
-labwc
