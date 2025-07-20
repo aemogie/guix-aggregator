@@ -227,13 +227,11 @@
 
 (define emacs:base
   (list emacs-next-pgtk
-        emacs-gcmh
-        emacs-general
-        emacs-no-littering
-        emacs-helpful))
+        emacs-gcmh emacs-general emacs-helpful emacs-no-littering emacs-on))
 
 (define emacs:buffer-management
   (list emacs-activities
+        emacs-ace-window
         emacs-perspective
         emacs-perspective-tabs))
 
@@ -241,8 +239,9 @@
   (list emacs-diminish))
 
 (define emacs:completion
-  (list emacs-anzu emacs-cape emacs-corfu emacs-corfu-doc emacs-consult-lsp
-        emacs-embark emacs-marginalia emacs-orderless emacs-vertico))
+  (list emacs-anzu emacs-cape emacs-corfu emacs-corfu-doc emacs-consult
+        emacs-consult-lsp emacs-embark emacs-marginalia emacs-orderless
+        emacs-vertico))
 
 (define emacs:file-managing
   (list emacs-all-the-icons emacs-dired-git-info emacs-dired-hacks
@@ -282,8 +281,8 @@
   (list emacs-lean4-mode))
 
 (define emacs:org
-  (list emacs-org-auto-tangle emacs-org-bullets emacs-org-fragtog emacs-org-present
-        emacs-org-roam emacs-org-modern emacs-olivetti)) ;emacs-org-pdftools
+  (list emacs-org-appear emacs-org-auto-tangle emacs-org-fragtog emacs-org-present
+        emacs-org-roam emacs-org-modern emacs-olivetti emacs-toc-org)) ;emacs-org-pdftools
 
 (define emacs:studying
   (list emacs-gnosis

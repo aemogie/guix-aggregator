@@ -25,3 +25,17 @@
   :hook ((scheme-mode . geiser-mode)
          (scheme-mode . eros-mode)
          (scheme-mode . geiser-eros-mode)))
+
+(use-package rainbow-delimiters
+  :hook ((text-mode prog-mode conf-mode) . rainbow-delimiters-mode))
+
+(use-package whitespace
+  :diminish whitespace-mode
+  :custom ((whitespace-display-mappings
+            '((space-mark    ?\   [?⋅])
+              ;; fix strange behaviour with hl-fill-column-mode
+              (newline-mark  ?\n  [?¬ ?\n])
+              (tab-mark      ?\t  [?→ ?\t]))))
+  :hook ((text-mode prog-mode conf-mode) . whitespace-mode))
+
+(use-package origami)

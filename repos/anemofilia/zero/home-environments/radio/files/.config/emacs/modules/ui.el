@@ -1,7 +1,7 @@
 ;; -*- lexical-binding: t; -*-
 
 (use-package marginalia
-  :init (marginalia-mode))
+  :hook (on-first-input . marginalia-mode))
 
 (use-package orderless
   :custom
@@ -44,7 +44,7 @@
           (delete-minibuffer-contents))
       (kill-word (- arg))))
   :hook
-  (after-init . vertico-multiform-mode)
+  (on-first-input . vertico-multiform-mode)
   (minibuffer-setup . cursor-intangible-mode)
   :bind (:map vertico-map
               ("C-j" . vertico-next)
@@ -52,9 +52,7 @@
               ("C-f" . vertico-exit))
   :bind (:map minibuffer-local-map
               ("C-<backspace>" . my/minibuffer-backward-kill))
-
-  :init
-  (vertico-mode))
+  :init (vertico-mode))
 
 (use-package corfu
   :preface
@@ -151,5 +149,24 @@
                         cape-elisp-symbol))
       (add-to-list 'completion-at-point-functions #'function)))
   :hook ((text-mode prog-mode conf-mode) . anemofilia/add-cape-completions))
+
+(use-package anzu
+  :diminish anzu-mode
+  :bind
+  (([remap query-replace] . anzu-query-replace)
+   ([remap query-replace-regexp] . anzu-query-replace-regexp)
+   :map isearch-mode-map
+   ([remap isearch-query-replace] . anzu-isearch-query-replace)
+   ([remap isearch-query-replace-regexp] . anzu-isearch-query-replace-regexp))
+  :hook (on-first-input . global-anzu-mode))
+
+(use-package helpful
+  :custom
+  (help-select-window t)
+  :bind
+  (("C-h f" . helpful-callable)
+   ("C-h v" . helpful-variable)
+   ("C-h k" . helpful-key)
+   ("C-h C-." . helpful-at-point)))
 
 (provide 'anemofilia/ui)

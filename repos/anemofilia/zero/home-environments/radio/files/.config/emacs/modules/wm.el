@@ -14,7 +14,7 @@
    ("C-x C-a b" . activities-switch-buffer)
    ("C-x C-a g" . activities-revert)
    ("C-x C-a l" . activities-list))
-  :init (activities-mode))
+  :hook (after-init . activities-mode))
 
 (use-package perspective
   :after (meow)
@@ -25,11 +25,7 @@
    (expand-file-name "persp-state.eld"
                      user-emacs-directory))
   :preface
-  (defun anemofilia/kill-this-buffer ()
-    "Kill current buffer."
-    (interactive)
-    (kill-this-buffer))
-  (defun anemofilia/kill-this-buffer-no-prompt ()
+  (defun kill-this-buffer-no-prompt ()
     "Kill current buffer without confirmation, even if modified."
     (interactive)
     (set-buffer-modified-p nil)
@@ -45,8 +41,8 @@
            ("<escape> H" . persp-prev)
            ("<escape> L" . persp-next)
            ("<escape> r" . persp-rename)
-           ("<escape> q" . anemofilia/kill-this-buffer)
-           ("<escape> Q" . anemofilia/kill-this-buffer-no-prompt)
+           ("<escape> q" . kill-this-buffer)
+           ("<escape> Q" . kill-this-buffer-no-prompt)
            ("<escape> l" . next-buffer)
            ("<escape> h" . previous-buffer)
            ("<escape> <escape>" . ignore)))
@@ -84,14 +80,16 @@ in PERSP-TAB that should be ignored when determining if the tab
 is occupied."
     `(,(format "\\*scratch\\* \\(.*\\)"
                (anemofilia/persp-tab-name persp-tab))
-      " \\*which-key\\*"))
+      " \\*which-key\\*" ; which-key
+      "Preview:.*"))     ; recentf previews
 
   (defun hidden-persp-tab-buffers (persp-tab)
     "Returns a list of regular expressions for matching buffers
 in PERSP-TAB that should be hidden in the tab-bar buffer list."
     '("\\*which-key\\*"
       "\\*Minibuf-[0-9]+\\*"
-      "\\*Echo Area [0-9]+\\*"))
+      "\\*Echo Area [0-9]+\\*"
+      "Preview:.*"))
 
   (defun anemofilia/persp-tab-occupiedp (persp-tab)
     "Checks whether TAB is occupied with relevant, non-ignored
@@ -116,7 +114,8 @@ buffers."
 
   (defun anemofilia/tab-bar-buffer-format (buffer)
     (let* ((selected-p (eq buffer (window-buffer)))
-           (name (s-truncate 20 (buffer-name buffer) "…"))
+           (name (s-truncate 20 (buffer-name buffer)
+                             truncate-string-ellipsis))
            (face (if selected-p
                      'tab-bar-tab
                    'tab-bar-tab-inactive)))
@@ -165,4 +164,7 @@ buffers."
   (add-to-list 'consult-buffer-sources persp-consult-source)
   :bind (("C-x b" . consult-buffer)))
 
-(provide 'anemofilia/perspective)
+(use-package recentf
+  :hook (after-init . recentf-mode))
+
+(provide 'anemofilia/wm)

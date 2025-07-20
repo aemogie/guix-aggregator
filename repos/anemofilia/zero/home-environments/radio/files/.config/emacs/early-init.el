@@ -1,42 +1,46 @@
 ;; -*- lexical-binding: t; -*-
 
-(setq ;; Garbage collection
+(setq ;; garbage collection
       gc-cons-threshold most-positive-fixnum
       gc-cons-percentage 0.6
       inhibit-compacting-font-caches t
 
-      ;; Data emacs reads from process
+      ;; native compilation
+      native-comp-jit-compilation t
+      native-compile-prune-cache t
+
+      ;; somehow this makes the init faster
+      file-name-handler-alist-old file-name-handler-alist
+      file-name-handler-alist '()
+
+      ;; data emacs reads from process
       read-process-output-max (* 1024 1024) ; 1mb
 
-      ;; Silence startup message
+      ;; silence startup message
       inhibit-startup-echo-area-message (user-login-name)
 
       ;; Warnings
       warning-suppress-log-types '((comp) (bytecomp))
-      native-comp-async-report-warnings-errors 'silent
       warning-minimum-level :emergency
       byte-compile-warnings '(not obsolete)
       native-comp-async-report-warnings-errors nil
+      large-file-warning-threshold nil
 
       ;; miscelaneous conveniences
       highlight-nonselected-windows nil
       fast-but-imprecise-scrolling t
 
-      ;; Ask y/n instead of yes/no
+      ;; ask y/n instead of yes/no
       use-short-answers t
 
-      ;; Disable compiler and large file warnings
-      native-comp-async-report-warnings-errors nil
-      large-file-warning-threshold             nil
-
-      ;; Remove start message and scratch message
+      ;; remove start message and scratch message
       inhibit-startup-message t
       initial-scratch-message nil
 
-      ;; Theme
+      ;; theme
       custom-theme-directory "~/.config/emacs/themes"
 
-      ;; Frame related settings
+      ;; frame related settings
       frame-resize-pixelwise t
       default-frame-alist '((fullscreen . maximized)
 
@@ -44,18 +48,18 @@
                             (vertical-scroll-bars . nil)
                             (horizontal-scroll-bars . nil)
 
-                            ;; Setting the face here prevents flashes of
+                            ;; setting the face here prevents flashes of
                             ;; color as the theme gets activated
                             (background-color . "#000000")
                             (ns-appearance . dark)
                             (ns-transparent-titlebar . t)
                             (undecorated . t)))
 
-;; Disabling bidi (bidirectional editing stuff)
+;; disabling bidi (bidirectional editing stuff)
 (setq-default bidi-display-reordering 'left-to-right
               bidi-paragraph-direction 'left-to-right)
 
-;; Default frame configuration
+;; default frame configuration
 (dolist (mode '(tool-bar-mode menu-bar-mode ; Menus
                 scroll-bar-mode             ; Scroll-bar
                 tooltip-mode                ; Tooltip
@@ -64,7 +68,7 @@
                 fringe-mode))               ; Fringe
   (funcall mode -1))
 
-;; Profile emacs startup
+;; profile emacs startup
 (add-hook 'emacs-startup-hook
           (lambda () (message
                  "*:** Emacs loaded in %s seconds with %d garbage collection%s."
