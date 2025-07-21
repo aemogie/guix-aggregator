@@ -1,6 +1,8 @@
 ;; -*- lexical-binding: t; -*-
 
+
 (use-package marginalia
+  :after on
   :hook (on-first-input . marginalia-mode))
 
 (use-package orderless
@@ -51,7 +53,7 @@
               ("C-k" . vertico-previous)
               ("C-f" . vertico-exit))
   :bind (:map minibuffer-local-map
-              ("C-<backspace>" . my/minibuffer-backward-kill))
+              ("C-<backspace>" . anemofilia/minibuffer-backward-kill))
   :init (vertico-mode))
 
 (use-package corfu
@@ -151,6 +153,7 @@
   :hook ((text-mode prog-mode conf-mode) . anemofilia/add-cape-completions))
 
 (use-package anzu
+  :after on
   :diminish anzu-mode
   :bind
   (([remap query-replace] . anzu-query-replace)

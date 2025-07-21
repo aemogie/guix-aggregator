@@ -37,5 +37,3 @@
               (newline-mark  ?\n  [?¬ ?\n])
               (tab-mark      ?\t  [?→ ?\t]))))
   :hook ((text-mode prog-mode conf-mode) . whitespace-mode))
-
-(use-package origami)

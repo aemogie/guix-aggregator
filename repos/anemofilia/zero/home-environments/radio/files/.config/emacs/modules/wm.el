@@ -114,8 +114,7 @@ buffers."
 
   (defun anemofilia/tab-bar-buffer-format (buffer)
     (let* ((selected-p (eq buffer (window-buffer)))
-           (name (s-truncate 20 (buffer-name buffer)
-                             truncate-string-ellipsis))
+           (name (truncate-string-to-width (buffer-name buffer) 20))
            (face (if selected-p
                      'tab-bar-tab
                    'tab-bar-tab-inactive)))
@@ -138,7 +137,7 @@ buffers."
                    menu-item
                    ,(anemofilia/tab-bar-buffer-format buffer)
                    (lambda () (interactive) (switch-to-buffer ,buffer)))))
-              (-filter (lambda (buffer)
+              (seq-filter (lambda (buffer)
                          (relevant-bufferp current-persp-tab buffer))
                        (anemofilia/persp-tab-buffers current-persp-tab)))))
 
