@@ -28,7 +28,7 @@
 (define-public guile-veritas
   (package
     (name "guile-veritas")
-    (version "0.0.18")
+    (version "0.0.28")
     (source
      (origin
        (method git-fetch)
@@ -37,21 +37,20 @@
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0f8maqgg1fahw9cfcvcrlff3hv9bw9d8z769va3az0bd7rkx14hb"))))
+        (base32 "068yhsaiz2l4wim6iagfjl059fdsfnmkxnhwp64dri556viijjdj"))))
     (build-system guile-build-system)
-    (native-inputs (list guile-3.0 guile-fibers))
     (arguments
      (list
       #:source-directory "src"))
+    (native-inputs (list guile-3.0))
+    (propagated-inputs (list guile-fibers))
     (home-page "https://codeberg.org/jjba23/veritas")
-    (synopsis
-     "Unit, Integration and Black Box testing framework powered by Lisp (Guile Scheme)")
+    (synopsis "Testing framework for Guile")
     (description
-     "veritas aims to be a simple and lightweight testing framework written in Scheme. Its main purpose is to help developers verify that their code behaves as expected. It achieves this by providing a clear structure for writing tests and producing easy-to-read feedback in various formats.
-
-The framework is built around the concepts of \"suites\" which group related \"tests\" and \"assertions\" which perform the actual checks. I'd encourage you to peruse the ~test/~ folder of this project to see real examples of how to use veritas.
-
-The power of ~veritas~ lies in its simplicity, expressive embedded domain-specific language (EDSL), and some clever features that promote robust testing practices and correctness, like order randomization and concurrent testing.")
+     "Veritas is a testing framework for Guile with an @acronym{EDSL,
+embedded domain specific language} to define test suites.  Emphasis is placed
+on legibility and maintainability of tests.  Veritas shuffles tests and
+runs them concurrently by default to ensure robust testing practices.")
     (license license:lgpl3+)))
 
 (packages->manifest (list guile-next

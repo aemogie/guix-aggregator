@@ -46,4 +46,4 @@
                              #:expected "reme sexp sys"))))
 
 (define (spec)
-  (run-suites prelude-suite))
+  (veritas-run prelude-suite))

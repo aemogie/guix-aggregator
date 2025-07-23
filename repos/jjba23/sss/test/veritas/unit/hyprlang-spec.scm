@@ -84,5 +84,5 @@
                                                  #:dispatch 'dispatch)))))
 
 (define (spec)
-  (run-suites hyprlang-suite))
+  (veritas-run hyprlang-suite))
 

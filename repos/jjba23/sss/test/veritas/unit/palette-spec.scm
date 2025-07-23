@@ -44,4 +44,4 @@
                                          (get-ansi-color 'ef-dream)))))))
 
 (define (spec)
-  (run-suites palette-suite))
+  (veritas-run palette-suite))

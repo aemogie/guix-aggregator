@@ -35,5 +35,5 @@
                              #:expected expected-dconf-writer-commands))))
 
 (define (spec)
-  (run-suites dconf-test-suite))
+  (veritas-run dconf-test-suite))
 
