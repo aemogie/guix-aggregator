@@ -56,8 +56,6 @@
     (name-service-switch %mdns-host-lookup-nss)))
 
 ((compose (nonguix-transformation-linux)
-          ;; Nonguix substitute server currently unavailable for IPv4.
-          ;; https://gitlab.com/nonguix/nonguix/-/issues/395
-          (nonguix-transformation-guix #:substitutes? #f)
+          (nonguix-transformation-guix)
           (rosenthal-transformation-guix))
  %my-os)

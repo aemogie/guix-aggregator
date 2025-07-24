@@ -125,7 +125,6 @@ Personal account.
 #+begin_src scheme :noweb-ref user
   (user-account
     (name "hako")
-    (password "$6$w0.1nJP5izI6Z/fc$EnWXCvbnFlwdO5dMp8Ir1J3NKRoVlPrTbv90cmPPe.t3Hxtalwt1jabylQIzTQlR3MHe4iNgiEyytwdVv3W55/")
     (group "users")
     (supplementary-groups '("wheel"))
     (shell (file-append (spec->pkg "fish") "/bin/fish")))
@@ -135,14 +134,12 @@ Nonguix sysadmins:
 #+begin_src scheme :noweb-ref user
   (user-account
     (name "jonathan")
-    (password #f)
     (group "users")
     (shell (file-append (spec->pkg "fish") "/bin/fish"))
     (comment "Jonathan Brielmaier"))
 
   (user-account
     (name "podiki")
-    (password #f)
     (group "users")
     (shell (file-append (spec->pkg "fish") "/bin/fish")))
 #+end_src
@@ -155,7 +152,6 @@ Administration accounts.
 
   (user-account
     (name "deploy")
-    (password #f)
     (group "users")
     (comment "User for 'guix deploy'")
     (create-home-directory? #f))
@@ -204,6 +200,8 @@ Frequently used packages.
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
+  (nonguix-transformation-guix)
+
   (lambda (os)
     (operating-system
       (inherit os)
@@ -417,7 +415,8 @@ Remember to open TCP port 5555 and 5556.
        '("x86_64-linux" "i686-linux"))
       (substitute-urls
        `(,@%default-substitute-urls
-         "https://ci.ultrarare.space"))))
+         "https://ci.boiledscript.com"
+         "https://substitutes.nonguix.org"))))
 #+end_src
 
 ** manage-cuirass

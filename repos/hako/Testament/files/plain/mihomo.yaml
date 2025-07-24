@@ -4,7 +4,7 @@
 
 mode: "rule"
 log-level: "error"
-ipv6: false
+ipv6: true
 find-process-mode: "strict"
 external-controller: "127.0.0.1:9090"
 external-ui: "ui"
@@ -27,17 +27,11 @@ geox-url:
   mmdb: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb"
   asn: "https://github.com/xishang0128/geoip/releases/download/latest/GeoLite2-ASN.mmdb"
 
-bind-address: 100.108.11.68
-mixed-port: 7890
-allow-lan: true
-lan-allowed-ips:
-  - 100.64.0.0/10
-
 dns:
   enable: true
   prefer-h3: true
   use-system-hosts: true
-  ipv6: false
+  ipv6: true
   nameserver-policy:
     "geosite:cn,private":
       - system
@@ -50,16 +44,6 @@ dns:
   direct-nameserver:
     - system
 
-sniffer:
-  enable: true
-  sniff:
-    HTTP:
-      ports: ["80", "8080-8880"]
-    TLS:
-      ports: ["443", "8443"]
-    QUIC:
-      ports: ["443", "8443"]
-
 tun:
   enable: true
   stack: mixed
@@ -71,9 +55,8 @@ proxy-groups:
   - {
       name: "Default",
       type: "select",
-      proxies: ["All-Proxies", "DIRECT"],
+      proxies: ["Proxy", "DIRECT"],
     }
-  - { name: "All-Proxies", <<: *use }
 
 rule-providers:
   reject:

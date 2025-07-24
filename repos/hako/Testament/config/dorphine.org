@@ -150,6 +150,7 @@ Root file system layout:
   ├─/swap         btrfs System/@Swap
   ├─/var/guix     btrfs System/@Guix
   ├─/var/lib      btrfs @Data
+  ├─/var/lock     tmpfs
   ├─/var/log      btrfs System/@Log
   └─/var/tmp      btrfs System/@Tmp
 #+end_example
@@ -166,7 +167,15 @@ Root file system layout:
           (device (uuid "2574-B3EC" 'fat))
           (mount-point "/efi")
           (type "vfat")
-          (create-mount-point? #t)))
+          (create-mount-point? #t))
+
+        (file-system
+          (device "tmpfs")
+          (mount-point "/var/lock")
+          (type "tmpfs")
+          (options "mode=0755,size=25%")
+          (create-mount-point? #t)
+          (check? #f)))
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref file-systems
@@ -286,7 +295,6 @@ Personal account.
 #+begin_src scheme :noweb yes :noweb-ref user
   (user-account
     (name "hako")
-    (password "$6$KC5RtFkRZBpkNFHg$tnl.h.9tzVMOxFy37WTGl8QBBmt.ZiZmxuLD8/9YCimYvFkU26xR6YTcHqhUeMQPiQZxZA3yEjeDBi6nST8ue/")
     (group "users")
     (supplementary-groups '(<<group>> "audio" "video" "wheel"))
     (shell (file-append (spec->pkg "fish") "/bin/fish")))
@@ -310,7 +318,6 @@ Administration accounts.
 
   (user-account
     (name "deploy")
-    (password #f)
     (group "users")
     (comment "User for 'guix deploy'")
     (create-home-directory? #f))
@@ -361,9 +368,7 @@ Frequently used packages.
 
 ** Guix Daemon
 #+begin_src scheme :noweb-ref transformation
-  ;; Nonguix substitute server currently unavailable for IPv4.
-  ;; https://gitlab.com/nonguix/nonguix/-/issues/395
-  (nonguix-transformation-guix #:substitutes? #f)
+  (nonguix-transformation-guix)
   (rosenthal-transformation-guix)
 #+end_src
 
@@ -472,6 +477,33 @@ Generate passwordless ECC key:
 #+end_src
 
 [[file:../files/plain/sops.yaml][sops.yaml]]
+
+* Power Management
+#+begin_src scheme :noweb-ref module
+  (gnu services pm)
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (service tlp-service-type)
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'auto-power-off
+      shepherd-root-service-type
+    (list (shepherd-timer '(auto-power-off)
+            #~(calendar-event #:minutes '(0 10 20 30 40 50))
+            #~(#$(program-file "auto-power-off"
+                   #~(begin
+                       (use-modules (ice-9 textual-ports))
+
+                       (define %battery-capacity
+                         (call-with-input-file
+                             "/sys/class/power_supply/BAT1/capacity"
+                           (compose string->number get-line)))
+
+                       (when (<= %battery-capacity 10)
+                         (system* "loginctl" "poweroff"))))))))
+#+end_src
 
 * Networking & SSH
 #+begin_src scheme :noweb-ref module

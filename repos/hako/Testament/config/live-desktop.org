@@ -166,10 +166,7 @@ Empty password
 
 Lock channels to avoid building Guix when using the LiveCD.
 #+begin_src scheme :noweb-ref transformation
-  ;; Nonguix substitute server currently unavailable for IPv4.
-  ;; https://gitlab.com/nonguix/nonguix/-/issues/395
   (nonguix-transformation-guix
-   #:substitutes? #f
    #:channel? #f)
   (rosenthal-transformation-guix
    #:channel? #f)
