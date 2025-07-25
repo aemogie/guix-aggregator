@@ -23,63 +23,63 @@
 (define hyprlang-suite
   (suite "Hyprlang test suite"
          (test "serialize-hypr-setting"
-               (assert-equal #:expected "    key = value"
-                             #:sut (serialize-hypr-setting "key"
+               (assert-equal #:expect "    key = value"
+                             #:got (serialize-hypr-setting "key"
                                                            "value"
                                                            #:indent "  "
                                                            #:nested #t))
-               (assert-equal #:expected "key = value"
-                             #:sut (serialize-hypr-setting "key" "value"))
-               (assert-equal #:expected "  key = value"
-                             #:sut (serialize-hypr-setting "key" "value"
+               (assert-equal #:expect "key = value"
+                             #:got (serialize-hypr-setting "key" "value"))
+               (assert-equal #:expect "  key = value"
+                             #:got (serialize-hypr-setting "key" "value"
                                                            #:indent "  "))
 
                )
          (test "serialize-hypr-section"
-               (assert-equal #:expected "section {\n  key = value\n}"
-                             #:sut (serialize-hypr-section #:section "section"
+               (assert-equal #:expect "section {\n  key = value\n}"
+                             #:got (serialize-hypr-section #:section "section"
                                                            #:settings '(("key" . "value"))))
-               (assert-equal #:expected "section {
+               (assert-equal #:expect "section {
   subsection {
     key = value
   }
 }"
-                             #:sut (serialize-hypr-section #:section "section"
+                             #:got (serialize-hypr-section #:section "section"
                                                            #:settings '(("subsection"
                                                                          ("key" . "value"))))))
          (test "hypr-translate-mod"
-               (assert-equal #:expected "SUPER"
-                             #:sut (hypr-translate-mod "s"))
+               (assert-equal #:expect "SUPER"
+                             #:got (hypr-translate-mod "s"))
 
-               (assert-equal #:expected "ALT"
-                             #:sut (hypr-translate-mod "M"))
+               (assert-equal #:expect "ALT"
+                             #:got (hypr-translate-mod "M"))
 
-               (assert-equal #:expected "unknown"
-                             #:sut (hypr-translate-mod "unknown")))
+               (assert-equal #:expect "unknown"
+                             #:got (hypr-translate-mod "unknown")))
          (test "hypr-translate-bind"
 
-               (assert-equal #:expected "mouse:272"
-                             #:sut (hypr-translate-bind "mouse-left"))
+               (assert-equal #:expect "mouse:272"
+                             #:got (hypr-translate-bind "mouse-left"))
 
-               (assert-equal #:expected "mouse:273"
-                             #:sut (hypr-translate-bind "mouse-right"))
+               (assert-equal #:expect "mouse:273"
+                             #:got (hypr-translate-bind "mouse-right"))
 
-               (assert-equal #:expected "key"
-                             #:sut (hypr-translate-bind "key")))
+               (assert-equal #:expect "key"
+                             #:got (hypr-translate-bind "key")))
          (test "hypr-bind"
-               (assert-equal #:expected "SUPER, key, dispatch, cmd"
-                             #:sut (hypr-bind #:mod "SUPER"
+               (assert-equal #:expect "SUPER, key, dispatch, cmd"
+                             #:got (hypr-bind #:mod "SUPER"
                                               #:bind "key"
                                               #:dispatch 'dispatch
                                               #:cmd "cmd")))
          (test "exec-bind"
-               (assert-equal #:expected "SUPER, key, exec, cmd"
-                             #:sut (exec-bind #:mod "SUPER"
+               (assert-equal #:expect "SUPER, key, exec, cmd"
+                             #:got (exec-bind #:mod "SUPER"
                                               #:bind "key"
                                               #:cmd "cmd")))
          (test "special-bind"
-               (assert-equal #:expected "SUPER, key, dispatch"
-                             #:sut (special-bind #:mod "SUPER"
+               (assert-equal #:expect "SUPER, key, dispatch"
+                             #:got (special-bind #:mod "SUPER"
                                                  #:bind "key"
                                                  #:dispatch 'dispatch)))))
 

@@ -27,7 +27,7 @@ precmd() {
 ENV_PART=''
 USER_PART='%B%(!.#.>)%b'
 if [ -n "$GUIX_ENVIRONMENT" ]; then
-    ENV_PART="%F{blue}[guix-shell]%f"
+    ENV_PART="%F{blue}[shell]%f"
 fi
 PROMPT="${ENV_PART}$USER_PART "
 

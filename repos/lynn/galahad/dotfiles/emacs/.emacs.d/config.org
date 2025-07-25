@@ -14,11 +14,6 @@ Prevent Emacs from loading out of date, native compiled jsonrpc:
    ;; generated from config.org via tangle
    (require 'package)
    (require 'use-package)
-   (use-package pdf-tools
-  :defer t
-  :config
-  (setq-default pdf-view-display-size 'fit-page)
-  (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward))
 
    (use-package org-auto-tangle
      :hook (org-mode . org-auto-tangle-mode))
@@ -209,6 +204,7 @@ Dired-subtree's functionality is within =dired-subtree-toggle=
          '("9" . meow-digit-argument)
          '("0" . meow-digit-argument)
          '("/" . meow-keypad-describe-key)
+         '("c" . compile)
          '("?" . meow-cheatsheet))
         (meow-normal-define-key
          ;; music stuff
@@ -398,16 +394,21 @@ Dired-subtree's functionality is within =dired-subtree-toggle=
 #+end_src
 ** Eglot
 #+begin_src emacs-lisp
-  (use-package company
-    :hook
-    (zig-mode . company-mode))
-  (use-package jsonrpc)
-  (use-package eglot
-    :hook
-    (zig-mode . eglot-ensure)
-    :config
-    (setq eglot-autoshutdown t)
-    (add-to-list 'eglot-server-programs '(zig-mode . ("~/zls"))))
+      (use-package company
+        :hook
+        (zig-mode . company-mode)
+        (c-mode . company-mode))
+      (use-package jsonrpc)
+      (use-package eglot
+        :hook
+        (zig-mode . eglot-ensure)
+        (c-mode . eglot-ensure)
+        :config
+        (setq eglot-autoshutdown t)
+        (add-to-list 'eglot-server-programs
+                     '(zig-mode . ("~/.guix-profile/bin/zls")))
+        (add-to-list 'eglot-server-programs
+                     '(c-mode) . ("clangd")))
 #+end_src
 ** Zig
 #+begin_src emacs-lisp
@@ -443,9 +444,10 @@ Dired-subtree's functionality is within =dired-subtree-toggle=
 when the Window (window manager) is not in focus, remove modeline for less noise
 ** Font setup
 #+begin_src emacs-lisp
-  (set-face-attribute 'default nil :font "Iosevka Term" :height 120)
-  (set-face-attribute 'variable-pitch nil :font "Iosevka Etoile")
-  (set-face-attribute 'org-modern-symbol nil :font "Iosevka Etoile")
+  (when (display-graphic-p)
+    (set-face-attribute 'default nil :font "Iosevka Term" :height 240)
+    (set-face-attribute 'variable-pitch nil :font "Iosevka Etoile")
+    (set-face-attribute 'org-modern-symbol nil :font "Iosevka Etoile"))
 #+end_src
 ** Sweet sweet transparency
 #+begin_src emacs-lisp
@@ -463,39 +465,46 @@ when the Window (window manager) is not in focus, remove modeline for less noise
 #+end_src
 * Organization & Work
 #+begin_src emacs-lisp
-  (defun ll/org-hook ()
-    (org-indent-mode)
-    (org-modern-mode)
-    (mixed-pitch-mode)
-    (auto-fill-mode 0)
-    (visual-line-mode 1))
-  (defun ll/org-agenda-hook ()
-    "Hook to run olivetti mode when entering org-agenda"
-    (olivetti-mode))
-  (defun ll/org-agenda-view-day ()
+    (defun ll/org-hook ()
+      (org-indent-mode)
+      (org-modern-mode)
+      (mixed-pitch-mode)
+      (auto-fill-mode 0)
+      (visual-line-mode 1))
+    (defun ll/org-agenda-hook ()
+      "Hook to run olivetti mode when entering org-agenda"
+      (olivetti-mode))
+    (defun ll/org-agenda-view-day ()
+      (interactive)
+      (org-agenda nil "d"))
+    (defun ll/org-agenda-view-todos ()
+      (interactive)
+      (org-agenda nil "t"))
+
+    (setq org-todo-keywords
+          '((sequence "TODO" "WORKING" "COMPLETE")))
+    (setq org-clock-in-switch-to-state "WORKING")
+    (setq org-clock-out-switch-to-state "TODO")
+    (setq org-agenda-custom-commands
+          '(("d" "Today's Tasks"
+             ((agenda "" ((org-agenda-span 1)
+                          (org-agenda-overriding-header "Today's Task")))))))
+    (setq org-agenda-files
+          (directory-files-recursively "~/docs/org" "\\.org$"))
+
+    (add-hook 'org-mode-hook 'll/org-hook)
+    (add-hook 'org-agenda-mode-hook 'll/org-agenda-hook)
+    (keymap-global-set "C-c a d" #'ll/org-agenda-view-day)
+    (keymap-global-set "C-c a t" #'ll/org-agenda-view-todos)
+
+    (setq org-src-window-setup 'current-window) ; C-c ' in same window
+
+  (defun kill-all-buffers ()
+    "Kill all buffers except *scratch* and *Messages*."
     (interactive)
-    (org-agenda nil "d"))
-  (defun ll/org-agenda-view-todos ()
-    (interactive)
-    (org-agenda nil "t"))
-
-  (setq org-todo-keywords
-        '((sequence "TODO" "WORKING" "COMPLETE")))
-  (setq org-clock-in-switch-to-state "WORKING")
-  (setq org-clock-out-switch-to-state "TODO")
-  (setq org-agenda-custom-commands
-        '(("d" "Today's Tasks"
-           ((agenda "" ((org-agenda-span 1)
-                        (org-agenda-overriding-header "Today's Task")))))))
-  (setq org-agenda-files
-        (directory-files-recursively "~/docs/org" "\\.org$"))
-
-  (add-hook 'org-mode-hook 'll/org-hook)
-  (add-hook 'org-agenda-mode-hook 'll/org-agenda-hook)
-  (keymap-global-set "C-c a d" #'ll/org-agenda-view-day)
-  (keymap-global-set "C-c a t" #'ll/org-agenda-view-todos)
-
-  (setq org-src-window-setup 'current-window) ; C-c ' in same window
+    (dolist (buf (buffer-list))
+      (unless (member (buffer-name buf) '("*scratch*" "*Messages*"))
+        (kill-buffer buf))))
 #+end_src
 * Writing
 Lint any prose based on =$HOME/.vale.ini=
@@ -555,12 +564,21 @@ Export compatible with copy & pasting to submission forms, such as AO3, Fanficti
 ** C-language
 Includes a messy hack to format-on-save. 
 #+begin_src emacs-lisp
-  (defun clang-format-on-save ()
-    "Format the buffer before save."
-    (when (locate-dominating-file "." ".clang-format") (clang-format-buffer)))
-  
-  (add-hook
-   'c-mode-hook (lambda () (add-hook 'before-save-hook 'clang-format-on-save nil t)))
+    (setq-default tab-width 4)
+    (defun clang-format-on-save ()
+        "Format the buffer before save."
+        (when (locate-dominating-file "." ".clang-format") (clang-format-buffer)))
+
+      (add-hook
+       'c-mode-hook (lambda () (add-hook 'before-save-hook 'clang-format-on-save nil t)))
+  ;; temporary
+  (setq compilation-save-buffers-predicate nil)
+  (setq compilation-scroll-output 'first-error)
+  (setq compilation-ask-about-save nil)
+  (setq compilation-always-kill t)
+  (setq ansi-color-for-compilation-mode t)
+  (setq eglot-events-buffer-size 0)
+  (add-hook 'compilation-filter-hook #'ansi-color-compilation-filter)
    #+end_src
 ** Rust
 #+begin_src emacs-lisp

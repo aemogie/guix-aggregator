@@ -23,21 +23,21 @@
 (define palette-suite
   (suite "Palette test suite"
          (test "get-color"
-               (assert-equal #:expected "#"
-                             #:sut (string-take (get-color 'ef-bio
+               (assert-equal #:expect "#"
+                             #:got (string-take (get-color 'ef-bio
                                                            'text) 1))
                (assert-error (lambda ()
                                (get-color 'unknown-palette
                                           'primary))))
          (test "hex-to-rgba"
-               (assert-equal #:expected "rgba(255, 87, 51, 1)"
-                             #:sut (hex-to-rgba "#ff5733"))
-               (assert-equal #:expected "rgba(0, 0, 0, 1)"
-                             #:sut (hex-to-rgba "#000000"))
-               (assert-equal #:expected "rgba(255, 255, 255, 1)"
-                             #:sut (hex-to-rgba "#ffffff"))
-               (assert-equal #:expected "rgba(0, 128, 128, 0.5)"
-                             #:sut (hex-to-rgba "#008080"
+               (assert-equal #:expect "rgba(255, 87, 51, 1)"
+                             #:got (hex-to-rgba "#ff5733"))
+               (assert-equal #:expect "rgba(0, 0, 0, 1)"
+                             #:got (hex-to-rgba "#000000"))
+               (assert-equal #:expect "rgba(255, 255, 255, 1)"
+                             #:got (hex-to-rgba "#ffffff"))
+               (assert-equal #:expect "rgba(0, 128, 128, 0.5)"
+                             #:got (hex-to-rgba "#008080"
                                                 #:alpha 0.5)))
          (test "get-ansi-color"
                (assert-true (not (equal? ""

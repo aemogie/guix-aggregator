@@ -28,11 +28,11 @@
 (define dconf-test-suite
   (suite "dconf test suite"
          (test "mk-nested-dconf-writer-commands"
-               (assert-equal #:sut (mk-nested-dconf-writer-commands '(("/org/gnome/desktop/interface"
+               (assert-equal #:got (mk-nested-dconf-writer-commands '(("/org/gnome/desktop/interface"
                                                                        (gtk-key-theme . "'Emacs'")
                                                                        (cursor-size . 24)
                                                                        (enable-animations . true))))
-                             #:expected expected-dconf-writer-commands))))
+                             #:expect expected-dconf-writer-commands))))
 
 (define (spec)
   (veritas-run dconf-test-suite))

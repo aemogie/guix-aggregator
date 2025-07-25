@@ -35,15 +35,15 @@
                             (equal? #f
                                     (get-setting 'lang)))))
          (test "string-drop-first-last-n"
-               (assert-equal #:sut (string-drop-first-last-n "hello world" 1)
-                             #:expected "ello worl")
-               (assert-equal #:sut (string-drop-first-last-n "hey" 1)
-                             #:expected "e")
-               (assert-equal #:sut (string-drop-first-last-n "h" 1)
-                             #:expected "h")
-               (assert-equal #:sut (string-drop-first-last-n
+               (assert-equal #:got (string-drop-first-last-n "hello world" 1)
+                             #:expect "ello worl")
+               (assert-equal #:got (string-drop-first-last-n "hey" 1)
+                             #:expect "e")
+               (assert-equal #:got (string-drop-first-last-n "h" 1)
+                             #:expect "h")
+               (assert-equal #:got (string-drop-first-last-n
                                     "supreme sexp system" 3)
-                             #:expected "reme sexp sys"))))
+                             #:expect "reme sexp sys"))))
 
 (define (spec)
   (veritas-run prelude-suite))

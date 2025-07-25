@@ -160,7 +160,7 @@ Root file system layout:
           (device "tmpfs")
           (mount-point "/")
           (type "tmpfs")
-          (options "mode=0755,size=25%")
+          (options "mode=0755,nr_inodes=1m,size=25%")
           (check? #f))
 
         (file-system
@@ -173,7 +173,8 @@ Root file system layout:
           (device "tmpfs")
           (mount-point "/var/lock")
           (type "tmpfs")
-          (options "mode=0755,size=25%")
+          (flags '(no-suid no-dev strict-atime))
+          (options "mode=1777,nr_inodes=800k,size=20%")
           (create-mount-point? #t)
           (check? #f)))
 #+end_src

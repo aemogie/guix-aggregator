@@ -1,14 +1,9 @@
 ;; generated from config.org via tangle
- (require 'package)
- (require 'use-package)
- (use-package pdf-tools
-:defer t
-:config
-(setq-default pdf-view-display-size 'fit-page)
-(define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward))
+(require 'package)
+(require 'use-package)
 
- (use-package org-auto-tangle
-   :hook (org-mode . org-auto-tangle-mode))
+(use-package org-auto-tangle
+  :hook (org-mode . org-auto-tangle-mode))
 
 (use-package no-littering)
   (setq backup-directory-alist
@@ -27,10 +22,10 @@
   :config
   ;; Enable all Iosevka ligatures in programming modes
   (ligature-set-ligatures 'prog-mode '("<---" "<--"  "<<-" "<-" "->" "-->" "--->" "<->" "<-->" "<--->" "<---->"
-				       "<!--" "<==" "<===" "<=" "=>" "=>>" "==>" "===>" ">=" "<=>" "<==>"
-				       "<===>" "<====>" "<!---" "<~~" "<~" "~>" "~~>" "::" ":::" "==" "!="
-				       "===" "!==" ":=" ":-" ":+" "<*" "<*>" "*>" "<|" "<|>" "|>" "+:" "-:"
-				       "=:" "<******>" "++" "+++"))
+					 "<!--" "<==" "<===" "<=" "=>" "=>>" "==>" "===>" ">=" "<=>" "<==>"
+					 "<===>" "<====>" "<!---" "<~~" "<~" "~>" "~~>" "::" ":::" "==" "!="
+					 "===" "!==" ":=" ":-" ":+" "<*" "<*>" "*>" "<|" "<|>" "|>" "+:" "-:"
+					 "=:" "<******>" "++" "+++"))
 ;; Enables ligature checks globally in all buffers. You can also do it
 ;; per mode with `ligature-mode'.
 (global-ligature-mode t))
@@ -41,10 +36,10 @@
 (use-package swiper)
 (use-package counsel
   :bind (("M-x" . counsel-M-x)
-	 ("C-x b" . counsel-ibuffer)
-	 ("C-x C-f" . counsel-find-file)
-	 :map minibuffer-local-map
-	 ("C-r" . counsel-minibuffer-history)))
+	   ("C-x b" . counsel-ibuffer)
+	   ("C-x C-f" . counsel-find-file)
+	   :map minibuffer-local-map
+	   ("C-r" . counsel-minibuffer-history)))
 (use-package ivy
   :diminish
   :bind (("C-s" . swiper-isearch))
@@ -88,9 +83,9 @@
 (use-package dired-subtree
   :bind
   (:map dired-mode-map
-      ("<enter>" . lynn/dwim-toggle-or-open)
-      ("<return>" . lynn/dwim-toggle-or-open)
-      ("<tab>" . lynn/dwim-toggle-or-open))
+	("<enter>" . lynn/dwim-toggle-or-open)
+	("<return>" . lynn/dwim-toggle-or-open)
+	("<tab>" . lynn/dwim-toggle-or-open))
   :config
     (setq dired-subtree-use-backgrounds nil))
 
@@ -99,9 +94,9 @@
   (interactive)
   (let ((file (dired-get-file-for-visit)))
     (if (and (file-directory-p file)
-  	   (not (or (string= file ".")
-  		    (string= file ".."))))
-      (dired-subtree-toggle)
+	     (not (or (string= file ".")
+		      (string= file ".."))))
+	(dired-subtree-toggle)
       (dired-find-file))))
 
 (use-package pinentry
@@ -117,10 +112,10 @@
   :custom
   (org-roam-directory "~/docs/roam/")
   :bind (("C-c n l" . org-roam-buffer-toggle)
-       ("C-c n f" . org-roam-node-find)
-       ("C-c n i" . org-roam-node-insert)
-       :map org-mode-map
-       ("C-M-i"    . completion-at-point))
+	 ("C-c n f" . org-roam-node-find)
+	 ("C-c n i" . org-roam-node-insert)
+	 :map org-mode-map
+	 ("C-M-i"    . completion-at-point))
   :config
   (org-roam-setup))
 
@@ -161,6 +156,7 @@
        '("9" . meow-digit-argument)
        '("0" . meow-digit-argument)
        '("/" . meow-keypad-describe-key)
+       '("c" . compile)
        '("?" . meow-cheatsheet))
       (meow-normal-define-key
        ;; music stuff
@@ -330,14 +326,19 @@
 
 (use-package company
   :hook
-  (zig-mode . company-mode))
+  (zig-mode . company-mode)
+  (c-mode . company-mode))
 (use-package jsonrpc)
 (use-package eglot
   :hook
   (zig-mode . eglot-ensure)
+  (c-mode . eglot-ensure)
   :config
   (setq eglot-autoshutdown t)
-  (add-to-list 'eglot-server-programs '(zig-mode . ("~/zls"))))
+  (add-to-list 'eglot-server-programs
+               '(zig-mode . ("~/.guix-profile/bin/zls")))
+  (add-to-list 'eglot-server-programs
+               '(c-mode) . ("clangd")))
 
 (use-package zig-mode)
 
@@ -360,9 +361,10 @@
 (add-to-list 'default-frame-alist '(undecorated . t))
 (setf frame-title-format "%b - Emacs")
 
-(set-face-attribute 'default nil :font "Iosevka Term" :height 120)
-(set-face-attribute 'variable-pitch nil :font "Iosevka Etoile")
-(set-face-attribute 'org-modern-symbol nil :font "Iosevka Etoile")
+(when (display-graphic-p)
+  (set-face-attribute 'default nil :font "Iosevka Term" :height 240)
+  (set-face-attribute 'variable-pitch nil :font "Iosevka Etoile")
+  (set-face-attribute 'org-modern-symbol nil :font "Iosevka Etoile"))
 
 (add-to-list 'default-frame-alist '(alpha-background . 95))
 
@@ -373,38 +375,45 @@
 (global-hl-line-mode 1)
 
 (defun ll/org-hook ()
-  (org-indent-mode)
-  (org-modern-mode)
-  (mixed-pitch-mode)
-  (auto-fill-mode 0)
-  (visual-line-mode 1))
-(defun ll/org-agenda-hook ()
-  "Hook to run olivetti mode when entering org-agenda"
-  (olivetti-mode))
-(defun ll/org-agenda-view-day ()
+    (org-indent-mode)
+    (org-modern-mode)
+    (mixed-pitch-mode)
+    (auto-fill-mode 0)
+    (visual-line-mode 1))
+  (defun ll/org-agenda-hook ()
+    "Hook to run olivetti mode when entering org-agenda"
+    (olivetti-mode))
+  (defun ll/org-agenda-view-day ()
+    (interactive)
+    (org-agenda nil "d"))
+  (defun ll/org-agenda-view-todos ()
+    (interactive)
+    (org-agenda nil "t"))
+
+  (setq org-todo-keywords
+        '((sequence "TODO" "WORKING" "COMPLETE")))
+  (setq org-clock-in-switch-to-state "WORKING")
+  (setq org-clock-out-switch-to-state "TODO")
+  (setq org-agenda-custom-commands
+        '(("d" "Today's Tasks"
+           ((agenda "" ((org-agenda-span 1)
+                        (org-agenda-overriding-header "Today's Task")))))))
+  (setq org-agenda-files
+        (directory-files-recursively "~/docs/org" "\\.org$"))
+
+  (add-hook 'org-mode-hook 'll/org-hook)
+  (add-hook 'org-agenda-mode-hook 'll/org-agenda-hook)
+  (keymap-global-set "C-c a d" #'ll/org-agenda-view-day)
+  (keymap-global-set "C-c a t" #'ll/org-agenda-view-todos)
+
+  (setq org-src-window-setup 'current-window) ; C-c ' in same window
+
+(defun kill-all-buffers ()
+  "Kill all buffers except *scratch* and *Messages*."
   (interactive)
-  (org-agenda nil "d"))
-(defun ll/org-agenda-view-todos ()
-  (interactive)
-  (org-agenda nil "t"))
-
-(setq org-todo-keywords
-      '((sequence "TODO" "WORKING" "COMPLETE")))
-(setq org-clock-in-switch-to-state "WORKING")
-(setq org-clock-out-switch-to-state "TODO")
-(setq org-agenda-custom-commands
-      '(("d" "Today's Tasks"
-         ((agenda "" ((org-agenda-span 1)
-                      (org-agenda-overriding-header "Today's Task")))))))
-(setq org-agenda-files
-      (directory-files-recursively "~/docs/org" "\\.org$"))
-
-(add-hook 'org-mode-hook 'll/org-hook)
-(add-hook 'org-agenda-mode-hook 'll/org-agenda-hook)
-(keymap-global-set "C-c a d" #'ll/org-agenda-view-day)
-(keymap-global-set "C-c a t" #'ll/org-agenda-view-todos)
-
-(setq org-src-window-setup 'current-window) ; C-c ' in same window
+  (dolist (buf (buffer-list))
+    (unless (member (buffer-name buf) '("*scratch*" "*Messages*"))
+      (kill-buffer buf))))
 
 (flycheck-define-checker
  vale
@@ -418,13 +427,13 @@
 
 (with-eval-after-load 'ox-latex
   (add-to-list 'org-latex-classes
-	       '("fiction" "
+		 '("fiction" "
 \\documentclass[submission,latterpaper,courier]{sffms}
 [NO-DEFAULT-PACKAGES]
 [PACKAGES]
 [EXTRA]
 "
-		 ("\\chapter*{%s" . "\\chapter*{%s}"))))
+		   ("\\chapter*{%s" . "\\chapter*{%s}"))))
 (setq org-latex-hyperref-template "")
 
 
@@ -448,11 +457,20 @@
 
 
 
-(defun clang-format-on-save ()
-  "Format the buffer before save."
-  (when (locate-dominating-file "." ".clang-format") (clang-format-buffer)))
+(setq-default tab-width 4)
+  (defun clang-format-on-save ()
+      "Format the buffer before save."
+      (when (locate-dominating-file "." ".clang-format") (clang-format-buffer)))
 
-(add-hook
- 'c-mode-hook (lambda () (add-hook 'before-save-hook 'clang-format-on-save nil t)))
+    (add-hook
+     'c-mode-hook (lambda () (add-hook 'before-save-hook 'clang-format-on-save nil t)))
+;; temporary
+(setq compilation-save-buffers-predicate nil)
+(setq compilation-scroll-output 'first-error)
+(setq compilation-ask-about-save nil)
+(setq compilation-always-kill t)
+(setq ansi-color-for-compilation-mode t)
+(setq eglot-events-buffer-size 0)
+(add-hook 'compilation-filter-hook #'ansi-color-compilation-filter)
 
 
