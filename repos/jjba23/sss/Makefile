@@ -229,7 +229,7 @@ test: fmt
 		-L ./per-host \
 		-L ./src \
 		-L ./test \
-		-c '((@ (veritas runner) run-unit-tests))'
+		-c '((@ (veritas runner) run-tests))'
 	$(call sss-log-complete,"test")
 
 
