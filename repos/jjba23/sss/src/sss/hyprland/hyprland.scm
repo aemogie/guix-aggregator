@@ -31,6 +31,7 @@
                        hypr-misc
                        hypr-media-binds
                        hypr-workspace-binds
+                       hypr-xwayland
                        hypr-movetoworkspace-binds
                        hypr-mouse-binds
                        hypr-swap-binds
@@ -114,6 +115,9 @@
 
 (define hypr-animations
   `((enabled . true) (first_launch_animation . true)))
+
+(define hypr-xwayland
+  `((force_zero_scaling . true)))
 
 (define* (hypr-misc #:key sans-font)
   `((disable_hyprland_logo . true) (force_default_wallpaper . 0)
@@ -368,6 +372,8 @@
          (serialized-animations (serialize-hypr-section #:section 'animations
                                                         #:settings
                                                         hypr-animations))
+         (serialized-xwayland (serialize-hypr-section #:section 'xwayland
+                                                      #:settings hypr-xwayland))
          (serialized-key-bindings (string-join (hypr-binds #:clone-dir
                                                            clone-dir
                                                            #:palette palette)
@@ -400,6 +406,8 @@
                                  ,serialized-key-bindings)
                                `("" "# ====== Window rules ======"
                                  ,serialized-window-rules)
+                               `("" "# ====== XWayland ======"
+                                 ,serialized-xwayland)
                                `(""
                                  "# ====== End of SSS Hyprland configuration ======"
                                  ""))))

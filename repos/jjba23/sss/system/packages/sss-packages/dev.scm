@@ -27,7 +27,7 @@
 (define dev-packages
   (make-parameter (list (specification->package "openjdk@21")
                         node
-                        (specification->package "python@3.10")
+                        (specification->package "python@3.11")
                         cl-asdf
                         sbcl
                         httpd

@@ -158,7 +158,8 @@
         autoconf
         automake
         ncurses
-        blender
+        ;; TODO enable blender (after opencolorio is fixed)
+        ;; blender
         blueman
         bluez
         bsd-games
@@ -203,6 +204,7 @@
         gnome-keyring
         evolution-data-server
         gnome-themes-extra
+        glibc-locales
         gparted
         gthumb
         gtk
@@ -237,7 +239,6 @@
         power-profiles-daemon
         powertop
         qemu
-        reaper
         remmina
         stellarium
         stress
@@ -257,7 +258,7 @@
         cups
         cups-filters
         ghostscript
-        xsane
+        simple-scan
         xdg-user-dirs
         xf86-input-libinput
         xf86-video-fbdev
