@@ -1,6 +1,21 @@
+;; Copyright © Josep Bigorra <jjbigorra@gmail.com>
+
+;; sss is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; sss is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with sss.  If not, see <https://www.gnu.org/licenses/>.
+
 text-mode :when (bound-and-true-p git-commit-mode)
 
-(add\ "gnu: Add "
+(add-guix\ "gnu: Add "
       (p (with-temp-buffer
            (magit-git-wash #'magit-diff-wash-diffs
              "diff" "--staged")
@@ -13,7 +28,7 @@ text-mode :when (bound-and-true-p git-commit-mode)
       "* " (p (or (car (magit-staged-files)) ""))
       " (" (s var ) "): New variable.")
 
-(remove\ "gnu: Remove "
+(remove-guix\ "gnu: Remove "
          (p (with-temp-buffer
               (magit-git-wash #'magit-diff-wash-diffs
                 "diff" "--staged")
@@ -26,7 +41,7 @@ text-mode :when (bound-and-true-p git-commit-mode)
          "* " (p (or (car (magit-staged-files)) ""))
          " (" (s var) "): Delete variable.")
 
-(rename\ "gnu: "
+(rename-guix\ "gnu: "
          (p (with-temp-buffer
               (magit-git-wash #'magit-diff-wash-diffs
                 "diff" "--staged")
@@ -49,7 +64,7 @@ text-mode :when (bound-and-true-p git-commit-mode)
          "(" (s new-var) "): New variable, formerly known as \""
          (s prev-var) "\".")
 
-(update\ "gnu: "
+(update-guix\ "gnu: "
          (p (with-temp-buffer
               (magit-git-wash #'magit-diff-wash-diffs
                 "diff" "--staged")
@@ -80,7 +95,7 @@ text-mode :when (bound-and-true-p git-commit-mode)
                     (cdr (magit-staged-files))
                     "\n"))
 
-(addcl\ "gnu: Add cl-"
+(addcl-guix\ "gnu: Add cl-"
         (p (replace-regexp-in-string
             "^cl-" "" (with-temp-buffer
                         (magit-git-wash #'magit-diff-wash-diffs
@@ -97,7 +112,7 @@ text-mode :when (bound-and-true-p git-commit-mode)
         ", ecl-" (s var)
         ", sbcl-" (s var) "): New variables.")
 
-(https\ "gnu: "
+(https-guix\ "gnu: "
         (p (with-temp-buffer
              (magit-git-wash #'magit-diff-wash-diffs
                "diff" "--staged")
@@ -114,7 +129,7 @@ text-mode :when (bound-and-true-p git-commit-mode)
                    (cdr (magit-staged-files))
                    "\n"))
 
-(move\ "gnu: "
+(move-guix\ "gnu: "
        (p (with-temp-buffer
             (magit-git-wash #'magit-diff-wash-diffs
               "diff" "--staged")

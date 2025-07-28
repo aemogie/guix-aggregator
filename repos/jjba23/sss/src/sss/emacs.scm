@@ -117,7 +117,8 @@
 (define emacs-tempel-snippets
   (make-parameter '(emacs-lisp fundamental
                                guix-scheme
-                               guix-text
+                               guix-commit
+                               sss-commit
                                js-ts-base
                                lisp
                                markdown

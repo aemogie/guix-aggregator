@@ -19,20 +19,8 @@
   #:declarative? #t
   #:use-module (gnu)
   #:use-module (sss prelude)
-  #:export (gitmessage-personal gitmessage-work
-                                gitignore-global
-                                gitconfig-personal
-                                gitconfig-work
-                                gitconfig
-                                git-capability))
-
-;; I enjoy having a default commit message, and I overwrite it
-;; sometimes when the commit is meaningful, otherwise I use it
-;; \xad is an invisible - character
-(define gitmessage-personal
-  "\xad")
-(define gitmessage-work
-  "\xad")
+  #:export (gitignore-global gitconfig-personal gitconfig-work gitconfig
+                             git-capability))
 
 (define gitignore-global
   `("bloop" ".bloop"
@@ -46,14 +34,12 @@
 (define gitconfig-personal
   `((user (name . "Josep Bigorra")
           (email . "jjbigorra@gmail.com")
-          (signingkey . "24F46738CE114AF6"))
-    (commit (template . "~/.gitmessage-personal"))))
+          (signingkey . "24F46738CE114AF6"))))
 
 (define gitconfig-work
   `((user (name . "Josep Bigorra")
           (email . "josepbigorraalgaba@vandebron.nl")
-          (signingkey . "3B6D20502E380697"))
-    (commit (template . "~/.gitmessage-work"))))
+          (signingkey . "3B6D20502E380697"))))
 
 (define gitconfig
   `((core (editor . "emacsclient")
@@ -70,9 +56,7 @@
 (define* (git-capability #:key (gitconfig gitconfig)
                          (gitconfig-personal gitconfig-personal)
                          (gitconfig-work gitconfig-work)
-                         (gitignore-global gitignore-global)
-                         (gitmessage-personal gitmessage-personal)
-                         (gitmessage-work gitmessage-work))
+                         (gitignore-global gitignore-global))
   `( ;Global Git configuration
      (".gitconfig" ,(plain-file "gitconfig.ini"
                                 (mk-rec-kv-conf-lines gitconfig
@@ -88,12 +72,7 @@
                                     (mk-rec-kv-conf-lines gitconfig-work
                                      #:template spaced-equal-conf-pair)))
 
-    ;; Global Git ignore and message configuration
+    ;; Global Git ignore
     (".gitignore-global" ,(plain-file "gitignore-global"
-                                      (mk-lines gitignore-global)))
-    ;; Personal Git commit message template
-    (".gitmessage-personal" ,(plain-file "gitmessage-personal"
-                                         gitmessage-personal))
-    ;; Work-related Git commit message template
-    (".gitmessage-work" ,(plain-file "gitmessage-work" gitmessage-work))))
+                                      (mk-lines gitignore-global)))))
 

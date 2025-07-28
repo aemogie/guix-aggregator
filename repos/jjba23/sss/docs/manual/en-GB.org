@@ -60,6 +60,7 @@ https://www.gnu.org/licenses/fdl-1.3.html
 
 - GNU Guix system configuration
 - GNU Guix home configurations
+- Advanced Emacs configurations and integration possibilities with Guix  + Elpaca  
 - Guix channel so you can cherry-pick parts of SSS to your liking      
 - 🎨 Theme palettes that affect the entire system (ef-themes, solarized-light, everforest dark and light)
 - A custom [[https://codeberg.org/jjba23/sss-help-center-gtk][tailor made help assistant for SSS - sss-help-center-gtk]]   
@@ -997,8 +998,8 @@ Currently this works on a per-directory basis, and is configured by default to m
 
 
 My settings are:
-- ~$HOME/hacking~ is where I keep my personal development projects. These are uploaded to Codeberg, and use their own gitconfig, email address, default git message, GPG key, and SSH keys.
-- ~$HOME/work~ is where I keep my work projects. These are uploaded to Github, and use their own gitconfig, email address, default git message, GPG key, and SSH keys.
+- ~$HOME/hacking~ is where I keep my personal development projects. These are uploaded to Codeberg, and use their own gitconfig, email address, GPG key, and SSH keys.
+- ~$HOME/work~ is where I keep my work projects. These are uploaded to Github, and use their own gitconfig, email address, GPG key, and SSH keys.
 
 
 ------

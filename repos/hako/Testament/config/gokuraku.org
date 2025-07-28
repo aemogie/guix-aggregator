@@ -196,7 +196,9 @@ Frequently used packages.
   (simple-service 'guix-extension-dorphine
       guix-service-type
     (guix-extension
-      (authorized-keys (list %guix-authorized-key-dorphine))))
+      (authorized-keys
+       (list %guix-authorized-key-dorphine
+             %guix-authorized-key-sin))))
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
@@ -409,13 +411,12 @@ Remember to open TCP port 5555 and 5556.
   (service cuirass-worker-container-service-type
     (cuirass-worker-container-configuration
       (host-name "gokuraku")
-      (server "100.97.195.93:5555")
       (workers 2)
-      (supported-systems
-       '("x86_64-linux" "i686-linux"))
+      (supported-systems '("x86_64-linux" "i686-linux"))
+      (server "127.0.0.1:5555")
       (substitute-urls
-       `(,@%default-substitute-urls
-         "https://ci.boiledscript.com"
+       `("https://ci.ultrarare.space"
+         ,@%default-substitute-urls
          "https://substitutes.nonguix.org"))))
 #+end_src
 
@@ -575,7 +576,7 @@ Remember to open TCP port 5555 and 5556.
                (openpgp-fingerprint
                 "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7"))))))
     (priority 5)
-    (systems '("x86_64-linux" "i686-linux")))
+    (systems '("x86_64-linux" "aarch64-linux" "i686-linux")))
 #+end_src
 
 #+begin_src scheme :noweb-ref cuirass-spec
@@ -597,7 +598,7 @@ Remember to open TCP port 5555 and 5556.
                 "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7"))))))
     (period (* 12 3600))
     (priority 7)
-    (systems '("x86_64-linux" "i686-linux")))
+    (systems '("x86_64-linux")))
 #+end_src
 
 * Web Servers
