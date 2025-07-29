@@ -61,7 +61,7 @@
                            'background))))
 
 (define alacritty-terminal
-  `((shell . fish)))
+  `((shell . bash)))
 
 (define (serialize-alacritty-setting s)
   (let* ((val (cond

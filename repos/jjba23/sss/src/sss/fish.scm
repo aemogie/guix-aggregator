@@ -32,7 +32,7 @@
           (car a)
           (cdr a)))
 
-(define* (fish-abbreviations #:key clone-dir)
+(define* (fish-abbreviations #:key clone-dir gui-cmd)
   `((c . "clear") (h . "history")
     (tree . "tree --dirsfirst -F")
     (mkdir . "mkdir -p -v")
@@ -66,7 +66,7 @@
     (docker . "podman")
     (docker-compose . "podman-compose")
     (podman-unix-socket . "podman system service --time=0 unix:///tmp/podman.sock")
-    (gui . "hyprland")
+    (gui unquote gui-cmd)
     (find-largest-files . "du -h -x -s -- * | sort -r -h | head -20")))
 
 (define* (fish-greeting #:key palette)
@@ -143,7 +143,7 @@
   (format #f "function fish_prompt\n    ~a\nend"
           (string-join prompt "\n    ")))
 
-(define* (fish-config #:key clone-dir palette)
+(define* (fish-config #:key clone-dir palette gui-cmd)
   (append `("# ====== SSS Fish configuration ======
 #
 # auto-generated file, DO NOT EDIT!
@@ -153,17 +153,19 @@
             "fish_default_key_bindings" "")
           ;; abbreviations (a much better approach than aliases)
           (map serialize-fish-abbreviation
-               (fish-abbreviations #:clone-dir clone-dir))
+               (fish-abbreviations #:clone-dir clone-dir
+                                   #:gui-cmd gui-cmd))
           `("")
           (list (serialize-fish-greeting #:palette palette))
           `("")
           (list (serialize-fish-prompt (fish-prompt #:palette palette)))))
 
-(define* (fish-capability #:key clone-dir palette)
+(define* (fish-capability #:key clone-dir palette gui-cmd)
   `((".config/fish/config.fish" ,(plain-file "config.fish"
                                              (string-join (fish-config
                                                            #:clone-dir
                                                            clone-dir
-                                                           #:palette palette)
+                                                           #:palette palette
+                                                           #:gui-cmd gui-cmd)
                                                           "\n")))))
 

@@ -18,7 +18,9 @@
 (define-module (sss-packages shell)
   #:declarative? #t
   #:use-module (gnu packages shells)
+  #:use-module (gnu packages bash)
+  #:use-module (gnu packages shellutils)
   #:export (shell-packages))
 
 (define shell-packages
-  (make-parameter (list fish)))
+  (make-parameter (list fish bash-completion blesh shfmt)))

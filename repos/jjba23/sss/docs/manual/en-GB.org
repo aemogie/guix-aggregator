@@ -6,7 +6,7 @@
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://jointhefreeworld.org/static/css/jointhefreeworld.css" />
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=IBM+Plex+Serif:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" />
 
-[[https://jointhefreeworld.org/ggg/dist/scheme-guile.svg]] [[https://jointhefreeworld.org/ggg/dist/gnu-guix.svg]]  [[https://jointhefreeworld.org/ggg/dist/gnu-emacs.svg]] [[https://jointhefreeworld.org/ggg/dist/shell-eshell.svg]]  [[https://jointhefreeworld.org/ggg/dist/shell-fish.svg]] 
+[[https://jointhefreeworld.org/ggg/dist/scheme-guile.svg]] [[https://jointhefreeworld.org/ggg/dist/gnu-guix.svg]]  [[https://jointhefreeworld.org/ggg/dist/gnu-emacs.svg]] [[https://jointhefreeworld.org/ggg/dist/shell-eshell.svg]]  [[https://jointhefreeworld.org/ggg/dist/shell-bash.svg]] 
 [[https://jointhefreeworld.org/ggg/dist/gnu-make.svg]] 
 [[https://jointhefreeworld.org/ggg/dist/license-gpl3+.svg]]    [[https://jointhefreeworld.org/ggg/dist/license-fdl13+.svg]] [[https://jointhefreeworld.org/ggg/dist/i18n-gnu-gettext.svg]] [[https://jointhefreeworld.org/ggg/dist/jointhefreeworld-org.svg]] 
 
@@ -66,7 +66,7 @@ https://www.gnu.org/licenses/fdl-1.3.html
 - A custom [[https://codeberg.org/jjba23/sss-help-center-gtk][tailor made help assistant for SSS - sss-help-center-gtk]]   
 - Hyprland configuration (power user session)
 - Labwc configuration (universal session)
-- Fish shell configuration
+- Bash and Fish shell configuration
 - Alacritty terminal emulator
 - Nyxt web browser (configured in Common Lisp)  
 - Firefox custom declarative configuration inspired on BetterFox

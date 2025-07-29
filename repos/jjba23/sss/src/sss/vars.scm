@@ -52,10 +52,6 @@
                   ("QT_AUTO_SCREEN_SCALE_FACTOR" . "1")
                   ("RTC_USE_PIPEWIRE" . "true")
                   ("TERM" . "xterm-256color")
-                  ("HISTTIMEFORMAT" . "%F %T  | ")
-                  ("HISTSIZE" . "200000")
-                  ("HISTCONTROL" . "ignoreboth:erasedups")
-                  ("HISTFILESIZE" . "200000")
                   ("XCURSOR_SIZE" . "24")
                   ("XCURSOR_THEME" unquote
                    (get-cursor-theme palette))

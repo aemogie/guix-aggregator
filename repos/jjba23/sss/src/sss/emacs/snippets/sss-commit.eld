@@ -47,6 +47,10 @@ text-mode :when (bound-and-true-p git-commit-mode)
              "🛠️ chore: " p n n p n n
              "Keywords: " p)
 
+(fix-commit "# Fix the project, the build, and other general maintenance." n "#" n
+             "🔧 fix: " p n n p n n
+             "Keywords: " p)
+
 (revert-commit "# Revert changes from a previous commit or decision." n "#" n
              "⏪️ revert: " p n n p n n
              "Keywords: " p)
@@ -73,5 +77,9 @@ text-mode :when (bound-and-true-p git-commit-mode)
 
 (package-commit "# Change the build system, dependencies or packaging" n "#" n
              "📦 package: " p n n p n n
+             "Keywords: " p)
+
+(ci-cd-commit "# Change the CI/CD system or pipeline" n "#" n
+             "📦 ci: " p n n p n n
              "Keywords: " p)
 
