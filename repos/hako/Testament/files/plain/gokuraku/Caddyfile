@@ -108,8 +108,16 @@ ci.boiledscript.com {
 
 	import logging cuirass
 	import guix_publish localhost:49637
-	respond /admin/* "Access denied" 403 {
-			close
+
+	handle /admin/* {
+		handle /admin/forgejo/event {
+			import /run/secrets/cuirass/forgejo
+		}
+		handle {
+			respond "Access denied" 403 {
+				close
+			}
+		}
 	}
 	reverse_proxy localhost:17732
 }

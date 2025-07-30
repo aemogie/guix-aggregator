@@ -248,7 +248,11 @@ Frequently used packages.
              (sops-secret
                (key '("cloudflared"))
                (file gokuraku.yaml)
-               (user "cloudflared"))))))
+               (user "cloudflared"))
+             (sops-secret
+               (key '("cuirass" "forgejo"))
+               (file gokuraku.yaml)
+               (user "cuirass"))))))
 #+end_src
 
 [[file:../files/plain/sops.yaml][sops.yaml]]
@@ -528,7 +532,7 @@ Remember to open TCP port 5555 and 5556.
              (url "https://codeberg.org/guix/guix.git"))
            (channel
              (name 'guixcn)
-             (url "https://github.com/guixcn/guix-channel.git")
+             (url "https://codeberg.org/guixcn/guix-channel.git")
              (introduction
               (make-channel-introduction
                "993d200265630e9c408028a022f32f34acacdf29"
