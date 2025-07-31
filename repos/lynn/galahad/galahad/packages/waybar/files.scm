@@ -1,0 +1,9 @@
+(define-module (galahad packages waybar files)
+  #:use-module (guix gexp)
+  #:export(waybar-files))
+(define (waybar-files)
+  `(
+    (".config/waybar/config" ,(local-file "config"))
+    (".config/waybar/style.css" ,(local-file "style.css"))
+    (".config/waybar/theme.css" ,(local-file "theme.css"))
+ ))

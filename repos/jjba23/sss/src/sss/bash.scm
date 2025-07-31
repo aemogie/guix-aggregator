@@ -148,13 +148,17 @@
    "set -o emacs"
    ;; Update window size after every command
    "shopt -s checkwinsize"
-   ;; Load fzf
+   ;; Load bash_completion
+   "include /run/current-system/profile/share/bash-completion/bash_completion"
+   ;; Load fzf (must be after bash_completion)
    "eval \"$(fzf --bash)\" || true"
    ;; Load Nix profile
    "include /run/current-system/profile/etc/profile.d/nix.sh"
-   ;; Load bash_completion
-   "include /run/current-system/profile/share/bash-completion/bash_completion"
+   ;; Load ble
    "[[ ! ${BLE_VERSION-} ]] || ble-attach"
+   "ble-import -d /run/current-system/profile/share/blesh/contrib/integration/fzf-completion"
+   "ble-import -d /run/current-system/profile/share/blesh/contrib/integration/fzf-key-bindings"
+   ;; Greet user
    "shell-greeting"))
 
 (define (serialize-bash-alias a)

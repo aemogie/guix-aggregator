@@ -4,13 +4,20 @@
   #:use-module (guix gexp) ; plain-file
   #:export (%channels-guix
 	    %channels-nonguix
-	    %channels-artoria
 	    %channels-guix-gaming
 	    %channels-emacs
 	    %authorized-guix-key-nonguix))
 
 (define %channels-guix
-  (first %default-channels))
+  (channel
+   (name 'guix)
+   (url "https://codeberg.org/guix/guix.git")
+   (branch "master")
+   (introduction
+    (make-channel-introduction
+     "9edb3f66fd807b096b48283debdcddccfea34bad"
+     (openpgp-fingerprint
+      "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA")))))
 
 (define %channels-nonguix
   (channel
@@ -22,16 +29,6 @@
      (openpgp-fingerprint
       "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5")))))
 
-(define %channels-artoria
-  (channel
-   (name 'artoria)
-   (url "https://git.transistor.house/lynn/artoria.git")
-   (branch "main")
-   (introduction
-    (make-channel-introduction
-     "56579fce18ab54c21442a98d923bd2bc6844d321"
-     (openpgp-fingerprint
-      "FE30 E8F6 522D 0615 35E0 E449 55E7 97F6 31DD A03C")))))
 
 (define %channels-guix-gaming
   (channel
@@ -43,16 +40,6 @@
      "c23d64f1b8cc086659f8781b27ab6c7314c5cca5"
      (openpgp-fingerprint
       "50F3 3E2E 5B0C 3D90 0424  ABE8 9BDC F497 A4BB CC7F")))))
-
-(define %channels-emacs
-  (channel
-   (name 'emacs)
-   (url "https://github.com/garrgravarr/guix-emacs")
-   (introduction
-    (make-channel-introduction
-     "d676ef5f94d2c1bd32f11f084d47dcb1a180fdd4"
-     (openpgp-fingerprint
-      "2DDF 9601 2828 6172 F10C  51A4 E80D 3600 684C 71BA")))))
 
 (define %authorized-guix-key-nonguix
   (plain-file "non-guix.pub" "

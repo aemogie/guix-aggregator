@@ -362,7 +362,7 @@
 (setf frame-title-format "%b - Emacs")
 
 (when (display-graphic-p)
-  (set-face-attribute 'default nil :font "Iosevka Term" :height 240)
+  (set-face-attribute 'default nil :font "Iosevka Term" :height 200)
   (set-face-attribute 'variable-pitch nil :font "Iosevka Etoile")
   (set-face-attribute 'org-modern-symbol nil :font "Iosevka Etoile"))
 

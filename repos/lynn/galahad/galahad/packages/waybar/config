@@ -56,5 +56,5 @@
             "default": [" ", " "]
         },
         "on-click": "pavucontrol"
-    },
+    }
 }

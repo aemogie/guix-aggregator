@@ -6,6 +6,7 @@
   #:use-module (gnu packages curl)
   #:use-module (gnu packages debian)
   #:use-module (gnu packages file)
+  #:use-module (gnu packages bash)
   #:use-module (gnu packages gawk)
   #:use-module (gnu packages glib) ;dbus
   #:use-module (gnu packages gnome)

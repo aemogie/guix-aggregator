@@ -8,6 +8,7 @@
   #:use-module (gnu packages admin) ;inetutils
   #:use-module (gnu packages base) ;findutils
   #:use-module (gnu packages certs)
+  #:use-module (gnu packages bash)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages curl)
   #:use-module (gnu packages debian)
@@ -46,6 +47,8 @@
   #:use-module (guix packages)
   #:use-module (guix)
   #:use-module (nongnu packages linux))
+
+
 
 (define galahad-utils-packages
   (list acpi
@@ -207,10 +210,31 @@
   '("quiet" "splash"))
  (firmware
   (list linux-firmware))
- (file-systems
-  (append galahad-file-systems %base-file-systems))
+
+  (swap-devices (list (swap-space
+                        (target (uuid
+                                 "0881fb03-4053-4010-b3b7-5a9ea35ccf60")))))
+
+  (file-systems (cons* (file-system
+                         (mount-point "/boot/efi")
+                         (device (uuid "6332-F4BA"
+                                       'fat32))
+                         (type "vfat"))
+                       (file-system
+                         (mount-point "/")
+                         (device (uuid
+                                  "d2c8af8a-5b78-4aa6-930d-1ac1b0d237ca"
+                                  'ext4))
+                         (type "ext4"))
+                       (file-system
+                         (mount-point "/home")
+                         (device (uuid
+                                  "14f1680f-52d6-4285-bef9-41a4946803f0"
+                                  'ext4))
+                         (type "ext4")) %base-file-systems))
  (users
   (cons* galahad-user-lynn %base-user-accounts))
  (packages
   (append galahad-system-packages galahad-per-host-packages))
  (services galahad-desktop-services))
+

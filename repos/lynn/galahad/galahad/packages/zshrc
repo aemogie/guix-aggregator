@@ -13,6 +13,7 @@ alias \
     lah='eza -lah' \
     lt='eza --tree --git-ignore' \
     search='guix search' \
+    fetch='hyfetch --ascii-file=/home/lynn/.config/fastfetch/logo.txt' \
 	
 zstyle ':vcs_info:git*' formats " %F{blue}%b%f %m%u%c %a "
 zstyle ':vcs_info:*' enable git
@@ -31,5 +32,5 @@ if [ -n "$GUIX_ENVIRONMENT" ]; then
 fi
 PROMPT="${ENV_PART}$USER_PART "
 
-source $HOME/.guix-profile/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-source $HOME/.guix-profile/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source $HOME/.guix-home/profile/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+source $HOME/.guix-home/profile/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh

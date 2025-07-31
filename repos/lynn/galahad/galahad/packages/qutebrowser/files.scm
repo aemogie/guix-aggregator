@@ -1,0 +1,10 @@
+(define-module (galahad packages qutebrowser files)
+  #:use-module (guix gexp)
+  #:export(qutebrowser-files))
+(define (qutebrowser-files)
+  `(
+    (".config/qutebrowser/config.py" ,(local-file "config.py"))
+    (".config/qutebrowser/gruvbox.py" ,(local-file "gruvbox.py"))
+    (".config/qutebrowser/start.html" ,(local-file "start.html"))
+    (".config/qutebrowser/anime.png" ,(local-file "anime.png"))
+ ))

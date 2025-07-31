@@ -7,11 +7,11 @@ set $term foot
 set $screenshot grim
 set $menu fuzzel
 
-output * scale 1 mode 2880x1800@60Hz bg $HOME/.test.png fill
+output * scale 1 mode 2880x1800@60Hz bg $HOME/.wp.png fill
 exec swayidle -w \
-         timeout 300 'swaylock -f --image "/home/lynn/.cyborg.png"' \
+         timeout 300 'swaylock -f --image "/home/lynn/.wp.png"' \
          timeout 600 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' \
-         before-sleep 'swaylock -f --image "/home/lynn/.cyborg.png"' \
+         before-sleep 'swaylock -f --image "/home/lynn/.wp.png"' \
 
 input type:keyboard {
       #xkb_options ctrl:swapcaps,compose:lctrl
@@ -69,7 +69,7 @@ gaps inner 10
 default_border pixel 0
 default_floating_border normal
 blur on
-corner_radius 4
+corner_radius 10
 shadows enable
 shadow_blur_radius 20
 default_dim_inactive 0.05
