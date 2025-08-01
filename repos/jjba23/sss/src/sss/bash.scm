@@ -129,6 +129,13 @@
   (make-parameter `((glog . "sudo gzip -d \"$1.gz\" && cat \"$1\"")
                     (hgrep . "history | grep \"$1\"")
                     (include . "[[ -f \"$1\" ]] && source \"$1\"")
+                    (work-github-actions-version-replacer unquote
+                                                          (string-append
+                                                           "find \"$1\" -type f \\( "
+                                                           "-name \"*.yml\" -o -name \"*.yaml\" "
+                                                           "\\) "
+                                                           "-print0 | xargs -0 sed -i "
+                                                           "\"s#\\(uses: Vandebron/github-actions/.*@\\).*#\\1$2#\""))
                     (shell-greeting unquote
                                     (string-join '("echo \"\""
                                                    "echo \"${PURPLE_TEXT}Welcome to SSS/GNU - the Supreme Sexp System${RESET_TEXT}\""

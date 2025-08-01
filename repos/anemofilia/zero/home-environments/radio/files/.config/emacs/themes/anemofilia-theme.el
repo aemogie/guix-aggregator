@@ -25,6 +25,31 @@
 (deftheme anemofilia
   "Created 2022-01-11.")
 
+(defface fill-column-face
+  `((t (:background ,dark-gray :foreground ,blue)))
+  "Face for highlighting characters at fill-column.")
+
+(defun display-fill-column-indicator-char-update (&rest _)
+  (let* ((active
+          display-fill-column-indicator)
+         (keywords
+          `((,(format "^\\(.\\{%d\\}\\)\\(.\\|\n\\)" fill-column)
+             (2 'fill-column-face prepend))))
+         (font-lock-update-keywords
+          (if active
+              #'font-lock-add-keywords
+            #'font-lock-remove-keywords)))
+    (apply font-lock-update-keywords nil keywords
+           (if active '(append) '()))
+    (font-lock-flush)
+    (font-lock-ensure)))
+
+(advice-add #'display-fill-column-indicator-mode
+            :after #'display-fill-column-indicator-char-update)
+
+(add-to-list 'after-change-functions
+             #'display-fill-column-indicator-char-update)
+
 (defface tab-bar-tab-focused-occupied
   `((t :inherit tab-bar-tab :overline t))
     "Tab bar face for focused tabs that are occupied."
@@ -172,7 +197,6 @@
  `(xref-match ((t (:inherit cursor))))
  `(lazy-highlight ((t (:inherit cursor))))
  `(meow-search-highlight ((t (:inherit cursor))))
- `(origami-fold-header-face ((t (:inherit cursor))))
 
  `(fixed-pitch ((t (:family "Monospace"))))
  `(fixed-pitch ((t (:family "Monospace"))))

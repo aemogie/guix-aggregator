@@ -55,6 +55,14 @@
   #|X|# #:use-module (gnu packages xdisorg)
         #:use-module (gnu packages xorg)
 
+  #|Guix|#
+  #|C|# #:use-module (guix channels)
+  #|I|# #:use-module (guix inferior)
+
+  #|home-environments radio|#
+  #|C|# #:use-module ((home-environments radio channels)
+                      #:prefix channel:)
+
   #|Radix packages|#
   #|B|# #:use-module (radix packages browser-extensions)
   #|D|# #:use-module (radix packages disk)
@@ -101,6 +109,14 @@
             typst
             video
             web))
+
+(define (rust-team-inferior-package name)
+  (car (lookup-inferior-packages
+        (inferior-for-channels
+         (list (channel
+                (inherit channel:guix)
+                (branch "rust-team"))))
+        name)))
 
 (define blogging
   (list #|guile-xyz|# haunt))
@@ -216,7 +232,9 @@
                 texlive-collection-mathscience))
 
 (define typst
-  (list #|typst|# (@ (radix packages typst) typst)))
+  (map rust-team-inferior-package
+       (list #|rust-apps|# "typst" "typstyle"
+             #|tree-sitter|# "tree-sitter-typst")))
 
 (define video
   (list #|video|# ani-cli ffmpeg mpv-minimal/wayland))
@@ -227,7 +245,9 @@
 
 (define emacs:base
   (list emacs-next-pgtk
-        emacs-gcmh emacs-general emacs-helpful emacs-no-littering emacs-on))
+        emacs-bug-hunter
+        emacs-benchmark-init emacs-gcmh emacs-general emacs-helpful emacs-no-littering
+        emacs-on))
 
 (define emacs:buffer-management
   (list emacs-activities

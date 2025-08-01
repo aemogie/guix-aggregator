@@ -1,4 +1,10 @@
 ;;; -*- lexical-binding: t -*-
+
+(use-package benchmark-init
+  :init
+  (benchmark-init/activate)
+  :hook (after-init . benchmark-init/deactivate))
+
 (use-package emacs
   :bind
   ("C-x C-b" . nil)

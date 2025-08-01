@@ -55,7 +55,7 @@ hook -group config global WinSetOption filetype=scheme %{
   set-option -add window snippets 'module' '@pmod' %{
     snippets-insert %sh{
       printf "
-(define-module (radix packages \${$(basename $kak_buffile | sed 's/\.scm//')})
+(define-module (radix packages \${$(basename $kak_buffile .scm)})
   #:use-module (guix build-system \${})
   #:use-module (guix gexp)
   #:use-module (guix git-download)

@@ -24,6 +24,7 @@
   (persp-state-default-file
    (expand-file-name "persp-state.eld"
                      user-emacs-directory))
+  (persp-suppress-no-prefix-key-warning t)
   :preface
   (defun kill-this-buffer-no-prompt ()
     "Kill current buffer without confirmation, even if modified."
@@ -78,8 +79,7 @@ nil otherwise."
     "Returns a list of regular expressions for matching buffers
 in PERSP-TAB that should be ignored when determining if the tab
 is occupied."
-    `(,(format "\\*scratch\\* \\(.*\\)"
-               (anemofilia/persp-tab-name persp-tab))
+    `("\\*scratch\\* \\(.*\\)"
       " \\*which-key\\*" ; which-key
       "Preview:.*"))     ; recentf previews
 
@@ -114,17 +114,29 @@ buffers."
 
   (defun anemofilia/tab-bar-buffer-format (buffer)
     (let* ((selected-p (eq buffer (window-buffer)))
-           (name (truncate-string-to-width (buffer-name buffer) 20))
+           (name (buffer-name buffer))
+           (getter (if (window-system) #'caar #'cadr))
+           (max-width (funcall getter tab-bar-auto-width-max))
+           (ellipsis (string-to-char truncate-string-ellipsis))
+           (truncated-name (if (> (length name) max-width) name
+                             (truncate-string-to-width name max-width 0 nil ellipsis)))
            (face (if selected-p
                      'tab-bar-tab
                    'tab-bar-tab-inactive)))
-      (propertize (format " %s " name) 'face face)))
+      (propertize (format " %s " truncated-name) 'face face)))
+  (anemofilia/tab-bar-buffer-format (current-buffer))
 
   (defun anemofilia/persp-tab-bar-format-current-tab-buffers ()
+    (defun visible-bufferp (buffer)
+      (member buffer
+              (mapcar #'window-buffer
+                      (window-list (selected-frame)))))
     (defun relevant-bufferp (persp-tab buffer)
-      (cl-every (lambda (re)
-                  (not (string-match re (buffer-name buffer))))
-                (hidden-persp-tab-buffers persp-tab)))
+       (and (buffer-live-p buffer)
+            (or (visible-bufferp buffer)
+                (cl-every (lambda (re)
+                            (not (string-match re (buffer-name buffer))))
+                          (hidden-persp-tab-buffers persp-tab)))))
     (let ((i 0)
           (current-persp-tab
            (seq-find #'anemofilia/persp-tab-currentp
@@ -138,8 +150,8 @@ buffers."
                    ,(anemofilia/tab-bar-buffer-format buffer)
                    (lambda () (interactive) (switch-to-buffer ,buffer)))))
               (seq-filter (lambda (buffer)
-                         (relevant-bufferp current-persp-tab buffer))
-                       (anemofilia/persp-tab-buffers current-persp-tab)))))
+                            (relevant-bufferp current-persp-tab buffer))
+                          (anemofilia/persp-tab-buffers current-persp-tab)))))
 
   :config
   (setq tab-bar-format
