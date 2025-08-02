@@ -56,6 +56,7 @@
   #:use-module (gnu packages password-utils)
   #:use-module (gnu packages pciutils)
   #:use-module (gnu packages pdf)
+  #:use-module (gnu packages python)
   #:use-module (gnu packages qt)
   #:use-module (gnu packages shells)
   #:use-module (gnu packages ssh)
@@ -72,6 +73,7 @@
   #|Guix|#
   #:use-module (guix channels)
   #:use-module (guix gexp)
+  #:use-module (guix utils)
   #:use-module (guix transformations)
   #|NonGNU|#
   #:use-module (nongnu packages game-client)
@@ -97,9 +99,9 @@
   #|Saayix Packages|#
   #:use-module (saayix packages binaries)
   #:use-module (saayix packages browser-extensions)
+  #:use-module (saayix packages emacs-xyz)
   #:use-module (saayix packages file-managers)
   #:use-module (saayix packages fonts)
-  #:use-module (saayix packages hyprland)
   #:use-module (saayix packages lsp)
   #:use-module (saayix packages minecraft)
   #:use-module (saayix packages pdf)
@@ -125,25 +127,29 @@
         #|Utils           |# hyfetch xdg-utils gnupg pinentry-bemenu aria2
         #|                |# light ncurses git sops kexec-tools pciutils
         #|                |# gtk gtk+ gsettings-desktop-schemas
-        #|                |# p7zip 
+        #|                |# p7zip
         #|Productivity    |# wayneko newsraft playerctl spotify ;kew
         #|Shell           |# fish
-        #|Terminal        |# foot ghostty-tip ydotool
+        #|Terminal        |# foot ghostty-tip
         #|Guile           |# guile-next guile-readline guile-colorized guile-gcrypt
         #|Text Editor     |# helix #|optional|# guile-lsp-server parinfer-rust
-        #|Emacs           |# emacs-pgtk emacs-geiser emacs-geiser-guile emacs-magit
-        #|                |# emacs-paredit emacs-yasnippet emacs-which-key
-        #|                |# emacs-vertico emacs-modus-themes emacs-debbugs
-        #|                |# emacs-meow emacs-multiple-cursors
+        #|Emacs           |# emacs-pgtk emacs-magit
+        #|                |# emacs-paredit emacs-yasnippet emacs-which-key emacs-eat
+        #|                |# emacs-vertico emacs-modus-themes emacs-debbugs emacs-modalka
+        #|                |# emacs-meow emacs-multiple-cursors emacs-catppuccin-theme
+        #|                |# emacs-mc-extras emacs-parinfer-rust-mode emacs-expand-region
+        #|                |# emacs-tabspaces emacs-activities emacs-move-text
+        #|                |# emacs-arei guile-ares-rs
         #|                |# zen-browser-bin
         #|Games           |# (nvidia?* (steam-for nvda)
                                        (heroic-for nvda)
-                                       (lutris-wrapped-for nvda)
+                                       ;; (lutris-wrapped-for nvda)
                                        mangohud
                                        prismlauncher
                                        path-of-building-bin
                                        mcpelauncher-ui
                                        osu-lazer-bin)
+        #|                |# python-wrapper xdotool ydotool
         #|File Manager    |# yazi
         #|Image Viewer    |# imv
         #|Sound           |# wireplumber-minimal ncpamixer helvum easyeffects
@@ -152,16 +158,17 @@
         #|Window Manager  |# hyprpaper hyprlock hypridle hyprcursor
         #|                |# hyprland-qtutils hyprsunset eww/wayland
         #|                |# mako waybar grim slurp bemenu fuzzel
-        #|                |# wl-clipboard wlsunset dbus qtwayland cursor-mcmojave
-        #|                |# hyprcursor-mcmojave
+        #|                |# wl-clipboard wlsunset dbus qtwayland
+        #|                |# hyprcursor-mcmojave cursor-mcmojave
         #|                |# nvidia-vaapi-driver
-        #|Messaging       |# senpai vesktop telegram-desktop
+        #|Messaging       |# senpai vesktop ;; telegram-desktop
         #|E-mail          |# aerc #|required|# sound-theme-freedesktop
         #|                |# libnotify
         #|SSH             |# openssh
         #|Video           |# mpv-minimal/wayland yt-dlp
                              (if nvidia?
-                                 (list ffmpeg-nvenc obs-nvenc)
+                                 (list ffmpeg-nvenc obs-nvenc
+                                       obs-pipewire-audio-capture)
                                  (list ffmpeg obs))
         #|                |# (nvidia?* cuda)
         #|Fonts           |# font-adobe-source-han-sans
@@ -223,20 +230,21 @@
             (package hyprland)))
 
         (service home-dotfiles-service-type
-          (home-dotfiles-configuration
-            (layout 'plain)
-            (directories (list look-files-dir))
-            (tokens
-              (list (token
-                      (link-to-store? #f)
-                      (start "{{{ #")
-                      (substitutes theme:modus-operandi))
-                    ;; HERE!
-                    (token
-                      (link-to-store? #f)
-                      (substitutes secrets:all))))))
+                 (home-dotfiles-configuration
+                  (source-directory look-files-dir)
+                  (layout 'plain)
+                  (directories (list look-files-dir))
+                  (tokens
+                   (list (token
+                          (link-to-store? #f)
+                          (start "{{{ #")
+                          (substitutes theme:modus-operandi))
+                         ;; HERE!
+                         (token
+                          (link-to-store? #f)
+                          (substitutes secrets:all))))))
 
-        (service home-syncthing-service-type)
+        ; (service home-syncthing-service-type)
 
         (simple-service 'default-fonts home-fontconfig-service-type
           (list '(alias
@@ -316,6 +324,10 @@
             ("GUILE_LOAD_COMPILED_PATH"
              . ,(string-join '("$HOME/.guix-home/profile/lib/guile/3.0/site-ccache"
                                "$XDG_CONFIG_HOME/guix/current/lib/guile/3.0/site-ccache")
+                             ":"))
+            ("EMACSLOADPATH"
+             . ,(string-join '("$HOME/.guix-home/profile/share/emacs/site-lisp"
+                               "$HOME/.guix-profile/share/emacs/site-lisp")
                              ":"))
             ; ("GUILE_AUTO_COMPILE"  . "0")
             #|General|#

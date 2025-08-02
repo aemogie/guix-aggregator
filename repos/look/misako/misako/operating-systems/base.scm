@@ -21,6 +21,7 @@
   #:use-module (gnu system keyboard)
   #:use-module (gnu system nss)
   #:use-module (gnu system shadow)
+  #:use-module (gnu system pam)
   #|GNU Services|#
   #:use-module (gnu services)
   #:use-module (gnu services admin)
@@ -148,7 +149,8 @@
         (service guix-service-type
           (guix-configuration
             (substitute-urls
-              '("https://substitutes.nonguix.org"
+              '("https://cuirass.genenetwork.org"
+                "https://substitutes.nonguix.org"
                 "https://guix.bordeaux.inria.fr"
                 "https://ci.guix.gnu.org"))
             (authorized-keys
@@ -169,7 +171,11 @@
         #|Home environment services|#
         (service guix-home-service-type
           (if (file-exists? "/run/current-system/provenance") '()
-            `(("look" ,home-environment:look))))
+              `(("look" ,home-environment:look))))
+
+        (service shared-cache-service-type
+          (shared-cache-configuration
+            (users (list (user-cache (user "look"))))))
 
         #|Login services|#
         (service virtual-terminal-service-type)
@@ -178,11 +184,11 @@
           (associate-right
             (%default-console-font `("tty1" "tty2" "tty3"))))
 
-        (service elogind-service-type)
+        (service seatd-service-type)
 
         (service greetd-service-type
           (greetd-configuration
-            (greeter-supplementary-groups `("video"))
+            (greeter-supplementary-groups `("video" "input" "seat"))
             (terminals
               (map (lambda (x)
                      (greetd-terminal-configuration
@@ -215,6 +221,24 @@
 
         #|Device management services|#
         (service udev-service-type)
+
+        (simple-service 'uaccess-pam-service pam-root-service-type
+          (let ((uaccess-pam-entry
+                 (pam-entry
+                   (control "optional")
+                   (module (file-append pam-uaccess "/lib/security/pam_uaccess.so"))
+                   (arguments '("skip_ungrant")))))
+            (list (pam-extension
+                    (transformer
+                     (lambda (pam)
+                       (if (member (pam-service-name pam)
+                                   '("login" "sudo" "greetd" "su"))
+                           (pam-service
+                             (inherit pam)
+                             (session
+                              (append (pam-service-session pam)
+                                      (list uaccess-pam-entry))))
+                           pam)))))))
 
         #|Hosts|#
         (simple-service 'extra-hosts hosts-service-type

@@ -26,7 +26,6 @@
   #:use-module (srfi srfi-43)
   #:export (nvidia-operating-system
             nvidia-home-environment
-            ffmpeg-nvenc/patched
             obs-nvenc
             plist
             misako-dir
@@ -100,22 +99,23 @@
 (define plist
   (compose flatten-package-list list))
 
-(define ffmpeg-nvenc/patched
-  (package
-    (inherit ffmpeg-nvenc)
-    (name "ffnveg")))
-
 (define obs-nvenc
   (package/inherit obs
     (name "obs-nvenc")
+    (arguments
+     (substitute-keyword-arguments (package-arguments obs)
+       ((#:configure-flags flags)
+        #~(cons* "-DENABLE_NVENC=ON"
+                 (delete "-DENABLE_NVENC=OFF" #$flags)))))
     (inputs
       (modify-inputs (package-inputs obs)
-        (replace "ffmpeg" ffmpeg-nvenc/patched)))))
+        (prepend nv-codec-headers)
+        (replace "ffmpeg" ffmpeg-nvenc)))))
 
 (define replace-all-nvidia
   (package-input-grafting
     `((,mesa   . ,nvda)
-      (,ffmpeg . ,ffmpeg-nvenc/patched))))
+      (,ffmpeg . ,ffmpeg-nvenc))))
 
 (define-syntax-rule (nvidia-home-environment exp ...)
   "Like 'home-environment' but graft Mesa with the proprietary NVIDIA driver."

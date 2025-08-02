@@ -652,26 +652,6 @@ Generate passwordless ECC key:
       (platforms (lookup-qemu-platforms "aarch64" "powerpc64le" "riscv64"))))
 #+end_src
 
-* Continuous Integration
-#+begin_src scheme :noweb-ref module
-  (gnu services cuirass)
-#+end_src
-
-** cuirass-remote-worker
-Remember to connect to server IPv4 address and open TCP port 5558.
-#+begin_src scheme :noweb-ref service
-  (service cuirass-remote-worker-service-type
-    (cuirass-remote-worker-configuration
-      (publish-port 5558)
-      (workers 1)
-      (systems '("x86_64-linux" "aarch64-linux" "i686-linux"))
-      (server "100.97.195.93:5555")       ;gokuraku (Tailscale)
-      (substitute-urls
-       `("https://ci.ultrarare.space"
-         ,@%default-substitute-urls
-         "https://substitutes.nonguix.org"))))
-#+end_src
-
 * Web Servers
 #+begin_src scheme :noweb-ref module
   (rosenthal services child-error)

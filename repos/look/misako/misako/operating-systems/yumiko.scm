@@ -6,6 +6,7 @@
   #:use-module (misako operating-systems yumiko cuirass)
   #:use-module (misako utils)
   #:use-module (saayix services system nvidia-unload)
+  #:use-module (saayix services system mullvad)
   #|Guix|#
   #:use-module (guix gexp)
   #|GNU System|#
@@ -67,10 +68,10 @@
                  (pam-limits-entry "*" 'hard 'nofile 1048576)))
 
              (service nvidia-unload-service-type)
-             (service samba-service-type
-               (samba-configuration
-                 (enable-smbd? #t)
-                 (config-file (local-file (string-append yumiko-dir "/samba/smb.conf")))))
+             ; (service samba-service-type
+             ;   (samba-configuration
+             ;     (enable-smbd? #t)
+             ;     (config-file (local-file (string-append yumiko-dir "/samba/smb.conf")))))
 
              (udev-rules-service 'otd
                (let ((rules "70-opentabletdriver.rules"))
@@ -98,6 +99,8 @@
                  (authorized-keys
                    `(("look" ,(local-file "/etc/ssh/look.pub"))))))
 
+             (service mullvad-service-type)
+
              #|SOPS services|#
              ; (service sops-secrets-service-type
              ;   (sops-service-configuration
@@ -114,7 +117,7 @@
              ;           (permissions #o400))))))
 
              (service kernel-module-loader-service-type
-               '("v4l2loopback"))
+               '("v4l2loopback" "ntsync"))
              (simple-service 'v4l2loopback-config etc-service-type
                (list `("modprobe.d/v4l2loopback.conf"
                        ,(plain-file "v4l2loopback.conf"

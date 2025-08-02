@@ -130,20 +130,6 @@ Personal account.
     (shell (file-append (spec->pkg "fish") "/bin/fish")))
 #+end_src
 
-Nonguix sysadmins:
-#+begin_src scheme :noweb-ref user
-  (user-account
-    (name "jonathan")
-    (group "users")
-    (shell (file-append (spec->pkg "fish") "/bin/fish"))
-    (comment "Jonathan Brielmaier"))
-
-  (user-account
-    (name "podiki")
-    (group "users")
-    (shell (file-append (spec->pkg "fish") "/bin/fish")))
-#+end_src
-
 Administration accounts.
 #+begin_src scheme :noweb-ref user
   (user-account
@@ -165,13 +151,7 @@ Administration accounts.
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2"))
       ("hako"
        ,(plain-file "hako.pub"
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2"))
-      ("jonathan"
-       ,(plain-file "jonathan.pub"
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHgzHvP3BRTIZ960LVglrK8w/C0+6Z5VM8/Q5Uwa0o+Z"))
-      ("podiki"
-       ,(plain-file "podiki.pub"
-          "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDaSmW/3uq5L6ZP6gWmRw5RiTTg0es1PrbAo/x4vkPzwIKTrMFOCBCmcuH3vOCkEZJtNy3OpXbt/a3tDW+cc6dkeq2H4WpogQvyMTXreFS2phMgDTEXW2gGZIP6fA33CHERmhd9A/m0A+NH5KGAmLDQNK8QgPgIjZuseJYtYHNCnN2TCsWQYnbZtVQF5CS6iBUILpVp6p7QlSUokiCGaPjZfrjSFCm1hUPjJYSkv0NTq8TzyDfU2quqP7TBCj4WBi9HoW9+a8tN2TQ/+GYbGqlFljeNdz3vzItcHjidHOQL/42mpvzgZx7o7dtrqX9stp+mI3oBREYSD0bMyvND/dEBRWIbpFvbyYx/leMKq9yUcFNyI2lztk17ObaQkDLxlq4ClytgEtdbP6X0gua29FYK/YlAi13NptK6uy2xB2gsEIt5P4N3u+gZCNA0U3IVd7iMRSpg6PWiL1JguvhYSD5vGOnOjiXVlBCKn+ErTO9Ey/BZqwVBZMeDwynFnU1mYnkxtA+G54VI77gj24FrHw/ClOdJOdBUGAso9P3sFjdykkAJyKd4jiFzpDTOOJNs8qKhmFFzJBnJjn7nzwjElwOCZXdDKTrKqF/51WEqpNr8Za2QjRirV4m7n6FnyyD38b24InAVa+yze3qDI9yk2vjPdtFGCeLODSEjfV3U1z1hiw=="))))
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2"))))
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
@@ -338,6 +318,7 @@ Frequently used packages.
 * Containers & Virtualization
 #+begin_src scheme :noweb-ref module
   (gnu services docker)
+  (gnu services virtualization)
 #+end_src
 
 ** containerd
@@ -350,6 +331,13 @@ Frequently used packages.
   (service docker-service-type
     (docker-configuration
       (enable-iptables? #f)))
+#+end_src
+
+** binfmt_misc
+#+begin_src scheme :noweb-ref service
+  (service qemu-binfmt-service-type
+    (qemu-binfmt-configuration
+      (platforms (lookup-qemu-platforms "aarch64"))))
 #+end_src
 
 * Databases
@@ -371,9 +359,6 @@ Frequently used packages.
 
 * Continuous Integration
 #+begin_src scheme :noweb-ref module
-  (guix packages)
-  (guix build-system copy)
-  (gnu system privilege)
   (rosenthal services cuirass)
   (gnu services cuirass)
 #+end_src
@@ -416,96 +401,12 @@ Remember to open TCP port 5555 and 5556.
     (cuirass-worker-container-configuration
       (host-name "gokuraku")
       (workers 2)
-      (supported-systems '("x86_64-linux" "i686-linux"))
+      (supported-systems '("x86_64-linux" "aarch64-linux" "i686-linux"))
       (server "127.0.0.1:5555")
       (substitute-urls
        `("https://ci.ultrarare.space"
          ,@%default-substitute-urls
          "https://substitutes.nonguix.org"))))
-#+end_src
-
-** manage-cuirass
-#+name: manage-cuirass
-#+begin_src scheme
-  (let ((script
-         (program-file "manage-cuirass.scm"
-           #~(begin
-               (use-modules (ice-9 format) (ice-9 match))
-               (define %services
-                 '("cuirass"
-                   "cuirass-remote-server"
-                   "cuirass-web"
-                   "cuirass-worker-container"))
-               (define %actions
-                 '("status"
-                   "start"
-                   "stop"
-                   "restart"
-                   "enable"
-                   "disable"))
-               (define (service? service)
-                 (member service %services))
-               (define (action? action)
-                 (member action %actions))
-
-               (match (cdr (command-line))
-                 (((? service? service) (? action? action))
-                  (system* "herd" action service))
-                 (_
-                  (format (current-error-port) "~
-  Usage: manage-cuirass SERVICE ACTION
-
-  SERVICE:
-  ~{- ~a
-  ~}
-  ACTION:
-  ~{- ~a
-  ~}" %services %actions)
-                  (exit 1)))))))
-    (package
-      (name "manage-cuirass")
-      (version "0.0.0")
-      (source #f)
-      (build-system copy-build-system)
-      (arguments
-       (list
-        #:phases
-        #~(modify-phases %standard-phases
-            (delete 'unpack)
-            (replace 'install
-              (lambda _
-                (call-with-output-file "manage-cuirass.c"
-                  (lambda (port)
-                    (format port "~
-  #include <sys/types.h>
-  #include <stdio.h>
-  #include <unistd.h>
-
-  int main(int argc, char **argv, char **envp) {
-    setuid(geteuid());
-    ,*argv = ~s;
-    execve(*argv, argv, envp);
-    perror(*argv);
-    return 127;
-  }~%"
-                            #$script)))
-                (invoke "gcc" "manage-cuirass.c" "-o" "manage-cuirass")
-                (install-file "manage-cuirass" (in-vicinity #$output "bin")))))))
-      (home-page "")
-      (synopsis "")
-      (description "")
-      (license #f)))
-#+end_src
-
-#+begin_src scheme :noweb yes :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (privileged-programs
-       (cons* (privileged-program
-                (program (file-append <<manage-cuirass>> "/bin/manage-cuirass"))
-                (setuid? #t))
-              (operating-system-privileged-programs os)))))
 #+end_src
 
 ** cuirass specifications

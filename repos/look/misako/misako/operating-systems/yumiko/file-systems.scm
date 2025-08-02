@@ -183,6 +183,13 @@
     (mount-point "/etc/wireguard")
     (flags '(no-atime bind-mount))))
 
+(define gnu-persist-mullvad-vpn
+  (file-system
+    (device "/gnu/persist/etc/mullvad-vpn")
+    (type "none")
+    (mount-point "/etc/mullvad-vpn")
+    (flags '(no-atime bind-mount))))
+
 (define %btrfs-ephemeral-file-systems
   (cons* root
          home
@@ -203,6 +210,7 @@
          gnu-persist-ssh
          gnu-persist-guix
          gnu-persist-wireguard
+         gnu-persist-mullvad-vpn
          %pseudo-terminal-file-system
          %shared-memory-file-system
          %efivars-file-system

@@ -250,7 +250,7 @@
   :config
   (add-hook 'xref-backend-functions #'dumb-jump-xref-activate))
 
-;;guix:python-next
+;;guix:python
 ;;guix:rust
 ;;guix:rust:cargo
 ;;guix:zig
