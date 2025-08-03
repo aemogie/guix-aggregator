@@ -74,6 +74,8 @@
          ("C-c w s" . sss-print-random-standup-order)
          ("C-c g l" . guix-package-location-on-mark)
          ("C-c t a" . sort-lines)
+         ("C-c t w" . delete-trailing-whitespace)
+         ("C-c t c" . display-fill-column-indicator-mode)
          ("C-c t p" . kbd-scheme-make-parameter)
          ("C-c t h" . kbd-scheme-hygguile-abstraction))
   :hook ((text-mode . visual-line-mode)
