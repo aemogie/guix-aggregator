@@ -156,7 +156,7 @@ reader.boiledscript.com {
 }
 
 # Misskey
-http://social.boiledscript.com {
+social.boiledscript.com {
 	import block_bots
 	import robots_txt
 

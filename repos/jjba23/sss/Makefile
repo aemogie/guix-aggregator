@@ -232,6 +232,8 @@ test: fmt
 		-c '((@ (veritas runner) run-tests))'
 	$(call sss-log-complete,"test")
 
+update-submodules:
+	git submodule update --remote --merge
 
 
 full-reset-emacs:

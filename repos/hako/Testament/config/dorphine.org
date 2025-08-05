@@ -20,7 +20,8 @@
       (file-systems (append <<file-systems>> %base-file-systems))
       (users (cons* <<user>> %base-user-accounts))
       (packages (append (specs->pkgs+out <<package>>) %base-packages))
-      (services (cons* <<service>> %rosenthal-desktop-services))))
+      (services (cons* <<service>> %rosenthal-desktop-services))
+      (name-service-switch %mdns-host-lookup-nss)))
 
   ((compose <<transformation>>)
    %os)
@@ -377,7 +378,7 @@ Frequently used packages.
   (simple-service 'guix-extensions
       guix-service-type
     (guix-extension
-      (authorized-keys (list %guix-authorized-key-gokuraku))))
+      (authorized-keys %hako-guix-authorized-keys-lan)))
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
@@ -389,8 +390,20 @@ Frequently used packages.
          (guix-service-type
           config => (guix-configuration
                       (inherit config)
+                      (discover? #t)
                       (extra-options '("--cores=24"))
                       (tmpdir "/mnt/Mentha/System/@Build")))))))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (service guix-publish-service-type
+    (guix-publish-configuration
+      (port 23575)
+      (host "0.0.0.0")
+      (advertise? #t)
+      (compression '(("zstd" 19)))
+      ;; 30 days
+      (ttl (* 30 24 3600))))
 #+end_src
 
 ** SOPS Secrets
@@ -498,8 +511,7 @@ Generate passwordless ECC key:
                        (use-modules (ice-9 textual-ports))
 
                        (define %battery-capacity
-                         (call-with-input-file
-                             "/sys/class/power_supply/BAT1/capacity"
+                         (call-with-input-file "/sys/class/power_supply/BAT1/capacity"
                            (compose string->number get-line)))
 
                        (when (<= %battery-capacity 10)
@@ -538,24 +550,6 @@ Generate passwordless ECC key:
   # Use IPv6 Privacy Extensions.
   [connection]
   ipv6.ip6-privacy=2\n"))))))))))
-#+end_src
-
-** smartdns
-#+begin_src scheme :noweb yes :noweb-ref service
-  (service smartdns-service-type
-    (smartdns-configuration
-      (config-file
-       (computed-substitution-with-inputs "smartdns.conf"
-         (local-file (testament-plain "smartdns.conf"))
-         (specs->pkgs "dnsmasq-china-list")))))
-#+end_src
-
-[[file:../files/plain/smartdns.conf][smartdns.conf]]
-
-#+begin_src scheme :noweb-ref service
-  (simple-service 'etc-resolv-conf
-      etc-service-type
-    `(("resolv.conf" ,(plain-file "resolv.conf" "nameserver 127.0.0.1\n"))))
 #+end_src
 
 ** nftables
@@ -1075,7 +1069,7 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
   (simple-service 'guix-label-teams
       home-shepherd-service-type
     (list (shepherd-timer '(guix-label-teams)
-            #~(calendar-event #:minutes '(0))
+            #~(calendar-event #:minutes '(0 15 30 45))
             #~("/home/hako/Workspace/guix-label-teams.scm"))))
 #+end_src
 

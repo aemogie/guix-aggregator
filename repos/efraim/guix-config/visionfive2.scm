@@ -105,7 +105,7 @@
 
            (service ntp-service-type)
 
-           (service dhcp-client-service-type)
+           (service dhcpcd-service-type)
 
            (service earlyoom-service-type
                     (earlyoom-configuration

@@ -1,0 +1,423 @@
+# SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space>
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: CC-BY-SA-4.0
+
+#+TITLE: ignamma
+#+PROPERTY: header-args :noweb-prefix no
+
+* Guix System
+#+begin_src scheme :tangle ignamma.scm :noweb yes
+  (load "../common.scm")
+  (use-modules <<module>>)
+
+  <<definition>>
+
+  (define %os
+    (operating-system
+      (host-name "ignamma")
+      (bootloader <<bootloader>>)
+      (mapped-devices (list <<mapped-device>>))
+      (file-systems (append <<file-systems>> %base-file-systems))
+      (users (cons* <<user>> %base-user-accounts))
+      (packages (append (specs->pkgs+out <<package>>) %base-packages))
+      (services (cons* <<service>> %base-services))
+      (name-service-switch %mdns-host-lookup-nss)))
+
+  ((compose <<transformation>>)
+   %os)
+#+end_src
+
+* Base
+#+begin_src scheme :noweb-ref module
+  (gnu services ssh)
+#+end_src
+
+** Bootloader & Kernel
+#+name: bootloader
+#+begin_src scheme
+  (bootloader-configuration
+    (bootloader grub-efi-removable-bootloader)
+    (targets '("/efi")))
+#+end_src
+
+#+begin_src scheme :noweb-ref transformation
+  (nonguix-transformation-linux
+   #:linux (spec->pkg "linux@6.12"))
+
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (kernel-arguments
+       (cons* "consoleblank=60"
+              "kernel.sysrq=0"
+              "zswap.enabled=1"
+              "zswap.max_pool_percent=90"
+              (operating-system-user-kernel-arguments os)))))
+#+end_src
+
+** File Systems
+Disk layout:
+#+begin_example
+  +----------------+----------------+
+  |                |                |
+  |      ESP       | Btrfs (Lancea) |
+  |_ _ _ _ _ _ _ __|_ _ _ _ _ _ _ _ |
+  |                |                |
+  | /dev/nvme0n1p1 | /dev/nvme0n1p2 |
+  |_ _ _ _ _ _ _ __| _ _ _ _ _ _ _ _|
+  |                                 |
+  |          /dev/nvme0n1           |
+  +---------------------------------+
+#+end_example
+
+Btrfs subvolumes:
+#+begin_example
+  @Snapshot
+
+  @Config
+  @Data
+  @Home
+
+  System/@Boot
+  System/@Build
+  System/@Guix
+  System/@Log
+  System/@Store
+  System/@Swap
+  System/@Tmp
+#+end_example
+
+Root file system layout:
+#+begin_example
+  /               tmpfs
+  ├─/efi          fat32 ESP
+  ├─/boot         btrfs System/@Boot
+  ├─/etc          btrfs @Config
+  ├─/gnu/store    btrfs System/@Store
+  ├─/home         btrfs @Home
+  ├─/swap         btrfs System/@Swap
+  ├─/var/guix     btrfs System/@Guix
+  ├─/var/lib      btrfs @Data
+  ├─/var/lock     tmpfs
+  ├─/var/log      btrfs System/@Log
+  └─/var/tmp      btrfs System/@Tmp
+#+end_example
+
+#+begin_src scheme :noweb-ref file-systems
+  (list (file-system
+          (device "tmpfs")
+          (mount-point "/")
+          (type "tmpfs")
+          (options "mode=0755,nr_inodes=1m,size=25%")
+          (check? #f))
+
+        (file-system
+          (device (uuid "3903-6E21" 'fat))
+          (mount-point "/efi")
+          (type "vfat")
+          (create-mount-point? #t))
+
+        (file-system
+          (device "tmpfs")
+          (mount-point "/var/lock")
+          (type "tmpfs")
+          (flags '(no-suid no-dev strict-atime))
+          (options "mode=1777,nr_inodes=800k,size=20%")
+          (create-mount-point? #t)
+          (check? #f)))
+#+end_src
+
+#+begin_src scheme :noweb yes :noweb-ref file-systems
+  (let ((options-for-subvolume
+         (lambda (subvolume)
+           (string-join
+            (list "compress=zstd:1"
+                  (or (and=> subvolume (cut string-append "subvol=" <>))
+                      "subvolid=5"))
+            ","))))
+    (map (match-lambda
+           ((subvolume . mount-point)
+            (file-system
+              (device (file-system-label "Lancea"))
+              (mount-point mount-point)
+              (type "btrfs")
+              (options (options-for-subvolume subvolume))
+              (dependencies mapped-devices)
+              (create-mount-point? #t)
+              (check? (string=? mount-point "/gnu/store"))
+              (needed-for-boot?
+               (member mount-point '("/etc" "/gnu/store" "/var/guix"))))))
+         '(("System/@Boot"  . "/boot")
+           ("System/@Store" . "/gnu/store")
+           ("System/@Swap"  . "/swap")
+           ("System/@Guix"  . "/var/guix")
+           ("System/@Log"   . "/var/log")
+           ("System/@Tmp"   . "/var/tmp")
+           ("@Config" . "/etc")
+           ("@Home"   . "/home")
+           ("@Data"   . "/var/lib")
+           (#f        . "/mnt/Lancea"))))
+#+end_src
+
+#+begin_src scheme :noweb yes :noweb-ref transformation
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (swap-devices
+       (list (swap-space
+               (target "/swap/swapfile")
+               (dependencies
+              (filter (file-system-mount-point-predicate "/swap")
+                      (operating-system-file-systems os))))))))
+#+end_src
+
+Maintenance:
+#+begin_src scheme :noweb-ref service
+  (simple-service 'btrfs-scrub
+      shepherd-root-service-type
+    (list (shepherd-timer '(btrfs-scrub)
+            #~(calendar-event #:hours '(0))
+            #~(#$(file-append (spec->pkg "btrfs-progs") "/bin/btrfs") "scrub" "start" "/mnt/Lancea")
+            #:requirement '(user-processes))))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'btrbk
+      shepherd-root-service-type
+    (list (shepherd-timer '(btrbk)
+            #~(calendar-event #:minutes '(0))
+            #~(#$(file-append (spec->pkg "btrbk") "/bin/btrbk") "run"
+               "-c" #$(local-file (testament-plain "ignamma/btrbk.conf")))
+            #:requirement '(user-processes))))
+#+end_src
+
+[[file:../files/plain/ignamma/btrbk.conf][ignamma/btrbk.conf]]
+
+** Timezone
+#+name: timezone
+#+begin_src scheme
+  "Asia/Hong_Kong"
+#+end_src
+
+#+begin_src scheme :noweb yes :noweb-ref transformation
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (timezone <<timezone>>)))
+#+end_src
+
+** Users
+Personal account.
+#+begin_src scheme :noweb-ref user
+  (user-account
+    (name "hako")
+    (group "users")
+    (supplementary-groups '("wheel"))
+    (shell (file-append (spec->pkg "fish") "/bin/fish")))
+#+end_src
+
+Administration accounts.
+#+begin_src scheme :noweb-ref user
+  (user-account
+    (inherit %root-account)
+    (password #f))
+
+  (user-account
+    (name "deploy")
+    (group "users")
+    (comment "User for 'guix deploy'")
+    (create-home-directory? #f))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'add-user-ssh-keys
+      openssh-service-type
+    `(("deploy"
+       ,(plain-file "hako.pub"
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2"))
+      ("hako"
+       ,(plain-file "hako.pub"
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2"))))
+#+end_src
+
+#+begin_src scheme :noweb-ref transformation
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (sudoers-file
+       (plain-file "sudoers"
+         (string-append
+          (plain-file-content (operating-system-sudoers-file os))
+          "deploy ALL = NOPASSWD: ALL\n"
+          "hako ALL = NOPASSWD: ALL\n")))))
+#+end_src
+
+** Packages
+Frequently used packages.
+#+begin_src scheme :noweb-ref package
+  "rsync"
+#+end_src
+
+** Guix Daemon
+#+begin_src scheme :noweb-ref service
+  (simple-service 'guix-extension-dorphine
+      guix-service-type
+    (guix-extension
+      (authorized-keys %hako-guix-authorized-keys-lan)))
+#+end_src
+
+#+begin_src scheme :noweb-ref transformation
+  (nonguix-transformation-guix)
+
+  (lambda (os)
+    (operating-system
+      (inherit os)
+      (services
+       (modify-services (operating-system-user-services os)
+         (guix-service-type
+          config => (guix-configuration
+                      (inherit config)
+                      (discover? #t)
+                      (extra-options '("--cores=4" "--max-jobs=4"))
+                      (tmpdir "/mnt/Mentha/System/@Build")))))))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (service guix-publish-service-type
+    (guix-publish-configuration
+      (port 26336)
+      (host "0.0.0.0")
+      (advertise? #t)
+      (compression '(("zstd" 19)))
+      ;; 30 days
+      (ttl (* 30 24 3600))))
+#+end_src
+
+* Power Management
+#+begin_src scheme :noweb-ref service
+  (simple-service 'auto-power-off
+      shepherd-root-service-type
+    (list (shepherd-timer '(auto-power-off)
+            #~(calendar-event #:minutes '(0 10 20 30 40 50))
+            #~(#$(program-file "auto-power-off"
+                   #~(begin
+                       (use-modules (ice-9 textual-ports))
+
+                       (define %battery-capacity
+                         (call-with-input-file "/sys/class/power_supply/BAT0/capacity"
+                           (compose string->number get-line)))
+
+                       (when (<= %battery-capacity 10)
+                         (system* "halt"))))))))
+#+end_src
+
+* Networking & SSH
+#+begin_src scheme :noweb-ref module
+  (gnu services avahi)
+  (gnu services networking)
+  (gnu services ssh)
+  (rosenthal services networking)
+#+end_src
+
+** wpa-supplicant
+#+begin_src scheme :noweb-ref service
+  (service wpa-supplicant-service-type)
+#+end_src
+
+** network-manager
+#+begin_src scheme :noweb-ref service
+  (service network-manager-service-type
+    (network-manager-configuration
+      (dns "none")
+      (extra-configuration-files
+       `(("wifi_rand_mac.conf"
+          ,(plain-file "wifi_rand_mac.conf" "\
+  # Generate a random MAC for each network connection and associate the two
+  # permanently.
+  [connection-mac-randomization]
+  ethernet.cloned-mac-address=stable
+  wifi.cloned-mac-address=stable\n"))
+         ("ip6-privacy.conf"
+          ,(plain-file "ip6-privacy.conf" "\
+  # Use IPv6 Privacy Extensions.
+  [connection]
+  ipv6.ip6-privacy=2\n"))))))
+#+end_src
+
+** ntp
+#+begin_src scheme :noweb-ref service
+  (service ntp-service-type)
+#+end_src
+
+** avahi
+#+begin_src scheme :noweb-ref service
+  (service avahi-service-type)
+#+end_src
+
+** nftables
+#+begin_src scheme :noweb-ref service
+  (service nftables-service-type
+    (nftables-configuration
+      (ruleset (local-file (testament-plain "ignamma/nftables.conf")))))
+#+end_src
+
+[[file:../files/plain/ignamma/nftables.conf][ignamma/nftables.conf]]
+
+** tailscale
+#+begin_src scheme :noweb-ref service
+  (service tailscale-service-type)
+#+end_src
+
+** openssh
+#+begin_src scheme :noweb-ref package
+  "mosh"
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (service openssh-service-type
+    (openssh-configuration
+      (openssh (spec->pkg "openssh-sans-x"))
+      (password-authentication? #f)))
+#+end_src
+
+* Virtualization
+#+begin_src scheme :noweb-ref module
+  (gnu services virtualization)
+#+end_src
+
+** binfmt_misc
+#+begin_src scheme :noweb-ref service
+  (service qemu-binfmt-service-type
+    (qemu-binfmt-configuration
+      (platforms (lookup-qemu-platforms "aarch64"))))
+#+end_src
+
+* Continuous Integration
+#+begin_src scheme :noweb-ref module
+  (gnu services cuirass)
+#+end_src
+
+** cuirass-remote-worker
+Open TCP port 5558 and connect to server IPv4 address.
+#+begin_src scheme :noweb-ref service
+  (service cuirass-remote-worker-service-type
+    (cuirass-remote-worker-configuration
+      (publish-port 5558)
+      (workers 4)
+      (systems '("x86_64-linux" "aarch64-linux" "i686-linux"))
+      (server "100.97.195.93:5555")       ;gokuraku (Tailscale)
+      (substitute-urls
+       `("https://ci.ultrarare.space"
+         ,@%default-substitute-urls
+         "https://substitutes.nonguix.org"))))
+#+end_src
+
+* Monitoring
+#+begin_src scheme :noweb-ref module
+  (gnu services monitoring)
+#+end_src
+
+** prometheus-node-exporter
+#+begin_src scheme :noweb-ref service
+  (service prometheus-node-exporter-service-type)
+#+end_src

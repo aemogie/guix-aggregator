@@ -65,6 +65,31 @@
   (cond ((equal sss-emacs-theme 'gruvbox-dark-hard) (load-theme sss-emacs-theme t))
         ((equal sss-emacs-theme 'gruvbox-light-hard) (load-theme sss-emacs-theme t))))
 
+(use-package dracula-theme
+  :ensure t
+  :config
+  (cond ((equal sss-emacs-theme 'dracula)
+         (progn
+           (load-theme sss-emacs-theme t)
+           ;; Tweak the font size for some headings and titles
+           (setq dracula-enlarge-headings t)
+
+           ;; Adjust font size of titles level 1 (default 1.3)
+           (setq dracula-height-title-1 1.25)
+
+           ;; Adjust font size of titles level 2 (default 1.1)
+           (setq dracula-height-title-2 1.15)
+
+           ;; Adjust font size of titles level 3 (default 1.0)
+           (setq dracula-height-title-3 1.05)
+
+           ;; Adjust font size of document titles (default 1.44)
+           (setq dracula-height-doc-title 1.4)
+
+           ;; Use less pink and bold on the mode-line and minibuffer (default nil)
+           (setq dracula-alternate-mode-line-and-minibuffer nil)))
+        ))
+
 
 (provide 'sss/theme)
 

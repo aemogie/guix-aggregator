@@ -77,6 +77,19 @@ WARNED."
   (curve Ed25519)
   (q #374EC58F5F2EC0412431723AF2D527AD626B049D657B5633AAAEBC694F3E33F9#)))"))
 
+(define %guix-authorized-key-ignamma
+  (plain-file "ignamma.pub" "
+(public-key
+ (ecc
+  (curve Ed25519)
+  (q #6FEEB15C4363F9975EB15C908EC911A4362E486DA642431FA2438C0B1C3D55F5#)))"))
+
+(define %hako-guix-authorized-keys-lan
+  (list %guix-authorized-key-dorphine
+        %guix-authorized-key-gokuraku
+
+        %guix-authorized-key-ignamma))
+
 ;; Managed by Zheng Junjie.
 (define %guix-authorized-key-sin
   (plain-file "sin.pub" "
@@ -84,6 +97,13 @@ WARNED."
  (ecc
   (curve Ed25519)
   (q #CC7E2CD7CA12B6CB9A822C0BFD14E2D7347FF6B96CB1D796513A813F07475B20#)))"))
+
+(define %hako-guix-authorized-keys-head
+  (list %guix-authorized-key-dorphine
+        %guix-authorized-key-gokuraku
+
+        %guix-authorized-key-ignamma
+        %guix-authorized-key-sin))
 
 
 ;;;

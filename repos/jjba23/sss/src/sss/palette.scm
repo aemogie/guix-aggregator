@@ -41,6 +41,7 @@
                                             ef-bio
                                             ef-dream
                                             ef-melissa-light
+                                            dracula
                                             gruvbox-dark
                                             gruvbox-light))
 
@@ -62,6 +63,7 @@
     ('everforest-dark (cdr (assoc sym everforest-dark)))
     ('gruvbox-light (cdr (assoc sym gruvbox-light)))
     ('gruvbox-dark (cdr (assoc sym gruvbox-dark)))
+    ('dracula (cdr (assoc sym dracula)))
     (_ (raise-unknown-palette-exception palette))))
 
 (define-syntax-rule (get-gtk-theme palette)
@@ -80,6 +82,7 @@
     ('everforest-dark #t)
     ('gruvbox-light #f)
     ('gruvbox-dark #t)
+    ('dracula #t)
     (_ (raise-unknown-palette-exception palette))))
 
 (define-syntax-rule (get-icon-theme palette)
@@ -98,6 +101,7 @@
     ('everforest-dark "'everforest-hard-dark")
     ('gruvbox-light "'gruvbox-light-hard")
     ('gruvbox-dark "'gruvbox-dark-hard")
+    ('dracula "'dracula")
     (_ (raise-unknown-palette-exception palette))))
 
 (define-syntax-rule (get-fish-color palette)
@@ -113,6 +117,7 @@
     ('everforest-dark "b8d191")
     ('gruvbox-light "d75f00")
     ('gruvbox-dark "d65d0e")
+    ('dracula "bd93f9")
     (_ (raise-unknown-palette-exception palette))))
 
 (define-syntax-rule (get-gtk-accent-color palette)
@@ -128,6 +133,7 @@
     ('everforest-dark "'green'")
     ('gruvbox-light "'orange'")
     ('gruvbox-dark "'orange'")
+    ('dracula "'pink'")
     (_ (raise-unknown-palette-exception palette))))
 
 (define-syntax-rule (get-cursor-theme palette)
@@ -157,6 +163,8 @@
                                'default))
     ('gruvbox-dark (assoc-ref ansi-color-escapes
                               'yellow))
+    ('dracula (assoc-ref ansi-color-escapes
+                         'magenta))
     (_ (raise-unknown-palette-exception palette))))
 
 (define-syntax-rule (hex-to-decimal n)
@@ -260,3 +268,10 @@
     (text-l . "#282828")
     (background . "#ebdbb2")
     (background-l . "#fbf1c7")))
+
+(define dracula
+  `((primary . "#bd93f9") (primary-l . "#ff79c6")
+    (text . "#f8f8f2")
+    (text-l . "#e7e8e1")
+    (background . "#282a36")
+    (background-l . "#44475a")))

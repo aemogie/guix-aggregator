@@ -61,9 +61,10 @@ https://www.gnu.org/licenses/fdl-1.3.html
 - GNU Guix system configuration
 - GNU Guix home configurations
 - Advanced Emacs configurations and integration possibilities with Guix  + Elpaca  
-- Guix channel so you can cherry-pick parts of SSS to your liking      
-- 🎨 Theme palettes that affect the entire system (ef-themes, solarized-light, everforest dark and light)
-- A custom [[https://codeberg.org/jjba23/sss-help-center-gtk][tailor made help assistant for SSS - sss-help-center-gtk]]   
+- Guix channel so you can cherry-pick parts of SSS to your liking
+
+Some of the features:  
+- 🎨 Many theme palettes that affect the entire system
 - Hyprland configuration (power user session)
 - Labwc configuration (universal session)
 - Bash and Fish shell configuration
@@ -74,6 +75,7 @@ https://www.gnu.org/licenses/fdl-1.3.html
 - Rofi application launcher
 - Mako configuration and style
 - multi-user Git configuration setup (work/personal)
+- A custom [[https://codeberg.org/jjba23/sss-help-center-gtk][tailor made help assistant for SSS - sss-help-center-gtk]]   
 - Fastfetch configuration
 - Multi user configuration
 
@@ -85,8 +87,6 @@ An operating system unto itself 🐂.
 
 - Advanced and modular Emacs configurations with Emacs Lisp + Elpaca
 - Dev setup for: Scheme, Scala, Haskell, Lisp, Rust, Python, Shell, Nix, Golang and more
-
-
 
 ** Universal session
 
@@ -421,6 +421,32 @@ Find here an example configuration of a SSS overrides file for one of my machine
   '("monitor = , preferred, auto, 1.33333"))
 #+end_src
 
+
+*** Available palettes
+
+You can set your active theme by modifying the ~override-palette~ (as symbol in Scheme) to the values:
+
+ef-themes:
+- ef-melissa-light 
+- ef-bio 
+- ef-dream
+- ef-cyprus 
+- ef-autumn
+
+Solarized:  
+- solarized-light
+
+Everforest:  
+- everforest-light
+- everforest-dark
+
+Gruvbox:  
+- gruvbox-light
+- gruvbox-dark
+
+Other:
+- dracula
+- heavy-metal
 
 When doing a system or home reconfigure, SSS will try to give you as much information as possible about the current settings you chose for. Here follows an example:
 
@@ -785,7 +811,7 @@ This module manages the visual appearance of Emacs by configuring and applying v
 
 Its primary functionality is to provide a flexible system for loading different Emacs themes, particularly focusing on ef-themes, solarized-theme, and everforest.
 
-The module also includes custom palette overrides for certain ef-themes (like ef-bio, ef-autumn, and ef-cyprus), allowing for fine-grained adjustments to their default color schemes.
+The module also includes custom palette overrides for certain ef-themes and others, allowing for fine-grained adjustments to their default color schemes.
 
 The module then conditionally loads a specific theme based on the value of the ~sss-emacs-theme~ variable. This ensures that your Emacs instance consistently loads your chosen aesthetic from the defined collection of themes upon startup.
 

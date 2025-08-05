@@ -93,7 +93,7 @@
                       (priority 100)))
 
            ;; For networking
-           (service dhcp-client-service-type)
+           (service dhcpcd-service-type)
 
            (modify-services
              %base-services

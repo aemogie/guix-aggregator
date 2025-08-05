@@ -87,7 +87,7 @@
                       ;; Prevent moving to year 2116.
                       (constraints-from '("https://www.google.com/"))))
 
-           (service dhcp-client-service-type)
+           (service dhcpcd-service-type)
 
            (service earlyoom-service-type
                     (earlyoom-configuration

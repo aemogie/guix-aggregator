@@ -25,7 +25,12 @@ Guix channels in use:
 [[file:files/plain/assets/dorphine-1.png]]
 [[file:files/plain/assets/dorphine-2.png]]
 
-** [[file:config/gokuraku.org][gokuraku]] (x86_64-linux, server)
+** [[file:config/chapra.org][chapra]] (x86_64-linux, server)
+
+** [[file:config/gokuraku.org][gokuraku]] (x86_64-linux, server, build worker)
+Head node of [[https://ci.boiledscript.com]].
+
+** [[file:config/ignamma.org][ignamma]] (x86_64-linux, server, build worker)
 
 * LiveCDs
 I provide two LiveCDs for the [[https://guix.gnu.org/manual/devel/en/html_node/Manual-Installation.html][manual installation]] of Guix System.  Pre-built

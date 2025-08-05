@@ -42,8 +42,9 @@ It is recommended to use tagged releases of SSS, as those are considered as stab
 - GNU Guix home configurations
 - Advanced Emacs configurations and integration possibilities with Guix  + Elpaca
 - Guix channel so you can cherry-pick parts of SSS to your liking
-- 🎨 Theme palettes that affect the entire system (ef-themes, solarized-light, everforest dark and light)
-- A custom [[https://codeberg.org/jjba23/sss-help-center-gtk][tailor made help assistant for SSS - sss-help-center-gtk]]     
+
+Some of the features:  
+- 🎨 Many theme palettes that affect the entire system 
 - Hyprland configuration (power user session)
 - Labwc configuration (universal session)
 - Bash and Fish shell configuration
@@ -53,9 +54,9 @@ It is recommended to use tagged releases of SSS, as those are considered as stab
 - Waybar configuration and style
 - Rofi application launcher
 - Mako configuration and style
-- multi-user Git configuration setup (work/personal)
+- A custom [[https://codeberg.org/jjba23/sss-help-center-gtk][tailor made help assistant for SSS - sss-help-center-gtk]]     
 - Fastfetch configuration
-
+- multi-user Git configuration setup (work/personal)
 
   and more....
   
