@@ -51,7 +51,7 @@
          ("C-c f r" . tekengrootte-set-scale-regular)
          ("C-c f s" . tekengrootte-set-scale-small)
          ("C-c f t" . tekengrootte-set-scale-tiny)
-	 ("C-c f n" . tekengrootte-set-scale-nano))
+	       ("C-c f n" . tekengrootte-set-scale-nano))
   :hook ((tekengrootte-set-scale . (lambda ()
                                      (sss-set-base-faces))))
   :after (ef-themes solarized-theme gruvbox-theme)
@@ -62,27 +62,27 @@ According to size, color and font family"
     (interactive)
 
     (set-face-attribute 'default nil
-		        :height (round (tekengrootte-mk-font-size 114))
-		        :font sss-font-mono)
+		                    :height (round (tekengrootte-mk-font-size 114))
+		                    :font sss-font-mono)
 
     (ignore-errors
       (set-face-attribute 'mode-line nil
                           :box `(:line-width 3 :color ,(face-attribute 'mode-line :background))
-		          :height (tekengrootte-mk-font-size 0.7)
-		          :font sss-font-sans))
+		                      :height (tekengrootte-mk-font-size 0.7)
+		                      :font sss-font-sans))
     (ignore-errors
       (set-face-attribute 'mode-line-active nil
                           :box `(:line-width 3 :color ,(face-attribute 'mode-line :background))
-		          :height (tekengrootte-mk-font-size 0.7)
-		          :font sss-font-sans))
+		                      :height (tekengrootte-mk-font-size 0.7)
+		                      :font sss-font-sans))
     (ignore-errors
       (set-face-attribute 'mode-line-inactive nil
                           :box `(:line-width 3 :color ,(face-attribute 'mode-line-inactive :background))
-		          :height (tekengrootte-mk-font-size 0.7)
-		          :font sss-font-sans))
+		                      :height (tekengrootte-mk-font-size 0.7)
+		                      :font sss-font-sans))
 
     (set-face-attribute 'variable-pitch nil
-		        :font sss-font-sans
+		                    :font sss-font-sans
                         :height (tekengrootte-mk-font-size 1.05))
 
     (set-face-attribute 'button nil :background 'unspecified
@@ -93,84 +93,86 @@ According to size, color and font family"
 
     (ignore-errors
       (set-face-attribute 'markdown-pre-face nil
-		          :font sss-font-mono
+		                      :font sss-font-mono
                           :height (tekengrootte-mk-font-size 0.95))
       (set-face-attribute 'markdown-code-face nil
-		          :font sss-font-mono
+		                      :font sss-font-mono
                           :height (tekengrootte-mk-font-size 0.95))
       (set-face-attribute 'markdown-inline-code-face nil
-		          :font sss-font-mono
+		                      :font sss-font-mono
                           :height (tekengrootte-mk-font-size 0.95))
       (set-face-attribute 'markdown-header-face-1 nil
                           :font sss-font-sans
                           :weight 'bold
-		          :height (tekengrootte-mk-font-size 1.2))
+		                      :height (tekengrootte-mk-font-size 1.2))
       (set-face-attribute 'markdown-header-face-2 nil
                           :font sss-font-sans
                           :weight 'bold
-		          :height (tekengrootte-mk-font-size 1.2))
+		                      :height (tekengrootte-mk-font-size 1.2))
       (set-face-attribute 'markdown-header-face-3 nil
                           :font sss-font-sans
                           :weight 'bold
-		          :height (tekengrootte-mk-font-size 1.1))
+		                      :height (tekengrootte-mk-font-size 1.1))
       (set-face-attribute 'markdown-header-face-4 nil
                           :font sss-font-sans
                           :weight 'bold
-		          :height (tekengrootte-mk-font-size 1.1))
+		                      :height (tekengrootte-mk-font-size 1.1))
       (set-face-attribute 'markdown-header-face-5 nil
                           :font sss-font-sans
                           :weight 'bold
-		          :height (tekengrootte-mk-font-size 1.0)))
+		                      :height (tekengrootte-mk-font-size 1.0)))
 
     (ignore-errors
       (set-face-attribute 'org-table nil
-		          :height (tekengrootte-mk-font-size 1.05)
-		          :font sss-font-mono)
+		                      :height (tekengrootte-mk-font-size 1.05)
+		                      :font sss-font-mono)
       (set-face-attribute 'org-default nil
-		          :height (tekengrootte-mk-font-size 1.05)
-		          :font sss-font-mono)
+		                      :height (tekengrootte-mk-font-size 1.05)
+		                      :font sss-font-mono)
       (set-face-attribute 'org-block nil
-		          :font sss-font-mono
+		                      :font sss-font-mono
                           :height (tekengrootte-mk-font-size 0.95))
       (set-face-attribute 'org-code nil
-		          :font sss-font-mono
+		                      :font sss-font-mono
                           :height (tekengrootte-mk-font-size 0.95))
       (set-face-attribute 'org-verbatim nil
-		          :font sss-font-mono
+		                      :font sss-font-mono
                           :height (tekengrootte-mk-font-size 1.05))
       (set-face-attribute 'org-document-title nil
-		          :height (tekengrootte-mk-font-size 1.2))
+		                      :height (tekengrootte-mk-font-size 1.2))
       (set-face-attribute 'org-level-1 nil
                           :font sss-font-sans
                           :weight 'bold
-		          :height (tekengrootte-mk-font-size 1.2))
+		                      :height (tekengrootte-mk-font-size 1.2))
       (set-face-attribute 'org-level-2 nil
                           :font sss-font-sans
                           :weight 'bold
-		          :height (tekengrootte-mk-font-size 1.2))
+		                      :height (tekengrootte-mk-font-size 1.2))
       (set-face-attribute 'org-level-3 nil
                           :font sss-font-sans
                           :weight 'bold
-		          :height (tekengrootte-mk-font-size 1.1))
+		                      :height (tekengrootte-mk-font-size 1.1))
       (set-face-attribute 'org-level-4 nil
                           :font sss-font-sans
                           :weight 'bold
-		          :height (tekengrootte-mk-font-size 1.1))
+		                      :height (tekengrootte-mk-font-size 1.1))
       (set-face-attribute 'org-level-5 nil
                           :font sss-font-sans
                           :weight 'bold
-		          :height (tekengrootte-mk-font-size 1.0)))
+		                      :height (tekengrootte-mk-font-size 1.0)))
     (ignore-errors
       (set-face-attribute 'keycast-key nil
-		          :font sss-font-mono
+		                      :font sss-font-mono
                           :background 'unspecified
                           :box nil
                           :height (tekengrootte-mk-font-size 0.8))
       (set-face-attribute 'keycast-command nil
-		          :font sss-font-sans
+		                      :font sss-font-sans
                           :height (tekengrootte-mk-font-size 0.8)))
 
+    ;;
     ;; ====== Theme specific tweaks ======
+    ;;
 
     ;; ====== Ef theme specific tweaks =============
     (when (string-prefix-p "ef-" (format "%s" sss-emacs-theme))
@@ -190,6 +192,19 @@ According to size, color and font family"
       (ignore-errors
         (set-face-attribute 'internal-border nil
                             :background "#1d2021")))
+
+    ;; ====== Dracula specific tweaks ======
+    (when (equal sss-emacs-theme 'dracula)
+      (ignore-errors
+        (set-face-attribute 'font-lock-comment-face nil
+                            :italic t)
+        (set-face-attribute 'font-lock-variable-use-face nil
+                            :bold nil)
+        (set-face-attribute 'font-lock-variable-name-face nil
+                            :bold nil)
+        (set-face-attribute 'window-divider nil
+                            :background "#6272a4"
+                            :foreground "#6272a4")))
 
 
     ;; ====== Everforest dark specific tweaks ======

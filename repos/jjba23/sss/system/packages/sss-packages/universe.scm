@@ -157,9 +157,8 @@
   (list android-file-transfer
         autoconf
         automake
-        ncurses
-        ;; TODO enable blender (after opencolorio is fixed)
-        ;; blender
+        ncurses        
+        blender
         blueman
         bluez
         bsd-games

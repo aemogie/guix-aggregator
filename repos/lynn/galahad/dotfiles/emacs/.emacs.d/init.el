@@ -35,22 +35,37 @@
 
 (use-package swiper)
 (use-package counsel
-  :bind (("M-x" . counsel-M-x)
-	   ("C-x b" . counsel-ibuffer)
-	   ("C-x C-f" . counsel-find-file)
-	   :map minibuffer-local-map
-	   ("C-r" . counsel-minibuffer-history)))
+    :bind (("M-x" . counsel-M-x)
+  	   ("C-x b" . counsel-ibuffer)
+  	   ("C-x C-f" . counsel-find-file)
+  	   :map minibuffer-local-map
+  	   ("C-r" . counsel-minibuffer-history)))
 (use-package ivy
-  :diminish
-  :bind (("C-s" . swiper-isearch))
-  :config
-  (ivy-mode 1))
+    :diminish
+    :bind (("C-s" . swiper-isearch))
+    :config
+    (ivy-mode 1))
+(use-package projectile
+    :init
+    (setq projectile-project-search-path'("~/dev/"))
+    :config
+    (projectile-global-mode)
+    (setq projectile-enable-caching t)
+    (setq projectile-completion-system 'ivy))
 (use-package which-key
-  :defer 0
-  :diminish which-key-mode
+    :defer 0
+    :diminish which-key-mode
+    :config
+    (which-key-mode)
+    (setq which-key-idle-delay 1))
+(use-package treemacs)
+(use-package treemacs-projectile)
+(use-package imenu-list
   :config
-  (which-key-mode)
-  (setq which-key-idle-delay 1))
+  (setq imenu-list-focus-after-activation t)
+  (global-set-key (kbd "C-.") #'imenu-list-minor-mode))
+
+  (global-set-key (kbd "C-x O") 'previous-multiframe-window)
 
 (use-package elfeed)
 
@@ -163,6 +178,7 @@
        '("+" . emms-volume-raise)
        '("=" . emms-volume-lower)
         ;; regular meow
+       '("?" . treemacs-select-window)
        '("0" . meow-expand-0)
        '("9" . meow-expand-9)
        '("8" . meow-expand-8)
@@ -333,12 +349,23 @@
   :hook
   (zig-mode . eglot-ensure)
   (c-mode . eglot-ensure)
+  (c++-mode . eglot-ensure)
+  :bind (:map eglot-mode-map
+            ("C-c r"   . eglot-rename)
+            ("C-c C-a" . eglot-code-actions)
+            ("C-c C-f" . eglot-format-buffer)
+            ("C-c C-i" . eglot-find-implementation))
   :config
   (setq eglot-autoshutdown t)
   (add-to-list 'eglot-server-programs
                '(zig-mode . ("~/.guix-profile/bin/zls")))
   (add-to-list 'eglot-server-programs
-               '(c-mode) . ("clangd")))
+               '(c-mode) . ("clangd"))
+  (add-to-list 'eglot-server-programs
+               '(c++-mode) . ("clangd"))
+  (add-hook 'c++-mode-hook
+	  #'(lambda() (add-hook
+		       'before-save-hook 'eglot-format-buffer nil t))))
 
 (use-package zig-mode)
 
@@ -457,13 +484,12 @@
 
 
 
-(setq-default tab-width 4)
-  (defun clang-format-on-save ()
-      "Format the buffer before save."
-      (when (locate-dominating-file "." ".clang-format") (clang-format-buffer)))
+(defun clang-format-on-save ()
+  "Format the buffer before save."
+  (when (locate-dominating-file "." ".clang-format") (clang-format-buffer)))
 
-    (add-hook
-     'c-mode-hook (lambda () (add-hook 'before-save-hook 'clang-format-on-save nil t)))
+(add-hook
+ 'c-mode-hook (lambda () (add-hook 'before-save-hook 'clang-format-on-save nil t)))
 ;; temporary
 (setq compilation-save-buffers-predicate nil)
 (setq compilation-scroll-output 'first-error)
@@ -472,5 +498,8 @@
 (setq ansi-color-for-compilation-mode t)
 (setq eglot-events-buffer-size 0)
 (add-hook 'compilation-filter-hook #'ansi-color-compilation-filter)
+
+;; don't indent inside of namespaces
+(c-set-offset 'innamespace 0)
 
 

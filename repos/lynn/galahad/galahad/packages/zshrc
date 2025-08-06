@@ -12,6 +12,7 @@ alias \
     ls='eza' \
     lah='eza -lah' \
     lt='eza --tree --git-ignore' \
+    ssh='TERM=xterm ssh' \
     search='guix search' \
     fetch='hyfetch --ascii-file=/home/lynn/.config/fastfetch/logo.txt' \
 	

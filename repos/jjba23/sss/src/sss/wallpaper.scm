@@ -55,8 +55,8 @@
                            '("joshua.jpg" "PXL_20250326_193029385.MP.jpg")))
 
       ('dracula (map digital-art-dreams-sss-wallpaper
-                     '("dracula/dracula-galaxy-282a36.png"
-                       "dracula/dracula-leaves-6272a4-dark.png"
+                     '("dracula/Dracula.png" "dracula/Ghost.png"
+                       "dracula/Kraken.png" "dracula/Tree.png"
                        "dracula/dracula-soft-waves-44475a.png")))
       (_ (raise-exception (make-exception-with-message (format #f
                                                         "exception ocurred! unknown palette selected, could not choose wallpaper for: ~a"

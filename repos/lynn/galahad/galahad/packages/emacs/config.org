@@ -1,0 +1,232 @@
+#+TITLE: Emacs Config v2 @lynn
+#+PROPERTY: header-args :tangle ./init.el
+#+auto_tangle: t
+
+This configuration file is meant to be used alongside Guix, and as such packages will be installed via a =guix home= configuration, instead of a package managed inside of emacs itself. If you aren't using Guix, you will need to add your own solution to ensure these packages are installed in the correct spot!
+
+* Guix setup
+First thing, we need to declare our module so our guix configuration file knows how to read our emacs config.
+#+begin_src scheme :tangle ./info.scm
+  (define-module (galahad packages emacs info)
+    #:use-module(guix gexp)
+    #:export(emacs-files)
+    #:export(emacs-packages))
+#+end_src
+I decided to handle both the configuration files here, =emacs-files=, and the packages that need to be included for this to work, =emacs-packages=. Next I will start defining =emacs-packages= but won't complete the definition. This is so that we can more easily couple the Guix package with the Emacs package. You'll understand better when we get to it:
+#+begin_src scheme :tangle ./info.scm
+  (define (emacs-packages)
+    (list
+#+end_src
+* Emacs Setup
+Despite using Guix for the package managing, we still need =use-package=, as it is very powerful. It is also built-in, so one less dependency!
+#+begin_src emacs-lisp
+  (require 'package)
+  (require 'use-package)
+#+end_src
+We also want to make sure any future settings saved in emacs itself don't interfere with this =init.el= file. We'll call it =custom.el=:
+#+begin_src emacs-lisp
+  (setq custom-file
+        (concat (getenv "XDG_CONFIG_HOME")
+  	      "/custom.el"))
+  (load-file custom-file)
+#+end_src
+** Sane Defaults
+I'm going to cover a collection of packages that just make using emacs a much better experience. It would take a lot to explain what each one does, so for now I suggest reading the package definitions and deciding for yourself which one fits your needs:
+#+begin_src scheme :tangle ./info.scm
+  ;; quality of life stuff
+  emacs-ivy
+  emacs-swiper
+  emacs-counsel
+  emacs-which-key
+  emacs-projectile
+#+end_src
+#+begin_src emacs-lisp
+  (use-package swiper)
+  (use-package counsel
+    :bind (("M-x" . counsel-M-x)
+    	 ("C-x b" . counsel-ibuffer)
+    	 ("C-x C-f" . counsel-find-file)
+    	 :map minibuffer-local-map
+    	 ("C-r" . counsel-minibuffer-history)))
+  (use-package ivy
+    :diminish
+    :bind (("C-s" . swiper-isearch))
+    :config
+    (ivy-mode 1))
+  (use-package projectile
+    :init
+    (setq projectile-project-search-path'("~/dev/"))
+    :config
+    (projectile-global-mode)
+    (setq projectile-enable-caching t)
+    (setq projectile-completion-system 'ivy))
+  (use-package which-key
+    :defer 0
+    :diminish which-key-mode
+    :config
+    (which-key-mode)
+    (setq which-key-idle-delay 1))
+#+end_src
+** Look & Feel
+This is all we technically need to setup for the rest of this config to work, but we are in the 21st century, which means we need to bring the look and feel of emacs up to date. These are my preferences, feel free to play with all of these to get the look you want.
+
+First thing, we need to remove some of these extra bars emacs has. This is because I focus on the minibuffer and keybindings to navigate the functionality of emacs. I recommend trying emacs with these bars on, so you can form your own opinion:
+#+begin_src emacs-lisp
+  (scroll-bar-mode -1)
+  (tool-bar-mode -1)
+  (menu-bar-mode -1)
+#+end_src
+=-1= just means "do not enable this." You can think of it as the opposite of true, or =t=.
+
+This next option is only if you are truly using a keyboard only experience, as it turns off the window decorations (title bar, close button, etc.) I use a window manager, so I manage all of these options via those keybindings:
+#+begin_src emacs-lisp
+  (add-to-list 'default-frame-alist '(undecorated . t))
+#+end_src
+Similarly, I prefer some transparency to my windows:
+#+begin_src emacs-lisp
+  (add-to-list 'default-frame-alist '(alpha-background .95))
+#+end_src
+You may notice the similarity between these two settings. If you want to set anything to a frame (this is the emacs word for a "window" in modern parlence), you need to add to the =default-frame-alist=.
+
+    Now a theme. My setup is all gruvbox so I'm going with that:
+#+begin_src scheme :tangle ./info.scm
+    ;; theme
+    emacs-gruvbox-theme
+#+end_src
+The =t= here means to trust the code, as it will execute arbitrary lisp. Make sure you are using a trusted source for your themes.
+#+begin_src emacs-lisp
+  (use-package gruvbox-theme
+    :init (load-theme 'gruvbox t))
+#+end_src
+Along with gruvbox, my setup uses Iosevka font for everything:
+#+begin_src emacs-lisp
+  (set-face-attribute 'default nil
+  		      :font "Iosevka Term"
+  		      :height 200)
+#+end_src
+Which sets the default font to be the monospaced variant, at a font-size of =200=. This value will need to be adjusted for your own comfort and setup.
+#+begin_src emacs-lisp
+  (set-face-attribute 'variable-pitch nil
+  		    :font "Iosevka Etoile")
+#+end_src
+And this sets the font used for text writing. We don't have to set the font-size here, because our default face already has it set.
+
+When we are in a programming mode, or =prog-mode=, we want to see line numbers in the column:
+#+begin_src emacs-lisp
+  (setq display-line-numbers-type t) 
+  (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+#+end_src
+That variable set to =t= gives us absolute column numbering. We can also get relative by setting it to ='relative= for a more vim feel.
+
+There are also line and column numbers we can show in the modeline:
+#+begin_src emacs-lisp
+  (setq column-number-mode t)
+#+end_src
+Finally I prefer to highlight the line I am currently working on:
+#+begin_src emacs-lisp
+  (global-hl-line-mode t)  
+#+end_src
+* Org Mode
+Org mode is the programming mode but for writing beautiful documents. This literate config is written in org mode, as an example. This single document produces the rest of the files in this directory, such as =info.scm= and =init.el=. This process is called tangling, and in order to improve the experience with it, I use =org-auto-tangle=:
+#+begin_src scheme :tangle ./info.scm
+  ;; in guix, emacs packages start with emacs-
+  emacs-org-auto-tangle 
+#+end_src
+And the configuration:
+#+begin_src emacs-lisp
+  (use-package org-auto-tangle
+    :hook (org-mode . org-auto-tangle-mode))
+#+end_src
+That =:hook= there allows us to tell emacs that anytime =org-mode= is activated, to also activate =org-auto-tangle-mode=. If you aren't familiar, a mode is basically a set of rules to treat a specific buffer with.
+Org mode is great, but it has some visual issues. To make editing org files a bit easier on the eyes, I use the following visual improvements:
+#+begin_src scheme :tangle ./info.scm
+  ;; org-mode specific guix packages
+  emacs-org-modern
+  emacs-olivetti
+  emacs-mixed-pitch
+#+end_src
+Org modern mode is just a visual upgrade to org mode:
+#+begin_src emacs-lisp
+  (use-package org-modern
+    :hook (org-mode . org-modern-mode))
+#+end_src
+Olivetti balances the margins on either side, so that the text is centered, which is nice when writing text:
+#+begin_src emacs-lisp
+  (use-package olivetti
+    :hook (org-mode . olivetti-mode))
+#+end_src
+Finally, org mode can contain both text and code. Most preferences would have the text be a regular font, while the code is a monospaced font to preserve indentation and alignment. In emacs, this is called =mixed-pitch-mode=:
+#+begin_src emacs-lisp
+  (use-package mixed-pitch
+    :hook (org-mode . mixed-pitch-mode))
+#+end_src
+If it suits you, =org-indent-mode= is available to indent text blocks beneath headers. I prefer a straight-down look, personally. 
+* Programming
+Eglot is my preferred LSP for programming. It requires jsonrpc to communicate:
+#+begin_src scheme :tangle ./info.scm
+  ;; LSP
+  emacs-eglot
+  emacs-jsonrpc
+#+end_src
+#+begin_src emacs-lisp
+  (use-package jsonrpc)
+  (use-package eglot
+    :hook
+    (c-mode . eglot-ensure)
+    (c++-mode . eglot-ensure)
+    :bind (:map eglot-mode-map
+  	      ("C-c r" . eglot-rename)
+  	      ("C-c C-a" . eglot-code-actions)
+  	      ("C-c C-f" . eglot-format-buffer)
+  	      ("C-c C-i" . eglot-find-implementations))
+    :config
+    (setq eglot-autoshutdown t))
+#+end_src
+This just sets up the basic eglot experience, ensures that C/C++ uses it, and adds some useful keybindings. One I find particularly useful is =eglot-code-actions= which allows you to automate a lot of obvious steps, such as =#include='ing a necessary file.
+
+When programming in guix I make use of the =guix shell= functionality, which allows me to setup a reproducable environment. This is important for a clean, reproducable project. To this end, I use =buffer-env= to automatically run any =guix shell= environment for my buffers, described in a =manifest.scm= file.
+#+begin_src scheme :tangle ./info.scm
+  ;; guix manifest.scm files
+  emacs-buffer-env
+#+end_src
+#+begin_src emacs-lisp
+  (use-package buffer-env
+    :config
+    (add-hook 'hack-loval-variables-hook #'buffer-env-update)
+    (add-hook 'comint-mode-hook #'buffer-env-update)
+    :custom
+    (buffer-env-script-name "manifest.scm"))
+#+end_src
+** IDE-likes
+Emacs is not an IDE, but that doesn't mean we can't play around with buffers a bit to have a more "Modern" feel:
+#+begin_src scheme :tangle ./info.scm
+  ;; IDE
+  emacs-treemacs
+  emacs-treemacs-extra ;; treemacs-projectile
+  emacs-imenu-list
+#+end_src
+Treemacs gives us a directory tree, while imenu-list let's us scroll through the current buffers list of symbols:
+#+begin_src emacs-lisp
+  (use-package treemacs)
+  (use-package treemacs-projectile)
+  (use-package imenu-list
+    :config
+    (setq imenu-list-focus-after-activation t)
+    :bind (("C-." . imenu-list-smart-toggle)))
+#+end_src
+** C/C++ language
+I want eglot to format my buffer on save:
+#+begin_src emacs-lisp
+  (add-hook 'c-mode-hook
+  	  #'(lambda() (add-hook 'before-save-hook
+  				'eglot-format-buffer nil t)))
+  (add-hook 'c++-mode-hook
+  	  #'(lambda() (add-hook 'before-save-hook
+  				'eglot-format-buffer nil t)))
+#+end_src
+* Epilogue
+First we need to close off that list of dependencies we are writing for guix:
+#+begin_src scheme :tangle ./info.scm
+  ;; epilogue
+  ))
+#+end_src

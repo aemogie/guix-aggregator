@@ -82,6 +82,10 @@
 	emacs-geiser-guile
 	emacs-htmlize
 	emacs-ivy
+	emacs-projectile
+	emacs-treemacs
+	emacs-treemacs-extra
+	emacs-imenu-list
 	emacs-jsonrpc
 	emacs-ligature
 	emacs-magit

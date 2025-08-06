@@ -42,10 +42,12 @@
   #:use-module (gnu services sound) ;pulseaudio-service-type
   #:use-module (gnu services xorg) ;screen-locker-service-type
   #:use-module (gnu services avahi)
+  #:use-module (gnu services nix)
   #:use-module (gnu services)
   #:use-module (gnu)
   #:use-module (guix packages)
   #:use-module (guix)
+  
   #:use-module (nongnu packages linux))
 
 
@@ -186,6 +188,12 @@
                                                    "/bin/swaylock"))
                                          (using-pam? #t)
                                          (using-setuid? #f)))
+   ;; nix
+   (service nix-service-type
+	    (nix-configuration
+	     (extra-config
+	      '("experimental-features = nix-command flakes"))))
+   
    (modify-services %base-services
 		    (guix-service-type
 		     config => (guix-configuration
