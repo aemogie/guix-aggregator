@@ -27,7 +27,7 @@ We also want to make sure any future settings saved in emacs itself don't interf
 #+begin_src emacs-lisp
   (setq custom-file
         (concat (getenv "XDG_CONFIG_HOME")
-  	      "/custom.el"))
+  	      "/emacs/custom.el"))
   (load-file custom-file)
 #+end_src
 ** Sane Defaults
@@ -98,6 +98,7 @@ The =t= here means to trust the code, as it will execute arbitrary lisp. Make su
   (use-package gruvbox-theme
     :init (load-theme 'gruvbox t))
 #+end_src
+
 Along with gruvbox, my setup uses Iosevka font for everything:
 #+begin_src emacs-lisp
   (set-face-attribute 'default nil
@@ -109,7 +110,22 @@ Which sets the default font to be the monospaced variant, at a font-size of =200
   (set-face-attribute 'variable-pitch nil
   		    :font "Iosevka Etoile")
 #+end_src
-And this sets the font used for text writing. We don't have to set the font-size here, because our default face already has it set.
+And this sets the font used for text writing. We don't have to set the font-size here, because our default face already has it set. Iosevka supports ligatures, which I prefer:
+#+begin_src scheme :tangle ./info.scm
+  ;; font
+  emacs-ligature
+  #+end_src
+#+begin_src emacs-lisp
+  (use-package ligature
+    :config
+    (ligature-set-ligatures 'prog-mode '("<---" "<--"  "<<-" "<-" "->" "-->" "--->" "<->" "<-->" "<--->" "<---->"
+  				       "<!--" "<==" "<===" "<=" "=>" "=>>" "==>" "===>" ">=" "<=>" "<==>"
+  				       "<===>" "<====>" "<!---" "<~~" "<~" "~>" "~~>" "::" ":::" "==" "!="
+  				       "===" "!==" ":=" ":-" ":+" "<*" "<*>" "*>" "<|" "<|>" "|>" "+:" "-:"
+  				       "=:" "<******>" "++" "+++"))
+    (global-ligature-mode t))
+#+end_src
+These are specific to the Iosevka font. If you use a different font, you may need to change these.
 
 When we are in a programming mode, or =prog-mode=, we want to see line numbers in the column:
 #+begin_src emacs-lisp
@@ -223,6 +239,108 @@ I want eglot to format my buffer on save:
   (add-hook 'c++-mode-hook
   	  #'(lambda() (add-hook 'before-save-hook
   				'eglot-format-buffer nil t)))
+#+end_src
+* Modal Editing
+I prefer using modal editing over the default emacs behavior. For this I use something called =meow-mode=:
+#+begin_src scheme :tangle ./info.scm
+  ;; modal editing
+  emacs-meow
+#+end_src
+This is mostly the stock QWERTY layout for meow mode, but I'll make notes where I have changed things:
+#+begin_src emacs-lisp
+  (use-package meow)
+  (defun meow-setup ()
+    (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
+    (meow-motion-overwrite-define-key
+     '("j" . meow-next)
+     '("k" . meow-prev)
+     '("<escape>" . ignore))
+    (meow-leader-define-key
+     '("j" . "H-j")
+     '("k" . "H-k")
+     '("1" . meow-digit-argument)
+     '("2" . meow-digit-argument)
+     '("3" . meow-digit-argument)
+     '("4" . meow-digit-argument)
+     '("5" . meow-digit-argument)
+     '("6" . meow-digit-argument)
+     '("7" . meow-digit-argument)
+     '("8" . meow-digit-argument)
+     '("9" . meow-digit-argument)
+     '("0" . meow-digit-argument)
+     '("/" . meow-keypad-describe-key)
+     '("c" . compile)
+     '("?" . meow-cheatsheet))
+    (meow-normal-define-key
+     ;; regular meow
+     '("0" . meow-expand-0)
+     '("9" . meow-expand-9)
+     '("8" . meow-expand-8)
+     '("7" . meow-expand-7)
+     '("6" . meow-expand-6)
+     '("5" . meow-expand-5)
+     '("4" . meow-expand-4)
+     '("3" . meow-expand-3)
+     '("2" . meow-expand-2)
+     '("1" . meow-expand-1)
+     '("-" . negative-argument)
+     '(";" . meow-reverse)
+     '("," . meow-inner-of-thing)
+     '("." . meow-bounds-of-thing)
+     '("[" . meow-beginning-of-thing)
+     '("]" . meow-end-of-thing)
+     '("a" . meow-append)
+     '("A" . meow-open-below)
+     '("b" . meow-back-word)
+     '("B" . meow-back-symbol)
+     '("c" . meow-change)
+     '("d" . meow-delete)
+     '("D" . meow-backward-delete)
+     '("e" . meow-next-word)
+     '("E" . meow-next-symbol)
+     '("f" . meow-find)
+     '("g" . meow-cancel-selection)
+     '("G" . meow-grab)
+     '("h" . meow-left)
+     '("H" . meow-left-expand)
+     '("i" . meow-insert)
+     '("I" . meow-open-above)
+     '("j" . meow-next)
+     '("J" . meow-next-expand)
+     '("k" . meow-prev)
+     '("K" . meow-prev-expand)
+     '("l" . meow-right)
+     '("L" . meow-right-expand)
+     '("m" . meow-join)
+     '("n" . meow-search)
+     '("o" . meow-block)
+     '("O" . meow-to-block)
+     '("p" . meow-yank)
+     '("q" . meow-quit)
+     '("Q" . meow-goto-line)
+     '("r" . meow-replace)
+     '("R" . meow-swap-grab)
+     '("s" . meow-kill)
+     '("t" . meow-till)
+     '("u" . meow-undo)
+     '("U" . meow-undo-in-selection)
+     '("v" . meow-visit)
+     '("w" . meow-mark-word)
+     '("W" . meow-mark-symbol)
+     '("x" . meow-line)
+     '("X" . meow-goto-line)
+     '("y" . meow-clipboard-save)
+     '("Y" . meow-sync-grab)
+     '("z" . meow-pop-selection)
+     '("'" . repeat)
+     '("<escape>" . ignore)
+     ;; custom keybindings start here
+     '("+" . emms-volume-raise)
+     '("=" . emms-volume-lower)
+     '("?" . treemacs-add-and-display-current-project-exclusively)))
+  (require 'meow)
+  (meow-setup)
+  (meow-global-mode 1)
 #+end_src
 * Epilogue
 First we need to close off that list of dependencies we are writing for guix:

@@ -12,16 +12,24 @@ Referencing https://codeberg.org/agx-r/agx-guix-home/src/branch/main/dotfiles/qu
   SEARCH = "https://duckduckgo.com?q={}"
 
   config.source('gruvbox.py')
+
   config.set('colors.webpage.darkmode.enabled', DARK_MODE)
+  c.colors.webpage.darkmode.algorithm = 'lightness-cielab'
+  c.colors.webpage.darkmode.policy.images = 'never'
   config.load_autoconfig(False)
   config.set('url.default_page', DEFAULT_PAGE)
   config.set('url.start_pages', STARTPAGE)
   config.set('url.searchengines', {'DEFAULT': SEARCH})
-  config.bind(',m', 'hint links spawn mpv --force-window=immediate {hint-url}')
-  config.bind('"inv', 'open --tab https://inv.nadeko.net/')
-  config.bind("'inv", 'open https://a.bloodyno.se')
-  config.bind('"bn', 'open --tab https://inv.nadeko.net/')
-  config.bind("'bn", 'open https://a.bloodyno.se')
+  config.bind(",m", 'hint links spawn mpv --force-window=immediate {hint-url}')
+  config.bind
+  config.bind('<inv', 'open --tab https://inv.nadeko.net/')
+  config.bind(",inv", 'open https://a.bloodyno.se')
+  config.bind('<bn', 'open --tab https://inv.nadeko.net/')
+  config.bind(",bn", 'open https://a.bloodyno.se')
+  c.tabs.padding = {'top': 5, 'bottom': 5, 'left': 9, 'right': 9}
+  c.tabs.indicator.width = 0
+  config.set("content.cookies.store", True)
+
 #+end_src
 The page we see at the start!
 #+begin_src html :tangle ./start.html

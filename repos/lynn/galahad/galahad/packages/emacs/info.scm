@@ -16,6 +16,9 @@ emacs-projectile
 ;; theme
 emacs-gruvbox-theme
 
+;; font
+emacs-ligature
+
 ;; in guix, emacs packages start with emacs-
 emacs-org-auto-tangle
 
@@ -35,6 +38,9 @@ emacs-buffer-env
 emacs-treemacs
 emacs-treemacs-extra ;; treemacs-projectile
 emacs-imenu-list
+
+;; modal editing
+emacs-meow
 
 ;; epilogue
 ))
