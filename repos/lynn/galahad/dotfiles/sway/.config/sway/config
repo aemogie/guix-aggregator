@@ -18,6 +18,12 @@ input type:keyboard {
       xkb_options ctrl:nocaps,compose:grave
 }
 
+input type:touchpad {
+    tap enabled
+    natural_scroll enabled
+    dwt enabled
+}
+
     bindsym $mod+space+t exec swaymsg input type:touchpad events toggle enabled disabled
     bindsym $mod+Return exec $term
     bindsym $mod+Shift+c kill

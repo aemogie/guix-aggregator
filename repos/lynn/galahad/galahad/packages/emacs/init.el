@@ -98,6 +98,11 @@
   :custom
   (buffer-env-script-name "manifest.scm"))
 
+(setq gdb-many-windows t)
+(setq gdb-find-source-frame t)
+(setq gdb-same-frame t)
+(setq gdb-show-main t)
+
 (use-package treemacs)
 (use-package treemacs-projectile)
 (use-package imenu-list

@@ -9,13 +9,22 @@ First thing, we need to declare our module so our guix configuration file knows 
 #+begin_src scheme :tangle ./info.scm
   (define-module (galahad packages emacs info)
     #:use-module(guix gexp)
+    #:use-module(gnu packages emacs)
+    #:use-module(gnu packages emacs-xyz)
     #:export(emacs-files)
     #:export(emacs-packages))
 #+end_src
-I decided to handle both the configuration files here, =emacs-files=, and the packages that need to be included for this to work, =emacs-packages=. Next I will start defining =emacs-packages= but won't complete the definition. This is so that we can more easily couple the Guix package with the Emacs package. You'll understand better when we get to it:
+I decided to handle both the configuration files here, =emacs-files=:
+#+begin_src scheme :tangle ./info.scm
+  (define (emacs-files)
+  `(
+    (".config/emacs/init.el" ,(local-file "init.el"))))
+#+end_src
+and the packages that need to be included for this to work, =emacs-packages=. Next I will start defining =emacs-packages= but won't complete the definition. This is so that we can more easily couple the Guix package with the Emacs package. You'll understand better when we get to it:
 #+begin_src scheme :tangle ./info.scm
   (define (emacs-packages)
-    (list
+    (list emacs-pgtk
+  	
 #+end_src
 * Emacs Setup
 Despite using Guix for the package managing, we still need =use-package=, as it is very powerful. It is also built-in, so one less dependency!
@@ -184,6 +193,7 @@ Eglot is my preferred LSP for programming. It requires jsonrpc to communicate:
   emacs-eglot
   emacs-jsonrpc
 #+end_src
+
 #+begin_src emacs-lisp
   (use-package jsonrpc)
   (use-package eglot
@@ -205,6 +215,7 @@ When programming in guix I make use of the =guix shell= functionality, which all
   ;; guix manifest.scm files
   emacs-buffer-env
 #+end_src
+
 #+begin_src emacs-lisp
   (use-package buffer-env
     :config
@@ -212,6 +223,14 @@ When programming in guix I make use of the =guix shell= functionality, which all
     (add-hook 'comint-mode-hook #'buffer-env-update)
     :custom
     (buffer-env-script-name "manifest.scm"))
+#+end_src
+** GDB
+Gnu debugger is my preferred way of debugging C-compliant code. It is built into emacs, but some modifications help make it more usable:
+#+begin_src emacs-lisp
+  (setq gdb-many-windows t)
+  (setq gdb-find-source-frame t)
+  (setq gdb-same-frame t)
+  (setq gdb-show-main t)
 #+end_src
 ** IDE-likes
 Emacs is not an IDE, but that doesn't mean we can't play around with buffers a bit to have a more "Modern" feel:

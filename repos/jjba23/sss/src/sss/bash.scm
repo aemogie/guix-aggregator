@@ -137,10 +137,8 @@
                                                            "-print0 | xargs -0 sed -i "
                                                            "\"s#\\(uses: Vandebron/github-actions/.*@\\).*#\\1$2#\""))
                     (shell-greeting unquote
-                                    (string-join '("echo \"\""
-                                                   "echo \"${PURPLE_TEXT}Welcome to SSS/GNU - the Supreme Sexp System${RESET_TEXT}\""
-                                                   "echo \"\"" "echo \"\"")
-                                                 "\n")))))
+                                    (string-join '("echo \"${PURPLE_TEXT}Welcome to SSS/GNU - the Supreme Sexp System${RESET_TEXT}\""
+                                                   "echo \"\"") "\n")))))
 
 (define bash-postlude
   (list

@@ -168,7 +168,9 @@
   (packages (append (sss-system-packages #:per-host-packages (get-setting 'extra-packages))
                     %base-packages))
   (services
-   (cons* (service nix-service-type)
+   (cons* (service nix-service-type
+                   (nix-configuration (extra-config (list
+                                                     "experimental-features = nix-command flakes"))))
           (service power-profiles-daemon-service-type)
           iptables-capability
           (service rootless-podman-service-type

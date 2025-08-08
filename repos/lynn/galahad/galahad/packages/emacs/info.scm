@@ -1,10 +1,16 @@
 (define-module (galahad packages emacs info)
   #:use-module(guix gexp)
+  #:use-module (gnu packages emacs)
+  #:use-module(gnu packages emacs-xyz)
   #:export(emacs-files)
   #:export(emacs-packages))
 
+(define (emacs-files)
+`(
+  (".config/emacs/init.el" ,(local-file "init.el"))))
+
 (define (emacs-packages)
-  (list
+  (list emacs-pgtk
 
 ;; quality of life stuff
 emacs-ivy

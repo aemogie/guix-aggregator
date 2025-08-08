@@ -157,7 +157,7 @@
   (list android-file-transfer
         autoconf
         automake
-        ncurses        
+        ncurses
         blender
         blueman
         bluez

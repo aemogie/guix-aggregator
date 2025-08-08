@@ -1,12 +1,10 @@
 import os #start page
-DARK_MODE = True
 STARTPAGE = "file://" + os.path.expanduser("~/.config/qutebrowser/start.html")
 DEFAULT_PAGE = STARTPAGE
 SEARCH = "https://duckduckgo.com?q={}"
 
 config.source('gruvbox.py')
 
-config.set('colors.webpage.darkmode.enabled', DARK_MODE)
 c.colors.webpage.darkmode.algorithm = 'lightness-cielab'
 c.colors.webpage.darkmode.policy.images = 'never'
 config.load_autoconfig(False)

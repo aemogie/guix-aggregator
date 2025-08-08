@@ -30,6 +30,7 @@
   #:use-module (galahad packages foot files)
   #:use-module (galahad packages waybar files)
   #:use-module (galahad packages qutebrowser files)
+  #:use-module (galahad packages emacs info)
   #:use-module (galahad system channels))
 
 (define lynn-wm-packages
@@ -51,7 +52,7 @@
 	xdg-desktop-portal-gtk
 	zsh-autosuggestions
 	zsh-syntax-highlighting
-					;fzf-tab
+	libinput
 	zathura-pdf-mupdf))
 
 (define lynn-font-packages
@@ -62,63 +63,11 @@
 	font-google-noto-emoji
 	font-sarasa-gothic))
 
-(define lynn-emacs-packages
-  (list emacs-aggressive-indent
-	emacs-auctex
-	emacs-autothemer
-	emacs-gruvbox-theme
-	emacs-buffer-env
-	emacs-clang-format
-	emacs-consult
-	emacs-company
-	emacs-counsel
-	emacs-doom-modeline
-	emacs-dired-hacks		; dired-subtree
-	emacs-eat
-	emacs-elfeed
-	emacs-emms
-	emacs-eglot
-	emacs-flycheck
-	emacs-geiser-guile
-	emacs-htmlize
-	emacs-ivy
-	emacs-projectile
-	emacs-treemacs
-	emacs-treemacs-extra
-	emacs-imenu-list
-	emacs-jsonrpc
-	emacs-ligature
-	emacs-magit
-	emacs-meow
-	emacs-mixed-pitch
-	emacs-nerd-icons
-	emacs-no-littering
-	emacs-olivetti
-	emacs-org-auto-tangle
-	emacs-org-modern
-	emacs-org-roam
-	emacs-paredit
-	emacs-pgtk			; the actual emacs package
-	emacs-php-mode
-	emacs-rainbow-delimiters
-	emacs-rainbow-mode
-	emacs-simple-httpd
-	emacs-swiper
-	emacs-typescript-mode
-	emacs-outline-indent
-	emacs-yaml-mode
-	emacs-pinentry
-	emacs-which-key
-	emacs-pdf-tools
-	emacs-bqn-mode
-	emacs-zig-mode
-	clang
-	))
 (home-environment
  (packages
   (append lynn-wm-packages
 	  lynn-font-packages
-	  lynn-emacs-packages))
+	  (emacs-packages)))
  (services
   (list
    (service home-channels-service-type
@@ -134,6 +83,7 @@
     home-files-service-type
     (append (foot-files)
 	    (qutebrowser-files)
+	    (emacs-files)
 	    (waybar-files)))
    (service home-xdg-mime-applications-service-type
 	    (home-xdg-mime-applications-configuration

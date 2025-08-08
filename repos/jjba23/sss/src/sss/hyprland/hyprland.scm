@@ -98,10 +98,10 @@
 
 (define* (hypr-decoration #:key (with-blur #f)
                           (with-shadow #f))
-  `((rounding . 8) (active_opacity . "1.0")
+  `((rounding . 12) (active_opacity . "1.0")
     (inactive_opacity . "0.9")
     (dim_inactive . true)
-    (dim_strength . "0.1")
+    (dim_strength . "0.15")
     (blur (enabled unquote
                    (if with-blur
                        'true
