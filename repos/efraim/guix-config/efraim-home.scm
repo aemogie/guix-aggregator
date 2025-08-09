@@ -335,7 +335,7 @@
     (if work-machine?
         ""
         #~(string-append "[commit]\n"
-                       "    gpgSign = true\n"))
+                         "    gpgSign = true\n"))
     "[diff]\n"
     "    algorithm = patience\n"
     "[diff \"scheme\"]\n"
@@ -357,25 +357,20 @@
     (if work-machine?
         ""
         #~(string-append "[gpg]\n"
-                       "    program = " #$(file-append (S "gnupg") "/bin/gpg") "\n"))
+                         "    program = " #$(file-append (S "gnupg") "/bin/gpg") "\n"))
     "[imap]\n"
     "    folder = Drafts\n"
-    "    tunnel = \"" (S "openssh") "/bin/ssh -o Compression=yes -q flashner.co.il /usr/lib/dovecot/imap ./Maildir 2> /dev/null\"\n"
     ;; This breaks tig
     ;"[log]\n"
     ;"    showSignature = true\n"
     "[pull]\n"
     "    rebase = true\n"
     "[push]\n"
-    "   followTags = true\n"
+    "    followTags = true\n"
     ;"   gpgSign = if-asked\n"
     "[sendemail]\n"
     "    smtpEncryption = ssl\n"
-    (if work-machine?
-        #~(string-append "    smtpServer = flashner.co.il\n"
-                       ;"    smtpsslcertpath = \"\"\n"
-        )
-        #~(string-append "    smtpServer = " #$(file-append (S "msmtp") "/bin/msmtp") "\n"))
+    "    smtpServer = " (file-append (S "msmtp") "/bin/msmtp") "\n"
     "    smtpUser = efraim\n"
     "    smtpPort = 465\n"
     "    supresscc = self\n"
