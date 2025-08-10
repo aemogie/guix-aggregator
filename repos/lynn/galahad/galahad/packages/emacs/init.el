@@ -6,6 +6,13 @@
 	      "/emacs/custom.el"))
 (load-file custom-file)
 
+(setq backup-directory-alist
+      `((".*" . ,temporary-file-directory)))
+(setq auto-save-file-name-transforms
+      `((".*" ,temporary-file-directory t)))
+
+(setq create-lockfiles nil)
+
 (use-package swiper)
 (use-package counsel
   :bind (("M-x" . counsel-M-x)
@@ -38,7 +45,7 @@
 
 (add-to-list 'default-frame-alist '(undecorated . t))
 
-(add-to-list 'default-frame-alist '(alpha-background .95))
+(add-to-list 'default-frame-alist '(alpha-background . 95))
 
 (use-package gruvbox-theme
   :init (load-theme 'gruvbox t))
@@ -78,6 +85,30 @@
 (use-package mixed-pitch
   :hook (org-mode . mixed-pitch-mode))
 
+(use-package org-roam
+  :custom
+  (org-roam-directory "~/docs/org")
+  (org-roam-completion-everywhere t)
+  (org-roam-capture-templates
+   '(("d" "default" plain "%?"
+   :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                      "#+title: ${title}\n")
+   :unnarrowed t)
+     ("b" "book" plain
+      "\n* Source\n\nAuthor: %^{Author}\nTitle: {title}\nYear: %^{Year}\n\n* Summary\n\n%?"
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+			 "#+title: ${title}\n")
+      :unnarrowed t)))
+   :bind (("C-c n l" . org-roam-buffer-toggle)
+	  ("C-c n f" . org-roam-node-find)
+	  ("C-c n i" . org-roam-node-insert)
+	  ("C-c n c" . org-roam-capture)
+	  ("C-c n j" . org-roam-dailies-capture-today)
+	  :map org-mode-map
+	  ("C-M-i" . completion-at-point))
+   :config
+   (org-roam-setup))
+
 (use-package jsonrpc)
 (use-package eglot
   :hook
@@ -93,7 +124,7 @@
 
 (use-package buffer-env
   :config
-  (add-hook 'hack-loval-variables-hook #'buffer-env-update)
+  (add-hook 'hack-local-variables-hook #'buffer-env-update)
   (add-hook 'comint-mode-hook #'buffer-env-update)
   :custom
   (buffer-env-script-name "manifest.scm"))

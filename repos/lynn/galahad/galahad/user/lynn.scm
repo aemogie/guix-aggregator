@@ -41,7 +41,7 @@
 	nheko
 	signal-desktop
 	zathura
-	firefox
+	;;firefox
 	qutebrowser
 	fastfetch
 	hyfetch

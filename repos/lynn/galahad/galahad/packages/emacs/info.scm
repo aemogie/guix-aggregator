@@ -1,6 +1,6 @@
 (define-module (galahad packages emacs info)
   #:use-module(guix gexp)
-  #:use-module (gnu packages emacs)
+  #:use-module(gnu packages emacs)
   #:use-module(gnu packages emacs-xyz)
   #:export(emacs-files)
   #:export(emacs-packages))
@@ -33,9 +33,7 @@ emacs-org-modern
 emacs-olivetti
 emacs-mixed-pitch
 
-;; LSP
-emacs-eglot
-emacs-jsonrpc
+emacs-org-roam
 
 ;; guix manifest.scm files
 emacs-buffer-env

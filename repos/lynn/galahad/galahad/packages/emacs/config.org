@@ -39,6 +39,17 @@ We also want to make sure any future settings saved in emacs itself don't interf
   	      "/emacs/custom.el"))
   (load-file custom-file)
 #+end_src
+Emacs has a habit of putting a bunch of extra files in our working directories. Let's put them somewhere out of the way:
+#+begin_src emacs-lisp
+  (setq backup-directory-alist
+        `((".*" . ,temporary-file-directory)))
+  (setq auto-save-file-name-transforms
+        `((".*" ,temporary-file-directory t)))
+#+end_src
+I also do not need lockfiles, as I don't edit files on a server with multiple other people. We can turn this feature off with:
+#+begin_src emacs-lisp
+  (setq create-lockfiles nil)
+#+end_src
 ** Sane Defaults
 I'm going to cover a collection of packages that just make using emacs a much better experience. It would take a lot to explain what each one does, so for now I suggest reading the package definitions and deciding for yourself which one fits your needs:
 #+begin_src scheme :tangle ./info.scm
@@ -93,7 +104,7 @@ This next option is only if you are truly using a keyboard only experience, as i
 #+end_src
 Similarly, I prefer some transparency to my windows:
 #+begin_src emacs-lisp
-  (add-to-list 'default-frame-alist '(alpha-background .95))
+  (add-to-list 'default-frame-alist '(alpha-background . 95))
 #+end_src
 You may notice the similarity between these two settings. If you want to set anything to a frame (this is the emacs word for a "window" in modern parlence), you need to add to the =default-frame-alist=.
 
@@ -163,6 +174,7 @@ And the configuration:
     :hook (org-mode . org-auto-tangle-mode))
 #+end_src
 That =:hook= there allows us to tell emacs that anytime =org-mode= is activated, to also activate =org-auto-tangle-mode=. If you aren't familiar, a mode is basically a set of rules to treat a specific buffer with.
+** Look & Feel
 Org mode is great, but it has some visual issues. To make editing org files a bit easier on the eyes, I use the following visual improvements:
 #+begin_src scheme :tangle ./info.scm
   ;; org-mode specific guix packages
@@ -185,15 +197,41 @@ Finally, org mode can contain both text and code. Most preferences would have th
   (use-package mixed-pitch
     :hook (org-mode . mixed-pitch-mode))
 #+end_src
-If it suits you, =org-indent-mode= is available to indent text blocks beneath headers. I prefer a straight-down look, personally. 
-* Programming
-Eglot is my preferred LSP for programming. It requires jsonrpc to communicate:
-#+begin_src scheme :tangle ./info.scm
-  ;; LSP
-  emacs-eglot
-  emacs-jsonrpc
+If it suits you, =org-indent-mode= is available to indent text blocks beneath headers. I prefer a straight-down look, personally.
+** Note-taking
+For note taking, I use the ever popular =org-roamn=. If you are familiar with note-taking apps like Obsidian, it's similar to that:
+#+begin_src :scheme :tangle ./info.scm
+  emacs-org-roam
 #+end_src
 
+I keep my org nodes in =~/docs/org=:
+#+begin_src emacs-lisp
+  (use-package org-roam
+    :custom
+    (org-roam-directory "~/docs/org")
+    (org-roam-completion-everywhere t)
+    (org-roam-capture-templates
+     '(("d" "default" plain "%?"
+     :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                        "#+title: ${title}\n")
+     :unnarrowed t)
+       ("b" "book" plain
+        "\n* Source\n\nAuthor: %^{Author}\nTitle: {title}\nYear: %^{Year}\n\n* Summary\n\n%?"
+        :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+  			 "#+title: ${title}\n")
+        :unnarrowed t)))
+     :bind (("C-c n l" . org-roam-buffer-toggle)
+  	  ("C-c n f" . org-roam-node-find)
+  	  ("C-c n i" . org-roam-node-insert)
+  	  ("C-c n c" . org-roam-capture)
+  	  ("C-c n j" . org-roam-dailies-capture-today)
+  	  :map org-mode-map
+  	  ("C-M-i" . completion-at-point))
+     :config
+     (org-roam-setup))
+#+end_src
+* Programming
+Eglot is my preferred LSP for programming. It requires jsonrpc to communicate:
 #+begin_src emacs-lisp
   (use-package jsonrpc)
   (use-package eglot
@@ -219,7 +257,7 @@ When programming in guix I make use of the =guix shell= functionality, which all
 #+begin_src emacs-lisp
   (use-package buffer-env
     :config
-    (add-hook 'hack-loval-variables-hook #'buffer-env-update)
+    (add-hook 'hack-local-variables-hook #'buffer-env-update)
     (add-hook 'comint-mode-hook #'buffer-env-update)
     :custom
     (buffer-env-script-name "manifest.scm"))
@@ -259,6 +297,8 @@ I want eglot to format my buffer on save:
   	  #'(lambda() (add-hook 'before-save-hook
   				'eglot-format-buffer nil t)))
 #+end_src
+** Zig language
+
 * Modal Editing
 I prefer using modal editing over the default emacs behavior. For this I use something called =meow-mode=:
 #+begin_src scheme :tangle ./info.scm
