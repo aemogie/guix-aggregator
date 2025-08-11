@@ -119,13 +119,12 @@
   '(("ALT-F4" . "Close window") ("WIN-Up" . "Maximize")))
 
 (define power-user-sss-keybindings-docs
-  `((window-manager (general unquote
-                             power-user-general-window-manager-keybindings)
-                    (application unquote
-                     power-user-application-window-manager-keybindings))
-    (emacs (sss-specific unquote power-user-sss-specific-emacs-keybindings)
-           (more unquote power-user-more-emacs-keybindings))))
+  `(("Window Manager (Hyprland)" ("General" unquote
+                                  power-user-general-window-manager-keybindings)
+     ("Application" unquote power-user-application-window-manager-keybindings))
+    (emacs ("SSS specific" unquote power-user-sss-specific-emacs-keybindings)
+           ("More" unquote power-user-more-emacs-keybindings))))
 
 (define universal-session-sss-keybindings-docs
-  `((window-manager (general unquote
-                     universal-session-general-window-manager-keybindings))))
+  `(("Window Manager (Labwc)" ("General" unquote
+                               universal-session-general-window-manager-keybindings))))
