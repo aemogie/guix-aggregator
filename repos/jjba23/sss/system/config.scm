@@ -164,7 +164,7 @@
                             (get-setting 'sudoers)))
   (mapped-devices (get-setting 'mapped-devices))
   (file-systems (append (get-setting 'filesystems) %base-file-systems))
-  (users (get-setting 'users))
+  (users (append (get-setting 'users) %base-user-accounts))
   (packages (append (sss-system-packages #:per-host-packages (get-setting 'extra-packages))
                     %base-packages))
   (services

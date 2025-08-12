@@ -21,39 +21,25 @@
 
 ;;; Code:
 
+(use-package project
+  :init
+  (setq project-vc-extra-root-markers '(".envrc")))
+
 (use-package flymake
   :ensure nil
   :bind(("C-c ! b" . flymake-show-buffer-diagnostics)
-	("C-c ! n" . flymake-goto-next-error)
-	("C-c ! p" . flymake-show-project-diagnostics)
-	("C-c ! f" . flymake-mode)))
+	      ("C-c ! n" . flymake-goto-next-error)
+	      ("C-c ! p" . flymake-show-project-diagnostics)
+	      ("C-c ! f" . flymake-mode)))
 
 (use-package which-key
-  :ensure (:host github :repo "justbur/emacs-which-key")
+  :ensure nil
   :config
   (setq which-key-sort-order 'which-key-key-order-alpha
-	which-key-max-description-length 35)
+	      which-key-max-description-length 35)
   (setq-default which-key-idle-delay 0.4)
   (which-key-setup-minibuffer)
   (which-key-mode))
-
-(setq sss-emacs-is-first-frame t)
-
-(defun new-frame-setup (frame)
-  (if (display-graphic-p frame)
-      (progn
-	      (message "window system")
-	      (if sss-emacs-is-first-frame
-            (progn
-              (message "initializing SSS UI scaling for first frame")
-              (tekengrootte-set-scale-small)
-              (setq sss-emacs-is-first-frame nil)))
-        (sss-set-base-faces))
-    (progn
-      (message "not a window system")
-      (setq sss-emacs-is-first-frame nil)
-      (sss-set-base-faces))
-    ))
 
 (use-package emacs
   :ensure nil
@@ -141,10 +127,7 @@
           recentf-max-saved-items 100)
 
   (global-hl-line-mode +1)
-  (setq-default cursor-type 'bar)
-
-  (add-to-list 'after-make-frame-functions 'new-frame-setup t))
-
+  (setq-default cursor-type 'bar))
 
 (provide 'sss/emacs-self)
 

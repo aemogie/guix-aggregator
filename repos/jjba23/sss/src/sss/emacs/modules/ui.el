@@ -202,6 +202,15 @@ According to size, color and font family"
                             :bold nil)
         (set-face-attribute 'font-lock-variable-name-face nil
                             :bold nil)
+        (set-face-attribute 'mode-line nil
+                            :box `(:line-width 3 :color "#44475a")
+                            :background "#44475a")
+        (set-face-attribute 'mode-line-active nil
+                            :box `(:line-width 3 :color "#44475a")
+                            :background "#44475a")
+        (set-face-attribute 'mode-line-inactive nil
+                            :box `(:line-width 3 :color "#282a36")
+                            :background "#282a36")
         (set-face-attribute 'window-divider nil
                             :background "#6272a4"
                             :foreground "#6272a4")))
@@ -238,7 +247,18 @@ According to size, color and font family"
                                    :inherit '(font-lock-string-face))))))
     )
 
-  (sss-set-base-faces))
+  (setq sss-emacs-is-first-frame t)
+
+  (defun new-frame-setup ()
+    (progn
+	    (when sss-emacs-is-first-frame
+        (progn
+          (message "initializing SSS UI scaling for first frame")
+          (tekengrootte-set-scale-small)
+          (setq sss-emacs-is-first-frame nil)))
+      (sss-set-base-faces)))
+  
+  (add-hook 'server-after-make-frame-hook 'new-frame-setup))
 
 (use-package nerd-icons :ensure t)
 

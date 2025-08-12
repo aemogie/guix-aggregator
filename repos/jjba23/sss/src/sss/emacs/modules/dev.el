@@ -25,6 +25,8 @@
 ;; indentation, and other language-specific features.
 (use-package rust-mode :ensure t)
 
+(use-package inheritenv :ensure t)
+
 ;; Provides a linter for Emacs Lisp packages, helping to ensure code quality
 ;; and adherence to best practices.
 (use-package package-lint :ensure t)

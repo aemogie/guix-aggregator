@@ -85,33 +85,35 @@
 (use-package mixed-pitch
   :hook (org-mode . mixed-pitch-mode))
 
+(setq org-capture-templates
+      '(("t" "TODO" entry
+       (file+headline "~/docs/org/00-inbox.org" "Inbox")
+       "* TODO %^{Task}\n"
+	       ":PROPERTIES:\n"
+	       ":CREATED: %U\n"
+	       ":CAPTURED: %a\n"
+	       ":END:\n%?")))
+
 (use-package org-roam
   :custom
-  (org-roam-directory "~/docs/org")
+  (org-roam-directory "~/docs/org/roam")
   (org-roam-completion-everywhere t)
-  (org-roam-capture-templates
-   '(("d" "default" plain "%?"
-   :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-                      "#+title: ${title}\n")
-   :unnarrowed t)
-     ("b" "book" plain
-      "\n* Source\n\nAuthor: %^{Author}\nTitle: {title}\nYear: %^{Year}\n\n* Summary\n\n%?"
-      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-			 "#+title: ${title}\n")
-      :unnarrowed t)))
-   :bind (("C-c n l" . org-roam-buffer-toggle)
-	  ("C-c n f" . org-roam-node-find)
-	  ("C-c n i" . org-roam-node-insert)
-	  ("C-c n c" . org-roam-capture)
-	  ("C-c n j" . org-roam-dailies-capture-today)
-	  :map org-mode-map
-	  ("C-M-i" . completion-at-point))
-   :config
-   (org-roam-setup))
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+	 ("C-c n f" . org-roam-node-find)
+	 ("C-c n i" . org-roam-node-insert)
+	 ("C-c n c" . org-roam-capture)
+	 ("C-c n j" . org-roam-dailies-capture-today)
+	 :map org-mode-map
+	 ("C-M-i" . completion-at-point))
+  :config
+  (unless (file-exists-p "~/docs/org/roam")
+    (make-directory "~/docs/org" t))
+  (org-roam-setup))
 
 (use-package jsonrpc)
 (use-package eglot
   :hook
+  (zig-mode . eglot-ensure)
   (c-mode . eglot-ensure)
   (c++-mode . eglot-ensure)
   :bind (:map eglot-mode-map
@@ -120,6 +122,8 @@
 	      ("C-c C-f" . eglot-format-buffer)
 	      ("C-c C-i" . eglot-find-implementations))
   :config
+  (add-to-list 'eglot-server-programs
+	       '(zig-mode . ("zls")))
   (setq eglot-autoshutdown t))
 
 (use-package buffer-env
@@ -147,6 +151,8 @@
 (add-hook 'c++-mode-hook
 	  #'(lambda() (add-hook 'before-save-hook
 				'eglot-format-buffer nil t)))
+
+(use-package zig-mode)
 
 (use-package meow)
 (defun meow-setup ()

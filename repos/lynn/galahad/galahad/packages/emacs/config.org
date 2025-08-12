@@ -199,36 +199,37 @@ Finally, org mode can contain both text and code. Most preferences would have th
 #+end_src
 If it suits you, =org-indent-mode= is available to indent text blocks beneath headers. I prefer a straight-down look, personally.
 ** Note-taking
-For note taking, I use the ever popular =org-roamn=. If you are familiar with note-taking apps like Obsidian, it's similar to that:
+For note taking, I use the ever popular =org-roamn= combined with org-capture. If you are familiar with note-taking apps like Obsidian, it's similar to that:
 #+begin_src :scheme :tangle ./info.scm
   emacs-org-roam
 #+end_src
 
-I keep my org nodes in =~/docs/org=:
 #+begin_src emacs-lisp
-  (use-package org-roam
-    :custom
-    (org-roam-directory "~/docs/org")
-    (org-roam-completion-everywhere t)
-    (org-roam-capture-templates
-     '(("d" "default" plain "%?"
-     :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-                        "#+title: ${title}\n")
-     :unnarrowed t)
-       ("b" "book" plain
-        "\n* Source\n\nAuthor: %^{Author}\nTitle: {title}\nYear: %^{Year}\n\n* Summary\n\n%?"
-        :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-  			 "#+title: ${title}\n")
-        :unnarrowed t)))
-     :bind (("C-c n l" . org-roam-buffer-toggle)
-  	  ("C-c n f" . org-roam-node-find)
-  	  ("C-c n i" . org-roam-node-insert)
-  	  ("C-c n c" . org-roam-capture)
-  	  ("C-c n j" . org-roam-dailies-capture-today)
-  	  :map org-mode-map
-  	  ("C-M-i" . completion-at-point))
-     :config
-     (org-roam-setup))
+  (setq org-capture-templates
+        '(("t" "TODO" entry
+         (file+headline "~/docs/org/00-inbox.org" "Inbox")
+         "* TODO %^{Task}\n"
+  	       ":PROPERTIES:\n"
+  	       ":CREATED: %U\n"
+  	       ":CAPTURED: %a\n"
+  	       ":END:\n%?")))
+  #+end_src
+  #+begin_src emacs-lisp
+    (use-package org-roam
+      :custom
+      (org-roam-directory "~/docs/org/roam")
+      (org-roam-completion-everywhere t)
+      :bind (("C-c n l" . org-roam-buffer-toggle)
+    	 ("C-c n f" . org-roam-node-find)
+    	 ("C-c n i" . org-roam-node-insert)
+    	 ("C-c n c" . org-roam-capture)
+    	 ("C-c n j" . org-roam-dailies-capture-today)
+    	 :map org-mode-map
+    	 ("C-M-i" . completion-at-point))
+      :config
+      (unless (file-exists-p "~/docs/org/roam")
+        (make-directory "~/docs/org" t))
+      (org-roam-setup))
 #+end_src
 * Programming
 Eglot is my preferred LSP for programming. It requires jsonrpc to communicate:
@@ -236,6 +237,7 @@ Eglot is my preferred LSP for programming. It requires jsonrpc to communicate:
   (use-package jsonrpc)
   (use-package eglot
     :hook
+    (zig-mode . eglot-ensure)
     (c-mode . eglot-ensure)
     (c++-mode . eglot-ensure)
     :bind (:map eglot-mode-map
@@ -244,6 +246,8 @@ Eglot is my preferred LSP for programming. It requires jsonrpc to communicate:
   	      ("C-c C-f" . eglot-format-buffer)
   	      ("C-c C-i" . eglot-find-implementations))
     :config
+    (add-to-list 'eglot-server-programs
+  	       '(zig-mode . ("zls")))
     (setq eglot-autoshutdown t))
 #+end_src
 This just sets up the basic eglot experience, ensures that C/C++ uses it, and adds some useful keybindings. One I find particularly useful is =eglot-code-actions= which allows you to automate a lot of obvious steps, such as =#include='ing a necessary file.
@@ -298,7 +302,12 @@ I want eglot to format my buffer on save:
   				'eglot-format-buffer nil t)))
 #+end_src
 ** Zig language
-
+#+begin_src scheme :tangle ./info.scm
+  emacs-zig-mode
+#+end_src
+#+begin_src emacs-lisp
+    (use-package zig-mode)
+#+end_src
 * Modal Editing
 I prefer using modal editing over the default emacs behavior. For this I use something called =meow-mode=:
 #+begin_src scheme :tangle ./info.scm

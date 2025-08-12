@@ -43,6 +43,8 @@ emacs-treemacs
 emacs-treemacs-extra ;; treemacs-projectile
 emacs-imenu-list
 
+emacs-zig-mode
+
 ;; modal editing
 emacs-meow
 
