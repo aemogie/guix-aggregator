@@ -52,6 +52,9 @@
                ('l 'right)
                ('g 'home)
                (#\; 'end)
+               ;; i use this at work with powertoys, since powertoys doesnt have tap behaviour
+               ('caps 'esc)
+               ('ret 'esc)
                ((? integer? int) (symbol-append 'C- (string->symbol (number->string int))))
                ((? char? char) (symbol-append 'C- (list->symbol (list char))))
                ((? symbol? sym) (symbol-append 'C- sym)))

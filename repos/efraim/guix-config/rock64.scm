@@ -42,7 +42,7 @@
     (cons* (file-system
              (device (file-system-label "Guix_image"))
              (mount-point "/")
-             (type "btrfs"))
+             (type "ext4"))
            %guix-temproots
            %base-file-systems))
 

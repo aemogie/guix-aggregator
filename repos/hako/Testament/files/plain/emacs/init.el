@@ -267,8 +267,7 @@
                 "--init="
                 (json-serialize
                  `((cache
-                    (directory
-                     . ,(concat (getenv "XDG_CACHE_HOME") "/ccls-cache")))))))
+                    (directory . ,(concat (xdg-cache-home) "/ccls-cache")))))))
              ((zig-mode)
               "$$bin/zls$$")))
     (add-to-list 'eglot-server-programs program)))
@@ -367,6 +366,21 @@
   (dired-create-destination-dirs-on-trailing-dirsep t)
   (dired-vc-rename-file t))
 
+;;guix:emacs-eat-hako
+(use-package eat
+  :custom
+  (eat-kill-buffer-on-exit t)
+  (eshell-visual-commands nil)
+  :hook
+  (eshell-load . eat-eshell-mode))
+
+(use-package project
+  :config
+  (add-to-list 'project-switch-commands '(eat-project "Eat") t)
+  :bind
+  (:map project-prefix-map
+        ("t" . eat-project)))
+
 ;;guix:emacs-envrc
 (use-package envrc
   :hook
@@ -427,43 +441,3 @@
   (epg-pinentry-mode 'loopback)
   :hook
   (after-init . pinentry-start))
-
-;;guix:emacs-vterm
-(use-package vterm
-  :custom
-  (vterm-enable-manipulate-selection-data-by-osc52 t)
-  (vterm-max-scrollback 100000)
-  (vterm-shell "$$bin/fish$$")
-  ;; Improve responsiveness.
-  (vterm-timer-delay 0.05)
-  :init
-  (defun hako/vterm ()
-    (interactive)
-    (let* ((parent (if (buffer-file-name)
-                       (file-name-directory (buffer-file-name))
-                     default-directory))
-           (name (car (last (split-string parent "/" t)))))
-      (setq-local vterm-buffer-name (concat "*vterm: " name "*"))
-      (setq-local vterm-buffer (get-buffer vterm-buffer-name))
-      (if (and vterm-buffer
-               (not current-prefix-arg))
-          (pop-to-buffer vterm-buffer)
-        (vterm t))))
-  (defun hako/vterm-project (&optional arg)
-    (interactive "P")
-    (require 'project)
-    (let ((default-directory (project-root (project-current t))))
-      (setq-local vterm-buffer-name (project-prefixed-buffer-name "vterm"))
-      (vterm arg)))
-  :bind
-  (("s-t" . hako/vterm)
-   :map vterm-mode-map
-   ("C-q" . vterm-send-next-key)))
-
-(use-package project
-  :config
-  (add-to-list 'project-switch-commands '(hako/vterm-project "Vterm") t)
-  (add-to-list 'project-kill-buffer-conditions  '(major-mode . vterm-mode))
-  :bind
-  (:map project-prefix-map
-        ("t" . hako/vterm-project)))

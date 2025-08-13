@@ -90,6 +90,7 @@
    (eval . (put 'shadow-tls-client-configuration 'scheme-indent-function 0))
    (eval . (put 'shadow-tls-configuration 'scheme-indent-function 0))
    (eval . (put 'shadow-tls-server-configuration 'scheme-indent-function 0))
+   (eval . (put 'sing-box-configuration 'scheme-indent-function 0))
    (eval . (put 'smartdns-configuration 'scheme-indent-function 0))
    (eval . (put 'tailscale-configuration 'scheme-indent-function 0))
    (eval . (put 'vaultwarden-configuration 'scheme-indent-function 0))

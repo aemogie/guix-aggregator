@@ -15,6 +15,7 @@
   (define %os
     (operating-system
       (host-name "chapra")
+      (timezone "Asia/Hong_Kong")
       (bootloader <<bootloader>>)
       (mapped-devices (list <<mapped-device>>))
       (file-systems (append <<file-systems>> %base-file-systems))
@@ -172,7 +173,7 @@ Maintenance:
   (simple-service 'btrfs-scrub
       shepherd-root-service-type
     (list (shepherd-timer '(btrfs-scrub)
-            #~(calendar-event #:hours '(0))
+            #~(calendar-event #:days-of-week '(sunday))
             #~(#$(file-append (spec->pkg "btrfs-progs") "/bin/btrfs") "scrub" "start" "/mnt/Eriope")
             #:requirement '(user-processes))))
 #+end_src
@@ -188,19 +189,6 @@ Maintenance:
 #+end_src
 
 [[file:../files/plain/chapra/btrbk.conf][chapra/btrbk.conf]]
-
-** Timezone
-#+name: timezone
-#+begin_src scheme
-  "Asia/Hong_Kong"
-#+end_src
-
-#+begin_src scheme :noweb yes :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (timezone <<timezone>>)))
-#+end_src
 
 ** Users
 Personal account.
@@ -282,16 +270,11 @@ Frequently used packages.
   (rosenthal services networking)
 #+end_src
 
-** wpa-supplicant
-#+begin_src scheme :noweb-ref service
-  (service wpa-supplicant-service-type)
-#+end_src
-
 ** network-manager
 #+begin_src scheme :noweb-ref service
   (service network-manager-service-type
     (network-manager-configuration
-      (dns "none")
+      (shepherd-requirement '())
       (extra-configuration-files
        `(("wifi_rand_mac.conf"
           ,(plain-file "wifi_rand_mac.conf" "\
@@ -326,16 +309,17 @@ Frequently used packages.
 
 [[file:../files/plain/chapra/nftables.conf][chapra/nftables.conf]]
 
-** tailscale
+** sing-box
 #+begin_src scheme :noweb-ref service
-  (service tailscale-service-type)
+  (service sing-box-service-type
+    (sing-box-configuration
+      (shepherd-requirement '(networking nftables))
+      (config-file
+       (sing-box-config
+        '("100.88.159.55/28" "fd7a:115c:a1e0::c801:9f3e/126")))))
 #+end_src
 
 ** openssh
-#+begin_src scheme :noweb-ref package
-  "mosh"
-#+end_src
-
 #+begin_src scheme :noweb-ref service
   (service openssh-service-type
     (openssh-configuration

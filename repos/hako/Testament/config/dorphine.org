@@ -15,6 +15,7 @@
   (define %os
     (operating-system
       (host-name "dorphine")
+      (timezone "Asia/Hong_Kong")
       (bootloader <<bootloader>>)
       (mapped-devices (list <<mapped-device>>))
       (file-systems (append <<file-systems>> %base-file-systems))
@@ -229,7 +230,7 @@ Maintenance:
   (simple-service 'btrfs-scrub
       shepherd-root-service-type
     (list (shepherd-timer '(btrfs-scrub)
-            #~(calendar-event #:hours '(0))
+            #~(calendar-event #:days-of-week '(sunday))
             #~(#$(file-append (spec->pkg "btrfs-progs") "/bin/btrfs") "scrub" "start" "/mnt/Mentha")
             #:requirement '(user-processes))))
 #+end_src
@@ -261,23 +262,6 @@ Maintenance:
 
 #+begin_src scheme :noweb yes :noweb-ref home-service
   (service home-keyboard-service-type <<keyboard-layout>>)
-#+end_src
-
-** Timezone
-#+name: timezone
-#+begin_src scheme
-  "Asia/Hong_Kong"
-#+end_src
-
-#+begin_src scheme :noweb yes :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (timezone <<timezone>>)))
-#+end_src
-
-#+begin_src scheme :noweb yes :noweb-ref home-environment-variable
-  ("TZ" . <<timezone>>)
 #+end_src
 
 ** Users
@@ -341,6 +325,7 @@ Administration accounts.
        (plain-file "sudoers"
          (string-append
           (plain-file-content (operating-system-sudoers-file os))
+          "Defaults env_keep += \"TERMINFO\"\n"
           "deploy ALL = NOPASSWD: ALL\n")))))
 #+end_src
 
@@ -352,13 +337,13 @@ Administration accounts.
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
-  (simple-service 'fish-vterm
+  (simple-service 'fish-emacs-eat
       home-fish-service-type
     (home-fish-extension
       (config
-       (list (plain-file "vterm.fish" "\
-  if test \"$INSIDE_EMACS\" = 'vterm'
-      source $EMACS_VTERM_PATH/etc/emacs-vterm.fish
+       (list (plain-file "emacs-eat.fish" "\
+  if test -n \"$EAT_SHELL_INTEGRATION_DIR\"
+      source $EAT_SHELL_INTEGRATION_DIR/fish
   end")))))
 #+end_src
 
@@ -369,11 +354,6 @@ Frequently used packages.
 #+end_src
 
 ** Guix Daemon
-#+begin_src scheme :noweb-ref transformation
-  (nonguix-transformation-guix)
-  (rosenthal-transformation-guix)
-#+end_src
-
 #+begin_src scheme :noweb-ref service
   (simple-service 'guix-extensions
       guix-service-type
@@ -445,25 +425,12 @@ Generate passwordless ECC key:
   "sops"
 #+end_src
 
-#+begin_src scheme :noweb-ref definition
-  (define dorphine.yaml
-    (local-file (testament-blobs "dorphine.yaml")))
-
-  (define (sops-str key)
-    "The result will be publicly available in /gnu/store, YOU ARE WARNED."
-    (get-sops-secret key #:file dorphine.yaml))
-
-  (define (sops-num key)
-    "The result will be publicly available in /gnu/store, YOU ARE WARNED."
-    (get-sops-secret key #:file dorphine.yaml #:number? #t))
-#+end_src
-
 #+begin_src scheme :noweb-ref home-service
   (service home-sops-secrets-service-type
     (home-sops-service-configuration
       (sops (spec->pkg "sops"))
       (config (local-file (testament-plain "sops.yaml")))
-      (gnupg-home (in-vicinity (getenv "XDG_DATA_HOME") "sops"))
+      (gnupg-home (in-vicinity %xdg-data-home "sops"))
       (secrets
        (list (sops-secret
                (key '("mail"))
@@ -536,7 +503,6 @@ Generate passwordless ECC key:
          (network-manager-service-type
           config => (network-manager-configuration
                       (inherit config)
-                      (dns "none")
                       (extra-configuration-files
                        `(("wifi_rand_mac.conf"
                           ,(plain-file "wifi_rand_mac.conf" "\
@@ -561,23 +527,16 @@ Generate passwordless ECC key:
 
 [[file:../files/plain/dorphine/nftables.conf][dorphine/nftables.conf]]
 
-** tailscale
+** sing-box
 #+begin_src scheme :noweb-ref service
-  (service tailscale-service-type)
+  (service sing-box-service-type
+    (sing-box-configuration
+      (shepherd-requirement '(networking nftables))
+      (config-file
+       (sing-box-config
+        '("100.108.11.68/30" "fd7a:115c:a1e0::5201:b44/126")
+        #:clash-api? #t))))
 #+end_src
-
-** mihomo
-#+begin_src scheme :noweb-ref service
-  (service clash-service-type
-    (clash-configuration
-      (clash (spec->pkg "mihomo"))
-      (config
-       (mixed-text-file "mihomo.yaml"
-         (sops-str '("mihomo")) "\n"
-         (file-content (testament-plain "mihomo.yaml"))))))
-#+end_src
-
-[[file:../files/plain/mihomo.yaml][mihomo.yaml]]
 
 ** openssh
 #+begin_src scheme :noweb-ref package
@@ -657,7 +616,8 @@ Generate passwordless ECC key:
   (service caddy-service-type
     (caddy-configuration
       (caddy (spec->pkg "caddy-hako"))
-      (caddyfile <<caddy-config>>)))
+      (caddyfile <<caddy-config>>)
+      (shepherd-requirement '(networking sing-box))))
 #+end_src
 
 #+name: caddy-config
@@ -758,7 +718,8 @@ To use NVK, mesa should be installed into a profile.
        (computed-substitution-with-inputs "niri.kdl"
          (local-file (testament-plain "niri.kdl"))
          (cons (testament-blobs)
-               (specs->pkgs "light"
+               (specs->pkgs "foot"
+                            "light"
                             "rofi-wayland"
                             "swaylock-effects"
                             "wireplumber"
@@ -1005,6 +966,7 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
 #+begin_src scheme :noweb-ref home-environment-variable
   ("EDITOR" . "emacsclient")
   ("VISUAL" . "$EDITOR")
+  ("ESHELL" . ,(file-append (spec->pkg "fish") "/bin/fish"))
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref package
@@ -1057,6 +1019,11 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
 
 [[file:../files/plain/emacs/fonts.el][emacs/fonts.el]]
 
+** foot
+#+begin_src scheme :noweb-ref package
+  "foot"
+#+end_src
+
 ** git
 #+begin_src scheme :noweb-ref package
   "git"
@@ -1072,22 +1039,6 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
             #~(calendar-event #:minutes '(0 15 30 45))
             #~("/home/hako/Workspace/guix-label-teams.scm"))))
 #+end_src
-
-** l2md
-Fetch mailing lists from public-inbox instances:
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'l2md
-      home-shepherd-service-type
-    (list (shepherd-service
-            (provision '(l2md))
-            (start
-             #~(make-forkexec-constructor
-                (list #$(file-append (spec->pkg "l2md") "/bin/l2md") "--verbose")))
-            (stop
-             #~(make-kill-destructor)))))
-#+end_src
-
-[[file:../files/dotfiles/.config/l2md/config][~/.config/l2md/config]]
 
 ** notmuch
 Fetch from mail server:
@@ -1114,14 +1065,6 @@ Fetch from mail server:
 #+end_src
 
 [[file:../files/plain/mbsync.conf][mbsync.conf]]
-
-** qbittorrent
-#+begin_src scheme :noweb-ref home-service
-  (service home-qbittorrent-service-type
-    (qbittorrent-configuration
-      (qbittorrent (spec->pkg "qbittorrent-enhanced-no-x"))
-      (webui-port 35951)))
-#+end_src
 
 ** syncthing
 #+begin_src scheme :noweb-ref home-service

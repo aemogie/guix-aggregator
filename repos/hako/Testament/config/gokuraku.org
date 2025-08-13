@@ -15,6 +15,7 @@
   (define %os
     (operating-system
       (host-name "gokuraku")
+      (timezone "Asia/Hong_Kong")
       (bootloader <<bootloader>>)
       (mapped-devices (list <<mapped-device>>))
       (file-systems (append <<file-systems>> %base-file-systems))
@@ -92,7 +93,7 @@ Maintenance:
   (simple-service 'btrfs-scrub
       shepherd-root-service-type
     (list (shepherd-timer '(btrfs-scrub)
-            #~(calendar-event #:hours '(0))
+            #~(calendar-event #:days-of-week '(sunday))
             #~(#$(file-append (spec->pkg "btrfs-progs") "/bin/btrfs") "scrub" "start" "/mnt/Lycoris")
             #:requirement '(user-processes))))
 #+end_src
@@ -108,19 +109,6 @@ Maintenance:
 #+end_src
 
 [[file:../files/plain/gokuraku/btrbk.conf][gokuraku/btrbk.conf]]
-
-** Timezone
-#+name: timezone
-#+begin_src scheme
-  "Asia/Hong_Kong"
-#+end_src
-
-#+begin_src scheme :noweb yes :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (timezone <<timezone>>)))
-#+end_src
 
 ** Users
 Personal account.
@@ -183,8 +171,6 @@ Frequently used packages.
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
-  (nonguix-transformation-guix)
-
   (lambda (os)
     (operating-system
       (inherit os)
@@ -212,19 +198,6 @@ Frequently used packages.
 #+begin_src scheme :noweb-ref package
   "gnupg"
   "sops"
-#+end_src
-
-#+begin_src scheme :noweb-ref definition
-  (define gokuraku.yaml
-    (local-file (testament-blobs "gokuraku.yaml")))
-
-  (define (sops-str key)
-    "The result will be publicly available in /gnu/store, YOU ARE WARNED."
-    (get-sops-secret key #:file gokuraku.yaml))
-
-  (define (sops-num key)
-    "The result will be publicly available in /gnu/store, YOU ARE WARNED."
-    (get-sops-secret key #:file gokuraku.yaml #:number? #t))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -261,15 +234,15 @@ Frequently used packages.
             (addresses
              (map (lambda (version)
                     (network-address
-                      (device (sops-str (list "network" version "name")))
-                      (value (sops-str (list "network" version "address")))))
+                      (device (sops-str gokuraku.yaml `("network" ,version "name")))
+                      (value  (sops-str gokuraku.yaml `("network" ,version "address")))))
                   '("v4" "v6")))
             (routes
              (map (lambda (version)
                     (network-route
                       (destination "default")
-                      (device (sops-str (list "network" version "name")))
-                      (gateway (sops-str (list "network" version "gateway")))))
+                      (device  (sops-str gokuraku.yaml `("network" ,version "name")))
+                      (gateway (sops-str gokuraku.yaml `("network" ,version "gateway")))))
                   '("v4" "v6")))
             (name-servers
              '("1.1.1.1"
@@ -332,7 +305,6 @@ Frequently used packages.
 * Containers & Virtualization
 #+begin_src scheme :noweb-ref module
   (gnu services docker)
-  (gnu services virtualization)
 #+end_src
 
 ** containerd
@@ -345,13 +317,6 @@ Frequently used packages.
   (service docker-service-type
     (docker-configuration
       (enable-iptables? #f)))
-#+end_src
-
-** binfmt_misc
-#+begin_src scheme :noweb-ref service
-  (service qemu-binfmt-service-type
-    (qemu-binfmt-configuration
-      (platforms (lookup-qemu-platforms "aarch64"))))
 #+end_src
 
 * Databases
@@ -401,28 +366,14 @@ Remember to open TCP port 5555 and 5556.
     (cuirass-remote-worker-configuration
       (publish-port 5558)
       (workers 2)
-      (systems '("x86_64-linux" "aarch64-linux" "i686-linux"))
+      (systems '("x86_64-linux" "i686-linux"))
       (server "127.0.0.1:5555")
       (substitute-urls
        `("https://ci.ultrarare.space"
-         ,@%default-substitute-urls
-         "https://substitutes.nonguix.org"))))
+         ,@%default-substitute-urls))))
 #+end_src
 
 ** cuirass specifications
-#+begin_src scheme :noweb-ref cuirass-spec
-  (specification
-    (name "guix-rusty-packages")
-    (build '(manifests "etc/teams/rust/rusty-packages.scm"))
-    (channels
-     (list (channel
-             (inherit %default-guix-channel)
-             (url "https://codeberg.org/guix/guix.git")
-             (branch "rust-team"))))
-    (priority 9)
-    (systems '("x86_64-linux")))
-#+end_src
-
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification
     (name "guixcn")
@@ -440,7 +391,7 @@ Remember to open TCP port 5555 and 5556.
                (openpgp-fingerprint
                 "7EBE A494 60CE 5E2C 0875  7FDB 3B5A A993 E1A2 DFF0"))))))
     (priority 5)
-    (systems '("x86_64-linux" "aarch64-linux" "i686-linux")))
+    (systems '("x86_64-linux" "i686-linux")))
 #+end_src
 
 #+begin_src scheme :noweb-ref cuirass-spec
@@ -460,7 +411,7 @@ Remember to open TCP port 5555 and 5556.
                (openpgp-fingerprint
                 "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))))
     (priority 5)
-    (systems '("x86_64-linux" "aarch64-linux" "i686-linux")))
+    (systems '("x86_64-linux" "i686-linux")))
 #+end_src
 
 #+begin_src scheme :noweb-ref cuirass-spec
@@ -481,29 +432,7 @@ Remember to open TCP port 5555 and 5556.
                (openpgp-fingerprint
                 "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7"))))))
     (priority 5)
-    (systems '("x86_64-linux" "aarch64-linux" "i686-linux")))
-#+end_src
-
-#+begin_src scheme :noweb-ref cuirass-spec
-  (specification
-    (name "rosenthal-auto-updates")
-    (build '(manifests "etc/manifests/rosenthal-auto-update.scm"))
-    (channels
-     (list (channel
-             (inherit %default-guix-channel)
-             (url "https://codeberg.org/guix/guix.git"))
-           (channel
-             (name 'rosenthal)
-             (url "https://codeberg.org/hako/rosenthal.git")
-             (branch "trunk")
-             (introduction
-              (make-channel-introduction
-               "7677db76330121a901604dfbad19077893865f35"
-               (openpgp-fingerprint
-                "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7"))))))
-    (period (* 12 3600))
-    (priority 7)
-    (systems '("x86_64-linux")))
+    (systems '("x86_64-linux" "i686-linux")))
 #+end_src
 
 * Web Servers
@@ -517,7 +446,8 @@ Remember to open TCP port 5555 and 5556.
   (service caddy-service-type
     (caddy-configuration
       (caddy (spec->pkg "caddy-hako"))
-      (caddyfile <<caddy-config>>)))
+      (caddyfile <<caddy-config>>)
+      (shepherd-requirement '(networking tailscaled))))
 #+end_src
 
 #+name: caddy-config
@@ -603,7 +533,7 @@ Remember to open TCP port 5555 and 5556.
        `(("BASE_URL" . "https://reader.boiledscript.com/")
          ("CLEANUP_ARCHIVE_READ_DAYS" . -1)
          ("CLEANUP_ARCHIVE_UNREAD_DAYS" . -1)
-         ("DATABASE_URL" . ,(sops-str '("miniflux" "database")))
+         ("DATABASE_URL" . ,(sops-str gokuraku.yaml '("miniflux" "database")))
          ("LISTEN_ADDR" . "127.0.0.1:51787")
          ("RUN_MIGRATIONS" . 1)))))
 #+end_src
@@ -621,7 +551,7 @@ Remember to open TCP port 5555 and 5556.
              (port . 5432)
              (db . misskey)
              (user . misskey)
-             (pass . ,(sops-str '("misskey" "password")))))
+             (pass . ,(sops-str gokuraku.yaml '("misskey" "password")))))
          (dbReplications . #f)
          (redis
           . ((host . localhost)
@@ -639,7 +569,7 @@ Remember to open TCP port 5555 and 5556.
 #+begin_src scheme :noweb-ref service
   (service vaultwarden-service-type
     (vaultwarden-configuration
-      (database-url (sops-str '("vaultwarden")))
+      (database-url (sops-str gokuraku.yaml '("vaultwarden")))
       (port 23263)
       (extra-options '(("ROCKET_ADDRESS" . "127.0.0.1")))))
 #+end_src
