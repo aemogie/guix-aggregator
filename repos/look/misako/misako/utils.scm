@@ -28,9 +28,12 @@
             nvidia-home-environment
             obs-nvenc
             plist
+            glist
             misako-dir
             yumiko-dir
             yuria-dir
+            yumiko?*
+            yuria?*
             yumiko-sops-dir
             look-sops-dir
             look-files-dir
@@ -62,6 +65,16 @@
 
 (define look-files-dir
   (string-append misako-dir "/misako/home-environments/look/files"))
+
+(define (yumiko?* . thing)
+  (if (equal? (gethostname) "yumiko")
+      thing
+      #f))
+
+(define (yuria?* . thing)
+  (if (equal? (gethostname) "yuria")
+      thing
+      #f))
 
 (define (secret key)
   (call-with-input-file
@@ -95,6 +108,23 @@
           (append (flatten-package-list head)
                   (flatten-package-list tail)))
          (else (list x))))
+
+(define (flatten lst)
+  (cond
+    ((null? lst) '())
+    ((pair? (car lst))
+     (append (flatten (car lst)) (flatten (cdr lst))))
+    (else (cons (car lst) (flatten (cdr lst))))))
+
+(define (filter-f lst)
+  (filter (lambda (x)
+            (if (eq? x #f)
+                #f
+                x))
+          lst))
+
+(define glist
+  (compose filter-f flatten list))
 
 (define plist
   (compose flatten-package-list list))

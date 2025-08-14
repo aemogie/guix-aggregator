@@ -25,8 +25,10 @@
                              (en-dict enchant-dict-en))
   `((".enchant" ,(plain-file "enchant"
                              (mk-lines ordering)))
-    (".config/enchant/en_US.dic" ,(plain-file "en_US.dic"
-                                              (mk-lines en-dict)))))
+    (".aspell.en.pws" ,(plain-file "aspell.en.pws"
+                                   (mk-lines (append (list
+                                                      "personal_ws-1.1 en 0")
+                                                     en-dict))))))
 
 ;; Enchant uses global and per-user ordering files named enchant.ordering to decide
 ;; which spelling provider to use for particular languages. The per-user file takes precedence.
@@ -35,7 +37,7 @@
 ;; To see what dictionaries are available, run enchant-lsmod-2.
 ;; ’*’ is used to mean use this ordering for all languages, unless instructed otherwise.
 (define enchant-ordering
-  `("*:aspell,hunspell,nuspell"))
+  `("*:aspell"))
 
 ;; Custom dictionary for English
 (define enchant-dict-en
@@ -43,6 +45,7 @@
     "aspell"
     "hunspell"
     "Sexp"
+    "MERCHANTABILITY"
     "byggsteg"
     "wikimusic"
     "repo"
@@ -50,6 +53,33 @@
     "nuspell"
     "sss"
     "Josep"
+    "pws"
+    "ws"
+    "defcustom"
+    "setq"
+    "src"
+    "emacs"
+    "init"
+    "mkdir"
+    "pkill"
+    "fastfetch"
+    "emacsclient"
+    "usr"
+    "env"
+    "dirsfirst"
+    "lAh"
+    "monospace"
+    "Consolas"
+    "sbt"
+    "direnv"
+    "gtk"
+    "ini"
+    "newstyle"
+    "gitignore"
+    "gitconfig"
+    "includeIf"
+    "gitdir"
+    "Xservers"
+    "Xcursor"
     "Bigorra"
     "Algaba"))
-

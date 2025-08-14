@@ -127,7 +127,7 @@
         #|Utils           |# hyfetch xdg-utils gnupg pinentry-bemenu aria2
         #|                |# light ncurses git sops kexec-tools pciutils
         #|                |# gtk gtk+ gsettings-desktop-schemas
-        #|                |# p7zip
+        #|                |# p7zip opentabletdriver-bin
         #|Productivity    |# wayneko newsraft playerctl spotify ;kew
         #|Shell           |# fish
         #|Terminal        |# foot ghostty-tip
@@ -146,7 +146,7 @@
                                        ;; (lutris-wrapped-for nvda)
                                        mangohud
                                        prismlauncher
-                                       path-of-building-bin
+                                       ; path-of-building-bin
                                        mcpelauncher-ui
                                        osu-lazer-bin)
         #|                |# python-wrapper xdotool ydotool
@@ -160,7 +160,7 @@
         #|                |# mako waybar grim slurp bemenu fuzzel
         #|                |# wl-clipboard wlsunset dbus qtwayland
         #|                |# hyprcursor-mcmojave cursor-mcmojave
-        #|                |# nvidia-vaapi-driver
+        #|                |# (nvidia?* nvidia-vaapi-driver)
         #|Messaging       |# senpai vesktop ;; telegram-desktop
         #|E-mail          |# aerc #|required|# sound-theme-freedesktop
         #|                |# libnotify
@@ -206,8 +206,8 @@
                     ssh-host:gitlab
                     ssh-host:forgejo
                     ; HERE !!!
-                    ssh-host:shadow-primary
-                    ssh-host:shadow-secondary
+                    ; ssh-host:shadow-primary
+                    ; ssh-host:shadow-secondary
                     ssh-host:yumiko))))
 
         (service home-gpg-agent-service-type
@@ -244,7 +244,7 @@
                           (link-to-store? #f)
                           (substitutes secrets:all))))))
 
-        ; (service home-syncthing-service-type)
+        (service home-syncthing-service-type)
 
         (simple-service 'default-fonts home-fontconfig-service-type
           (list '(alias

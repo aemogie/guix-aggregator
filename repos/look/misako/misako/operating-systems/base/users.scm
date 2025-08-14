@@ -3,6 +3,7 @@
   #:use-module (gnu packages shells)
   #:use-module (gnu system accounts)
   #:use-module (guix gexp)
+  #:use-module (misako utils)
   #:export (look))
 
 (define look
@@ -12,4 +13,12 @@
     (shell (file-append fish "/bin/fish"))
     (uid 1000)
     (group "users")
-    (supplementary-groups '("audio" "seat" "input" "video" "wheel" "kvm" "tablet" "usb"))))
+    (supplementary-groups
+      (glist "audio"
+             "seat"
+             "input"
+             "video"
+             "wheel"
+             "kvm"
+             (yumiko?* "tablet"
+                       "usb")))))

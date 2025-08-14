@@ -49,6 +49,7 @@
   #:use-module (misako packages cuda)
   #:use-module (nongnu packages chromium)
   #:use-module (nongnu packages nvidia)
+  #:use-module (nongnu packages dotnet)
   #:use-module (nonguix build utils)
   #:use-module (nonguix build-system binary)
   #:use-module (nonguix build-system chromium-binary)
@@ -56,7 +57,8 @@
             path-of-building-bin
             libdeep-filter-ladspa-bin
             ollama-bin
-            spotify))
+            spotify
+            opentabletdriver-bin))
 
 (define path-of-building-bin
   (package
@@ -488,3 +490,52 @@ well.")
 millions of songs.")
       (home-page "https://open.spotify.com/")
       (license #f))))
+
+(define opentabletdriver-bin
+  (package
+    (name "opentabletdriver-bin")
+    (version "0.6.5.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (string-append
+              "https://github.com/OpenTabletDriver/OpenTabletDriver/releases/download/v"
+              version "/opentabletdriver-" version "-x64.tar.gz"))
+        (sha256
+          (base32 "0p74avg03mqrqfvmidaagsq8lwancn1g3an9a2140qwqnc2439lf"))))
+    (build-system copy-build-system)
+    (arguments
+      (list #:install-plan
+            #~'(("usr/local/lib/opentabletdriver/OpenTabletDriver.Console" "bin/otd")
+                ("usr/local/lib/opentabletdriver/OpenTabletDriver.Daemon" "bin/otd-daemon")
+                ("usr/local/lib/opentabletdriver/OpenTabletDriver.UX.Gtk" "bin/otd-gui")
+                ("etc" "lib")
+                ("usr/local/share" "share")
+                ("usr/local/lib/modprobe.d" "lib/modprobe.d")
+                ("usr/local/lib/modules-load.d" "lib/modules-load.d")
+                ("usr/local/lib/systemd" "lib/systemd"))
+            #:phases
+            #~(modify-phases %standard-phases
+                (add-after 'install 'patch-elf
+                  (lambda _
+                    (let ((ld.so (string-append #$(this-package-input "glibc")
+                                                #$(glibc-dynamic-linker)))
+                          (rpath (string-join
+                                   (list
+                                     (string-append #$(this-package-input "gcc-toolchain") "/lib"))
+                                   ":")))
+                      (for-each (lambda (x)
+                                  (invoke "patchelf" x "--set-interpreter" ld.so)
+                                  (invoke "patchelf" x "--set-rpath" rpath))
+                                (find-files (string-append #$output "/bin")))))))))
+    (native-inputs (list patchelf))
+    (inputs (list gcc-toolchain-15
+                  glibc))
+    (propagated-inputs (list dotnet))
+    (home-page "https://opentabletdriver.net")
+    (synopsis "OpenTabletDriver is an open source, cross platform, user mode tablet driver.")
+    (description "The goal of OpenTabletDriver is to be cross platform as
+possible with the highest compatibility in an easily configurable graphical
+user interface.")
+    (properties '((saayix-update? . #f)))
+    (license (list license:lgpl3+))))

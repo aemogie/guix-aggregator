@@ -156,7 +156,7 @@
     "backlight": {
         // "device": "acpi_video1",
         "format": "{icon} {percent}%",
-        "format-icons": ["󰃞 ", "󰃟 ", "󰃠 "],
+        "format-icons": ["󰃞", "󰃟", "󰃠"],
         "on-scroll-up": "light -A 1",
         "on-scroll-down": "light -U 1",
         "on-click": "light -S 50",

@@ -16,10 +16,9 @@ set reload-period        15
 set scrolloff            2
 feeds-menu-paramount-explore true
 
-menu-explore-item-entry-format " %u │ %-20T │ %o"
+# menu-explore-item-entry-format " %u │ %-20T │ %o"
 
 # binds
 bind   R    reload-all
 bind   o    exec $BROWSER %l
 bind   m    exec setsid -f mpv %l >/dev/null 2>&1 & disown
-bind   s    status-history-menu

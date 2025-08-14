@@ -6,7 +6,6 @@
   #:use-module (misako operating-systems yumiko cuirass)
   #:use-module (misako utils)
   #:use-module (saayix services system nvidia-unload)
-  #:use-module (saayix services system mullvad)
   #|Guix|#
   #:use-module (guix gexp)
   #|GNU System|#
@@ -98,8 +97,6 @@
                  (x11-forwarding? #f)
                  (authorized-keys
                    `(("look" ,(local-file "/etc/ssh/look.pub"))))))
-
-             (service mullvad-service-type)
 
              #|SOPS services|#
              ; (service sops-secrets-service-type

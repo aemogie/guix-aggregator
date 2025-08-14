@@ -63,6 +63,7 @@
   #:use-module (guix gexp)
   #|Saayix|#
   #:use-module (saayix utils)
+  #:use-module (saayix services system mullvad)
   #:use-module (saayix packages binaries)
   #:use-module (saayix packages text-editors)
   #:use-module (saayix packages toys)
@@ -149,9 +150,10 @@
         (service guix-service-type
           (guix-configuration
             (substitute-urls
-              '("https://cuirass.genenetwork.org"
+              '(
+                ; "https://cuirass.genenetwork.org"
                 "https://substitutes.nonguix.org"
-                "https://guix.bordeaux.inria.fr"
+                ; "https://guix.bordeaux.inria.fr"
                 "https://ci.guix.gnu.org"))
             (authorized-keys
               (list substitute-key:guix.pub
@@ -249,6 +251,8 @@
                   '("cuirass.yumiko"
                     "substitutes.yumiko"
                     "ci.yumiko"))))
+
+        (service mullvad-service-type)
 
         #|NTPD service|#
         (service ntp-service-type)

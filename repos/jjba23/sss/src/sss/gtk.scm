@@ -46,7 +46,7 @@
 
 (define* (gtk-dconf-settings #:key palette sans-font mono-font)
   `(("/org/gnome/desktop/interface"
-     ;; Basename of the default keybinding theme used by gtk+.
+     ;; Base-name of the default keybinding theme used by GTK+.
      (gtk-key-theme . "'Emacs'")
      ;; Size of the cursor used as cursor theme.
      (cursor-size . 24)
@@ -54,7 +54,7 @@
      (cursor-theme unquote
                    (format #f "'~a'"
                            (get-cursor-theme palette)))
-     ;; Basename of the default theme used by gtk+.
+     ;; Base-name of the default theme used by GTK+.
      (gtk-theme unquote
                 (format #f "'~a'"
                         (get-gtk-theme palette)))
@@ -63,7 +63,7 @@
                  (format #f "'~a'"
                          (get-icon-theme palette)))
      ;; Whether animations should be displayed. Note: This is a global key,
-     ;; it changes the behaviour of the window manager, the panel etc.
+     ;; it changes the behavior of the window manager, the panel etc.
      (enable-animations . true)
      ;; The preferred accent color for the user interface. Valid values are
      ;; "blue", "teal", "green", "yellow", "orange", "red", "pink", "purple", "slate".
@@ -79,7 +79,7 @@
      ;; Name of the default font used for reading documents.
      (document-font-name unquote
                          (format #f "'~a 11'" sans-font))
-     ;; Name of a monospaced (fixed-width) font for use in locations like
+     ;; Name of a mono-space (fixed-width) font for use in locations like
      ;; terminals.
      (monospace-font-name unquote
                           (format #f "'~a 11'" mono-font)))))

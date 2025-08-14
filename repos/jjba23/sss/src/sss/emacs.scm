@@ -61,7 +61,7 @@
       (sss-font-mono (value unquote
                             (format #f "\"~a\"" mono-font))
                      (type . string)
-                     (description . "My preferred monospaced font family."))
+                     (description . "My preferred mono-space font family."))
       (sss-font-sans (value unquote
                             (format #f "\"~a\"" sans-font))
                      (type . string)

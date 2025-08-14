@@ -5,6 +5,7 @@
   #:use-module (misako utils)
   #:use-module ((misako build-machines) #:prefix build-machine:)
   #|GNU|#
+  #:use-module (gnu packages linux)
   #:use-module (gnu packages networking)
   #|GNU System|#
   #:use-module (gnu system)
@@ -14,7 +15,9 @@
   #:use-module (gnu services)
   #:use-module (gnu services base)
   #:use-module (gnu services desktop)
-  #:use-module (gnu services networking)
+  #:use-module ((gnu services networking)
+                #:hide (iwd-service-type
+                        iwd-configuration))
   #:use-module (gnu services docker)
   #|Guix|#
   #:use-module (guix gexp)
@@ -49,7 +52,7 @@
       (cons* "amdgpu.backlight=0"
              (operating-system-user-kernel-arguments base)))
 
-    (file-systems %ext4-file-systems)
+    (file-systems %btrfs-ephemeral-file-systems)
 
     #|System-level Services|#
     (services
@@ -104,6 +107,7 @@
         #|Persistent Files|#
         (extra-special-file "/etc/system.scm"
           (string-append misako-dir "/misako/operating-systems/yuria.scm"))
+        (extra-special-file "/etc/machine-id" "/gnu/persist/etc/machine-id")
 
         #|Base Services|#
         (modify-services (operating-system-user-services base)
@@ -121,6 +125,11 @@
               ; Remember to unlink /etc/guix/machines.scm due to bug
               ; (build-machines
               ;   (list build-machine:yumiko))))
-          (delete dhcp-client-service-type))))))
+          (udev-service-type
+            config =>
+            (udev-configuration
+              (udev eudev)
+              (rules (list light))))
+          (delete dhcpcd-service-type))))))
 
 yuria
