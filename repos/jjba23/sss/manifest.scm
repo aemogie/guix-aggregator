@@ -22,6 +22,7 @@
              (gnu packages guile)
              (gnu packages emacs)
              (gnu packages guile-xyz)
+             (gnu packages texinfo)
              ((guix licenses)
               #:prefix license:))
 
@@ -59,4 +60,6 @@ runs them concurrently by default to ensure robust testing practices.")
                           guile-veritas
                           (specification->package "gettext")
                           (specification->package "make")
-                          coreutils))
+                          coreutils
+                          guile-documenta
+                          texinfo))

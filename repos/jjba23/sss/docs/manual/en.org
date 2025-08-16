@@ -1414,3 +1414,4 @@ GNU Emacs, GNU Guix, Arch Linux, Void Linux, Nix, NixOS, Hyprland, ...
 - Mu Lei (NalaGinrut) for his great work on GNU Artanis and Scheme, and inspiring me to pursue my projects and power them with a Lispy flavor
 
 
+

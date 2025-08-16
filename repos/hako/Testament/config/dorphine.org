@@ -372,6 +372,7 @@ Frequently used packages.
                       (inherit config)
                       (discover? #t)
                       (extra-options '("--cores=24"))
+                      (http-proxy "http://100.90.40.94:7890")
                       (tmpdir "/mnt/Mentha/System/@Build")))))))
 #+end_src
 
@@ -527,15 +528,9 @@ Generate passwordless ECC key:
 
 [[file:../files/plain/dorphine/nftables.conf][dorphine/nftables.conf]]
 
-** sing-box
+** tailscale
 #+begin_src scheme :noweb-ref service
-  (service sing-box-service-type
-    (sing-box-configuration
-      (shepherd-requirement '(networking nftables))
-      (config-file
-       (sing-box-config
-        '("100.108.11.68/30" "fd7a:115c:a1e0::5201:b44/126")
-        #:clash-api? #t))))
+  (service tailscale-service-type)
 #+end_src
 
 ** openssh
@@ -617,7 +612,7 @@ Generate passwordless ECC key:
     (caddy-configuration
       (caddy (spec->pkg "caddy-hako"))
       (caddyfile <<caddy-config>>)
-      (shepherd-requirement '(networking sing-box))))
+      (shepherd-requirement '(networking tailscaled))))
 #+end_src
 
 #+name: caddy-config

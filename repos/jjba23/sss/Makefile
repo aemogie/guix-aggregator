@@ -26,16 +26,20 @@
 
 .PHONY: update system-reconfigure joe-reconfigure manon-reconfigure \
         format jr fr sr mr fmt full-rebuild nix-profile-upgrade \
-        test gc store-gc full-gc shepherd-logs npu \
+        test gc store-gc full-gc shepherd-logs npu docs \
         clone-user-repos install-nix-packages npi deploy install-flatpak-packages
 
-DEPLOY_WWW="/srv/http/jointhefreeworld.org"
-COPYRIGHT_HOLDERS="Josep Bigorra"
-I18N_LOCATION="resources/locale"
+DEPLOY_WWW:="/srv/http/jointhefreeworld.org"
+COPYRIGHT_HOLDERS:="Josep Bigorra"
+I18N_LOCATION:="resources/locale"
 
-LOG_MSG_PREFIX = "\n\033[1m[INFO]["
-LOG_MSG_SUFFIX_PRE_MSG = "]"
-LOG_END="\033[0m\n"
+LOG_MSG_PREFIX:="\n\033[1m[INFO]["
+LOG_MSG_SUFFIX_PRE_MSG:="]"
+LOG_END:="\033[0m\n"
+
+ELISP_MANUAL_CMD:='(progn (find-file "$(shell realpath ./docs/manual/en.org)")(org-html-export-to-html)(message "finished publishing SSS manual"))'
+API_DOCS_CSS_URL:="https://jointhefreeworld.org/static-assets/api-docs/css/style.css"
+
 
 # G_: translate messages using gettext (i18n)
 define G_
@@ -205,13 +209,14 @@ fpi:  # Installs Flatpak packages
 fpu:  # Updates Flatpak packages
 	@make update-flatpak-packages
 
-# deploy: Deploys the manual HTML to a web server directory.
+
+# deploy: Deploys the documentation to a web server directory.
 deploy:
 	guix shell -m manifest.scm -- emacs -Q --batch \
-		--eval '(progn (find-file "$(shell realpath ./docs/manual/en-GB.org)")(org-html-export-to-html)(message "finished publishing SSS manual"))'
+		--eval $(ELISP_MANUAL_CMD)
 	mkdir -pv $(DEPLOY_WWW)/manuals/sss
 	rm -rfv $(DEPLOY_WWW)/manuals/sss/index.html
-	mv -v docs/manual/en-GB.html $(DEPLOY_WWW)/manuals/sss/index.html
+	mv -v docs/manual/en.html $(DEPLOY_WWW)/manuals/sss/index.html
 
 # repl: Start a Guile Scheme development REPL
 repl:
@@ -234,7 +239,6 @@ test: fmt
 
 update-submodules:
 	git submodule update --remote --merge
-
 
 full-reset-emacs:
 	-pkill emacs

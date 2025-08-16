@@ -22,7 +22,6 @@
   #:use-module (json)
   #:use-module (sss prelude)
   #:export (serialize-firefox-ini-setting serialize-firefox-userjs-setting
-                                          userjs-value-quoting
                                           firefox-profile-default
                                           firefox-profile-sss
                                           firefox-profile-general

@@ -309,17 +309,16 @@ Frequently used packages.
 
 [[file:../files/plain/chapra/nftables.conf][chapra/nftables.conf]]
 
-** sing-box
+** tailscale
 #+begin_src scheme :noweb-ref service
-  (service sing-box-service-type
-    (sing-box-configuration
-      (shepherd-requirement '(networking nftables))
-      (config-file
-       (sing-box-config
-        '("100.88.159.55/28" "fd7a:115c:a1e0::c801:9f3e/126")))))
+  (service tailscale-service-type)
 #+end_src
 
 ** openssh
+#+begin_src scheme :noweb-ref package
+  "mosh"
+#+end_src
+
 #+begin_src scheme :noweb-ref service
   (service openssh-service-type
     (openssh-configuration

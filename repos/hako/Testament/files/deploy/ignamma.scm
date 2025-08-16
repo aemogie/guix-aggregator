@@ -11,7 +11,7 @@
    (environment managed-host-environment-type)
    (configuration
     (machine-ssh-configuration
-      (host-name "ignamma.ultrarare.space")
+      (host-name "ignamma")
       (system "x86_64-linux")
       (user "deploy")
       (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFLJvoZh/xEjDq43Osbg3bUek9GJoTYkUJo5+K2f3rOP")))))

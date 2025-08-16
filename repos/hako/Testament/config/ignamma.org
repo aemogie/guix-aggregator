@@ -263,6 +263,7 @@ Frequently used packages.
                       (inherit config)
                       (discover? #t)
                       (extra-options '("--cores=4" "--max-jobs=4"))
+                      (http-proxy "http://192.168.31.233:7890")
                       (tmpdir "/mnt/Lancea/System/@Build")))))))
 #+end_src
 
@@ -342,15 +343,16 @@ Frequently used packages.
 
 [[file:../files/plain/ignamma/nftables.conf][ignamma/nftables.conf]]
 
-** sing-box
+** tailscale
 #+begin_src scheme :noweb-ref service
-  (service sing-box-service-type
-    (sing-box-configuration
-      (shepherd-requirement '(networking nftables))
-      (config-file (sing-box-config))))
+  (service tailscale-service-type)
 #+end_src
 
 ** openssh
+#+begin_src scheme :noweb-ref package
+  "mosh"
+#+end_src
+
 #+begin_src scheme :noweb-ref service
   (service openssh-service-type
     (openssh-configuration

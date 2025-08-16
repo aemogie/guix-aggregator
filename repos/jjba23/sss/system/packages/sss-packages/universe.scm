@@ -94,6 +94,7 @@
                      gnuzilla
                      golang
                      graphics
+                     graphviz
                      gsasl
                      gtk
                      guile
@@ -207,6 +208,7 @@
         gparted
         gthumb
         gtk
+        graphviz
         hplip
         httpie
         icedove

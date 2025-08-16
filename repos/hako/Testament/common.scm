@@ -28,6 +28,13 @@
   (curve Ed25519)
   (q #374EC58F5F2EC0412431723AF2D527AD626B049D657B5633AAAEBC694F3E33F9#)))"))
 
+(define %guix-authorized-key-bocis
+  (plain-file "bocis.pub" "
+(public-key
+ (ecc
+  (curve Ed25519)
+  (q #4048CC570B57B6399A8F561B1EC624C3BE5E1465175AD568AADC3F3DFB1B5A8A#)))"))
+
 (define %guix-authorized-key-ignamma
   (plain-file "ignamma.pub" "
 (public-key
@@ -39,6 +46,7 @@
   (list %guix-authorized-key-dorphine
         %guix-authorized-key-gokuraku
 
+        %guix-authorized-key-bocis
         %guix-authorized-key-ignamma))
 
 ;; Managed by Zheng Junjie.
@@ -53,6 +61,7 @@
   (list %guix-authorized-key-dorphine
         %guix-authorized-key-gokuraku
 
+        %guix-authorized-key-bocis
         %guix-authorized-key-ignamma
         %guix-authorized-key-sin))
 
@@ -143,27 +152,37 @@ WARNED."
   (local-file (testament-blobs "gokuraku.yaml")))
 
 
-(define* (sing-box-config #:optional (ip-addresses '("172.19.0.1/30" "fd00::1/126"))
-                          #:key android? clash-api?)
-  (define %direct-processes
-    '(".qbittorrent-nox-real"
-      "cs2"
-      "rclone"
-      "sing-box"
-      "smartdns"
-      "steam"
-      "syncthing"
-      "wineserver"))
+(define (sing-box-config)
+  (define %rule-sets
+    (let ((geosite
+           (lambda (rule-set)
+             `(("type" . "remote")
+               ("tag" . ,(format #f "geosite-~a" rule-set))
+               ("url" . ,(format #f "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geosite/~a.srs" rule-set))
+               ("download_detour" . "OUT: Proxy"))))
+          (geoip
+           (lambda (rule-set)
+             `(("type" . "remote")
+               ("tag" . ,(format #f "geoip-~a" rule-set))
+               ("url" . ,(format #f "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geoip/~a.srs" rule-set))
+               ("download_detour" . "OUT: Proxy")))))
+      (append
+       (map geosite '("category-ads-all" "cn" "gfw" "private"))
+       (map geoip   '("cn" "telegram")))))
+
+  (define %block-rules
+    '((("rule_set" . "geosite-category-ads-all"))))
 
   (define %direct-rules
     '((("protocol" . "bittorrent"))
-      (("rule_set" . "geosite-geolocation-cn"))
-      (("type" . "logical")
-       ("mode" . "and")
-       ("rules"
-        . #((("rule_set" . "geosite-geolocation-!cn")
-             ("invert" . #t))
-            (("rule_set" . "geoip-cn")))))))
+      (("rule_set" . "geosite-private"))
+      (("rule_set" . "geosite-cn"))
+      (("rule_set" . "geoip-cn"))))
+
+  (define %proxy-rules
+    '((("rule_set" . "geosite-gfw"))
+      (("rule_set" . "geoip-telegram"))
+      (("inbound" . "IN: Proxy"))))
 
   (define %config
     `(("log"
@@ -171,74 +190,69 @@ WARNED."
       ("dns"
        ("servers"
         . #((("type" . "tls")
+             ("tag" . "DNS: Direct")
+             ("server" . "223.5.5.5"))
+            (("type" . "tls")
              ("tag" . "DNS: Proxy")
              ("detour" . "OUT: Proxy")
-             ("server" . "1.1.1.1"))
-            (("type" . "tls")
-             ("tag" . "DNS: Direct")
-             ("server" . "223.5.5.5"))))
+             ("server" . "1.1.1.1"))))
        ("rules"
         . #(,@(map (lambda (rule)
                      `(,@rule
                        ("server" . "DNS: Direct")))
                    %direct-rules)
-            (("process_name" . #(,@%direct-processes))
-             ("server" . "DNS: Direct")))))
-      ("endpoints"
-       . #((("type" . "tailscale")
-            ("tag" . "EP: Tailscale")
-            ("domain_resolver" . "DNS: Direct"))))
+            ,@(map (lambda (rule)
+                     `(,@rule
+                       ("server" . "DNS: Proxy")))
+                   %proxy-rules))))
       ("inbounds"
-       . #((("type" . "tun")
+       . #((("type" . "direct")
+            ("tag" . "IN: DNS")
+            ("listen" . "0.0.0.0")
+            ("listen_port" . 53)
+            ("network" . "udp"))
+           (("type" . "mixed")
+            ("tag" . "IN: Proxy")
+            ("listen" . "0.0.0.0")
+            ("listen_port" . 7890))
+           (("type" . "tun")
             ("tag" . "IN: Tun")
-            ("address" . #(,@ip-addresses))
+            ("address" . #("172.19.0.1/30" "fd00::1/126"))
             ("auto_route" . #t)
-            ("auto_redirect" . ,(not android?))
+            ("auto_redirect" . #t)
             ("strict_route" . #t))))
       ("outbounds"
-       . #(,(call-with-input-string (sops-str dorphine.yaml '("sing-box")) read)
-           (("type" . "direct")
-            ("tag" . "OUT: Direct")
-            ("domain_resolver" . "DNS: Direct"))))
+       . #((("type" . "direct")
+            ("tag" . "OUT: Direct"))
+           (("type" . "block")
+            ("tag" . "OUT: Block"))
+           ,(call-with-input-string (sops-str dorphine.yaml '("sing-box")) read)))
       ("route"
        ("rules"
         . #((("action" . "sniff"))
             (("protocol" . "dns")
              ("action" . "hijack-dns"))
-            (("ip_cidr" . #("100.64.0.0/10" "fd71:115c:a1e0::/48"))
-             ("outbound" . "EP: Tailscale"))
             (("ip_is_private" . #t)
              ("outbound" . "OUT: Direct"))
             ,@(map (lambda (rule)
                      `(,@rule
+                       ("outbound" . "OUT: Block")))
+                   %block-rules)
+            ,@(map (lambda (rule)
+                     `(,@rule
                        ("outbound" . "OUT: Direct")))
                    %direct-rules)
-            (("process_name" . #(,@%direct-processes))
-             ("outbound" . "OUT: Direct"))))
-       ("rule_set"
-        . #((("type" . "remote")
-             ("tag" . "geosite-geolocation-cn")
-             ("url" . "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-geolocation-cn.srs"))
-            (("type" . "remote")
-             ("tag" . "geosite-geolocation-!cn")
-             ("url" . "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-geolocation-!cn.srs"))
-            (("type" . "remote")
-             ("tag" . "geoip-cn")
-             ("url" . "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-cn.srs"))))
-       ("find_process" . #t)
+            ,@(map (lambda (rule)
+                     `(,@rule
+                       ("outbound" . "OUT: Proxy")))
+                   %proxy-rules)))
+       ("rule_set" . #(,@%rule-sets))
        ("auto_detect_interface" . #t)
        ("default_domain_resolver" . "DNS: Direct"))
       ("experimental"
        ("cache_file"
         ("enabled" . #t)
-        ("store_rdrc" . #t))
-       ,@(if clash-api?
-             '(("clash_api"
-                ("external_controller" . "127.0.0.1:9090")
-                ("external_ui" . "ui")
-                ("external_ui_download_url" . "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip")
-                ("external_ui_download_detour" . "OUT: Proxy")))
-             '()))))
+        ("store_rdrc" . #t)))))
 
   (computed-file "sing-box.json"
     (with-extensions (map specification->package '("guile-json@4"))

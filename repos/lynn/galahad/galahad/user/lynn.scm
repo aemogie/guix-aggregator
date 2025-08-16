@@ -18,6 +18,7 @@
   #:use-module (gnu packages shellutils)
   #:use-module (gnu packages shells)
   #:use-module (gnu packages llvm)
+  #:use-module (gnu packages ibus)
   #:use-module (gnu services) ;simple service
   #:use-module (guix gexp) ;plain-file
   #:use-module (gnu home)
@@ -47,6 +48,12 @@
 	hyfetch
 	fcitx5
 	fcitx5-gtk
+	fcitx5-gtk4
+	fcitx5-qt
+	fcitx5-rime
+	fcitx5-chinese-addons
+	fcitx5-configtool
+	librime
 	xdg-utils
 	xdg-desktop-portal
 	xdg-desktop-portal-gtk
