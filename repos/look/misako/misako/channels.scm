@@ -35,7 +35,7 @@
   (channel
     (name 'nonguix)
     (url "https://gitlab.com/look7/nonguix")
-    (branch "nonguix-hacks")
+    (branch "hacks")
     (introduction
       (make-channel-introduction
         "897c1a470da759236cc11798f4e0a5f7d4d59fbc"

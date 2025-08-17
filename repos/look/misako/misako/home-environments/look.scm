@@ -78,6 +78,7 @@
   #|NonGNU|#
   #:use-module (nongnu packages game-client)
   #:use-module (nongnu packages nvidia)
+  #:use-module (nongnu packages productivity)
   #:use-module (nongnu packages video)
   #|Radix|#
   #:use-module (radix utils)
@@ -128,7 +129,7 @@
         #|                |# light ncurses git sops kexec-tools pciutils
         #|                |# gtk gtk+ gsettings-desktop-schemas
         #|                |# p7zip opentabletdriver-bin
-        #|Productivity    |# wayneko newsraft playerctl spotify ;kew
+        #|Productivity    |# wayneko newsraft playerctl spotify obsidian ;kew
         #|Shell           |# fish
         #|Terminal        |# foot ghostty-tip
         #|Guile           |# guile-next guile-readline guile-colorized guile-gcrypt
@@ -154,7 +155,7 @@
         #|Image Viewer    |# imv
         #|Sound           |# wireplumber-minimal ncpamixer helvum easyeffects
         #|Password Manager|# keepassxc password-store passff-host
-        #|PDF             |# sioyek ;zaread
+        #|PDF             |# sioyek zaread zathura
         #|Window Manager  |# hyprpaper hyprlock hypridle hyprcursor
         #|                |# hyprland-qtutils hyprsunset eww/wayland
         #|                |# mako waybar grim slurp bemenu fuzzel

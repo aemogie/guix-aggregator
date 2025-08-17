@@ -154,7 +154,8 @@
                 ; "https://cuirass.genenetwork.org"
                 "https://substitutes.nonguix.org"
                 ; "https://guix.bordeaux.inria.fr"
-                "https://ci.guix.gnu.org"))
+                "https://ci.guix.gnu.org"
+                "https://bordeaux.guix.gnu.org"))
             (authorized-keys
               (list substitute-key:guix.pub
                     substitute-key:bordeaux.pub
