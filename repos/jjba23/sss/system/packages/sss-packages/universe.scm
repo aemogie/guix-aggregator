@@ -27,6 +27,7 @@
   #:use-module (sss-packages tree-sitter)
   #:use-module (sss-packages universal-session)
   #:use-module (sss-packages dict)
+  #:use-module (sss-packages mbake)
   #:use-module (sss-packages dev)
   #:use-module (sss-packages shell)
   #:use-module (sss-packages container)
@@ -290,5 +291,6 @@
           (net-packages)
           (music-packages)
           (qt-packages)
+          (list mbake)
           (theme-packages)))
 

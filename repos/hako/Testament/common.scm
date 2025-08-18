@@ -167,8 +167,15 @@ WARNED."
                ("url" . ,(format #f "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/sing/geo/geoip/~a.srs" rule-set))
                ("download_detour" . "OUT: Proxy")))))
       (append
-       (map geosite '("category-ads-all" "cn" "gfw" "private"))
-       (map geoip   '("cn" "telegram")))))
+       (map geosite
+            '("category-ads-all"
+              "category-dev"
+              "cn"
+              "gfw"
+              "private"))
+       (map geoip
+            '("cn"
+              "telegram")))))
 
   (define %block-rules
     '((("rule_set" . "geosite-category-ads-all"))))
@@ -181,6 +188,8 @@ WARNED."
 
   (define %proxy-rules
     '((("rule_set" . "geosite-gfw"))
+      (("rule_set" . "geosite-category-dev"))
+      (("domain_suffix" . ".boiledscript.com"))
       (("rule_set" . "geoip-telegram"))
       (("inbound" . "IN: Proxy"))))
 

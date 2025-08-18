@@ -1,3 +1,5 @@
+.PHONY: test docs
+
 # Makefile - installing and working with sss - Supreme Sexp System
 
 # Copyright © Josep Bigorra <jjbigorra@gmail.com>
@@ -24,22 +26,16 @@
 
 # Code:
 
-.PHONY: update system-reconfigure joe-reconfigure manon-reconfigure \
-        format jr fr sr mr fmt full-rebuild nix-profile-upgrade \
-        test gc store-gc full-gc shepherd-logs npu docs \
-        clone-user-repos install-nix-packages npi deploy install-flatpak-packages
+DEPLOY_WWW := "/srv/http/jointhefreeworld.org"
+COPYRIGHT_HOLDERS := "Josep Bigorra"
+I18N_LOCATION := "resources/locale"
 
-DEPLOY_WWW:="/srv/http/jointhefreeworld.org"
-COPYRIGHT_HOLDERS:="Josep Bigorra"
-I18N_LOCATION:="resources/locale"
+LOG_MSG_PREFIX := "\n\033[1m[INFO]["
+LOG_MSG_SUFFIX_PRE_MSG := "]"
+LOG_END := "\033[0m\n"
 
-LOG_MSG_PREFIX:="\n\033[1m[INFO]["
-LOG_MSG_SUFFIX_PRE_MSG:="]"
-LOG_END:="\033[0m\n"
-
-ELISP_MANUAL_CMD:='(progn (find-file "$(shell realpath ./docs/manual/en.org)")(org-html-export-to-html)(message "finished publishing SSS manual"))'
-API_DOCS_CSS_URL:="https://jointhefreeworld.org/static-assets/api-docs/css/style.css"
-
+ELISP_MANUAL_CMD := '(progn (find-file "$(shell realpath ./docs/manual/en.org)")(org-html-export-to-html)(message "finished publishing SSS manual"))'
+API_DOCS_CSS_URL := "https://jointhefreeworld.org/static-assets/api-docs/css/style.css"
 
 # G_: translate messages using gettext (i18n)
 define G_
@@ -104,7 +100,6 @@ define sss-user-reconfigure
 	@-make document-keybindings-dconf
 endef
 
-
 joe-reconfigure: format test
 	$(call sss-user-reconfigure,"joe")
 	-hyprctl reload
@@ -116,7 +111,6 @@ manon-reconfigure: format test
 	$(call sss-user-reconfigure,"manon")
 mr:
 	make manon-reconfigure
-
 
 # full-rebuild: Rebuilds the entire system and home environment for Joe.
 full-rebuild: format
@@ -137,11 +131,11 @@ format:
 	@-find ~+ -maxdepth 8 -name "*.scm" -type f -exec guix style -f {} \;
 	@-find ~+ -maxdepth 8 -name "*.el" -type f -exec emacs -Q --batch {} \
 		-l $(shell realpath ./src/sss/emacs/batch-indent.el) -f indent-file \;
+	@-mbake format --config .mbake.toml Makefile
 	$(call sss-log-complete,"format")
 
-
 # Cleans up unused objects in the Guix store.
-store-gc:  
+store-gc:
 	@sudo guix gc
 
 # Performs a full garbage collection across Guix and Nix stores.
@@ -153,7 +147,7 @@ full-gc:
 	-nix-store --gc --print-roots | egrep -v "^(/nix/var|/run/\w+-system|\{memory|/proc)"
 
 # Displays the logs for the Shepherd service manager.
-shepherd-logs:  
+shepherd-logs:
 	cat $(HOME)/.local/state/log/shepherd.log
 
 # clone-user-repos: Clones user repositories using a custom script.
@@ -185,30 +179,28 @@ document-keybindings-dconf:
 
 # Aliases for common tasks
 
-
-sr:  # Alias for system-reconfigure
+sr: # Alias for system-reconfigure
 	@make system-reconfigure
 
-fr:  # Alias for full-rebuild
+fr: # Alias for full-rebuild
 	@make full-rebuild
 
-gc:  # Deletes old generations (1 day or older).
+gc: # Deletes old generations (1 day or older).
 	@sudo guix system delete-generations 1d
 
-npu:  # Alias for nix-profile-upgrade
+npu: # Alias for nix-profile-upgrade
 	@make nix-profile-upgrade
 
-fmt:  # Alias for format
+fmt: # Alias for format
 	@make format
 
-npi:  # Installs Nix packages 
+npi: # Installs Nix packages
 	@make install-nix-packages
 
-fpi:  # Installs Flatpak packages
+fpi: # Installs Flatpak packages
 	@make install-flatpak-packages
-fpu:  # Updates Flatpak packages
+fpu: # Updates Flatpak packages
 	@make update-flatpak-packages
-
 
 # deploy: Deploys the documentation to a web server directory.
 deploy:

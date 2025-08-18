@@ -155,7 +155,7 @@
         #|Image Viewer    |# imv
         #|Sound           |# wireplumber-minimal ncpamixer helvum easyeffects
         #|Password Manager|# keepassxc password-store passff-host
-        #|PDF             |# sioyek zaread zathura
+        #|PDF             |# sioyek zaread zathura zathura-pdf-poppler
         #|Window Manager  |# hyprpaper hyprlock hypridle hyprcursor
         #|                |# hyprland-qtutils hyprsunset eww/wayland
         #|                |# mako waybar grim slurp bemenu fuzzel

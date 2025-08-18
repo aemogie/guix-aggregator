@@ -434,10 +434,3 @@
   (smtpmail-stream-type 'ssl)
   (smtpmail-queue-mail t)
   (smtpmail-queue-dir "~/.local/share/queued-mail"))
-
-;;guix:emacs-pinentry
-(use-package pinentry
-  :custom
-  (epg-pinentry-mode 'loopback)
-  :hook
-  (after-init . pinentry-start))

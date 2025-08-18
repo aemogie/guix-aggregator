@@ -372,7 +372,6 @@ Frequently used packages.
                       (inherit config)
                       (discover? #t)
                       (extra-options '("--cores=24"))
-                      (http-proxy "http://100.90.40.94:7890")
                       (tmpdir "/mnt/Mentha/System/@Build")))))))
 #+end_src
 
@@ -560,10 +559,8 @@ Generate passwordless ECC key:
 #+begin_src scheme :noweb-ref home-service
   (service home-gpg-agent-service-type
     (home-gpg-agent-configuration
-      (pinentry-program
-       (file-append (spec->pkg "pinentry-emacs") "/bin/pinentry-emacs"))
-      (ssh-support? #t)
-      (extra-content "allow-loopback-pinentry")))
+      (pinentry-program (file-append (spec->pkg "pinentry") "/bin/pinentry"))
+      (ssh-support? #t)))
 #+end_src
 
 ** libfido2

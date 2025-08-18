@@ -263,7 +263,6 @@ Frequently used packages.
                       (inherit config)
                       (discover? #t)
                       (extra-options '("--cores=4" "--max-jobs=4"))
-                      (http-proxy "http://192.168.31.233:7890")
                       (tmpdir "/mnt/Lancea/System/@Build")))))))
 #+end_src
 
