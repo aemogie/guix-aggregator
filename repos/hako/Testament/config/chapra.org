@@ -30,7 +30,9 @@
 
 * Base
 #+begin_src scheme :noweb-ref module
+  (gnu services linux)
   (gnu services ssh)
+  (gnu services sysctl)
 #+end_src
 
 ** Bootloader & Kernel
@@ -51,6 +53,17 @@
               "zswap.enabled=1"
               "zswap.max_pool_percent=90"
               (operating-system-user-kernel-arguments os)))))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'add-extra-modules
+      kernel-module-loader-service-type
+    '("tcp_bbr"))
+
+  (simple-service 'add-sysctl-rules
+      sysctl-service-type
+    '(("net.core.default_qdisc" . "fq_pie")
+      ("net.ipv4.tcp_congestion_control" . "bbr")))
 #+end_src
 
 ** File Systems

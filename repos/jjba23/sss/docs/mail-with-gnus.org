@@ -99,6 +99,7 @@ Summary Buffer (gnus-summary-mode)
 | g |	Get new articles (updates the list of messages). |
 | n | or SPC	Go to the next unread article. |
 | p |	Go to the previous unread article. |
+| ! | Tick an article (flag) |
 | m |	Compose a new email. |
 | r |	Reply to the sender of the current article. |
 | S | f	Forward the current article. |
@@ -524,17 +525,11 @@ My ~/.gnus.el,
       smtpmail-smtp-service 587
       gnus-ignored-newsgroups "^to\\.\\|^[0-9. ]+\\( \\|$\\)\\|^[\"]\"[#'()]")
 
-(setq gnus-thread-sort-functions
-      '(gnus-thread-sort-by-most-recent-date
-        (not gnus-thread-sort-by-number)))
-
-
 (setq gnus-use-cache t)
 
 (setq gnus-thread-sort-functions
       '(gnus-thread-sort-by-most-recent-date
         (not gnus-thread-sort-by-number)))
-
 
 
 ;; BBDB: Address list

@@ -42,14 +42,7 @@
         (base32 "1badaaw5cxbca7fqahjm6j5yk6mmcakc4772q9gdrr84jx9wjd67"))))
     (build-system pyproject-build-system)
     (propagated-inputs (list python-rich python-tomli python-typer))
-    (native-inputs (list python-black
-                         python-hatchling
-                         python-mypy
-                         python-pytest
-                         python-pytest-cov
-                         ;; TODO enable when Ruff is upstreamed
-                         ;; python-ruff
-                         python-tomli))
+    (native-inputs (list python-hatchling python-pytest python-pytest-cov))
     (home-page "https://github.com/EbodShojaei/bake")
     (synopsis "A Python-based Makefile formatter and linter")
     (description

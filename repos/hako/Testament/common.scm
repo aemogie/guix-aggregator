@@ -49,6 +49,17 @@
         %guix-authorized-key-bocis
         %guix-authorized-key-ignamma))
 
+(define %guix-authorized-key-nuporta
+  (plain-file "nuporta.pub" "
+(public-key
+ (ecc
+  (curve Ed25519)
+  (q #44CBF83288D090E877ED1B852ECCD790B2D48E11E7ECF3FFA38A1F46D5E40DCA#)))"))
+
+(define %hako-guix-authorized-keys-self
+  (cons* %guix-authorized-key-nuporta
+         %hako-guix-authorized-keys-lan))
+
 ;; Managed by Zheng Junjie.
 (define %guix-authorized-key-sin
   (plain-file "sin.pub" "

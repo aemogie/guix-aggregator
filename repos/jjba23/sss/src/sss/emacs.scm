@@ -104,6 +104,7 @@
                                 go
                                 libs
                                 macros
+                                mail
                                 maps
                                 misc
                                 music

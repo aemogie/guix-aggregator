@@ -31,7 +31,9 @@
 * Base
 #+begin_src scheme :noweb-ref module
   (sops secrets)
+  (gnu services linux)
   (gnu services ssh)
+  (gnu services sysctl)
   (sops services sops)
 #+end_src
 
@@ -53,6 +55,17 @@
               "zswap.enabled=1"
               "zswap.max_pool_percent=90"
               (operating-system-user-kernel-arguments os)))))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'add-extra-modules
+      kernel-module-loader-service-type
+    '("tcp_bbr"))
+
+  (simple-service 'add-sysctl-rules
+      sysctl-service-type
+    '(("net.core.default_qdisc" . "fq_pie")
+      ("net.ipv4.tcp_congestion_control" . "bbr")))
 #+end_src
 
 ** File Systems
@@ -188,8 +201,8 @@ Frequently used packages.
       (port 49637)
       (compression '(("zstd" 19)))
       (cache "/var/cache/guix/publish")
-      ;; 30 days
-      (ttl (* 30 24 3600))
+      ;; 6 months
+      (ttl (* 6 30 24 3600))
       ;; 2 minutes
       (negative-ttl (* 2 60))))
 #+end_src
@@ -351,7 +364,13 @@ Remember to open TCP port 5555 and 5556.
       (interval (* 6 3600))
       (parameters
        (plain-file "cuirass-parameters"
-         "(%cuirass-url \"https://ci.boiledscript.com\")\n"))
+         (call-with-output-string
+           (lambda (port)
+             (write
+              '(begin
+                 (%cuirass-url "https://ci.boiledscript.com")
+                 (%forgejo-notification-type 'update-pull-request-body))
+              port)))))
       (remote-server
        (cuirass-remote-server-configuration
          (trigger-url "http://localhost:49637")
@@ -391,7 +410,8 @@ Remember to open TCP port 5555 and 5556.
                (openpgp-fingerprint
                 "7EBE A494 60CE 5E2C 0875  7FDB 3B5A A993 E1A2 DFF0"))))))
     (priority 5)
-    (systems '("x86_64-linux" "aarch64-linux" "i686-linux")))
+    (systems '("x86_64-linux" "aarch64-linux" "i686-linux"))
+    (properties '((forge-type . forgejo))))
 #+end_src
 
 #+begin_src scheme :noweb-ref cuirass-spec
@@ -432,7 +452,8 @@ Remember to open TCP port 5555 and 5556.
                (openpgp-fingerprint
                 "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7"))))))
     (priority 5)
-    (systems '("x86_64-linux" "aarch64-linux" "i686-linux")))
+    (systems '("x86_64-linux" "aarch64-linux" "i686-linux"))
+    (properties '((forge-type . forgejo))))
 #+end_src
 
 * Web Servers
