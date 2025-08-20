@@ -681,9 +681,6 @@ Generate passwordless ECC key:
 #+end_src
 
 ** Graphics Driver
-通常用 nvidia-driver，出問題時換 nouveau。
-
-*** nvidia-driver
 #+begin_src scheme :noweb-ref transformation
   (nonguix-transformation-nvidia)
 
@@ -691,12 +688,6 @@ Generate passwordless ECC key:
     (operating-system
       (inherit os)
       (packages (replace-mesa (operating-system-packages os)))))
-#+end_src
-
-*** nouveau
-To use NVK, mesa should be installed into a profile.
-#+begin_src scheme :noweb-ref package
-  #;"mesa"
 #+end_src
 
 ** Wayland
