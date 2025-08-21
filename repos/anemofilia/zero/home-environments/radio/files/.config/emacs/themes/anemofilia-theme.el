@@ -1,33 +1,35 @@
 ;;-*- lexical-binding: t; -*-
 
 ;; base colors
-(setq red "#df6760")
-(setq green "#8be760")
-(setq yellow "#ffd17a")
-(setq blue "#9688d9")
-(setq dark-blue "#5a5182")
-(setq magenta "#fc97ff")
-(setq cyan "#86adff")
-(setq white "gray80")
-(setq light-gray "gray79")
-(setq gray "#808080")
-(setq dark-gray "#313131")
-(setq darker-gray "#1a1a1a")
-(setq black "#000000")
+(defvar red "#df6760")
+(defvar green "#8be760")
+(defvar yellow "#ffd17a")
+(defvar blue "#9688d9")
+(defvar dark-blue "#5a5182")
+(defvar magenta "#fc97ff")
+(defvar cyan "#86adff")
+(defvar white "gray80")
+(defvar light-gray "gray79")
+(defvar gray "#808080")
+(defvar dark-gray "#313131")
+(defvar darker-gray "#1a1a1a")
+(defvar black "#000000")
 
 ;; normal and focused colors
-(setq normal-bg darker-gray)
-(setq normal-fg white)
+(defvar normal-bg darker-gray)
+(defvar normal-fg white)
 
-(setq focused-bg dark-gray)
-(setq focused-fg blue)
+(defvar focused-bg dark-gray)
+(defvar focused-fg blue)
 
 (deftheme anemofilia
   "Created 2022-01-11.")
 
 (defface fill-column-face
   `((t (:background ,dark-gray :foreground ,blue)))
-  "Face for highlighting characters at fill-column.")
+  "Face for highlighting characters at fill-column."
+  :group 'basic-faces
+  :group 'display-fill-column-indicator)
 
 (defun display-fill-column-indicator-char-update (&rest _)
   (let* ((active
@@ -51,19 +53,19 @@
              #'display-fill-column-indicator-char-update)
 
 (defface tab-bar-tab-focused-occupied
-  `((t :inherit tab-bar-tab :overline t))
+  `((t (:inherit tab-bar-tab :overline t)))
     "Tab bar face for focused tabs that are occupied."
    :group 'tab-bar-faces)
 (defface tab-bar-tab-unfocused-occupied
-  `((t :inherit tab-bar-tab-inactive :overline t))
+  `((t (:inherit tab-bar-tab-inactive :overline t)))
     "Tab bar face for unfocused tabs that are occupied."
     :group 'tab-bar-faces)
 (defface tab-bar-tab-focused-empty
-  `((t :inherit tab-bar-tab))
+  `((t (:inherit tab-bar-tab)))
     "Tab bar face for focused tabs that are empty."
     :group 'tab-bar-faces)
 (defface tab-bar-tab-unfocused-empty
-  `((t :inherit tab-bar-tab-inactive))
+  `((t (:inherit tab-bar-tab-inactive)))
     "Tab bar face for unfocused tabs that are empty."
     :group 'tab-bar-faces)
 
@@ -157,14 +159,14 @@
  `(rainbow-delimiters-base-error-face ((default (:inherit (rainbow-delimiters-base-face))) (t (:foreground ,red))))
 
  `(org-document-title ((t (:height 1.2 :underline nil :inherit org-level-1))))
- `(org-level-1 ((t (:inherit default :extend t :foreground ,white :family "Sans Serif"))))
- `(org-level-2 ((t (:family "Sans Serif" :foreground ,white :extend t :inherit default))))
- `(org-level-3 ((t (:foreground ,white :extend t :inherit default))))
+ `(org-level-1 ((t (:inherit default :extend t :foreground ,white))))
+ `(org-level-2 ((t (:inherit default :extend t :foreground ,white))))
+ `(org-level-3 ((t (:inherit default :extend t :foreground ,white))))
  `(org-level-4 ((t (:inherit default :extend t :foreground ,white))))
  `(org-level-5 ((t (:inherit default :extend t :foreground ,white))))
- `(org-level-6 ((t (:extend t :foreground :inherit (default)))))
- `(org-level-7 ((t (:extend t :foreground ,white :inherit (default)))))
- `(org-level-8 ((t (:extend t :foreground ,white :inherit (default)))))
+ `(org-level-6 ((t (:inherit default :extend t :foreground ,white))))
+ `(org-level-7 ((t (:inherit default :extend t :foreground ,white))))
+ `(org-level-8 ((t (:inherit default :extend t :foreground ,white))))
  `(org-todo ((t (:foreground ,green :weight bold))))
  `(org-done ((t (:foreground ,red :weight bold))))
  `(org-table ((t (:foreground ,white))))
@@ -201,7 +203,7 @@
  `(fixed-pitch ((t (:family "Monospace"))))
  `(fixed-pitch ((t (:family "Monospace"))))
  `(variable-pitch ((((type w32)) (:foundry "outline" :family "Arial")) (t (:family "Sans Serif"))))
- `(escape-glyph ((t (:background "#444083" :foreground ,yellow))))
+ `(escape-glyph ((t (:inherit default))))
  `(homoglyph ((t (:foreground ,yellow))))
  `(minibuffer-prompt ((t (:foreground ,blue))))
  `(highlight ((t (:background ,blue :foreground ,black))))

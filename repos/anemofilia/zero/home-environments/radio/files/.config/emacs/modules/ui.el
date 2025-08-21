@@ -141,16 +141,23 @@
                     :system t))
             abbrevs))
 
-  (defun anemofilia/add-cape-completions ()
+  (defun anemofilia/add-basic-cape-completions ()
     "Add cape completion functions to complete-at-point-functions."
     (dolist (function '(cape-file
-                        cape-tex
                         cape-dabbrev
-                        cape-keyword
-                        cape-elisp-block
+                        cape-keyword))
+      (add-to-list 'completion-at-point-functions function)))
+  (defun anemofilia/add-elisp-cape-completions ()
+    "Add cape elisp completion functions to complete-at-point-functions."
+    (dolist (function '(cape-elisp-block
                         cape-elisp-symbol))
-      (add-to-list 'completion-at-point-functions #'function)))
-  :hook ((text-mode prog-mode conf-mode) . anemofilia/add-cape-completions))
+      (add-to-list 'completion-at-point-functions function)))
+  (defun anemofilia/add-tex-cape-completions ()
+    "Add cape tex completion function to complete-at-point-functions."
+    (add-to-list 'completion-at-point-functions 'cape-tex))
+  :hook (((text-mode prog-mode conf-mode) . anemofilia/add-basic-cape-completions)
+         ((TeX-mode LaTeX-mode AmSTeX-mode docTeX-mode) . anemofilia/add-tex-cape-completions)
+         ((emacs-lisp-mode lisp-interaction-mode) . anemofilia/add-elisp-cape-completions)))
 
 (use-package anzu
   :after on

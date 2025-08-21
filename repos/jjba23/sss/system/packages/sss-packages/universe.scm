@@ -28,6 +28,7 @@
   #:use-module (sss-packages universal-session)
   #:use-module (sss-packages dict)
   #:use-module (sss-packages mbake)
+  #:use-module (sss-packages maak)
   #:use-module (sss-packages dev)
   #:use-module (sss-packages shell)
   #:use-module (sss-packages container)
@@ -221,6 +222,7 @@
         light
         lm-sensors
         lxsession
+        maak
         mpv
         mpv-mpris
         nemo
