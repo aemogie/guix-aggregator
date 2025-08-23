@@ -52,6 +52,7 @@
   #:use-module (gnu packages less)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages man)
+  #:use-module (gnu packages nss)
   #:use-module (gnu packages display-managers)
   #:use-module (gnu packages shells)
   #:use-module (gnu packages texinfo)

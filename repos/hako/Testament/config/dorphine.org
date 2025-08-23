@@ -234,7 +234,7 @@ Maintenance:
   (simple-service 'btrfs-scrub
       shepherd-root-service-type
     (list (shepherd-timer '(btrfs-scrub)
-            #~(calendar-event #:days-of-week '(sunday))
+            #~(calendar-event #:days-of-week '(sunday) #:hours '(0) #:minutes '(0))
             #~(#$(file-append (spec->pkg "btrfs-progs") "/bin/btrfs") "scrub" "start" "/mnt/Mentha")
             #:requirement '(user-processes))))
 #+end_src
@@ -316,9 +316,7 @@ Administration accounts.
 #+begin_src scheme :noweb-ref service
   (simple-service 'add-user-ssh-keys
       openssh-service-type
-    `(("deploy"
-       ,(plain-file "hako.pub"
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2"))))
+    `(("deploy" ,%ssh-key-deploy)))
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
@@ -612,8 +610,7 @@ Generate passwordless ECC key:
   (service caddy-service-type
     (caddy-configuration
       (caddy (spec->pkg "caddy-hako"))
-      (caddyfile <<caddy-config>>)
-      (shepherd-requirement '(networking tailscaled))))
+      (caddyfile <<caddy-config>>)))
 #+end_src
 
 #+name: caddy-config

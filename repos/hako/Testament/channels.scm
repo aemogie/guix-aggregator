@@ -4,7 +4,7 @@
 
 (cons* (channel
          (name 'guixcn)
-         (url "https://github.com/guixcn/guix-channel.git")
+         (url "https://codeberg.org/guixcn/guix-channel.git")
          (introduction
           (make-channel-introduction
            "993d200265630e9c408028a022f32f34acacdf29"

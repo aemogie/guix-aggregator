@@ -77,6 +77,15 @@
         %guix-authorized-key-sin))
 
 
+(define %ssh-key-deploy
+  (plain-file "deploy.pub"
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMLWIp8y5/JGBaw+yFA5MFB5nlFpEx/tjc0q0Ij9KjTu\n"))
+
+(define %ssh-key-hako
+  (plain-file "hako.pub"
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2\n"))
+
+
 ;; Source: <https://wiki.archlinux.org/title/XDG_Base_Directory>
 (define %testament-xdg-base-directory-env-vars
   '(;; bash
@@ -183,7 +192,8 @@ WARNED."
               "category-dev"
               "cn"
               "gfw"
-              "private"))
+              "private"
+              "stripe"))
        (map geoip
             '("cn"
               "telegram")))))
@@ -200,7 +210,9 @@ WARNED."
   (define %proxy-rules
     '((("rule_set" . "geosite-gfw"))
       (("rule_set" . "geosite-category-dev"))
-      (("domain_suffix" . ".boiledscript.com"))
+      (("rule_set" . "geosite-stripe"))
+      (("domain_suffix" . "boiledscript.com"))
+      (("domain_suffix" . "freedesktop.org"))
       (("rule_set" . "geoip-telegram"))
       (("inbound" . "IN: Proxy"))))
 

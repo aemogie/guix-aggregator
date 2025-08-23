@@ -12,6 +12,7 @@
              (gnu packages gnome-xyz)
              (gnu packages guile)
              (gnu packages ibus)
+             (gnu packages image)
              (gnu packages librewolf)
              (gnu packages mail)
              (gnu packages qt)
@@ -50,6 +51,7 @@
              network-manager
              network-manager-applet
              papirus-icon-theme
+             swappy
              wireguard-tools
              zsh
              zsh-completions

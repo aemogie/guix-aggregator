@@ -41,11 +41,11 @@
   #|S|# #:use-module (gnu packages scheme)
         #:use-module (gnu packages shells)
         #:use-module (gnu packages ssh)
-        #:use-module (gnu packages suckless)
         #:use-module (gnu packages syndication)
   #|T|# #:use-module (gnu packages terminals)
         #:use-module (gnu packages tex)
         #:use-module (gnu packages text-editors)
+        #:use-module (gnu packages tree-sitter)
         #:use-module (gnu packages tmux)
         #:use-module (gnu packages toys)
   #|V|# #:use-module (gnu packages version-control)
@@ -53,20 +53,13 @@
   #|W|# #:use-module (gnu packages web)
         #:use-module (gnu packages wm)
   #|X|# #:use-module (gnu packages xdisorg)
-        #:use-module (gnu packages xorg)
-
-  #|Guix|#
-  #|C|# #:use-module (guix channels)
-  #|I|# #:use-module (guix inferior)
 
   #|home-environments radio|#
   #|C|# #:use-module ((home-environments radio channels)
                       #:prefix channel:)
 
   #|Radix packages|#
-  #|B|# #:use-module (radix packages browser-extensions)
   #|D|# #:use-module (radix packages disk)
-  #|I|# #:use-module (radix packages image-viewers)
   #|E|# #:use-module (radix packages emacs-xyz)
   #|F|# #:use-module (radix packages fish-xyz)
         #:use-module (radix packages freedesktop)
@@ -109,14 +102,6 @@
             typst
             video
             web))
-
-(define (rust-team-inferior-package name)
-  (car (lookup-inferior-packages
-        (inferior-for-channels
-         (list (channel
-                (inherit channel:guix)
-                (branch "rust-team"))))
-        name)))
 
 (define blogging
   (list #|guile-xyz|# haunt))
@@ -232,9 +217,8 @@
                 texlive-collection-mathscience))
 
 (define typst
-  (map rust-team-inferior-package
-       (list #|rust-apps|# "typst" "typstyle"
-             #|tree-sitter|# "tree-sitter-typst")))
+  (list #|rust-apps|# (@ (gnu packages rust-apps) typst) typstyle
+        #|tree-sitter|# tree-sitter-typst))
 
 (define video
   (list #|video|# ani-cli ffmpeg mpv-minimal/wayland))

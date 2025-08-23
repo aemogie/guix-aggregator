@@ -106,7 +106,7 @@ Maintenance:
   (simple-service 'btrfs-scrub
       shepherd-root-service-type
     (list (shepherd-timer '(btrfs-scrub)
-            #~(calendar-event #:days-of-week '(sunday))
+            #~(calendar-event #:days-of-week '(sunday) #:hours '(0) #:minutes '(0))
             #~(#$(file-append (spec->pkg "btrfs-progs") "/bin/btrfs") "scrub" "start" "/mnt/Lycoris")
             #:requirement '(user-processes))))
 #+end_src
@@ -149,12 +149,8 @@ Administration accounts.
 #+begin_src scheme :noweb-ref service
   (simple-service 'add-user-ssh-keys
       openssh-service-type
-    `(("deploy"
-       ,(plain-file "hako.pub"
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2"))
-      ("hako"
-       ,(plain-file "hako.pub"
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2"))))
+    `(("deploy" ,%ssh-key-deploy)
+      ("hako" ,%ssh-key-hako)))
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
@@ -388,7 +384,7 @@ Remember to open TCP port 5555 and 5556.
       (systems '("x86_64-linux" "i686-linux"))
       (server "127.0.0.1:5555")
       (substitute-urls
-       `("https://ci.ultrarare.space"
+       `("https://ci.boiledscript.com"
          ,@%default-substitute-urls))))
 #+end_src
 
@@ -467,8 +463,7 @@ Remember to open TCP port 5555 and 5556.
   (service caddy-service-type
     (caddy-configuration
       (caddy (spec->pkg "caddy-hako"))
-      (caddyfile <<caddy-config>>)
-      (shepherd-requirement '(networking tailscaled))))
+      (caddyfile <<caddy-config>>)))
 #+end_src
 
 #+name: caddy-config

@@ -17,15 +17,6 @@
 }
 
 
-(block_bots) {
-	import $$share/ai-robots-txt/Caddyfile$$
-	handle @aibots {
-		respond /* "Access denied" 403 {
-			close
-		}
-	}
-}
-
 (guix_publish) {
 	@guix_publish {
 		path /*.narinfo || /file/* || /nar/* || /nix-cache-info || /signing-key.pub
@@ -48,6 +39,23 @@
 	}
 }
 
+(tailscale) {
+	@tailscale client_ip 100.64.0.0/10 fd7a:115c:a1e0::/48
+	handle @tailscale {
+		reverse_proxy {args[0]}
+	}
+}
+
+
+(block_bots) {
+	import $$share/ai-robots-txt/Caddyfile$$
+	handle @aibots {
+		respond /* "Access denied" 403 {
+			close
+		}
+	}
+}
+
 (pow) {
 	@pow_matcher {
 		header User-Agent *Mozilla*
@@ -63,10 +71,6 @@
 
 		EOF
 	}
-}
-
-(tailscale) {
-	bind 100.97.195.93 [fd7a:115c:a1e0::2401:c35d]
 }
 
 
@@ -101,12 +105,15 @@ www.ultrarare.space {
 }
 
 # Cuirass
-ci.boiledscript.com {
+ci.guixcn.org, ci.boiledscript.com, ci.ultrarare.space {
 	import block_bots
 	import pow
 	import robots_txt
 
 	import logging cuirass
+
+	import tailscale localhost:17732
+
 	import guix_publish localhost:49637
 
 	handle /admin/* {
@@ -119,13 +126,6 @@ ci.boiledscript.com {
 			}
 		}
 	}
-	reverse_proxy localhost:17732
-}
-
-ci.ultrarare.space {
-	import tailscale
-	import logging cuirass
-	import guix_publish localhost:49637
 	reverse_proxy localhost:17732
 }
 

@@ -17,15 +17,6 @@
 }
 
 
-(block_bots) {
-	import $$share/ai-robots-txt/Caddyfile$$
-	handle @aibots {
-		respond /* "Access denied" 403 {
-			close
-		}
-	}
-}
-
 (logging) {
 	log {
 		output file /var/lib/caddy/{args[0]}.access.log
@@ -39,11 +30,21 @@
 	}
 }
 
-(pow) {
-	@pow_matcher {
-		header User-Agent *Mozilla*
+(tailscale) {
+	@tailscale client_ip 100.64.0.0/10 fd7a:115c:a1e0::/48
+	handle @tailscale {
+		reverse_proxy {args[0]}
 	}
-	proof_of_work @pow_matcher
+}
+
+
+(block_bots) {
+	import $$share/ai-robots-txt/Caddyfile$$
+	handle @aibots {
+		respond /* "Access denied" 403 {
+			close
+		}
+	}
 }
 
 (robots_txt) {
@@ -56,56 +57,37 @@
 	}
 }
 
-(tailscale) {
-	bind 127.0.0.1 [::1] 100.108.11.68 [fd7a:115c:a1e0::5201:b44]
-}
-
 
 # Komga
-http://manga.boiledscript.com {
+http://manga.boiledscript.com, manga.ultrarare.space {
 	import block_bots
-	import pow
 	import robots_txt
 
 	import logging komga
-	reverse_proxy localhost:44293
-}
 
-manga.ultrarare.space {
-	import tailscale
-	import logging komga
+	import tailscale localhost:44293
 	reverse_proxy localhost:44293
 }
 
 # Navidrome
-http://music.boiledscript.com {
+http://music.boiledscript.com, music.ultrarare.space {
 	import block_bots
-	import pow
 	import robots_txt
 
 	import logging navidrome
-	reverse_proxy localhost:43502
-}
 
-music.ultrarare.space {
-	import tailscale
-	import logging navidrome
+	import tailscale localhost:43502
 	reverse_proxy localhost:43502
 }
 
 # Jellyfin
-http://shows.boiledscript.com {
+http://shows.boiledscript.com, shows.ultrarare.space {
 	import block_bots
-	import pow
 	import robots_txt
 
 	import logging jellyfin
-	reverse_proxy localhost:22443
-}
 
-shows.ultrarare.space {
-	import tailscale
-	import logging jellyfin
+	import tailscale localhost:22443
 	reverse_proxy localhost:22443
 }
 
