@@ -90,6 +90,17 @@
            (setq dracula-alternate-mode-line-and-minibuffer nil)))
         ))
 
+(use-package catppuccin-theme
+  :ensure t
+  :config
+  (cond ((equal sss-emacs-theme 'catppuccin-latte)
+         (setopt catppuccin-flavor 'latte)
+         (load-theme 'catppuccin t))
+        ((equal sss-emacs-theme 'catppuccin-mocha)
+         (setopt catppuccin-flavor 'mocha)
+         (load-theme 'catppuccin t)))
+  )
+
 
 (provide 'sss/theme)
 

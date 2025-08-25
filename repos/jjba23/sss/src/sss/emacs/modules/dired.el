@@ -27,17 +27,17 @@
   :ensure t
   :config
   (set-face-attribute 'dired-subtree-depth-1-face nil
-		                  :background 'unspecified)
+                      :background 'unspecified)
   (set-face-attribute 'dired-subtree-depth-2-face nil
-		                  :background 'unspecified)
+                      :background 'unspecified)
   (set-face-attribute 'dired-subtree-depth-3-face nil
-		                  :background 'unspecified)
+                      :background 'unspecified)
   (set-face-attribute 'dired-subtree-depth-4-face nil
-		                  :background 'unspecified)
+                      :background 'unspecified)
   (set-face-attribute 'dired-subtree-depth-5-face nil
-		                  :background 'unspecified)
+                      :background 'unspecified)
   (set-face-attribute 'dired-subtree-depth-6-face nil
-		                  :background 'unspecified)
+                      :background 'unspecified)
   :bind (:map dired-mode-map (("<mouse-1>" . dired-subtree-toggle)
                               ("<TAB>" . dired-subtree-toggle)
                               ("C-<tab>" . dired-subtree-toggle)

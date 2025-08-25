@@ -57,6 +57,7 @@ Some of the features:
 - A custom [[https://codeberg.org/jjba23/sss-help-center-gtk][tailor made help assistant for SSS - sss-help-center-gtk]]     
 - Fastfetch configuration
 - multi-user Git configuration setup (work/personal)
+- Useful [[https://codeberg.org/jjba23/maak][Maak]] file for managing your system
 
   and more....
   

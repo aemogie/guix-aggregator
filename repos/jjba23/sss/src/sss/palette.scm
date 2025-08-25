@@ -43,7 +43,9 @@
                                             ef-melissa-light
                                             dracula
                                             gruvbox-dark
-                                            gruvbox-light))
+                                            gruvbox-light
+                                            catppuccin-mocha
+                                            catppuccin-latte))
 
 (define (raise-unknown-palette-exception palette)
   (raise-exception (make-exception-with-message (format #f
@@ -64,6 +66,8 @@
     ('gruvbox-light (cdr (assoc sym gruvbox-light)))
     ('gruvbox-dark (cdr (assoc sym gruvbox-dark)))
     ('dracula (cdr (assoc sym dracula)))
+    ('catppuccin-latte (cdr (assoc sym catppuccin-latte)))
+    ('catppuccin-mocha (cdr (assoc sym catppuccin-mocha)))
     (_ (raise-unknown-palette-exception palette))))
 
 (define-syntax-rule (get-gtk-theme palette)
@@ -83,6 +87,8 @@
     ('gruvbox-light #f)
     ('gruvbox-dark #t)
     ('dracula #t)
+    ('catppuccin-latte #f)
+    ('catppuccin-mocha #t)
     (_ (raise-unknown-palette-exception palette))))
 
 (define-syntax-rule (get-icon-theme palette)
@@ -102,6 +108,8 @@
     ('gruvbox-light "'gruvbox-light-hard")
     ('gruvbox-dark "'gruvbox-dark-hard")
     ('dracula "'dracula")
+    ('catppuccin-latte "'catppuccin-latte")
+    ('catppuccin-mocha "'catppuccin-mocha")
     (_ (raise-unknown-palette-exception palette))))
 
 (define-syntax-rule (get-fish-color palette)
@@ -118,6 +126,8 @@
     ('gruvbox-light "d75f00")
     ('gruvbox-dark "d65d0e")
     ('dracula "bd93f9")
+    ('catppuccin-latte "ba5205")
+    ('catppuccin-mocha "b0a0cf")
     (_ (raise-unknown-palette-exception palette))))
 
 (define-syntax-rule (get-gtk-accent-color palette)
@@ -134,6 +144,8 @@
     ('gruvbox-light "'orange'")
     ('gruvbox-dark "'orange'")
     ('dracula "'pink'")
+    ('catppuccin-latte "'yellow'")
+    ('catppuccin-mocha "'pink'")
     (_ (raise-unknown-palette-exception palette))))
 
 (define-syntax-rule (get-cursor-theme palette)
@@ -165,6 +177,10 @@
                               'yellow))
     ('dracula (assoc-ref ansi-color-escapes
                          'magenta))
+    ('catppuccin-latte (assoc-ref ansi-color-escapes
+                                  'magenta))
+    ('catppuccin-mocha (assoc-ref ansi-color-escapes
+                                  'magenta))
     (_ (raise-unknown-palette-exception palette))))
 
 (define-syntax-rule (hex-to-decimal n)
@@ -275,3 +291,17 @@
     (text-l . "#e7e8e1")
     (background . "#282a36")
     (background-l . "#44475a")))
+
+(define catppuccin-latte
+  `((primary . "#df8e1d") (primary-l . "#dc8a78")
+    (text . "#4c4f69")
+    (text-l . "#5c5f77")
+    (background . "#eff1f5")
+    (background-l . "#e6e9ef")))
+
+(define catppuccin-mocha
+  `((primary . "#cba6f7") (primary-l . "#f5c2e7")
+    (text . "#cdd6f4")
+    (text-l . "#bac2de")
+    (background . "#1e1e2e")
+    (background-l . "#181825")))

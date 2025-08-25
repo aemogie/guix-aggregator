@@ -41,8 +41,8 @@
   (setq
    gptel-model 'gemini-pro
    gptel-backend (gptel-make-gemini "Gemini"
-                   :key (lambda() (f-read-text "~/.secrets/gemini"))
-                   :stream t)))
+                                    :key (lambda() (f-read-text "~/.secrets/gemini"))
+                                    :stream t)))
 
 
 (use-package speed-type

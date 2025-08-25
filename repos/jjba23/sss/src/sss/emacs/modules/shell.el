@@ -84,7 +84,7 @@ length of PATH (sans directory slashes) down to MAX-LEN."
    (with-face (system-name) :inherit 'font-lock-function-name-face)
    ": "
    (with-face (if (string= (eshell/pwd) (getenv "HOME"))
-	          "~" (fish-path (eshell/pwd) 36))
+                  "~" (fish-path (eshell/pwd) 36))
               :inherit 'font-lock-function-name-face)
    ": "
    (with-face
@@ -105,17 +105,17 @@ length of PATH (sans directory slashes) down to MAX-LEN."
 
 (setq sss/eshell-aliases
       '((g  . magit)
-	      (gl . magit-log)
-	      (d  . dired)
+        (gl . magit-log)
+        (d  . dired)
         (h . eshell/history)
-	      (o  . find-file)
-	      (oo . find-file-other-window)
-	      (l  . (lambda () (eshell/ls '-lAh '--group-directories-first)))
+        (o  . find-file)
+        (oo . find-file-other-window)
+        (l  . (lambda () (eshell/ls '-lAh '--group-directories-first)))
         (ll  . (lambda () (eshell/ls '-lAh '--group-directories-first)))
-	      (eshell/clear . eshell/clear-scrollback)))
+        (eshell/clear . eshell/clear-scrollback)))
 
 (mapc (lambda (alias)
-	(defalias (car alias) (cdr alias)))
+        (defalias (car alias) (cdr alias)))
       sss/eshell-aliases)
 
 (provide 'sss/shell)

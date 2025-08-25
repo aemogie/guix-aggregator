@@ -38,14 +38,14 @@
 
         ;; │06-Jan│  Sender Name  │ Email Subject
         gnus-summary-line-format (concat "%0{%U%R%z%}"
-				                                 "%3{│%}" "%1{%d%}" "%3{│%}"
-				                                 "  "
-				                                 "%4{%-20,20f%}"
-				                                 "  "
-				                                 "%3{│%}"
-				                                 " "
-				                                 "%1{%B%}"
-				                                 "%s\n"))
+                                         "%3{│%}" "%1{%d%}" "%3{│%}"
+                                         "  "
+                                         "%4{%-20,20f%}"
+                                         "  "
+                                         "%3{│%}"
+                                         " "
+                                         "%1{%B%}"
+                                         "%s\n"))
   (setq gnus-thread-sort-functions
         '(gnus-thread-sort-by-most-recent-date
           (not gnus-thread-sort-by-number))))

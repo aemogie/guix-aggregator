@@ -82,8 +82,8 @@
   "Load a file in current user's configuration directory, often ~/.emacs.d, ignoring errors for resilience"
   (if (file-exists-p (expand-file-name file user-init-dir))
       (progn
-	(ignore-errors
-	  (load-file (expand-file-name file user-init-dir))))
+        (ignore-errors
+          (load-file (expand-file-name file user-init-dir))))
     (message (format "file doesn't exist: %s" (expand-file-name file user-init-dir)))))
 
 ;; ====== Load user modules ======
@@ -131,10 +131,10 @@
   :init
   (setopt tempel-path '("~/.emacs.d/snippets/*.eld")))
 
-(use-package super-save 
-  :ensure t  
-  :init (setq super-save-auto-save-when-idle t auto-save-default nil make-backup-files nil) 
-  :config (super-save-mode +1) 
+(use-package super-save
+  :ensure t
+  :init (setq super-save-auto-save-when-idle t auto-save-default nil make-backup-files nil)
+  :config (super-save-mode +1)
   (add-to-list 'super-save-hook-triggers 'find-file-hook))
 
 (use-package rainbow-mode
@@ -169,16 +169,16 @@
   (completion-category-overrides '((file (styles basic partial-completion)))))
 
 ;; TODO work on debugger support (use GUD? Realgud? DAPE?)
-;; (use-package dape 
-;;   :ensure t  
+;; (use-package dape
+;;   :ensure t
 ;;   :init (setq dape-buffer-window-arrangement 'gud))
 
-(use-package move-text 
-  :ensure t  
+(use-package move-text
+  :ensure t
   :config (move-text-default-bindings))
 
 (use-package corfu
-  :ensure t 
+  :ensure t
   :init
   (setq corfu-cycle t
         corfu-auto t
@@ -199,12 +199,12 @@
 (use-package helpful
   :ensure t
   :bind (
-	 ("C-h f" . helpful-callable)
-	 ("C-h v" . helpful-variable)
-	 ("C-h k" . helpful-key)
-	 ("C-c C-d" . helpful-at-point)
-	 ("C-h F" . helpful-function)
-	 ("C-h C" . helpful-command)))
+         ("C-h f" . helpful-callable)
+         ("C-h v" . helpful-variable)
+         ("C-h k" . helpful-key)
+         ("C-c C-d" . helpful-at-point)
+         ("C-h F" . helpful-function)
+         ("C-h C" . helpful-command)))
 
 (use-package cape
   :ensure t

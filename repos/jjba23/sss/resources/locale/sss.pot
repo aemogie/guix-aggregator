@@ -8,13 +8,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: sss\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-02 11:55+0200\n"
+"POT-Creation-Date: 2025-08-24 21:37+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "Cloning user Git repositories for SSS"
@@ -47,13 +47,18 @@ msgstr ""
 msgid "Task was completed successfully!"
 msgstr ""
 
-#: home/joe.scm:122 home/joe.scm:123 home/manon.scm:88
+#: home/joe.scm:122 home/joe.scm:123 home/joe.scm:149 home/manon.scm:88
+#: home/manon.scm:106
 #, scheme-format
 msgid "Configuring home environment for user: ~a"
 msgstr ""
 
-#: src/sss/hyprland/hyprland.scm:79
+#: src/sss/hyprland/hyprland.scm:67 src/sss/hyprland/hyprland.scm:79
 msgid "Welcome to the SSS/GNU power user session"
+msgstr ""
+
+#: src/sss/hyprland/hyprland.scm:69
+msgid "Enter and explore, for the cosmos of computation is yours to command."
 msgstr ""
 
 #: src/sss/hyprland/hyprland.scm:81
@@ -78,12 +83,34 @@ msgstr ""
 msgid "Cloning user's Git repositories"
 msgstr ""
 
+#: system/scripts/document-keybindings-dconf.scm:29
+msgid "Documenting power-user keybindings in JSON format"
+msgstr ""
+
+#: system/scripts/document-keybindings-dconf.scm:35
+msgid "Writing power-user keybindings to dconf"
+msgstr ""
+
+#: system/scripts/document-keybindings-dconf.scm:47
+msgid "Documenting universal-session keybindings in JSON format"
+msgstr ""
+
+#: system/scripts/document-keybindings-dconf.scm:53
+msgid "Writing universal-session keybindings to dconf"
+msgstr ""
+
 #: system/scripts/install-flatpak-packages.scm:26
 #, scheme-format
 msgid "Installing Flatpak package: ~a"
 msgstr ""
 
 #: system/scripts/install-flatpak-packages.scm:30
+#, scheme-format
+msgid "Cleaning font caches for package: ~a"
+msgstr ""
+
+#: system/scripts/install-flatpak-packages.scm:30
+#: system/scripts/install-flatpak-packages.scm:34
 #, scheme-format
 msgid "Installing Flatpak remote: ~a"
 msgstr ""

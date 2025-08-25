@@ -78,7 +78,8 @@ Some of the features:
 - A custom [[https://codeberg.org/jjba23/sss-help-center-gtk][tailor made help assistant for SSS - sss-help-center-gtk]]   
 - Fastfetch configuration
 - Multi user configuration
-
+- Useful [[https://codeberg.org/jjba23/maak][Maak]] file for managing your system
+  
   and more....
   
 ** Joe's Emacs configuration
@@ -125,8 +126,6 @@ In some ways this is a laboratory of experimentation for my computing environmen
 This configuration is somewhat biased towards containing a ~joe~ user who also acts as administrator for most of the time. This is trivial to change and should be easy to adapt to your needs. Your mileage may vary (YMMV).
 
 I have a bias towards Emacs-style behaviors and keyboard shortcuts, so most of my preferences in software settings get reflected on SSS, while I do try to make it all configurable.
-
-Some commands in the ~Makefile~ are more geared towards ~joe~ since we assume a device is most frequently only tended to by one system administration most of the time. Some examples are ~make fr~ or ~make jr~. Feel free to change this or contribute improvements to make this modular.
 
 The system and home folders of users are managed independently of each other, in quite a loosely coupled manner.
 
@@ -444,6 +443,10 @@ Gruvbox:
 - gruvbox-light
 - gruvbox-dark
 
+Catppuccin:
+- catppuccin-latte
+- catppuccin-mocha  
+
 Other:
 - dracula
 - heavy-metal
@@ -547,7 +550,7 @@ Note: ~make sr~ translates to ~sudo guix system reconfigure~ with some extra set
 
 While unlikely, it's possible that some packages fail to install/build for your setup. I would encourage to temporarily comment those out of the configuration (likely at ~src/sss/packages/~) and try again. After a working SSS setup, you can uncomment them and try again.
 
-For more commands take a look at the SSS Makefile: [[file:../../Makefile]].
+For more commands take a look at the ~maak.scm~ or ~Makefile~.
 
 The ~--fallback~ option is optional, and simply helps when upstream substitute (cache) servers are less available.
 
@@ -896,7 +899,7 @@ The installed software will be available, for example at: ~$HOME/.nix-profile/bi
 
 SSS provides some scripts that allow you to maintain your Nix configuration and installed packages programatically with Lisp.
 
-You can find these scripts and the list file at ~system/scripts~ in this repo and in the Makefile.
+You can find these scripts and the list file at ~system/scripts~ in this repo and in the ~maak.scm~ and ~Makefile~.
 
 Installing all wanted Nix packages can be done with ~make npi~ for example and updating them with ~make npu~.
 
@@ -1131,7 +1134,7 @@ text/html=firefox.desktop;emacsclient.desktop
 
 Q: I ran out of disk space, and have too much garbage in the system!
 
-A: Check the Makefile of SSS and run a ~make full-gc~ followed by a ~make sr~
+A: Check the ~maak.scm~ or ~Makefile~ of SSS and run a ~full-gc~ followed by a ~sr~
 
 -----
 
@@ -1208,7 +1211,7 @@ Good luck!
 * SSS keybindings
 
 Please refer to the ~keybindings-docs.scm~ file located in the ~src/sss/~ directory of this project for a comprehensive listing of keybindings in SSS, for the window manager, text editor and more.
-When configuring a user via SSS, the Makefile contains a target to write the keybinding reference in JSON format and base16 encoding to dconf, in order to be read easily by other software at ~/sss/power-user-keybindings-docs~ and (WIP) ~/sss/universal-session-keybindings-docs~.
+When configuring a user via SSS, the ~maak.scm~ and ~Makefile~ contain targets to write the keybinding reference in JSON format and base16 encoding to dconf, in order to be read easily by other software at ~/sss/power-user-keybindings-docs~ and (WIP) ~/sss/universal-session-keybindings-docs~.
 In a nutshell, the power user session leverages Emacs-like keybindings, and the universal session leverages CUA-like keybindings.
 
 ----------

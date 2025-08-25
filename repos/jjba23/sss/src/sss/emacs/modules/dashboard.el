@@ -52,7 +52,7 @@
 
 (defvar joe-welkomscherm/actions-list)
 (setopt joe-welkomscherm/actions-list
-	'((("*scratch*" . (lambda(btn) (switch-to-buffer "*scratch*")))
+        '((("*scratch*" . (lambda(btn) (switch-to-buffer "*scratch*")))
            ("*Messages*" . (lambda(btn) (switch-to-buffer "*Messages*")))
            ("re-render me" . (lambda(btn) (welkomscherm))))
           (("system-rebuild  (sr)" . (lambda(btn) (sss-sys-reconfigure)))

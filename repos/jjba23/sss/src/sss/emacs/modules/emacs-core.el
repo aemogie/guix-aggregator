@@ -28,15 +28,15 @@
 (use-package flymake
   :ensure nil
   :bind(("C-c ! b" . flymake-show-buffer-diagnostics)
-	      ("C-c ! n" . flymake-goto-next-error)
-	      ("C-c ! p" . flymake-show-project-diagnostics)
-	      ("C-c ! f" . flymake-mode)))
+        ("C-c ! n" . flymake-goto-next-error)
+        ("C-c ! p" . flymake-show-project-diagnostics)
+        ("C-c ! f" . flymake-mode)))
 
 (use-package which-key
   :ensure nil
   :config
   (setq which-key-sort-order 'which-key-key-order-alpha
-	      which-key-max-description-length 35)
+        which-key-max-description-length 35)
   (setq-default which-key-idle-delay 0.4)
   (which-key-setup-minibuffer)
   (which-key-mode))
@@ -119,8 +119,8 @@
 
   (setopt initial-buffer-choice
           (lambda () (ignore-errors
-                  (welkomscherm)
-                  (get-buffer welkomscherm/buffer-name))))
+                       (welkomscherm)
+                       (get-buffer welkomscherm/buffer-name))))
 
   (recentf-mode 1)
   (setopt recentf-max-menu-items 100
