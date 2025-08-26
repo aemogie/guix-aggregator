@@ -120,6 +120,7 @@
                      lua
                      lxde
                      lxqt
+                     maths
                      mpd
                      multiprecision
                      music
@@ -167,6 +168,7 @@
         bsd-games
         cheese
         cmatrix
+        direvent
         drill
         evince
         emacs-jinx
@@ -207,6 +209,7 @@
         evolution-data-server
         gnome-themes-extra
         glibc-locales
+        gnuplot
         gparted
         gthumb
         gtk

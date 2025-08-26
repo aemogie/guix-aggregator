@@ -37,6 +37,7 @@
   (org-src-fontify-natively t)
   (org-src-tab-acts-natively t)
   (org-edit-src-content-indentation 0)
+  (org-table-convert-region-max-lines 9999)
   :config
   (defun sss-org-mode ()
     (variable-pitch-mode 1)

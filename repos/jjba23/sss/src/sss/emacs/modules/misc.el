@@ -68,6 +68,9 @@
                   markdown-mode-hook))
     (add-hook hook #'jinx-mode)))
 
+(use-package gnuplot
+  :ensure t)
+
 
 (provide 'sss/misc)
 
