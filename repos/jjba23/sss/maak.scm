@@ -75,7 +75,7 @@
            (~ "system/scripts/~a.scm" file))))
 
 (define (run-installed-script file)
-  ($ (list (~ "sh ~/.local/bin/~a.sh" file))))
+  ($ (list (~ "sh ~~/.local/bin/~a.sh" file))))
 
 (define (notify title message)
   ($ (list (~ "fyi \"~a\" \"~a\" >/dev/null 2>&1" title message))))

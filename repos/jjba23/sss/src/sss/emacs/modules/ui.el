@@ -124,22 +124,22 @@ According to size, color and font family"
 
     (ignore-errors
       (set-face-attribute 'org-table nil
-                          :height (tekengrootte-mk-font-size 1.05)
+                          :height (tekengrootte-mk-font-size 0.92)
                           :font sss-font-mono)
       (set-face-attribute 'org-default nil
                           :height (tekengrootte-mk-font-size 1.05)
                           :font sss-font-mono)
       (set-face-attribute 'org-block nil
                           :font sss-font-mono
-                          :height (tekengrootte-mk-font-size 0.95))
+                          :height (tekengrootte-mk-font-size 0.78))
       (set-face-attribute 'org-code nil
                           :font sss-font-mono
-                          :height (tekengrootte-mk-font-size 0.95))
+                          :height (tekengrootte-mk-font-size 0.84))
       (set-face-attribute 'org-verbatim nil
                           :font sss-font-mono
                           :height (tekengrootte-mk-font-size 1.05))
       (set-face-attribute 'org-document-title nil
-                          :height (tekengrootte-mk-font-size 1.2))
+                          :height (tekengrootte-mk-font-size 1.18))
       (set-face-attribute 'org-level-1 nil
                           :font sss-font-sans
                           :weight 'bold

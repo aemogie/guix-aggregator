@@ -66,25 +66,25 @@
   "Rebuild GNU Guix Joe's configs."
   (interactive)
   (let ((default-directory (string-replace "$HOME" "~" sss-clone-dir)))
-    (async-shell-command "make jr")))
+    (async-shell-command "maak jr")))
 
 (defun sss-full-reconfigure ()
   "Fully Rebuild GNU Guix Joe's configs and Joe's user."
   (interactive)
   (let ((default-directory (string-replace "$HOME" "~" sss-clone-dir)))
-    (async-shell-command "make fr")))
+    (async-shell-command "maak fr")))
 
 (defun sss-sys-reconfigure ()
   "Rebuild GNU Guix Joe's configs."
   (interactive)
   (let ((default-directory (string-replace "$HOME" "~" sss-clone-dir)))
-    (async-shell-command "make sr")))
+    (async-shell-command "maak sr")))
 
 (defun sss-sys-update ()
   "Update GNU Guix packages."
   (interactive)
   (let ((default-directory (string-replace "$HOME" "~" sss-clone-dir)))
-    (async-shell-command "make update")))
+    (async-shell-command "maak update")))
 
 (defun sss-uuidgen ()
   "Generate a UUID (Universally Unique Identifier) and yank it to kill ring."
@@ -312,7 +312,7 @@ DATA: A string containing JSON data."
     (message clean-loc)))
 
 (defun hugot-shuffle (ls)
-  "Method from hugot, tweaked to avoid converting vecs back into lists when not needed."
+  "Fast vector-based shuffle, return LS in a shuffled way."
   (let* ((vec (seq-into ls 'vector))
          (length (length vec))
          (n 0))
