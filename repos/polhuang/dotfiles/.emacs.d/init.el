@@ -102,11 +102,13 @@
 ;; everforest
 (use-package everforest-theme
   :straight (everforest :type git :host github :repo "Theory-of-Everything/everforest-emacs")
+  :defer t
   :config
   (load-theme 'everforest-hard-dark t t)
   (load-theme 'everforest-hard-light t t)
   (load-theme 'everforest-hard-olddark t t)
   (load-theme 'everforest-hard-oldlight t t))
+
 ;; (use-package everforest-hard-dark-theme
 ;;   :load-path "~/.emacs.d/everforest-emacs/"
 ;;   :config
@@ -122,9 +124,10 @@
 (use-package cherry-seoul256-theme
   :straight (cherry-seoul256 :type git :host github :repo "polhuang/cherry-seoul256")
   :custom
-  (cherry-seoul256-background 233)
-  :config
-  (load-theme 'cherry-seoul256 t))
+  (cherry-seoul256-background 233))
+
+(load-theme 'cherry-seoul256 t)
+
 
 ;; (defvar current-theme 'everforest-hard-dark
 ;;   "Stores the currently active theme name.")
@@ -182,7 +185,7 @@
 (with-eval-after-load 'marginalia
   (set-face-attribute 'marginalia-documentation nil :inherit 'doom-mode-line :slant 'italic))
 
-;; misc ui settingsq
+;; misc ui settings
 (menu-bar-mode -1)
 (global-hl-line-mode t)
 (scroll-bar-mode -1)
@@ -474,6 +477,9 @@ Use prefix argument ARG for number of lines, otherwise use default."
 (set-register ?S (cons 'file "~/projects/cherry-seoul256/cherry-seoul256-theme.el"))
 (set-register ?t (cons 'file "~/org/tasks.org"))
 (set-register ?z (cons 'file "~/.dotfiles/.zshrc"))
+(set-register ?g (cons 'file (concat "~/.dotfiles/polterguix/systems/"
+                                     (system-name)
+                                     ".scm")))
 
 ;; use ibuffer
 (global-set-key (kbd "C-x C-b") 'ibuffer)
@@ -568,7 +574,7 @@ Use prefix argument ARG for number of lines, otherwise use default."
   (org-preview-latex-default-process 'dvipng)
 
   (org-agenda-start-with-archives-mode t)
-  (org-agenda-files '("~/org/tasks.org" "~/org/projects.org" "~/org/schedule.org"))
+  (org-agenda-files '("~/org/tasks.org" "~/org/projects.org" "~/org/schedule.org" "~/org/ticktick.org"))
   (org-agenda-format-date (lambda (date)
                             (require 'cal-iso)
                             (let* ((dayname (calendar-day-name date))
@@ -1932,6 +1938,15 @@ Otherwise, call eat."
   ;;                                    ' ((jupyter . t))))
   )
 
+(use-package claude-code-ide
+  :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :rev :newest)
+  :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
+  :config
+  (setq claude-code-ide-terminal-backend 'eat)
+  (claude-code-ide-emacs-tools-setup)) ; Optionally enable Emacs MCP tools
+
+
+
 ;; jupyter
 (use-package jupyter
   :ensure t
@@ -2065,15 +2080,11 @@ Otherwise, call eat."
                 auto-mode-alist)))
 
 ;; perspective
-(use-package perspective
+(use-package persp-mode
   :ensure t
-  :commands persp-mode
   :custom
-  (consult-customize consult--source-buffer :hidden t :default nil)
-  (add-to-list 'consult-buffer-sources persp-consult-source)
-  (persp-mode-prefix-key (kbd "C-c M-p"))
-  (persp-state-default-file (expand-file-name "perspectives/default" user-emacs-directory))
-  :init
+  (persp-save-dir (expand-file-name "perspectives/" user-emacs-directory))
+  :config
   (persp-mode))
 
 ;; nyan-mode
@@ -2086,7 +2097,7 @@ Otherwise, call eat."
 (use-package zone
   :commands zone-when-idle
   :config
-  (zone-when-idle 300))
+  (zone-when-idle 120))
 
 ;; dashboard
 (use-package dashboard
@@ -2300,7 +2311,15 @@ in HEADINGS-TO-DELETE."
      "Resale Operations Office Hours")))
 
 ;; scratchpad in scratch buffers
+
+;; (use-package scratchpad
+;;   :vc (:url "https://github.com/polhuang/scratchpad.el" :rev :newest)
+;;   :config)
+
 (load "~/projects/scratchpad/scratchpad.el")
+(load "~/projects/org-linear/org-linear.el")
+(require 'linear-org)
+(scratchpad-enable)
 (global-set-key (kbd "C-M-z") 'scratchpad-toggle)
 (setq scratchpad-save-directory "~/org/scratchpad")
 
@@ -2328,7 +2347,8 @@ in HEADINGS-TO-DELETE."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("9f1c593abc996917c24f563e68f44bb4175d4419925577014757f6ba2dfe2850"
+   '("18f669003544bfcfb544fb94572c18354447b3d9d14a2b96d0b4ca787f7fe2dd"
+     "9f1c593abc996917c24f563e68f44bb4175d4419925577014757f6ba2dfe2850"
      "ed70dedb2c45f8b698c1f7ab04b6a0d8678f6d49cd977e01b35f8546dcbb4aa8"
      "d585421c2f1917400daaac0b628ee74e0c2d2960b99680cc75b393601adef535"
      "a53c7ff4570e23d7c5833cd342c461684aa55ddba09b7788d6ae70e7645c12b4"
@@ -2342,6 +2362,10 @@ in HEADINGS-TO-DELETE."
      "7b8f5bbdc7c316ee62f271acf6bcd0e0b8a272fdffe908f8c920b0ba34871d98"
      default))
  '(epg-pinentry-mode 'loopback nil nil "Customized with use-package epa")
+ '(package-vc-selected-packages
+   '((scratchpad :url "https://github.com/polhuang/scratchpad.el")
+     (claude-code-ide :url
+                      "https://github.com/manzaltu/claude-code-ide.el")))
  '(safe-local-variable-values
    '((eval progn (my/clear-extra-gcal-timestamps) (goto-char (point-min))
            (org-sort-entries t 115))

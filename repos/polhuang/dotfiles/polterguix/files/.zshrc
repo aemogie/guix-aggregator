@@ -18,12 +18,6 @@ zstyle ':completion:*:default' menu select=1
 bindkey -e
 bindkey "^[[3~" delete-char
 
-# env variables
-export PATH="$PATH:$HOME/.local/bin"
-# export PATH="$PATH:$HOME/.nix-profile/bin"
-export PATH="$PATH:$HOME/.bin"
-
-
 # on guix systems, go to ~/.config/zsh/ and delete the cache to reconfigure if using a package manager. avoiding here.
 
 TMOUT=600

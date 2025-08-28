@@ -32,7 +32,7 @@
 (define maak
   (package
     (name "maak")
-    (version "0.1.10")
+    (version "0.1.14")
     (source
      (origin
        (method git-fetch)
@@ -41,7 +41,7 @@
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0lw5y3rb061b31wwp2qiyxh1da9famh3gj29sjmh3qn80v8nr48b"))))
+        (base32 "0c3h8xqlwb0xj84ikjngnccmlv1iyh1zg3xnmzd7fwj7ljvcxvfb"))))
     (build-system guile-build-system)
     (arguments
      (list
