@@ -55,6 +55,8 @@
           (delete-trailing-whitespace)
           (save-buffer)))
 
+(define hot-reload-file-types '(scm el lisp))
+
 ;; ====== Maak prelude ======
 
 ;; Specify the directory where the MO file is located
@@ -253,6 +255,17 @@ Args: update? represents whether we should update a template or create a new one
   (mv "docs/manual/en.html"
       (~ "~a/manuals/sss/index.html" deploy-dir)))
 
+(define (hot-reload)
+  "Hot-reloading developer's setup."
+  (manifest-shell (list "watchexec 'maak test'"
+                        "--clear"
+                        (~ "--exts ~a"
+                           (string-join (map symbol->string
+                                             hot-reload-file-types) ","))
+                        "--on-busy-update=restart"
+                        "--shell bash"
+                        "--watch .")))
+
 ;; ====== Maak i18n tasks ======
 
 (define (i18n-compile)
@@ -308,3 +321,12 @@ Args: update? represents whether we should update a template or create a new one
 (define (mr)
   "Alias to manon-reconfigure."
   (manon-reconfigure))
+
+(define (hr)
+  "Alias to hot-reloading."
+  (hot-reload))
+
+(define (dev)
+  "Developer's setup."
+  (hot-reload))
+

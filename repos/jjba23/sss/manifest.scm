@@ -23,6 +23,7 @@
              (gnu packages emacs)
              (gnu packages guile-xyz)
              (gnu packages texinfo)
+             (gnu packages rust-apps)
              ((guix licenses)
               #:prefix license:))
 
@@ -62,4 +63,5 @@ runs them concurrently by default to ensure robust testing practices.")
                           (specification->package "make")
                           coreutils
                           guile-documenta
+                          watchexec
                           texinfo))

@@ -157,7 +157,7 @@ interactive development and testing."
   (sss-do-in-project (lambda(root-dir)
                        (let* ((sep "==============================================")
                               (msg (format "%s\nstarting a project REPL process for %s\n%s\n" sep root-dir sep))
-                              (cmd (format "echo \"%s\" && cd %s && make repl" msg root-dir))
+                              (cmd (format "echo \"%s\" && cd %s && maak repl" msg root-dir))
                               (buf-name (format "repl:%s" root-dir)))
                          (ignore-errors
                            (with-current-buffer buf-name
@@ -188,7 +188,7 @@ helping to maintain consistent code style across the project."
   (sss-do-in-project (lambda(root-dir)
                        (let* ((sep "==============================================")
                               (msg (format "%s\nstarting format process for %s\n%s\n" sep root-dir sep))
-                              (cmd (format "echo \"%s\" && cd %s && make fmt" msg root-dir))
+                              (cmd (format "echo \"%s\" && cd %s && maak fmt" msg root-dir))
                               (buf-name (format "fmt:%s" root-dir)))
                          (ignore-errors
                            (with-current-buffer buf-name
@@ -219,7 +219,7 @@ interactive development and testing."
   (sss-do-in-project (lambda(root-dir)
                        (let* ((sep "==============================================")
                               (msg (format "%s\nstarting a dev session for %s\n%s\n" sep root-dir sep))
-                              (cmd (format "echo \"%s\" && cd %s && make dev" msg root-dir))
+                              (cmd (format "echo \"%s\" && cd %s && maak dev" msg root-dir))
                               (buf-name (format "dev:%s" root-dir)))
                          (ignore-errors
                            (with-current-buffer buf-name
@@ -250,7 +250,7 @@ process of verifying the project's functionality."
   (sss-do-in-project (lambda(root-dir)
                        (let* ((sep "==============================================")
                               (msg (format "%s\nstarting tests for %s\n%s\n" sep root-dir sep))
-                              (cmd (format "echo \"%s\" && cd %s && make test" msg root-dir))
+                              (cmd (format "echo \"%s\" && cd %s && maak test" msg root-dir))
                               (buf-name (format "test:%s" root-dir)))
                          (ignore-errors
                            (with-current-buffer buf-name
