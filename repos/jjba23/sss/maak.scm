@@ -55,7 +55,8 @@
           (delete-trailing-whitespace)
           (save-buffer)))
 
-(define hot-reload-file-types '(scm el lisp))
+(define hot-reload-file-types
+  '(scm el lisp))
 
 ;; ====== Maak prelude ======
 
