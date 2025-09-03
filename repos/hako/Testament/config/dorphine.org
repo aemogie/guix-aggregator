@@ -17,14 +17,13 @@
       (host-name "dorphine")
       (timezone "Asia/Hong_Kong")
       (bootloader <<bootloader>>)
-      (mapped-devices (list <<mapped-device>>))
       (file-systems (append <<file-systems>> %base-file-systems))
       (users (cons* <<user>> %base-user-accounts))
       (packages (append (specs->pkgs+out <<package>>) %base-packages))
       (services (cons* <<service>> %rosenthal-desktop-services))
       (name-service-switch %mdns-host-lookup-nss)))
 
-  ((compose <<transformation>>)
+  ((compose replace-mesa <<transformation>>)
    %os)
 #+end_src
 
@@ -58,9 +57,9 @@
   (gnu services linux)
   (gnu services ssh)
   (gnu services sysctl)
+  (rosenthal services file-systems)
   (rosenthal services keyboard)
   (rosenthal services shellutils)
-  (sops services sops)
 #+end_src
 
 ** Bootloader & Kernel
@@ -77,7 +76,8 @@
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
-  (nonguix-transformation-linux)
+  (nonguix-transformation-linux
+   #:linux (spec->pkg "linux@6.12"))
 
   (lambda (os)
     (operating-system
@@ -86,12 +86,12 @@
        (cons* "kernel.sysrq=1"
               "zswap.enabled=1"
               "zswap.max_pool_percent=90"
-              "modprobe.blacklist=pcspkr"
+              "modprobe.blacklist=amdgpu,pcspkr"
               (operating-system-user-kernel-arguments os)))))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (simple-service 'add-extra-modules
+  (simple-service 'load-extra-modules
       kernel-module-loader-service-type
     '("tcp_bbr"))
 
@@ -200,7 +200,6 @@ Root file system layout:
               (mount-point mount-point)
               (type "btrfs")
               (options (options-for-subvolume subvolume))
-              (dependencies mapped-devices)
               (create-mount-point? #t)
               (check? (string=? mount-point "/gnu/store"))
               (needed-for-boot?
@@ -250,6 +249,10 @@ Maintenance:
 #+end_src
 
 [[file:../files/plain/dorphine/btrbk.conf][dorphine/btrbk.conf]]
+
+#+begin_src scheme :noweb-ref service
+  (service zfs-service-type)
+#+end_src
 
 ** Keyboard Layout
 #+name: keyboard-layout
@@ -327,7 +330,6 @@ Administration accounts.
        (plain-file "sudoers"
          (string-append
           (plain-file-content (operating-system-sudoers-file os))
-          "Defaults env_keep += \"TERMINFO\"\n"
           "deploy ALL = NOPASSWD: ALL\n")))))
 #+end_src
 
@@ -360,7 +362,7 @@ Frequently used packages.
   (simple-service 'guix-extensions
       guix-service-type
     (guix-extension
-      (authorized-keys %hako-guix-authorized-keys-self)))
+      (authorized-keys %hako-guix-authorized-keys-lan)))
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
@@ -373,7 +375,10 @@ Frequently used packages.
           config => (guix-configuration
                       (inherit config)
                       (discover? #t)
-                      (extra-options '("--cores=24"))
+                      (substitute-urls
+                       `("http://crustum:9018"
+                         "https://mirror.sjtu.edu.cn/guix"))
+                      (extra-options '("--max-jobs=8" "--cores=4"))
                       (tmpdir "/mnt/Mentha/System/@Build")))))))
 #+end_src
 
@@ -382,10 +387,7 @@ Frequently used packages.
     (guix-publish-configuration
       (port 23575)
       (host "0.0.0.0")
-      (advertise? #t)
-      (compression '(("zstd" 19)))
-      ;; 30 days
-      (ttl (* 30 24 3600))))
+      (advertise? #t)))
 #+end_src
 
 ** SOPS Secrets
@@ -440,23 +442,6 @@ Generate passwordless ECC key:
              (sops-secret
                (key '("gammastep"))
                (file dorphine.yaml))))))
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (service sops-secrets-service-type
-    (sops-service-configuration
-      (sops (spec->pkg "sops"))
-      (config (local-file (testament-plain "sops.yaml")))
-      (gnupg-home "/var/lib/sops")
-      (secrets
-       (list (sops-secret
-               (key '("cloudflare"))
-               (file dorphine.yaml)
-               (user "caddy"))
-             (sops-secret
-               (key '("cloudflared"))
-               (file dorphine.yaml)
-               (user "cloudflared"))))))
 #+end_src
 
 [[file:../files/plain/sops.yaml][sops.yaml]]
@@ -561,7 +546,7 @@ Generate passwordless ECC key:
 #+begin_src scheme :noweb-ref home-service
   (service home-gpg-agent-service-type
     (home-gpg-agent-configuration
-      (pinentry-program (file-append (spec->pkg "pinentry") "/bin/pinentry"))
+      (pinentry-program (file-append (spec->pkg "pinentry-qt") "/bin/pinentry-qt"))
       (ssh-support? #t)))
 #+end_src
 
@@ -576,20 +561,7 @@ Generate passwordless ECC key:
 
 * Containers & Virtualization
 #+begin_src scheme :noweb-ref module
-  (gnu services docker)
   (gnu services virtualization)
-#+end_src
-
-** containerd
-#+begin_src scheme :noweb-ref service
-  (service containerd-service-type)
-#+end_src
-
-** docker
-#+begin_src scheme :noweb-ref service
-  (service docker-service-type
-    (docker-configuration
-      (enable-iptables? #f)))
 #+end_src
 
 ** binfmt_misc
@@ -599,66 +571,23 @@ Generate passwordless ECC key:
       (platforms (lookup-qemu-platforms "aarch64" "powerpc64le" "riscv64"))))
 #+end_src
 
-* Web Servers
+* Continuous Integration
 #+begin_src scheme :noweb-ref module
-  (rosenthal services child-error)
-  (rosenthal services web)
+  (gnu services cuirass)
 #+end_src
 
-** caddy
-#+begin_src scheme :noweb yes :noweb-ref service
-  (service caddy-service-type
-    (caddy-configuration
-      (caddy (spec->pkg "caddy-hako"))
-      (caddyfile <<caddy-config>>)))
-#+end_src
-
-#+name: caddy-config
-#+begin_src scheme
-  (computed-substitution-with-inputs "dorphine.caddyfile"
-    (local-file (testament-plain "dorphine/Caddyfile"))
-    (specs->pkgs "ai-robots-txt"))
-#+end_src
-
-[[file:../files/plain/dorphine/Caddyfile][dorphine/Caddyfile]]
-
-** cloudflared
+** cuirass-remote-worker
+Open TCP port 5558 and connect to server IPv4 address.
 #+begin_src scheme :noweb-ref service
-  (service cloudflare-tunnel-service-type
-    (cloudflare-tunnel-configuration
-      (log-level "error")
-      (token-file "/run/secrets/cloudflared")))
-#+end_src
-
-* Web Services
-#+begin_src scheme :noweb-ref module
-  (rosenthal services web)
-#+end_src
-
-** jellyfin
-#+begin_src scheme :noweb-ref service
-  (service jellyfin-service-type
-    (jellyfin-configuration
-      (extra-options
-       `("--volume" "/mnt/Mentha/@Library/Movies:/media/Movies"
-         "--volume" "/mnt/Mentha/@Library/Shows:/media/Shows"
-         "--volume"
-         ,(let ((path "/share/fonts/truetype/NotoSansCJK-VF.otf.ttc"))
-            (file-append (spec->pkg "font-google-noto-sans-cjk") path ":/usr" path))))))
-#+end_src
-
-** komga
-#+begin_src scheme :noweb-ref service
-  (service komga-service-type
-    (komga-configuration
-      (port 44293)))
-#+end_src
-
-** navidrome
-#+begin_src scheme :noweb-ref service
-  (service navidrome-service-type
-    (navidrome-configuration
-      (extra-config (file-content (testament-blobs "navidrome.toml")))))
+  (service cuirass-remote-worker-service-type
+    (cuirass-remote-worker-configuration
+      (publish-port 5558)
+      (workers 8)
+      (systems '("x86_64-linux" "aarch64-linux" "i686-linux"))
+      (server "100.97.195.93:5555")       ;gokuraku (Tailscale)
+      (substitute-urls
+       `("https://ci.boiledscript.com"
+         ,@%default-substitute-urls))))
 #+end_src
 
 * Monitoring
@@ -680,11 +609,6 @@ Generate passwordless ECC key:
 ** Graphics Driver
 #+begin_src scheme :noweb-ref transformation
   (nonguix-transformation-nvidia)
-
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (packages (replace-mesa (operating-system-packages os)))))
 #+end_src
 
 ** Wayland
@@ -863,14 +787,12 @@ Generate passwordless ECC key:
   "bitwarden-icecat"
   "livemarks-icecat"
   "ohmyech-icecat"
-  "privacy-redirect-icecat"
   "ublock-origin-icecat"
 #+end_src
 
 * Multimedia & Miscellaneous
 #+begin_src scheme :noweb-ref module
   (rosenthal services bittorrent)
-  (rosenthal services file-systems)
   (gnu home services syncthing)
 #+end_src
 
@@ -895,7 +817,7 @@ Generate passwordless ECC key:
 
 ** obs
 #+begin_src scheme :noweb-ref package
-  "obs"
+  "obs-nvidia"
 #+end_src
 
 ** steam

@@ -17,7 +17,6 @@
       (host-name "ignamma")
       (timezone "Asia/Hong_Kong")
       (bootloader <<bootloader>>)
-      (mapped-devices (list <<mapped-device>>))
       (file-systems (append <<file-systems>> %base-file-systems))
       (users (cons* <<user>> %base-user-accounts))
       (packages (append (specs->pkgs+out <<package>>) %base-packages))
@@ -154,7 +153,6 @@ Root file system layout:
               (mount-point mount-point)
               (type "btrfs")
               (options (options-for-subvolume subvolume))
-              (dependencies mapped-devices)
               (create-mount-point? #t)
               (check? (string=? mount-point "/gnu/store"))
               (needed-for-boot?
@@ -280,10 +278,7 @@ Frequently used packages.
     (guix-publish-configuration
       (port 26336)
       (host "0.0.0.0")
-      (advertise? #t)
-      (compression '(("zstd" 19)))
-      ;; 30 days
-      (ttl (* 30 24 3600))))
+      (advertise? #t)))
 #+end_src
 
 * Power Management

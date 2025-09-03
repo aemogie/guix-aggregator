@@ -86,6 +86,8 @@ files.boiledscript.com {
 
 ultrarare.space {
 	import block_bots
+	import pow
+
 	import logging blog
 
 	root * /var/lib/webpublic/blog
@@ -104,8 +106,8 @@ www.ultrarare.space {
 	redir https://ultrarare.space{uri} permanent
 }
 
-# Cuirass
-ci.guixcn.org, ci.boiledscript.com, ci.ultrarare.space {
+# Cuirass & Substitutes & Mirrors
+ci.boiledscript.com, ci.ultrarare.space {
 	import block_bots
 	import pow
 	import robots_txt
@@ -129,11 +131,30 @@ ci.guixcn.org, ci.boiledscript.com, ci.ultrarare.space {
 	reverse_proxy localhost:17732
 }
 
-# docker-mailserver
-mail.boiledscript.com {
-	respond /* "Access denied" 403 {
-		close
+cache-de.boiledscript.com, cache.boiledscript.com {
+	import block_bots
+	import pow
+	import robots_txt
+
+	import logging substitutes
+
+	root * /var/cache/guix/publish
+	file_server
+}
+
+cache-cdn.boiledscript.com {
+	import block_bots
+	import pow
+	import robots_txt
+
+	import logging substitutes
+
+	handle /nar/* {
+		redir https://nars.boiledscript.com{uri}
 	}
+
+	root * /var/cache/guix/narinfo
+	file_server
 }
 
 # Forgejo
@@ -171,4 +192,10 @@ vault.boiledscript.com {
 
 	import logging vaultwarden
 	reverse_proxy localhost:23263
+}
+
+:80, :443, mail.boiledscript.com {
+	respond /* "Access denied" 403 {
+		close
+	}
 }

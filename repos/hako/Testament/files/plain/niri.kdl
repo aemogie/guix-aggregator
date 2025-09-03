@@ -5,21 +5,7 @@
 prefer-no-csd
 screenshot-path "/mnt/Mentha/@Library/Pictures/Screenshots/%Y%m%d-%H%M%S.png"
 
-spawn-at-startup "sh" "-c" "pgrep --uid $USER shepherd > /dev/null || shepherd"
-spawn-at-startup "$$bin/xwayland-satellite$$" ":233"
-environment {
-    DISPLAY ":233"
-}
-
-window-rule {
-    match app-id="emacs"
-    open-maximized true
-}
-
-window-rule {
-    match app-id="librewolf"
-    open-maximized true
-}
+spawn-sh-at-startup "pgrep --uid $USER shepherd > /dev/null || shepherd"
 
 window-rule {
     match app-id="librewolf" title="^Picture-in-Picture$"
@@ -45,6 +31,10 @@ overview {
     backdrop-color "#E8E3E9"
 }
 
+xwayland-satellite {
+    path "$$bin/xwayland-satellite$$"
+}
+
 layout {
     focus-ring {
         off
@@ -66,7 +56,7 @@ input {
     warp-mouse-to-focus
 }
 
-output "eDP-2" {
+output "eDP-1" {
     mode "2560x1440@239.999"
 }
 

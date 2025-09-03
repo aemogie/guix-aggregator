@@ -8,7 +8,7 @@
 * Guix System
 #+begin_src scheme :tangle chapra.scm :noweb yes
   (load "../common.scm")
-  (use-modules <<module>>)
+  (use-modules (rosenthal) <<module>>)
 
   <<definition>>
 
@@ -17,7 +17,6 @@
       (host-name "chapra")
       (timezone "Asia/Hong_Kong")
       (bootloader <<bootloader>>)
-      (mapped-devices (list <<mapped-device>>))
       (file-systems (append <<file-systems>> %base-file-systems))
       (users (cons* <<user>> %base-user-accounts))
       (packages (append (specs->pkgs+out <<package>>) %base-packages))
@@ -30,9 +29,12 @@
 
 * Base
 #+begin_src scheme :noweb-ref module
+  (sops secrets)
   (gnu services linux)
   (gnu services ssh)
   (gnu services sysctl)
+  (rosenthal services file-systems)
+  (sops services sops)
 #+end_src
 
 ** Bootloader & Kernel
@@ -63,7 +65,10 @@
   (simple-service 'add-sysctl-rules
       sysctl-service-type
     '(("net.core.default_qdisc" . "fq_pie")
-      ("net.ipv4.tcp_congestion_control" . "bbr")))
+      ("net.ipv4.tcp_congestion_control" . "bbr")
+      ;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
+      ("net.core.rmem_max" . "7500000")
+      ("net.core.wmem_max" . "7500000")))
 #+end_src
 
 ** File Systems
@@ -71,7 +76,7 @@ Disk layout:
 #+begin_example
   +----------------+----------------+
   |                |                |
-  |      ESP       | Btrfs (Eriope) |
+  |      ESP       |  XFS (Eriope)  |
   |_ _ _ _ _ _ _ __|_ _ _ _ _ _ _ _ |
   |                |                |
   | /dev/nvme0n1p1 | /dev/nvme0n1p2 |
@@ -81,92 +86,23 @@ Disk layout:
   +---------------------------------+
 #+end_example
 
-Btrfs subvolumes:
-#+begin_example
-  @Snapshot
-
-  @Config
-  @Data
-  @Home
-
-  System/@Boot
-  System/@Guix
-  System/@Log
-  System/@Store
-  System/@Swap
-  System/@Tmp
-#+end_example
-
-Root file system layout:
-#+begin_example
-  /               tmpfs
-  ├─/efi          fat32 ESP
-  ├─/boot         btrfs System/@Boot
-  ├─/etc          btrfs @Config
-  ├─/gnu/store    btrfs System/@Store
-  ├─/home         btrfs @Home
-  ├─/swap         btrfs System/@Swap
-  ├─/var/guix     btrfs System/@Guix
-  ├─/var/lib      btrfs @Data
-  ├─/var/lock     tmpfs
-  ├─/var/log      btrfs System/@Log
-  └─/var/tmp      btrfs System/@Tmp
-#+end_example
-
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
-          (device "tmpfs")
+          (device (file-system-label "Eriope"))
           (mount-point "/")
-          (type "tmpfs")
-          (options "mode=0755,nr_inodes=1m,size=25%")
-          (check? #f))
+          (type "xfs"))
 
         (file-system
           (device (uuid "1308-97C1" 'fat))
           (mount-point "/efi")
-          (type "vfat")
-          (create-mount-point? #t))
+          (type "vfat"))
 
         (file-system
-          (device "tmpfs")
-          (mount-point "/var/lock")
-          (type "tmpfs")
-          (flags '(no-suid no-dev strict-atime))
-          (options "mode=1777,nr_inodes=800k,size=20%")
-          (create-mount-point? #t)
-          (check? #f)))
-#+end_src
-
-#+begin_src scheme :noweb yes :noweb-ref file-systems
-  (let ((options-for-subvolume
-         (lambda (subvolume)
-           (string-join
-            (list "compress=zstd:1"
-                  (or (and=> subvolume (cut string-append "subvol=" <>))
-                      "subvolid=5"))
-            ","))))
-    (map (match-lambda
-           ((subvolume . mount-point)
-            (file-system
-              (device (file-system-label "Eriope"))
-              (mount-point mount-point)
-              (type "btrfs")
-              (options (options-for-subvolume subvolume))
-              (dependencies mapped-devices)
-              (create-mount-point? #t)
-              (check? (string=? mount-point "/gnu/store"))
-              (needed-for-boot?
-               (member mount-point '("/etc" "/gnu/store" "/var/guix"))))))
-         '(("System/@Boot"  . "/boot")
-           ("System/@Store" . "/gnu/store")
-           ("System/@Swap"  . "/swap")
-           ("System/@Guix"  . "/var/guix")
-           ("System/@Log"   . "/var/log")
-           ("System/@Tmp"   . "/var/tmp")
-           ("@Config" . "/etc")
-           ("@Home"   . "/home")
-           ("@Data"   . "/var/lib")
-           (#f        . "/mnt/Eriope"))))
+          (device (file-system-label "Ocimeae"))
+          (mount-point "/mnt/Ocimeae")
+          (type "btrfs")
+          (options "compress=zstd,subvolid=5")
+          (create-mount-point? #t)))
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref transformation
@@ -175,10 +111,7 @@ Root file system layout:
       (inherit os)
       (swap-devices
        (list (swap-space
-               (target "/swap/swapfile")
-               (dependencies
-              (filter (file-system-mount-point-predicate "/swap")
-                      (operating-system-file-systems os))))))))
+               (target "/swapfile"))))))
 #+end_src
 
 Maintenance:
@@ -187,21 +120,13 @@ Maintenance:
       shepherd-root-service-type
     (list (shepherd-timer '(btrfs-scrub)
             #~(calendar-event #:days-of-week '(sunday) #:hours '(0) #:minutes '(0))
-            #~(#$(file-append (spec->pkg "btrfs-progs") "/bin/btrfs") "scrub" "start" "/mnt/Eriope")
+            #~(#$(file-append (spec->pkg "btrfs-progs") "/bin/btrfs") "scrub" "start" "/mnt/Ocimeae")
             #:requirement '(user-processes))))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (simple-service 'btrbk
-      shepherd-root-service-type
-    (list (shepherd-timer '(btrbk)
-            #~(calendar-event #:minutes '(0))
-            #~(#$(file-append (spec->pkg "btrbk") "/bin/btrbk") "run"
-               "-c" #$(local-file (testament-plain "chapra/btrbk.conf")))
-            #:requirement '(user-processes))))
+  (service zfs-service-type)
 #+end_src
-
-[[file:../files/plain/chapra/btrbk.conf][chapra/btrbk.conf]]
 
 ** Users
 Personal account.
@@ -253,7 +178,7 @@ Frequently used packages.
 
 ** Guix Daemon
 #+begin_src scheme :noweb-ref service
-  (simple-service 'guix-extension-dorphine
+  (simple-service 'guix-extension-chapra
       guix-service-type
     (guix-extension
       (authorized-keys %hako-guix-authorized-keys-lan)))
@@ -270,6 +195,31 @@ Frequently used packages.
                       (inherit config)
                       (discover? #t)))))))
 #+end_src
+
+** SOPS Secrets
+#+begin_src scheme :noweb-ref package
+  "gnupg"
+  "sops"
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (service sops-secrets-service-type
+    (sops-service-configuration
+      (sops (spec->pkg "sops"))
+      (config (local-file (testament-plain "sops.yaml")))
+      (gnupg-home "/var/lib/sops")
+      (secrets
+       (list (sops-secret
+               (key '("cloudflare"))
+               (file chapra.yaml)
+               (user "caddy"))
+             (sops-secret
+               (key '("cloudflared"))
+               (file chapra.yaml)
+               (user "cloudflared"))))))
+#+end_src
+
+[[file:../files/plain/sops.yaml][sops.yaml]]
 
 * Networking & SSH
 #+begin_src scheme :noweb-ref module
@@ -365,6 +315,68 @@ Frequently used packages.
   (service docker-service-type
     (docker-configuration
       (enable-iptables? #f)))
+#+end_src
+
+* Web Servers
+#+begin_src scheme :noweb-ref module
+  (rosenthal services child-error)
+  (rosenthal services web)
+#+end_src
+
+** caddy
+#+begin_src scheme :noweb yes :noweb-ref service
+  (service caddy-service-type
+    (caddy-configuration
+      (caddy (spec->pkg "caddy-hako"))
+      (caddyfile <<caddy-config>>)))
+#+end_src
+
+#+name: caddy-config
+#+begin_src scheme
+  (computed-substitution-with-inputs "chapra.caddyfile"
+    (local-file (testament-plain "chapra/Caddyfile"))
+    (specs->pkgs "ai-robots-txt"))
+#+end_src
+
+[[file:../files/plain/chapra/Caddyfile][chapra/Caddyfile]]
+
+** cloudflared
+#+begin_src scheme :noweb-ref service
+  (service cloudflare-tunnel-service-type
+    (cloudflare-tunnel-configuration
+      (log-level "error")
+      (token-file "/run/secrets/cloudflared")))
+#+end_src
+
+* Web Services
+#+begin_src scheme :noweb-ref module
+  (rosenthal services web)
+#+end_src
+
+** jellyfin
+#+begin_src scheme :noweb-ref service
+  (service jellyfin-service-type
+    (jellyfin-configuration
+      (extra-options
+       `("--volume" "/mnt/Ocimeae/@Library/Movies:/media/Movies"
+         "--volume" "/mnt/Ocimeae/@Library/Shows:/media/Shows"
+         "--volume"
+         ,(let ((path "/share/fonts/truetype/NotoSansCJK-VF.otf.ttc"))
+            (file-append (spec->pkg "font-google-noto-sans-cjk") path ":/usr" path))))))
+#+end_src
+
+** komga
+#+begin_src scheme :noweb-ref service
+  (service komga-service-type
+    (komga-configuration
+      (port 44293)))
+#+end_src
+
+** navidrome
+#+begin_src scheme :noweb-ref service
+  (service navidrome-service-type
+    (navidrome-configuration
+      (extra-config (file-content (testament-blobs "navidrome.toml")))))
 #+end_src
 
 * Monitoring

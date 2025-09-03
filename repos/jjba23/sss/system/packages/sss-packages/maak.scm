@@ -32,7 +32,7 @@
 (define maak
   (package
     (name "maak")
-    (version "0.2.0")
+    (version "0.2.2")
     (source
      (origin
        (method git-fetch)
@@ -41,7 +41,7 @@
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0zsz7ggl36dd8np4w5la14jisxpwm804ximl3ya4qqxg7p6yxa9n"))))
+        (base32 "0dc0i56dlp5f5prf7yfva7kjbpbzq7sq2rx4mj8qww12l1qq1ksd"))))
     (build-system guile-build-system)
     (arguments
      (list
@@ -57,6 +57,8 @@
                 (install-file "scripts/maak" bin)
                 (install-file "scripts/log.bash"
                               (string-append share "/scripts/"))
+                (install-file "scripts/maak-completion.bash"
+                              (string-append share "/scripts/"))
                 (chmod (string-append bin "/maak") #o755)))))))
     (native-inputs (list guile-3.0))
     (inputs (list guile-3.0 bash-minimal))
@@ -71,4 +73,3 @@ With Maak you can easily call external shell commands and integrate with
 your existing scripts and tools.  It is inspired by the GNU Make utility
 but it does away with a lot of the complexity that comes with its history.")
     (license license:gpl3+)))
-

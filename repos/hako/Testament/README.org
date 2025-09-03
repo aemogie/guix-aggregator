@@ -21,16 +21,16 @@ Guix channels in use:
 + [[https://github.com/fishinthecalculator/sops-guix][sops-guix]]
 
 * Systems
-** [[file:config/dorphine.org][dorphine]] (x86_64-linux, laptop)
+** [[file:config/dorphine.org][dorphine]] (x86_64-linux)
 [[file:files/plain/assets/dorphine-1.png]]
 [[file:files/plain/assets/dorphine-2.png]]
 
-** [[file:config/chapra.org][chapra]] (x86_64-linux, server)
+** [[file:config/chapra.org][chapra]] (x86_64-linux)
 
-** [[file:config/gokuraku.org][gokuraku]] (x86_64-linux, server, build worker)
+** [[file:config/gokuraku.org][gokuraku]] (x86_64-linux)
 Head node of [[https://ci.boiledscript.com]].
 
-** [[file:config/ignamma.org][ignamma]] (x86_64-linux, server, build worker)
+** [[file:config/ignamma.org][ignamma]] (x86_64-linux)
 
 * LiveCDs
 I provide two LiveCDs for the [[https://guix.gnu.org/manual/devel/en/html_node/Manual-Installation.html][manual installation]] of Guix System.  Pre-built

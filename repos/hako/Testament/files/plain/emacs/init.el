@@ -267,7 +267,10 @@
                 "--init="
                 (json-serialize
                  `((cache
-                    (directory . ,(concat (xdg-cache-home) "/ccls-cache")))))))
+                    (directory
+                     . ,(concat (or (getenv "XDG_CACHE_HOME")
+                                    "~/.cache")
+                                "/ccls-cache")))))))
              ((zig-mode)
               "$$bin/zls$$")))
     (add-to-list 'eglot-server-programs program)))
