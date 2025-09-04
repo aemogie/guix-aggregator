@@ -112,6 +112,15 @@
     (flags '(no-atime))
     (options "compress=zstd,subvol=@var/guix,ssd")))
 
+(define var-cache
+  (file-system
+    (device guix-part)
+    (type "btrfs")
+    (mount-point "/var/cache")
+    (needed-for-boot? #t)
+    (flags '(no-atime))
+    (options "compress=zstd,subvol=@var/cache,ssd")))
+
 (define gnu-store
   (file-system
     (device guix-part)
@@ -171,6 +180,7 @@
         var-log
         var-lib
         var-guix
+        var-cache
         gnu-store
         gnu-persist
         gnu-persist-ssh

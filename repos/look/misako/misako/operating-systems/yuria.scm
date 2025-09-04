@@ -26,8 +26,7 @@
   #:use-module (nongnu packages linux)
   #|Saayix|#
   #:use-module (saayix services system rfkill)
-  #|Rosenthal|#
-  #:use-module (rosenthal services networking)
+  #:use-module (saayix services system iwd)
   #:export (yuria))
 
 #|Operating system definition|#

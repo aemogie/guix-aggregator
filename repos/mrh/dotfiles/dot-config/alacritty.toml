@@ -9,27 +9,27 @@ size = 13
 
 # Default colors
 [colors.primary]
-background = "#222524"
-foreground = "#eaf2ef"
+background = "#352718"
+foreground = "#e8e4b1"
 
 # Normal colors
 [colors.normal]
 black   = "#000000"
-red     = "#ff656a"
-green   = "#7fc87f"
-yellow  = "#cac85f"
+red     = "#ff7f7f"
+green   = "#6fd560"
+yellow  = "#e4b53f"
 blue    = "#57aff6"
-magenta = "#f59acf"
-cyan    = "#7fcfdf"
+magenta = "#f0aac5"
+cyan    = "#6fcad0"
 white   = "#a6a6a6"
 
 # Bright colors
 [colors.bright]
 black   = '#595959'
-red     = "#ff7a5f"
-green   = "#50cf89"
-yellow  = "#e0b02f"
-blue    = "#78afff"
-magenta = "#cfaaff"
-cyan    = "#60d5c2"
+red     = "#ff7f4f"
+green   = "#65d590"
+yellow  = "#ffa21f"
+blue    = "#62cfef"
+magenta = "#fa90aa"
+cyan    = "#70e0cf"
 white   = "#ffffff"

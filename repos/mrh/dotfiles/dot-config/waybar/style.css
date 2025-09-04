@@ -6,12 +6,12 @@
 }
 
 window#waybar {
-    background: #222524;
+    background: #352718;
     color: #eaf2ef;
 }
 
 tooltip {
-    background: #222524;
+    background: #352718;
     border: 1px solid #5d5f63;
 }
 
@@ -20,7 +20,7 @@ tooltip label {
 }
 
 #workspaces button {
-    color: #7fc87f;
+    color: #ffa21f;
 }
 
 #workspaces button.persistent {
@@ -28,12 +28,12 @@ tooltip label {
 }
 
 #workspaces button.focused {
-	border-top: 3px solid #7fc87f;
+	border-top: 3px solid #ffa21f;
 }
 
 #workspaces button:hover {
-    background: #edf5e2;
-    color: #221321;
+    background: #fff6d8;
+    color: #484431;
 }
 
 #window {
@@ -48,8 +48,8 @@ tooltip label {
 }
 
 #wireplumber {
-    border-top: 3px solid #e0b02f;
-    color:  #eaf2ef;
+    border-top: 3px solid #ffa21f;
+    color:  #e8e4b1;
 }
 
 #wireplumber.muted {
@@ -57,48 +57,48 @@ tooltip label {
 }
 
 #network.wifi {
-	border-top: 3px solid #7fc87f;
-    color: #eaf2ef;
+	border-top: 3px solid #6fd560;
+    color: #e8e4b1;
 }
 
 #network.disconnected {
-	border-top: 3px solid #bd1f30;
-    color: #eaf2ef;
+	border-top: 3px solid #b02930;
+    color: #e8e4b1;
 }
 
 #cpu {
     border-top: 3px solid #57aff6;
-    color: #eaf2ef;
+    color: #e8e4b1;
 }
 
 #memory {
-    border-top: 3px solid #969faf;
-    color: #eaf2ef;
+    border-top: 3px solid #90918a;
+    color: #e8e4b1;
 }
 
 #backlight {
-    border-top: 3px solid #6fcfd2;
-    color: #eaf2ef;
+    border-top: 3px solid #6fcad0;
+    color: #e8e4b1;
 }
 
 #battery.full {
-    border-top: 3px solid #7fca5a;
-    color: #eaf2ef;
+    border-top: 3px solid #a0d13a;
+    color: #e8e4b1;
 }
 
 #battery.good {
-    border-top: 3px solid #cac85f;
-    color: #eaf2ef;
+    border-top: 3px solid #e4b53f;
+    color: #e8e4b1;
 }
 
 #battery.critical {
-    border-top: 3px solid #bd1f30;
-    color: #eaf2ef;
+    border-top: 3px solid #b02930;
+    color: #e8e4b1;
 }
 
 #clock {
-    border-top: 3px solid #f59acf;
-    color: #eaf2ef;
+    border-top: 3px solid #f0aac5;
+    color: #e8e4b1;
 }
 
 @keyframes blink {

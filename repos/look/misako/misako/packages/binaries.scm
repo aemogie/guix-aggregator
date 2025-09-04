@@ -522,15 +522,22 @@ millions of songs.")
                                                 #$(glibc-dynamic-linker)))
                           (rpath (string-join
                                    (list
-                                     (string-append #$(this-package-input "gcc-toolchain") "/lib"))
+                                     (string-append #$(this-package-input "gcc-toolchain") "/lib")
+                                     (string-append #$(this-package-input "libnotify") "/lib")
+                                     (string-append #$(this-package-input "glibc") "/lib")
+                                     (string-append #$(this-package-input "gtk+") "/lib"))
                                    ":")))
                       (for-each (lambda (x)
                                   (invoke "patchelf" x "--set-interpreter" ld.so)
+                                  (when (equal? (basename x) "otd-gui")
+                                    (invoke "patchelf" x "--add-needed" "libnotify.so.4"))
                                   (invoke "patchelf" x "--set-rpath" rpath))
                                 (find-files (string-append #$output "/bin")))))))))
     (native-inputs (list patchelf))
     (inputs (list gcc-toolchain-15
-                  glibc))
+                  glibc
+                  gtk+
+                  libnotify))
     (propagated-inputs (list dotnet))
     (home-page "https://opentabletdriver.net")
     (synopsis "OpenTabletDriver is an open source, cross platform, user mode tablet driver.")

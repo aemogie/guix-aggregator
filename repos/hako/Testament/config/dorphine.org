@@ -583,7 +583,7 @@ Open TCP port 5558 and connect to server IPv4 address.
     (cuirass-remote-worker-configuration
       (publish-port 5558)
       (workers 8)
-      (systems '("x86_64-linux" "aarch64-linux" "i686-linux"))
+      (systems '("x86_64-linux" "i686-linux"))
       (server "100.97.195.93:5555")       ;gokuraku (Tailscale)
       (substitute-urls
        `("https://ci.boiledscript.com"

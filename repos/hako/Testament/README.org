@@ -4,6 +4,7 @@
 #+TITLE: Testament - Personal dot(?)files
 
 This repository contains my dotfiles and Guix System literate configurations.
+Part of them are also used for the [[https://ultrarare.space/en/posts/guix-build-farm/][public Guix build farm and mirrors]] I run.
 
 * Structure
 + [[file:config][config]] :: Guix System configurations.

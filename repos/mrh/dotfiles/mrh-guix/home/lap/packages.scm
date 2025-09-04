@@ -107,7 +107,6 @@
    emacs-paredit
    emacs-pinentry
    emacs-rainbow-delimiters
-   emacs-sly
    emacs-tldr
    emacs-trashed
    emacs-vertico
@@ -125,7 +124,6 @@
    guile-next
    guile-swayer
    guile-taglib
-   sbcl
 
    ;; communication
    isync

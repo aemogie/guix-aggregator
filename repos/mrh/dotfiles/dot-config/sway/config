@@ -126,7 +126,7 @@ floating_modifier $mod normal
 font pango:DejaVu Sans Mono 0.5
 titlebar_border_thickness 0
 titlebar_padding 0
-client.focused "ebdbb2" "7fc87f" "282828"
+client.focused "ebdbb2" "ffa21f" "282828"
 
 bar {
     swaybar_command waybar

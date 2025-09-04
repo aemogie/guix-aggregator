@@ -80,6 +80,8 @@
   #:use-module (nongnu packages nvidia)
   #:use-module (nongnu packages productivity)
   #:use-module (nongnu packages video)
+  #:use-module (nongnu packages dotnet)
+  #:use-module (nongnu packages fonts)
   #|Radix|#
   #:use-module (radix utils)
   #|Radix Home Services|#
@@ -128,7 +130,7 @@
         #|Utils           |# hyfetch xdg-utils gnupg pinentry-bemenu aria2
         #|                |# light ncurses git sops kexec-tools pciutils
         #|                |# gtk gtk+ gsettings-desktop-schemas
-        #|                |# p7zip opentabletdriver-bin
+        #|                |# p7zip dotnet
         #|Productivity    |# wayneko newsraft playerctl spotify obsidian ;kew
         #|Shell           |# fish
         #|Terminal        |# foot ghostty-tip
@@ -147,8 +149,7 @@
                                        ;; (lutris-wrapped-for nvda)
                                        mangohud
                                        prismlauncher
-                                       ; path-of-building-bin
-                                       mcpelauncher-ui
+                                       ; mcpelauncher-ui
                                        osu-lazer-bin)
         #|                |# python-wrapper xdotool ydotool
         #|File Manager    |# yazi
@@ -168,13 +169,14 @@
         #|SSH             |# openssh
         #|Video           |# mpv-minimal/wayland yt-dlp
                              (if nvidia?
-                                 (list ffmpeg-nvenc obs-nvenc
+                                 (list ffmpeg-nvenc obs-nvidia
                                        obs-pipewire-audio-capture)
                                  (list ffmpeg obs))
         #|                |# (nvidia?* cuda)
         #|Fonts           |# font-adobe-source-han-sans
         #|                |# font-adobe-source-sans-pro
         #|                |# font-adobe-source-serif-pro
+        #|                |# font-microsoft-times-new-roman
         #|                |# font-ipa-mj-mincho
         #|                |# font-jetbrains-mono
         #|                |# font-nerd-symbols
@@ -190,9 +192,7 @@
                 channel:saayix
                 channel:nonguix
                 channel:radix
-                channel:sops-guix
-                channel:rosenthal))
-                ; channel:guixpkgs))
+                channel:sops-guix))
 
         (service home-dbus-service-type)
 
@@ -355,6 +355,10 @@
                   ("__GLX_VENDOR_LIBRARY_NAME"           . "nvidia")
                   ("__EGL_VENDOR_LIBRARY_FILENAMES"      . ,(file-append nvidia-driver "/share/glvnd/egl_vendor.d/10_nvidia.x86_64.json"))
                   ; ("__NV_PRIME_RENDER_OFFLOAD"           . "1")
+                  ; ("__GL_SHADER_DISK_CACHE_SIZE"         . "21474836480")
+                  ("__GL_SHADER_DISK_CACHE"              . "1")
+                  ("__GL_SHADER_DISK_CACHE_PATH"         . "/home/look/games/.nv")
+                  ("__GL_SHADER_DISK_CACHE_SKIP_CLEANUP" . "1")
                   ("__GL_GSYNC_ALLOWED"                  . "1")
                   ("__GL_VRR_ALLOWED"                    . "1")
                   ;; This flag below solves prismlauncher problems

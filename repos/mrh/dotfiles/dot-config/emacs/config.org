@@ -5,7 +5,7 @@
 #+options: toc:1 num:2
 #+property: header-args :tangle init.el
 
-Note that this is for emacs 29.x with pgtk on wayland.
+Note that this is for emacs 30.x with pgtk on wayland.
 Most here is agnostic of that but some is not.
 
 * Early Init
@@ -187,7 +187,7 @@ You may need to call =(nerd-icons-install-fonts)=
 (use-package ef-themes
   :custom
   (ef-themes-mixed-fonts t)
-  (ef-themes-to-toggle '(ef-elea-dark ef-elea-light))
+  (ef-themes-to-toggle '(ef-melissa-dark ef-melissa-light))
   :config
   (defun my/adjust-opacity (&optional theme)
     "Make sure opacity is correct for a given theme."
@@ -212,7 +212,7 @@ You may need to call =(nerd-icons-install-fonts)=
     (advice-add 'ef-themes-load-theme :after #'my/fontify-org-buffers)
     (add-hook 'org-mode-hook #'variable-pitch-mode))
   
-  (ef-themes-select-dark 'ef-elea-dark))
+  (ef-themes-select-dark 'ef-melissa-dark))
 #+end_src
 
 * Files / Directories
@@ -830,7 +830,6 @@ Export to pdf presentations via LaTeX beamer
 #+end_src
 
 ** LaTeX
-*** Compilation
 
 #+begin_src emacs-lisp
 (use-package latex

@@ -155,8 +155,8 @@
                 ; "https://cuirass.genenetwork.org"
                 "https://substitutes.nonguix.org"
                 ; "https://guix.bordeaux.inria.fr"
-                "https://ci.guix.gnu.org"
-                "https://bordeaux.guix.gnu.org"))
+                "https://ci.guix.gnu.org"))
+                ; "https://bordeaux.guix.gnu.org"))
             (authorized-keys
               (list substitute-key:guix.pub
                     substitute-key:bordeaux.pub
@@ -165,8 +165,8 @@
                     substitute-key:buer.pub
                     substitute-key:nonguix.pub
                     substitute-key:inria.pub
-                    substitute-key:boiledscript.pub
-                    substitute-key:genenetwork.pub))
+                    substitute-key:boiledscript.pub))
+                    ; substitute-key:genenetwork.pub))
             (build-accounts 300)
             (discover? #t)
             (extra-options '("--gc-keep-derivations=yes"

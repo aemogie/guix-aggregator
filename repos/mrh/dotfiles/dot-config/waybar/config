@@ -38,7 +38,7 @@
      },
     "sway/window": {
         "format": " {}",
-        "max-length": 40
+        "max-length": 35
     },
     "tray": {
         // "icon-size": 21,
