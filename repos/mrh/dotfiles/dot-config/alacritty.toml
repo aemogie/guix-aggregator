@@ -10,7 +10,7 @@ size = 13
 # Default colors
 [colors.primary]
 background = "#352718"
-foreground = "#e8e4b1"
+foreground = "#ffffff"
 
 # Normal colors
 [colors.normal]

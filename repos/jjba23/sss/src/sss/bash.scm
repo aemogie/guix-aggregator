@@ -156,6 +156,20 @@
    "shopt -s checkwinsize"
    ;; Load bash_completion
    "include /run/current-system/profile/share/bash-completion/bash_completion"
+   ;; Integrate Guix-managed Bash & Maak
+   "
+maak_bin_install_dir=$(which maak)
+maak_install_dir=$(realpath \"${maak_bin_install_dir}\")
+maak_bin=$(dirname \"${maak_install_dir}\")
+maak_store=$(dirname \"${maak_bin}\")
+maak_completions=\"${maak_store}/share/scripts/maak-completion.bash\"
+"
+   ;; Load Maak completion
+   "
+if [[ -f \"${maak_completions}\" ]]; then
+  source \"${maak_completions}\" || true
+fi"
+
    ;; Load fzf (must be after bash_completion)
    "eval \"$(fzf --bash)\" || true"
    ;; Load Nix profile

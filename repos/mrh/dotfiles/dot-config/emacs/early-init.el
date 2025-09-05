@@ -122,6 +122,7 @@
 (use-package ef-themes
   :custom
   (ef-themes-mixed-fonts t)
+  (ef-themes-common-palette-overrides '((fg-main fg-intense)))
   (ef-themes-to-toggle '(ef-melissa-dark ef-melissa-light))
   :config
   (defun my/adjust-opacity (&optional theme)

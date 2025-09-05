@@ -7,7 +7,7 @@
 
 window#waybar {
     background: #352718;
-    color: #eaf2ef;
+    color: #ffffff;
 }
 
 tooltip {
@@ -24,7 +24,8 @@ tooltip label {
 }
 
 #workspaces button.persistent {
-    color: #dfd2c4;
+    /* color: #dfd2c4; */
+    color: #ffffff
 }
 
 #workspaces button.focused {
@@ -49,7 +50,7 @@ tooltip label {
 
 #wireplumber {
     border-top: 3px solid #ffa21f;
-    color:  #e8e4b1;
+    color:  #ffffff;
 }
 
 #wireplumber.muted {
@@ -58,47 +59,47 @@ tooltip label {
 
 #network.wifi {
 	border-top: 3px solid #6fd560;
-    color: #e8e4b1;
+    color: #ffffff;
 }
 
 #network.disconnected {
 	border-top: 3px solid #b02930;
-    color: #e8e4b1;
+    color: #ffffff;
 }
 
 #cpu {
     border-top: 3px solid #57aff6;
-    color: #e8e4b1;
+    color: #ffffff;
 }
 
 #memory {
     border-top: 3px solid #90918a;
-    color: #e8e4b1;
+    color: #ffffff;
 }
 
 #backlight {
     border-top: 3px solid #6fcad0;
-    color: #e8e4b1;
+    color: #ffffff;
 }
 
 #battery.full {
     border-top: 3px solid #a0d13a;
-    color: #e8e4b1;
+    color: #ffffff;
 }
 
 #battery.good {
     border-top: 3px solid #e4b53f;
-    color: #e8e4b1;
+    color: #ffffff;
 }
 
 #battery.critical {
     border-top: 3px solid #b02930;
-    color: #e8e4b1;
+    color: #ffffff;
 }
 
 #clock {
     border-top: 3px solid #f0aac5;
-    color: #e8e4b1;
+    color: #ffffff;
 }
 
 @keyframes blink {

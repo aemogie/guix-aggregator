@@ -30,7 +30,7 @@ Finally, my custom packages which are either not available or more up to date th
 * Emacs
 [[https://www.gnu.org/software/emacs][GNU Emacs]] is a text editor and lisp interpreter designed to maximize hackability and software freedom, in addition to serving as the primary text editor for the GNU system.
 
-I use emacs for just about everything on my computer other than browsing the web and consuming audio/visual media. This of course includes editing source code, but also:
+I use emacs for just about everything on my computer other than browsing the web and consuming audio/visual media. This includes editing source code, but also:
 
 - [[https://www.gnu.org/software/auctex][AUCTeX]] for writing LaTeX documents
 - [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Dired.html][Dired]] for managing files
@@ -39,9 +39,8 @@ I use emacs for just about everything on my computer other than browsing the web
 - [[https://www.gnu.org/software/emacs/erc.html][ERC]] for IRC
 - [[https://www.nongnu.org/geiser/][Geiser]] for Guile Scheme hacking
 - [[https://magit.vc/][Magit]] for git
-- [[https://orgmode.org/][Org Mode]] for so much (including this readme!)
 - [[https://www.djcbsoftware.nl/code/mu/][Mu4e]] for email
-- [[https://joaotavora.github.io/sly][Sly]] for Common Lisp hacking
+- [[https://orgmode.org/][Org Mode]] for so much (including this readme!)
 - [[https://www.gnu.org/software/tramp/][Tramp]] for remotely accessing machines
 
 All of my emacs packages are installed and managed via guix home (see =Guix= section).
