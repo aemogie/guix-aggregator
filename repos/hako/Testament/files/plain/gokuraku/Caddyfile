@@ -7,7 +7,7 @@
 	acme_dns cloudflare {file./run/secrets/cloudflare}
 	ech hello.boiledscript.com
 	log {
-		output file /var/lib/caddy/access.log
+		format json
 	}
 	servers {
 		trusted_proxies static private_ranges
@@ -17,52 +17,24 @@
 }
 
 
-(guix_publish) {
-	@guix_publish {
-		path /*.narinfo || /file/* || /nar/* || /nix-cache-info || /signing-key.pub
-	}
-	handle @guix_publish {
-		reverse_proxy {args[0]}
-	}
-}
-
 (logging) {
 	log {
-		output file /var/lib/caddy/{args[0]}.access.log
-		format json
+		output file /var/log/caddy/{args[0]}.log
 		format filter {
+			request>remote_ip ip_mask {
+				ipv4 20
+				ipv6 44
+			}
 			request>client_ip ip_mask {
 				ipv4 20
 				ipv6 44
 			}
+			wrap json
 		}
-	}
-}
-
-(tailscale) {
-	@tailscale client_ip 100.64.0.0/10 fd7a:115c:a1e0::/48
-	handle @tailscale {
-		reverse_proxy {args[0]}
 	}
 }
 
 
-(block_bots) {
-	import $$share/ai-robots-txt/Caddyfile$$
-	handle @aibots {
-		respond /* "Access denied" 403 {
-			close
-		}
-	}
-}
-
-(pow) {
-	@pow_matcher {
-		header User-Agent *Mozilla*
-	}
-	proof_of_work @pow_matcher
-}
-
 (robots_txt) {
 	respond /robots.txt 200 {
 		body <<EOF
@@ -75,49 +47,47 @@
 
 
 files.boiledscript.com {
-	import block_bots
-	import pow
 	import robots_txt
-
 	import logging files
 	root * /var/lib/webpublic/files
 	file_server browse
 }
 
 ultrarare.space {
-	import block_bots
-	import pow
-
 	import logging blog
 
 	root * /var/lib/webpublic/blog
-	file_server
-
 	handle_errors {
 		rewrite * /{err.status_code}.html
 		file_server
 	}
+
 	handle_path /comments/* {
 		reverse_proxy localhost:42174
 	}
-}
-
-www.ultrarare.space {
-	redir https://ultrarare.space{uri} permanent
+	file_server
 }
 
 # Cuirass & Substitutes & Mirrors
-ci.boiledscript.com, ci.ultrarare.space {
-	import block_bots
-	import pow
-	import robots_txt
-
+ci.ultrarare.space {
 	import logging cuirass
 
-	import tailscale localhost:17732
+	@tailscale client_ip 100.64.0.0/10 fd7a:115c:a1e0::/48
+	handle @tailscale {
+		reverse_proxy localhost:17732
+	}
+}
 
-	import guix_publish localhost:49637
+ci.guix.moe {
+	import robots_txt
+	import logging cuirass
 
+	@guix_publish {
+		path /*.narinfo || /file/* || /nar/* || /nix-cache-info || /signing-key.pub
+	}
+	handle @guix_publish {
+		reverse_proxy localhost:49637
+	}
 	handle /admin/* {
 		handle /admin/forgejo/event {
 			import /run/secrets/cuirass/forgejo
@@ -131,70 +101,59 @@ ci.boiledscript.com, ci.ultrarare.space {
 	reverse_proxy localhost:17732
 }
 
-cache-de.boiledscript.com, cache.boiledscript.com {
-	import block_bots
-	import pow
+cache-de.guix.moe, cache.guix.moe {
 	import robots_txt
-
 	import logging substitutes
 
 	root * /var/cache/guix/publish
 	file_server
 }
 
-cache-cdn.boiledscript.com {
-	import block_bots
-	import pow
+cache-cdn.guix.moe {
 	import robots_txt
-
 	import logging substitutes
 
 	handle /nar/* {
-		redir https://nars.boiledscript.com{uri}
+		redir https://nars.guix.moe{uri}
 	}
-
 	root * /var/cache/guix/narinfo
 	file_server
 }
 
 # Forgejo
 git.boiledscript.com {
-	import block_bots
-	import pow
 	import $$robots.txt/forgejo$$
-
 	import logging forgejo
+
 	reverse_proxy localhost:48071
 }
 
 # Miniflux
 reader.boiledscript.com {
-	import block_bots
 	import robots_txt
-
 	import logging miniflux
+
 	reverse_proxy localhost:51787
 }
 
 # Misskey
 social.boiledscript.com {
-	import block_bots
 	import robots_txt
-
 	import logging misskey
+
 	reverse_proxy localhost:54493
 }
 
 # Vaultwarden
 vault.boiledscript.com {
-	import block_bots
 	import robots_txt
-
 	import logging vaultwarden
+
 	reverse_proxy localhost:23263
 }
 
 :80, :443, mail.boiledscript.com {
+	import logging catchall
 	respond /* "Access denied" 403 {
 		close
 	}

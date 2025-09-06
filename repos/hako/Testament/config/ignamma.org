@@ -276,7 +276,7 @@ Frequently used packages.
 #+begin_src scheme :noweb-ref service
   (service guix-publish-service-type
     (guix-publish-configuration
-      (port 26336)
+      (port 49637)
       (host "0.0.0.0")
       (advertise? #t)))
 #+end_src
@@ -378,7 +378,7 @@ Open TCP port 5558 and connect to server IPv4 address.
       (systems '("x86_64-linux" "i686-linux"))
       (server "100.97.195.93:5555")       ;gokuraku (Tailscale)
       (substitute-urls
-       `("https://ci.boiledscript.com"
+       `("https://ci.guix.moe"
          ,@%default-substitute-urls))))
 #+end_src
 
@@ -389,5 +389,7 @@ Open TCP port 5558 and connect to server IPv4 address.
 
 ** prometheus-node-exporter
 #+begin_src scheme :noweb-ref service
-  (service prometheus-node-exporter-service-type)
+  (service prometheus-node-exporter-service-type
+    (prometheus-node-exporter-configuration
+      (web-listen-address ":36277")))
 #+end_src

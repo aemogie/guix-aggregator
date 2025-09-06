@@ -40,12 +40,15 @@
   (add-to-list 'backup-directory-alist
                `("." . ,(expand-file-name "backups" user-emacs-directory))))
 
-;; when a buffer is looking at a file, and that file is changed by something other than emacs, update the buffer
+;; when a buffer is looking at a file,
+;; and that file is changed by something other than emacs,
+;; update the buffer
 (use-package autorevert
   :config
   (global-auto-revert-mode 1))
 
-;; when re-opening files, emacs will remember where in that file you were when you last had it open
+;; when re-opening files,
+;; emacs will remember where in that file you were when you last had it open
 (use-package saveplace
   :config
   (save-place-mode 1))

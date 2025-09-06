@@ -51,7 +51,8 @@
    gtk+
    libnotify
    librewolf
-   sway
+   ;; sway
+   swayfx
    swaybg
    swayidle
    swaylock
@@ -101,7 +102,6 @@
    emacs-magit
    emacs-marginalia
    emacs-markdown-mode
-   emacs-meow
    emacs-orderless
    emacs-org-bullets
    emacs-paredit
@@ -113,6 +113,7 @@
    emacs-wgrep
    emacs-writeroom
    mrh-emacs-nerd-icons-dired
+   mrh-emacs-nm
    mrh-emacs-org-publish-rss
 
    ;; programming
@@ -129,6 +130,7 @@
    isync
    mu
    signal-desktop
+   zoom
 
    ;; security
    gnupg

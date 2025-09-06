@@ -11,7 +11,7 @@ set $brightnessctl brightnessctl
 # Outputs.
 ##########
 output * {
-    bg ~/media/pictures/wallpapers/background fill
+    bg ~/media/pictures/wallpapers/background stretch
     resolution 2256x1504
     position 2256 0
     scale 1.25
@@ -127,6 +127,7 @@ font pango:DejaVu Sans Mono 0.5
 titlebar_border_thickness 0
 titlebar_padding 0
 client.focused "ebdbb2" "ffa21f" "282828"
+blur enable
 
 bar {
     swaybar_command waybar

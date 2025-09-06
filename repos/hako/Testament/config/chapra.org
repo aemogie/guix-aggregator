@@ -386,5 +386,7 @@ Frequently used packages.
 
 ** prometheus-node-exporter
 #+begin_src scheme :noweb-ref service
-  (service prometheus-node-exporter-service-type)
+  (service prometheus-node-exporter-service-type
+    (prometheus-node-exporter-configuration
+      (web-listen-address ":36277")))
 #+end_src

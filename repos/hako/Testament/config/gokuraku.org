@@ -368,7 +368,7 @@ Remember to open TCP port 5555 and 5556.
            (lambda (port)
              (write
               '(begin
-                 (%cuirass-url "https://ci.boiledscript.com"))
+                 (%cuirass-url "https://ci.guix.moe"))
               port)))))
       (remote-server
        (cuirass-remote-server-configuration
@@ -427,12 +427,34 @@ rsync://cache.boiledscript.com
       (systems '("x86_64-linux" "i686-linux"))
       (server "127.0.0.1:5555")
       (substitute-urls
-       `("https://ci.boiledscript.com"
+       `("https://ci.guix.moe"
          ,@%default-substitute-urls))))
 #+end_src
 
 ** cuirass specifications
 *** channels
+#+begin_src scheme :noweb-ref cuirass-spec
+  (specification
+    (name "emacs-master")
+    (build '(channels emacs-master))
+    (channels
+     (list (channel
+             (inherit %default-guix-channel)
+             (url "https://codeberg.org/guix/guix.git"))
+           (channel
+             (name 'emacs-master)
+             (url "https://github.com/gs-101/emacs-master.git")
+             (branch "main")
+             (introduction
+              (make-channel-introduction
+               "568579841d0ca41a9d222a2cfcad9a7367f9073b"
+               (openpgp-fingerprint
+                "3049 BF6C 0829 94E4 38ED  4A15 3033 E0E9 F7E2 5FE4"))))))
+    (priority 5)
+    (systems '("x86_64-linux")))
+
+#+end_src
+
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification
     (name "guixcn")
@@ -450,7 +472,7 @@ rsync://cache.boiledscript.com
                (openpgp-fingerprint
                 "7EBE A494 60CE 5E2C 0875  7FDB 3B5A A993 E1A2 DFF0"))))))
     (priority 5)
-    (systems '("x86_64-linux" "aarch64-linux" "i686-linux"))
+    (systems '("x86_64-linux"))
     (properties '((forge-type . forgejo))))
 #+end_src
 
@@ -471,7 +493,27 @@ rsync://cache.boiledscript.com
                (openpgp-fingerprint
                 "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))))
     (priority 5)
-    (systems '("x86_64-linux" "aarch64-linux" "i686-linux")))
+    (systems '("x86_64-linux" "aarch64-linux")))
+#+end_src
+
+#+begin_src scheme :noweb-ref cuirass-spec
+  (specification
+    (name "rde")
+    (build '(channels rde))
+    (channels
+     (list (channel
+             (inherit %default-guix-channel)
+             (url "https://codeberg.org/guix/guix.git"))
+           (channel
+             (name 'rde)
+             (url "https://git.sr.ht/~abcdw/rde")
+             (introduction
+              (make-channel-introduction
+               "257cebd587b66e4d865b3537a9a88cccd7107c95"
+               (openpgp-fingerprint
+                "2841 9AC6 5038 7440 C7E9  2FFA 2208 D209 58C1 DEB0"))))))
+    (priority 5)
+    (systems '("x86_64-linux")))
 #+end_src
 
 #+begin_src scheme :noweb-ref cuirass-spec
@@ -492,7 +534,7 @@ rsync://cache.boiledscript.com
                (openpgp-fingerprint
                 "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7"))))))
     (priority 5)
-    (systems '("x86_64-linux" "aarch64-linux" "i686-linux"))
+    (systems '("x86_64-linux"))
     (properties '((forge-type . forgejo))))
 #+end_src
 
@@ -514,8 +556,7 @@ rsync://cache.boiledscript.com
 #+begin_src scheme
   (computed-substitution-with-inputs "gokuraku.caddyfile"
     (local-file (testament-plain "gokuraku/Caddyfile"))
-    (cons (testament-plain)
-          (specs->pkgs "ai-robots-txt")))
+    (list (testament-plain)))
 #+end_src
 
 [[file:../files/plain/gokuraku/Caddyfile][gokuraku/Caddyfile]]
@@ -641,5 +682,7 @@ rsync://cache.boiledscript.com
 
 ** prometheus-node-exporter
 #+begin_src scheme :noweb-ref service
-  (service prometheus-node-exporter-service-type)
+  (service prometheus-node-exporter-service-type
+    (prometheus-node-exporter-configuration
+      (web-listen-address ":36277")))
 #+end_src

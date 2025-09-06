@@ -7,7 +7,17 @@
 	acme_dns cloudflare {file./run/secrets/cloudflare}
 	ech hello.boiledscript.com
 	log {
-		output file /var/lib/caddy/access.log
+		format filter {
+			request>remote_ip ip_mask {
+				ipv4 20
+				ipv6 44
+			}
+			request>client_ip ip_mask {
+				ipv4 20
+				ipv6 44
+			}
+			wrap json
+		}
 	}
 	servers {
 		trusted_proxies static private_ranges
@@ -19,13 +29,13 @@
 
 (logging) {
 	log {
-		output file /var/lib/caddy/{args[0]}.access.log
-		format json
+		output file /var/log/caddy/{args[0]}.log
 		format filter {
 			request>client_ip ip_mask {
 				ipv4 20
 				ipv6 44
 			}
+			wrap json
 		}
 	}
 }

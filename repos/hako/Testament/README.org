@@ -29,7 +29,6 @@ Guix channels in use:
 ** [[file:config/chapra.org][chapra]] (x86_64-linux)
 
 ** [[file:config/gokuraku.org][gokuraku]] (x86_64-linux)
-Head node of [[https://ci.boiledscript.com]].
 
 ** [[file:config/ignamma.org][ignamma]] (x86_64-linux)
 

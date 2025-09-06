@@ -43,16 +43,16 @@
     (keyboard-layout (keyboard-layout "us" "dvorak"))
 
     (users (cons* (user-account
-                   (name "mrh")
-                   (group "users")
-                   (home-directory "/home/mrh")
-                   (supplementary-groups '("wheel"
-                                           "docker"
-                                           "netdev"
-                                           "audio"
-                                           "video"
-                                           "input"
-                                           "lp")))
+                    (name "mrh")
+                    (group "users")
+                    (home-directory "/home/mrh")
+                    (supplementary-groups '("wheel"
+                                            "docker"
+                                            "netdev"
+                                            "audio"
+                                            "video"
+                                            "input"
+                                            "lp")))
                   %base-user-accounts))
 
     (packages (map replace-mesa (cons* btop
@@ -69,11 +69,11 @@
      (cons*
       (service cups-service-type
                (cups-configuration
-                (web-interface? #t)))
+                 (web-interface? #t)))
 
       (service bluetooth-service-type
                (bluetooth-configuration
-                (name "guix-box")))
+                 (name "guix-box")))
 
       ;; required for oci-container-service-type
       (service elogind-service-type)
@@ -82,30 +82,29 @@
 
       (service oci-container-service-type
                (list (oci-container-configuration
-                      (image "jellyfin/jellyfin")
-                      (provision "jellyfin")
-                      (network "host")
-                      (ports (list (format #f "~a:8096:8096"  %wireguard-ipv4)
-                                   (format #f "~a:8920:8920"  %wireguard-ipv4)
-                                   (format #f "~a:8096:8096"  %local-ipv4)
-                                   (format #f "~a:8920:8920"  %local-ipv4)))
-                      (volumes '(("jellyfin-config" . "/config")
-                                 ("jellyfin-cache" . "/cache")
-                                 ("/home/mrh/media" . "/media"))))
+                       (image "jellyfin/jellyfin")
+                       (provision "jellyfin")
+                       (network "host")
+                       (ports (list (format #f "~a:8096:8096"  %wireguard-ipv4)
+                                    (format #f "~a:8920:8920"  %wireguard-ipv4)
+                                    (format #f "~a:8096:8096"  %local-ipv4)
+                                    (format #f "~a:8920:8920"  %local-ipv4)))
+                       (volumes '(("jellyfin-config" . "/config")
+                                  ("jellyfin-cache" . "/cache")
+                                  ("/home/mrh/media" . "/media"))))
                      (oci-container-configuration
-                      (image "linuxserver/sabnzbd")
-                      (provision "sabnzbd")
-                      (ports (list (format #f "~a:8081:8081"  %wireguard-ipv4)
-                                   (format #f "~a:8082:8082"  %wireguard-ipv4)))
-                      (volumes '(("/home/mrh/media" . "/config")))
-                      (environment '(("PUID" . "1000")
-                                     ("PGID" . "998")
-                                     ("TZ" . "Etc/UTC"))))))
+                       (image "linuxserver/sabnzbd")
+                       (provision "sabnzbd")
+                       (ports (list (format #f "~a:8081:8081"  %wireguard-ipv4)
+                                    (format #f "~a:8082:8082"  %wireguard-ipv4)))
+                       (volumes '(("/home/mrh/media" . "/config")))
+                       (environment '(("PUID" . "1000")
+                                      ("PGID" . "998")
+                                      ("TZ" . "Etc/UTC"))))))
 
       (service nftables-service-type
                (nftables-configuration
-                (ruleset (plain-file "nftables.conf"
-                                     (local-file "nftables.conf")))))
+                 (ruleset (local-file "nftables.conf"))))
 
       (service wireguard-service-type
                (wireguard-host-config
@@ -116,27 +115,27 @@
       
       (set-xorg-configuration
        (xorg-configuration
-        (keyboard-layout keyboard-layout)
-        (modules (cons nvda %default-xorg-modules))
-        (drivers '("nvidia")))
+         (keyboard-layout keyboard-layout)
+         (modules (cons nvda %default-xorg-modules))
+         (drivers '("nvidia")))
        sddm-service-type)
 
       (modify-services (operating-system-user-services base-operating-system)
         (openssh-service-type
          config => (openssh-configuration
-                    (password-authentication? #f)
-                    (port-number 2222)
-                    (max-connections 10)
-                    (authorized-keys
-                     `(("mrh" ,(local-file %ssh-public-path))))))
+                     (password-authentication? #f)
+                     (port-number 2222)
+                     (max-connections 10)
+                     (authorized-keys
+                      `(("mrh" ,(local-file %ssh-public-path))))))
 
         (sysctl-service-type
          config => (sysctl-configuration
-                    (settings
-                     (append
-                      '(("net.ipv4.ip_forward" . "1")
-                        ("net.ipv6.conf.all.forwarding" . "1"))
-                      %default-sysctl-settings)))))))
+                     (settings
+                      (append
+                       '(("net.ipv4.ip_forward" . "1")
+                         ("net.ipv6.conf.all.forwarding" . "1"))
+                       %default-sysctl-settings)))))))
 
     (swap-devices (list (swap-space
                           (target

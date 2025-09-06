@@ -33,5 +33,5 @@
   (wireguard-peer
    (name name)
    (public-key public-key)
-   (allowed-ips (list (format #f "~a.~a" %wireguard-ipv4-prefix num)
-                      (format #f "~a::~a" %wireguard-ipv6-prefix num)))))
+   (allowed-ips (list (format #f "~a.~a/24" %wireguard-ipv4-prefix num)
+                      (format #f "~a::~a/64" %wireguard-ipv6-prefix num)))))

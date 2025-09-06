@@ -283,7 +283,7 @@ time in `current-time' format."
 (defun my/publish-html-head (level)
   (jack-html
    `((:link (@ :rel "stylesheet" :type "text/css" :href ,(my/get-up-directory level "static/css/stylesheet.css")))
-     (:link (@ :rel "icon" :href ,(my/get-up-directory level "static/images/icons/favicon.ico"))))))
+     (:link (@ :rel "icon" :href ,(my/get-up-directory level "static/images/icons/favicon.png"))))))
 
 (defun my/publish-html-preamble (level)
   (jack-html

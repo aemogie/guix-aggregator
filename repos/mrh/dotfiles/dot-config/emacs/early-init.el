@@ -9,7 +9,7 @@
 
 (add-hook 'emacs-startup-hook #'restore-gc-cons-threshold 105)
 
-(add-to-list 'default-frame-alist '(alpha-background . 80))
+(add-to-list 'default-frame-alist '(alpha-background . 75))
 
 (setopt initial-scratch-message nil
         inhibit-startup-screen t)
@@ -131,8 +131,8 @@
     (let ((theme (if theme theme (ef-themes--current-theme))))
       (set-frame-parameter nil 'alpha-background
                            (if (member theme ef-themes-light-themes)
-                               100
-                             80))))
+                               75
+                             75))))
 
   (advice-add 'ef-themes-load-theme :after #'my/adjust-opacity)
 

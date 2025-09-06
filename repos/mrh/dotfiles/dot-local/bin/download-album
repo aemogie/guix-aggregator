@@ -26,10 +26,8 @@
   (scandir album-path
            audio-file?
            (lambda (filename-1 filename-2)
-             (< (track (taglib-open (format #f "~a/~a"
-                                            album-path filename-1)))
-                (track (taglib-open (format #f "~a/~a"
-                                            album-path filename-2)))))))
+             (< (track (taglib-open (format #f "~a/~a" album-path filename-1)))
+                (track (taglib-open (format #f "~a/~a" album-path filename-2)))))))
 
 (define (make-song-list! album-path)
   (call-with-output-file (format #f "~a/~a--Album.txt"
