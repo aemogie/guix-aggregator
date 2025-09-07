@@ -17,6 +17,16 @@
 }
 
 
+(robots_txt) {
+	respond /robots.txt 200 {
+		body <<EOF
+		User-Agent: *
+		Disallow: /
+
+		EOF
+	}
+}
+
 (logging) {
 	log {
 		output file /var/log/caddy/{args[0]}.log
@@ -34,14 +44,19 @@
 	}
 }
 
-
-(robots_txt) {
-	respond /robots.txt 200 {
-		body <<EOF
-		User-Agent: *
-		Disallow: /
-
-		EOF
+(iocaine) {
+	@read method GET HEAD
+	@not-read not {
+		method GET HEAD
+	}
+	reverse_proxy @read localhost:54504 {
+		@fallback status 421
+		handle_response @fallback {
+			{block}
+		}
+	}
+	handle @not-read {
+		{block}
 	}
 }
 
@@ -49,8 +64,15 @@
 files.boiledscript.com {
 	import robots_txt
 	import logging files
+
 	root * /var/lib/webpublic/files
-	file_server browse
+	import iocaine {
+		file_server browse
+	}
+}
+
+www.ultrarare.space {
+	redir https://ultrarare.space{uri} permanent
 }
 
 ultrarare.space {
@@ -61,20 +83,27 @@ ultrarare.space {
 		rewrite * /{err.status_code}.html
 		file_server
 	}
-
-	handle_path /comments/* {
-		reverse_proxy localhost:42174
+	import iocaine {
+		handle_path /comments/* {
+			reverse_proxy localhost:42174
+		}
+		file_server
 	}
-	file_server
 }
 
 # Cuirass & Substitutes & Mirrors
+guix.moe, www.guix.moe {
+	redir https://ultrarare.space/en/posts/guix-build-farm/
+}
+
 ci.ultrarare.space {
 	import logging cuirass
 
-	@tailscale client_ip 100.64.0.0/10 fd7a:115c:a1e0::/48
-	handle @tailscale {
-		reverse_proxy localhost:17732
+	import iocaine {
+		@tailscale client_ip 100.64.0.0/10 fd7a:115c:a1e0::/48
+		handle @tailscale {
+			reverse_proxy localhost:17732
+		}
 	}
 }
 
@@ -82,42 +111,45 @@ ci.guix.moe {
 	import robots_txt
 	import logging cuirass
 
-	@guix_publish {
-		path /*.narinfo || /file/* || /nar/* || /nix-cache-info || /signing-key.pub
-	}
-	handle @guix_publish {
-		reverse_proxy localhost:49637
-	}
-	handle /admin/* {
-		handle /admin/forgejo/event {
-			import /run/secrets/cuirass/forgejo
+	import iocaine {
+		@guix_publish {
+			path /*.narinfo || /file/* || /nar/* || /nix-cache-info || /signing-key.pub
 		}
-		handle {
-			respond "Access denied" 403 {
-				close
+		handle @guix_publish {
+			reverse_proxy localhost:49637
+		}
+		handle /admin/* {
+			handle /admin/forgejo/event {
+				import /run/secrets/cuirass/forgejo
+			}
+			handle {
+				respond "Access denied" 403 {
+					close
+				}
 			}
 		}
+		reverse_proxy localhost:17732
 	}
-	reverse_proxy localhost:17732
 }
 
-cache-de.guix.moe, cache.guix.moe {
+cache.guix.moe {
 	import robots_txt
 	import logging substitutes
 
-	root * /var/cache/guix/publish
-	file_server
+	import iocaine {
+		root * /var/cache/guix/narinfo
+		file_server
+	}
 }
 
-cache-cdn.guix.moe {
+cache-de.guix.moe {
 	import robots_txt
 	import logging substitutes
 
-	handle /nar/* {
-		redir https://nars.guix.moe{uri}
+	import iocaine {
+		root * /var/cache/guix/publish
+		file_server
 	}
-	root * /var/cache/guix/narinfo
-	file_server
 }
 
 # Forgejo
@@ -125,7 +157,9 @@ git.boiledscript.com {
 	import $$robots.txt/forgejo$$
 	import logging forgejo
 
-	reverse_proxy localhost:48071
+	import iocaine {
+		reverse_proxy localhost:48071
+	}
 }
 
 # Miniflux
@@ -133,7 +167,9 @@ reader.boiledscript.com {
 	import robots_txt
 	import logging miniflux
 
-	reverse_proxy localhost:51787
+	import iocaine {
+		reverse_proxy localhost:51787
+	}
 }
 
 # Misskey
@@ -141,7 +177,9 @@ social.boiledscript.com {
 	import robots_txt
 	import logging misskey
 
-	reverse_proxy localhost:54493
+	import iocaine {
+		reverse_proxy localhost:54493
+	}
 }
 
 # Vaultwarden
@@ -149,12 +187,17 @@ vault.boiledscript.com {
 	import robots_txt
 	import logging vaultwarden
 
-	reverse_proxy localhost:23263
+	import iocaine {
+		reverse_proxy localhost:23263
+	}
 }
 
 :80, :443, mail.boiledscript.com {
 	import logging catchall
-	respond /* "Access denied" 403 {
-		close
+
+	import iocaine {
+		respond /* "Access denied" 403 {
+			close
+		}
 	}
 }

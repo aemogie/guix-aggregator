@@ -136,6 +136,7 @@
    gnupg
    keepassxc
    ksshaskpass
+   pinentry-emacs
    pinentry-tty
 
    ;; sysadmin

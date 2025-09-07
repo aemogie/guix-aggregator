@@ -327,7 +327,7 @@ Frequently used packages.
 #+begin_src scheme :noweb yes :noweb-ref service
   (service caddy-service-type
     (caddy-configuration
-      (caddy (spec->pkg "caddy-hako"))
+      (caddy (spec->pkg "caddy-dolly"))
       (caddyfile <<caddy-config>>)))
 #+end_src
 

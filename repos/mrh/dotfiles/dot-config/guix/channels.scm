@@ -8,7 +8,12 @@
           (openpgp-fingerprint
            "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))
        (channel
-        (name 'mrh-channel)
+        (name 'mrh)
         (url "https://codeberg.org/mrh/guix-channel.git")
-        (branch "trunk"))
+        (branch "trunk")
+        (introduction
+         (make-channel-introduction
+          "2a79d9f12341857c8071e0cfc45489d7587ee596"
+          (openpgp-fingerprint
+           "1F5C 5723 E950 62A7 085E  0757 6C7C 794F 4A82 8B59"))))
        %default-channels)

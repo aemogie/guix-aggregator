@@ -24,19 +24,13 @@ update-channels:
 pull:
 	guix pull --channels=channels.lock $(OPTS)
 
-.PHONY: build build-self build-lan build-remote
-build: build-self build-lan build-remote
-build-self: build-dorphine
-build-lan: build-chapra build-ignamma
-build-remote: build-gokuraku
+.PHONY: build
+build: build-dorphine build-chapra build-ignamma build-gokuraku
 build-%: config/%.scm
 	$(GUIX) system build $< $(OPTS)
 
 .PHONY: deploy deploy-self deploy-lan deploy-remote
-deploy: deploy-self deploy-lan deploy-remote
-deploy-self: deploy-dorphine
-deploy-lan: deploy-chapra deploy-ignamma
-deploy-remote: deploy-gokuraku
+deploy: deploy-dorphine deploy-chapra deploy-ignamma deploy-gokuraku
 deploy-%: config/%.scm
 	$(GUIX) deploy files/deploy/$(notdir $<) $(OPTS)
 

@@ -363,6 +363,20 @@ Frequently used packages.
       guix-service-type
     (guix-extension
       (authorized-keys %hako-guix-authorized-keys-lan)))
+
+  (simple-service 'guix-moe guix-service-type
+    (guix-extension
+      (authorized-keys
+       (list
+        (plain-file "guix-moe.pub" "
+  (public-key
+   (ecc
+    (curve Ed25519)
+    (q #374EC58F5F2EC0412431723AF2D527AD626B049D657B5633AAAEBC694F3E33F9#)
+   )
+  )")))
+      (substitute-urls
+       '("https://cache-cdn.guix.moe"))))
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
@@ -376,8 +390,7 @@ Frequently used packages.
                       (inherit config)
                       (discover? #t)
                       (substitute-urls
-                       `("http://crustum:9018"
-                         "https://mirror.sjtu.edu.cn/guix"))
+                       '("https://mirror.sjtu.edu.cn/guix"))
                       (extra-options '("--max-jobs=8" "--cores=4"))
                       (tmpdir "/mnt/Mentha/System/@Build")))))))
 #+end_src

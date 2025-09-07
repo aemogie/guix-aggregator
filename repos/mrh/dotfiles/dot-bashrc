@@ -13,6 +13,9 @@ alias dots="stow --dotfiles -t $HOME -d $HOME/src dotfiles"
 # honor it and otherwise use /bin/sh.
 export SHELL
 
+# fix pinentry tty things
+export GPG_TTY=$(tty)
+
 if [[ $- != *i* ]]
 then
     # We are being invoked from a non-interactive shell.  If this
