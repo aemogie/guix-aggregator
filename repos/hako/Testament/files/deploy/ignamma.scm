@@ -14,4 +14,4 @@
       (host-name "ignamma")
       (system "x86_64-linux")
       (user "deploy")
-      (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFLJvoZh/xEjDq43Osbg3bUek9GJoTYkUJo5+K2f3rOP")))))
+      (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF4J18s0e6sbR7IaJblTkpLt0gflXjt1ZRHyI9vMmDE6")))))

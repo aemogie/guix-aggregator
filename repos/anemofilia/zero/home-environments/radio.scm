@@ -259,10 +259,7 @@
                        ("DOTREMINDERS" . "$XDG_DATA_HOME/reminders")
 
                        #|GTK|#
-                       ("GTK_RC_FILES" . "$XDG_CONFIG_HOME/gtk-2.0/gtkrc")
-
-                       #|Ncurses|#
-                       ("TERMINFO" . "$XDG_DATA_HOME/terminfo")))
+                       ("GTK_RC_FILES" . "$XDG_CONFIG_HOME/gtk-2.0/gtkrc")))
                     (aliases
                      `(#|Common aliases|#
                        ("df" . "df -h")

@@ -1,0 +1,9 @@
+* TODO move from kakoune to emacs
+** [ ] Write a proper emulation of kakoune for emacs
+*** [ ] [[https://elpa.gnu.org/packages/zones.html][emacs-zones]]
+*** [ ] [[https://github.com/Kungsgeten/ryo-modal][emacs-ryo]]/[[https://github.com/mrkkrp/modalka][emacs-modalka]]
+*** [ ]
+** [ ] Learn magit
+** [ ] Learn org-mode
+** [ ] Setup eglot
+** [ ] Setup flycheck

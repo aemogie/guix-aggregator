@@ -3,6 +3,7 @@
   #:export (berlin.pub
             genenetwork.pub
             inria.pub
+            moe.pub
             yumiko.pub
             yuria.pub))
 
@@ -30,6 +31,15 @@
       (ecc
        (curve Ed25519)
        (q #89FBA276A976A8DE2A69774771A92C8C879E0F24614AAAAE23119608707B3F06#)
+      )
+     )"))
+
+(define moe.pub
+  (plain-file "moe.pub"
+    "(public-key
+      (ecc
+       (curve Ed25519)
+       (q #374EC58F5F2EC0412431723AF2D527AD626B049D657B5633AAAEBC694F3E33F9#)
       )
      )"))
 

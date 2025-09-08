@@ -8,22 +8,22 @@
       (call-interactively 'find-file))))
 
 (defun radix-packages ()
-  "Find files in ~/areas/code/scm/radix/radix/packages."
+  "Find files in ~/areas/code/scm/radix/modules/radix/packages."
   (interactive)
   (funcall (radix "packages")))
 
 (defun radix-services ()
-  "Find files in ~/areas/code/scm/radix/radix/services."
+  "Find files in ~/areas/code/scm/radix/modules/radix/services."
   (interactive)
   (funcall (radix "services")))
 
 (defun radix-home-services ()
-  "Find files in ~/areas/code/scm/radix/radix/home/services."
+  "Find files in ~/areas/code/scm/radix/modules/radix/home/services."
   (interactive)
   (funcall (radix "home/services")))
 
 (defun radix-system ()
-  "Find files in ~/areas/code/scm/radix/radix/system."
+  "Find files in ~/areas/code/scm/radix/modules/radix/system."
   (interactive)
   (funcall (radix "system")))
 

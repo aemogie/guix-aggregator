@@ -67,106 +67,17 @@
 #+end_src
 
 ** File Systems
-Disk layout:
-#+begin_example
-  +----------------+----------------+
-  |                |                |
-  |      ESP       | Btrfs (Lancea) |
-  |_ _ _ _ _ _ _ __|_ _ _ _ _ _ _ _ |
-  |                |                |
-  | /dev/nvme0n1p1 | /dev/nvme0n1p2 |
-  |_ _ _ _ _ _ _ __| _ _ _ _ _ _ _ _|
-  |                                 |
-  |          /dev/nvme0n1           |
-  +---------------------------------+
-#+end_example
-
-Btrfs subvolumes:
-#+begin_example
-  @Snapshot
-
-  @Config
-  @Data
-  @Home
-
-  System/@Boot
-  System/@Build
-  System/@Guix
-  System/@Log
-  System/@Store
-  System/@Swap
-  System/@Tmp
-#+end_example
-
-Root file system layout:
-#+begin_example
-  /               tmpfs
-  ├─/efi          fat32 ESP
-  ├─/boot         btrfs System/@Boot
-  ├─/etc          btrfs @Config
-  ├─/gnu/store    btrfs System/@Store
-  ├─/home         btrfs @Home
-  ├─/swap         btrfs System/@Swap
-  ├─/var/guix     btrfs System/@Guix
-  ├─/var/lib      btrfs @Data
-  ├─/var/lock     tmpfs
-  ├─/var/log      btrfs System/@Log
-  └─/var/tmp      btrfs System/@Tmp
-#+end_example
-
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
-          (device "tmpfs")
+          (device (file-system-label "Lancea"))
           (mount-point "/")
-          (type "tmpfs")
-          (options "mode=0755,nr_inodes=1m,size=25%")
-          (check? #f))
+          (type "xfs"))
 
         (file-system
           (device (uuid "3903-6E21" 'fat))
           (mount-point "/efi")
           (type "vfat")
-          (create-mount-point? #t))
-
-        (file-system
-          (device "tmpfs")
-          (mount-point "/var/lock")
-          (type "tmpfs")
-          (flags '(no-suid no-dev strict-atime))
-          (options "mode=1777,nr_inodes=800k,size=20%")
-          (create-mount-point? #t)
-          (check? #f)))
-#+end_src
-
-#+begin_src scheme :noweb yes :noweb-ref file-systems
-  (let ((options-for-subvolume
-         (lambda (subvolume)
-           (string-join
-            (list "compress=zstd:1"
-                  (or (and=> subvolume (cut string-append "subvol=" <>))
-                      "subvolid=5"))
-            ","))))
-    (map (match-lambda
-           ((subvolume . mount-point)
-            (file-system
-              (device (file-system-label "Lancea"))
-              (mount-point mount-point)
-              (type "btrfs")
-              (options (options-for-subvolume subvolume))
-              (create-mount-point? #t)
-              (check? (string=? mount-point "/gnu/store"))
-              (needed-for-boot?
-               (member mount-point '("/etc" "/gnu/store" "/var/guix"))))))
-         '(("System/@Boot"  . "/boot")
-           ("System/@Store" . "/gnu/store")
-           ("System/@Swap"  . "/swap")
-           ("System/@Guix"  . "/var/guix")
-           ("System/@Log"   . "/var/log")
-           ("System/@Tmp"   . "/var/tmp")
-           ("@Config" . "/etc")
-           ("@Home"   . "/home")
-           ("@Data"   . "/var/lib")
-           (#f        . "/mnt/Lancea"))))
+          (create-mount-point? #t)))
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref transformation
@@ -175,33 +86,8 @@ Root file system layout:
       (inherit os)
       (swap-devices
        (list (swap-space
-               (target "/swap/swapfile")
-               (dependencies
-              (filter (file-system-mount-point-predicate "/swap")
-                      (operating-system-file-systems os))))))))
+               (target "/swapfile"))))))
 #+end_src
-
-Maintenance:
-#+begin_src scheme :noweb-ref service
-  (simple-service 'btrfs-scrub
-      shepherd-root-service-type
-    (list (shepherd-timer '(btrfs-scrub)
-            #~(calendar-event #:days-of-week '(sunday) #:hours '(0) #:minutes '(0))
-            #~(#$(file-append (spec->pkg "btrfs-progs") "/bin/btrfs") "scrub" "start" "/mnt/Lancea")
-            #:requirement '(user-processes))))
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (simple-service 'btrbk
-      shepherd-root-service-type
-    (list (shepherd-timer '(btrbk)
-            #~(calendar-event #:minutes '(0))
-            #~(#$(file-append (spec->pkg "btrbk") "/bin/btrbk") "run"
-               "-c" #$(local-file (testament-plain "ignamma/btrbk.conf")))
-            #:requirement '(user-processes))))
-#+end_src
-
-[[file:../files/plain/ignamma/btrbk.conf][ignamma/btrbk.conf]]
 
 ** Users
 Personal account.
@@ -269,8 +155,7 @@ Frequently used packages.
           config => (guix-configuration
                       (inherit config)
                       (discover? #t)
-                      (extra-options '("--cores=4" "--max-jobs=4"))
-                      (tmpdir "/mnt/Lancea/System/@Build")))))))
+                      (extra-options '("--cores=4" "--max-jobs=4"))))))))
 #+end_src
 
 #+begin_src scheme :noweb-ref service

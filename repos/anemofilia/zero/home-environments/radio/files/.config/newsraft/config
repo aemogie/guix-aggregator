@@ -22,5 +22,4 @@ bind   b    exec $BROWSER %l
 bind   gj   select-last
 bind   gk   select-first
 bind   m    exec setsid -f mpv %l >/dev/null 2>&1 & disown
-bind   s    status-history-menu
 bind   z    exec ~/bin/bookmark %l

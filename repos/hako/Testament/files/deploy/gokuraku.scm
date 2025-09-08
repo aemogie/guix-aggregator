@@ -14,4 +14,4 @@
       (host-name "gokuraku")
       (system "x86_64-linux")
       (user "deploy")
-      (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEmYb1CT2KCMAJnxBZZLEyrFEs27xqGiRXk4LTMOzy8F")))))
+      (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBiAMzppym/kbVUvmFJLMbiUDSvnh2luYNjd5TZ7J8Pv")))))

@@ -33,6 +33,7 @@
   (gnu services linux)
   (gnu services ssh)
   (gnu services sysctl)
+  (rosenthal services file-systems)
   (sops services sops)
 #+end_src
 
@@ -41,7 +42,7 @@
 #+begin_src scheme
   (bootloader-configuration
     (bootloader grub-bootloader)
-    (targets '("/dev/nvme1n1")))
+    (targets '("/dev/sdb")))
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
@@ -69,25 +70,10 @@
 
 ** File Systems
 #+begin_src scheme :noweb-ref file-systems
-  (let ((options-for-subvolume
-         (lambda (subvolume)
-           (string-join
-            (list "compress=zstd"
-                  (or (and=> subvolume (cut string-append "subvol=" <>))
-                      "subvolid=5"))
-            ","))))
-    (map (match-lambda
-           ((subvolume . mount-point)
-            (file-system
-              (device (file-system-label "Lycoris"))
-              (mount-point mount-point)
-              (type "btrfs")
-              (options (options-for-subvolume subvolume))
-              (create-mount-point? #t)
-              (check? (string=? mount-point "/")))))
-         '(("@System" . "/")
-           ("@Data"   . "/var/lib")
-           (#f        . "/mnt/Lycoris"))))
+  (list (file-system
+          (device (file-system-label "Lycoris"))
+          (mount-point "/")
+          (type "xfs")))
 #+end_src
 
 #+begin_src scheme :noweb-ref transformation
@@ -96,31 +82,12 @@
       (inherit os)
       (swap-devices
        (list (swap-space
-               (target (uuid "62da8bb4-d578-40f7-be9f-f76e7d7c1a91"))
-               (discard? #t))))))
-#+end_src
-
-Maintenance:
-#+begin_src scheme :noweb-ref service
-  (simple-service 'btrfs-scrub
-      shepherd-root-service-type
-    (list (shepherd-timer '(btrfs-scrub)
-            #~(calendar-event #:days-of-week '(sunday) #:hours '(0) #:minutes '(0))
-            #~(#$(file-append (spec->pkg "btrfs-progs") "/bin/btrfs") "scrub" "start" "/mnt/Lycoris")
-            #:requirement '(user-processes))))
+               (target (uuid "fe13d21b-385e-4dc3-9f94-24276d89c890")))))))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (simple-service 'btrbk
-      shepherd-root-service-type
-    (list (shepherd-timer '(btrbk)
-            #~(calendar-event #:minutes '(0))
-            #~(#$(file-append (spec->pkg "btrbk") "/bin/btrbk") "run"
-               "-c" #$(local-file (testament-plain "gokuraku/btrbk.conf")))
-            #:requirement '(user-processes))))
+  (service zfs-service-type)
 #+end_src
-
-[[file:../files/plain/gokuraku/btrbk.conf][gokuraku/btrbk.conf]]
 
 ** Users
 Personal account.
@@ -359,7 +326,6 @@ Remember to open TCP port 5555 and 5556.
 #+begin_src scheme :noweb yes :noweb-ref service
   (service cuirass-service-type
     (cuirass-configuration
-      (cuirass (spec->pkg "cuirass-hako"))
       ;; 6 hours
       (interval (* 6 3600))
       (parameters
@@ -384,7 +350,7 @@ rsync://cache.boiledscript.com
   (service rsync-service-type
     (rsync-configuration
       (modules
-       (list (rsync-module
+       (list #;(rsync-module
                (name "substitutes")
                (file-name "/var/cache/guix/publish"))
              (rsync-module
@@ -457,6 +423,20 @@ rsync://cache.boiledscript.com
 
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification
+    (name "guix")
+    (build '(channels guix))
+    (channels
+     (list (channel
+             (inherit %default-guix-channel)
+             (url "https://codeberg.org/guix/guix.git"))))
+    ;; 1 week
+    (period (* 7 24 3600))
+    (priority 7)
+    (systems '("x86_64-linux")))
+#+end_src
+
+#+begin_src scheme :noweb-ref cuirass-spec
+  (specification
     (name "guixcn")
     (build '(channels guixcn))
     (channels
@@ -472,7 +452,7 @@ rsync://cache.boiledscript.com
                (openpgp-fingerprint
                 "7EBE A494 60CE 5E2C 0875  7FDB 3B5A A993 E1A2 DFF0"))))))
     (priority 5)
-    (systems '("x86_64-linux"))
+    (systems '("x86_64-linux" "aarch64-linux"))
     (properties '((forge-type . forgejo))))
 #+end_src
 
@@ -534,13 +514,12 @@ rsync://cache.boiledscript.com
                (openpgp-fingerprint
                 "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7"))))))
     (priority 5)
-    (systems '("x86_64-linux"))
+    (systems '("x86_64-linux" "aarch64-linux"))
     (properties '((forge-type . forgejo))))
 #+end_src
 
 * Web Servers
 #+begin_src scheme :noweb-ref module
-  (gnu services certbot)
   (rosenthal services child-error)
 #+end_src
 
@@ -592,7 +571,7 @@ rsync://cache.boiledscript.com
          ("ENABLE_RSPAMD" . "1")
          ("ENABLE_RSPAMD_REDIS" . "0")
          ("ENABLE_SPAMASSASSIN" . "0")
-         ("NETWORK_INTERFACE" . "eno1")
+         ("NETWORK_INTERFACE" . "enp0s31f6")
          ("OVERRIDE_HOSTNAME" . "mail.boiledscript.com")
          ("POSTMASTER_ADDRESS" . "admin@boiledscript.com")
          ("RSPAMD_LEARN" . "1")
@@ -640,6 +619,7 @@ rsync://cache.boiledscript.com
 #+end_src
 
 ** misskey
+https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
 #+begin_src scheme :noweb-ref service
   (service misskey-service-type
     (misskey-configuration

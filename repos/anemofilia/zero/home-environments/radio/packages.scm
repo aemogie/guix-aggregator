@@ -34,6 +34,7 @@
         #:use-module (gnu packages maths)
         #:use-module (gnu packages messaging)
         #:use-module (gnu packages minetest)
+  #|N|# #:use-module (gnu packages ncurses)
   #|O|# #:use-module (gnu packages ocr)
   #|P|# #:use-module (gnu packages password-utils)
         #:use-module (gnu packages pdf)
@@ -119,6 +120,7 @@
         #|glib       |# dbus
         #|image      |# grim slurp
         #|libcanberra|# sound-theme-freedesktop
+        #|ncurses    |# ncurses
         #|terminals  |# foot
         #|toys       |# wayneko
         #|video      |# wf-recorder

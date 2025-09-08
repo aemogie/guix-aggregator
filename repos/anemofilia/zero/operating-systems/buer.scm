@@ -15,6 +15,7 @@
   #|L|# #:use-module (gnu packages less)
         #:use-module (gnu packages linux)
   #|M|# #:use-module (gnu packages man)
+  #|N|# #:use-module (gnu packages nss)
   #|P|# #:use-module (gnu packages package-management)
         #:use-module (gnu packages pciutils)
   #|T|# #:use-module (gnu packages texinfo)
@@ -110,7 +111,7 @@
                                  "/backgrounds/guix-silver-16-9.svg"))
              (gfxmode `("1280x720x32"))))))
 
-   (kernel linux-libre-6.15)
+   (kernel linux-libre-6.16)
    (kernel-arguments
     `("console=tty1"
       "modprobe.blacklist=usbmouse,usbkbd,pcspkr"
@@ -205,18 +206,21 @@
                    (guix-configuration
                     (build-accounts 16)
                     (authorized-keys
-                     (cons* substitute-key:genenetwork.pub
-                            substitute-key:inria.pub
+                     (cons* substitute-key:inria.pub
+                            substitute-key:moe.pub
                             substitute-key:yumiko.pub
                             %default-authorized-guix-keys))
                     (substitute-urls
-                      `("https://cuirass.genenetwork.org"
+                      `("https://cache-us-lax.guix.moe"
                         "https://ci.guix.gnu.org"
                         "https://guix.bordeaux.inria.fr"))
                     (extra-options
                       `("--cores=4"
                         "--gc-keep-derivations=yes"
                         "--gc-keep-outputs=yes"))))
+          (service shared-cache-service-type
+                   (shared-cache-configuration
+                    (users (list (user-cache (user "radio"))))))
 
           #|Device management services|#
           (service udev-service-type
