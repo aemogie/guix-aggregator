@@ -55,11 +55,11 @@
                  ;; rofi
                  (".local/share/applications/rofi.desktop"
                   ,(hidden-desktop-entry "rofi.desktop"
-                     (file-append (specification->package "rofi-wayland")
+                     (file-append (specification->package "rofi")
                                   "/share/applications/rofi.desktop")))
                  (".local/share/applications/rofi-theme-selector.desktop"
                   ,(hidden-desktop-entry "rofi-theme-selector.desktop"
-                     (file-append (specification->package "rofi-wayland")
+                     (file-append (specification->package "rofi")
                                   "/share/applications/rofi-theme-selector.desktop")))
                  ;; thunar
                  (".local/share/applications/thunar-bulk-rename.desktop"
@@ -204,7 +204,7 @@ Lock channels to avoid building Guix when using the LiveCD.
   "imv"                                   ;image viewer
   "light"                                 ;brightness control
   "pavucontrol"                           ;sound settings
-  "rofi-wayland"                          ;application launcher
+  "rofi"                                  ;application launcher
   "wireplumber"                           ;PipeWire session manager
   "xwayland-satellite"                    ;rootless XWayland integration
 

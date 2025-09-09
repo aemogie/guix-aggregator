@@ -643,7 +643,7 @@ Open TCP port 5558 and connect to server IPv4 address.
          (cons (testament-blobs)
                (specs->pkgs "foot"
                             "light"
-                            "rofi-wayland"
+                            "rofi"
                             "swaylock-effects"
                             "wireplumber"
                             "xwayland-satellite"))))))
@@ -655,7 +655,7 @@ Open TCP port 5558 and connect to server IPv4 address.
   configuration {
       icon-theme: \"Qogir\";
   }
-  @theme \"" (spec->pkg "rofi-wayland") "/share/rofi/themes/fullscreen-preview.rasi\"\n"))))
+  @theme \"" (spec->pkg "rofi") "/share/rofi/themes/fullscreen-preview.rasi\"\n"))))
 #+end_src
 
 [[file:../files/plain/niri.kdl][niri.kdl]]

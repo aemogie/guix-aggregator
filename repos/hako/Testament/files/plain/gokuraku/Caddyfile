@@ -132,6 +132,25 @@ ci.guix.moe {
 	}
 }
 
+# Used for cache-cdn.guix.moe.
+cache.guix.moe {
+	import robots_txt
+	import logging substitutes
+
+	import iocaine {
+		root * /var/cache/guix/narinfo
+
+		@weather_endpoints {
+			path /api/queue || /api/latestbuilds
+		}
+		respond @weather_endpoints 404 {
+			close
+		}
+
+		file_server
+	}
+}
+
 cache-de.guix.moe {
 	import robots_txt
 	import logging substitutes

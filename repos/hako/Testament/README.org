@@ -86,7 +86,7 @@ the final system if configured.
 Default keybindings:
 + =Super + Shift + /= :: Open an overlay for available hotkeys.
 + =Super + T= :: Open terminal emulator, [[https://codeberg.org/dnkl/foot][foot]] is used.
-+ =Super + D= :: Open application launcher, [[https://github.com/lbonn/rofi][rofi-wayland]] is used.
++ =Super + D= :: Open application launcher, [[https://github.com/davatorium/rofi][rofi]] is used.
 
 [[file:files/plain/assets/live-desktop-1.png]]
 [[file:files/plain/assets/live-desktop-2.png]]

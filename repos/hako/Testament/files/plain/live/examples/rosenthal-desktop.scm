@@ -71,7 +71,7 @@
                 "imv"                ;image viewer
                 "light"              ;brightness control
                 "pavucontrol"        ;sound settings
-                "rofi-wayland"       ;application launcher
+                "rofi"               ;application launcher
                 "wireplumber"        ;PipeWire session manager
                 "xwayland-satellite" ;rootless XWayland integration
 
