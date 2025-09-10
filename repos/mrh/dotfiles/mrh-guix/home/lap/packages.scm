@@ -122,7 +122,6 @@
    gnu-make
 
    ;; lisp
-   guile-next
    guile-swayer
    guile-taglib
 
@@ -134,6 +133,7 @@
 
    ;; security
    gnupg
+   mrh-i2pd
    keepassxc
    ksshaskpass
    pinentry-emacs

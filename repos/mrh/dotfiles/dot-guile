@@ -17,8 +17,3 @@ convenient interactive line editing and input history.\n\n"))))
         (else
          (display "Consider installing the 'guile-colorized' package
 for a colorful Guile experience.\n\n"))))
-
-(for-each (lambda (path)
-            (add-to-load-path (format #f "~a/~a" (getenv "HOME") path)))
-          (list ".guix-home/profile/share/guile/site/3.0"
-                ".config/guix/current/share/guile/site/3.0"))

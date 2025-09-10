@@ -206,12 +206,14 @@
                    (guix-configuration
                     (build-accounts 16)
                     (authorized-keys
-                     (cons* substitute-key:inria.pub
+                     (cons* substitute-key:genenetwork.pub
+                            substitute-key:inria.pub
                             substitute-key:moe.pub
                             substitute-key:yumiko.pub
                             %default-authorized-guix-keys))
                     (substitute-urls
                       `("https://cache-us-lax.guix.moe"
+                        "https://cuirass.genenetwork.org"
                         "https://ci.guix.gnu.org"
                         "https://guix.bordeaux.inria.fr"))
                     (extra-options
