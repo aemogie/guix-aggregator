@@ -823,6 +823,15 @@ Open TCP port 5558 and connect to server IPv4 address.
             (stop #~(make-kill-destructor)))))
 #+end_src
 
+** mirroring
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'sync-kv
+      home-shepherd-service-type
+    (list (shepherd-timer '(sync-kv)
+            #~(calendar-event #:hours '(1 7 13 19) #:minutes '(0))
+            #~("/home/hako/Workspace/sync-kv.sh"))))
+#+end_src
+
 ** mpv
 #+begin_src scheme :noweb-ref package
   "mpv-nvidia"
