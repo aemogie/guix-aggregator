@@ -364,59 +364,21 @@ rsync://cache.boiledscript.com
     (list (shepherd-timer '(setup-mirror)
             #~(calendar-event #:hours '(0 6 12 18) #:minutes '(0))
             #~(#$(program-file "setup-mirror"
-                   (with-extensions (map specification->package '("guile-json@4"))
-                     (with-imported-modules '((guix build utils))
-                       #~(begin
-                           (use-modules (srfi srfi-1)
-                                        (ice-9 textual-ports)
-                                        (json)
-                                        (guix build utils))
-                           ;; Upload storage to Cloudflare R2.
-                           (invoke "/bin/sh"
-                                   #$(local-file (testament-plain "gokuraku/sync-r2.sh"))
-                                   #$(file-append (spec->pkg "rclone-bin") "/bin/rclone"))
-                           ;; Set up narinfo mirror.
-                           (mkdir-p "/var/cache/guix/narinfo")
-                           (invoke #$(file-append (spec->pkg "rsync") "/bin/rsync")
-                                   "/var/cache/guix/publish/" "/var/cache/guix/narinfo/"
-                                   "-avh"
-                                   "--delete"
-                                   "--exclude" "/hashes"
-                                   "--exclude" "/nar")
-                           ;; Prepare file list to Upload narinfo files to Cloudflare KV
-                           ;; The actual uploading happens on dorphine.
-                           (invoke "/bin/sh"
-                                   #$(local-file (testament-plain "gokuraku/prepare-kv.sh")))
-                           (with-directory-excursion "/var/cache/kv"
-                             (when (file-exists? "to-delete.txt")
-                               (call-with-input-file "to-delete.txt"
-                                 (lambda (input-port)
-                                   (let loop ((line (get-line input-port))
-                                              (result '()))
-                                     (if (eof-object? line)
-                                         (call-with-output-file "to-delete.json"
-                                           (lambda (output-port)
-                                             (scm->json (list->vector result) output-port)))
-                                         (loop (get-line input-port)
-                                               (cons `(("name" . ,line))
-                                                     result))))))
-                               (false-if-exception (delete-file "to-delete.txt")))
-                             (when (file-exists? "to-copy.txt")
-                               (call-with-input-file "to-copy.txt"
-                                 (lambda (input-port)
-                                   (let loop ((line (get-line input-port))
-                                              (result '()))
-                                     (if (eof-object? line)
-                                         (call-with-output-file "to-copy.json"
-                                           (lambda (output-port)
-                                             (scm->json (list->vector result) output-port)))
-                                         (loop (get-line input-port)
-                                               (cons `(("key" . ,line)
-                                                       ("value" . ,(call-with-input-file
-                                                                       (in-vicinity "/var/cache/guix/narinfo" line)
-                                                                     get-string-all)))
-                                                     result))))))
-                               (false-if-exception (delete-file "to-copy.txt")))))))))
+                   (with-imported-modules '((guix build utils))
+                     #~(begin
+                         (use-modules (guix build utils))
+                         ;; Upload storage to Cloudflare R2.
+                         (invoke "/bin/sh"
+                                 #$(local-file (testament-plain "gokuraku/sync-r2.sh"))
+                                 #$(file-append (spec->pkg "rclone-bin") "/bin/rclone"))
+                         ;; Set up narinfo mirror.
+                         (mkdir-p "/var/cache/guix/narinfo")
+                         (invoke #$(file-append (spec->pkg "rsync") "/bin/rsync")
+                                 "/var/cache/guix/publish/" "/var/cache/guix/narinfo/"
+                                 "-avh"
+                                 "--delete"
+                                 "--exclude" "/hashes"
+                                 "--exclude" "/nar")))))
             #:requirement '(user-processes))))
 #+end_src
 
