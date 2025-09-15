@@ -17,3 +17,5 @@
   ((options->transformation
      '((with-commit . "ghostty=9d9d781a0b7142ddc176167ef5e889618d295ef5")))
    ghostty))
+
+ghostty-tip

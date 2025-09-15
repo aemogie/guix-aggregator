@@ -59,7 +59,7 @@
       kernel-module-loader-service-type
     '("sch_fq_pie" "tcp_bbr"))
 
-  (simple-service 'extend-systctl
+  (simple-service 'extend-sysctl
       sysctl-service-type
     '(("net.core.default_qdisc" . "fq_pie")
       ("net.ipv4.tcp_congestion_control" . "bbr")))
@@ -214,12 +214,12 @@ Open TCP port 5558 and connect to server IPv4 address.
 
 * Monitoring
 #+begin_src scheme :noweb-ref module
-  (gnu services monitoring)
+  (rosenthal services monitoring)
 #+end_src
 
-** prometheus-node-exporter
+** alloy
 #+begin_src scheme :noweb-ref service
-  (service prometheus-node-exporter-service-type
-    (prometheus-node-exporter-configuration
-      (web-listen-address ":36277")))
+  (service alloy-service-type
+    (alloy-configuration
+      (config (local-file (testament-blobs "ignamma/config.alloy")))))
 #+end_src

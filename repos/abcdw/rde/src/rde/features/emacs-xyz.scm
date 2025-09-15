@@ -5010,7 +5010,8 @@ citar-org-roam-subdir if org-roam is enabled."
    (name f-name)
    (values `((,f-name . #t)
              (bibtex-dialect . ,bibtex-dialect)
-             (global-bibliography . ,global-bibliography)))
+             (global-bibliography . ,global-bibliography)
+             (citar-library-paths . ,citar-library-paths)))
    (home-services-getter get-home-services)))
 
 (define* (feature-emacs-zotra
@@ -6197,7 +6198,9 @@ WTTR-LOCATIONS you will get a weather report based on your IP address."
         (setq display-wttr-locations ',wttr-locations)
         (setq display-wttr-interval ,wttr-interval)
         (autoload 'display-wttr-mode "display-wttr")
-        (display-wttr-mode))
+        (if after-init-time
+            (display-wttr-mode)
+            (add-hook 'after-init-hook 'display-wttr-mode)))
       #:elisp-packages (list emacs-display-wttr))))
 
   (feature

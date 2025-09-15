@@ -7,6 +7,7 @@
 	acme_dns cloudflare {file./run/secrets/cloudflare}
 	ech hello.boiledscript.com
 	log {
+		output file /var/log/caddy/caddy.log
 		format filter {
 			request>remote_ip ip_mask {
 				ipv4 20
@@ -20,6 +21,7 @@
 		}
 	}
 	servers {
+		metrics
 		trusted_proxies static private_ranges
 		client_ip_headers X-Forwarded-For X-Real-IP
 		trusted_proxies_strict
@@ -72,12 +74,6 @@
 }
 
 
-# Grafana
-dash.ultrarare.space {
-	import logging grafana
-	import tailscale localhost:13064
-}
-
 # Komga
 http://manga.boiledscript.com, manga.ultrarare.space {
 	import block_bots
@@ -109,4 +105,29 @@ http://shows.boiledscript.com, shows.ultrarare.space {
 
 	import tailscale localhost:22443
 	reverse_proxy localhost:22443
+}
+
+
+# Grafana
+dash.ultrarare.space {
+	import logging grafana
+	import tailscale localhost:13064
+}
+
+# Loki
+http://logs.boiledscript.com {
+	import block_bots
+	import robots_txt
+	import logging loki
+	import /run/secrets/loki/caddy
+	reverse_proxy localhost:50968
+}
+
+# Mimir
+http://metrics.boiledscript.com {
+	import block_bots
+	import robots_txt
+	import logging mimir
+	import /run/secrets/mimir/caddy
+	reverse_proxy localhost:49951
 }

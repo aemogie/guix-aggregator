@@ -58,6 +58,7 @@
   #:use-module (gnu packages pdf)
   #:use-module (gnu packages python)
   #:use-module (gnu packages qt)
+  #:use-module (gnu packages rust-apps)
   #:use-module (gnu packages shells)
   #:use-module (gnu packages ssh)
   #:use-module (gnu packages syndication)
@@ -133,9 +134,10 @@
         #|                |# p7zip dotnet
         #|Productivity    |# wayneko newsraft playerctl spotify obsidian ;kew
         #|Shell           |# fish
-        #|Terminal        |# foot ghostty-tip
+        #|Terminal        |# foot ghostty
         #|Guile           |# guile-next guile-readline guile-colorized guile-gcrypt
-        #|Text Editor     |# helix #|optional|# guile-lsp-server parinfer-rust
+        #|Text Editor     |# helix #|optional|# guile-lsp-server parinfer-rust helix-pdf
+        #|Typst           |# typst tinymist
         #|Emacs           |# emacs-pgtk emacs-magit
         #|                |# emacs-paredit emacs-yasnippet emacs-which-key emacs-eat
         #|                |# emacs-vertico emacs-modus-themes emacs-debbugs emacs-modalka
@@ -157,7 +159,7 @@
         #|Sound           |# wireplumber-minimal ncpamixer helvum easyeffects
         #|Password Manager|# keepassxc password-store passff-host
         #|PDF             |# sioyek zaread zathura zathura-pdf-poppler
-        #|Window Manager  |# hyprpaper hyprlock hypridle hyprcursor
+        #|Window Manager  |# hyprpaper hyprlock hypridle hyprcursor hyprland
         #|                |# hyprland-qtutils hyprsunset eww/wayland
         #|                |# mako waybar grim slurp bemenu fuzzel
         #|                |# wl-clipboard wlsunset dbus qtwayland
@@ -177,6 +179,7 @@
         #|                |# font-adobe-source-sans-pro
         #|                |# font-adobe-source-serif-pro
         #|                |# font-microsoft-times-new-roman
+        #|                |# font-microsoft-arial
         #|                |# font-ipa-mj-mincho
         #|                |# font-jetbrains-mono
         #|                |# font-nerd-symbols
@@ -226,9 +229,9 @@
 
         (service home-log-rotation-service-type)
 
-        (service home-hyprland-service-type
-          (home-hyprland-configuration
-            (package hyprland)))
+        ; (service home-hyprland-service-type
+        ;   (home-hyprland-configuration
+        ;     (package hyprland)))
 
         (service home-dotfiles-service-type
                  (home-dotfiles-configuration
