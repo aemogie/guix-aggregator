@@ -190,16 +190,6 @@ You may need to call =(nerd-icons-install-fonts)=
   (ef-themes-common-palette-overrides '((fg-main fg-intense)))
   (ef-themes-to-toggle '(ef-melissa-dark ef-melissa-light))
   :config
-  (defun my/adjust-opacity (&optional theme)
-    "Make sure opacity is correct for a given theme."
-    (interactive)
-    (let ((theme (if theme theme (ef-themes--current-theme))))
-      (set-frame-parameter nil 'alpha-background
-                           (if (member theme ef-themes-light-themes)
-                               75
-                             75))))
-
-  (advice-add 'ef-themes-load-theme :after #'my/adjust-opacity)
 
   (with-eval-after-load 'server
     (add-hook 'server-after-make-frame-hook
@@ -242,6 +232,7 @@ You may need to call =(nerd-icons-install-fonts)=
   :custom
   (large-file-warning-threshold 10000000)
   (backup-by-copying t)
+  (safe-local-variable-directories '("~/.config/guix/current/share/guile/site/3.0/"))
   :config
   (add-to-list 'backup-directory-alist
                `("." . ,(expand-file-name "backups" user-emacs-directory))))
@@ -335,6 +326,17 @@ Fix bug causing hangups upon re-encryption of files
   (trashed-use-header-line t))
 #+end_src
 
+** OS
+
+#+begin_src emacs-lisp
+(defun my/os-release ()
+  (interactive)
+  (with-temp-buffer
+    (insert-file-contents "/etc/os-release")
+    (let ((line (thing-at-point 'line t)))
+      (string-trim (cadr (string-split line "=")) "\"" "\"\n"))))
+#+end_src
+
 * Keybindings
 
 #+begin_src emacs-lisp
@@ -350,6 +352,7 @@ Fix bug causing hangups upon re-encryption of files
                         ("M-[" . previous-window-any-frame)
                         ("M-#" . dictionary-lookup-definition)
                         ("C-x b" . consult-buffer)
+                        ("C-c c" . org-capture)
                         ("C-c y" . consult-yank-from-kill-ring)
                         ("C-c r s" . consult-register-store)
                         ("C-c r l" . consult-register-load)
@@ -568,7 +571,7 @@ Enable narrowing commands
 #+begin_src emacs-lisp
 (use-package writeroom-mode
   :custom
-  (writeroom-width 80)
+  (writeroom-width 90)
   (writeroom-fullscreen-effect 'maximized)
   (writeroom-major-modes '(text-mode))
   (writeroom-major-modes-exceptions '(mhtml-mode nxml-mode))
@@ -676,7 +679,13 @@ Compile without showing compile buffer
                  sym)))
 #+end_src
 
-**** Guile
+**** Scheme
+#+begin_src emacs-lisp
+(use-package scheme
+  :when (string-equal (my/os-release) "Guix System")
+  :config (load (expand-file-name "scheme-guix.el" user-emacs-directory)))
+#+end_src
+***** Guile
 
 #+begin_src emacs-lisp
 (use-package geiser)
@@ -736,6 +745,8 @@ See [[https://unimath.github.io/agda-unimath/HOWTO-INSTALL.html#emacs][agda-unim
 ** Org
 
 #+begin_src emacs-lisp
+(setopt org-default-notes-file (expand-file-name "notes.org" org-directory))
+
 (use-package org
   :defer t
   :hook
@@ -745,7 +756,6 @@ See [[https://unimath.github.io/agda-unimath/HOWTO-INSTALL.html#emacs][agda-unim
         ("C-c l" . org-cycle-list-bullet))
   :custom
   (org-directory "~/documents/org/")
-  (org-default-notes-file (expand-file-name "notes.org" org-directory))
   (org-agenda-files (list (expand-file-name "agenda/" org-directory)))
   
   (org-startup-folded t)
@@ -821,6 +831,19 @@ Export to pdf presentations via LaTeX beamer
 
   (load (expand-file-name "org-publish.el" user-emacs-directory))
   :after jack)
+#+end_src
+
+*** Org Capture
+
+#+begin_src emacs-lisp
+(use-package org-capture
+  :commands org-capture
+  :custom
+  (org-capture-templates
+   '(("w" "website" entry
+      (file+headline "" "Websites"))
+     ("m" "misc" item
+      (file+headline "" "Miscellaneous")))))
 #+end_src
 
 ** Markdown
@@ -919,12 +942,19 @@ Magic git frontend
 #+end_src
 
 ** Pinentry
+NOTE: On my machine there is a bug of some kind which requires me to restart pinentry on occassion.
 
 #+begin_src emacs-lisp
 (use-package pinentry
   :custom
   (epg-pinentry-mode 'loopback)
   :config
+  (defun my/restart-pinentry ()
+    (interactive)
+    (pinentry-stop)
+    (sleep-for 0.5)
+    (pinentry-start))
+
   (pinentry-start))
 #+end_src
 

@@ -10,20 +10,38 @@
   (load "../common.scm")
   (use-modules (rosenthal) <<module>>)
 
-  <<definition>>
-
   (define %os
     (operating-system
       (host-name "gokuraku")
       (timezone "Asia/Hong_Kong")
-      (bootloader <<bootloader>>)
+      (bootloader
+        (bootloader-configuration
+          (bootloader grub-efi-removable-bootloader)
+          (targets '("/efi"))))
+      (kernel (spec->pkg "linux-libre@6.12"))
+      (kernel-arguments
+       (cons* "kernel.sysrq=0"
+              "zswap.enabled=1"
+              "zswap.max_pool_percent=90"
+              %default-kernel-arguments))
       (file-systems (append <<file-systems>> %base-file-systems))
+      (swap-devices
+       (list (swap-space
+               (target (uuid "0316f295-36d1-4948-8c95-c1a8d8a8ab8b")))))
       (users (cons* <<user>> %base-user-accounts))
-      (packages (append (specs->pkgs+out <<package>>) %base-packages))
-      (services (cons* <<service>> %base-services))
+      (packages
+       (append (specs->pkgs+out "gnupg" "rsync" <<package>>)
+               %base-packages))
+      (services
+       (cons* <<service>>
+              (modify-services %base-services
+                (guix-service-type
+                 config => (guix-configuration
+                             (inherit config)
+                             (extra-options '("--cores=4" "--max-jobs=2")))))))
       (name-service-switch %default-nss)))
 
-  ((compose <<transformation>>)
+  ((compose (rosenthal-transformation-zfs #:boot? #t))
    %os)
 #+end_src
 
@@ -33,36 +51,16 @@
   (gnu services linux)
   (gnu services ssh)
   (gnu services sysctl)
-  (rosenthal services file-systems)
   (sops services sops)
 #+end_src
 
-** Bootloader & Kernel
-#+name: bootloader
-#+begin_src scheme
-  (bootloader-configuration
-    (bootloader grub-bootloader)
-    (targets '("/dev/sdb")))
-#+end_src
-
-#+begin_src scheme :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (kernel (spec->pkg "linux-libre@6.12"))
-      (kernel-arguments
-       (cons* "kernel.sysrq=0"
-              "zswap.enabled=1"
-              "zswap.max_pool_percent=90"
-              (operating-system-user-kernel-arguments os)))))
-#+end_src
-
+** Kernel
 #+begin_src scheme :noweb-ref service
-  (simple-service 'add-extra-modules
+  (simple-service 'extend-kernel-module-loader
       kernel-module-loader-service-type
-    '("tcp_bbr"))
+    '("sch_fq_pie" "tcp_bbr"))
 
-  (simple-service 'add-sysctl-rules
+  (simple-service 'extend-systctl
       sysctl-service-type
     '(("net.core.default_qdisc" . "fq_pie")
       ("net.ipv4.tcp_congestion_control" . "bbr")))
@@ -71,22 +69,23 @@
 ** File Systems
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
-          (device (file-system-label "Lycoris"))
+          (device "zfs:Lycoris/Root")
           (mount-point "/")
-          (type "xfs")))
-#+end_src
-
-#+begin_src scheme :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (swap-devices
-       (list (swap-space
-               (target (uuid "fe13d21b-385e-4dc3-9f94-24276d89c890")))))))
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (service zfs-service-type)
+          (type "zfs"))
+        (file-system
+          (device (uuid "C633-92CC" 'fat))
+          (mount-point "/efi")
+          (type "vfat"))
+        (file-system
+          (device "zfs:Lycoris/Config")
+          (mount-point "/etc")
+          (type "zfs")
+          (needed-for-boot? #t))
+        (file-system
+          (device "zfs:Lycoris/Store")
+          (mount-point "/gnu")
+          (type "zfs")
+          (needed-for-boot? #t)))
 #+end_src
 
 ** Users
@@ -104,63 +103,28 @@ Administration accounts.
   (user-account
     (inherit %root-account)
     (password #f))
-
-  (user-account
-    (name "deploy")
-    (group "users")
-    (comment "User for 'guix deploy'")
-    (create-home-directory? #f))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (simple-service 'add-user-ssh-keys
+  (simple-service 'extend-openssh
       openssh-service-type
-    `(("deploy" ,%ssh-key-deploy)
+    `(("root" ,%ssh-key-deploy)
       ("hako" ,%ssh-key-hako)))
-#+end_src
-
-#+begin_src scheme :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (sudoers-file
-       (plain-file "sudoers"
-         (string-append
-          (plain-file-content (operating-system-sudoers-file os))
-          "deploy ALL = NOPASSWD: ALL\n"
-          "hako ALL = NOPASSWD: ALL\n")))))
-#+end_src
-
-** Packages
-Frequently used packages.
-#+begin_src scheme :noweb-ref package
-  "rsync"
 #+end_src
 
 ** Guix Daemon
 #+begin_src scheme :noweb-ref service
-  (simple-service 'guix-extension-dorphine
+  (simple-service 'extend-guix
       guix-service-type
     (guix-extension
-      (authorized-keys %hako-guix-authorized-keys-head)))
-#+end_src
-
-#+begin_src scheme :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (services
-       (modify-services (operating-system-user-services os)
-         (guix-service-type
-          config => (guix-configuration
-                      (inherit config)
-                      (extra-options '("--cores=4" "--max-jobs=2"))))))))
+      (authorized-keys %hako-guix-authorized-keys-head)
+      (substitute-urls '("https://cache-cdn.guix.moe"))))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
   (service guix-publish-service-type
     (guix-publish-configuration
-      (guix (spec->pkg "guix-hako"))
+      (guix (spec->pkg "guix-dolly"))
       (port 49637)
       (compression '(("zstd" 19)))
       (cache "/var/cache/guix/publish")
@@ -172,7 +136,6 @@ Frequently used packages.
 
 ** SOPS Secrets
 #+begin_src scheme :noweb-ref package
-  "gnupg"
   "sops"
 #+end_src
 
@@ -206,28 +169,11 @@ Frequently used packages.
   (rosenthal services networking)
 #+end_src
 
-** static-networking
+** network-manager
 #+begin_src scheme :noweb-ref service
-  (service static-networking-service-type
-    (list (static-networking
-            (addresses
-             (map (lambda (version)
-                    (network-address
-                      (device (sops-str gokuraku.yaml `("network" ,version "name")))
-                      (value  (sops-str gokuraku.yaml `("network" ,version "address")))))
-                  '("v4" "v6")))
-            (routes
-             (map (lambda (version)
-                    (network-route
-                      (destination "default")
-                      (device  (sops-str gokuraku.yaml `("network" ,version "name")))
-                      (gateway (sops-str gokuraku.yaml `("network" ,version "gateway")))))
-                  '("v4" "v6")))
-            (name-servers
-             '("1.1.1.1"
-               "1.0.0.1"
-               "2606:4700:4700::1111"
-               "2606:4700:4700::1001")))))
+  (service network-manager-service-type
+    (network-manager-configuration
+      (shepherd-requirement '())))
 #+end_src
 
 ** ntp
@@ -263,39 +209,8 @@ Frequently used packages.
   (service openssh-service-type
     (openssh-configuration
       (openssh (spec->pkg "openssh-sans-x"))
+      (permit-root-login 'prohibit-password)
       (password-authentication? #f)))
-#+end_src
-
-* Session and Seat Management
-#+begin_src scheme :noweb-ref module
-  (gnu services dbus)
-#+end_src
-
-** dbus
-#+begin_src scheme :noweb-ref service
-  (service dbus-root-service-type)
-#+end_src
-
-** elogind
-#+begin_src scheme :noweb-ref service
-  (service elogind-service-type)
-#+end_src
-
-* Containers & Virtualization
-#+begin_src scheme :noweb-ref module
-  (gnu services docker)
-#+end_src
-
-** containerd
-#+begin_src scheme :noweb-ref service
-  (service containerd-service-type)
-#+end_src
-
-** docker
-#+begin_src scheme :noweb-ref service
-  (service docker-service-type
-    (docker-configuration
-      (enable-iptables? #f)))
 #+end_src
 
 * Databases
@@ -308,11 +223,6 @@ Frequently used packages.
   (service postgresql-service-type
     (postgresql-configuration
       (postgresql (spec->pkg "postgresql@15"))))
-#+end_src
-
-** redis
-#+begin_src scheme :noweb-ref service
-  (service redis-service-type)
 #+end_src
 
 * Continuous Integration
@@ -517,9 +427,9 @@ rsync://cache.boiledscript.com
     (properties '((forge-type . forgejo))))
 #+end_src
 
-* Web Servers
+* Web Servers & Services
 #+begin_src scheme :noweb-ref module
-  (rosenthal services child-error)
+  (rosenthal services web)
 #+end_src
 
 ** caddy
@@ -539,120 +449,18 @@ rsync://cache.boiledscript.com
 
 [[file:../files/plain/gokuraku/Caddyfile][gokuraku/Caddyfile]]
 
-[[file:../files/plain/robots.txt/forgejo][robots.txt/forgejo]]
-
-* Web Services
-#+begin_src scheme :noweb-ref module
-  (rosenthal services child-error)
-  (rosenthal services mail)
-  (rosenthal services web)
-#+end_src
-
-** docker-mailserver
-#+name: rspamd-redis-conf
-#+begin_src scheme
-  (plain-file "rspamd-redis.conf" "\
-  servers = \"127.0.0.1:6379\";
-  expand_keys = true;")
-#+end_src
-
-#+begin_src scheme :noweb yes :noweb-ref service
-  (service docker-mailserver-service-type
-    (docker-mailserver-configuration
-      (shepherd-requirement '(redis))
-      (options
-       '(("ENABLE_AMAVIS" . "0")
-         ("ENABLE_FAIL2BAN" . "1")
-         ("ENABLE_MTA_STS" . "1")
-         ("ENABLE_OPENDKIM" . "0")
-         ("ENABLE_OPENDMARC" . "0")
-         ("ENABLE_POLICYD_SPF" . "0")
-         ("ENABLE_RSPAMD" . "1")
-         ("ENABLE_RSPAMD_REDIS" . "0")
-         ("ENABLE_SPAMASSASSIN" . "0")
-         ("NETWORK_INTERFACE" . "enp0s31f6")
-         ("OVERRIDE_HOSTNAME" . "mail.boiledscript.com")
-         ("POSTMASTER_ADDRESS" . "admin@boiledscript.com")
-         ("RSPAMD_LEARN" . "1")
-         ("SPOOF_PROTECTION" . "1")
-         ("SSL_TYPE" . "letsencrypt")))
-      (extra-arguments
-       `("--cap-add=NET_ADMIN"      ;For fail2ban.
-         "--volume"
-         ,(string-append
-           "/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/mail.boiledscript.com/mail.boiledscript.com.crt"
-           ":/etc/letsencrypt/live/mail.boiledscript.com/fullchain.pem")
-         "--volume"
-         ,(string-append
-           "/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/mail.boiledscript.com/mail.boiledscript.com.key"
-           ":/etc/letsencrypt/live/mail.boiledscript.com/privkey.pem")
-         "--volume"
-         ,(file-append
-           <<rspamd-redis-conf>> ":/etc/rspamd/local.d/redis.conf:ro")
-         "--volume"
-         ,(file-append
-           (local-file (testament-plain "rspamd-dkim-signing.conf"))
-           ":/etc/rspamd/override.d/dkim_signing.conf:ro")))))
-#+end_src
-
-[[file:../files/plain/rspamd-dkim-signing.conf][rspamd-dkim-signing.conf]]
-
-** forgejo
+** iocaine
 #+begin_src scheme :noweb-ref service
-  (service forgejo-service-type
-    (forgejo-configuration
-      (config-file (local-file (testament-blobs "forgejo.ini")))))
-#+end_src
-
-** miniflux
-#+begin_src scheme :noweb-ref service
-  (service miniflux-service-type
-    (miniflux-configuration
-      (options
-       `(("BASE_URL" . "https://reader.boiledscript.com/")
-         ("CLEANUP_ARCHIVE_READ_DAYS" . -1)
-         ("CLEANUP_ARCHIVE_UNREAD_DAYS" . -1)
-         ("DATABASE_URL" . ,(sops-str gokuraku.yaml '("miniflux" "database")))
-         ("LISTEN_ADDR" . "127.0.0.1:51787")
-         ("RUN_MIGRATIONS" . 1)))))
-#+end_src
-
-** misskey
-https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
-#+begin_src scheme :noweb-ref service
-  (service misskey-service-type
-    (misskey-configuration
-      (image "ghcr.io/rakino/misskey:latest")
+  (service iocaine-service-type
+    (iocaine-configuration
       (config
-       `((url . "https://social.boiledscript.com")
-         (port . 54493)
-         (db
-          . ((host . localhost)
-             (port . 5432)
-             (db . misskey)
-             (user . misskey)
-             (pass . ,(sops-str gokuraku.yaml '("misskey" "password")))))
-         (dbReplications . #f)
-         (redis
-          . ((host . localhost)
-             (port . 6379)))
-         (fulltextSearch
-          . ((provider . sqlLike)))
-         (id . "aid")
-         (clusterLimit . 4)
-         (outgoingAddressFamily . dual)
-         (proxyRemoteFiles . #t)
-         (signToActivityPubGet . #t)))))
+       (computed-substitution-with-inputs "iocaine.toml"
+         (local-file (testament-plain "iocaine.toml"))
+         (list (testament-blobs)
+               (testament-plain))))))
 #+end_src
 
-** vaultwarden
-#+begin_src scheme :noweb-ref service
-  (service vaultwarden-service-type
-    (vaultwarden-configuration
-      (database-url (sops-str gokuraku.yaml '("vaultwarden")))
-      (port 23263)
-      (extra-options '(("ROCKET_ADDRESS" . "127.0.0.1")))))
-#+end_src
+[[file:../files/plain/iocaine.toml][iocaine.toml]]
 
 * Monitoring
 #+begin_src scheme :noweb-ref module

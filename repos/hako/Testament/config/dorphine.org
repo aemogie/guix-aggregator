@@ -8,30 +8,77 @@
 * Guix System
 #+begin_src scheme :tangle dorphine.scm :noweb yes
   (load "../common.scm")
-  (use-modules <<module>>)
-
-  <<definition>>
+  (use-modules (rosenthal) <<module>>)
 
   (define %os
     (operating-system
       (host-name "dorphine")
       (timezone "Asia/Hong_Kong")
-      (bootloader <<bootloader>>)
+      (keyboard-layout
+       (keyboard-layout "us" "dvorak" #:options '("ctrl:nocaps")))
+      (bootloader
+       (bootloader-configuration
+         (bootloader grub-efi-removable-bootloader)
+         (targets '("/efi"))
+         (keyboard-layout keyboard-layout)
+         (theme
+          (grub-theme
+           (inherit (grub-theme))
+           (image (local-file (testament-blobs "grub.png")))))))
+      (kernel-arguments
+       (cons* "kernel.sysrq=1"
+              "zswap.enabled=1"
+              "zswap.max_pool_percent=90"
+              "modprobe.blacklist=amdgpu,pcspkr,hid_nintendo"
+              %default-kernel-arguments))
       (file-systems (append <<file-systems>> %base-file-systems))
+      (swap-devices
+       (list (swap-space
+               (target "/swap/swapfile")
+               (dependencies
+                (filter (file-system-mount-point-predicate "/swap")
+                        file-systems)))))
       (users (cons* <<user>> %base-user-accounts))
-      (packages (append (specs->pkgs+out <<package>>) %base-packages))
-      (services (cons* <<service>> %rosenthal-desktop-services))
+      (packages
+       (append (specs->pkgs+out "dino" "foot" "gnupg" "obs-nvidia" "rsync"
+                                <<package>>)
+               %base-packages))
+      (services
+       (cons* <<service>>
+              (modify-services %rosenthal-desktop-services
+                (guix-service-type
+                 config => (guix-configuration
+                             (inherit config)
+                             (discover? #t)
+                             (extra-options '("--max-jobs=8" "--cores=4"))
+                             (tmpdir "/mnt/Mentha/System/@Build")))
+                (network-manager-service-type
+                 config => (network-manager-configuration
+                             (inherit config)
+                             (extra-configuration-files
+                              (list %network-manager-ipv6-privacy
+                                    %network-manager-random-mac-address)))))))
       (name-service-switch %mdns-host-lookup-nss)))
 
-  ((compose replace-mesa <<transformation>>)
+  ((compose replace-mesa
+            (nonguix-transformation-nvidia)
+            (rosenthal-transformation-zfs #:boot? #t)
+            (nonguix-transformation-linux #:linux (spec->pkg "linux@6.12")))
    %os)
 #+end_src
 
 * Guix Home
+#+begin_src scheme :noweb-ref module
+  (rosenthal services keyboard)
+#+end_src
+
 #+begin_src scheme :noweb yes :noweb-ref service
   (service guix-home-service-type
     `(("hako" ,(home-environment
-                 (services (cons* <<home-service>> %rosenthal-desktop-home-services))))))
+                 (services
+                  (cons* <<home-service>>
+                         (service home-keyboard-service-type keyboard-layout)
+                         %rosenthal-desktop-home-services))))))
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref home-service
@@ -41,7 +88,7 @@
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref home-service
-  (simple-service 'extra-environment-variables
+  (simple-service 'extend-environment-variables
       home-environment-variables-service-type
     `(,@%testament-xdg-base-directory-env-vars
       <<home-environment-variable>>))
@@ -50,52 +97,22 @@
 * Base
 #+begin_src scheme :noweb-ref module
   (sops secrets)
-  (rosenthal bootloader grub)
   (gnu home services dotfiles)
   (gnu home services shells)
   (sops home services sops)
   (gnu services linux)
   (gnu services ssh)
   (gnu services sysctl)
-  (rosenthal services file-systems)
-  (rosenthal services keyboard)
   (rosenthal services shellutils)
 #+end_src
 
-** Bootloader & Kernel
-#+name: bootloader
-#+begin_src scheme :noweb yes
-  (bootloader-configuration
-    (bootloader grub-efi-removable-bootloader)
-    (targets '("/efi"))
-    (keyboard-layout <<keyboard-layout>>)
-    (theme
-     (grub-theme
-       (inherit (grub-theme))
-       (image (local-file (testament-blobs "grub.png"))))))
-#+end_src
-
-#+begin_src scheme :noweb-ref transformation
-  (nonguix-transformation-linux
-   #:linux (spec->pkg "linux@6.12"))
-
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (kernel-arguments
-       (cons* "kernel.sysrq=1"
-              "zswap.enabled=1"
-              "zswap.max_pool_percent=90"
-              "modprobe.blacklist=amdgpu,pcspkr"
-              (operating-system-user-kernel-arguments os)))))
-#+end_src
-
+** Kernel
 #+begin_src scheme :noweb-ref service
-  (simple-service 'load-extra-modules
+  (simple-service 'extend-kernel-module-loader
       kernel-module-loader-service-type
-    '("tcp_bbr"))
+    '("sch_fq_pie" "tcp_bbr"))
 
-  (simple-service 'add-sysctl-rules
+  (simple-service 'extend-systctl
       sysctl-service-type
     '(("net.core.default_qdisc" . "fq_pie")
       ("net.ipv4.tcp_congestion_control" . "bbr")))
@@ -112,55 +129,6 @@
 [[file:../files/dotfiles/.config/modprobed-db.conf][~/.config/modprobed-db.conf]]
 
 ** File Systems
-Disk layout:
-#+begin_example
-  +----------------+---------------------------------+
-  |                |                                 |
-  |      ESP       |        Btrfs (Mentha)           |
-  |_ _ _ _ _ _ _ __|_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _|
-  |                |                |                |
-  | /dev/nvme0n1p1 | /dev/nvme0n1p2 | /dev/nvme1n1p1 |
-  |_ _ _ _ _ _ _ __| _ _ _ _ _ _ _ _|_ _ _ _ _ _ _ _ |
-  |                                 |                |
-  |          /dev/nvme0n1           | /dev/nvme1n1   |
-  +---------------------------------+----------------+
-#+end_example
-
-Btrfs subvolumes:
-#+begin_example
-  @Library
-  @Sandbox
-  @Snapshot
-
-  @Config
-  @Data
-  @Home
-
-  System/@Boot
-  System/@Build
-  System/@Guix
-  System/@Log
-  System/@Store
-  System/@Swap
-  System/@Tmp
-#+end_example
-
-Root file system layout:
-#+begin_example
-  /               tmpfs
-  ├─/efi          fat32 ESP
-  ├─/boot         btrfs System/@Boot
-  ├─/etc          btrfs @Config
-  ├─/gnu/store    btrfs System/@Store
-  ├─/home         btrfs @Home
-  ├─/swap         btrfs System/@Swap
-  ├─/var/guix     btrfs System/@Guix
-  ├─/var/lib      btrfs @Data
-  ├─/var/lock     tmpfs
-  ├─/var/log      btrfs System/@Log
-  └─/var/tmp      btrfs System/@Tmp
-#+end_example
-
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
           (device "tmpfs")
@@ -216,61 +184,6 @@ Root file system layout:
            (#f        . "/mnt/Mentha"))))
 #+end_src
 
-#+begin_src scheme :noweb yes :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (swap-devices
-       (list (swap-space
-               (target "/swap/swapfile")
-               (dependencies
-              (filter (file-system-mount-point-predicate "/swap")
-                      (operating-system-file-systems os))))))))
-#+end_src
-
-Maintenance:
-#+begin_src scheme :noweb-ref service
-  (simple-service 'btrfs-scrub
-      shepherd-root-service-type
-    (list (shepherd-timer '(btrfs-scrub)
-            #~(calendar-event #:days-of-week '(sunday) #:hours '(0) #:minutes '(0))
-            #~(#$(file-append (spec->pkg "btrfs-progs") "/bin/btrfs") "scrub" "start" "/mnt/Mentha")
-            #:requirement '(user-processes))))
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (simple-service 'btrbk
-      shepherd-root-service-type
-    (list (shepherd-timer '(btrbk)
-            #~(calendar-event #:minutes '(0))
-            #~(#$(file-append (spec->pkg "btrbk") "/bin/btrbk") "run"
-               "-c" #$(local-file (testament-plain "dorphine/btrbk.conf")))
-            #:requirement '(user-processes))))
-#+end_src
-
-[[file:../files/plain/dorphine/btrbk.conf][dorphine/btrbk.conf]]
-
-#+begin_src scheme :noweb-ref service
-  (service zfs-service-type)
-#+end_src
-
-** Keyboard Layout
-#+name: keyboard-layout
-#+begin_src scheme
-  (keyboard-layout "us" "dvorak" #:options '("ctrl:nocaps"))
-#+end_src
-
-#+begin_src scheme :noweb yes :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (keyboard-layout <<keyboard-layout>>)))
-#+end_src
-
-#+begin_src scheme :noweb yes :noweb-ref home-service
-  (service home-keyboard-service-type <<keyboard-layout>>)
-#+end_src
-
 ** Users
 Generate password hash:
 #+begin_src shell
@@ -289,7 +202,7 @@ Personal account.
   (user-account
     (name "hako")
     (group "users")
-    (supplementary-groups '(<<group>> "audio" "video" "wheel"))
+    (supplementary-groups '("adbusers" "audio" "plugdev" "video" "wheel"))
     (shell (file-append (spec->pkg "fish") "/bin/fish")))
 #+end_src
 
@@ -308,29 +221,12 @@ Administration accounts.
   (user-account
     (inherit %root-account)
     (password #f))
-
-  (user-account
-    (name "deploy")
-    (group "users")
-    (comment "User for 'guix deploy'")
-    (create-home-directory? #f))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (simple-service 'add-user-ssh-keys
+  (simple-service 'extend-openssh
       openssh-service-type
-    `(("deploy" ,%ssh-key-deploy)))
-#+end_src
-
-#+begin_src scheme :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (sudoers-file
-       (plain-file "sudoers"
-         (string-append
-          (plain-file-content (operating-system-sudoers-file os))
-          "deploy ALL = NOPASSWD: ALL\n")))))
+    `(("root" ,%ssh-key-deploy)))
 #+end_src
 
 ** Shell Utilities
@@ -351,48 +247,13 @@ Administration accounts.
   end")))))
 #+end_src
 
-** Packages
-Frequently used packages.
-#+begin_src scheme :noweb-ref package
-  "rsync"
-#+end_src
-
 ** Guix Daemon
 #+begin_src scheme :noweb-ref service
-  (simple-service 'guix-extensions
+  (simple-service 'extend-guix
       guix-service-type
     (guix-extension
-      (authorized-keys %hako-guix-authorized-keys-lan)))
-
-  (simple-service 'guix-moe guix-service-type
-    (guix-extension
-      (authorized-keys
-       (list
-        (plain-file "guix-moe.pub" "
-  (public-key
-   (ecc
-    (curve Ed25519)
-    (q #374EC58F5F2EC0412431723AF2D527AD626B049D657B5633AAAEBC694F3E33F9#)
-   )
-  )")))
-      (substitute-urls
-       '("https://cache-cdn.guix.moe"))))
-#+end_src
-
-#+begin_src scheme :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (services
-       (modify-services (operating-system-user-services os)
-         (guix-service-type
-          config => (guix-configuration
-                      (inherit config)
-                      (discover? #t)
-                      (substitute-urls
-                       '("https://mirror.sjtu.edu.cn/guix"))
-                      (extra-options '("--max-jobs=8" "--cores=4"))
-                      (tmpdir "/mnt/Mentha/System/@Build")))))))
+      (authorized-keys %hako-guix-authorized-keys-lan)
+      (substitute-urls '("https://cache-cdn.guix.moe"))))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -424,21 +285,19 @@ Generate passwordless ECC key:
   MY_GPGHOME="<GPG homedir>"
   MY_NAME="<Your Name>"
 
-  gpg --homedir "$MY_GPGHOME" --batch --generate-key <<EOF
+  echo '
   %no-protection
   Key-Type: EDDSA
   Key-Curve: ed25519
   Subkey-Type: ECDH
   Subkey-Curve: cv25519
   Name-Real: $MY_NAME
-  Expire-Date: 0
-  EOF
+  Expire-Date: 0' | gpg --homedir "$MY_GPGHOME" --batch --generate-key
 
   unset MY_GPGHOME MY_NAME
 #+end_src
 
 #+begin_src scheme :noweb-ref package
-  "gnupg"
   "sops"
 #+end_src
 
@@ -493,31 +352,6 @@ Generate passwordless ECC key:
   (rosenthal services dns)
 #+end_src
 
-** network-manager
-#+begin_src scheme :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (services
-       (modify-services (operating-system-user-services os)
-         (network-manager-service-type
-          config => (network-manager-configuration
-                      (inherit config)
-                      (extra-configuration-files
-                       `(("wifi_rand_mac.conf"
-                          ,(plain-file "wifi_rand_mac.conf" "\
-  # Generate a random MAC for each network connection and associate the two
-  # permanently.
-  [connection-mac-randomization]
-  ethernet.cloned-mac-address=stable
-  wifi.cloned-mac-address=stable\n"))
-                         ("ip6-privacy.conf"
-                          ,(plain-file "ip6-privacy.conf" "\
-  # Use IPv6 Privacy Extensions.
-  [connection]
-  ipv6.ip6-privacy=2\n"))))))))))
-#+end_src
-
 ** nftables
 #+begin_src scheme :noweb-ref service
   (service nftables-service-type
@@ -541,6 +375,7 @@ Generate passwordless ECC key:
   (service openssh-service-type
     (openssh-configuration
       (openssh (spec->pkg "openssh-sans-x"))
+      (permit-root-login 'prohibit-password)
       (password-authentication? #f)))
 #+end_src
 
@@ -555,7 +390,7 @@ Generate passwordless ECC key:
   (service pcscd-service-type)
 #+end_src
 
-** gnupg
+** gpg-agent
 #+begin_src scheme :noweb-ref home-service
   (service home-gpg-agent-service-type
     (home-gpg-agent-configuration
@@ -564,10 +399,6 @@ Generate passwordless ECC key:
 #+end_src
 
 ** libfido2
-#+begin_src scheme :noweb-ref group
-  "plugdev"
-#+end_src
-
 #+begin_src scheme :noweb-ref service
   (udev-rules-service 'u2f (spec->pkg "libfido2") #:groups '("plugdev"))
 #+end_src
@@ -621,11 +452,6 @@ Open TCP port 5558 and connect to server IPv4 address.
   (gnu home services fontutils)
 #+end_src
 
-** Graphics Driver
-#+begin_src scheme :noweb-ref transformation
-  (nonguix-transformation-nvidia)
-#+end_src
-
 ** Wayland
 *** niri
 #+begin_src scheme :noweb-ref package
@@ -659,6 +485,7 @@ Open TCP port 5558 and connect to server IPv4 address.
 #+end_src
 
 [[file:../files/plain/niri.kdl][niri.kdl]]
+
 *** xdg-desktop-portal
 #+begin_src scheme :noweb-ref package
   "xdg-desktop-portal"
@@ -740,7 +567,7 @@ Open TCP port 5558 and connect to server IPv4 address.
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
-  (simple-service 'extra-fontconfig
+  (simple-service 'extend-fontconfig
       home-fontconfig-service-type
     (let ((sans  "SF Pro Text")
           (serif "New York Medium")
@@ -830,11 +657,6 @@ Open TCP port 5558 and connect to server IPv4 address.
 
 [[../files/dotfiles/.config/mpv/mpv.conf][~/.config/mpv/mpv.conf]]
 
-** obs
-#+begin_src scheme :noweb-ref package
-  "obs-nvidia"
-#+end_src
-
 ** steam
 #+begin_src scheme :noweb-ref package
   "steam-nvidia"
@@ -843,16 +665,6 @@ Open TCP port 5558 and connect to server IPv4 address.
 #+begin_src scheme :noweb-ref home-environment-variable
   ("GUIX_SANDBOX_HOME" . "/mnt/Mentha/@Sandbox")
   ("GUIX_SANDBOX_EXTRA_SHARES" . "$HOME/Downloads:/mnt/Mentha/@Library/Pictures/Screenshots")
-#+end_src
-
-My game controller provides both Xbox and Nintendo interfaces but doesn't offer a toggle.
-#+begin_src scheme :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (kernel-arguments
-       (cons "modprobe.blacklist=hid_nintendo"
-             (operating-system-user-kernel-arguments os)))))
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref service
@@ -869,17 +681,8 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
 #+end_src
 
 ** adb
-#+begin_src scheme :noweb-ref group
-  "adbusers"
-#+end_src
-
 #+begin_src scheme :noweb-ref service
   (udev-rules-service 'android (spec->pkg "android-udev-rules") #:groups '("adbusers"))
-#+end_src
-
-** dino
-#+begin_src scheme :noweb-ref package
-  "dino"
 #+end_src
 
 ** emacs
@@ -939,11 +742,6 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
 [[file:../files/plain/emacs/init.el][emacs/init.el]]
 
 [[file:../files/plain/emacs/fonts.el][emacs/fonts.el]]
-
-** foot
-#+begin_src scheme :noweb-ref package
-  "foot"
-#+end_src
 
 ** git
 #+begin_src scheme :noweb-ref package

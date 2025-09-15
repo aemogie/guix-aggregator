@@ -303,6 +303,10 @@ time in `current-time' format."
               (:img (@ :style "border-width:0" :src ,(my/get-up-directory level "static/images/icons/git.png")))
               " Code")
           " | "
+          (:a (@ :href ,(my/get-up-directory level "donate.html"))
+              (:img (@ :style "border-width:0" :src ,(my/get-up-directory level "static/images/icons/money-bag.png")))
+              " Donate")
+          " | "
           (:a (@ :href ,(my/get-up-directory level "about.html"))
               (:img (@ :style "border-width:0" :src ,(my/get-up-directory level "static/images/icons/lisp-circle.png")))
               " About"))))
@@ -334,6 +338,7 @@ time in `current-time' format."
            :publishing-function org-publish-attachment
            
            :base-extension ,(regexp-opt '("css"
+                                          "asc"
                                           "gif"
                                           "ico"
                                           "js"

@@ -31,6 +31,10 @@
 	log {
 		output file /var/log/caddy/{args[0]}.log
 		format filter {
+			request>remote_ip ip_mask {
+				ipv4 20
+				ipv6 44
+			}
 			request>client_ip ip_mask {
 				ipv4 20
 				ipv6 44
@@ -68,6 +72,12 @@
 }
 
 
+# Grafana
+dash.ultrarare.space {
+	import logging grafana
+	import tailscale localhost:13064
+}
+
 # Komga
 http://manga.boiledscript.com, manga.ultrarare.space {
 	import block_bots
@@ -99,11 +109,4 @@ http://shows.boiledscript.com, shows.ultrarare.space {
 
 	import tailscale localhost:22443
 	reverse_proxy localhost:22443
-}
-
-:80, :443 {
-	import logging catchall
-	respond "Access denied" 403 {
-		close
-	}
 }

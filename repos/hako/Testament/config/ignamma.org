@@ -8,23 +8,42 @@
 * Guix System
 #+begin_src scheme :tangle ignamma.scm :noweb yes
   (load "../common.scm")
-  (use-modules <<module>>)
-
-  <<definition>>
+  (use-modules (rosenthal) <<module>>)
 
   (define %os
     (operating-system
       (host-name "ignamma")
       (timezone "Asia/Hong_Kong")
-      (bootloader <<bootloader>>)
+      (bootloader
+       (bootloader-configuration
+         (bootloader grub-efi-removable-bootloader)
+         (targets '("/efi"))))
+      (kernel (spec->pkg "linux-libre@6.12"))
+      (kernel-arguments
+       (cons* "consoleblank=60"
+              "kernel.sysrq=0"
+              "zswap.enabled=1"
+              "zswap.max_pool_percent=90"
+              %default-kernel-arguments))
       (file-systems (append <<file-systems>> %base-file-systems))
+      (swap-devices
+       (list (swap-space
+               (target "/swapfile"))))
       (users (cons* <<user>> %base-user-accounts))
-      (packages (append (specs->pkgs+out <<package>>) %base-packages))
-      (services (cons* <<service>> %base-services))
+      (packages
+       (append (specs->pkgs+out "rsync" <<package>>)
+               %base-packages))
+      (services
+       (cons* <<service>>
+              (modify-services %base-services
+                (guix-service-type
+                 config => (guix-configuration
+                             (inherit config)
+                             (discover? #t)
+                             (extra-options '("--cores=4" "--max-jobs=4")))))))
       (name-service-switch %mdns-host-lookup-nss)))
 
-  ((compose <<transformation>>)
-   %os)
+  %os
 #+end_src
 
 * Base
@@ -34,33 +53,13 @@
   (gnu services sysctl)
 #+end_src
 
-** Bootloader & Kernel
-#+name: bootloader
-#+begin_src scheme
-  (bootloader-configuration
-    (bootloader grub-efi-removable-bootloader)
-    (targets '("/efi")))
-#+end_src
-
-#+begin_src scheme :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (kernel (spec->pkg "linux-libre@6.12"))
-      (kernel-arguments
-       (cons* "consoleblank=60"
-              "kernel.sysrq=0"
-              "zswap.enabled=1"
-              "zswap.max_pool_percent=90"
-              (operating-system-user-kernel-arguments os)))))
-#+end_src
-
+** Kernel
 #+begin_src scheme :noweb-ref service
-  (simple-service 'add-extra-modules
+  (simple-service 'extend-kernel-module-loader
       kernel-module-loader-service-type
-    '("tcp_bbr"))
+    '("sch_fq_pie" "tcp_bbr"))
 
-  (simple-service 'add-sysctl-rules
+  (simple-service 'extend-systctl
       sysctl-service-type
     '(("net.core.default_qdisc" . "fq_pie")
       ("net.ipv4.tcp_congestion_control" . "bbr")))
@@ -80,15 +79,6 @@
           (create-mount-point? #t)))
 #+end_src
 
-#+begin_src scheme :noweb yes :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (swap-devices
-       (list (swap-space
-               (target "/swapfile"))))))
-#+end_src
-
 ** Users
 Personal account.
 #+begin_src scheme :noweb-ref user
@@ -104,58 +94,22 @@ Administration accounts.
   (user-account
     (inherit %root-account)
     (password #f))
-
-  (user-account
-    (name "deploy")
-    (group "users")
-    (comment "User for 'guix deploy'")
-    (create-home-directory? #f))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (simple-service 'add-user-ssh-keys
+  (simple-service 'extend-openssh
       openssh-service-type
-    `(("deploy" ,%ssh-key-deploy)
+    `(("root" ,%ssh-key-deploy)
       ("hako" ,%ssh-key-hako)))
-#+end_src
-
-#+begin_src scheme :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (sudoers-file
-       (plain-file "sudoers"
-         (string-append
-          (plain-file-content (operating-system-sudoers-file os))
-          "deploy ALL = NOPASSWD: ALL\n"
-          "hako ALL = NOPASSWD: ALL\n")))))
-#+end_src
-
-** Packages
-Frequently used packages.
-#+begin_src scheme :noweb-ref package
-  "rsync"
 #+end_src
 
 ** Guix Daemon
 #+begin_src scheme :noweb-ref service
-  (simple-service 'guix-extension-dorphine
+  (simple-service 'extend-guix
       guix-service-type
     (guix-extension
-      (authorized-keys %hako-guix-authorized-keys-lan)))
-#+end_src
-
-#+begin_src scheme :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (services
-       (modify-services (operating-system-user-services os)
-         (guix-service-type
-          config => (guix-configuration
-                      (inherit config)
-                      (discover? #t)
-                      (extra-options '("--cores=4" "--max-jobs=4"))))))))
+      (authorized-keys %hako-guix-authorized-keys-lan)
+      (substitute-urls '("https://cache-cdn.guix.moe"))))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -198,18 +152,8 @@ Frequently used packages.
     (network-manager-configuration
       (shepherd-requirement '())
       (extra-configuration-files
-       `(("wifi_rand_mac.conf"
-          ,(plain-file "wifi_rand_mac.conf" "\
-  # Generate a random MAC for each network connection and associate the two
-  # permanently.
-  [connection-mac-randomization]
-  ethernet.cloned-mac-address=stable
-  wifi.cloned-mac-address=stable\n"))
-         ("ip6-privacy.conf"
-          ,(plain-file "ip6-privacy.conf" "\
-  # Use IPv6 Privacy Extensions.
-  [connection]
-  ipv6.ip6-privacy=2\n"))))))
+       (list %network-manager-ipv6-privacy
+             %network-manager-random-mac-address))))
 #+end_src
 
 ** ntp
@@ -245,6 +189,7 @@ Frequently used packages.
   (service openssh-service-type
     (openssh-configuration
       (openssh (spec->pkg "openssh-sans-x"))
+      (permit-root-login 'prohibit-password)
       (password-authentication? #f)))
 #+end_src
 

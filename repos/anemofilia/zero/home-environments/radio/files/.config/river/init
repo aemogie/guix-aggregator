@@ -1,41 +1,22 @@
 #!/bin/sh
 
-# Please, no cursor ___________________________________________________________
-riverctl hide-cursor when-typing enabled
-
-# Hibernate when lid is closed ________________________________________________
-riverctl declare-mode wlrctl
-for mode in locked normal wlrctl; do
-    riverctl map-switch $mode lid close "doas zzz"
-done
-
 # Autostart applications ______________________________________________________
-
-spawn () {
-    $1 >> ~/.local/state/log/$(basename $1).log 2>&1 &
-}
-
-# xdg-desktop-portal
-dbus-update-activation-environment DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=river
-spawn ~/.guix-home/profile/libexec/xdg-desktop-portal-termfilechooser -l TRACE -r
-spawn ~/.guix-home/profile/libexec/xdg-desktop-portal-wlr
-spawn ~/.guix-home/profile/libexec/xdg-desktop-portal
-spawn fnott
-
+eww daemon
 eww open bar
-spawn gammastep
+dbus-update-activation-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=river
+wbg ~/media/pictures/wallpapers/wall.png &
 wayneko --background-colour 0x606060 --layer overlay --follow-pointer false &
+fnott &
+gammastep &
 
 # Decorations _________________________________________________________________
-
-# wallpaper
-wbg ~/media/pictures/wallpapers/wall.png &
-
-# Set background and border color
 riverctl border-color-focused 0x8581e0
 riverctl border-color-unfocused 0x313131
 riverctl border-color-urgent 0xdce081
 riverctl border-width 1
+
+# Please, no cursor ___________________________________________________________
+riverctl hide-cursor when-typing enabled
 
 # Window layout _______________________________________________________________
 
@@ -88,7 +69,7 @@ riverctl map normal Super Tab focus-view "next"
 riverctl map normal Super+Shift Tab focus-view "previous"
 
 ## view related keybindings ___________________________________________________
-
+riverctl declare-mode wlrctl
 riverctl map normal Super w enter-mode "wlrctl"
 riverctl map wlrctl Super w enter-mode "normal"
 riverctl map wlrctl Super Escape enter-mode "normal"
@@ -134,9 +115,6 @@ riverctl map-pointer normal Super BTN_LEFT move-view
 # Super + Right Mouse Button to resize views
 riverctl map-pointer normal Super BTN_RIGHT resize-view
 
-# Super + Middle Mouse Button to toggle float
-riverctl map-pointer normal Super BTN_MIDDLE toggle-float
-
 # Super + f to toggle float
 riverctl map normal Super f toggle-float
 
@@ -168,7 +146,7 @@ riverctl map normal Super Semicolon spawn fuzzel
 riverctl map normal None XF86WebCam spawn "cam"
 riverctl map normal None XF86Sleep spawn "doas zzz"
 
-# rss reader (TODO: fix)
+# rss reader
 riverctl map normal None XF86Launch1 spawn "$TERMINAL -e newsraft"
 
 # keepassxc
@@ -221,15 +199,13 @@ done
 ## Clipboard related keybindings ______________________________________________
 
 riverctl map normal None Print \
-         spawn 'riverctl zoom \
-                && region="$(slurp)" \
+         spawn 'region="$(slurp)" \
                 && sleep 0.1 \
                 && grim -g "$region" -t png - | wl-copy -t image/png'
 
-# screenshot (TODO: fix)
+# screenshot
 riverctl map normal Super Print \
-         spawn 'riverctl zoom \
-                && region="$(slurp)" \
+         spawn 'region="$(slurp)" \
                 && sleep 0.1 \
                 && grim -g "$region" ~/media/pictures/screenshots/$(date +%Y-%m-%d--%H-%M-%S.png)'
 
@@ -245,25 +221,11 @@ do
     riverctl map -repeat $mode None XF86AudioMicMute     \
              spawn 'wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle'
 
-    # control mpv playlist listening on socket /tmp/mpv-socket
-    riverctl map $mode Super XF86AudioLowerVolume \
-             spawn "echo '{ \"command\": [\"keypress\", \"<\"] }' | socat - /tmp/mpv-socket"
-    riverctl map $mode Super XF86AudioRaiseVolume \
-             spawn "echo '{ \"command\": [\"keypress\", \">\"] }' | socat - /tmp/mpv-socket"
-    riverctl map $mode Super XF86AudioMute        \
-             spawn "echo '{ \"command\": [\"keypress\", \"p\"] }' | socat - /tmp/mpv-socket"
-    riverctl map $mode Super A                    \
-             spawn "echo '{ \"command\": [\"keypress\", \"N\"] }' | socat - /tmp/mpv-socket"
-
     # Control screen backlight brightness
     riverctl map $mode None  XF86MonBrightnessUp   \
              spawn 'brightnessctl set +5%'
-    riverctl map $mode Shift XF86MonBrightnessUp   \
-             spawn 'brightnessctl set +10%'
     riverctl map $mode None  XF86MonBrightnessDown \
              spawn 'brightnessctl set 5%-'
-    riverctl map $mode Shift XF86MonBrightnessDown \
-             spawn 'brightnessctl set 10%-'
 done
 
 # lock screen

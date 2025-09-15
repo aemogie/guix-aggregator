@@ -13,5 +13,4 @@
     (machine-ssh-configuration
       (host-name "gokuraku")
       (system "x86_64-linux")
-      (user "deploy")
       (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBiAMzppym/kbVUvmFJLMbiUDSvnh2luYNjd5TZ7J8Pv")))))

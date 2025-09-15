@@ -1,4 +1,4 @@
-(define-module (mrh-guix home lap packages)
+(define-module (mrh-guix home sleep packages)
   #:use-module (gnu)
   #:use-module (nongnu packages messaging)
   #:use-module (mrh packages))
@@ -41,7 +41,7 @@
                      wm
                      xdisorg)
 
-(define-public %lap-home-packages
+(define-public %sleep-home-packages
   (list
    ;; graphical-env
    alacritty

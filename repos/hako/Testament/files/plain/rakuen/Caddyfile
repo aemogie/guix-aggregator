@@ -71,76 +71,58 @@
 }
 
 
-files.boiledscript.com {
-	import robots_txt
-	import logging files
+# Blog
+ultrarare.space {
+	import logging blog
 
-	root * /var/lib/webpublic/files
-	import iocaine {
-		file_server browse
-	}
-}
-
-# Cuirass
-ci.ultrarare.space {
-	import logging cuirass
-
-	import iocaine {
-		@tailscale client_ip 100.64.0.0/10 fd7a:115c:a1e0::/48
-		handle @tailscale {
-			reverse_proxy localhost:17732
-		}
-	}
-}
-
-ci.guix.moe {
-	import robots_txt
-	import logging cuirass
-
-	import iocaine {
-		@guix_publish {
-			path /*.narinfo || /file/* || /nar/* || /nix-cache-info || /signing-key.pub
-		}
-		handle @guix_publish {
-			reverse_proxy localhost:49637
-		}
-		handle /admin/* {
-			handle /admin/forgejo/event {
-				import /run/secrets/cuirass/forgejo
-			}
-			handle {
-				respond "Access denied" 403 {
-					close
-				}
-			}
-		}
-		reverse_proxy localhost:17732
-	}
-}
-
-# Mirrors
-cache-cdn.guix.moe {
-	import robots_txt
-	import logging substitutes
-
-	@guix_publish {
-		path /*.narinfo || /nix-cache-info || /signing-key.pub
-	}
-	handle @guix_publish {
-		root * /var/cache/guix/narinfo
+	root * /var/lib/webpublic/blog
+	handle_errors {
+		rewrite * /{err.status_code}.html
 		file_server
 	}
-
-	handle /nar/* {
-		redir https://nars.guix.moe{uri}
-	}
-
-	respond "Visit guix [dot] moe for more information." 404 {
-		close
+	import iocaine {
+		handle_path /comments/* {
+			reverse_proxy localhost:42174
+		}
+		file_server
 	}
 }
 
-cache-de.guix.moe {
+www.ultrarare.space {
+	redir https://ultrarare.space{uri} permanent
+}
+
+# Miniflux
+reader.boiledscript.com {
+	import robots_txt
+	import logging miniflux
+
+	import iocaine {
+		reverse_proxy localhost:51787
+	}
+}
+
+# Misskey
+social.boiledscript.com {
+	import robots_txt
+	import logging misskey
+
+	import iocaine {
+		reverse_proxy localhost:54493
+	}
+}
+
+# Vaultwarden
+vault.boiledscript.com {
+	import robots_txt
+	import logging vaultwarden
+
+	import iocaine {
+		reverse_proxy localhost:23263
+	}
+}
+
+cache-fi.guix.moe {
 	import robots_txt
 	import logging substitutes
 
@@ -148,7 +130,7 @@ cache-de.guix.moe {
 		path /*.narinfo || /nix-cache-info || /signing-key.pub
 	}
 	handle @guix_publish {
-		root * /var/cache/guix/narinfo
+		root * /var/cache/guix-moe/narinfo
 		file_server
 	}
 
@@ -163,13 +145,10 @@ cache-de.guix.moe {
 	}
 }
 
-# Redirections
-guix.moe, www.guix.moe {
-	redir https://ultrarare.space/en/posts/guix-build-farm/
-}
-ci.boiledscript.com {
-	redir https://ci.guix.moe{uri} permanent
-}
-cache-cdn.boiledscript.com, cache-de.boiledscript.com, cache-sg.boiledscript.com, cache-us-lax.boiledscript.com {
-	redir https://cache-cdn.guix.moe{uri} permanent
+mail.boiledscript.com {
+	import iocaine {
+		respond /* "Access denied" 403 {
+			close
+		}
+	}
 }

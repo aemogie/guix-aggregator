@@ -32,7 +32,7 @@
 (define maak
   (package
     (name "maak")
-    (version "0.2.2")
+    (version "0.2.3")
     (source
      (origin
        (method git-fetch)
@@ -41,7 +41,7 @@
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0dc0i56dlp5f5prf7yfva7kjbpbzq7sq2rx4mj8qww12l1qq1ksd"))))
+        (base32 "15s6khifk7k002hr9mqgl45r3ipmvsc56z9z8skwclxsj6w1cddl"))))
     (build-system guile-build-system)
     (arguments
      (list
@@ -49,9 +49,9 @@
       #:phases
       #~(modify-phases %standard-phases
           (add-before 'build 'install-program-files
-            (lambda* (#:key outputs #:allow-other-keys)
-              (let ((bin (string-append (assoc-ref outputs "out") "/bin"))
-                    (share (string-append (assoc-ref outputs "out") "/share")))
+            (lambda _
+              (let ((bin (string-append #$output "/bin"))
+                    (share (string-append #$output "/share")))
                 (install-file "resources/help.txt"
                               (string-append share "/resources"))
                 (install-file "scripts/maak" bin)

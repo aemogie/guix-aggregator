@@ -125,16 +125,6 @@
   (ef-themes-common-palette-overrides '((fg-main fg-intense)))
   (ef-themes-to-toggle '(ef-melissa-dark ef-melissa-light))
   :config
-  (defun my/adjust-opacity (&optional theme)
-    "Make sure opacity is correct for a given theme."
-    (interactive)
-    (let ((theme (if theme theme (ef-themes--current-theme))))
-      (set-frame-parameter nil 'alpha-background
-                           (if (member theme ef-themes-light-themes)
-                               75
-                             75))))
-
-  (advice-add 'ef-themes-load-theme :after #'my/adjust-opacity)
 
   (with-eval-after-load 'server
     (add-hook 'server-after-make-frame-hook

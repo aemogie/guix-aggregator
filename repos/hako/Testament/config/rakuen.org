@@ -1,0 +1,382 @@
+# SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space>
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: CC-BY-SA-4.0
+
+#+TITLE: rakuen
+#+PROPERTY: header-args :noweb-prefix no
+
+* Guix System
+#+begin_src scheme :tangle rakuen.scm :noweb yes
+  (load "../common.scm")
+  (use-modules (rosenthal) <<module>>)
+
+  (define %os
+    (operating-system
+      (host-name "rakuen")
+      (timezone "Asia/Hong_Kong")
+      (bootloader
+        (bootloader-configuration
+          (bootloader grub-efi-removable-bootloader)
+          (targets '("/efi"))))
+      (kernel (spec->pkg "linux-libre@6.12"))
+      (kernel-arguments
+       (cons* "kernel.sysrq=0"
+              "zswap.enabled=1"
+              "zswap.max_pool_percent=90"
+              %default-kernel-arguments))
+      (initrd-modules
+       (cons* "sd_mod"
+              "virtio_scsi"
+              %base-initrd-modules))
+      (file-systems (append <<file-systems>> %base-file-systems))
+      (swap-devices
+       (list (swap-space
+               (target
+                (uuid "3b0cbf5f-e8eb-41a7-93f4-5f870bf09640")))))
+      (users (cons* <<user>> %base-user-accounts))
+      (packages
+       (append (specs->pkgs+out "gnupg" "rsync" <<package>>)
+               %base-packages))
+      (services (cons* <<service>> %base-services))))
+
+  %os
+#+end_src
+
+* Base
+#+begin_src scheme :noweb-ref module
+  (sops secrets)
+  (gnu services linux)
+  (gnu services ssh)
+  (gnu services sysctl)
+  (sops services sops)
+#+end_src
+
+** Kernel
+#+begin_src scheme :noweb-ref service
+  (simple-service 'extend-kernel-module-loader
+      kernel-module-loader-service-type
+    '("sch_fq_pie" "tcp_bbr"))
+
+  (simple-service 'extend-systctl
+      sysctl-service-type
+    '(("net.core.default_qdisc" . "fq_pie")
+      ("net.ipv4.tcp_congestion_control" . "bbr")))
+#+end_src
+
+** File Systems
+#+begin_src scheme :noweb-ref file-systems
+  (list (file-system
+          (device (uuid "333171f3-1ffc-40c2-bcc2-cbe8f4f2276e"))
+          (mount-point "/")
+          (type "xfs"))
+        (file-system
+          (device (uuid "0EE5-5F67" 'fat))
+          (mount-point "/efi")
+          (type "vfat")))
+#+end_src
+
+** Users
+Personal account.
+#+begin_src scheme :noweb-ref user
+  (user-account
+    (name "hako")
+    (group "users")
+    (supplementary-groups '("wheel"))
+    (shell (file-append (spec->pkg "fish") "/bin/fish")))
+#+end_src
+
+Administration accounts.
+#+begin_src scheme :noweb-ref user
+  (user-account
+    (inherit %root-account)
+    (password #f))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'extend-openssh
+      openssh-service-type
+    `(("root" ,%ssh-key-deploy)
+      ("hako" ,%ssh-key-hako)))
+#+end_src
+
+** Guix Daemon
+#+begin_src scheme :noweb-ref service
+  (simple-service 'extend-guix
+      guix-service-type
+    (guix-extension
+      (authorized-keys (list %guix-authorized-key-dorphine))
+      (substitute-urls '("https://cache-cdn.guix.moe"))))
+#+end_src
+
+** SOPS Secrets
+#+begin_src scheme :noweb-ref package
+  "sops"
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (service sops-secrets-service-type
+    (sops-service-configuration
+      (sops (spec->pkg "sops"))
+      (config (local-file (testament-plain "sops.yaml")))
+      (gnupg-home "/var/lib/sops")
+      (secrets
+       (list (sops-secret
+               (key '("cloudflare"))
+               (file rakuen.yaml)
+               (user "caddy"))))))
+#+end_src
+
+[[file:../files/plain/sops.yaml][sops.yaml]]
+
+* Networking & SSH
+#+begin_src scheme :noweb-ref module
+  (gnu services avahi)
+  (gnu services networking)
+  (gnu services ssh)
+  (rosenthal services networking)
+#+end_src
+
+** network-manager
+#+begin_src scheme :noweb-ref service
+  (service network-manager-service-type
+    (network-manager-configuration
+      (shepherd-requirement '())))
+#+end_src
+
+** ntp
+#+begin_src scheme :noweb-ref service
+  (service ntp-service-type)
+#+end_src
+
+** nftables
+#+begin_src scheme :noweb-ref service
+  (service nftables-service-type
+    (nftables-configuration
+      (ruleset (local-file (testament-plain "rakuen/nftables.conf")))))
+#+end_src
+
+[[file:../files/plain/rakuen/nftables.conf][rakuen/nftables.conf]]
+
+** tailscale
+#+begin_src scheme :noweb-ref service
+  (service tailscale-service-type)
+#+end_src
+
+** openssh
+#+begin_src scheme :noweb-ref package
+  "mosh"
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (service openssh-service-type
+    (openssh-configuration
+      (openssh (spec->pkg "openssh-sans-x"))
+      (permit-root-login 'prohibit-password)
+      (password-authentication? #f)))
+#+end_src
+
+* Session and Seat Management
+** elogind
+#+begin_src scheme :noweb-ref service
+  (service elogind-service-type)
+#+end_src
+
+* Containers & Virtualization
+#+begin_src scheme :noweb-ref module
+  (gnu services docker)
+#+end_src
+
+** containerd
+#+begin_src scheme :noweb-ref service
+  (service containerd-service-type)
+#+end_src
+
+** docker
+#+begin_src scheme :noweb-ref service
+  (service docker-service-type
+    (docker-configuration
+      (enable-iptables? #f)))
+#+end_src
+
+* Databases
+#+begin_src scheme :noweb-ref module
+  (gnu services databases)
+#+end_src
+
+** postgresql
+#+begin_src scheme :noweb-ref service
+  (service postgresql-service-type
+    (postgresql-configuration
+      (postgresql (spec->pkg "postgresql@15"))))
+#+end_src
+
+** redis
+#+begin_src scheme :noweb-ref service
+  (service redis-service-type)
+#+end_src
+
+* Web Servers & Services
+#+begin_src scheme :noweb-ref module
+  (rosenthal services child-error)
+  (rosenthal services mail)
+  (rosenthal services web)
+#+end_src
+
+** caddy
+#+begin_src scheme :noweb yes :noweb-ref service
+  (service caddy-service-type
+    (caddy-configuration
+      (caddy (spec->pkg "caddy-dolly"))
+      (caddyfile <<caddy-config>>)))
+#+end_src
+
+#+name: caddy-config
+#+begin_src scheme
+  (computed-substitution-with-inputs "rakuen.caddyfile"
+    (local-file (testament-plain "rakuen/Caddyfile"))
+    (list (testament-plain)))
+#+end_src
+
+[[file:../files/plain/rakuen/Caddyfile][rakuen/Caddyfile]]
+
+** mirroring
+#+begin_src scheme :noweb-ref service
+  (simple-service 'guix-moe-mirror
+      shepherd-root-service-type
+    (list (shepherd-timer '(guix-moe-mirror)
+            #~(calendar-event #:hours '(4) #:minutes '(0))
+            #~(#$(program-file "guix-moe-mirror"
+                   (with-imported-modules '((guix build utils))
+                     #~(begin
+                         (use-modules (guix build utils))
+                         (mkdir-p "/var/cache/guix-moe/narinfo")
+                         (invoke #$(file-append (spec->pkg "rsync") "/bin/rsync")
+                                 "-azvh" "--delete"
+                                 "rsync://cache.guix.moe/narinfo/"
+                                 "/var/cache/guix-moe/narinfo/")))))
+            #:requirement '(user-processes))))
+#+end_src
+
+** iocaine
+#+begin_src scheme :noweb-ref service
+  (service iocaine-service-type
+    (iocaine-configuration
+      (config
+       (computed-substitution-with-inputs "iocaine.toml"
+         (local-file (testament-plain "iocaine.toml"))
+         (list (testament-blobs)
+               (testament-plain))))))
+#+end_src
+
+[[file:../files/plain/iocaine.toml][iocaine.toml]]
+
+** docker-mailserver
+#+name: rspamd-redis-conf
+#+begin_src scheme
+  (plain-file "rspamd-redis.conf" "\
+  servers = \"127.0.0.1:6379\";
+  expand_keys = true;")
+#+end_src
+
+#+begin_src scheme :noweb yes :noweb-ref service
+  (service docker-mailserver-service-type
+    (docker-mailserver-configuration
+      (shepherd-requirement '(redis))
+      (options
+       '(("ENABLE_AMAVIS" . "0")
+         ("ENABLE_FAIL2BAN" . "1")
+         ("ENABLE_MTA_STS" . "1")
+         ("ENABLE_OPENDKIM" . "0")
+         ("ENABLE_OPENDMARC" . "0")
+         ("ENABLE_POLICYD_SPF" . "0")
+         ("ENABLE_RSPAMD" . "1")
+         ("ENABLE_RSPAMD_REDIS" . "0")
+         ("ENABLE_SPAMASSASSIN" . "0")
+         ("NETWORK_INTERFACE" . "eth0")
+         ("OVERRIDE_HOSTNAME" . "mail.boiledscript.com")
+         ("POSTMASTER_ADDRESS" . "admin@boiledscript.com")
+         ("RSPAMD_LEARN" . "1")
+         ("SPOOF_PROTECTION" . "1")
+         ("SSL_TYPE" . "letsencrypt")))
+      (extra-arguments
+       `("--cap-add=NET_ADMIN"      ;For fail2ban.
+         "--volume"
+         ,(string-append
+           "/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/mail.boiledscript.com/mail.boiledscript.com.crt"
+           ":/etc/letsencrypt/live/mail.boiledscript.com/fullchain.pem")
+         "--volume"
+         ,(string-append
+           "/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/mail.boiledscript.com/mail.boiledscript.com.key"
+           ":/etc/letsencrypt/live/mail.boiledscript.com/privkey.pem")
+         "--volume"
+         ,(file-append
+           <<rspamd-redis-conf>> ":/etc/rspamd/local.d/redis.conf:ro")
+         "--volume"
+         ,(file-append
+           (local-file (testament-plain "rspamd-dkim-signing.conf"))
+           ":/etc/rspamd/override.d/dkim_signing.conf:ro")))))
+#+end_src
+
+[[file:../files/plain/rspamd-dkim-signing.conf][rspamd-dkim-signing.conf]]
+
+** miniflux
+#+begin_src scheme :noweb-ref service
+  (service miniflux-service-type
+    (miniflux-configuration
+      (options
+       `(("BASE_URL" . "https://reader.boiledscript.com/")
+         ("CLEANUP_ARCHIVE_READ_DAYS" . -1)
+         ("CLEANUP_ARCHIVE_UNREAD_DAYS" . -1)
+         ("DATABASE_URL" . ,(sops-str rakuen.yaml '("miniflux" "database")))
+         ("LISTEN_ADDR" . "127.0.0.1:51787")
+         ("RUN_MIGRATIONS" . 1)))))
+#+end_src
+
+** misskey
+https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
+#+begin_src scheme :noweb-ref service
+  (service misskey-service-type
+    (misskey-configuration
+      (image "ghcr.io/rakino/misskey:latest")
+      (config
+       `((url . "https://social.boiledscript.com")
+         (port . 54493)
+         (db
+          . ((host . localhost)
+             (port . 5432)
+             (db . misskey)
+             (user . misskey)
+             (pass . ,(sops-str rakuen.yaml '("misskey" "password")))))
+         (dbReplications . #f)
+         (redis
+          . ((host . localhost)
+             (port . 6379)))
+         (fulltextSearch
+          . ((provider . sqlLike)))
+         (id . "aid")
+         (clusterLimit . 4)
+         (outgoingAddressFamily . dual)
+         (proxyRemoteFiles . #t)
+         (signToActivityPubGet . #t)))))
+#+end_src
+
+** vaultwarden
+#+begin_src scheme :noweb-ref service
+  (service vaultwarden-service-type
+    (vaultwarden-configuration
+      (database-url (sops-str rakuen.yaml '("vaultwarden")))
+      (port 23263)
+      (extra-options '(("ROCKET_ADDRESS" . "127.0.0.1")))))
+#+end_src
+
+* Monitoring
+#+begin_src scheme :noweb-ref module
+  (gnu services monitoring)
+#+end_src
+
+** prometheus-node-exporter
+#+begin_src scheme :noweb-ref service
+  (service prometheus-node-exporter-service-type
+    (prometheus-node-exporter-configuration
+      (web-listen-address ":36277")))
+#+end_src

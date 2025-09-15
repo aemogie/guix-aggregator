@@ -129,6 +129,25 @@
            (leave (G_ "file '~a' not found.~%") file))))))
 
 
+(define %network-manager-ipv6-privacy
+  `("ip6-privacy.conf"
+    ,(plain-file "ip6-privacy.conf" "\
+# Use IPv6 Privacy Extensions.
+[connection]
+ipv6.ip6-privacy=2\n")))
+
+;; NOTE: When using on cloud machines, refer to the terms of the provider
+;; first.
+(define %network-manager-random-mac-address
+  `("rand_mac.conf"
+   ,(plain-file "rand_mac.conf" "\
+# Generate a random MAC for each network connection and associate the two
+# permanently.
+[connection-mac-randomization]
+ethernet.cloned-mac-address=stable
+wifi.cloned-mac-address=stable\n")))
+
+
 (define* (get-sops-secret key #:key file (number? #f))
   "Return a string (or number if NUMBER? is set to #t) of SOPS secret for KEY
 stored in FILE.  The result will be publicly available in '/gnu/store', YOU ARE
@@ -160,6 +179,8 @@ WARNED."
   (local-file (testament-blobs "dorphine.yaml")))
 (define gokuraku.yaml
   (local-file (testament-blobs "gokuraku.yaml")))
+(define rakuen.yaml
+  (local-file (testament-blobs "rakuen.yaml")))
 
 
 (define (sing-box-config)

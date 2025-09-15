@@ -12,6 +12,7 @@
   :custom
   (large-file-warning-threshold 10000000)
   (backup-by-copying t)
+  (safe-local-variable-directories '("~/.config/guix/current/share/guile/site/3.0/"))
   :config
   (add-to-list 'backup-directory-alist
                `("." . ,(expand-file-name "backups" user-emacs-directory))))
@@ -73,6 +74,13 @@
   (trashed-date-format "%Y-%m-%d %H:%M:%S")
   (trashed-use-header-line t))
 
+(defun my/os-release ()
+  (interactive)
+  (with-temp-buffer
+    (insert-file-contents "/etc/os-release")
+    (let ((line (thing-at-point 'line t)))
+      (string-trim (cadr (string-split line "=")) "\"" "\"\n"))))
+
 (use-package keymap
   :config
   (defvar my/keybinds '(("M-<tab>" . next-buffer)
@@ -85,6 +93,7 @@
                         ("M-[" . previous-window-any-frame)
                         ("M-#" . dictionary-lookup-definition)
                         ("C-x b" . consult-buffer)
+                        ("C-c c" . org-capture)
                         ("C-c y" . consult-yank-from-kill-ring)
                         ("C-c r s" . consult-register-store)
                         ("C-c r l" . consult-register-load)
@@ -228,7 +237,7 @@ See also `my/hide-buffer'."
 
 (use-package writeroom-mode
   :custom
-  (writeroom-width 80)
+  (writeroom-width 90)
   (writeroom-fullscreen-effect 'maximized)
   (writeroom-major-modes '(text-mode))
   (writeroom-major-modes-exceptions '(mhtml-mode nxml-mode))
@@ -295,6 +304,10 @@ See `my/dired-run-command'."
                    (advice-remove sym advice))
                  sym)))
 
+(use-package scheme
+  :when (string-equal (my/os-release) "Guix System")
+  :config (load (expand-file-name "scheme-guix.el" user-emacs-directory)))
+
 (use-package geiser)
 
 (use-package geiser-guile
@@ -335,6 +348,8 @@ See `my/dired-run-command'."
     (add-hook 'go-mode-hook #'my/set-go-compile)
     (keymap-set 'go-mode-map "C-c C-c" #'my/compile))  )
 
+(setopt org-default-notes-file (expand-file-name "notes.org" org-directory))
+
 (use-package org
   :defer t
   :hook
@@ -344,7 +359,6 @@ See `my/dired-run-command'."
         ("C-c l" . org-cycle-list-bullet))
   :custom
   (org-directory "~/documents/org/")
-  (org-default-notes-file (expand-file-name "notes.org" org-directory))
   (org-agenda-files (list (expand-file-name "agenda/" org-directory)))
   
   (org-startup-folded t)
@@ -406,6 +420,15 @@ Helpful advice for face changing functions."
 
   (load (expand-file-name "org-publish.el" user-emacs-directory))
   :after jack)
+
+(use-package org-capture
+  :commands org-capture
+  :custom
+  (org-capture-templates
+   '(("w" "website" entry
+      (file+headline "" "Websites"))
+     ("m" "misc" item
+      (file+headline "" "Miscellaneous")))))
 
 (use-package markdown-mode
   :defer t)
@@ -472,6 +495,12 @@ Helpful advice for face changing functions."
   :custom
   (epg-pinentry-mode 'loopback)
   :config
+  (defun my/restart-pinentry ()
+    (interactive)
+    (pinentry-stop)
+    (sleep-for 0.5)
+    (pinentry-start))
+
   (pinentry-start))
 
 (use-package bluetooth

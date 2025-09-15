@@ -1,4 +1,4 @@
-(define-module (mrh-guix home box packages)
+(define-module (mrh-guix home nvidia packages)
   #:use-module (gnu)
   #:use-module (nongnu packages messaging)
   #:use-module (nongnu packages game-development))
@@ -21,7 +21,7 @@
                      xdisorg
                      xorg)
 
-(define-public %box-home-packages
+(define-public %nvidia-home-packages
   (list
    ;; graphical env
    feh
@@ -46,8 +46,6 @@
    font-google-noto-emoji
    font-google-noto-sans-cjk
    font-google-noto-serif-cjk
-   font-juliamono
-   font-hack
 
    ;; emacs
    emacs-next

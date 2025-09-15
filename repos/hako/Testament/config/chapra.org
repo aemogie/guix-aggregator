@@ -10,20 +10,39 @@
   (load "../common.scm")
   (use-modules (rosenthal) <<module>>)
 
-  <<definition>>
-
   (define %os
     (operating-system
       (host-name "chapra")
       (timezone "Asia/Hong_Kong")
-      (bootloader <<bootloader>>)
+      (bootloader
+        (bootloader-configuration
+          (bootloader grub-efi-removable-bootloader)
+          (targets '("/efi"))))
+      (kernel (spec->pkg "linux-libre@6.12"))
+      (kernel-arguments
+       (cons* "kernel.sysrq=0"
+              "zswap.enabled=1"
+              "zswap.max_pool_percent=90"
+              %default-kernel-arguments))
       (file-systems (append <<file-systems>> %base-file-systems))
+      (swap-devices
+       (list (swap-space
+               (target
+                (uuid "b955a6b1-9dd9-4e91-b9d9-b4e15473396c")))))
       (users (cons* <<user>> %base-user-accounts))
-      (packages (append (specs->pkgs+out <<package>>) %base-packages))
-      (services (cons* <<service>> %base-services))
+      (packages
+       (append (specs->pkgs+out "gnupg" "rsync" <<package>>)
+               %base-packages))
+      (services
+       (cons* <<service>>
+              (modify-services %base-services
+                (guix-service-type
+                 config => (guix-configuration
+                             (inherit config)
+                             (discover? #t))))))
       (name-service-switch %mdns-host-lookup-nss)))
 
-  ((compose <<transformation>>)
+  ((compose (rosenthal-transformation-zfs #:boot? #t))
    %os)
 #+end_src
 
@@ -33,36 +52,16 @@
   (gnu services linux)
   (gnu services ssh)
   (gnu services sysctl)
-  (rosenthal services file-systems)
   (sops services sops)
 #+end_src
 
-** Bootloader & Kernel
-#+name: bootloader
-#+begin_src scheme
-  (bootloader-configuration
-    (bootloader grub-efi-removable-bootloader)
-    (targets '("/efi")))
-#+end_src
-
-#+begin_src scheme :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (kernel (spec->pkg "linux-libre@6.12"))
-      (kernel-arguments
-       (cons* "kernel.sysrq=0"
-              "zswap.enabled=1"
-              "zswap.max_pool_percent=90"
-              (operating-system-user-kernel-arguments os)))))
-#+end_src
-
+** Kernel
 #+begin_src scheme :noweb-ref service
-  (simple-service 'add-extra-modules
+  (simple-service 'extend-kernel-module-loader
       kernel-module-loader-service-type
-    '("tcp_bbr"))
+    '("sch_fq_pie" "tcp_bbr"))
 
-  (simple-service 'add-sysctl-rules
+  (simple-service 'extend-systctl
       sysctl-service-type
     '(("net.core.default_qdisc" . "fq_pie")
       ("net.ipv4.tcp_congestion_control" . "bbr")
@@ -72,60 +71,25 @@
 #+end_src
 
 ** File Systems
-Disk layout:
-#+begin_example
-  +----------------+----------------+
-  |                |                |
-  |      ESP       |  XFS (Eriope)  |
-  |_ _ _ _ _ _ _ __|_ _ _ _ _ _ _ _ |
-  |                |                |
-  | /dev/nvme0n1p1 | /dev/nvme0n1p2 |
-  |_ _ _ _ _ _ _ __| _ _ _ _ _ _ _ _|
-  |                                 |
-  |          /dev/nvme0n1           |
-  +---------------------------------+
-#+end_example
-
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
-          (device (file-system-label "Eriope"))
+          (device "zfs:Ocimeae/Root")
           (mount-point "/")
-          (type "xfs"))
-
+          (type "zfs"))
         (file-system
-          (device (uuid "1308-97C1" 'fat))
+          (device (uuid "4E36-D157" 'fat))
           (mount-point "/efi")
           (type "vfat"))
-
         (file-system
-          (device (file-system-label "Ocimeae"))
-          (mount-point "/mnt/Ocimeae")
-          (type "btrfs")
-          (options "compress=zstd,subvolid=5")
-          (create-mount-point? #t)))
-#+end_src
-
-#+begin_src scheme :noweb yes :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (swap-devices
-       (list (swap-space
-               (target "/swapfile"))))))
-#+end_src
-
-Maintenance:
-#+begin_src scheme :noweb-ref service
-  (simple-service 'btrfs-scrub
-      shepherd-root-service-type
-    (list (shepherd-timer '(btrfs-scrub)
-            #~(calendar-event #:days-of-week '(sunday) #:hours '(0) #:minutes '(0))
-            #~(#$(file-append (spec->pkg "btrfs-progs") "/bin/btrfs") "scrub" "start" "/mnt/Ocimeae")
-            #:requirement '(user-processes))))
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (service zfs-service-type)
+          (device "zfs:Ocimeae/Config")
+          (mount-point "/etc")
+          (type "zfs")
+          (needed-for-boot? #t))
+        (file-system
+          (device "zfs:Ocimeae/Store")
+          (mount-point "/gnu")
+          (type "zfs")
+          (needed-for-boot? #t)))
 #+end_src
 
 ** Users
@@ -143,62 +107,26 @@ Administration accounts.
   (user-account
     (inherit %root-account)
     (password #f))
-
-  (user-account
-    (name "deploy")
-    (group "users")
-    (comment "User for 'guix deploy'")
-    (create-home-directory? #f))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (simple-service 'add-user-ssh-keys
+  (simple-service 'extend-openssh
       openssh-service-type
-    `(("deploy" ,%ssh-key-deploy)
+    `(("root" ,%ssh-key-deploy)
       ("hako" ,%ssh-key-hako)))
-#+end_src
-
-#+begin_src scheme :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (sudoers-file
-       (plain-file "sudoers"
-         (string-append
-          (plain-file-content (operating-system-sudoers-file os))
-          "deploy ALL = NOPASSWD: ALL\n"
-          "hako ALL = NOPASSWD: ALL\n")))))
-#+end_src
-
-** Packages
-Frequently used packages.
-#+begin_src scheme :noweb-ref package
-  "rsync"
 #+end_src
 
 ** Guix Daemon
 #+begin_src scheme :noweb-ref service
-  (simple-service 'guix-extension-chapra
+  (simple-service 'extend-guix
       guix-service-type
     (guix-extension
-      (authorized-keys %hako-guix-authorized-keys-lan)))
-#+end_src
-
-#+begin_src scheme :noweb-ref transformation
-  (lambda (os)
-    (operating-system
-      (inherit os)
-      (services
-       (modify-services (operating-system-user-services os)
-         (guix-service-type
-          config => (guix-configuration
-                      (inherit config)
-                      (discover? #t)))))))
+      (authorized-keys %hako-guix-authorized-keys-lan)
+      (substitute-urls '("https://cache-cdn.guix.moe"))))
 #+end_src
 
 ** SOPS Secrets
 #+begin_src scheme :noweb-ref package
-  "gnupg"
   "sops"
 #+end_src
 
@@ -216,7 +144,12 @@ Frequently used packages.
              (sops-secret
                (key '("cloudflared"))
                (file chapra.yaml)
-               (user "cloudflared"))))))
+               (user "cloudflared"))
+             (sops-secret
+               (key '("grafana"))
+               (file chapra.yaml)
+               (user "grafana")
+               (group "postgres"))))))
 #+end_src
 
 [[file:../files/plain/sops.yaml][sops.yaml]]
@@ -235,18 +168,8 @@ Frequently used packages.
     (network-manager-configuration
       (shepherd-requirement '())
       (extra-configuration-files
-       `(("wifi_rand_mac.conf"
-          ,(plain-file "wifi_rand_mac.conf" "\
-  # Generate a random MAC for each network connection and associate the two
-  # permanently.
-  [connection-mac-randomization]
-  ethernet.cloned-mac-address=stable
-  wifi.cloned-mac-address=stable\n"))
-         ("ip6-privacy.conf"
-          ,(plain-file "ip6-privacy.conf" "\
-  # Use IPv6 Privacy Extensions.
-  [connection]
-  ipv6.ip6-privacy=2\n"))))))
+       (list %network-manager-ipv6-privacy
+             %network-manager-random-mac-address))))
 #+end_src
 
 ** ntp
@@ -282,19 +205,23 @@ Frequently used packages.
   (service openssh-service-type
     (openssh-configuration
       (openssh (spec->pkg "openssh-sans-x"))
+      (permit-root-login 'prohibit-password)
       (password-authentication? #f)))
 #+end_src
 
-* Session and Seat Management
+* Databases
 #+begin_src scheme :noweb-ref module
-  (gnu services dbus)
+  (gnu services databases)
 #+end_src
 
-** dbus
+** postgresql
 #+begin_src scheme :noweb-ref service
-  (service dbus-root-service-type)
+  (service postgresql-service-type
+    (postgresql-configuration
+      (postgresql (spec->pkg "postgresql@15"))))
 #+end_src
 
+* Session and Seat Management
 ** elogind
 #+begin_src scheme :noweb-ref service
   (service elogind-service-type)
@@ -317,7 +244,7 @@ Frequently used packages.
       (enable-iptables? #f)))
 #+end_src
 
-* Web Servers
+* Web Servers & Services
 #+begin_src scheme :noweb-ref module
   (rosenthal services child-error)
   (rosenthal services web)
@@ -348,18 +275,13 @@ Frequently used packages.
       (token-file "/run/secrets/cloudflared")))
 #+end_src
 
-* Web Services
-#+begin_src scheme :noweb-ref module
-  (rosenthal services web)
-#+end_src
-
 ** jellyfin
 #+begin_src scheme :noweb-ref service
   (service jellyfin-service-type
     (jellyfin-configuration
       (extra-options
-       `("--volume" "/mnt/Ocimeae/@Library/Movies:/media/Movies"
-         "--volume" "/mnt/Ocimeae/@Library/Shows:/media/Shows"
+       `("--volume" "/mnt/Ocimeae/Library/Movies:/media/Movies"
+         "--volume" "/mnt/Ocimeae/Library/Shows:/media/Shows"
          "--volume"
          ,(let ((path "/share/fonts/truetype/NotoSansCJK-VF.otf.ttc"))
             (file-append (spec->pkg "font-google-noto-sans-cjk") path ":/usr" path))))))
@@ -382,6 +304,49 @@ Frequently used packages.
 * Monitoring
 #+begin_src scheme :noweb-ref module
   (gnu services monitoring)
+  (rosenthal services monitoring)
+#+end_src
+
+** grafana
+#+begin_src scheme :noweb-ref service
+  (service grafana-service-type
+    (grafana-configuration
+      (config
+       `((paths
+          ((data . /var/lib/grafana)
+           (logs . /var/log/grafana)
+           (plugins . /var/lib/grafana/plugins)))
+         (server
+          ((http_addr . 127.0.0.1)
+           (http_port . 13064)))
+         (database
+          ((type . postgres)
+           (host . 127.0.0.1:5432)
+           (user . grafana)
+           (password . $__file{/run/secrets/grafana})
+           (ssl_mode . disable)))))
+      (database-password-file "/run/secrets/grafana")))
+#+end_src
+
+** prometheus
+#+begin_src scheme :noweb-ref service
+  (service prometheus-service-type
+    (prometheus-configuration
+      (listen-address "127.0.0.1:49951")
+      (config
+       `(("scrape_configs"
+          . #((("job_name" . "prometheus")
+               ("static_configs"
+                . #((("targets"
+                      . #("127.0.0.1:49951"))))))
+              (("job_name" . "node")
+               ("static_configs"
+                . #((("targets"
+                      . #("chapra:36277"
+                          "dorphine:36277"
+                          "gokuraku:36277"
+                          "ignamma:36277"
+                          "rakuen:36277"))))))))))))
 #+end_src
 
 ** prometheus-node-exporter
