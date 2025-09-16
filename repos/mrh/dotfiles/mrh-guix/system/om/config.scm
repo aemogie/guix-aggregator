@@ -14,12 +14,14 @@
 
 (use-service-modules dbus
                      desktop
+                     dns
                      docker
                      networking
                      ssh
                      syncthing
                      sysctl
-                     vpn)
+                     vpn
+                     web)
 
 (define-public %om-operating-system
   (operating-system
@@ -59,8 +61,11 @@
                  (handle-lid-switch-docked 'ignore)
                  (handle-lid-switch-external-power 'ignore)))
       
-      (service wpa-supplicant-service-type)
-      (service network-manager-service-type)
+      (service wpa-supplicant-service-type
+               (wpa-supplicant-configuration
+                 (interface %om-network-interface)
+                 (config-file (local-file "wpa-supplicant.conf"))))
+      
       (service ntp-service-type)
 
       (service nftables-service-type
@@ -77,6 +82,18 @@
                (wireguard-host-config
                 (list (wireguard-host-peer "sleep" 2 %sleep-wireguard-key)
                       (wireguard-host-peer "phone" 3 %phone-wireguard-key))))
+
+      (service dnsmasq-service-type
+               (dnsmasq-configuration
+                 (listen-addresses '("127.0.0.1" "10.0.0.1"))
+                 (servers '("9.9.9.9" "1.1.1.1" "8.8.8.8" "192.168.1.1" ))
+                 (no-hosts? #t)
+                 (query-servers-in-order? #t)
+                 (addresses '("/home.wumpus.pizza/10.0.0.1"))))
+
+      (service dhcpcd-service-type
+               (dhcpcd-configuration
+                 (static '("domain_name_servers=127.0.0.1 10.0.0.1"))))
 
       (service syncthing-service-type
                (let ((sleep (syncthing-device
@@ -101,7 +118,7 @@
       (service docker-service-type)
 
       (service oci-container-service-type
-               (let ((local-ip (format #f "~a.171" %local-ipv4-prefix))
+               (let ((local-ip "192.168.1.171")
                      (wireguard-ip (format #f "~a.1"  %wireguard-ipv4-prefix)))
                  (list (oci-container-configuration
                          (image "jellyfin/jellyfin")
@@ -123,6 +140,48 @@
                          (environment '(("PUID" . "1000")
                                         ("PGID" . "998")
                                         ("TZ" . "Etc/UTC")))))))
+
+      (service
+       nginx-service-type
+       (nginx-configuration
+         (server-blocks
+          (list (nginx-server-configuration
+                  (server-name '("home.wumpus.pizza"))
+                  (locations
+                   (list (nginx-location-configuration
+                           (uri "/syncthing/")
+                           (body
+                            (list "proxy_pass http://10.0.0.1:8384/;")))
+                         (nginx-location-configuration
+                           (uri "/jelly/")
+                           (body
+                            (list "proxy_pass http://10.0.0.1:8096/;"
+                                  "proxy_set_header Host $host;"
+                                  "proxy_set_header X-Real-IP $remote_addr;"
+                                  "proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;"
+                                  "proxy_set_header X-Forwarded-Proto $scheme;"
+                                  "proxy_set_header X-Forwarded-Protocol $scheme;"
+                                  "proxy_set_header X-Forwarded-Host $http_host;"
+                                  
+                                  "proxy_buffering off;")))
+                         (nginx-location-configuration
+                           (uri "/sab/")
+                           (body
+                            (list "proxy_pass http://10.0.0.1:8081/;"
+                                  "proxy_set_header Host $host;"
+                                  "proxy_set_header X-Real-IP $remote_addr;"
+                                  "proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;"
+                                  "proxy_set_header X-Forwarded-Proto $scheme;"
+                                  "proxy_set_header X-Forwarded-Protocol $scheme;"
+                                  "proxy_set_header X-Forwarded-Host $http_host;")))
+                         (nginx-location-configuration
+                           (uri "/i2p/")
+                           (body
+                            (list "proxy_pass http://10.0.0.1:7070/;")))))
+                  (ssl-certificate
+                   (string-append %wumpus-certs-dir "/fullchain.pem"))
+                  (ssl-certificate-key
+                   (string-append %wumpus-certs-dir "/privkey.pem")))))))
 
       (modify-services %base-services
         (sysctl-service-type
@@ -150,15 +209,15 @@
 
     (swap-devices (list (swap-space
                           (target
-                           (uuid "REPLACE-ME")))))
+                           (uuid "23c6c6c3-3653-4eed-95fa-cee1b87acc32")))))
 
     (file-systems
      (cons* (file-system (mount-point "/")
                          (device
-                          (uuid "REPLACE-ME" 'ext4))
+                          (uuid "6ec680cc-bf14-49d2-b4d0-d4feac003ae1" 'ext4))
                          (type "ext4"))
             (file-system (mount-point "/boot/efi")
-                         (device (uuid "REPLACE-ME" 'fat32))
+                         (device (uuid "1921-C31A" 'fat32))
                          (type "vfat"))
             %base-file-systems))))
 
