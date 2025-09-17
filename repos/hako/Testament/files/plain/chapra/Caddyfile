@@ -6,6 +6,7 @@
 	dns cloudflare {file./run/secrets/cloudflare}
 	acme_dns cloudflare {file./run/secrets/cloudflare}
 	ech hello.boiledscript.com
+	metrics
 	log {
 		output file /var/log/caddy/caddy.log
 		format filter {
@@ -21,7 +22,6 @@
 		}
 	}
 	servers {
-		metrics
 		trusted_proxies static private_ranges
 		client_ip_headers X-Forwarded-For X-Real-IP
 		trusted_proxies_strict
@@ -49,7 +49,7 @@
 (tailscale) {
 	@tailscale client_ip 100.64.0.0/10 fd7a:115c:a1e0::/48
 	handle @tailscale {
-		reverse_proxy {args[0]}
+		{block}
 	}
 }
 
@@ -57,19 +57,16 @@
 (block_bots) {
 	import $$share/ai-robots-txt/Caddyfile$$
 	handle @aibots {
+		respond /robots.txt 200 {
+			body <<EOF
+			User-Agent: *
+			Disallow: /
+
+			EOF
+		}
 		respond /* "Access denied" 403 {
 			close
 		}
-	}
-}
-
-(robots_txt) {
-	respond /robots.txt 200 {
-		body <<EOF
-		User-Agent: *
-		Disallow: /
-
-		EOF
 	}
 }
 
@@ -77,57 +74,57 @@
 # Komga
 http://manga.boiledscript.com, manga.ultrarare.space {
 	import block_bots
-	import robots_txt
+	import logging manga.boiledscript.com
 
-	import logging komga
-
-	import tailscale localhost:44293
+	import tailscale {
+		reverse_proxy localhost:44293
+	}
 	reverse_proxy localhost:44293
 }
 
 # Navidrome
 http://music.boiledscript.com, music.ultrarare.space {
 	import block_bots
-	import robots_txt
+	import logging music.boiledscript.com
 
-	import logging navidrome
-
-	import tailscale localhost:43502
+	import tailscale {
+		reverse_proxy localhost:43502
+	}
 	reverse_proxy localhost:43502
 }
 
 # Jellyfin
 http://shows.boiledscript.com, shows.ultrarare.space {
 	import block_bots
-	import robots_txt
+	import logging shows.boiledscript.com
 
-	import logging jellyfin
-
-	import tailscale localhost:22443
+	import tailscale {
+		reverse_proxy localhost:22443
+	}
 	reverse_proxy localhost:22443
 }
 
 
 # Grafana
 dash.ultrarare.space {
-	import logging grafana
-	import tailscale localhost:13064
+	import logging dash.ultrarare.space
+	import tailscale {
+		reverse_proxy localhost:13064
+	}
 }
 
 # Loki
 http://logs.boiledscript.com {
 	import block_bots
-	import robots_txt
-	import logging loki
-	import /run/secrets/loki/caddy
+	import logging logs.boiledscript.com
+	import /run/secrets/loki
 	reverse_proxy localhost:50968
 }
 
 # Mimir
 http://metrics.boiledscript.com {
 	import block_bots
-	import robots_txt
-	import logging mimir
-	import /run/secrets/mimir/caddy
+	import logging metrics.boiledscript.com
+	import /run/secrets/mimir
 	reverse_proxy localhost:49951
 }

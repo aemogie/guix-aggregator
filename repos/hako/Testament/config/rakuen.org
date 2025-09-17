@@ -35,7 +35,12 @@
                 (uuid "3b0cbf5f-e8eb-41a7-93f4-5f870bf09640")))))
       (users (cons* <<user>> %base-user-accounts))
       (packages
-       (append (specs->pkgs+out "gnupg" "rsync" <<package>>)
+       (append (specs->pkgs+out
+                "gnupg"
+                "mosh"
+                "rsync"
+                "sops"
+                <<package>>)
                %base-packages))
       (services (cons* <<service>> %base-services))))
 
@@ -109,10 +114,6 @@ Administration accounts.
 #+end_src
 
 ** SOPS Secrets
-#+begin_src scheme :noweb-ref package
-  "sops"
-#+end_src
-
 #+begin_src scheme :noweb-ref service
   (service sops-secrets-service-type
     (sops-service-configuration
@@ -125,8 +126,6 @@ Administration accounts.
                (file rakuen.yaml)
                (user "caddy"))))))
 #+end_src
-
-[[file:../files/plain/sops.yaml][sops.yaml]]
 
 * Networking & SSH
 #+begin_src scheme :noweb-ref module
@@ -155,18 +154,12 @@ Administration accounts.
       (ruleset (local-file (testament-plain "rakuen/nftables.conf")))))
 #+end_src
 
-[[file:../files/plain/rakuen/nftables.conf][rakuen/nftables.conf]]
-
 ** tailscale
 #+begin_src scheme :noweb-ref service
   (service tailscale-service-type)
 #+end_src
 
 ** openssh
-#+begin_src scheme :noweb-ref package
-  "mosh"
-#+end_src
-
 #+begin_src scheme :noweb-ref service
   (service openssh-service-type
     (openssh-configuration
@@ -234,10 +227,9 @@ Administration accounts.
 #+begin_src scheme
   (computed-substitution-with-inputs "rakuen.caddyfile"
     (local-file (testament-plain "rakuen/Caddyfile"))
-    (list (testament-plain)))
+    (cons (testament-plain)
+          (specs->pkgs "ai-robots-txt")))
 #+end_src
-
-[[file:../files/plain/rakuen/Caddyfile][rakuen/Caddyfile]]
 
 ** mirroring
 #+begin_src scheme :noweb-ref service
@@ -267,8 +259,6 @@ Administration accounts.
          (list (testament-blobs)
                (testament-plain))))))
 #+end_src
-
-[[file:../files/plain/iocaine.toml][iocaine.toml]]
 
 ** docker-mailserver
 #+name: rspamd-redis-conf
@@ -316,8 +306,6 @@ Administration accounts.
            (local-file (testament-plain "rspamd-dkim-signing.conf"))
            ":/etc/rspamd/override.d/dkim_signing.conf:ro")))))
 #+end_src
-
-[[file:../files/plain/rspamd-dkim-signing.conf][rspamd-dkim-signing.conf]]
 
 ** miniflux
 #+begin_src scheme :noweb-ref service
@@ -378,5 +366,6 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
 #+begin_src scheme :noweb-ref service
   (service alloy-service-type
     (alloy-configuration
+      (alloy (spec->pkg "alloy-bin-aarch64-linux"))
       (config (local-file (testament-blobs "rakuen/config.alloy")))))
 #+end_src

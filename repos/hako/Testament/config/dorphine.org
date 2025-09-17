@@ -40,8 +40,41 @@
                         file-systems)))))
       (users (cons* <<user>> %base-user-accounts))
       (packages
-       (append (specs->pkgs+out "dino" "foot" "gnupg" "obs-nvidia" "rsync"
-                                <<package>>)
+       (append (specs->pkgs+out
+                "dino"
+                "foot"
+                "git"
+                "gnupg"
+                "imv"
+                "mosh"
+                "mpv-nvidia"
+                "niri"
+                "obs-nvidia"
+                "rsync"
+                "sops"
+                "steam-nvidia"
+                "wl-clipboard"
+
+                "xdg-desktop-portal"
+                "xdg-desktop-portal-gnome"
+                "xdg-desktop-portal-gtk"
+
+                "librewolf"
+                "adaptive-tab-bar-colour-icecat"
+                "bitwarden-icecat"
+                "livemarks-icecat"
+                "ohmyech-icecat"
+                "ublock-origin-icecat"
+
+                "exo"
+                "file-roller"
+                "thunar"
+                "thunar-archive-plugin"
+                "thunar-media-tags-plugin"
+                "thunar-volman"
+                "unzip"
+
+                <<package>>)
                %base-packages))
       (services
        (cons* <<service>>
@@ -125,8 +158,6 @@
             #~(calendar-event #:minutes '(0))
             #~(#$(file-append (spec->pkg "modprobed-db") "/bin/modprobed-db") "storesilent"))))
 #+end_src
-
-[[file:../files/dotfiles/.config/modprobed-db.conf][~/.config/modprobed-db.conf]]
 
 ** File Systems
 #+begin_src scheme :noweb-ref file-systems
@@ -297,10 +328,6 @@ Generate passwordless ECC key:
   unset MY_GPGHOME MY_NAME
 #+end_src
 
-#+begin_src scheme :noweb-ref package
-  "sops"
-#+end_src
-
 #+begin_src scheme :noweb-ref home-service
   (service home-sops-secrets-service-type
     (home-sops-service-configuration
@@ -315,8 +342,6 @@ Generate passwordless ECC key:
                (key '("gammastep"))
                (file dorphine.yaml))))))
 #+end_src
-
-[[file:../files/plain/sops.yaml][sops.yaml]]
 
 * Power Management
 #+begin_src scheme :noweb-ref module
@@ -359,18 +384,12 @@ Generate passwordless ECC key:
       (ruleset (local-file (testament-plain "dorphine/nftables.conf")))))
 #+end_src
 
-[[file:../files/plain/dorphine/nftables.conf][dorphine/nftables.conf]]
-
 ** tailscale
 #+begin_src scheme :noweb-ref service
   (service tailscale-service-type)
 #+end_src
 
 ** openssh
-#+begin_src scheme :noweb-ref package
-  "mosh"
-#+end_src
-
 #+begin_src scheme :noweb-ref service
   (service openssh-service-type
     (openssh-configuration
@@ -454,12 +473,6 @@ Open TCP port 5558 and connect to server IPv4 address.
 
 ** Wayland
 *** niri
-#+begin_src scheme :noweb-ref package
-  "niri"
-  "wl-clipboard"
-  "imv"
-#+end_src
-
 #+begin_src scheme :noweb-ref home-service
   (service home-niri-service-type
     (home-niri-configuration
@@ -484,15 +497,6 @@ Open TCP port 5558 and connect to server IPv4 address.
   @theme \"" (spec->pkg "rofi") "/share/rofi/themes/fullscreen-preview.rasi\"\n"))))
 #+end_src
 
-[[file:../files/plain/niri.kdl][niri.kdl]]
-
-*** xdg-desktop-portal
-#+begin_src scheme :noweb-ref package
-  "xdg-desktop-portal"
-  "xdg-desktop-portal-gnome"
-  "xdg-desktop-portal-gtk"
-#+end_src
-
 *** waybar
 #+begin_src scheme :noweb-ref home-service
   (service home-waybar-service-type
@@ -507,12 +511,6 @@ Open TCP port 5558 and connect to server IPv4 address.
          (list (local-file "../files/plain/dorphine" #:recursive? #t))))))
 #+end_src
 
-[[file:../files/plain/waybar.jsonc][waybar.jsonc]]
-
-[[file:../files/plain/waybar.css][waybar.css]]
-
-[[file:../files/plain/dorphine/waybar-colors.css][dorphine/waybar-colors.css]]
-
 *** swaybg
 #+begin_src scheme :noweb-ref home-service
   (service home-swaybg-service-type
@@ -526,8 +524,6 @@ Open TCP port 5558 and connect to server IPv4 address.
     (home-mako-configuration
       (config (local-file (testament-plain "dorphine/mako.conf")))))
 #+end_src
-
-[[file:../files/plain/dorphine/mako.conf][dorphine/mako.conf]]
 
 *** gammastep
 #+begin_src scheme :noweb-ref home-service
@@ -622,16 +618,6 @@ Open TCP port 5558 and connect to server IPv4 address.
       (input-method-editors (specs->pkgs "fcitx5-rime"))))
 #+end_src
 
-** librewolf
-#+begin_src scheme :noweb-ref package
-  "librewolf"
-  "adaptive-tab-bar-colour-icecat"
-  "bitwarden-icecat"
-  "livemarks-icecat"
-  "ohmyech-icecat"
-  "ublock-origin-icecat"
-#+end_src
-
 * Multimedia & Miscellaneous
 #+begin_src scheme :noweb-ref module
   (rosenthal services bittorrent)
@@ -649,18 +635,7 @@ Open TCP port 5558 and connect to server IPv4 address.
             (stop #~(make-kill-destructor)))))
 #+end_src
 
-** mpv
-#+begin_src scheme :noweb-ref package
-  "mpv-nvidia"
-#+end_src
-
-[[../files/dotfiles/.config/mpv/mpv.conf][~/.config/mpv/mpv.conf]]
-
 ** steam
-#+begin_src scheme :noweb-ref package
-  "steam-nvidia"
-#+end_src
-
 #+begin_src scheme :noweb-ref home-environment-variable
   ("GUIX_SANDBOX_HOME" . "/mnt/Mentha/@Sandbox")
   ("GUIX_SANDBOX_EXTRA_SHARES" . "$HOME/Downloads:/mnt/Mentha/@Library/Pictures/Screenshots")
@@ -738,17 +713,6 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
                 '("emacsclient" "--eval" "(kill-emacs)"))))))
 #+end_src
 
-[[file:../files/plain/emacs/init.el][emacs/init.el]]
-
-[[file:../files/plain/emacs/fonts.el][emacs/fonts.el]]
-
-** git
-#+begin_src scheme :noweb-ref package
-  "git"
-#+end_src
-
-[[file:../files/dotfiles/.config/git/config][~/.config/git/config]]
-
 ** guix-label-teams
 #+begin_src scheme :noweb-ref home-service
   (simple-service 'guix-label-teams
@@ -780,17 +744,4 @@ Fetch from mail server:
                     ;; Send queued mail.
                     (invoke #$(file-append (spec->pkg "emacs-pgtk") "/bin/emacsclient")
                             "--eval" "(smtpmail-send-queued-mail)"))))))))
-#+end_src
-
-[[file:../files/plain/mbsync.conf][mbsync.conf]]
-
-** thunar
-#+begin_src scheme :noweb-ref package
-  "exo"
-  "file-roller"
-  "thunar"
-  "thunar-archive-plugin"
-  "thunar-media-tags-plugin"
-  "thunar-volman"
-  "unzip"
 #+end_src

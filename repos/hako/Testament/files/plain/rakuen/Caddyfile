@@ -6,6 +6,7 @@
 	dns cloudflare {file./run/secrets/cloudflare}
 	acme_dns cloudflare {file./run/secrets/cloudflare}
 	ech hello.boiledscript.com
+	metrics
 	log {
 		output file /var/log/caddy/caddy.log
 		format filter {
@@ -21,7 +22,6 @@
 		}
 	}
 	servers {
-		metrics
 		trusted_proxies static private_ranges
 		client_ip_headers X-Forwarded-For X-Real-IP
 		trusted_proxies_strict
@@ -29,16 +29,6 @@
 }
 
 
-(robots_txt) {
-	respond /robots.txt 200 {
-		body <<EOF
-		User-Agent: *
-		Disallow: /
-
-		EOF
-	}
-}
-
 (logging) {
 	log {
 		output file /var/log/caddy/{args[0]}.log
@@ -52,6 +42,23 @@
 				ipv6 44
 			}
 			wrap json
+		}
+	}
+}
+
+
+(block_bots) {
+	import $$share/ai-robots-txt/Caddyfile$$
+	handle @aibots {
+		respond /robots.txt 200 {
+			body <<EOF
+			User-Agent: *
+			Disallow: /
+
+			EOF
+		}
+		respond /* "Access denied" 403 {
+			close
 		}
 	}
 }
@@ -75,19 +82,18 @@
 
 # Blog
 ultrarare.space {
-	import logging blog
+	import block_bots
+	import logging ultrarare.space
 
 	root * /var/lib/webpublic/blog
 	handle_errors {
 		rewrite * /{err.status_code}.html
 		file_server
 	}
-	import iocaine {
-		handle_path /comments/* {
-			reverse_proxy localhost:42174
-		}
-		file_server
+	handle_path /comments/* {
+		reverse_proxy localhost:42174
 	}
+	file_server
 }
 
 www.ultrarare.space {
@@ -96,18 +102,16 @@ www.ultrarare.space {
 
 # Miniflux
 reader.boiledscript.com {
-	import robots_txt
-	import logging miniflux
+	import block_bots
+	import logging reader.boiledscript.com
 
-	import iocaine {
-		reverse_proxy localhost:51787
-	}
+	reverse_proxy localhost:51787
 }
 
 # Misskey
 social.boiledscript.com {
-	import robots_txt
-	import logging misskey
+	import block_bots
+	import logging social.boiledscript.com
 
 	import iocaine {
 		reverse_proxy localhost:54493
@@ -116,17 +120,15 @@ social.boiledscript.com {
 
 # Vaultwarden
 vault.boiledscript.com {
-	import robots_txt
-	import logging vaultwarden
+	import block_bots
+	import logging vault.boiledscript.com
 
-	import iocaine {
-		reverse_proxy localhost:23263
-	}
+	reverse_proxy localhost:23263
 }
 
 cache-fi.guix.moe {
-	import robots_txt
-	import logging substitutes
+	import block_bots
+	import logging cache-fi.guix.moe
 
 	@guix_publish {
 		path /*.narinfo || /nix-cache-info || /signing-key.pub
@@ -148,9 +150,10 @@ cache-fi.guix.moe {
 }
 
 mail.boiledscript.com {
-	import iocaine {
-		respond /* "Access denied" 403 {
-			close
-		}
+	import block_bots
+	import logging mail.boiledscript.com
+
+	respond /* "Access denied" 403 {
+		close
 	}
 }

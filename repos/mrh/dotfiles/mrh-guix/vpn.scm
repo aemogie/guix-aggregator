@@ -14,7 +14,8 @@
     (dns '("10.0.0.1"))
     (peers (list (wireguard-peer
                    (name "om")
-                   (endpoint (format #f "~a:~a" %om-domain-name %wireguard-port))
+                   (endpoint (format #f "home.~a:~a"
+                                     %domain-name %wireguard-port))
                    (public-key %om-wireguard-key)
                    (allowed-ips '("0.0.0.0/0" "::/0")))))))
 

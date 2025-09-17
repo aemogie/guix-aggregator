@@ -30,7 +30,12 @@
                (target (uuid "0316f295-36d1-4948-8c95-c1a8d8a8ab8b")))))
       (users (cons* <<user>> %base-user-accounts))
       (packages
-       (append (specs->pkgs+out "gnupg" "rsync" <<package>>)
+       (append (specs->pkgs+out
+                "gnupg"
+                "mosh"
+                "rsync"
+                "sops"
+                <<package>>)
                %base-packages))
       (services
        (cons* <<service>>
@@ -135,10 +140,6 @@ Administration accounts.
 #+end_src
 
 ** SOPS Secrets
-#+begin_src scheme :noweb-ref package
-  "sops"
-#+end_src
-
 #+begin_src scheme :noweb-ref service
   (service sops-secrets-service-type
     (sops-service-configuration
@@ -158,8 +159,6 @@ Administration accounts.
                (key '("rclone"))
                (file gokuraku.yaml))))))
 #+end_src
-
-[[file:../files/plain/sops.yaml][sops.yaml]]
 
 * Networking & SSH
 #+begin_src scheme :noweb-ref module
@@ -193,18 +192,12 @@ Administration accounts.
       (ruleset (local-file (testament-plain "gokuraku/nftables.conf")))))
 #+end_src
 
-[[file:../files/plain/gokuraku/nftables.conf][gokuraku/nftables.conf]]
-
 ** tailscale
 #+begin_src scheme :noweb-ref service
   (service tailscale-service-type)
 #+end_src
 
 ** openssh
-#+begin_src scheme :noweb-ref package
-  "mosh"
-#+end_src
-
 #+begin_src scheme :noweb-ref service
   (service openssh-service-type
     (openssh-configuration
@@ -444,7 +437,8 @@ rsync://cache.boiledscript.com
 #+begin_src scheme
   (computed-substitution-with-inputs "gokuraku.caddyfile"
     (local-file (testament-plain "gokuraku/Caddyfile"))
-    (list (testament-plain)))
+    (cons (testament-plain)
+          (specs->pkgs "ai-robots-txt")))
 #+end_src
 
 [[file:../files/plain/gokuraku/Caddyfile][gokuraku/Caddyfile]]

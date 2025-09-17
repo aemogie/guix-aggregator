@@ -1,9 +1,4 @@
 function init() -> Verdict[Unit, String] {
-  let robot_list = Json
-    .load_file("/opt/iocaine/share/data/ai.robots.txt-robots.json")
-    .get_keys();
-  iocaine_patterns.insert_patterns("ai.robots.txt", robot_list);
-
   let major_browser_patterns = MutableStringList.new();
   major_browser_patterns.push("Chrome/");
   major_browser_patterns.push("Firefox");
@@ -17,11 +12,6 @@ function init() -> Verdict[Unit, String] {
 }
 
 function decide(request: Request) -> Verdict[Outcome, Outcome] {
-  let robot_patterns = iocaine_patterns.get("ai.robots.txt");
-  if robot_patterns.is_match(request.header("user-agent")) {
-    metrics.inc("rule::ai.robots.txt");
-    accept Outcome.garbage()
-  }
   let major_browser_patterns = iocaine_patterns.get("major-browsers");
   if major_browser_patterns.is_match(request.header("user-agent"))
     && (request.header("sec-fetch-mode") == "") {
@@ -35,17 +25,6 @@ function decide(request: Request) -> Verdict[Outcome, Outcome] {
   }
   metrics.inc("rule::default");
   reject Outcome.not_for_us();
-}
-
-test bad_robot {
-  let request = RequestBuilder.new("GET", "/hello-world")
-    .header("host", "localhost")
-    .user_agent("Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; ClaudeBot/1.0; +claudebot@anthropic.com)")
-    .build();
-  match decide(request) {
-    Accept(_) -> accept,
-    Reject(_) -> reject,
-  }
 }
 
 test good_user_agent {

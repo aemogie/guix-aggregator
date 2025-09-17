@@ -31,7 +31,10 @@
                (target "/swapfile"))))
       (users (cons* <<user>> %base-user-accounts))
       (packages
-       (append (specs->pkgs+out "rsync" <<package>>)
+       (append (specs->pkgs+out
+                "mosh"
+                "rsync"
+                <<package>>)
                %base-packages))
       (services
        (cons* <<service>>
@@ -173,18 +176,12 @@ Administration accounts.
       (ruleset (local-file (testament-plain "ignamma/nftables.conf")))))
 #+end_src
 
-[[file:../files/plain/ignamma/nftables.conf][ignamma/nftables.conf]]
-
 ** tailscale
 #+begin_src scheme :noweb-ref service
   (service tailscale-service-type)
 #+end_src
 
 ** openssh
-#+begin_src scheme :noweb-ref package
-  "mosh"
-#+end_src
-
 #+begin_src scheme :noweb-ref service
   (service openssh-service-type
     (openssh-configuration

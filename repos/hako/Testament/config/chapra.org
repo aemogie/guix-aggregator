@@ -31,7 +31,12 @@
                 (uuid "b955a6b1-9dd9-4e91-b9d9-b4e15473396c")))))
       (users (cons* <<user>> %base-user-accounts))
       (packages
-       (append (specs->pkgs+out "gnupg" "rsync" <<package>>)
+       (append (specs->pkgs+out
+                "gnupg"
+                "mosh"
+                "rsync"
+                "sops"
+                <<package>>)
                %base-packages))
       (services
        (cons* <<service>>
@@ -126,10 +131,6 @@ Administration accounts.
 #+end_src
 
 ** SOPS Secrets
-#+begin_src scheme :noweb-ref package
-  "sops"
-#+end_src
-
 #+begin_src scheme :noweb-ref service
   (service sops-secrets-service-type
     (sops-service-configuration
@@ -159,8 +160,6 @@ Administration accounts.
                (file chapra.yaml)
                (user "caddy"))))))
 #+end_src
-
-[[file:../files/plain/sops.yaml][sops.yaml]]
 
 * Networking & SSH
 #+begin_src scheme :noweb-ref module
@@ -197,18 +196,12 @@ Administration accounts.
       (ruleset (local-file (testament-plain "chapra/nftables.conf")))))
 #+end_src
 
-[[file:../files/plain/chapra/nftables.conf][chapra/nftables.conf]]
-
 ** tailscale
 #+begin_src scheme :noweb-ref service
   (service tailscale-service-type)
 #+end_src
 
 ** openssh
-#+begin_src scheme :noweb-ref package
-  "mosh"
-#+end_src
-
 #+begin_src scheme :noweb-ref service
   (service openssh-service-type
     (openssh-configuration
@@ -272,8 +265,6 @@ Administration accounts.
     (local-file (testament-plain "chapra/Caddyfile"))
     (specs->pkgs "ai-robots-txt"))
 #+end_src
-
-[[file:../files/plain/chapra/Caddyfile][chapra/Caddyfile]]
 
 ** cloudflared
 #+begin_src scheme :noweb-ref service

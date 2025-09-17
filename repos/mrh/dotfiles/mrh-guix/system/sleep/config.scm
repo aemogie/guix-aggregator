@@ -50,10 +50,10 @@
       (service ntp-service-type)
 
       (service openssh-service-type
-			   (openssh-configuration
+               (openssh-configuration
                  (port-number 2222)
                  (password-authentication? #f)
-                 (max-connections 3)))
+                 (max-connections 5)))
 
       (service elogind-service-type)
 
@@ -94,19 +94,21 @@
                       (cons "https://substitutes.nonguix.org"
                             %default-substitute-urls)))))))
 
-    (bootloader (bootloader-configuration
-                  (bootloader grub-efi-bootloader)
-                  (targets (list "/boot/efi"))
-                  (keyboard-layout keyboard-layout)))
+    (bootloader
+      (bootloader-configuration
+        (bootloader grub-efi-bootloader)
+        (targets (list "/boot/efi"))
+        (keyboard-layout keyboard-layout)))
 
-    (swap-devices (list (swap-space
-                          (target
-                           (uuid "e5f30f68-8021-45bf-9768-5895f5c9eb54")))))
+    (swap-devices
+     (list (swap-space
+             (target (uuid "e5f30f68-8021-45bf-9768-5895f5c9eb54")))))
 
-    (mapped-devices (list (mapped-device
-                            (source (uuid "b7913f43-e874-4862-a40e-823cc136795c"))
-                            (target "cryptroot")
-                            (type luks-device-mapping))))
+    (mapped-devices
+     (list (mapped-device
+             (source (uuid "b7913f43-e874-4862-a40e-823cc136795c"))
+             (target "cryptroot")
+             (type luks-device-mapping))))
 
     (file-systems (cons* (file-system
                            (mount-point "/")

@@ -1,7 +1,8 @@
 (define-module (mrh-guix system om config)
   #:use-module (mrh-guix personal)
   #:use-module (mrh-guix vpn)
-  #:use-module (nongnu packages linux) 
+  #:use-module (mrh-guix system om dns)
+  #:use-module (nongnu packages linux)
   #:use-module (nongnu system linux-initrd)
   #:use-module (gnu))
 
@@ -12,7 +13,8 @@
                      tls
                      version-control)
 
-(use-service-modules dbus
+(use-service-modules containers
+                     dbus
                      desktop
                      dns
                      docker
@@ -60,12 +62,12 @@
                  (handle-lid-switch 'ignore)
                  (handle-lid-switch-docked 'ignore)
                  (handle-lid-switch-external-power 'ignore)))
-      
+
       (service wpa-supplicant-service-type
                (wpa-supplicant-configuration
-                 (interface %om-network-interface)
+                 (interface %network-interface)
                  (config-file (local-file "wpa-supplicant.conf"))))
-      
+
       (service ntp-service-type)
 
       (service nftables-service-type
@@ -73,73 +75,71 @@
                  (ruleset (local-file "nftables.conf"))))
 
       (service openssh-service-type
-			   (openssh-configuration
-			     (port-number 2222)
+               (openssh-configuration
+                 (port-number 2222)
                  (password-authentication? #f)
-                 (max-connections 3)))
+                 (max-connections 5)))
 
       (service wireguard-service-type
                (wireguard-host-config
                 (list (wireguard-host-peer "sleep" 2 %sleep-wireguard-key)
                       (wireguard-host-peer "phone" 3 %phone-wireguard-key))))
 
-      (service dnsmasq-service-type
-               (dnsmasq-configuration
-                 (listen-addresses '("127.0.0.1" "10.0.0.1"))
-                 (servers '("9.9.9.9" "1.1.1.1" "8.8.8.8" "192.168.1.1" ))
-                 (no-hosts? #t)
-                 (query-servers-in-order? #t)
-                 (addresses '("/home.wumpus.pizza/10.0.0.1"))))
+      (service unbound-service-type %unbound-config)
 
       (service dhcpcd-service-type
                (dhcpcd-configuration
-                 (static '("domain_name_servers=127.0.0.1 10.0.0.1"))))
+                 (static
+                  '("domain_name_servers=10.0.0.1 127.0.0.1"))))
 
       (service syncthing-service-type
-               (let ((sleep (syncthing-device
-                              (name "sleep")
-                              (id %sleep-syncthing-id)))
-                     (phone (syncthing-device
-                              (name "phone")
-                              (id %phone-syncthing-id))))
-                 (syncthing-configuration
-                   (user "mrh")
-                   (config-file
-                    (syncthing-config-file
-                      (gui-address "10.0.0.1:8384")
-                      (folders (list (syncthing-folder
-                                       (id "default")
-                                       (label "default folder")
-                                       (path "~/sync")
-                                       (devices (list sleep phone))))))))))
+               (syncthing-configuration
+                 (user "mrh")
+                 (config-file
+                  (syncthing-config-file
+                    (gui-address "10.0.0.1:8384")
+                    (folders
+                     (list (syncthing-folder
+                             (id "default")
+                             (label "default folder")
+                             (path "~/sync")
+                             (devices (list (syncthing-device
+                                              (name "sleep")
+                                              (id %sleep-syncthing-id))
 
-      ;; required for oci-container-service-type
+                                            (syncthing-device
+                                              (name "phone")
+                                              (id %phone-syncthing-id)))))))))))
+
+      ;; required for oci-service-type
       (service containerd-service-type)
       (service docker-service-type)
 
-      (service oci-container-service-type
-               (let ((local-ip "192.168.1.171")
-                     (wireguard-ip (format #f "~a.1"  %wireguard-ipv4-prefix)))
-                 (list (oci-container-configuration
-                         (image "jellyfin/jellyfin")
-                         (provision "jellyfin")
-                         (network "host")
-                         (ports (list (format #f "~a:8096:8096" wireguard-ip)
-                                      (format #f "~a:8920:8920" wireguard-ip)
-                                      (format #f "~a:8096:8096" local-ip)
-                                      (format #f "~a:8920:8920" local-ip)))
-                         (volumes '(("jellyfin-config" . "/config")
-                                    ("jellyfin-cache" . "/cache")
-                                    ("/home/mrh/media" . "/media"))))
-                       (oci-container-configuration
-                         (image "linuxserver/sabnzbd")
-                         (provision "sabnzbd")
-                         (ports (list (format #f "~a:8081:8081" wireguard-ip)
-                                      (format #f "~a:8082:8082" wireguard-ip)))
-                         (volumes '(("/home/mrh/media" . "/config")))
-                         (environment '(("PUID" . "1000")
-                                        ("PGID" . "998")
-                                        ("TZ" . "Etc/UTC")))))))
+      (simple-service
+       'oci-provisioning
+       oci-service-type
+       (oci-extension
+        (containers
+         (let ((local-ip "192.168.1.171")
+               (wireguard-ip (format #f "~a.1" %wireguard-ipv4-prefix)))
+           (list (oci-container-configuration
+                   (image "jellyfin/jellyfin")
+                   (provision "jellyfin")
+                   (network "host")
+                   (ports (list (format #f "~a:8096:8096" wireguard-ip)
+                                (format #f "~a:8096:8096" local-ip)))
+                   (volumes '(("jellyfin-config" . "/config")
+                              ("jellyfin-cache" . "/cache")
+                              ("/home/mrh/media" . "/media"))))
+
+                 (oci-container-configuration
+                   (image "linuxserver/sabnzbd")
+                   (provision "sabnzbd")
+                   (ports (list (format #f "~a:8081:8081" wireguard-ip)))
+                   (volumes '(("/home/mrh/media" . "/config")))
+                   (environment '(("PUID" . "1000")
+                                  ("PGID" . "998")
+                                  ("TZ" . "Etc/UTC")))))))))
 
       (service
        nginx-service-type
@@ -149,9 +149,10 @@
                   (server-name '("home.wumpus.pizza"))
                   (locations
                    (list (nginx-location-configuration
-                           (uri "/syncthing/")
+                           (uri "/i2p/")
                            (body
-                            (list "proxy_pass http://10.0.0.1:8384/;")))
+                            (list "proxy_pass http://10.0.0.1:7070/;")))
+
                          (nginx-location-configuration
                            (uri "/jelly/")
                            (body
@@ -162,8 +163,9 @@
                                   "proxy_set_header X-Forwarded-Proto $scheme;"
                                   "proxy_set_header X-Forwarded-Protocol $scheme;"
                                   "proxy_set_header X-Forwarded-Host $http_host;"
-                                  
+
                                   "proxy_buffering off;")))
+
                          (nginx-location-configuration
                            (uri "/sab/")
                            (body
@@ -174,14 +176,16 @@
                                   "proxy_set_header X-Forwarded-Proto $scheme;"
                                   "proxy_set_header X-Forwarded-Protocol $scheme;"
                                   "proxy_set_header X-Forwarded-Host $http_host;")))
+
                          (nginx-location-configuration
-                           (uri "/i2p/")
+                           (uri "/syncthing/")
                            (body
-                            (list "proxy_pass http://10.0.0.1:7070/;")))))
+                            (list "proxy_pass http://10.0.0.1:8384/;")))))
+
                   (ssl-certificate
-                   (string-append %wumpus-certs-dir "/fullchain.pem"))
+                   (string-append %domain-certs-dir "/fullchain.pem"))
                   (ssl-certificate-key
-                   (string-append %wumpus-certs-dir "/privkey.pem")))))))
+                   (string-append %domain-certs-dir "/privkey.pem")))))))
 
       (modify-services %base-services
         (sysctl-service-type
@@ -191,6 +195,7 @@
                        '(("net.ipv4.ip_forward" . "1")
                          ("net.ipv6.conf.all.forwarding" . "1"))
                        %default-sysctl-settings))))
+
         (guix-service-type
          config => (guix-configuration
                      (inherit config)
@@ -202,23 +207,26 @@
                       (cons* "https://substitutes.nonguix.org"
                              %default-substitute-urls)))))))
 
-    (bootloader (bootloader-configuration
-                  (bootloader grub-efi-bootloader)
-                  (targets (list "/boot/efi"))
-                  (keyboard-layout keyboard-layout)))
+    (bootloader
+      (bootloader-configuration
+        (bootloader grub-efi-bootloader)
+        (targets (list "/boot/efi"))
+        (keyboard-layout keyboard-layout)))
 
-    (swap-devices (list (swap-space
-                          (target
-                           (uuid "23c6c6c3-3653-4eed-95fa-cee1b87acc32")))))
+    (swap-devices
+     (list (swap-space
+             (target (uuid "23c6c6c3-3653-4eed-95fa-cee1b87acc32")))))
 
     (file-systems
-     (cons* (file-system (mount-point "/")
-                         (device
-                          (uuid "6ec680cc-bf14-49d2-b4d0-d4feac003ae1" 'ext4))
-                         (type "ext4"))
-            (file-system (mount-point "/boot/efi")
-                         (device (uuid "1921-C31A" 'fat32))
-                         (type "vfat"))
+     (cons* (file-system
+              (mount-point "/")
+              (device
+               (uuid "6ec680cc-bf14-49d2-b4d0-d4feac003ae1" 'ext4))
+              (type "ext4"))
+            (file-system
+              (mount-point "/boot/efi")
+              (device (uuid "1921-C31A" 'fat32))
+              (type "vfat"))
             %base-file-systems))))
 
 %om-operating-system

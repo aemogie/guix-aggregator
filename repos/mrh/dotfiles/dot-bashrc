@@ -6,6 +6,8 @@ alias md="monerod --prune-blockchain --detach --non-interactive --hide-my-port -
 alias hr="guix home reconfigure -L $HOME/src/dotfiles $HOME/src/dotfiles/mrh-guix/home/$HOSTNAME/config.scm"
 alias sr="sudo guix system reconfigure -L $HOME/src/dotfiles $HOME/src/dotfiles/mrh-guix/system/$HOSTNAME/config.scm"
 alias dots="stow --dotfiles -t $HOME -d $HOME/src dotfiles"
+alias wu="sudo herd start wireguard-wg0"
+alias wd="sudo herd stop wireguard-wg0"
 # Bash initialization for interactive non-login shells and
 # for remote shells (info "(bash) Bash Startup Files").
 
