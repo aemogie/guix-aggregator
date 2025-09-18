@@ -42,6 +42,13 @@
 ;; Custom dictionary for English
 (define enchant-dict-en
   `("Guix" "Hyprland"
+    "www" "rchuidkliniek" "jointhefreeworld"
+    "lsmod"
+    "hygguile"
+    "carvoeirowaterfun"
+    "casadelcata"
+    "oculuslambda"
+    "pingwing"
     "aspell"
     "hunspell"
     "Sexp"

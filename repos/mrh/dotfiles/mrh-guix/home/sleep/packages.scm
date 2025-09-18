@@ -8,6 +8,7 @@
                      base
                      compression
                      cups
+                     dns
                      emacs
                      emacs-xyz
                      finance
@@ -140,6 +141,7 @@
    pinentry-tty
 
    ;; sysadmin
+   (list isc-bind "utils")
    fastfetch
    rsync
    socat

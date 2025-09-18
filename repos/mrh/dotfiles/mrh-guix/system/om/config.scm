@@ -1,7 +1,7 @@
 (define-module (mrh-guix system om config)
   #:use-module (mrh-guix personal)
   #:use-module (mrh-guix vpn)
-  #:use-module (mrh-guix system om dns)
+  #:use-module (mrh-guix system om networking)
   #:use-module (nongnu packages linux)
   #:use-module (nongnu system linux-initrd)
   #:use-module (gnu))
@@ -63,16 +63,9 @@
                  (handle-lid-switch-docked 'ignore)
                  (handle-lid-switch-external-power 'ignore)))
 
-      (service wpa-supplicant-service-type
-               (wpa-supplicant-configuration
-                 (interface %network-interface)
-                 (config-file (local-file "wpa-supplicant.conf"))))
-
+      (service wpa-supplicant-service-type %wpa-supplicant-config)
       (service ntp-service-type)
-
-      (service nftables-service-type
-               (nftables-configuration
-                 (ruleset (local-file "nftables.conf"))))
+      (service nftables-service-type %nftables-config)
 
       (service openssh-service-type
                (openssh-configuration
@@ -85,19 +78,15 @@
                 (list (wireguard-host-peer "sleep" 2 %sleep-wireguard-key)
                       (wireguard-host-peer "phone" 3 %phone-wireguard-key))))
 
-      (service unbound-service-type %unbound-config)
-
-      (service dhcpcd-service-type
-               (dhcpcd-configuration
-                 (static
-                  '("domain_name_servers=10.0.0.1 127.0.0.1"))))
+      (service dnsmasq-service-type %dnsmasq-config)
+      (service dhcpcd-service-type %dhcpd-config)
 
       (service syncthing-service-type
                (syncthing-configuration
                  (user "mrh")
                  (config-file
                   (syncthing-config-file
-                    (gui-address "10.0.0.1:8384")
+                    (gui-address (format #f "~a:8384" %wireguard-ipv4))
                     (folders
                      (list (syncthing-folder
                              (id "default")
@@ -120,43 +109,44 @@
        oci-service-type
        (oci-extension
         (containers
-         (let ((local-ip "192.168.1.171")
-               (wireguard-ip (format #f "~a.1" %wireguard-ipv4-prefix)))
-           (list (oci-container-configuration
-                   (image "jellyfin/jellyfin")
-                   (provision "jellyfin")
-                   (network "host")
-                   (ports (list (format #f "~a:8096:8096" wireguard-ip)
-                                (format #f "~a:8096:8096" local-ip)))
-                   (volumes '(("jellyfin-config" . "/config")
-                              ("jellyfin-cache" . "/cache")
-                              ("/home/mrh/media" . "/media"))))
+         (list (oci-container-configuration
+                 (image "jellyfin/jellyfin")
+                 (provision "jellyfin")
+                 (network "host")
+                 (ports (list (format #f "~a:8096:8096" %wireguard-ipv4)
+                              (format #f "~a:8096:8096" %lan-ipv4)))
+                 (volumes '(("jellyfin-config" . "/config")
+                            ("jellyfin-cache" . "/cache")
+                            ("/home/mrh/media" . "/media"))))
 
-                 (oci-container-configuration
-                   (image "linuxserver/sabnzbd")
-                   (provision "sabnzbd")
-                   (ports (list (format #f "~a:8081:8081" wireguard-ip)))
-                   (volumes '(("/home/mrh/media" . "/config")))
-                   (environment '(("PUID" . "1000")
-                                  ("PGID" . "998")
-                                  ("TZ" . "Etc/UTC")))))))))
+               (oci-container-configuration
+                 (image "linuxserver/sabnzbd")
+                 (provision "sabnzbd")
+                 (ports (list (format #f "~a:8081:8081" %wireguard-ipv4)))
+                 (volumes '(("/home/mrh/media" . "/config")))
+                 (environment '(("PUID" . "1000")
+                                ("PGID" . "998")
+                                ("TZ" . "Etc/UTC"))))))))
 
       (service
        nginx-service-type
        (nginx-configuration
          (server-blocks
           (list (nginx-server-configuration
-                  (server-name '("home.wumpus.pizza"))
+                  (server-name
+                   (list (format #f "home.~a" %domain-name)))
                   (locations
                    (list (nginx-location-configuration
                            (uri "/i2p/")
                            (body
-                            (list "proxy_pass http://10.0.0.1:7070/;")))
+                            (list (format #f "proxy_pass http://~a:7070/;"
+                                          %wireguard-ipv4))))
 
                          (nginx-location-configuration
                            (uri "/jelly/")
                            (body
-                            (list "proxy_pass http://10.0.0.1:8096/;"
+                            (list (format #f "proxy_pass http://~a:8096/;"
+                                          %wireguard-ipv4)
                                   "proxy_set_header Host $host;"
                                   "proxy_set_header X-Real-IP $remote_addr;"
                                   "proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;"
@@ -169,7 +159,8 @@
                          (nginx-location-configuration
                            (uri "/sab/")
                            (body
-                            (list "proxy_pass http://10.0.0.1:8081/;"
+                            (list (format #f "proxy_pass http://~a:8081/;"
+                                          %wireguard-ipv4)
                                   "proxy_set_header Host $host;"
                                   "proxy_set_header X-Real-IP $remote_addr;"
                                   "proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;"
@@ -180,7 +171,8 @@
                          (nginx-location-configuration
                            (uri "/syncthing/")
                            (body
-                            (list "proxy_pass http://10.0.0.1:8384/;")))))
+                            (list (format #f "proxy_pass http://~a:8384/;"
+                                          %wireguard-ipv4))))))
 
                   (ssl-certificate
                    (string-append %domain-certs-dir "/fullchain.pem"))

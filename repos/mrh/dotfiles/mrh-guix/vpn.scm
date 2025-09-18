@@ -9,25 +9,29 @@
 
 (define-public (wireguard-client-config num)
   (wireguard-configuration
-    (addresses (list (format #f "~a.~a" %wireguard-ipv4-prefix num)
-                     (format #f "~a::~a" %wireguard-ipv6-prefix num)))
-    (dns '("10.0.0.1"))
-    (peers (list (wireguard-peer
-                   (name "om")
-                   (endpoint (format #f "home.~a:~a"
-                                     %domain-name %wireguard-port))
-                   (public-key %om-wireguard-key)
-                   (allowed-ips '("0.0.0.0/0" "::/0")))))))
+    (addresses
+     (list (format #f "~a.~a" %wireguard-ipv4-prefix num)
+           (format #f "~a::~a" %wireguard-ipv6-prefix num)))
+    (peers
+     (list (wireguard-peer
+             (name "om")
+             (endpoint (format #f "home.~a:~a" %domain-name %wireguard-port))
+             (public-key %om-wireguard-key)
+             (allowed-ips '("0.0.0.0/0" "::/0")))))
+    (dns '("127.0.0.1"))))
 
 (define-public (wireguard-host-config peers)
   (wireguard-configuration
-    (addresses (list (format #f "~a.1" %wireguard-ipv4-prefix)
-                     (format #f "~a::1" %wireguard-ipv6-prefix)))
-    (peers peers)))
+    (addresses
+     (list (format #f "~a.1" %wireguard-ipv4-prefix)
+           (format #f "~a::1" %wireguard-ipv6-prefix)))
+    (peers peers)
+    (dns '("127.0.0.1"))))
 
 (define-public (wireguard-host-peer name num public-key)
   (wireguard-peer
     (name name)
     (public-key public-key)    
-    (allowed-ips (list (format #f "~a.~a" %wireguard-ipv4-prefix num)
-                       (format #f "~a::~a" %wireguard-ipv6-prefix num)))))
+    (allowed-ips
+     (list (format #f "~a.~a" %wireguard-ipv4-prefix num)
+           (format #f "~a::~a" %wireguard-ipv6-prefix num)))))
