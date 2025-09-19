@@ -18,15 +18,14 @@
              (endpoint (format #f "home.~a:~a" %domain-name %wireguard-port))
              (public-key %om-wireguard-key)
              (allowed-ips '("0.0.0.0/0" "::/0")))))
-    (dns '("127.0.0.1"))))
+    (dns '("10.0.0.1"))))
 
 (define-public (wireguard-host-config peers)
   (wireguard-configuration
     (addresses
      (list (format #f "~a.1" %wireguard-ipv4-prefix)
            (format #f "~a::1" %wireguard-ipv6-prefix)))
-    (peers peers)
-    (dns '("127.0.0.1"))))
+    (peers peers)))
 
 (define-public (wireguard-host-peer name num public-key)
   (wireguard-peer

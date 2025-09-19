@@ -34,10 +34,8 @@
       (file-systems (append <<file-systems>> %base-file-systems))
       (swap-devices
        (list (swap-space
-               (target "/swap/swapfile")
-               (dependencies
-                (filter (file-system-mount-point-predicate "/swap")
-                        file-systems)))))
+               (target
+                (uuid "7de33202-1010-4297-ba9c-8e7fa419f891")))))
       (users (cons* <<user>> %base-user-accounts))
       (packages
        (append (specs->pkgs+out
@@ -83,8 +81,7 @@
                  config => (guix-configuration
                              (inherit config)
                              (discover? #t)
-                             (extra-options '("--max-jobs=8" "--cores=4"))
-                             (tmpdir "/mnt/Mentha/System/@Build")))
+                             (extra-options '("--max-jobs=8" "--cores=4"))))
                 (network-manager-service-type
                  config => (network-manager-configuration
                              (inherit config)
@@ -162,57 +159,27 @@
 ** File Systems
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
-          (device "tmpfs")
+          (device "zfs:Mentha/Root")
           (mount-point "/")
-          (type "tmpfs")
-          (options "mode=0755,nr_inodes=1m,size=25%")
-          (check? #f))
-
+          (type "zfs"))
         (file-system
           (device (uuid "2574-B3EC" 'fat))
           (mount-point "/efi")
-          (type "vfat")
-          (create-mount-point? #t))
-
+          (type "vfat"))
         (file-system
-          (device "tmpfs")
-          (mount-point "/var/lock")
-          (type "tmpfs")
-          (flags '(no-suid no-dev strict-atime))
-          (options "mode=1777,nr_inodes=800k,size=20%")
-          (create-mount-point? #t)
-          (check? #f)))
-#+end_src
-
-#+begin_src scheme :noweb yes :noweb-ref file-systems
-  (let ((options-for-subvolume
-         (lambda (subvolume)
-           (string-join
-            (list "compress=zstd:1"
-                  (or (and=> subvolume (cut string-append "subvol=" <>))
-                      "subvolid=5"))
-            ","))))
-    (map (match-lambda
-           ((subvolume . mount-point)
-            (file-system
-              (device (file-system-label "Mentha"))
-              (mount-point mount-point)
-              (type "btrfs")
-              (options (options-for-subvolume subvolume))
-              (create-mount-point? #t)
-              (check? (string=? mount-point "/gnu/store"))
-              (needed-for-boot?
-               (member mount-point '("/etc" "/gnu/store" "/var/guix"))))))
-         '(("System/@Boot"  . "/boot")
-           ("System/@Store" . "/gnu/store")
-           ("System/@Swap"  . "/swap")
-           ("System/@Guix"  . "/var/guix")
-           ("System/@Log"   . "/var/log")
-           ("System/@Tmp"   . "/var/tmp")
-           ("@Config" . "/etc")
-           ("@Home"   . "/home")
-           ("@Data"   . "/var/lib")
-           (#f        . "/mnt/Mentha"))))
+          (device "zfs:Mentha/Config")
+          (mount-point "/etc")
+          (type "zfs")
+          (needed-for-boot? #t))
+        (file-system
+          (device "zfs:Mentha/Store")
+          (mount-point "/gnu")
+          (type "zfs")
+          (needed-for-boot? #t))
+        (file-system
+          (device "zfs:Mentha/Home")
+          (mount-point "/home")
+          (type "zfs")))
 #+end_src
 
 ** Users
@@ -637,8 +604,8 @@ Open TCP port 5558 and connect to server IPv4 address.
 
 ** steam
 #+begin_src scheme :noweb-ref home-environment-variable
-  ("GUIX_SANDBOX_HOME" . "/mnt/Mentha/@Sandbox")
-  ("GUIX_SANDBOX_EXTRA_SHARES" . "$HOME/Downloads:/mnt/Mentha/@Library/Pictures/Screenshots")
+  ("GUIX_SANDBOX_HOME" . "/mnt/Mentha/Sandbox")
+  ("GUIX_SANDBOX_EXTRA_SHARES" . "$HOME/Downloads")
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref service

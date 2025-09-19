@@ -43,7 +43,6 @@
   :type 'symbol)
 
 (defcustom sss-standup-people '("Arnav"
-                                "Dan"
                                 "David"
                                 "Joe"
                                 "John"

@@ -247,6 +247,7 @@ Administration accounts.
 
 * Web Servers & Services
 #+begin_src scheme :noweb-ref module
+  (rosenthal services bittorrent)
   (rosenthal services child-error)
   (rosenthal services web)
 #+end_src
@@ -298,6 +299,14 @@ Administration accounts.
   (service navidrome-service-type
     (navidrome-configuration
       (extra-config (file-content (testament-blobs "navidrome.toml")))))
+#+end_src
+
+** qbittorrent
+#+begin_src scheme :noweb-ref service
+  (service qbittorrent-service-type
+    (qbittorrent-configuration
+      (qbittorrent (spec->pkg "qbittorrent-enhanced-no-x"))
+      (webui-port 35951)))
 #+end_src
 
 * Monitoring
@@ -399,6 +408,8 @@ Administration accounts.
          ("storage_config"
           ("filesystem"
            ("directory" . "/var/lib/loki/chunks")))
+         ("pattern_ingester"
+          ("enabled" . #t))
          ("analytics"
           ("reporting_enabled" . #f))))))
 #+end_src

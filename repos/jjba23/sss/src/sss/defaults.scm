@@ -184,13 +184,13 @@
                    nwg-look
                    onefetch
                    postman
+                   prettierd
                    pyright
                    rustfmt
                    sbt
                    scala-cli
                    scala_2_13
                    spotify
-                   stack
                    stylelint
                    stylelint-lsp
                    typescript-language-server

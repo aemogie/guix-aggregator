@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 ARGS  :=
-OPTS  := --max-jobs=1 --cores=32 --keep-going --verbosity=1 $(ARGS)
+OPTS  := --keep-going --verbosity=1 $(ARGS)
 GUIX  := guix time-machine --channels=channels.lock --
 EMACS := $(GUIX) shell emacs-minimal -- emacs
 

@@ -152,6 +152,10 @@ Administration accounts.
                (file gokuraku.yaml)
                (user "caddy"))
              (sops-secret
+               (key '("cuirass" "admin"))
+               (file gokuraku.yaml)
+               (user "caddy"))
+             (sops-secret
                (key '("cuirass" "forgejo"))
                (file gokuraku.yaml)
                (user "caddy"))

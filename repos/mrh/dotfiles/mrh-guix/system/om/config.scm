@@ -113,8 +113,9 @@
                  (image "jellyfin/jellyfin")
                  (provision "jellyfin")
                  (network "host")
-                 (ports (list (format #f "~a:8096:8096" %wireguard-ipv4)
-                              (format #f "~a:8096:8096" %lan-ipv4)))
+                 (ports
+                  (list (format #f "~a:8096:8096" %wireguard-ipv4)
+                        (format #f "~a:8096:8096" %lan-ipv4)))
                  (volumes '(("jellyfin-config" . "/config")
                             ("jellyfin-cache" . "/cache")
                             ("/home/mrh/media" . "/media"))))
@@ -122,8 +123,9 @@
                (oci-container-configuration
                  (image "linuxserver/sabnzbd")
                  (provision "sabnzbd")
-                 (ports (list (format #f "~a:8081:8081" %wireguard-ipv4)))
-                 (volumes '(("/home/mrh/media" . "/config")))
+                 (ports
+                  (list (format #f "~a:8081:8081" %wireguard-ipv4)))
+                 (volumes '(("/home/mrh/.config/sabnzbd" . "/config")))
                  (environment '(("PUID" . "1000")
                                 ("PGID" . "998")
                                 ("TZ" . "Etc/UTC"))))))))
@@ -134,7 +136,7 @@
          (server-blocks
           (list (nginx-server-configuration
                   (server-name
-                   (list (format #f "home.~a" %domain-name)))
+                   (list (format #f "priv.~a" %domain-name)))
                   (locations
                    (list (nginx-location-configuration
                            (uri "/i2p/")

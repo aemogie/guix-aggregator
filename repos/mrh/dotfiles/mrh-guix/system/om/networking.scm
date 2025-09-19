@@ -28,9 +28,10 @@
     (servers dns-servers)
     (cache-size 5000)
     (no-hosts? #f)
+    (no-resolv? #t)
     (query-servers-in-order? #t)
     (addresses
-     (list (format #f "/home.~a/~a" %domain-name %wireguard-ipv4)))
+     (list (format #f "/priv.~a/~a" %domain-name %wireguard-ipv4)))
     (extra-options '("--filterwin2k"))))
 
 (define-public %dhcpd-config
@@ -59,9 +60,9 @@ access-control: 192.168.0.0/16 allow
 private-address: 192.168.0.0/16
 private-address: 10.0.0.0/8
 
-local-zone: \"home.~a.\" static
-local-data: \"home.~a. IN A 10.0.0.1\"
-local-data-ptr: \"10.0.0.1 home.~a\"
+local-zone: \"priv.~a.\" static
+local-data: \"priv.~a. IN A 10.0.0.1\"
+local-data-ptr: \"10.0.0.1 priv.~a\"
 
 interface-automatic: yes
 

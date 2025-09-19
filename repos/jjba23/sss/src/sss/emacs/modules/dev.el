@@ -200,6 +200,15 @@
 (use-package swagg
   :ensure (:host github :repo "isamert/swagg.el"))
 
+(use-package format-all
+  :ensure t
+  :commands format-all-mode
+  :bind ("C-c i p" . format-all-region-or-buffer)
+  :config
+  (setq-default format-all-formatters
+                '(("CSS"     (prettierd))
+                  ("HTML" (prettierd)))))
+
 (provide 'sss/dev)
 
 ;;; dev.el ends here

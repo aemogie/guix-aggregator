@@ -79,18 +79,6 @@
 
       (service wireguard-service-type (wireguard-client-config 2))
 
-      (service dnsmasq-service-type
-               (dnsmasq-configuration
-                 (listen-addresses '("127.0.0.1" "192.168.1.160"))
-                 (servers '("9.9.9.9" "2620:fe::9"
-                            "1.1.1.1" "2606:4700:4700::1111"))
-                 (cache-size 5000)
-                 (no-hosts? #f)
-                 (query-servers-in-order? #t)
-                 (addresses
-                  (list (format #f "/home.~a/10.0.0.1" %domain-name)))
-                 (extra-options '("--filterwin2k"))))
-
       ;; doesn't work
       ;; (simple-service 'fwupd-dbus dbus-root-service-type
       ;;                 (list fwupd-nonfree))

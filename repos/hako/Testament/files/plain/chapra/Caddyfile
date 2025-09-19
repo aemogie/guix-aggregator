@@ -104,6 +104,14 @@ http://shows.boiledscript.com, shows.ultrarare.space {
 	reverse_proxy localhost:22443
 }
 
+# qBittorrent
+download.ultrarare.space {
+	import logging download.ultrarare.space
+	import tailscale {
+		reverse_proxy localhost:35951
+	}
+}
+
 
 # Grafana
 dash.ultrarare.space {

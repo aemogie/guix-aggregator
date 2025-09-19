@@ -113,9 +113,7 @@ ci.guix.moe {
 			import /run/secrets/cuirass/forgejo
 		}
 		handle {
-			respond "Access denied" 403 {
-				close
-			}
+			import /run/secrets/cuirass/admin
 		}
 	}
 	import iocaine {

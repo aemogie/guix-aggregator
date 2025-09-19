@@ -42,7 +42,10 @@
 ;; Custom dictionary for English
 (define enchant-dict-en
   `("Guix" "Hyprland"
-    "www" "rchuidkliniek" "jointhefreeworld"
+    "www"
+    "Codeberg"
+    "rchuidkliniek"
+    "jointhefreeworld"
     "lsmod"
     "hygguile"
     "carvoeirowaterfun"
