@@ -258,14 +258,15 @@ Args: update? represents whether we should update a template or create a new one
 
 (define (hot-reload)
   "Hot-reloading developer's setup."
-  (manifest-shell (list "watchexec 'maak test'"
+  (manifest-shell (list "watchexec"
                         "--clear"
                         (~ "--exts ~a"
                            (string-join (map symbol->string
                                              hot-reload-file-types) ","))
                         "--on-busy-update=restart"
                         "--shell bash"
-                        "--watch .")))
+                        "--watch . --"
+                        "maak test")))
 
 ;; ====== Maak i18n tasks ======
 
