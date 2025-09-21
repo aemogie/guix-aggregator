@@ -13,7 +13,7 @@
   (define %os
     (operating-system
       (host-name "dorphine")
-      (timezone "Asia/Hong_Kong")
+      (timezone "Etc/GMT-8")
       (keyboard-layout
        (keyboard-layout "us" "dvorak" #:options '("ctrl:nocaps")))
       (bootloader
@@ -80,6 +80,7 @@
                 (guix-service-type
                  config => (guix-configuration
                              (inherit config)
+                             (substitute-urls '())
                              (discover? #t)
                              (extra-options '("--max-jobs=8" "--cores=4"))))
                 (network-manager-service-type
@@ -134,6 +135,7 @@
   (gnu services ssh)
   (gnu services sysctl)
   (rosenthal services shellutils)
+  (sops services sops)
 #+end_src
 
 ** Kernel
@@ -251,7 +253,9 @@ Administration accounts.
       guix-service-type
     (guix-extension
       (authorized-keys %hako-guix-authorized-keys-lan)
-      (substitute-urls '("https://cache-cdn.guix.moe"))))
+      (substitute-urls
+       '("https://cache-cdn.guix.moe"
+         "https://mirror.sjtu.edu.cn/guix"))))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -293,6 +297,19 @@ Generate passwordless ECC key:
   Expire-Date: 0' | gpg --homedir "$MY_GPGHOME" --batch --generate-key
 
   unset MY_GPGHOME MY_NAME
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (service sops-secrets-service-type
+    (sops-service-configuration
+      (sops (spec->pkg "sops"))
+      (config (local-file (testament-plain "sops.yaml")))
+      (gnupg-home "/var/lib/sops")
+      (secrets
+       (list (sops-secret
+               (key '("cloudflare"))
+               (file dorphine.yaml)
+               (user "caddy"))))))
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
@@ -401,6 +418,28 @@ Generate passwordless ECC key:
       (platforms (lookup-qemu-platforms "aarch64" "powerpc64le" "riscv64"))))
 #+end_src
 
+* Web Servers & Services
+#+begin_src scheme :noweb-ref module
+  (rosenthal services bittorrent)
+  (rosenthal services web)
+#+end_src
+
+** caddy
+#+begin_src scheme :noweb-ref service
+  (service caddy-service-type
+    (caddy-configuration
+      (caddy (spec->pkg "caddy-dolly"))
+      (caddyfile (local-file (testament-plain "dorphine/Caddyfile")))))
+#+end_src
+
+** qbittorrent
+#+begin_src scheme :noweb-ref service
+  (service qbittorrent-service-type
+    (qbittorrent-configuration
+      (qbittorrent (spec->pkg "qbittorrent-enhanced-no-x"))
+      (webui-port 35951)))
+#+end_src
+
 * Continuous Integration
 #+begin_src scheme :noweb-ref module
   (gnu services cuirass)
@@ -429,7 +468,7 @@ Open TCP port 5558 and connect to server IPv4 address.
 #+begin_src scheme :noweb-ref service
   (service alloy-service-type
     (alloy-configuration
-      (config (local-file (testament-blobs "dorphine/config.alloy")))))
+      (config (local-file (testament-blobs "dorphine.alloy")))))
 #+end_src
 
 * Graphical Session
@@ -605,7 +644,7 @@ Open TCP port 5558 and connect to server IPv4 address.
 ** steam
 #+begin_src scheme :noweb-ref home-environment-variable
   ("GUIX_SANDBOX_HOME" . "/mnt/Mentha/Sandbox")
-  ("GUIX_SANDBOX_EXTRA_SHARES" . "$HOME/Downloads")
+  ("GUIX_SANDBOX_EXTRA_SHARES" . "$HOME/Downloads:$HOME/Screenshots")
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref service

@@ -646,14 +646,6 @@ Compile without showing compile buffer
   ((lisp-mode emacs-lisp-mode scheme-mode) . paredit-mode))
 #+end_src
 
-***** Rainbow Coloring
-
-#+begin_src emacs-lisp
-(use-package rainbow-delimiters
-  :hook
-  ((lisp-mode emacs-lisp-mode scheme-mode) . rainbow-delimiters-mode))
-#+end_src
-
 ***** Indentation
 #+begin_src emacs-lisp
 (use-package aggressive-indent

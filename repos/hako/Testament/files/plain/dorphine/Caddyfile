@@ -54,52 +54,10 @@
 }
 
 
-(block_bots) {
-	import $$share/ai-robots-txt/Caddyfile$$
-	handle @aibots {
-		respond /robots.txt 200 {
-			body <<EOF
-			User-Agent: *
-			Disallow: /
-
-			EOF
-		}
-		respond /* "Access denied" 403 {
-			close
-		}
-	}
-}
-
-
-# Komga
-http://manga.boiledscript.com, manga.ultrarare.space {
-	import block_bots
-	import logging manga.boiledscript.com
-
+# qBittorrent
+download.ultrarare.space {
+	import logging download.ultrarare.space
 	import tailscale {
-		reverse_proxy localhost:44293
+		reverse_proxy localhost:35951
 	}
-	reverse_proxy localhost:44293
-}
-
-# Navidrome
-http://music.boiledscript.com, music.ultrarare.space {
-	import block_bots
-	import logging music.boiledscript.com
-
-	import tailscale {
-		reverse_proxy localhost:43502
-	}
-	reverse_proxy localhost:43502
-}
-
-# Jellyfin
-http://shows.boiledscript.com, shows.ultrarare.space {
-	import block_bots
-	import logging shows.boiledscript.com
-
-	import tailscale {
-		reverse_proxy localhost:22443
-	}
-	reverse_proxy localhost:22443
 }

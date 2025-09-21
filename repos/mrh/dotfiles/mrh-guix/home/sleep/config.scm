@@ -17,8 +17,7 @@
            (simple-service
             'environment-variables-service
             home-environment-variables-service-type
-            '(("MACHINE_ROLE" . "sleep")
-              ("ASPELL_DICT_DIR" . "$HOME/.guix-home/profile/lib/aspell/")
+            '(("ASPELL_DICT_DIR" . "$HOME/.guix-home/profile/lib/aspell/")
               ("BROWSER" . "librewolf")
               ("EDITOR" . "emacs")
               ("GNUPGHOME" . "$XDG_DATA_HOME/gnupg")

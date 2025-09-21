@@ -107,7 +107,6 @@
    emacs-org-bullets
    emacs-paredit
    emacs-pinentry
-   emacs-rainbow-delimiters
    emacs-tldr
    emacs-trashed
    emacs-vertico

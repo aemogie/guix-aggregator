@@ -2,6 +2,7 @@
   #:use-module (mrh-guix personal)
   #:use-module (mrh-guix vpn)
   #:use-module (mrh-guix system om networking)
+  #:use-module (mrh-guix system om web)
   #:use-module (nongnu packages linux)
   #:use-module (nongnu system linux-initrd)
   #:use-module (gnu))
@@ -9,6 +10,7 @@
 (use-package-modules admin
                      cryptsetup
                      curl
+                     dns
                      package-management
                      tls
                      version-control)
@@ -52,6 +54,7 @@
                      cryptsetup
                      curl
                      git
+                     (list isc-bind "utils")
                      openssl
                      %base-packages))
 
@@ -86,7 +89,7 @@
                  (user "mrh")
                  (config-file
                   (syncthing-config-file
-                    (gui-address (format #f "~a:8384" %wireguard-ipv4))
+                    (gui-address (format #f "[~a]:8384" %wireguard-ipv6-host))
                     (folders
                      (list (syncthing-folder
                              (id "default")
@@ -114,81 +117,31 @@
                  (provision "jellyfin")
                  (network "host")
                  (ports
-                  (list (format #f "~a:8096:8096" %wireguard-ipv4)
-                        (format #f "~a:8096:8096" %lan-ipv4)))
+                  (list (format #f "[~a]:8096:8096" %wireguard-ipv6-host)))
                  (volumes '(("jellyfin-config" . "/config")
                             ("jellyfin-cache" . "/cache")
-                            ("/home/mrh/media" . "/media"))))
+                            ("/mnt/wd/media" . "/media"))))
 
                (oci-container-configuration
                  (image "linuxserver/sabnzbd")
                  (provision "sabnzbd")
                  (ports
-                  (list (format #f "~a:8081:8081" %wireguard-ipv4)))
-                 (volumes '(("/home/mrh/.config/sabnzbd" . "/config")))
+                  (list (format #f "[~a]:8081:8081" %wireguard-ipv6-host)))
+                 (volumes '(("/home/mrh/.config/sabnzbd" . "/config")
+                            ("/mnt/wd/media" . "/media")))
                  (environment '(("PUID" . "1000")
                                 ("PGID" . "998")
                                 ("TZ" . "Etc/UTC"))))))))
 
-      (service
-       nginx-service-type
-       (nginx-configuration
-         (server-blocks
-          (list (nginx-server-configuration
-                  (server-name
-                   (list (format #f "priv.~a" %domain-name)))
-                  (locations
-                   (list (nginx-location-configuration
-                           (uri "/i2p/")
-                           (body
-                            (list (format #f "proxy_pass http://~a:7070/;"
-                                          %wireguard-ipv4))))
-
-                         (nginx-location-configuration
-                           (uri "/jelly/")
-                           (body
-                            (list (format #f "proxy_pass http://~a:8096/;"
-                                          %wireguard-ipv4)
-                                  "proxy_set_header Host $host;"
-                                  "proxy_set_header X-Real-IP $remote_addr;"
-                                  "proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;"
-                                  "proxy_set_header X-Forwarded-Proto $scheme;"
-                                  "proxy_set_header X-Forwarded-Protocol $scheme;"
-                                  "proxy_set_header X-Forwarded-Host $http_host;"
-
-                                  "proxy_buffering off;")))
-
-                         (nginx-location-configuration
-                           (uri "/sab/")
-                           (body
-                            (list (format #f "proxy_pass http://~a:8081/;"
-                                          %wireguard-ipv4)
-                                  "proxy_set_header Host $host;"
-                                  "proxy_set_header X-Real-IP $remote_addr;"
-                                  "proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;"
-                                  "proxy_set_header X-Forwarded-Proto $scheme;"
-                                  "proxy_set_header X-Forwarded-Protocol $scheme;"
-                                  "proxy_set_header X-Forwarded-Host $http_host;")))
-
-                         (nginx-location-configuration
-                           (uri "/syncthing/")
-                           (body
-                            (list (format #f "proxy_pass http://~a:8384/;"
-                                          %wireguard-ipv4))))))
-
-                  (ssl-certificate
-                   (string-append %domain-certs-dir "/fullchain.pem"))
-                  (ssl-certificate-key
-                   (string-append %domain-certs-dir "/privkey.pem")))))))
+      (service nginx-service-type %nginx-config)
 
       (modify-services %base-services
         (sysctl-service-type
          config => (sysctl-configuration
                      (settings
-                      (append
-                       '(("net.ipv4.ip_forward" . "1")
-                         ("net.ipv6.conf.all.forwarding" . "1"))
-                       %default-sysctl-settings))))
+                      (append '(("net.ipv6.conf.all.forwarding" . "1")
+                                ("net.ipv4.ip_forward" . "1"))
+                              %default-sysctl-settings))))
 
         (guix-service-type
          config => (guix-configuration

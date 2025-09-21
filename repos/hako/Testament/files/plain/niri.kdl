@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: CC0-1.0
 
 prefer-no-csd
-screenshot-path "/mnt/Mentha/@Library/Pictures/Screenshots/%Y%m%d-%H%M%S.png"
+screenshot-path "/home/hako/Screenshots/%Y%m%d-%H%M%S.png"
 
 spawn-sh-at-startup "pgrep --uid $USER shepherd > /dev/null || shepherd"
 

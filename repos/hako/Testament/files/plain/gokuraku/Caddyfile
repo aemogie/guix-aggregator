@@ -51,6 +51,13 @@
 	}
 }
 
+(tailscale) {
+	@tailscale client_ip 100.64.0.0/10 fd7a:115c:a1e0::/48
+	handle @tailscale {
+		{block}
+	}
+}
+
 
 (block_bots) {
 	import $$share/ai-robots-txt/Caddyfile$$
@@ -66,21 +73,15 @@
 			close
 		}
 	}
-}
 
-(iocaine) {
-	@read method GET HEAD
-	@not-read not {
-		method GET HEAD
+	@fake {
+		header User-Agent *Chrome/*
+		header User-Agent *Firefox*
+		header !Sec-Fetch-Mode
 	}
-	reverse_proxy @read localhost:54504 {
-		@fallback status 421
-		handle_response @fallback {
-			{block}
-		}
-	}
-	handle @not-read {
-		{block}
+	handle @fake {
+		log_skip
+		reverse_proxy localhost:54504
 	}
 }
 
@@ -90,10 +91,8 @@ files.boiledscript.com {
 	import block_bots
 	import logging files.boiledscript.com
 
-	import iocaine {
-		root * /var/lib/webpublic/files
-		file_server browse
-	}
+	root * /var/lib/webpublic/files
+	file_server browse
 }
 
 # Cuirass
@@ -110,14 +109,21 @@ ci.guix.moe {
 	}
 	handle /admin/* {
 		handle /admin/forgejo/event {
-			import /run/secrets/cuirass/forgejo
+			import /run/secrets/caddy/cuirass/forgejo
 		}
 		handle {
-			import /run/secrets/cuirass/admin
+			import /run/secrets/caddy/cuirass/admin
 		}
 	}
-	import iocaine {
-		reverse_proxy localhost:17732
+	reverse_proxy localhost:17732
+}
+
+# Forgejo
+git.ultrarare.space {
+	import cloudflare
+	import logging git.ultrarare.space
+	import tailscale {
+		reverse_proxy localhost:48071
 	}
 }
 
@@ -168,6 +174,35 @@ cache-de.guix.moe {
 	}
 }
 
+
+# Grafana
+dash.ultrarare.space {
+	import cloudflare
+	import logging dash.ultrarare.space
+	import tailscale {
+		reverse_proxy localhost:13064
+	}
+}
+
+# Loki
+logs.boiledscript.com {
+	import cloudflare
+	import block_bots
+	import logging logs.boiledscript.com
+	import /run/secrets/caddy/loki
+	reverse_proxy localhost:50968
+}
+
+# Mimir
+metrics.boiledscript.com {
+	import cloudflare
+	import block_bots
+	import logging metrics.boiledscript.com
+	import /run/secrets/caddy/mimir
+	reverse_proxy localhost:49951
+}
+
+
 # Redirections
 guix.moe, www.guix.moe {
 	import cloudflare
@@ -176,10 +211,6 @@ guix.moe, www.guix.moe {
 ci.boiledscript.com {
 	import cloudflare
 	redir https://ci.guix.moe{uri} permanent
-}
-git.boiledscript.com {
-	import cloudflare
-	redir https://codeberg.org{uri}
 }
 cache-cdn.boiledscript.com, cache-de.boiledscript.com, cache-sg.boiledscript.com, cache-us-lax.boiledscript.com {
 	import cloudflare

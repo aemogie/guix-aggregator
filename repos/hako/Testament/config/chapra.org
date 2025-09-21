@@ -13,7 +13,7 @@
   (define %os
     (operating-system
       (host-name "chapra")
-      (timezone "Asia/Hong_Kong")
+      (timezone "Etc/GMT-8")
       (bootloader
         (bootloader-configuration
           (bootloader grub-efi-removable-bootloader)
@@ -145,20 +145,7 @@ Administration accounts.
              (sops-secret
                (key '("cloudflared"))
                (file chapra.yaml)
-               (user "cloudflared"))
-             (sops-secret
-               (key '("grafana"))
-               (file chapra.yaml)
-               (user "grafana")
-               (group "postgres"))
-             (sops-secret
-               (key '("loki"))
-               (file chapra.yaml)
-               (user "caddy"))
-             (sops-secret
-               (key '("mimir"))
-               (file chapra.yaml)
-               (user "caddy"))))))
+               (user "cloudflared"))))))
 #+end_src
 
 * Networking & SSH
@@ -210,18 +197,6 @@ Administration accounts.
       (password-authentication? #f)))
 #+end_src
 
-* Databases
-#+begin_src scheme :noweb-ref module
-  (gnu services databases)
-#+end_src
-
-** postgresql
-#+begin_src scheme :noweb-ref service
-  (service postgresql-service-type
-    (postgresql-configuration
-      (postgresql (spec->pkg "postgresql@15"))))
-#+end_src
-
 * Session and Seat Management
 ** elogind
 #+begin_src scheme :noweb-ref service
@@ -247,7 +222,6 @@ Administration accounts.
 
 * Web Servers & Services
 #+begin_src scheme :noweb-ref module
-  (rosenthal services bittorrent)
   (rosenthal services child-error)
   (rosenthal services web)
 #+end_src
@@ -301,122 +275,14 @@ Administration accounts.
       (extra-config (file-content (testament-blobs "navidrome.toml")))))
 #+end_src
 
-** qbittorrent
-#+begin_src scheme :noweb-ref service
-  (service qbittorrent-service-type
-    (qbittorrent-configuration
-      (qbittorrent (spec->pkg "qbittorrent-enhanced-no-x"))
-      (webui-port 35951)))
-#+end_src
-
 * Monitoring
 #+begin_src scheme :noweb-ref module
   (rosenthal services monitoring)
-#+end_src
-
-** grafana
-#+begin_src scheme :noweb-ref service
-  (service grafana-service-type
-    (grafana-configuration
-      (config
-       `((paths
-          ((data . /var/lib/grafana)
-           (logs . /var/log/grafana)
-           (plugins . /var/lib/grafana/plugins)))
-         (server
-          ((http_addr . 127.0.0.1)
-           (http_port . 13064)))
-         (database
-          ((type . postgres)
-           (host . 127.0.0.1:5432)
-           (user . grafana)
-           (password . $__file{/run/secrets/grafana})
-           (ssl_mode . disable)))))
-      (database-password-file "/run/secrets/grafana")))
-#+end_src
-
-** mimir
-#+begin_src scheme :noweb-ref service
-  (service mimir-service-type
-    (mimir-configuration
-      (config
-       '(("multitenancy_enabled" . #f)
-         ("server"
-          ("http_listen_address" . "127.0.0.1")
-          ("http_listen_port" . 49951)
-          ("grpc_listen_port" . 32773)
-          ("log_level" . "error"))
-         ("blocks_storage"
-          ("backend" . "filesystem")
-          ("bucket_store"
-           ("sync_dir" . "/var/lib/mimir/tsdb-sync"))
-          ("filesystem"
-           ("dir" . "/var/lib/mimir/data/tsdb"))
-          ("tsdb"
-           ("dir" . "/var/lib/mimir/tsdb")))
-         ("compactor"
-          ("data_dir" . "/var/lib/mimir/compactor")
-          ("sharding_ring"
-           ("kvstore"
-            ("store" . "memberlist"))))
-         ("distributor"
-          ("ring"
-           ("instance_addr" . "127.0.0.1")
-           ("kvstore"
-            ("store" . "memberlist"))))
-         ("ingester"
-          ("ring"
-           ("instance_addr" . "127.0.0.1")
-           ("kvstore"
-            ("store" . "memberlist"))
-           ("replication_factor" . 1)))
-         ("ruler_storage"
-          ("backend" . "filesystem")
-          ("filesystem"
-           ("dir" . "/var/lib/mimir/rules")))
-         ("store_gateway"
-          ("sharding_ring"
-           ("replication_factor" . 1)))))))
-#+end_src
-
-** loki
-#+begin_src scheme :noweb-ref service
-  (service loki-service-type
-    (loki-configuration
-      (config
-       '(("auth_enabled" . #f)
-         ("server"
-          ("http_listen_address" . "127.0.0.1")
-          ("http_listen_port" . 50968)
-          ("grpc_listen_port" . 11365))
-         ("common"
-          ("ring"
-           ("instance_addr" . "127.0.0.1")
-           ("kvstore"
-            ("store" . "inmemory")))
-          ("replication_factor" . 1)
-          ("path_prefix" . "/var/lib/loki"))
-         ("schema_config"
-          ("configs"
-           . #((("from" . "2020-05-15")
-                ("store" . "tsdb")
-                ("object_store" . "filesystem")
-                ("schema" . "v13")
-                ("index"
-                 ("prefix" . "index_")
-                 ("period" . "24h"))))))
-         ("storage_config"
-          ("filesystem"
-           ("directory" . "/var/lib/loki/chunks")))
-         ("pattern_ingester"
-          ("enabled" . #t))
-         ("analytics"
-          ("reporting_enabled" . #f))))))
 #+end_src
 
 ** alloy
 #+begin_src scheme :noweb-ref service
   (service alloy-service-type
     (alloy-configuration
-      (config (local-file (testament-blobs "chapra/config.alloy")))))
+      (config (local-file (testament-blobs "chapra.alloy")))))
 #+end_src

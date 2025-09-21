@@ -816,6 +816,9 @@ Use prefix argument ARG for number of lines, otherwise use default."
                           :actions -notify)
                   '(:time "30m" :duration 1200 :actions -notify)))
 
+;; add snooze functionality to org-notify
+(load "~/projects/org-notify-snooze/org-notify-snooze.el")
+
 ;; org-pomodoro
 (defun my/pomodoro-finished-alert ()
   (interactive)
@@ -1268,26 +1271,6 @@ T - tag prefix
   (define-key puni-mode-map (kbd "C-c C-M-a") 'puni-beginning-of-sexp)
   (define-key puni-mode-map (kbd "C-c C-M-e") 'puni-end-of-sexp)
   (define-key puni-mode-map (kbd "C-c <delete>") 'puni-force-delete))
-
-(use-package tempel
-  :ensure t
-  :bind (("C-c t t" . tempel-complete)
-         ("C-c t i" . tempel-insert))
-  :hook
-  (prog-mode . tempel-setup-capf)
-  (text-mode . tempel-setup-capf)
-  (org-mode-hook . tempel-setup-capf)
-  :custom
-  (tempel-path (expand-file-name "templates" user-emacs-directory))
-  (tempel-trigger-prefix "<")
-  :init
-  (defun tempel-setup-capf ()
-    "Adds the tempel capf to completion-at-point-functions"
-    (setq-local completion-at-point-functions
-                (cons #'tempel-complete
-                      completion-at-point-functions)))
-  
-  (global-tempel-abbrev-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 ;; completion system ;;
@@ -2079,13 +2062,13 @@ Otherwise, call eat."
         (append '(("\\.pdf\\'" . pdf-view-mode))
                 auto-mode-alist)))
 
-;; perspective
-(use-package persp-mode
-  :ensure t
-  :custom
-  (persp-save-dir (expand-file-name "perspectives/" user-emacs-directory))
-  :config
-  (persp-mode))
+;; perspective (commented out as it breaks erc)
+;; (use-package persp-mode
+;;   :ensure t
+;;   :custom
+;;   (persp-save-dir (expand-file-name "perspectives/" user-emacs-directory))
+;;   :config
+;;   (persp-mode))
 
 ;; nyan-mode
 (use-package nyan-mode
@@ -2097,7 +2080,7 @@ Otherwise, call eat."
 (use-package zone
   :commands zone-when-idle
   :config
-  (zone-when-idle 120))
+  (zone-when-idle 60))
 
 ;; dashboard
 (use-package dashboard
@@ -2112,7 +2095,7 @@ Otherwise, call eat."
   (dashboard-items '((recents  . 5)
 			  (bookmarks . 5)
 			  (projects . 5)
-			  (agenda . 15)
+			  ;; (agenda . 15)
 			  (registers . 5)))
   (dashboard-agenda-sort-strategy '(time-up))
   (dashboard-match-agenda-entry
@@ -2121,7 +2104,7 @@ Otherwise, call eat."
   :config
   (dashboard-setup-startup-hook))
 
-;; refresh buffer after UI components load (necessary for emacs-daemon/client)
+;; refresh buffer after UI components load (necessary for emacs-daemon/czlient)
 (add-hook 'server-after-make-frame-hook
           (lambda ()
             (when (equal (buffer-name) "*dashboard*")
@@ -2143,13 +2126,16 @@ Otherwise, call eat."
   :config
   (advice-add 'helpful-update :after #'elisp-demos-advice-helpful-update))
 
+
 ;; gptel
 (use-package gptel
   :ensure t
   :commands gptel-end-of-response
   :custom
   (gptel-model "gpt-4o")
-  (gptel-default-mode 'org-mode))
+  (gptel-default-mode 'org-mode)
+  :config
+  (require 'gptel-integrations))
 
 ;; add text block markers around gptel responses with-editor
 (add-hook 'gptel-post-response-functions
@@ -2161,12 +2147,6 @@ Otherwise, call eat."
             (gptel-end-of-response)
             (insert "\n#+END_RESPONSE")
             (insert "\n\n")))
-
-(use-package elysium
-  :ensure t
-  :custom
-  (elysium-window-size 0.33) 
-  (elysium-window-style 'vertical))
 
 ;; install external dependencies enchant, pkgconf, and lang dict
 ;; pacman: enchant, pkgconf, hunspell-en_us
@@ -2199,7 +2179,7 @@ Otherwise, call eat."
   :custom
   (erc-nick "polhuang")
   (erc-user-full-name "polhuang")
-  (erc-autojoin-channels-alist '((".*" "#systemcrafters" "#emacsatx")))
+  (erc-autojoin-channels-alist '(("#systemcrafters" "#emacsatx")))
   (erc-hide-list '("JOIN" "PART" "QUIT"))
   :functions my/connect-to-erc
   :config
@@ -2207,8 +2187,8 @@ Otherwise, call eat."
     (interactive)
     (erc :server "irc.libera.chat"
          :port "6667"
-         :password (cadr (auth-source-user-and-password "irc.libera.chat"))))
-  (my/connect-to-erc))
+         :password (cadr (auth-source-user-and-password "irc.libera.chat")))))
+
 
 ;; org-gcal
 (use-package org-gcal
@@ -2257,60 +2237,7 @@ Otherwise, call eat."
               (org-schedule nil (format "<%s>" stime))))
         (org-sort-entries nil ?o)))
 
-  (defun my/delete-specified-org-headings-in-file (file headings-to-delete)
-  "Delete all occurrences of specified headings in FILE given
-in HEADINGS-TO-DELETE."
-  (when (file-exists-p file)
-    (with-current-buffer (find-file-noselect file)
-      (org-mode)
-      (goto-char (point-min))
-      (org-map-entries
-       (lambda ()
-         (let ((heading (nth 4 (org-heading-components))))
-           (when (and heading (member (string-trim heading) headings-to-delete))
-             (org-cut-subtree))))
-       t)  ;; Use 't' to process all headings in the buffer
-      (save-buffer)
-      ;; (kill-buffer)
-      )))
-  
-  (my/delete-specified-org-headings-in-file
-   "~/org/schedule.org"
-   '(
-   "AWS (Office)"
-   "Channels & Alliances Office Hours"
-   "Daily Guilt Free Break"
-   "Dream Team Weekly Pipeline Review"
-   "Dream Team Weekly Sync"
-   "Focus"
-   "Large Deal Review"
-   "Midweek Meditation"
-   "Mission - Office Hour with Paul"
-   "Product Marketing Office Hours"
-   "Salesforce Office Hours"))
-
-  (my/delete-specified-org-headings-in-file
-   "~/org/schedule.org_archive"
-   '(
-     "All Hands | Department Updates"
-     "Bobby, Paul, Jake Mission, AWS, CDW Bi-weekly Cadence"
-     "Channels & Alliances Office Hours"
-     "Daily Guilt Free Break"
-     "Do BoostUp"
-     "Dr. Abbott"
-     "Dream Team Weekly Pipeline Review"
-     "Dream Team Weekly Sync"
-     "Focus"
-     "Emacs ATX Meetup"
-     "GTM Standup"
-     "Joshua / Paul"
-     "Kyle / Paul"
-     "Large Deal Review"
-     "Mission - Office Hour with Paul"
-     "New(ish) Crew | Weekly Sync"
-     "Resale Operations Office Hours")))
-
-;; scratchpad in scratch buffers
+  )
 
 ;; (use-package scratchpad
 ;;   :vc (:url "https://github.com/polhuang/scratchpad.el" :rev :newest)
@@ -2318,7 +2245,9 @@ in HEADINGS-TO-DELETE."
 
 (load "~/projects/scratchpad/scratchpad.el")
 (load "~/projects/org-linear/org-linear.el")
-(require 'linear-org)
+(load "~/projects/asciiquarium.el/asciiquarium.el")
+(load "~/projects/asciiquarium.el/asciiquarium-data.el")
+(require 'org-linear)
 (scratchpad-enable)
 (global-set-key (kbd "C-M-z") 'scratchpad-toggle)
 (setq scratchpad-save-directory "~/org/scratchpad")
@@ -2363,7 +2292,9 @@ in HEADINGS-TO-DELETE."
      default))
  '(epg-pinentry-mode 'loopback nil nil "Customized with use-package epa")
  '(package-vc-selected-packages
-   '((scratchpad :url "https://github.com/polhuang/scratchpad.el")
+   '((org-notify-snooze :url
+                        "https://github.com/polhuang/org-notify-snooze")
+     (scratchpad :url "https://github.com/polhuang/scratchpad.el")
      (claude-code-ide :url
                       "https://github.com/manzaltu/claude-code-ide.el")))
  '(safe-local-variable-values

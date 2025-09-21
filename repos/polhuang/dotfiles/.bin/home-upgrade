@@ -8,4 +8,7 @@ echo
 echo -e "${GREEN}Updating ${BLUE}$(hostname)${GREEN}...${NC}"
 echo
 
+# build firefox before running
+guix build firefox --substitute-urls='https://ci.guix.gnu.org https://bordeaux.guix.gnu.org https://substitutes.nonguix.org'
+
 GUIX_TARGET=home guix home reconfigure -L ~/.dotfiles ~/.dotfiles/polterguix/systems/$(hostname).scm

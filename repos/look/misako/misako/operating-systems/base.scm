@@ -152,7 +152,7 @@
           (guix-configuration
             (substitute-urls
               '(
-                ; "https://cuirass.genenetwork.org"
+                "https://cuirass.genenetwork.org"
                 "https://substitutes.nonguix.org"
                 ; "https://guix.bordeaux.inria.fr"
                 "https://ci.guix.gnu.org"))
@@ -165,8 +165,8 @@
                     substitute-key:buer.pub
                     substitute-key:nonguix.pub
                     substitute-key:inria.pub
-                    substitute-key:boiledscript.pub))
-                    ; substitute-key:genenetwork.pub))
+                    substitute-key:boiledscript.pub
+                    substitute-key:genenetwork.pub))
             (build-accounts 300)
             (discover? #t)
             (extra-options '("--gc-keep-derivations=yes"

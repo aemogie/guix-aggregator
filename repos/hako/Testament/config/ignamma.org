@@ -13,7 +13,7 @@
   (define %os
     (operating-system
       (host-name "ignamma")
-      (timezone "Asia/Hong_Kong")
+      (timezone "Etc/GMT-8")
       (bootloader
        (bootloader-configuration
          (bootloader grub-efi-removable-bootloader)
@@ -218,5 +218,5 @@ Open TCP port 5558 and connect to server IPv4 address.
 #+begin_src scheme :noweb-ref service
   (service alloy-service-type
     (alloy-configuration
-      (config (local-file (testament-blobs "ignamma/config.alloy")))))
+      (config (local-file (testament-blobs "ignamma.alloy")))))
 #+end_src

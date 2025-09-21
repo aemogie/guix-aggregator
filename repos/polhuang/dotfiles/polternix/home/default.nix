@@ -11,7 +11,6 @@
     pkgs.google-chrome
     pkgs.morewaita-icon-theme
     pkgs.protonmail-bridge-gui
-    pkgs.slack
     pkgs.ticktick
     pkgs.winbox
   ];
@@ -19,5 +18,3 @@
   programs.home-manager.enable = true;
 
 }
-
-

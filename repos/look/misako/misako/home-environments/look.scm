@@ -315,7 +315,7 @@
                 ('yazi.desktop mime-types:file-manager)
                 ('mpv.desktop mime-types:audio-video)
                 ('imv.desktop mime-types:image)
-                ('sioyek.desktop mime-types:pdf)))))
+                ('zathura.desktop mime-types:pdf)))))
 
         (simple-service 'environment-variables
                         home-environment-variables-service-type
@@ -376,7 +376,7 @@
             ("GUILE_HISTORY" . "$XDG_CACHE_HOME/guile/history")
             #|User variables|#
             ("EDITOR"   . "hx")
-            ("READER"   . "sioyek")
+            ("READER"   . "zathura")
             ("VISUAL"   . "hx")
             ("TERMINAL" . "ghostty")
             ("BROWSER"  . "zen")

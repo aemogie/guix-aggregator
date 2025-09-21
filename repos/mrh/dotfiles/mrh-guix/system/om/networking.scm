@@ -6,7 +6,7 @@
   #:use-module (gnu services dns)
   #:use-module (gnu services networking))
 
-(define-public %wireguard-ipv4 (format #f "~a.1" %wireguard-ipv4-prefix))
+(define-public %lan-ipv6 (format #f "~a:2bf9:92b5:e621:6aae" %lan-ipv6-prefix))
 (define-public %lan-ipv4 (format #f "~a.171" %lan-ipv4-prefix))
 
 (define-public %wpa-supplicant-config
@@ -18,9 +18,13 @@
   (nftables-configuration
     (ruleset (local-file "nftables.conf"))))
 
-(define dns-interfaces (list "127.0.0.1" %wireguard-ipv4 %lan-ipv4))
-(define dns-servers '("9.9.9.9" "2620:fe::9"
-                      "1.1.1.1" "2606:4700:4700::1111"))
+(define dns-interfaces (list "::1"
+                             %wireguard-ipv6-host
+                             %wireguard-ipv4-host
+                             %lan-ipv6))
+
+(define dns-servers '("2620:fe::9" "2620:fe::11"
+                      "2606:4700:4700::1111" "2606:4700:4700::1112"))
 
 (define-public %dnsmasq-config
   (dnsmasq-configuration
@@ -28,18 +32,17 @@
     (servers dns-servers)
     (cache-size 5000)
     (no-hosts? #f)
-    (no-resolv? #t)
+    (no-resolv? #f)
     (query-servers-in-order? #t)
-    (addresses
-     (list (format #f "/priv.~a/~a" %domain-name %wireguard-ipv4)))
     (extra-options '("--filterwin2k"))))
 
 (define-public %dhcpd-config
   (dhcpcd-configuration
     (static
-     (list (format #f "domain_name_servers=127.0.0.1 ~a ~a"
-                   %wireguard-ipv4
-                   %lan-ipv4)))))
+     (list (format #f "domain_name_servers=::1 ~a ~a ~a"
+                   %wireguard-ipv6-host
+                   %wireguard-ipv4-host
+                   %lan-ipv6)))))
 
 (define-public %unbound-config
   (unbound-configuration
@@ -102,10 +105,10 @@ num-queries-per-thread: 4096
     (image "adguard/adguardhome")
     (provision "adguard")
     (network "host")
-    (ports (list (format #f "~a:53:53" %wireguard-ipv4)
-                 (format #f "~a:853:853" %wireguard-ipv4)
-                 (format #f "~a:3000:3000" %wireguard-ipv4)
-                 (format #f "~a:3001:3001" %wireguard-ipv4)))
+    (ports (list (format #f "~a:53:53" %wireguard-ipv4-host)
+                 (format #f "~a:853:853" %wireguard-ipv4-host)
+                 (format #f "~a:3000:3000" %wireguard-ipv4-host)
+                 (format #f "~a:3001:3001" %wireguard-ipv4-host)))
     (volumes
      '(("adguard-work" . "/opt/adguardhome/work")
        ("adguard-conf" . "/opt/adguardhome/conf")))))

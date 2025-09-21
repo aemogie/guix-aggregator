@@ -13,7 +13,7 @@
   (define %os
     (operating-system
       (host-name "gokuraku")
-      (timezone "Asia/Hong_Kong")
+      (timezone "Etc/GMT-8")
       (bootloader
         (bootloader-configuration
           (bootloader grub-efi-removable-bootloader)
@@ -152,13 +152,25 @@ Administration accounts.
                (file gokuraku.yaml)
                (user "caddy"))
              (sops-secret
-               (key '("cuirass" "admin"))
+               (key '("caddy" "cuirass" "admin"))
                (file gokuraku.yaml)
                (user "caddy"))
              (sops-secret
-               (key '("cuirass" "forgejo"))
+               (key '("caddy" "cuirass" "forgejo"))
                (file gokuraku.yaml)
                (user "caddy"))
+             (sops-secret
+               (key '("caddy" "loki"))
+               (file gokuraku.yaml)
+               (user "caddy"))
+             (sops-secret
+               (key '("caddy" "mimir"))
+               (file gokuraku.yaml)
+               (user "caddy"))
+             (sops-secret
+               (key '("grafana"))
+               (file gokuraku.yaml)
+               (user "grafana"))
              (sops-secret
                (key '("rclone"))
                (file gokuraku.yaml))))))
@@ -288,8 +300,6 @@ rsync://cache.boiledscript.com
                                  "--exclude" "/nar")))))
             #:requirement '(user-processes))))
 #+end_src
-
-[[file:../files/plain/gokuraku/sync-r2.sh][gokuraku/sync-r2.sh]]
 
 ** cuirass-remote-worker
 #+begin_src scheme :noweb-ref service
@@ -445,8 +455,6 @@ rsync://cache.boiledscript.com
           (specs->pkgs "ai-robots-txt")))
 #+end_src
 
-[[file:../files/plain/gokuraku/Caddyfile][gokuraku/Caddyfile]]
-
 ** iocaine
 #+begin_src scheme :noweb-ref service
   (service iocaine-service-type
@@ -454,20 +462,101 @@ rsync://cache.boiledscript.com
       (config
        (computed-substitution-with-inputs "iocaine.toml"
          (local-file (testament-plain "iocaine.toml"))
-         (list (testament-blobs)
-               (testament-plain))))))
+         (list (testament-blobs))))))
 #+end_src
 
-[[file:../files/plain/iocaine.toml][iocaine.toml]]
+** forgejo
+#+begin_src scheme :noweb-ref service
+  (service forgejo-service-type
+    (forgejo-configuration
+      (config-file (local-file (testament-blobs "forgejo.ini")))))
+#+end_src
 
 * Monitoring
 #+begin_src scheme :noweb-ref module
   (rosenthal services monitoring)
 #+end_src
 
+** grafana
+#+begin_src scheme :noweb-ref service
+  (service grafana-service-type
+    (grafana-configuration
+      (config
+       `((paths
+          ((data . /var/lib/grafana)
+           (logs . /var/log/grafana)
+           (plugins . /var/lib/grafana/plugins)))
+         (server
+          ((http_addr . 127.0.0.1)
+           (http_port . 13064)))
+         (database
+          ((type . postgres)
+           (host . 127.0.0.1:5432)
+           (user . grafana)
+           (password . $__file{/run/secrets/grafana})
+           (ssl_mode . disable)))))))
+#+end_src
+
+** mimir
+#+begin_src scheme :noweb-ref service
+  (service mimir-service-type
+    (mimir-configuration
+      (config
+       `(("multitenancy_enabled" . #f)
+         ("server"
+          ("http_listen_address" . "127.0.0.1")
+          ("http_listen_port" . 49951)
+          ("grpc_listen_port" . 32773)
+          ("log_level" . "error"))
+         ,@(call-with-input-string (sops-str gokuraku.yaml '("mimir")) read)
+         ("ingester"
+          ("ring"
+           ("replication_factor" . 1)))
+         ("alertmanager"
+          ("sharding_ring"
+           ("replication_factor" . 1)))
+         ("store_gateway"
+          ("sharding_ring"
+           ("replication_factor" . 1)))
+         ("usage_stats"
+          ("enabled" . #f))))))
+#+end_src
+
+** loki
+#+begin_src scheme :noweb-ref service
+  (service loki-service-type
+    (loki-configuration
+      (config
+       `(("auth_enabled" . #f)
+         ("server"
+          ("http_listen_address" . "127.0.0.1")
+          ("http_listen_port" . 50968)
+          ("grpc_listen_port" . 11365))
+         ("common"
+          ("path_prefix" . "/var/lib/loki")
+          ,@(call-with-input-string (sops-str gokuraku.yaml '("loki")) read)
+          ("ring"
+           ("kvstore"
+            ("store" . "inmemory")))
+          ("replication_factor" . 1))
+         ("schema_config"
+          ("configs"
+           . #((("from" . "2020-05-15")
+                ("store" . "tsdb")
+                ("object_store" . "s3")
+                ("schema" . "v13")
+                ("index"
+                 ("prefix" . "index_")
+                 ("period" . "24h"))))))
+         ("pattern_ingester"
+          ("enabled" . #t))
+         ("analytics"
+          ("reporting_enabled" . #f))))))
+#+end_src
+
 ** alloy
 #+begin_src scheme :noweb-ref service
   (service alloy-service-type
     (alloy-configuration
-      (config (local-file (testament-blobs "gokuraku/config.alloy")))))
+      (config (local-file (testament-blobs "gokuraku.alloy")))))
 #+end_src

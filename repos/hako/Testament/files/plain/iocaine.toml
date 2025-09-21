@@ -1,10 +1,6 @@
 [server]
 bind = "127.0.0.1:54504"
 
-[server.request-handler]
-path = "$$iocaine-handler$$"
-language = "roto"
-
 [sources]
 markov = [
     "$$iocaine/1984.txt$$",

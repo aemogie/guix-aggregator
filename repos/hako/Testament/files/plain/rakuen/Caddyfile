@@ -61,21 +61,15 @@
 			close
 		}
 	}
-}
 
-(iocaine) {
-	@read method GET HEAD
-	@not-read not {
-		method GET HEAD
+	@fake {
+		header User-Agent *Chrome/*
+		header User-Agent *Firefox*
+		header !Sec-Fetch-Mode
 	}
-	reverse_proxy @read localhost:54504 {
-		@fallback status 421
-		handle_response @fallback {
-			{block}
-		}
-	}
-	handle @not-read {
-		{block}
+	handle @fake {
+		log_skip
+		reverse_proxy localhost:54504
 	}
 }
 
@@ -113,9 +107,7 @@ social.boiledscript.com {
 	import block_bots
 	import logging social.boiledscript.com
 
-	import iocaine {
-		reverse_proxy localhost:54493
-	}
+	reverse_proxy localhost:54493
 }
 
 # Vaultwarden

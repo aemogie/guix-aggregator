@@ -1,0 +1,11 @@
+[Unit]
+Description=Top-of-hour Org-roam prompt (swaync actions)
+
+[Service]
+Type=oneshot
+Environment=WAYLAND_DISPLAY=%E(WAYLAND_DISPLAY)
+Environment=DISPLAY=%E(DISPLAY)
+Environment=XDG_RUNTIME_DIR=%E(XDG_RUNTIME_DIR)
+Environment=DBUS_SESSION_BUS_ADDRESS=%E(DBUS_SESSION_BUS_ADDRESS)
+ExecStart=%h/.local/bin/org-roam-daily-prompt.sh
+WorkingDirectory=%h

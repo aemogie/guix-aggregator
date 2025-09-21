@@ -20,7 +20,7 @@ https://github.com/typst/typst/releases.atom                        "typst"
 https://github.com/Vencord/Vesktop/releases.atom                    "Vesktop"
 https://github.com/NVIDIA/open-gpu-kernel-modules/releases.atom     "NVIDIA"
 https://github.com/GloriousEggroll/proton-ge-custom/releases.atom   "Proton-GE"
-https://git.sr.ht/~delthas/senpai/refs/rss.xml                      "Senpai"
+# https://git.sr.ht/~delthas/senpai/refs/rss.xml                      "Senpai"
 # https://github.com/CachyOS/proton-cachyos/releases.atom             "Proton-CachyOS"
 # Hypr* stack
 https://github.com/hyprwm/Hyprland/releases.atom                    "Hyprland"
