@@ -178,7 +178,6 @@ cache-de.guix.moe {
 # Grafana
 dash.ultrarare.space {
 	import cloudflare
-	import logging dash.ultrarare.space
 	import tailscale {
 		reverse_proxy localhost:13064
 	}
@@ -188,7 +187,6 @@ dash.ultrarare.space {
 logs.boiledscript.com {
 	import cloudflare
 	import block_bots
-	import logging logs.boiledscript.com
 	import /run/secrets/caddy/loki
 	reverse_proxy localhost:50968
 }
@@ -197,7 +195,6 @@ logs.boiledscript.com {
 metrics.boiledscript.com {
 	import cloudflare
 	import block_bots
-	import logging metrics.boiledscript.com
 	import /run/secrets/caddy/mimir
 	reverse_proxy localhost:49951
 }

@@ -66,9 +66,12 @@
                  (handle-lid-switch-docked 'ignore)
                  (handle-lid-switch-external-power 'ignore)))
 
-      (service wpa-supplicant-service-type %wpa-supplicant-config)
+      %wpa-supplicant-service
+      %nftables-service
+      %dnsmasq-service
+      %dhcpcd-service
+
       (service ntp-service-type)
-      (service nftables-service-type %nftables-config)
 
       (service openssh-service-type
                (openssh-configuration
@@ -81,27 +84,24 @@
                 (list (wireguard-host-peer "sleep" 2 %sleep-wireguard-key)
                       (wireguard-host-peer "phone" 3 %phone-wireguard-key))))
 
-      (service dnsmasq-service-type %dnsmasq-config)
-      (service dhcpcd-service-type %dhcpd-config)
-
       (service syncthing-service-type
                (syncthing-configuration
                  (user "mrh")
                  (config-file
                   (syncthing-config-file
-                    (gui-address (format #f "[~a]:8384" %wireguard-ipv6-host))
+                    (gui-address (format #f "[::1]:8384" %wireguard-ipv6-host))
                     (folders
-                     (list (syncthing-folder
-                             (id "default")
-                             (label "default folder")
-                             (path "~/sync")
-                             (devices (list (syncthing-device
-                                              (name "sleep")
-                                              (id %sleep-syncthing-id))
-
-                                            (syncthing-device
-                                              (name "phone")
-                                              (id %phone-syncthing-id)))))))))))
+                     (let ((sleep (syncthing-device
+                                    (name "sleep")
+                                    (id %sleep-syncthing-id)))
+                           (phone (syncthing-device
+                                    (name "phone")
+                                    (id %phone-syncthing-id))))
+                       (list (syncthing-folder
+                               (id "default")
+                               (label "default folder")
+                               (path "~/sync")
+                               (devices (list sleep phone))))))))))
 
       ;; required for oci-service-type
       (service containerd-service-type)
@@ -116,8 +116,7 @@
                  (image "jellyfin/jellyfin")
                  (provision "jellyfin")
                  (network "host")
-                 (ports
-                  (list (format #f "[~a]:8096:8096" %wireguard-ipv6-host)))
+                 (ports '("[::1]:8096:8096"))
                  (volumes '(("jellyfin-config" . "/config")
                             ("jellyfin-cache" . "/cache")
                             ("/mnt/wd/media" . "/media"))))
@@ -125,15 +124,15 @@
                (oci-container-configuration
                  (image "linuxserver/sabnzbd")
                  (provision "sabnzbd")
-                 (ports
-                  (list (format #f "[~a]:8081:8081" %wireguard-ipv6-host)))
+                 (network "host")
+                 (ports '("[::1]:8081:8081"))
                  (volumes '(("/home/mrh/.config/sabnzbd" . "/config")
                             ("/mnt/wd/media" . "/media")))
                  (environment '(("PUID" . "1000")
                                 ("PGID" . "998")
                                 ("TZ" . "Etc/UTC"))))))))
 
-      (service nginx-service-type %nginx-config)
+      %nginx-service
 
       (modify-services %base-services
         (sysctl-service-type

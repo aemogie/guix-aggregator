@@ -143,8 +143,6 @@ cache-fi.guix.moe {
 
 mail.boiledscript.com {
 	import block_bots
-	import logging mail.boiledscript.com
-
 	respond /* "Access denied" 403 {
 		close
 	}

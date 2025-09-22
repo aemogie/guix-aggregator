@@ -29,23 +29,6 @@
 }
 
 
-(logging) {
-	log {
-		output file /var/log/caddy/{args[0]}.log
-		format filter {
-			request>remote_ip ip_mask {
-				ipv4 20
-				ipv6 44
-			}
-			request>client_ip ip_mask {
-				ipv4 20
-				ipv6 44
-			}
-			wrap json
-		}
-	}
-}
-
 (tailscale) {
 	@tailscale client_ip 100.64.0.0/10 fd7a:115c:a1e0::/48
 	handle @tailscale {
@@ -56,7 +39,6 @@
 
 # qBittorrent
 download.ultrarare.space {
-	import logging download.ultrarare.space
 	import tailscale {
 		reverse_proxy localhost:35951
 	}

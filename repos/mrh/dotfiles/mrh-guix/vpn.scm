@@ -16,6 +16,7 @@
     (addresses
      (list (format #f "~a::~a" %wireguard-ipv6-prefix num)
            (format #f "~a.~a" %wireguard-ipv4-prefix num)))
+    (port %wireguard-port)
     (peers
      (list (wireguard-peer
              (name "om")

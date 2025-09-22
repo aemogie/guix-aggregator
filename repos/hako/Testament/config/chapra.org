@@ -227,18 +227,11 @@ Administration accounts.
 #+end_src
 
 ** caddy
-#+begin_src scheme :noweb yes :noweb-ref service
+#+begin_src scheme :noweb-ref service
   (service caddy-service-type
     (caddy-configuration
       (caddy (spec->pkg "caddy-dolly"))
-      (caddyfile <<caddy-config>>)))
-#+end_src
-
-#+name: caddy-config
-#+begin_src scheme
-  (computed-substitution-with-inputs "chapra.caddyfile"
-    (local-file (testament-plain "chapra/Caddyfile"))
-    (specs->pkgs "ai-robots-txt"))
+      (caddyfile (local-file (testament-plain "chapra/Caddyfile")))))
 #+end_src
 
 ** cloudflared

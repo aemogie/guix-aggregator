@@ -29,23 +29,6 @@
 }
 
 
-(logging) {
-	log {
-		output file /var/log/caddy/{args[0]}.log
-		format filter {
-			request>remote_ip ip_mask {
-				ipv4 20
-				ipv6 44
-			}
-			request>client_ip ip_mask {
-				ipv4 20
-				ipv6 44
-			}
-			wrap json
-		}
-	}
-}
-
 (tailscale) {
 	@tailscale client_ip 100.64.0.0/10 fd7a:115c:a1e0::/48
 	handle @tailscale {
@@ -54,28 +37,8 @@
 }
 
 
-(block_bots) {
-	import $$share/ai-robots-txt/Caddyfile$$
-	handle @aibots {
-		respond /robots.txt 200 {
-			body <<EOF
-			User-Agent: *
-			Disallow: /
-
-			EOF
-		}
-		respond /* "Access denied" 403 {
-			close
-		}
-	}
-}
-
-
 # Komga
 http://manga.boiledscript.com, manga.ultrarare.space {
-	import block_bots
-	import logging manga.boiledscript.com
-
 	import tailscale {
 		reverse_proxy localhost:44293
 	}
@@ -84,9 +47,6 @@ http://manga.boiledscript.com, manga.ultrarare.space {
 
 # Navidrome
 http://music.boiledscript.com, music.ultrarare.space {
-	import block_bots
-	import logging music.boiledscript.com
-
 	import tailscale {
 		reverse_proxy localhost:43502
 	}
@@ -95,9 +55,6 @@ http://music.boiledscript.com, music.ultrarare.space {
 
 # Jellyfin
 http://shows.boiledscript.com, shows.ultrarare.space {
-	import block_bots
-	import logging shows.boiledscript.com
-
 	import tailscale {
 		reverse_proxy localhost:22443
 	}
