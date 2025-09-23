@@ -1,25 +1,33 @@
 (define-module (mrh-guix system vps config)
-  #:use-module (gnu)
-  #:use-module (gnu services certbot)
-  #:use-module (gnu services networking)
+  #:use-module (mrh-guix personal)
   #:use-module (beaver system)
   #:use-module (beaver functional-services)
-  #:use-module (mrh-guix personal))
+  #:use-module (gnu)
+  #:use-module (gnu services certbot)
+  #:use-module (gnu services networking))
 
 (use-package-modules admin rsync)
 
 (let ((certs-path "/etc/certs/wumpus.pizza"))
-  (-> (minimal-ovh %ssh-key)
+  (-> (minimal-ovh %ssh-pub)
 
-      (add-service nftables
-                   (ruleset (plain-file "nftables.conf"
-                                        (local-file "nftables.conf"))))
+      (add-service
+       nftables
+       (ruleset
+        (plain-file "nftables.conf"
+                    (local-file "nftables.conf"))))
 
-      (add-service certbot
-                   (email "mrh57@posteo.net")
-                   (certificates
-                    (list (certificate-configuration
-                           (domains '("wumpus.pizza" "www.wumpus.pizza"))))))
+      (add-service
+       certbot
+       (email "mrh57@posteo.net")
+       (certificates
+        (list (certificate-configuration
+               (domains '("wumpus.pizza"
+                          "www.wumpus.pizza"
+                          "home.wumpus.pizza"
+                          "*.home.wumpus.pizza"
+                          "pub.wumpus.pizza"
+                          "*.pub.wumpus.pizza"))))))
 
       (httpx-reverse-proxy
        #:from-host "www.wumpus.pizza"

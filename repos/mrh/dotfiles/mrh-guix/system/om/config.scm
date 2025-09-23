@@ -5,7 +5,9 @@
   #:use-module (mrh-guix system om web)
   #:use-module (nongnu packages linux)
   #:use-module (nongnu system linux-initrd)
-  #:use-module (gnu))
+  #:use-module (gnu)
+  #:use-module (ice-9 popen)
+  #:use-module (ice-9 textual-ports))
 
 (use-package-modules admin
                      cryptsetup
@@ -89,7 +91,7 @@
                  (user "mrh")
                  (config-file
                   (syncthing-config-file
-                    (gui-address (format #f "[::1]:8384" %wireguard-ipv6-host))
+                    (gui-address (format #f "[::1]:8384" %ipv6-wireguard-host))
                     (folders
                      (let ((sleep (syncthing-device
                                     (name "sleep")
@@ -112,25 +114,35 @@
        oci-service-type
        (oci-extension
         (containers
-         (list (oci-container-configuration
-                 (image "jellyfin/jellyfin")
-                 (provision "jellyfin")
-                 (network "host")
-                 (ports '("[::1]:8096:8096"))
-                 (volumes '(("jellyfin-config" . "/config")
-                            ("jellyfin-cache" . "/cache")
-                            ("/mnt/wd/media" . "/media"))))
+         (let ((oci-uid (get-line (open-input-pipe "id oci-container -u")))
+               (oci-gid (get-line (open-input-pipe "id oci-container -g"))))
+           (list (oci-container-configuration
+                   (image "linuxserver/sabnzbd")
+                   (provision "sabnzbd")
+                   (ports '("[::1]:8081:8081"))
+                   (volumes '(("/home/mrh/.config/sabnzbd" . "/config")
+                              ("/mnt/wd/media" . "/media")))
+                   (environment `(("PUID" . ,oci-uid)
+                                  ("PGID" . ,oci-gid)
+                                  ("TZ" . "Etc/UTC"))))
 
-               (oci-container-configuration
-                 (image "linuxserver/sabnzbd")
-                 (provision "sabnzbd")
-                 (network "host")
-                 (ports '("[::1]:8081:8081"))
-                 (volumes '(("/home/mrh/.config/sabnzbd" . "/config")
-                            ("/mnt/wd/media" . "/media")))
-                 (environment '(("PUID" . "1000")
-                                ("PGID" . "998")
-                                ("TZ" . "Etc/UTC"))))))))
+                 (oci-container-configuration
+                   (image "jellyfin/jellyfin")
+                   (provision "jellyfin")
+                   (ports '("[::1]:8096:8096"))
+                   (volumes '(("jellyfin-config" . "/config")
+                              ("jellyfin-cache" . "/cache")
+                              ("/mnt/wd/media" . "/media")))
+                   (environment `(("PUID" . ,oci-uid)
+                                  ("PGID" . ,oci-gid))))
+
+                 (oci-container-configuration
+                   (image "filebrowser/filebrowser:s6")
+                   (provision "filebrowser")
+                   (ports '("[::1]:8080:80"))
+                   (volumes '(("/mnt/wd/shared/config" . "/config")
+                              ("/mnt/wd/shared/database" . "/database")
+                              ("/mnt/wd/shared/srv" . "/srv")))))))))
 
       %nginx-service
 

@@ -8,9 +8,6 @@
   #:use-module (gnu services dns)
   #:use-module (gnu services networking))
 
-(define-public %lan-ipv6 (format #f "~a:2bf9:92b5:e621:6aae" %lan-ipv6-prefix))
-(define-public %lan-ipv4 (format #f "~a.171" %lan-ipv4-prefix))
-
 (define-public %wpa-supplicant-service
   (service wpa-supplicant-service-type
            (wpa-supplicant-configuration
@@ -23,9 +20,9 @@
              (ruleset (local-file "nftables.conf")))))
 
 (define dns-interfaces (list "::1"
-                             %wireguard-ipv6-host
-                             %wireguard-ipv4-host
-                             %lan-ipv6))
+                             %ipv6-ula-om
+                             %ipv6-wireguard-host
+                             %ipv4-wireguard-host))
 
 (define dns-servers '("2620:fe::9" "2620:fe::11"
                       "2606:4700:4700::1111" "2606:4700:4700::1112"))
@@ -39,8 +36,10 @@
              (no-hosts? #t)
              (no-resolv? #t)
              (query-servers-in-order? #t)
-             (addresses (list (format #f "/om/~a:1::1" %ipv6-ula-prefix)
-                              (format #f "/sleep/~a:1::2" %ipv6-ula-prefix)))
+             (addresses
+              (list (format #f "/mynetworksettings.com/~a::1" %ipv6-gua-prefix)
+                    (format #f "/om/~a" %ipv6-ula-om)
+                    (format #f "/sleep/~a" %ipv6-ula-sleep)))
              (extra-options '("--filterwin2k")))))
 
 (define-public %dhcpcd-service
@@ -48,10 +47,10 @@
            (dhcpcd-configuration
              (interfaces (list %wlan-interface))
              (static
-              (list (format #f "ip6_address=~a:1::1/64" %ipv6-ula-prefix)
-                    (format #f "domain_name_servers=::1 ~a ~a:1::1"
-                            %wireguard-ipv6-host
-                            %ipv6-ula-prefix))))))
+              (list (format #f "ip6_address=~a/64" %ipv6-ula-om)
+                    (format #f "domain_name_servers=::1 ~a ~a"
+                            %ipv6-wireguard-host
+                            %ipv6-ula-om))))))
 
 (define-public %unbound-service
   (service unbound-service-type
