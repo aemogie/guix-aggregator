@@ -282,10 +282,6 @@ See `my/dired-run-command'."
   :hook
   ((lisp-mode emacs-lisp-mode scheme-mode) . paredit-mode))
 
-(use-package rainbow-delimiters
-  :hook
-  ((lisp-mode emacs-lisp-mode scheme-mode) . rainbow-delimiters-mode))
-
 (use-package aggressive-indent
   :hook
   ((lisp-mode emacs-lisp-mode scheme-mode) . aggressive-indent-mode))
@@ -348,7 +344,9 @@ See `my/dired-run-command'."
     (add-hook 'go-mode-hook #'my/set-go-compile)
     (keymap-set 'go-mode-map "C-c C-c" #'my/compile))  )
 
-(setopt org-default-notes-file (expand-file-name "notes.org" org-directory))
+(setopt org-directory "~/documents/org/"
+        org-default-notes-file (expand-file-name "notes.org" org-directory)
+        org-agenda-files (list (expand-file-name "agenda/" org-directory)))
 
 (use-package org
   :defer t
@@ -358,9 +356,6 @@ See `my/dired-run-command'."
   (:map org-mode-map
         ("C-c l" . org-cycle-list-bullet))
   :custom
-  (org-directory "~/documents/org/")
-  (org-agenda-files (list (expand-file-name "agenda/" org-directory)))
-  
   (org-startup-folded t)
   (org-M-RET-may-split-line '((default . nil)))
   (org-insert-heading-respect-content t)
@@ -370,7 +365,7 @@ See `my/dired-run-command'."
   (org-log-into-drawer t)
   (org-todo-keywords
    '((sequence "TODO(t)" "BLOCKED(b)" "|" "CANCELED(c)" "DONE(d)")))
-  
+
   (org-edit-src-content-indentation 0)
   (org-babel-python-command "python3")
   :config
@@ -386,7 +381,7 @@ Helpful advice for face changing functions."
             (font-lock-fontify-buffer))))))
 
   (add-to-list 'org-structure-template-alist '("m" . "src emacs-lisp"))
-  
+
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)

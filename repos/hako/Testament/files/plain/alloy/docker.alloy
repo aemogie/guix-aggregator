@@ -1,0 +1,60 @@
+prometheus.exporter.cadvisor "metrics_docker" {
+    docker_only = true
+}
+
+discovery.relabel "metrics_docker" {
+    targets = prometheus.exporter.cadvisor.metrics_docker.targets
+
+    rule {
+        target_label = "job"
+        replacement  = "docker"
+    }
+
+    rule {
+        target_label = "instance"
+        replacement  = constants.hostname
+    }
+}
+
+prometheus.scrape "metrics_docker" {
+    targets    = discovery.relabel.metrics_docker.output
+    forward_to = [prometheus.remote_write.metrics.receiver]
+}
+
+discovery.docker "logs_docker" {
+    host             = "unix:///var/run/docker.sock"
+    refresh_interval = "5s"
+}
+
+discovery.relabel "logs_docker" {
+    targets = []
+
+    rule {
+        target_label = "job"
+        replacement  = "docker"
+    }
+
+    rule {
+        target_label = "instance"
+        replacement  = constants.hostname
+    }
+
+    rule {
+        source_labels = ["__meta_docker_container_name"]
+        regex         = "/(.*)"
+        target_label  = "container"
+    }
+
+    rule {
+        source_labels = ["__meta_docker_container_log_stream"]
+        target_label  = "stream"
+    }
+}
+
+loki.source.docker "logs_docker" {
+    host             = "unix:///var/run/docker.sock"
+    targets          = discovery.docker.logs_docker.targets
+    forward_to       = [loki.write.logs.receiver]
+    relabel_rules    = discovery.relabel.logs_docker.rules
+    refresh_interval = "5s"
+}

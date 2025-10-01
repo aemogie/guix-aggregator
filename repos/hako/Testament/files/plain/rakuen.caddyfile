@@ -1,0 +1,159 @@
+# SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+{
+	dns cloudflare {file./run/secrets/cloudflare}
+	acme_dns cloudflare {file./run/secrets/cloudflare}
+	ech hello.boiledscript.com
+	metrics
+	log {
+		output file /var/log/caddy/caddy.log
+		format filter {
+			request>remote_ip ip_mask {
+				ipv4 20
+				ipv6 44
+			}
+			request>client_ip ip_mask {
+				ipv4 20
+				ipv6 44
+			}
+			wrap json
+		}
+	}
+	servers {
+		trusted_proxies static private_ranges
+		client_ip_headers X-Forwarded-For X-Real-IP
+		trusted_proxies_strict
+	}
+}
+
+
+(logging) {
+	log {
+		output file /var/log/caddy/{args[0]}.log
+		format filter {
+			wrap json
+			request>remote_ip ip_mask {
+				ipv4 20
+				ipv6 44
+			}
+			request>client_ip ip_mask {
+				ipv4 20
+				ipv6 44
+			}
+			fields {
+				request>uri query {
+					delete access_token
+				}
+			}
+		}
+	}
+}
+
+
+(block_bots) {
+	import $$share/ai-robots-txt/Caddyfile$$
+	handle @aibots {
+		respond /robots.txt 200 {
+			body <<EOF
+			User-Agent: *
+			Disallow: /
+
+			EOF
+		}
+		respond /* "Access denied" 403 {
+			close
+		}
+	}
+
+	@fake {
+		header User-Agent *Chrome/*
+		header User-Agent *Firefox*
+		header !Sec-Fetch-Mode
+	}
+	handle @fake {
+		log_skip
+		reverse_proxy localhost:54504
+	}
+}
+
+
+# Blog
+ultrarare.space {
+	import block_bots
+	import logging ultrarare.space
+
+	root * /var/lib/webpublic/blog
+	handle_errors {
+		rewrite * /{err.status_code}.html
+		file_server
+	}
+	handle_path /comments/* {
+		reverse_proxy localhost:42174
+	}
+	file_server
+}
+
+# Miniflux
+reader.boiledscript.com {
+	import block_bots
+	import logging reader.boiledscript.com
+
+	reverse_proxy localhost:51787
+}
+
+# Vaultwarden
+vault.boiledscript.com {
+	import block_bots
+	import logging vault.boiledscript.com
+
+	reverse_proxy localhost:23263
+}
+
+# Certificates for mail server
+mail.boiledscript.com {
+	import block_bots
+	respond /* "Access denied" 403 {
+		close
+	}
+}
+
+# Guix Moe
+cache-cdn.guix.moe {
+	import block_bots
+	import logging cache-cdn.guix.moe
+
+	handle /*.narinfo {
+		root * /var/cache/guix-moe/narinfo
+		file_server
+	}
+
+	handle /nar/* {
+		redir https://nars.guix.moe{uri}
+	}
+
+	respond "Visit guix [dot] moe for more information." 404 {
+		close
+	}
+}
+
+cache-fi.guix.moe {
+	import block_bots
+	import logging cache-fi.guix.moe
+
+	handle /*.narinfo {
+		root * /var/cache/guix-moe/narinfo
+		file_server
+	}
+
+	handle /nar/* {
+		reverse_proxy https://nars.guix.moe {
+			header_up Host {upstream_hostport}
+		}
+	}
+
+	respond "Visit guix [dot] moe for more information." 404 {
+		close
+	}
+}

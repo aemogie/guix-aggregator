@@ -658,7 +658,7 @@ Use prefix argument ARG for number of lines, otherwise use default."
         `(("p" "Protocol Text" entry
            (file+headline ,(concat org-directory "/captures.org") "Captures")
 	   "* %^{Title}\nSource: [[%:link][%:description]] %(progn (setq my/delete-frame-after-capture 1) \"\") \nCaptured on: %U\n\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n")
-	  ("L" "Protocol Link" entry (file+headline ,(concat org-directory "notes.org") "Inbox")
+	  ("L" "Protocol Link" entry (file+headline ,(concat org-directory "/captures.org") "Captures")
  "* [[%:link][%:description]] %(progn (setq my/delete-frame-after-capture 1) \"\")\nCaptured on: %U"
  :empty-lines 1)
           ("s")
@@ -2245,9 +2245,7 @@ Otherwise, call eat."
 
 (load "~/projects/scratchpad/scratchpad.el")
 (load "~/projects/org-linear/org-linear.el")
-(load "~/projects/asciiquarium.el/asciiquarium.el")
-(load "~/projects/asciiquarium.el/asciiquarium-data.el")
-(require 'org-linear)
+(load "~/.emacs.d/private/org-linear-credentials.el")
 (scratchpad-enable)
 (global-set-key (kbd "C-M-z") 'scratchpad-toggle)
 (setq scratchpad-save-directory "~/org/scratchpad")
@@ -2304,6 +2302,7 @@ Otherwise, call eat."
            (while (re-search-forward "^\\(<\\([^>]+\\)>\\)" nil t)
              (replace-match "SCHEDULED: \\1")))
      (eval org-columns) (eval outline-next-heading)
+
      (eval goto-char (point-min))))
  '(warning-suppress-types '((comp))))
 

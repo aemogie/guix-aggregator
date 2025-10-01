@@ -105,7 +105,11 @@
 #+begin_src scheme :noweb yes
   (bootloader-configuration
     (bootloader grub-bootloader)
-    (targets '("/dev/sda")))
+    (targets '("/dev/sda"))
+    (theme
+     (grub-theme
+       (inherit (grub-theme))
+       (resolution #f))))
 #+end_src
 
 FIXME: Using =microcode-initrd= will make the system image unbootable.

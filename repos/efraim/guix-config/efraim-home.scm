@@ -18,7 +18,9 @@
   #:use-module (guix transformations)
   #:use-module (guix utils)
   #:use-module (guix gexp)
-  #:use-module (ice-9 match))
+  #:use-module (ice-9 match)
+
+  #:export (efraim-offload-home-environment))
 
 ;;;
 
@@ -106,10 +108,9 @@
 (define %not-for-work
   (list "btrfs-progs"
         "codeberg-cli"
-        "ffmpeg@6"  ; Newer version conflicts with mpv
+        "ffmpeg"
         "git-annex"
         "isync"
-        ;"keybase"
         "khal"
         "khard"
         "libhdate"
@@ -1380,6 +1381,50 @@ rm ${XDG_CACHE_HOME:-~/.cache}/tofi-drun\n")))))
            ("user-dirs.dirs" ,%xdg-user-dirs)
            ("youtube-dl/config" ,%ytdl-config)
            ("yt-dlp/config" ,%ytdl-config)))))))
+
+(define efraim-offload-home-environment
+  (home-environment
+    (services
+      (list
+        (service home-bash-service-type
+                 (home-bash-configuration
+                   (guix-defaults? #t)
+                   (environment-variables
+                     `(("CVS_RSH" . "ssh")
+                       ("EDITOR" . "vim")
+                       ("GPG_TTY" . "$(tty)")
+                       ("XZ_DEFAULTS" . "--threads=0 --memlimit=50%")
+                       ("ZSTD_NBTHREADS" . "0")
+                       ("HISTSIZE" . "3000")
+                       ("HISTFILESIZE" . "10000")
+                       ("HISTCONTROL" . "ignoreboth")
+                       ("HISTIGNORE" . "pwd:exit:fg:bg:top:clear:history:ls:uptime:df")
+                       ("PROMPT_COMMAND" . "history -a; $PROMPT_COMMAND")))
+                   (aliases
+                     `(("cp" . "cp --reflink=auto")
+
+                       ;; I seem to have lost these
+                       ("ls" . "ls -p --color=auto")
+                       ("grep" . "grep --color=auto")
+                       ("ip" . "ip -color")
+
+                       ("exitexit" . "exit")
+                       ("clear" . "printf '\\E[H\\E[J\\E[0m'")
+                       ("ime" . "time")))
+                   (bashrc
+                     (list
+                       (mixed-text-file "bashrc" "screen -wipe\n")))
+                   (bash-logout
+                     (list
+                       (mixed-text-file "bash-logout" "screen -wipe\n")))))
+
+        (service home-inputrc-service-type
+                 %home-inputrc-configuration)
+
+        (service home-files-service-type
+                 `((".guile" ,%default-dotguile)
+                   (".screenrc" ,%screenrc)
+                   (".wgetpaste.conf" ,%wgetpaste.conf)))))))
 
 (define foreign-home-environment
   (home-environment

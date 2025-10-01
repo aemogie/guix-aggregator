@@ -3,6 +3,7 @@
   #:use-module (mrh-guix vpn)
   #:use-module (mrh-guix system om networking)
   #:use-module (mrh-guix system om web)
+  #:use-module (mrh services)
   #:use-module (nongnu packages linux)
   #:use-module (nongnu system linux-initrd)
   #:use-module (gnu)
@@ -23,6 +24,7 @@
                      dns
                      docker
                      networking
+                     nfs
                      ssh
                      syncthing
                      sysctl
@@ -70,7 +72,7 @@
 
       %wpa-supplicant-service
       %nftables-service
-      %dnsmasq-service
+      %unbound-service
       %dhcpcd-service
 
       (service ntp-service-type)
@@ -92,10 +94,13 @@
                  (config-file
                   (syncthing-config-file
                     (gui-address (format #f "[::1]:8384" %ipv6-wireguard-host))
+                    (gui-user "wumpus")
+                    (gui-password %syncthing-password)
                     (folders
                      (let ((sleep (syncthing-device
                                     (name "sleep")
                                     (id %sleep-syncthing-id)))
+
                            (phone (syncthing-device
                                     (name "phone")
                                     (id %phone-syncthing-id))))
@@ -103,7 +108,19 @@
                                (id "default")
                                (label "default folder")
                                (path "~/sync")
-                               (devices (list sleep phone))))))))))
+                               (devices (list sleep phone)))
+
+                             (syncthing-folder
+                               (id "dotfiles")
+                               (label "dotfiles folder")
+                               (path "~/src/dotfiles")
+                               (devices (list sleep))))))))))
+
+      (service nfs-service-type
+               (nfs-configuration
+                 (exports
+                  '(("/mnt/wd"
+                     "sleep(rw,sync,insecure,no_root_squash,no_subtree_check)")))))
 
       ;; required for oci-service-type
       (service containerd-service-type)
@@ -119,6 +136,7 @@
            (list (oci-container-configuration
                    (image "linuxserver/sabnzbd")
                    (provision "sabnzbd")
+                   (network "host")
                    (ports '("[::1]:8081:8081"))
                    (volumes '(("/home/mrh/.config/sabnzbd" . "/config")
                               ("/mnt/wd/media" . "/media")))
@@ -129,6 +147,7 @@
                  (oci-container-configuration
                    (image "jellyfin/jellyfin")
                    (provision "jellyfin")
+                   (network "host")
                    (ports '("[::1]:8096:8096"))
                    (volumes '(("jellyfin-config" . "/config")
                               ("jellyfin-cache" . "/cache")
@@ -145,6 +164,12 @@
                               ("/mnt/wd/shared/srv" . "/srv")))))))))
 
       %nginx-service
+
+      (service i2pd-service-type
+               (i2pd-configuration
+                (user "mrh")
+                (conf "/home/mrh/.config/i2pd/i2pd.conf")
+                (datadir "/home/mrh/.config/i2pd")))
 
       (modify-services %base-services
         (sysctl-service-type

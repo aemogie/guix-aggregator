@@ -16,23 +16,29 @@ Part of them are also used for the [[https://ultrarare.space/en/posts/guix-build
 See [[file:Makefile][Makefile]] for usage.
 
 Guix channels in use:
-+ [[https://codeberg.org/guix/guix.git][guix]]
++ [[https://codeberg.org/guix/guix.git][guix]] (additional patches are used locally for root on ZFS support)
 + [[https://gitlab.com/nonguix/nonguix][nonguix]]
 + [[https://codeberg.org/hako/rosenthal.git][rosenthal]]
 + [[https://github.com/fishinthecalculator/sops-guix][sops-guix]]
 
 * Systems
-** [[file:config/dorphine.org][dorphine]] (x86_64-linux)
-[[file:files/plain/assets/dorphine-1.png]]
-[[file:files/plain/assets/dorphine-2.png]]
+** [[file:config/dorphine.org][dorphine]] (x86_64-linux, UEFI, ZFS, NVIDIA) | [[file:files/deploy/dorphine.scm][deploy]]
+#+html: <img src="https://s3.boiledscript.com/misskey/29eb35e9-11fb-46b6-8b64-594f521b4309.webp">
+#+html: <img src="https://s3.boiledscript.com/misskey/0d658beb-e5b2-418b-a7b6-e2882c906b61.webp">
 
-** [[file:config/chapra.org][chapra]] (x86_64-linux)
+** [[file:config/chapra.org][chapra]] (x86_64-linux, UEFI, ZFS) | [[file:files/deploy/chapra.scm][deploy]]
 
-** [[file:config/gokuraku.org][gokuraku]] (x86_64-linux)
+** [[file:config/gokuraku.org][gokuraku]] (x86_64-linux, UEFI, ZFS) | [[file:files/deploy/gokuraku.scm][deploy]]
 
-** [[file:config/ignamma.org][ignamma]] (x86_64-linux)
+** [[file:config/ignamma.org][ignamma]] (x86_64-linux, UEFI, XFS) | [[file:files/deploy/ignamma.scm][deploy]]
 
-** [[file:config/rakuen.org][rakuen]] (aarch64-linux)
+** [[file:config/rakuen.org][rakuen]] (aarch64-linux, UEFI, XFS) | [[file:files/deploy/rakuen.scm][deploy]]
+
+** [[file:config/worker.org][worker]] | [[file:files/deploy/worker.scm][deploy]]
+Temporary build workers for Guix Moe CI.
+
+** [[file:config/mirror.org][mirror]] | [[file:files/deploy/mirror.scm][deploy]]
+Mirrors for Guix Moe CI substitutes.
 
 * LiveCDs
 I provide two LiveCDs for the [[https://guix.gnu.org/manual/devel/en/html_node/Manual-Installation.html][manual installation]] of Guix System.  Pre-built
@@ -74,7 +80,7 @@ Username: =live=, password: =rosenthal=.
 To facilitate remote installation, this LiveCD starts a SSH daemon.  Remember to
 change the password when logged in if the machine is exposed to the Internet ;)
 
-[[file:files/plain/assets/live-console-1.jpg]]
+#+html: <img src="https://s3.boiledscript.com/misskey/a666efc8-71e7-4b82-8385-131bab46d234.webp">
 
 ** [[file:config/live-desktop.org][desktop]]
 Username: =live=, no password.
@@ -90,9 +96,9 @@ Default keybindings:
 + =Super + T= :: Open terminal emulator, [[https://codeberg.org/dnkl/foot][foot]] is used.
 + =Super + D= :: Open application launcher, [[https://github.com/davatorium/rofi][rofi]] is used.
 
-[[file:files/plain/assets/live-desktop-1.png]]
-[[file:files/plain/assets/live-desktop-2.png]]
-[[file:files/plain/assets/live-desktop-3.png]]
+#+html: <img src="https://s3.boiledscript.com/misskey/ffe3522a-991f-452e-addb-fa47b6acc6bc.webp">
+#+html: <img src="https://s3.boiledscript.com/misskey/10c08444-f3f6-4c45-a1e2-3fcdd3a3810e.webp">
+#+html: <img src="https://s3.boiledscript.com/misskey/46995f8b-41fb-4b53-af2f-8353d5c6bd2d.webp">
 
 * Resources
 + [[https://files.spritely.institute/papers/scheme-primer.html][A Scheme Primer]] :: Nice short guide to get you started with Scheme.

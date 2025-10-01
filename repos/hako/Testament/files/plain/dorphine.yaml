@@ -1,0 +1,32 @@
+cloudflare: ENC[AES256_GCM,data:4Bd6pOFAC8LOJ54+j2FrDH3F6iHTayw7ez1s+PeTYDQibmYUbvfM+A==,iv:I5Qe70l5kQ/iKJ9NIQQ/vFBqIkXm7G1Jyg+TifyyGAk=,tag:l+tgx6gHYsWiUTmBVsJfTg==,type:str]
+gammastep: ENC[AES256_GCM,data:ti7BuD20A5eRiMMUXQ==,iv:9QBPcKbZMr6Wl37LniQ9eLb/F6RC3qdTwXfZII35U20=,tag:3o9WPM3LeEaDhWgKj15vRg==,type:str]
+mail: ENC[AES256_GCM,data:4j885kXMZmZzO1ksOxst,iv:rIOU8xtwg6iRU5Au0P1zCHikvdmZ/2Uf+NEA3zQpYrk=,tag:MoD++dXjVLFG1uaB50mMxA==,type:str]
+alloy: ENC[AES256_GCM,data:clyMRXEnharsSxq4THQktTKcUOCHqALaqdQZ14Sw5Te/URdxFwt5/FMkf6R87P7n7JguW+k5Ejv9NV6o3+P7joumVLAbj4lDEVVCfGeLgfupaqNnWcmlt89tcChwljph9PbchH971nHIn/LR76TYCFPieb5TNoSEreeVNI1gp/Qd7Xi195SMk3cCtoJe4L0oZJHO49tTQHJIokdBBp0wkM6A4montjfpMfisEJ9o9FsRwxkxCRXapgxsHOGj2/yQBrS/lTmvgfdOpm80nys2uTUAHMiVKyYWUYd9hyUxylzE8ekcfm5yOEDZum5fd8Hszz24J2B0vwVxk+T59PWuiIURMiPLq9+LXfc/PMc/O99SnVtoVi+C6GlyuwZ/LcQtWFxSHi3h+YxMBbC2UX2XmsmmOGegR+swwlkVuGyQqzT1sgk9xADJnEhuVBmmrMMqHLkBkfneE4hSD9cjEhBV+fhsYpFx83dBvHJETyYarT+2+3fbSW9zxFM=,iv:GJ2cjS3Wr1S0Oc7KJRNm/PuEwQXX03Ola6w7ciZnChc=,tag:ryc2EC73siNU20HlHV0R+w==,type:str]
+sops:
+    lastmodified: "2025-09-25T18:15:35Z"
+    mac: ENC[AES256_GCM,data:13jKTE8yWuWA908n7NPckspAJvo443BPXayr51K+JUHepAGSX9n7SuuN0POrabqZ70gFXED2oD2Fls+ZGp4Ei4xZP3f13DySAWLRo44gSBaglIpLEXvOq2PzQKJOL0AJTNShPUKHpHuZI1XvQg9qtwSIlYnHUSZD+9rEnd7ODNo=,iv:/Az8jM7bXNWzf8QJPM+e350rGiE4IxZRZeDq12f9Oxo=,tag:8MHhhDJU+RIwgEV+HbyzxA==,type:str]
+    pgp:
+        - created_at: "2024-10-04T10:29:52Z"
+          enc: |-
+            -----BEGIN PGP MESSAGE-----
+
+            hF4DCX0+KRBcjbsSAQdApkhEDZ5kSxo3HD7uXRsZ8VSvRhBap4QbQW927GsavFgw
+            DNXLbF4k2vhyD04a9yl9Tx07CpQ8ikzHYyK9Wg+aKkcokqpJ7KggI37tRpnYmIzV
+            0l4BZK59m+ou/A8dpYjpKmqO4/v9vrmwwxgAyOpAL3Gn+XRVDteNTp2vt7zpG5ma
+            8lGpzKR+hfjuZsag8t8UZfSv7OTFgsnQKU9BnIM/OLyU/dMGEOpNeMWE3ukXtsGW
+            =z5Fc
+            -----END PGP MESSAGE-----
+          fp: 576C8A836723183D34C98D12C66DF7E30ED48083
+        - created_at: "2024-10-04T10:29:52Z"
+          enc: |-
+            -----BEGIN PGP MESSAGE-----
+
+            hF4D10KP4oVyYa4SAQdAxEz+hEuB5nxxnScjRPDphmoBKLpAnMf3DtnPth3nJUMw
+            /dZg3HRBXdrT00uXLYC5OPbegNH++33wfUGZv0dlyQO9N2DP15RYdUMLUhXRIpWl
+            0l4BDycuwrLpc/eYPfvVvwmPKj3kTT5Frn8W/mCoLhifG/WhPHSffdMreTdHBhO5
+            kAi09I9+boswUv45NWFuae8kJBiIBcERm2En9qb3whLgILqnkRv8J3HbbyHUYq6Q
+            =Efg4
+            -----END PGP MESSAGE-----
+          fp: 3B6C92CB84BB392FD8DF3609D7428FE2857261AE
+    unencrypted_suffix: _unencrypted
+    version: 3.10.2

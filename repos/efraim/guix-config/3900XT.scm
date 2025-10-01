@@ -151,7 +151,7 @@
                     (dnsmasq-configuration
                       (listen-addresses '("127.0.0.1" "::1"))
                       (no-resolv? #t)
-                      (servers '("192.168.1.1"
+                      (servers '("192.168.68.1"
                                  ;; Tailscale
                                  "/unicorn-typhon.ts.net/100.100.100.100"
                                  ;; OpenDNS servers

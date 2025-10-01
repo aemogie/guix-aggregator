@@ -737,7 +737,9 @@ See [[https://unimath.github.io/agda-unimath/HOWTO-INSTALL.html#emacs][agda-unim
 ** Org
 
 #+begin_src emacs-lisp
-(setopt org-default-notes-file (expand-file-name "notes.org" org-directory))
+(setopt org-directory "~/documents/org/"
+        org-default-notes-file (expand-file-name "notes.org" org-directory)
+        org-agenda-files (list (expand-file-name "agenda/" org-directory)))
 
 (use-package org
   :defer t
@@ -747,9 +749,6 @@ See [[https://unimath.github.io/agda-unimath/HOWTO-INSTALL.html#emacs][agda-unim
   (:map org-mode-map
         ("C-c l" . org-cycle-list-bullet))
   :custom
-  (org-directory "~/documents/org/")
-  (org-agenda-files (list (expand-file-name "agenda/" org-directory)))
-  
   (org-startup-folded t)
   (org-M-RET-may-split-line '((default . nil)))
   (org-insert-heading-respect-content t)
@@ -759,7 +758,7 @@ See [[https://unimath.github.io/agda-unimath/HOWTO-INSTALL.html#emacs][agda-unim
   (org-log-into-drawer t)
   (org-todo-keywords
    '((sequence "TODO(t)" "BLOCKED(b)" "|" "CANCELED(c)" "DONE(d)")))
-  
+
   (org-edit-src-content-indentation 0)
   (org-babel-python-command "python3")
   :config
@@ -775,7 +774,7 @@ Helpful advice for face changing functions."
             (font-lock-fontify-buffer))))))
 
   (add-to-list 'org-structure-template-alist '("m" . "src emacs-lisp"))
-  
+
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)

@@ -1,0 +1,30 @@
+discovery.relabel "metrics_caddy" {
+	targets = [{
+		__address__ = "localhost:2019",
+	}]
+
+	rule {
+		target_label = "instance"
+		replacement  = constants.hostname
+	}
+}
+
+prometheus.scrape "metrics_caddy" {
+	targets    = discovery.relabel.metrics_caddy.output
+	forward_to = [prometheus.remote_write.metrics.receiver]
+	job_name   = "caddy"
+}
+
+local.file_match "logs_caddy" {
+    path_targets = [{
+        __address__ = "localhost",
+        __path__    = "/var/log/caddy/*.log",
+        instance    = constants.hostname,
+        job         = "caddy",
+    }]
+}
+
+loki.source.file "logs_caddy" {
+    targets    = local.file_match.logs_caddy.targets
+    forward_to = [loki.write.logs.receiver]
+}

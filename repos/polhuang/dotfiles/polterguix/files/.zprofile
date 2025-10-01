@@ -1,6 +1,7 @@
 # augment PATH with nix profile
 export PATH=$HOME/.nix-profile/bin:$PATH
 export PATH=$HOME/.nix-profile/share:$PATH
+export PATH=$HOME/.npm-global/bin:$PATH
 
 # add nix directory to XDG_DATA_DIRS
 export XDG_DATA_DIRS="$HOME/.local/share:$HOME/.nix-profile/share:$HOME/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:$XDG_DATA_DIRS"

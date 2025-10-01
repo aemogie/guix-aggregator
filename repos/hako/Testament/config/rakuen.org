@@ -17,7 +17,11 @@
       (bootloader
         (bootloader-configuration
           (bootloader grub-efi-removable-bootloader)
-          (targets '("/efi"))))
+          (targets '("/efi"))
+          (theme
+           (grub-theme
+             (inherit (grub-theme))
+             (resolution #f)))))
       (kernel (spec->pkg "linux-libre@6.12"))
       (kernel-arguments
        (cons* "kernel.sysrq=0"
@@ -31,13 +35,15 @@
       (file-systems (append <<file-systems>> %base-file-systems))
       (swap-devices
        (list (swap-space
-               (target
-                (uuid "3b0cbf5f-e8eb-41a7-93f4-5f870bf09640")))))
+               (target (file-system-label "swap")))))
       (users (cons* <<user>> %base-user-accounts))
       (packages
        (append (specs->pkgs+out
+                "curl"
+                "fd"
                 "gnupg"
                 "mosh"
+                "ripgrep"
                 "rsync"
                 "sops"
                 <<package>>)
@@ -71,11 +77,11 @@
 ** File Systems
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
-          (device (uuid "333171f3-1ffc-40c2-bcc2-cbe8f4f2276e"))
+          (device (file-system-label "root"))
           (mount-point "/")
           (type "xfs"))
         (file-system
-          (device (uuid "0EE5-5F67" 'fat))
+          (device (file-system-label "boot"))
           (mount-point "/efi")
           (type "vfat")))
 #+end_src
@@ -94,7 +100,8 @@ Administration accounts.
 #+begin_src scheme :noweb-ref user
   (user-account
     (inherit %root-account)
-    (password #f))
+    (password #f)
+    (shell (file-append (spec->pkg "fish") "/bin/fish")))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -124,13 +131,18 @@ Administration accounts.
        (list (sops-secret
                (key '("cloudflare"))
                (file rakuen.yaml)
-               (user "caddy"))))))
+               (user "caddy"))
+             (sops-secret
+               (key '("postgres" "vaultwarden"))
+               (file rakuen.yaml)
+               (group "postgres"))))))
 #+end_src
 
 * Networking & SSH
 #+begin_src scheme :noweb-ref module
   (gnu services avahi)
   (gnu services networking)
+  (gnu services security)
   (gnu services ssh)
   (rosenthal services networking)
 #+end_src
@@ -151,7 +163,7 @@ Administration accounts.
 #+begin_src scheme :noweb-ref service
   (service nftables-service-type
     (nftables-configuration
-      (ruleset (local-file (testament-plain "rakuen/nftables.conf")))))
+      (ruleset (local-file (testament-plain "rakuen.nftables")))))
 #+end_src
 
 ** tailscale
@@ -166,6 +178,16 @@ Administration accounts.
       (openssh (spec->pkg "openssh-sans-x"))
       (permit-root-login 'prohibit-password)
       (password-authentication? #f)))
+#+end_src
+
+** fail2ban
+#+begin_src scheme :noweb-ref service
+  (service fail2ban-service-type
+    (fail2ban-configuration
+      (extra-jails
+       (list (fail2ban-jail-configuration
+               (name "sshd")
+               (enabled? #t))))))
 #+end_src
 
 * Session and Seat Management
@@ -210,7 +232,7 @@ Administration accounts.
 
 * Web Servers & Services
 #+begin_src scheme :noweb-ref module
-  (rosenthal services child-error)
+  (gnu services web)
   (rosenthal services mail)
   (rosenthal services web)
 #+end_src
@@ -226,7 +248,7 @@ Administration accounts.
 #+name: caddy-config
 #+begin_src scheme
   (computed-substitution-with-inputs "rakuen.caddyfile"
-    (local-file (testament-plain "rakuen/Caddyfile"))
+    (local-file (testament-plain "rakuen.caddyfile"))
     (cons (testament-plain)
           (specs->pkgs "ai-robots-txt")))
 #+end_src
@@ -236,7 +258,7 @@ Administration accounts.
   (simple-service 'guix-moe-mirror
       shepherd-root-service-type
     (list (shepherd-timer '(guix-moe-mirror)
-            #~(calendar-event #:hours '(4) #:minutes '(0))
+            #~(calendar-event #:hours (list (random 24)) #:minutes '(0))
             #~(#$(program-file "guix-moe-mirror"
                    (with-imported-modules '((guix build utils))
                      #~(begin
@@ -310,48 +332,21 @@ Administration accounts.
 #+begin_src scheme :noweb-ref service
   (service miniflux-service-type
     (miniflux-configuration
-      (options
-       `(("BASE_URL" . "https://reader.boiledscript.com/")
-         ("CLEANUP_ARCHIVE_READ_DAYS" . -1)
-         ("CLEANUP_ARCHIVE_UNREAD_DAYS" . -1)
-         ("DATABASE_URL" . ,(sops-str rakuen.yaml '("miniflux")))
-         ("LISTEN_ADDR" . "127.0.0.1:51787")
-         ("RUN_MIGRATIONS" . 1)))))
-#+end_src
-
-** misskey
-https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
-#+begin_src scheme :noweb-ref service
-  (service misskey-service-type
-    (misskey-configuration
-      (image "ghcr.io/rakino/misskey:latest")
-      (config
-       `((url . "https://social.boiledscript.com")
-         (port . 54493)
-         (db
-          . ((host . localhost)
-             (port . 5432)
-             (db . misskey)
-             (user . misskey)
-             (pass . ,(sops-str rakuen.yaml '("misskey")))))
-         (dbReplications . #f)
-         (redis
-          . ((host . localhost)
-             (port . 6379)))
-         (fulltextSearch
-          . ((provider . sqlLike)))
-         (id . "aid")
-         (clusterLimit . 4)
-         (outgoingAddressFamily . dual)
-         (proxyRemoteFiles . #t)
-         (signToActivityPubGet . #t)))))
+      (listen-address "127.0.0.1:51787")
+      (base-url "https://reader.boiledscript.com/")
+      (extra-settings
+       '("CLEANUP_ARCHIVE_READ_DAYS=-1"
+         "CLEANUP_ARCHIVE_UNREAD_DAYS=-1"))))
 #+end_src
 
 ** vaultwarden
 #+begin_src scheme :noweb-ref service
   (service vaultwarden-service-type
     (vaultwarden-configuration
-      (database-url (sops-str rakuen.yaml '("vaultwarden")))
+      (postgresql-password-file "/run/secrets/postgres/vaultwarden")
+      (database-url
+       (format #f "postgresql://vaultwarden:~a@localhost/vaultwarden"
+               (sops-str rakuen.yaml '("postgres" "vaultwarden"))))
       (port 23263)
       (extra-options '(("ROCKET_ADDRESS" . "127.0.0.1")))))
 #+end_src
@@ -366,5 +361,12 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
   (service alloy-service-type
     (alloy-configuration
       (alloy (spec->pkg "alloy-bin-aarch64-linux"))
-      (config (local-file (testament-blobs "rakuen.alloy")))))
+      (config
+       (plain-file "rakuen.alloy"
+         (string-join
+          (list (sops-str dorphine.yaml '("alloy"))
+                (file-content (testament-plain "alloy/node-exporter.alloy"))
+                (file-content (testament-plain "alloy/docker.alloy"))
+                (file-content (testament-plain "alloy/caddy.alloy")))
+          "\n")))))
 #+end_src

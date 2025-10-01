@@ -102,9 +102,9 @@
         "format-wifi": " {ifname}",
         "format-ethernet": "{ipaddr}/{cidr} ",
         "tooltip-format": "{essid} via {gwaddr}",
-        "format-linked": "{essid} (No IP) ",
+        // "format-linked": "{essid} (No IP) ",
         "format-disconnected": "Disconnected ⚠",
-        "format-alt": "{essid}: {ipaddr}/{cidr}"
+        // "format-alt": "{essid}: {ipaddr}/{cidr}"
     },
     "custom/media": {
         "format": "{icon} {}",

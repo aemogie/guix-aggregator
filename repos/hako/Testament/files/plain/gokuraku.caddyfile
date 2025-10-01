@@ -33,6 +33,7 @@
 	log {
 		output file /var/log/caddy/{args[0]}.log
 		format filter {
+			wrap json
 			request>remote_ip ip_mask {
 				ipv4 20
 				ipv6 44
@@ -41,8 +42,19 @@
 				ipv4 20
 				ipv6 44
 			}
-			wrap json
+			fields {
+				request>uri query {
+					delete access_token
+				}
+			}
 		}
+	}
+}
+
+(tailscale) {
+	@tailscale client_ip 100.64.0.0/10 fd7a:115c:a1e0::/48
+	handle @tailscale {
+		{block}
 	}
 }
 
@@ -74,58 +86,61 @@
 }
 
 
-# Blog
-ultrarare.space {
+files.boiledscript.com {
 	import block_bots
-	import logging ultrarare.space
+	import logging files.boiledscript.com
 
-	root * /var/lib/webpublic/blog
-	handle_errors {
-		rewrite * /{err.status_code}.html
-		file_server
-	}
-	handle_path /comments/* {
-		reverse_proxy localhost:42174
-	}
-	file_server
+	root * /var/lib/webpublic/files
+	file_server browse
 }
 
-www.ultrarare.space {
-	redir https://ultrarare.space{uri} permanent
-}
-
-# Miniflux
-reader.boiledscript.com {
-	import block_bots
-	import logging reader.boiledscript.com
-
-	reverse_proxy localhost:51787
+# Forgejo
+git.ultrarare.space {
+	import tailscale {
+		reverse_proxy localhost:48071
+	}
 }
 
 # Misskey
-social.boiledscript.com {
+boiledscript.com {
 	import block_bots
 	import logging social.boiledscript.com
 
 	reverse_proxy localhost:54493
 }
 
-# Vaultwarden
-vault.boiledscript.com {
+
+# Cuirass
+ci.guix.moe {
 	import block_bots
-	import logging vault.boiledscript.com
-
-	reverse_proxy localhost:23263
-}
-
-cache-fi.guix.moe {
-	import block_bots
-	import logging cache-fi.guix.moe
+	import logging ci.guix.moe
 
 	@guix_publish {
-		path /*.narinfo || /nix-cache-info || /signing-key.pub
+		path /*.narinfo || /file/* || /nar/* || /nix-cache-info || /signing-key.pub
 	}
 	handle @guix_publish {
+		reverse_proxy localhost:49637
+	}
+
+	@forgejo_hooks {
+		path /admin/forgejo/event || /jobset/*/hook/evaluate
+	}
+	handle @forgejo_hooks {
+		import /run/secrets/caddy/cuirass/forgejo
+	}
+
+	handle /admin/* {
+		import /run/secrets/caddy/cuirass/admin
+	}
+
+	reverse_proxy localhost:17732
+}
+
+cache-de.guix.moe {
+	import block_bots
+	import logging cache-de.guix.moe
+
+	handle /*.narinfo {
 		root * /var/cache/guix-moe/narinfo
 		file_server
 	}
@@ -141,9 +156,24 @@ cache-fi.guix.moe {
 	}
 }
 
-mail.boiledscript.com {
-	import block_bots
-	respond /* "Access denied" 403 {
-		close
+
+# Grafana
+dash.ultrarare.space {
+	import tailscale {
+		reverse_proxy localhost:13064
 	}
+}
+
+# Loki
+logs.boiledscript.com {
+	import block_bots
+	import /run/secrets/caddy/loki
+	reverse_proxy localhost:50968
+}
+
+# Mimir
+metrics.boiledscript.com {
+	import block_bots
+	import /run/secrets/caddy/mimir
+	reverse_proxy localhost:49951
 }

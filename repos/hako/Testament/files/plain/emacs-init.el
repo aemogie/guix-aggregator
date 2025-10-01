@@ -8,7 +8,7 @@
     (make-empty-file custom-file)
   (load custom-file))
 
-(load-file "$$emacs/fonts.el$$")
+(load-file "$$emacs-fonts.el$$")
 
 ;; Tweak garbage collection strategy.
 ;;guix:emacs-gcmh
@@ -77,6 +77,11 @@
   (load-theme 'modus-operandi-tinted :no-confirm)
   :hook
   (after-init . menu-bar-mode))
+
+;;guix:emacs-adaptive-wrap
+(use-package adaptive-wrap
+  :hook
+  (visual-line-mode . adaptive-wrap-prefix-mode))
 
 (use-package completion-preview
   :custom
@@ -185,6 +190,13 @@
   ;; Tidy shadowed file names.
   :hook
   (rfn-eshadow-update-overlay . vertico-directory-tidy))
+
+;;guix:emacs-visual-fill-column
+(use-package visual-fill-column
+  :custom
+  (visual-fill-column-center-text t)
+  :hook
+  (visual-line-mode . visual-fill-column-mode))
 
 (use-package which-key
   :config

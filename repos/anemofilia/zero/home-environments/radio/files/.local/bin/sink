@@ -1,0 +1,21 @@
+#!/usr/bin/env -S guile
+!#
+
+(use-modules (radix system monitoring) (ice-9 format) (ice-9 match))
+
+(match (command-line)
+  [(_ "status") #f]
+  [(_ "toggle" "mute")
+   (system "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")]
+  [(_ "volume" "up")
+   (system "wpctl set-volume -l 1.2 @DEFAULT_AUDIO_SINK@ 5%+")]
+  [(_ "volume" "down")
+   (system "wpctl set-volume -l 1.2 @DEFAULT_AUDIO_SINK@ 5%-")]
+  [else (error "Unknown subcommand")])
+
+(call-with-values
+  (lambda () (sink-volume))
+  (lambda (volume status)
+    (format #t "{\"volume\": ~d, \"muted\": ~a}~%"
+               (inexact->exact (round volume))
+               (if (equal? status "Muted") "true" "false"))))

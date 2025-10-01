@@ -1,0 +1,170 @@
+# SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space>
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: CC-BY-SA-4.0
+
+#+TITLE: worker
+#+PROPERTY: header-args :noweb-prefix no
+
+* Guix System
+#+begin_src scheme :tangle worker.scm :noweb yes
+  (load "../common.scm")
+  (use-modules (rosenthal) <<module>>)
+
+  (define (%os system 32bit-support? jobs threads-per-job bios-boot)
+    (operating-system
+      (host-name "temp")
+      (timezone "Etc/GMT-8")
+      (bootloader
+       (bootloader-configuration
+         (bootloader
+           (if bios-boot
+               grub-bootloader
+               grub-efi-removable-bootloader))
+         (targets (list (or bios-boot "/efi")))
+         (theme
+          (grub-theme
+            (inherit (grub-theme))
+            (resolution #f)))))
+      (kernel (spec->pkg "linux-libre@6.12"))
+      (kernel-arguments
+       (cons* "kernel.sysrq=0"
+              "zswap.enabled=1"
+              "zswap.max_pool_percent=90"
+              %default-kernel-arguments))
+      (initrd-modules
+       (cons* "sd_mod"
+              "virtio_scsi"
+              %base-initrd-modules))
+      (file-systems (append <<file-systems>> %base-file-systems))
+      (swap-devices
+       (list (swap-space
+               (target (file-system-label "swap")))))
+      (users (cons* <<user>> %base-user-accounts))
+      (packages
+       (append (specs->pkgs+out
+                "mosh"
+                "rsync"
+                <<package>>)
+               %base-packages))
+      (services
+       (cons* <<service>>
+              (modify-services %base-services
+                (guix-service-type
+                 config => (guix-configuration
+                             (inherit config)
+                             (build-accounts (* 2 jobs))
+                             (extra-options
+                              (list "--max-jobs" (number->string jobs)
+                                    "--cores" (number->string threads-per-job))))))))))
+
+  %os
+#+end_src
+
+* Base
+#+begin_src scheme :noweb-ref module
+  (gnu services linux)
+  (gnu services ssh)
+  (gnu services sysctl)
+#+end_src
+
+** Kernel
+#+begin_src scheme :noweb-ref service
+  (simple-service 'extend-kernel-module-loader
+      kernel-module-loader-service-type
+    '("sch_fq_pie" "tcp_bbr"))
+
+  (simple-service 'extend-sysctl
+      sysctl-service-type
+    '(("net.core.default_qdisc" . "fq_pie")
+      ("net.ipv4.tcp_congestion_control" . "bbr")))
+#+end_src
+
+** File Systems
+#+begin_src scheme :noweb-ref file-systems
+  (list (file-system
+          (device (file-system-label "root"))
+          (mount-point "/")
+          (type "xfs")))
+
+  (if bios-boot
+      '()
+      (list (file-system
+              (device (file-system-label "boot"))
+              (mount-point "/efi")
+              (type "vfat"))))
+#+end_src
+
+** Users
+#+begin_src scheme :noweb-ref service
+  (simple-service 'extend-openssh
+      openssh-service-type
+    `(("root" ,%ssh-key-deploy)))
+#+end_src
+
+** Guix Daemon
+#+begin_src scheme :noweb-ref service
+  (simple-service 'extend-guix
+      guix-service-type
+    (guix-extension
+      (authorized-keys
+       (list %guix-authorized-key-dorphine
+             %guix-authorized-key-gokuraku))))
+#+end_src
+
+* Networking & SSH
+#+begin_src scheme :noweb-ref module
+  (gnu services avahi)
+  (gnu services networking)
+  (gnu services ssh)
+  (rosenthal services networking)
+#+end_src
+
+** avahi
+#+begin_src scheme :noweb-ref service
+  (service avahi-service-type)
+#+end_src
+
+** dhcpcd
+#+begin_src scheme :noweb-ref service
+  (service dhcpcd-service-type)
+#+end_src
+
+** tailscale
+#+begin_src scheme :noweb-ref service
+  (service tailscale-service-type)
+#+end_src
+
+** openssh
+#+begin_src scheme :noweb-ref service
+  (service openssh-service-type
+    (openssh-configuration
+      (openssh (spec->pkg "openssh-sans-x"))
+      (permit-root-login 'prohibit-password)
+      (password-authentication? #f)))
+#+end_src
+
+* Continuous Integration
+#+begin_src scheme :noweb-ref module
+  (gnu services cuirass)
+#+end_src
+
+** cuirass-remote-worker
+Open TCP port 5558 and connect to server IPv4 address.
+#+begin_src scheme :noweb-ref service
+  (service cuirass-remote-worker-service-type
+    (cuirass-remote-worker-configuration
+      (publish-port 5558)
+      (workers jobs)
+      (server "100.97.195.93:5555")       ;gokuraku (Tailscale)
+      (systems
+       (cond
+        ((string=? system "x86_64-linux")
+         `("x86_64-linux"
+           ,@(if 32bit-support? '("i686-linux") '())))
+        ((string=? system "aarch64-linux")
+         `("aarch64-linux"
+           ,@(if 32bit-support? '("armhf-linux") '())))))
+      (substitute-urls
+       `("https://ci.guix.moe"
+         ,@%default-substitute-urls))))
+#+end_src

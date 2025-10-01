@@ -1,0 +1,10 @@
+# SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+BaseUrl = 'https://music.boiledscript.com'
+Address = '127.0.0.1'
+Port = 43502
+MusicFolder = '/mnt/Ocimeae/Library/Music'
+EnableSharing = true
+Scanner.Extractor = 'ffmpeg'

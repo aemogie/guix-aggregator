@@ -1,9 +1,6 @@
 #!/usr/bin/env -S guile -e main -s
 !#
 
-(eval-when (expand load)
-  (load (format #f "~a/.guile" (getenv "HOME"))))
-
 (use-modules (ice-9 ftw)
              (ice-9 match)
              (taglib))
@@ -30,8 +27,8 @@
                 (track (taglib-open (format #f "~a/~a" album-path filename-2)))))))
 
 (define (make-song-list! album-path)
-  (call-with-output-file (format #f "~a/~a--Album.txt"
-                                 album-path (basename album-path))
+  (call-with-output-file
+      (format #f "~a/~a--Album.txt" album-path (basename album-path))
     (lambda (port)
       (for-each (lambda (song)
                   (format port "~a~%" song))

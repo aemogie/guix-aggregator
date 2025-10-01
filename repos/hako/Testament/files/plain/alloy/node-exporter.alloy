@@ -1,0 +1,26 @@
+prometheus.exporter.unix "node_exporter" {
+  include_exporter_metrics = true
+}
+
+discovery.relabel "node_exporter" {
+  targets = prometheus.exporter.unix.node_exporter.targets
+
+  rule {
+    target_label = "instance"
+    replacement  = constants.hostname
+  }
+
+  rule {
+    target_label = "job"
+    replacement = "node_exporter"
+  }
+}
+
+prometheus.scrape "node_exporter" {
+  targets    = discovery.relabel.node_exporter.output
+  forward_to = [prometheus.relabel.node_exporter.receiver]
+}
+
+prometheus.relabel "node_exporter" {
+  forward_to = [prometheus.remote_write.metrics.receiver]
+}

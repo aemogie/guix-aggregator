@@ -16,7 +16,7 @@
       (timezone "Etc/GMT-8")
       (bootloader
         (bootloader-configuration
-          (bootloader grub-efi-removable-bootloader)
+          (bootloader uefi-uki-removable-bootloader)
           (targets '("/efi"))))
       (kernel (spec->pkg "linux-libre@6.12"))
       (kernel-arguments
@@ -31,20 +31,17 @@
       (users (cons* <<user>> %base-user-accounts))
       (packages
        (append (specs->pkgs+out
+                "curl"
+                "fd"
                 "gnupg"
                 "mosh"
+                "rclone-bin"
+                "ripgrep"
                 "rsync"
                 "sops"
                 <<package>>)
                %base-packages))
-      (services
-       (cons* <<service>>
-              (modify-services %base-services
-                (guix-service-type
-                 config => (guix-configuration
-                             (inherit config)
-                             (extra-options '("--cores=4" "--max-jobs=2")))))))
-      (name-service-switch %default-nss)))
+      (services (cons* <<service>> %base-services))))
 
   ((compose (rosenthal-transformation-zfs #:boot? #t))
    %os)
@@ -107,7 +104,8 @@ Administration accounts.
 #+begin_src scheme :noweb-ref user
   (user-account
     (inherit %root-account)
-    (password #f))
+    (password #f)
+    (shell (file-append (spec->pkg "fish") "/bin/fish")))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -139,6 +137,28 @@ Administration accounts.
       (negative-ttl (* 2 60))))
 #+end_src
 
+rsync://cache.boiledscript.com
+#+begin_src scheme :noweb-ref service
+  (service rsync-service-type
+    (rsync-configuration
+      (modules
+       (list #;(rsync-module
+               (name "substitutes")
+               (file-name "/var/cache/guix/publish"))
+             (rsync-module
+               (name "narinfo")
+               (file-name "/var/cache/guix-moe/narinfo"))))))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'setup-mirror
+      shepherd-root-service-type
+    (list (shepherd-timer '(setup-mirror)
+            #~(calendar-event #:hours '(0 6 12 18) #:minutes '(0))
+            #~("/bin/sh" #$(local-file (testament-plain "setup-mirror.sh")))
+            #:requirement '(user-processes))))
+#+end_src
+
 ** SOPS Secrets
 #+begin_src scheme :noweb-ref service
   (service sops-secrets-service-type
@@ -152,34 +172,45 @@ Administration accounts.
                (file gokuraku.yaml)
                (user "caddy"))
              (sops-secret
+               (key '("rclone"))
+               (file gokuraku.yaml))
+
+             (sops-secret
                (key '("caddy" "cuirass" "admin"))
                (file gokuraku.yaml)
-               (user "caddy"))
+               (group "caddy"))
              (sops-secret
                (key '("caddy" "cuirass" "forgejo"))
                (file gokuraku.yaml)
-               (user "caddy"))
+               (group "caddy"))
              (sops-secret
                (key '("caddy" "loki"))
                (file gokuraku.yaml)
-               (user "caddy"))
+               (group "caddy"))
              (sops-secret
                (key '("caddy" "mimir"))
                (file gokuraku.yaml)
-               (user "caddy"))
+               (group "caddy"))
+
              (sops-secret
-               (key '("grafana"))
+               (key '("postgres" "forgejo"))
                (file gokuraku.yaml)
-               (user "grafana"))
+               (group "postgres"))
              (sops-secret
-               (key '("rclone"))
-               (file gokuraku.yaml))))))
+               (key '("postgres" "grafana"))
+               (file gokuraku.yaml)
+               (group "postgres"))
+             (sops-secret
+               (key '("postgres" "misskey"))
+               (file gokuraku.yaml)
+               (group "postgres"))))))
 #+end_src
 
 * Networking & SSH
 #+begin_src scheme :noweb-ref module
   (gnu services avahi)
   (gnu services networking)
+  (gnu services security)
   (gnu services ssh)
   (rosenthal services networking)
 #+end_src
@@ -205,7 +236,7 @@ Administration accounts.
 #+begin_src scheme :noweb-ref service
   (service nftables-service-type
     (nftables-configuration
-      (ruleset (local-file (testament-plain "gokuraku/nftables.conf")))))
+      (ruleset (local-file (testament-plain "gokuraku.nftables")))))
 #+end_src
 
 ** tailscale
@@ -222,6 +253,47 @@ Administration accounts.
       (password-authentication? #f)))
 #+end_src
 
+** fail2ban
+#+begin_src scheme :noweb-ref service
+  (service fail2ban-service-type
+    (fail2ban-configuration
+      (extra-jails
+       (list (fail2ban-jail-configuration
+               (name "sshd")
+               (enabled? #t))))))
+#+end_src
+
+* Session and Seat Management
+** elogind
+#+begin_src scheme :noweb-ref service
+  (service elogind-service-type)
+#+end_src
+
+* Containers & Virtualization
+#+begin_src scheme :noweb-ref module
+  (gnu services docker)
+  (gnu services virtualization)
+#+end_src
+
+** binfmt_misc
+#+begin_src scheme :noweb-ref service
+  (service qemu-binfmt-service-type
+    (qemu-binfmt-configuration
+      (platforms (lookup-qemu-platforms "aarch64"))))
+#+end_src
+
+** containerd
+#+begin_src scheme :noweb-ref service
+  (service containerd-service-type)
+#+end_src
+
+** docker
+#+begin_src scheme :noweb-ref service
+  (service docker-service-type
+    (docker-configuration
+      (enable-iptables? #f)))
+#+end_src
+
 * Databases
 #+begin_src scheme :noweb-ref module
   (gnu services databases)
@@ -231,7 +303,35 @@ Administration accounts.
 #+begin_src scheme :noweb-ref service
   (service postgresql-service-type
     (postgresql-configuration
-      (postgresql (spec->pkg "postgresql@15"))))
+      (postgresql (spec->pkg "postgresql@16"))
+      (config-file
+       (postgresql-config-file
+         (log-destination "stderr")
+         (extra-config
+          '(("max_connections" 500)
+            ("shared_buffers" "16GB")
+            ("effective_cache_size" "48GB")
+            ("maintenance_work_mem" "2GB")
+            ("checkpoint_completion_target" 0.9)
+            ("wal_buffers" "16MB")
+            ("default_statistics_target" 100)
+            ("random_page_cost" 4)
+            ("effective_io_concurrency" 2)
+            ("work_mem" "80659kB")
+            ("huge_pages" "try")
+            ("min_wal_size" "1GB")
+            ("max_wal_size" "4GB")
+            ("max_worker_processes" 8)
+            ("max_parallel_workers_per_gather" 4)
+            ("max_parallel_workers" 8)
+            ("max_parallel_maintenance_workers" 4)
+            ("logging_collector" #t)
+            ("log_directory" "/var/log/postgresql")))))))
+#+end_src
+
+** redis
+#+begin_src scheme :noweb-ref service
+  (service redis-service-type)
 #+end_src
 
 * Continuous Integration
@@ -245,6 +345,7 @@ Remember to open TCP port 5555 and 5556.
 #+begin_src scheme :noweb yes :noweb-ref service
   (service cuirass-service-type
     (cuirass-configuration
+      (cuirass (spec->pkg "cuirass-dolly"))
       ;; 6 hours
       (interval (* 6 3600))
       (parameters
@@ -263,57 +364,6 @@ Remember to open TCP port 5555 and 5556.
       (specifications #~(list <<cuirass-spec>>))))
 #+end_src
 
-** mirroring
-rsync://cache.boiledscript.com
-#+begin_src scheme :noweb-ref service
-  (service rsync-service-type
-    (rsync-configuration
-      (modules
-       (list #;(rsync-module
-               (name "substitutes")
-               (file-name "/var/cache/guix/publish"))
-             (rsync-module
-               (name "narinfo")
-               (file-name "/var/cache/guix/narinfo"))))))
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (simple-service 'setup-mirror
-      shepherd-root-service-type
-    (list (shepherd-timer '(setup-mirror)
-            #~(calendar-event #:hours '(0 6 12 18) #:minutes '(0))
-            #~(#$(program-file "setup-mirror"
-                   (with-imported-modules '((guix build utils))
-                     #~(begin
-                         (use-modules (guix build utils))
-                         ;; Upload storage to Cloudflare R2.
-                         (invoke "/bin/sh"
-                                 #$(local-file (testament-plain "gokuraku/sync-r2.sh"))
-                                 #$(file-append (spec->pkg "rclone-bin") "/bin/rclone"))
-                         ;; Set up narinfo mirror.
-                         (mkdir-p "/var/cache/guix/narinfo")
-                         (invoke #$(file-append (spec->pkg "rsync") "/bin/rsync")
-                                 "/var/cache/guix/publish/" "/var/cache/guix/narinfo/"
-                                 "-avh"
-                                 "--delete"
-                                 "--exclude" "/hashes"
-                                 "--exclude" "/nar")))))
-            #:requirement '(user-processes))))
-#+end_src
-
-** cuirass-remote-worker
-#+begin_src scheme :noweb-ref service
-  (service cuirass-remote-worker-service-type
-    (cuirass-remote-worker-configuration
-      (publish-port 5558)
-      (workers 2)
-      (systems '("x86_64-linux" "i686-linux"))
-      (server "127.0.0.1:5555")
-      (substitute-urls
-       `("https://ci.guix.moe"
-         ,@%default-substitute-urls))))
-#+end_src
-
 ** cuirass specifications
 *** channels
 #+begin_src scheme :noweb-ref cuirass-spec
@@ -321,18 +371,16 @@ rsync://cache.boiledscript.com
     (name "emacs-master")
     (build '(channels emacs-master))
     (channels
-     (list (channel
-             (inherit %default-guix-channel)
-             (url "https://codeberg.org/guix/guix.git"))
-           (channel
-             (name 'emacs-master)
-             (url "https://github.com/gs-101/emacs-master.git")
-             (branch "main")
-             (introduction
-              (make-channel-introduction
-               "568579841d0ca41a9d222a2cfcad9a7367f9073b"
-               (openpgp-fingerprint
-                "3049 BF6C 0829 94E4 38ED  4A15 3033 E0E9 F7E2 5FE4"))))))
+     (cons* (channel
+              (name 'emacs-master)
+              (url "https://github.com/gs-101/emacs-master.git")
+              (branch "main")
+              (introduction
+               (make-channel-introduction
+                "568579841d0ca41a9d222a2cfcad9a7367f9073b"
+                (openpgp-fingerprint
+                 "3049 BF6C 0829 94E4 38ED  4A15 3033 E0E9 F7E2 5FE4"))))
+            %default-channels))
     (priority 5)
     (systems '("x86_64-linux")))
 #+end_src
@@ -341,14 +389,11 @@ rsync://cache.boiledscript.com
   (specification
     (name "guix")
     (build '(channels guix))
-    (channels
-     (list (channel
-             (inherit %default-guix-channel)
-             (url "https://codeberg.org/guix/guix.git"))))
-    ;; 1 week
-    (period (* 7 24 3600))
+    (channels %default-channels)
+    ;; 1 day
+    (period (* 24 3600))
     (priority 7)
-    (systems '("x86_64-linux")))
+    (systems '("x86_64-linux" "aarch64-linux")))
 #+end_src
 
 #+begin_src scheme :noweb-ref cuirass-spec
@@ -356,17 +401,15 @@ rsync://cache.boiledscript.com
     (name "guixcn")
     (build '(channels guixcn))
     (channels
-     (list (channel
-             (inherit %default-guix-channel)
-             (url "https://codeberg.org/guix/guix.git"))
-           (channel
-             (name 'guixcn)
-             (url "https://codeberg.org/guixcn/guix-channel.git")
-             (introduction
-              (make-channel-introduction
-               "993d200265630e9c408028a022f32f34acacdf29"
-               (openpgp-fingerprint
-                "7EBE A494 60CE 5E2C 0875  7FDB 3B5A A993 E1A2 DFF0"))))))
+     (cons* (channel
+              (name 'guixcn)
+              (url "https://codeberg.org/guixcn/guix-channel.git")
+              (introduction
+               (make-channel-introduction
+                "993d200265630e9c408028a022f32f34acacdf29"
+                (openpgp-fingerprint
+                 "7EBE A494 60CE 5E2C 0875  7FDB 3B5A A993 E1A2 DFF0"))))
+            %default-channels))
     (priority 5)
     (systems '("x86_64-linux"))
     (properties '((forge-type . forgejo))))
@@ -377,17 +420,15 @@ rsync://cache.boiledscript.com
     (name "nonguix")
     (build '(channels nonguix))
     (channels
-     (list (channel
-             (inherit %default-guix-channel)
-             (url "https://codeberg.org/guix/guix.git"))
-           (channel
-             (name 'nonguix)
-             (url "https://gitlab.com/nonguix/nonguix")
-             (introduction
-              (make-channel-introduction
-               "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
-               (openpgp-fingerprint
-                "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))))
+     (cons* (channel
+              (name 'nonguix)
+              (url "https://gitlab.com/nonguix/nonguix")
+              (introduction
+               (make-channel-introduction
+                "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
+                (openpgp-fingerprint
+                 "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))
+            %default-channels))
     (priority 3)
     (systems '("x86_64-linux" "aarch64-linux")))
 #+end_src
@@ -397,17 +438,15 @@ rsync://cache.boiledscript.com
     (name "rde")
     (build '(channels rde))
     (channels
-     (list (channel
-             (inherit %default-guix-channel)
-             (url "https://codeberg.org/guix/guix.git"))
-           (channel
-             (name 'rde)
-             (url "https://git.sr.ht/~abcdw/rde")
-             (introduction
-              (make-channel-introduction
-               "257cebd587b66e4d865b3537a9a88cccd7107c95"
-               (openpgp-fingerprint
-                "2841 9AC6 5038 7440 C7E9  2FFA 2208 D209 58C1 DEB0"))))))
+     (cons* (channel
+              (name 'rde)
+              (url "https://git.sr.ht/~abcdw/rde")
+              (introduction
+               (make-channel-introduction
+                "257cebd587b66e4d865b3537a9a88cccd7107c95"
+                (openpgp-fingerprint
+                 "2841 9AC6 5038 7440 C7E9  2FFA 2208 D209 58C1 DEB0"))))
+            %default-channels))
     (priority 5)
     (systems '("x86_64-linux")))
 #+end_src
@@ -417,21 +456,52 @@ rsync://cache.boiledscript.com
     (name "rosenthal")
     (build '(channels rosenthal))
     (channels
-     (list (channel
-             (inherit %default-guix-channel)
-             (url "https://codeberg.org/guix/guix.git"))
-           (channel
-             (name 'rosenthal)
-             (url "https://codeberg.org/hako/rosenthal.git")
-             (branch "trunk")
-             (introduction
-              (make-channel-introduction
-               "7677db76330121a901604dfbad19077893865f35"
-               (openpgp-fingerprint
-                "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7"))))))
+     (cons* (channel
+              (name 'rosenthal)
+              (url "https://codeberg.org/hako/rosenthal.git")
+              (branch "trunk")
+              (introduction
+               (make-channel-introduction
+                "7677db76330121a901604dfbad19077893865f35"
+                (openpgp-fingerprint
+                 "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7"))))
+            %default-channels))
     (priority 5)
     (systems '("x86_64-linux" "aarch64-linux"))
     (properties '((forge-type . forgejo))))
+#+end_src
+
+*** tarballs
+#+begin_src scheme :noweb-ref cuirass-spec
+  (specification
+    (name "tarball-guix")
+    (build 'tarball)
+    (channels %default-channels)
+    ;; 3 months
+    (period (* 3 2592000))
+    (priority 9)
+    (systems '("x86_64-linux" "aarch64-linux")))
+#+end_src
+
+#+begin_src scheme :noweb-ref cuirass-spec
+  (specification
+    (name "tarball-guix-dolly")
+    (build '(custom (rosenthal ci tarball)))
+    (channels
+     (cons* (channel
+              (name 'rosenthal)
+              (url "https://codeberg.org/hako/rosenthal.git")
+              (branch "trunk")
+              (introduction
+               (make-channel-introduction
+                "7677db76330121a901604dfbad19077893865f35"
+                (openpgp-fingerprint
+                 "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7"))))
+            %default-channels))
+    ;; 3 months
+    (period (* 3 2592000))
+    (priority 9)
+    (systems '("x86_64-linux" "aarch64-linux")))
 #+end_src
 
 * Web Servers & Services
@@ -450,7 +520,7 @@ rsync://cache.boiledscript.com
 #+name: caddy-config
 #+begin_src scheme
   (computed-substitution-with-inputs "gokuraku.caddyfile"
-    (local-file (testament-plain "gokuraku/Caddyfile"))
+    (local-file (testament-plain "gokuraku.caddyfile"))
     (cons (testament-plain)
           (specs->pkgs "ai-robots-txt")))
 #+end_src
@@ -469,7 +539,81 @@ rsync://cache.boiledscript.com
 #+begin_src scheme :noweb-ref service
   (service forgejo-service-type
     (forgejo-configuration
-      (config-file (local-file (testament-blobs "forgejo.ini")))))
+      (postgresql-password-file "/run/secrets/postgres/forgejo")
+      (config
+       `((#f
+          ("APP_NAME" . "URSpace VCS")
+          ("RUN_USER" . "forgejo")
+          ("WORK_PATH" . "/var/lib/forgejo")
+          ("RUN_MODE" . "prod"))
+         ,@(call-with-input-string (sops-str gokuraku.yaml '("forgejo")) read)
+         ("ui"
+          ("AMBIGUOUS_UNICODE_DETECTION" . "false"))
+         ("repository"
+          ("ROOT" . "/var/lib/forgejo/data/forgejo-repositories")
+          ("PREFERRED_LICENSES" . "GPL-3.0-or-later")
+          ("ENABLE_PUSH_CREATE_USER" . "true")
+          ("ENABLE_PUSH_CREATE_ORG" . "true")
+          ("DEFAULT_REPO_UNITS" . "repo.code,repo.releases,repo.issues,repo.pulls")
+          ("DEFAULT_BRANCH" . "trunk")
+          ("DISABLE_DOWNLOAD_SOURCE_ARCHIVES" . "true"))
+         ("lfs"
+          ("PATH" . "/var/lib/forgejo/data/lfs"))
+         ("service"
+          ("REGISTER_EMAIL_CONFIRM" . "true")
+          ("ENABLE_NOTIFY_MAIL" . "true")
+          ("DISABLE_REGISTRATION" . "true")
+          ("ALLOW_ONLY_EXTERNAL_REGISTRATION" . "false")
+          ("ENABLE_CAPTCHA" . "false")
+          ("REQUIRE_SIGNIN_VIEW" . "false")
+          ("DEFAULT_KEEP_EMAIL_PRIVATE" . "true")
+          ("DEFAULT_ALLOW_CREATE_ORGANIZATION" . "true")
+          ("DEFAULT_ENABLE_TIMETRACKING" . "true")
+          ("NO_REPLY_ADDRESS" . "noreply.localhost"))
+         ("openid"
+          ("ENABLE_OPENID_SIGNIN" . "false")
+          ("ENABLE_OPENID_SIGNUP" . "false"))
+         ("cron.update_checker"
+          ("ENABLED" . "false"))
+         ("session"
+          ("PROVIDER" . "file"))
+         ("log"
+          ("MODE" . "file")
+          ("LEVEL" . "info")
+          ("ROOT_PATH" . "/var/log/forgejo"))
+         ("repository.pull-request"
+          ("DEFAULT_MERGE_STYLE" . "rebase"))
+         ("repository.signing"
+          ("DEFAULT_TRUST_MODEL" . "committer"))))))
+#+end_src
+
+** misskey
+https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
+#+begin_src scheme :noweb-ref service
+  (service misskey-service-type
+    (misskey-configuration
+      (postgresql-password-file "/run/secrets/postgres/misskey")
+      (image "ghcr.io/rakino/misskey:latest")
+      (config
+       `(("url" . "https://boiledscript.com")
+         ("port" . 54493)
+         ("db"
+          ("host" . "localhost")
+          ("port" . 5432)
+          ("db" . "misskey")
+          ("user" . "misskey")
+          ("pass" . ,(sops-str gokuraku.yaml '("postgres" "misskey"))))
+         ("dbReplications" . #f)
+         ("redis"
+          ("host" . "localhost")
+          ("port" . 6379))
+         ("fulltextSearch"
+          ("provider" . "sqlLike"))
+         ("id" . "aidx")
+         ("clusterLimit" . 4)
+         ("outgoingAddressFamily" . "dual")
+         ("proxyRemoteFiles" . #t)
+         ("signToActivityPubGet" . #t)))))
 #+end_src
 
 * Monitoring
@@ -481,20 +625,21 @@ rsync://cache.boiledscript.com
 #+begin_src scheme :noweb-ref service
   (service grafana-service-type
     (grafana-configuration
+      (postgresql-password-file "/run/secrets/postgres/grafana")
       (config
-       `((paths
-          ((data . /var/lib/grafana)
-           (logs . /var/log/grafana)
-           (plugins . /var/lib/grafana/plugins)))
-         (server
-          ((http_addr . 127.0.0.1)
-           (http_port . 13064)))
-         (database
-          ((type . postgres)
-           (host . 127.0.0.1:5432)
-           (user . grafana)
-           (password . $__file{/run/secrets/grafana})
-           (ssl_mode . disable)))))))
+       `(("paths"
+          ("data" . "/var/lib/grafana")
+          ("logs" . "/var/log/grafana")
+          ("plugins" . "/var/lib/grafana/plugins"))
+         ("server"
+          ("http_addr" . "127.0.0.1")
+          ("http_port" . "13064"))
+         ("database"
+          ("type" . "postgres")
+          ("host" . "127.0.0.1:5432")
+          ("user" . "grafana")
+          ("password" . ,(sops-str gokuraku.yaml '("postgres" "grafana")))
+          ("ssl_mode" . "disable"))))))
 #+end_src
 
 ** mimir
@@ -558,5 +703,12 @@ rsync://cache.boiledscript.com
 #+begin_src scheme :noweb-ref service
   (service alloy-service-type
     (alloy-configuration
-      (config (local-file (testament-blobs "gokuraku.alloy")))))
+      (config
+       (plain-file "gokuraku.alloy"
+         (string-join
+          (list (sops-str dorphine.yaml '("alloy"))
+                (file-content (testament-plain "alloy/node-exporter.alloy"))
+                (file-content (testament-plain "alloy/docker.alloy"))
+                (file-content (testament-plain "alloy/caddy.alloy")))
+          "\n")))))
 #+end_src

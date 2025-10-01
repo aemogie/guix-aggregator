@@ -13,4 +13,4 @@
     (machine-ssh-configuration
       (host-name "rakuen")
       (system "aarch64-linux")
-      (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP6wXEtl1KzLdwi8REdDU2uUxUiDEYNpfXI6bwXhi/Th")))))
+      (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJshFR+hdtUsKXoQzDU15+suiP76aPELYccqd04KQxZy")))))

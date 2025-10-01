@@ -18,13 +18,9 @@
        (keyboard-layout "us" "dvorak" #:options '("ctrl:nocaps")))
       (bootloader
        (bootloader-configuration
-         (bootloader grub-efi-removable-bootloader)
+         (bootloader uefi-uki-removable-bootloader)
          (targets '("/efi"))
-         (keyboard-layout keyboard-layout)
-         (theme
-          (grub-theme
-           (inherit (grub-theme))
-           (image (local-file (testament-blobs "grub.png")))))))
+         (keyboard-layout keyboard-layout)))
       (kernel-arguments
        (cons* "kernel.sysrq=1"
               "zswap.enabled=1"
@@ -39,7 +35,9 @@
       (users (cons* <<user>> %base-user-accounts))
       (packages
        (append (specs->pkgs+out
+                "curl"
                 "dino"
+                "fd"
                 "foot"
                 "git"
                 "gnupg"
@@ -48,6 +46,7 @@
                 "mpv-nvidia"
                 "niri"
                 "obs-nvidia"
+                "ripgrep"
                 "rsync"
                 "sops"
                 "steam-nvidia"
@@ -82,7 +81,7 @@
                              (inherit config)
                              (substitute-urls '())
                              (discover? #t)
-                             (extra-options '("--max-jobs=8" "--cores=4"))))
+                             (extra-options '("--max-jobs=4" "--cores=8"))))
                 (network-manager-service-type
                  config => (network-manager-configuration
                              (inherit config)
@@ -220,7 +219,8 @@ Administration accounts.
 #+begin_src scheme :noweb-ref user
   (user-account
     (inherit %root-account)
-    (password #f))
+    (password #f)
+    (shell (file-append (spec->pkg "fish") "/bin/fish")))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -253,9 +253,7 @@ Administration accounts.
       guix-service-type
     (guix-extension
       (authorized-keys %hako-guix-authorized-keys-lan)
-      (substitute-urls
-       '("https://cache-cdn.guix.moe"
-         "https://mirror.sjtu.edu.cn/guix"))))
+      (substitute-urls '("https://cache-cdn.guix.moe"))))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -356,6 +354,7 @@ Generate passwordless ECC key:
 * Networking & SSH
 #+begin_src scheme :noweb-ref module
   (gnu services networking)
+  (gnu services security)
   (gnu services ssh)
   (rosenthal services networking)
   (rosenthal services dns)
@@ -365,7 +364,7 @@ Generate passwordless ECC key:
 #+begin_src scheme :noweb-ref service
   (service nftables-service-type
     (nftables-configuration
-      (ruleset (local-file (testament-plain "dorphine/nftables.conf")))))
+      (ruleset (local-file (testament-plain "dorphine.nftables")))))
 #+end_src
 
 ** tailscale
@@ -380,6 +379,16 @@ Generate passwordless ECC key:
       (openssh (spec->pkg "openssh-sans-x"))
       (permit-root-login 'prohibit-password)
       (password-authentication? #f)))
+#+end_src
+
+** fail2ban
+#+begin_src scheme :noweb-ref service
+  (service fail2ban-service-type
+    (fail2ban-configuration
+      (extra-jails
+       (list (fail2ban-jail-configuration
+               (name "sshd")
+               (enabled? #t))))))
 #+end_src
 
 * OpenPGP & Security Token
@@ -406,7 +415,7 @@ Generate passwordless ECC key:
   (udev-rules-service 'u2f (spec->pkg "libfido2") #:groups '("plugdev"))
 #+end_src
 
-* Containers & Virtualization
+* Virtualization
 #+begin_src scheme :noweb-ref module
   (gnu services virtualization)
 #+end_src
@@ -429,7 +438,7 @@ Generate passwordless ECC key:
   (service caddy-service-type
     (caddy-configuration
       (caddy (spec->pkg "caddy-dolly"))
-      (caddyfile (local-file (testament-plain "dorphine/Caddyfile")))))
+      (caddyfile (local-file (testament-plain "dorphine.caddyfile")))))
 #+end_src
 
 ** qbittorrent
@@ -451,7 +460,7 @@ Open TCP port 5558 and connect to server IPv4 address.
   (service cuirass-remote-worker-service-type
     (cuirass-remote-worker-configuration
       (publish-port 5558)
-      (workers 8)
+      (workers 4)
       (systems '("x86_64-linux" "i686-linux"))
       (server "100.97.195.93:5555")       ;gokuraku (Tailscale)
       (substitute-urls
@@ -468,7 +477,13 @@ Open TCP port 5558 and connect to server IPv4 address.
 #+begin_src scheme :noweb-ref service
   (service alloy-service-type
     (alloy-configuration
-      (config (local-file (testament-blobs "dorphine.alloy")))))
+      (config
+       (plain-file "dorphine.alloy"
+         (string-join
+          (list (sops-str dorphine.yaml '("alloy"))
+                (file-content (testament-plain "alloy/node-exporter.alloy"))
+                (file-content (testament-plain "alloy/caddy.alloy")))
+          "\n")))))
 #+end_src
 
 * Graphical Session
@@ -514,7 +529,7 @@ Open TCP port 5558 and connect to server IPv4 address.
       (style
        (computed-substitution-with-inputs "style.css"
          (local-file (testament-plain "waybar.css"))
-         (list (local-file "../files/plain/dorphine" #:recursive? #t))))))
+         (list (testament-plain))))))
 #+end_src
 
 *** swaybg
@@ -528,7 +543,7 @@ Open TCP port 5558 and connect to server IPv4 address.
 #+begin_src scheme :noweb-ref home-service
   (service home-mako-service-type
     (home-mako-configuration
-      (config (local-file (testament-plain "dorphine/mako.conf")))))
+      (config (local-file (testament-plain "mako.conf")))))
 #+end_src
 
 *** gammastep
@@ -697,7 +712,7 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
       home-xdg-configuration-files-service-type
     `(("emacs/init.el"
        ,(computed-substitution-with-inputs "init.el"
-          (local-file (testament-plain "emacs/init.el"))
+          (local-file (testament-plain "emacs-init.el"))
           (cons (testament-plain)
                 (specs->pkgs "ccls"
                              "fish"

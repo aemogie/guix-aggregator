@@ -16,8 +16,12 @@
       (timezone "Etc/GMT-8")
       (bootloader
         (bootloader-configuration
-          (bootloader grub-efi-removable-bootloader)
-          (targets '("/efi"))))
+          (bootloader uefi-uki-removable-bootloader)
+          (targets '("/efi"))
+          (theme
+           (grub-theme
+             (inherit (grub-theme))
+             (resolution #f)))))
       (kernel (spec->pkg "linux-libre@6.12"))
       (kernel-arguments
        (cons* "kernel.sysrq=0"
@@ -32,8 +36,11 @@
       (users (cons* <<user>> %base-user-accounts))
       (packages
        (append (specs->pkgs+out
+                "curl"
+                "fd"
                 "gnupg"
                 "mosh"
+                "ripgrep"
                 "rsync"
                 "sops"
                 <<package>>)
@@ -111,7 +118,8 @@ Administration accounts.
 #+begin_src scheme :noweb-ref user
   (user-account
     (inherit %root-account)
-    (password #f))
+    (password #f)
+    (shell (file-append (spec->pkg "fish") "/bin/fish")))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -152,6 +160,7 @@ Administration accounts.
 #+begin_src scheme :noweb-ref module
   (gnu services avahi)
   (gnu services networking)
+  (gnu services security)
   (gnu services ssh)
   (rosenthal services networking)
 #+end_src
@@ -180,7 +189,7 @@ Administration accounts.
 #+begin_src scheme :noweb-ref service
   (service nftables-service-type
     (nftables-configuration
-      (ruleset (local-file (testament-plain "chapra/nftables.conf")))))
+      (ruleset (local-file (testament-plain "chapra.nftables")))))
 #+end_src
 
 ** tailscale
@@ -195,6 +204,16 @@ Administration accounts.
       (openssh (spec->pkg "openssh-sans-x"))
       (permit-root-login 'prohibit-password)
       (password-authentication? #f)))
+#+end_src
+
+** fail2ban
+#+begin_src scheme :noweb-ref service
+  (service fail2ban-service-type
+    (fail2ban-configuration
+      (extra-jails
+       (list (fail2ban-jail-configuration
+               (name "sshd")
+               (enabled? #t))))))
 #+end_src
 
 * Session and Seat Management
@@ -231,7 +250,7 @@ Administration accounts.
   (service caddy-service-type
     (caddy-configuration
       (caddy (spec->pkg "caddy-dolly"))
-      (caddyfile (local-file (testament-plain "chapra/Caddyfile")))))
+      (caddyfile (local-file (testament-plain "chapra.caddyfile")))))
 #+end_src
 
 ** cloudflared
@@ -265,7 +284,10 @@ Administration accounts.
 #+begin_src scheme :noweb-ref service
   (service navidrome-service-type
     (navidrome-configuration
-      (extra-config (file-content (testament-blobs "navidrome.toml")))))
+      (extra-config
+       (string-append
+        (file-content (testament-plain "navidrome.toml"))
+        (sops-str chapra.yaml '("navidrome"))))))
 #+end_src
 
 * Monitoring
@@ -277,5 +299,12 @@ Administration accounts.
 #+begin_src scheme :noweb-ref service
   (service alloy-service-type
     (alloy-configuration
-      (config (local-file (testament-blobs "chapra.alloy")))))
+      (config
+       (plain-file "chapra.alloy"
+         (string-join
+          (list (sops-str dorphine.yaml '("alloy"))
+                (file-content (testament-plain "alloy/node-exporter.alloy"))
+                (file-content (testament-plain "alloy/docker.alloy"))
+                (file-content (testament-plain "alloy/caddy.alloy")))
+          "\n")))))
 #+end_src

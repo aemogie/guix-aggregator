@@ -4,6 +4,7 @@
 
 ARGS  :=
 OPTS  := --keep-going --verbosity=1 $(ARGS)
+# GUIX  := ./pre-inst-env guix
 GUIX  := guix time-machine --channels=channels.lock --
 EMACS := $(GUIX) shell emacs-minimal -- emacs
 
@@ -25,12 +26,27 @@ pull:
 	guix pull --channels=channels.lock $(OPTS)
 
 .PHONY: build
-build: build-dorphine build-chapra build-ignamma build-gokuraku build-rakuen
+build:  build-dorphine \
+	\
+	build-chapra \
+	build-ignamma \
+	\
+	build-gokuraku \
+	build-rakuen
 build-%: config/%.scm
 	$(GUIX) system build $< $(OPTS)
 
-.PHONY: deploy deploy-self deploy-lan deploy-remote
-deploy: deploy-dorphine deploy-chapra deploy-ignamma deploy-gokuraku deploy-rakuen
+.PHONY: deploy
+deploy: deploy-dorphine \
+	\
+	deploy-chapra \
+	deploy-ignamma \
+	\
+	deploy-gokuraku \
+	deploy-rakuen \
+	\
+	deploy-mirror \
+	deploy-worker
 deploy-%: config/%.scm
 	$(GUIX) deploy files/deploy/$(notdir $<) $(OPTS)
 
