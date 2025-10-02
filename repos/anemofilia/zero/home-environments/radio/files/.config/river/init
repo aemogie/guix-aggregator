@@ -3,10 +3,9 @@
 # Autostart applications ______________________________________________________
 eww daemon
 eww open bar
-eww update sink-status="$(sink status)" &
 dbus-update-activation-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=river
 wbg ~/media/pictures/wallpapers/wall.png &
-wayneko --background-colour 0x606060 --layer overlay --follow-pointer false &
+wayneko --background-colour 0x505050 --layer overlay --follow-pointer false &
 fnott &
 gammastep &
 
@@ -214,11 +213,11 @@ riverctl map normal Super Print \
 for mode in normal locked wlrctl
 do
     riverctl map -repeat $mode None XF86AudioRaiseVolume \
-             spawn 'eww update sink-status="$(sink volume up)"'
+             spawn 'wpctl set-volume -l 1.2 @DEFAULT_AUDIO_SINK@ 5%+'
     riverctl map -repeat $mode None  XF86AudioLowerVolume \
-             spawn 'eww update sink-status="$(sink volume down)"'
+             spawn 'wpctl set-volume -l 1.2 @DEFAULT_AUDIO_SINK@ 5%-'
     riverctl map -repeat $mode None XF86AudioMute        \
-             spawn 'eww update sink-status="$(sink toggle mute)"'
+             spawn 'wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle'
     riverctl map -repeat $mode None XF86AudioMicMute     \
              spawn 'wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle'
 

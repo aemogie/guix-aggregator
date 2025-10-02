@@ -8,4 +8,4 @@
   (shepherd-timer
    (name 'guix-gc)
    (event #~(calendar-event #:hours '(6) #:minutes '(0)))
-   (action #~(command '("guix" ("gc" "-F" "20G"))))))
+   (action #~(command `("/run/current-system/profile/bin/guix" "gc" "-F" "20G")))))

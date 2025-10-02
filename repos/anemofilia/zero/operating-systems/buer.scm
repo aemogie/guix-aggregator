@@ -64,7 +64,7 @@
   #|Radix system|#
   #|M|# #:use-module (radix system monitoring)
 
-  #|Buer|#
+  #|Operating-systems Buer|#
   #|F|# #:use-module ((operating-systems buer files)
                       #:prefix file:)
         #:use-module ((operating-systems buer file-systems)
