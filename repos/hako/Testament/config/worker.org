@@ -10,7 +10,7 @@
   (load "../common.scm")
   (use-modules (rosenthal) <<module>>)
 
-  (define (%os system 32bit-support? jobs threads-per-job bios-boot)
+  (define (%os system 32bit-support? workers threads-per-worker bios-boot)
     (operating-system
       (host-name "temp")
       (timezone "Etc/GMT-8")
@@ -52,10 +52,9 @@
                 (guix-service-type
                  config => (guix-configuration
                              (inherit config)
-                             (build-accounts (* 2 jobs))
+                             (build-accounts (* 2 workers))
                              (extra-options
-                              (list "--max-jobs" (number->string jobs)
-                                    "--cores" (number->string threads-per-job))))))))))
+                              (list "--cores" (number->string threads-per-worker))))))))))
 
   %os
 #+end_src
@@ -154,7 +153,7 @@ Open TCP port 5558 and connect to server IPv4 address.
   (service cuirass-remote-worker-service-type
     (cuirass-remote-worker-configuration
       (publish-port 5558)
-      (workers jobs)
+      (workers workers)
       (server "100.97.195.93:5555")       ;gokuraku (Tailscale)
       (systems
        (cond

@@ -41,7 +41,13 @@
                 "sops"
                 <<package>>)
                %base-packages))
-      (services (cons* <<service>> %base-services))))
+      (services
+       (cons* <<service>>
+              (modify-services %base-services
+                (guix-service-type
+                 config => (guix-configuration
+                             (inherit config)
+                             (extra-options '("--max-jobs=2")))))))))
 
   ((compose (rosenthal-transformation-zfs #:boot? #t))
    %os)
@@ -88,6 +94,15 @@
           (mount-point "/gnu")
           (type "zfs")
           (needed-for-boot? #t)))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'zfs-scrub
+      shepherd-root-service-type
+    (list (shepherd-timer '(zfs-scrub)
+            #~(calendar-event #:days-of-week '(sunday) #:hours '(0) #:minutes '(0))
+            #~(#$(file-append (spec->pkg "zfs") "/sbin/zpool") "scrub" "-w" "Lycoris")
+            #:requirement '(user-processes))))
 #+end_src
 
 ** Users
@@ -336,6 +351,8 @@ rsync://cache.boiledscript.com
 
 * Continuous Integration
 #+begin_src scheme :noweb-ref module
+  (guix packages)
+  (guix git-download)
   (gnu services cuirass)
   (gnu services rsync)
 #+end_src
@@ -366,6 +383,7 @@ Remember to open TCP port 5555 and 5556.
 
 ** cuirass specifications
 *** channels
+**** emacs-master
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification
     (name "emacs-master")
@@ -385,6 +403,7 @@ Remember to open TCP port 5555 and 5556.
     (systems '("x86_64-linux")))
 #+end_src
 
+**** guix
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification
     (name "guix")
@@ -396,6 +415,22 @@ Remember to open TCP port 5555 and 5556.
     (systems '("x86_64-linux" "aarch64-linux")))
 #+end_src
 
+**** guix-pinned
+Commit for the Guix package at (gnu packages package-management).
+
+#+begin_src scheme :noweb-ref cuirass-spec
+  (specification
+    (name "guix-pinned")
+    (build '(channels guix))
+    (channels
+     (list (channel
+             (inherit %default-guix-channel)
+             (commit #$(git-reference-commit (origin-uri (package-source (spec->pkg "guix"))))))))
+    (priority 9)
+    (systems '("x86_64-linux" "aarch64-linux")))
+#+end_src
+
+**** guixcn
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification
     (name "guixcn")
@@ -415,6 +450,7 @@ Remember to open TCP port 5555 and 5556.
     (properties '((forge-type . forgejo))))
 #+end_src
 
+**** nonguix
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification
     (name "nonguix")
@@ -433,6 +469,7 @@ Remember to open TCP port 5555 and 5556.
     (systems '("x86_64-linux" "aarch64-linux")))
 #+end_src
 
+**** rde
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification
     (name "rde")
@@ -451,6 +488,7 @@ Remember to open TCP port 5555 and 5556.
     (systems '("x86_64-linux")))
 #+end_src
 
+**** rosenthal
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification
     (name "rosenthal")
@@ -469,39 +507,6 @@ Remember to open TCP port 5555 and 5556.
     (priority 5)
     (systems '("x86_64-linux" "aarch64-linux"))
     (properties '((forge-type . forgejo))))
-#+end_src
-
-*** tarballs
-#+begin_src scheme :noweb-ref cuirass-spec
-  (specification
-    (name "tarball-guix")
-    (build 'tarball)
-    (channels %default-channels)
-    ;; 3 months
-    (period (* 3 2592000))
-    (priority 9)
-    (systems '("x86_64-linux" "aarch64-linux")))
-#+end_src
-
-#+begin_src scheme :noweb-ref cuirass-spec
-  (specification
-    (name "tarball-guix-dolly")
-    (build '(custom (rosenthal ci tarball)))
-    (channels
-     (cons* (channel
-              (name 'rosenthal)
-              (url "https://codeberg.org/hako/rosenthal.git")
-              (branch "trunk")
-              (introduction
-               (make-channel-introduction
-                "7677db76330121a901604dfbad19077893865f35"
-                (openpgp-fingerprint
-                 "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7"))))
-            %default-channels))
-    ;; 3 months
-    (period (* 3 2592000))
-    (priority 9)
-    (systems '("x86_64-linux" "aarch64-linux")))
 #+end_src
 
 * Web Servers & Services

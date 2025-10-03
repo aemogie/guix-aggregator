@@ -42,12 +42,19 @@
   (curve Ed25519)
   (q #6FEEB15C4363F9975EB15C908EC911A4362E486DA642431FA2438C0B1C3D55F5#)))"))
 
-(define %guix-authorized-key-hetzner-temporary-worker
-  (plain-file "hetzner-temporary-worker.pub" "
+(define %guix-authorized-key-workers-hako
+  (plain-file "workers-hako.pub" "
 (public-key
  (ecc
   (curve Ed25519)
   (q #7927EA1162184C1FAA62D20C111121A4604F00956E69F0FEB89EEE1721647897#)))"))
+
+(define %guix-authorized-key-workers-poesty
+  (plain-file "workers-poesty.pub" "
+(public-key
+ (ecc
+  (curve Ed25519)
+  (q #8C4662FA0BC955B33261EEA5AA15F33081A7BEC991E5F990F7382F0988459B37#)))"))
 
 (define %hako-guix-authorized-keys-lan
   (list %guix-authorized-key-dorphine
@@ -63,7 +70,8 @@
         %guix-authorized-key-bocis
         %guix-authorized-key-ignamma
 
-        %guix-authorized-key-hetzner-temporary-worker))
+        %guix-authorized-key-workers-hako
+        %guix-authorized-key-workers-poesty))
 
 
 (define %ssh-key-deploy

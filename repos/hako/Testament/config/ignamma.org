@@ -47,7 +47,7 @@
                  config => (guix-configuration
                              (inherit config)
                              (discover? #t)
-                             (extra-options '("--cores=4" "--max-jobs=4")))))))
+                             (extra-options '("--cores=4")))))))
       (name-service-switch %mdns-host-lookup-nss)))
 
   %os

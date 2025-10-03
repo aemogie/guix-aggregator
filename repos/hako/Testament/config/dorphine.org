@@ -81,7 +81,7 @@
                              (inherit config)
                              (substitute-urls '())
                              (discover? #t)
-                             (extra-options '("--max-jobs=4" "--cores=8"))))
+                             (extra-options '("--cores=8"))))
                 (network-manager-service-type
                  config => (network-manager-configuration
                              (inherit config)
@@ -181,6 +181,15 @@
           (device "zfs:Mentha/Home")
           (mount-point "/home")
           (type "zfs")))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'zfs-scrub
+      shepherd-root-service-type
+    (list (shepherd-timer '(zfs-scrub)
+            #~(calendar-event #:days-of-week '(sunday) #:hours '(0) #:minutes '(0))
+            #~(#$(file-append (spec->pkg "zfs") "/sbin/zpool") "scrub" "-w" "Mentha")
+            #:requirement '(user-processes))))
 #+end_src
 
 ** Users
@@ -704,7 +713,7 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
 
 #+name: emacs-packages
 #+begin_src shell :results output
-  grep '^;;guix:' ../files/plain/emacs/init.el | sed -E 's/^;;guix:(.*)/"\1"/g'
+  grep '^;;guix:' ../files/plain/emacs-init.el | sed -E 's/^;;guix:(.*)/"\1"/g'
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
