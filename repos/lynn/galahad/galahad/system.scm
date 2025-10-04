@@ -43,6 +43,7 @@
   #:use-module (gnu services xorg) ;screen-locker-service-type
   #:use-module (gnu services avahi)
   #:use-module (gnu services nix)
+  #:use-module (gnu packages nss)
   #:use-module (gnu services)
   #:use-module (gnu)
   #:use-module (guix packages)
@@ -179,6 +180,11 @@
    
    (service gnome-keyring-service-type)
    (udev-rules-service 'light light)
+   (udev-rules-service 'vial
+		       (file-append
+			(plain-file "99-vial.rules"
+				    "KERNEL==\"hidraw*\", SUBSYSTEM==\"hidraw\", ATTRS{serial}==\"*vial:f64c2b3c*\", MODE=\"0660\", GROUP=\"users\", TAG+=\"uaccess\"")
+			"/lib/udev/rules.d/99-vial.rules"))
    ;; Screen lock is important if using a desktop environment, for
    ;; security.
    (service screen-locker-service-type

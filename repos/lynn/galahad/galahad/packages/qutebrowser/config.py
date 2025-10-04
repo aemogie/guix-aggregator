@@ -1,10 +1,10 @@
 import os #start page
-STARTPAGE = "file://" + os.path.expanduser("~/.config/qutebrowser/start.html")
+STARTPAGE = "https://smol.ch/~lynn/chinese"
 DEFAULT_PAGE = STARTPAGE
 SEARCH = "https://duckduckgo.com?q={}"
 
 config.source('gruvbox.py')
-
+c.fonts.hints = "28pt Iosevka"
 c.colors.webpage.darkmode.algorithm = 'lightness-cielab'
 c.colors.webpage.darkmode.policy.images = 'never'
 config.load_autoconfig(False)

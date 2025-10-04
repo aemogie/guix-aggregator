@@ -5,6 +5,9 @@
   #:use-module (gnu packages messaging)
   #:use-module (nongnu packages messaging)
   #:use-module (nongnu packages mozilla)
+  #:use-module (gnu packages)
+  #:use-module (guix profiles)
+  #:use-module (gnu services)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages pdf)
   #:use-module (gnu packages fonts)
@@ -18,7 +21,9 @@
   #:use-module (gnu packages shellutils)
   #:use-module (gnu packages shells)
   #:use-module (gnu packages llvm)
+  #:use-module (gnu packages qt)
   #:use-module (gnu packages ibus)
+  #:use-module (gnu packages fcitx)
   #:use-module (gnu services) ;simple service
   #:use-module (guix gexp) ;plain-file
   #:use-module (gnu home)
@@ -54,6 +59,7 @@
 	fcitx5-chinese-addons
 	fcitx5-configtool
 	librime
+	qtwayland
 	xdg-utils
 	xdg-desktop-portal
 	xdg-desktop-portal-gtk
@@ -123,9 +129,26 @@
 		     ("GTK_IM_MODULE" . "fcitx")
 		     ("QT_IM_MODULE" . "fcitx")
 		     ("XMODIFIERS" . "@im=fcitx")
+		     ("GTK2_RF_RICLES" . "/home/lynn/.gtkrc-2.0")
 		     ("INPUT_METHOD" . "fcitx")
 		     ("XCOMPOSEFILE" . "$HOME/.XCompose")
 		     ("XCOMPOSECACHE" . "$HOME/.xcompose-cache")
-		     ("WEBKIT_DISABLE_COMPOSITING_MODE" . "1") ;; prevent nyxt from crashing
+		     ("ANKI_WAYLAND" . "1")
 		     ("TERM" . "xterm-256color")))
+   (service home-xdg-configuration-files-service-type
+           `(("gtk-3.0/settings.ini"
+              ,(plain-file "settings.ini"
+                           "[Settings]
+gtk-theme-name=Gruvbox-Dark
+gtk-icon-theme-name=Papirus
+gtk-font-name=Sans 10
+"))
+	     ("gtk-4.0/settings.ini"
+	      ,(plain-file "settings.ini"
+			   "[Settings]
+gtk-theme-name=Gruvbox-Dark
+gtk-icon-theme-name=Papirus
+gtk-font-name=Sans 10
+"))))
    (service home-dbus-service-type))))
+;;export QT_PLUGIN_PATH="$(guix build fcitx5-qt)/lib/qt6/plugins"

@@ -5,7 +5,6 @@
   #:export (%channels-guix
 	    %channels-nonguix
 	    %channels-guix-gaming
-	    %channels-emacs
 	    %authorized-guix-key-nonguix))
 
 (define %channels-guix
@@ -23,6 +22,7 @@
   (channel
    (name 'nonguix)
    (url "https://gitlab.com/nonguix/nonguix")
+   (branch "discord")
    (introduction
     (make-channel-introduction
      "897c1a470da759236cc11798f4e0a5f7d4d59fbc"

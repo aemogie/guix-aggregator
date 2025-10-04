@@ -89,10 +89,29 @@
       '(("t" "TODO" entry
        (file+headline "~/docs/org/00-inbox.org" "Inbox")
        "* TODO %^{Task}\n"
-	       ":PROPERTIES:\n"
-	       ":CREATED: %U\n"
-	       ":CAPTURED: %a\n"
-	       ":END:\n%?")))
+       ":PROPERTIES:\n"
+       ":CREATED: %U\n"
+       ":CAPTURED: %a\n"
+       ":END:\n%?")
+	("i" "Immersion" entry
+	 (file+datetree "~/docs/org/immersion.org")
+	  "* %^{Immersion|Passive|Active|Reading} %U  :%\\1:"
+	 :clock-in t
+	 :clock-keep t)))
+
+(defun my/org-write-clock-status ()
+  "Write the current org-clock status to ~/.cache/org-clock-current."
+  (let ((file "~/.cache/org-clock-current"))
+    (with-temp-file file
+      (if (org-clocking-p)
+          (insert (format "%s"
+                          (org-clock-get-clock-string)))
+        (insert "")))))
+(add-hook 'org-clock-in-hook #'my/org-write-clock-status)
+(add-hook 'org-clock-out-hook #'my/org-write-clock-status)
+(add-hook 'org-clock-cancel-hook #'my/org-write-clock-status)
+(add-hook 'org-clock-in-resume-hook #'my/org-write-clock-status)
+(run-with-timer 0 60 #'my/org-write-clock-status)
 
 (use-package org-roam
   :custom
@@ -109,6 +128,8 @@
   (unless (file-exists-p "~/docs/org/roam")
     (make-directory "~/docs/org" t))
   (org-roam-setup))
+(require 'org-protocol)
+(server-start)
 
 (use-package jsonrpc)
 (use-package eglot
@@ -175,7 +196,6 @@
    '("9" . meow-digit-argument)
    '("0" . meow-digit-argument)
    '("/" . meow-keypad-describe-key)
-   '("c" . compile)
    '("?" . meow-cheatsheet))
   (meow-normal-define-key
    ;; regular meow
@@ -225,6 +245,7 @@
    '("q" . meow-quit)
    '("Q" . meow-goto-line)
    '("r" . meow-replace)
+   '("c" . org-capture)
    '("R" . meow-swap-grab)
    '("s" . meow-kill)
    '("t" . meow-till)

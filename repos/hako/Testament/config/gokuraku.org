@@ -340,6 +340,9 @@ rsync://cache.boiledscript.com
             ("max_parallel_workers_per_gather" 4)
             ("max_parallel_workers" 8)
             ("max_parallel_maintenance_workers" 4)
+            ;; ZFS
+            ("full_page_writes" #f)
+            ;; Logging
             ("logging_collector" #t)
             ("log_directory" "/var/log/postgresql")))))))
 #+end_src
@@ -381,6 +384,19 @@ Remember to open TCP port 5555 and 5556.
       (specifications #~(list <<cuirass-spec>>))))
 #+end_src
 
+** cuirass-remote-worker
+#+begin_src scheme :noweb-ref service
+  (service cuirass-remote-worker-service-type
+    (cuirass-remote-worker-configuration
+      (publish-port 5558)
+      (workers 1)
+      (systems '("x86_64-linux" "i686-linux"))
+      (server "127.0.0.1:5555")
+      (substitute-urls
+       `("https://ci.guix.moe"
+         ,@%default-substitute-urls))))
+#+end_src
+
 ** cuirass specifications
 *** channels
 **** emacs-master
@@ -403,21 +419,7 @@ Remember to open TCP port 5555 and 5556.
     (systems '("x86_64-linux")))
 #+end_src
 
-**** guix
-#+begin_src scheme :noweb-ref cuirass-spec
-  (specification
-    (name "guix")
-    (build '(channels guix))
-    (channels %default-channels)
-    ;; 1 day
-    (period (* 24 3600))
-    (priority 7)
-    (systems '("x86_64-linux" "aarch64-linux")))
-#+end_src
-
 **** guix-pinned
-Commit for the Guix package at (gnu packages package-management).
-
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification
     (name "guix-pinned")
@@ -425,7 +427,8 @@ Commit for the Guix package at (gnu packages package-management).
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (commit #$(git-reference-commit (origin-uri (package-source (spec->pkg "guix"))))))))
+             (url "https://codeberg.org/hako/guix-pinned.git")
+             (branch "pinned"))))
     (priority 9)
     (systems '("x86_64-linux" "aarch64-linux")))
 #+end_src
@@ -507,6 +510,21 @@ Commit for the Guix package at (gnu packages package-management).
     (priority 5)
     (systems '("x86_64-linux" "aarch64-linux"))
     (properties '((forge-type . forgejo))))
+#+end_src
+
+*** source
+**** guix-pinned
+#+begin_src scheme :noweb-ref cuirass-spec
+  (specification
+    (name "source")
+    (build '(manifests "etc/manifests/source.scm"))
+    (channels
+     (list (channel
+             (inherit %default-guix-channel)
+             (url "https://codeberg.org/hako/guix-pinned.git")
+             (branch "pinned"))))
+    (priority 9)
+    (systems '("x86_64-linux")))
 #+end_src
 
 * Web Servers & Services

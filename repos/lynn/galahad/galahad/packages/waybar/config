@@ -8,7 +8,7 @@
     "spacing": 0,
     "modules-left": ["sway/workspaces", "sway/mode", "sway/window"],
     "modules-center": ["clock"],
-    "modules-right": ["idle_inhibitor","pulseaudio", "network", "battery"],
+    "modules-right": ["custom/org-clock", "idle_inhibitor","pulseaudio", "network", "battery"],
     "sway/window": {
 	"format": "",
 	"max-length": 40
@@ -33,6 +33,11 @@
         "format-wifi": "wi-fi ({signalStrength}%)  ",
         "format-ethernet": "{ifname}: {ipaddr}/{cidr}  ",
         "format-disconnected": "Disconnected ⚠"
+    },
+    "custom/org-clock": {
+	"exec": "$HOME/.config/waybar/org-clock2.sh",
+	"interval": 60,
+	"return-type": "json"
     },
     "idle_inhibitor": {
         "format": "{icon}",

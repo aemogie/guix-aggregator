@@ -13,6 +13,8 @@ exec swayidle -w \
          timeout 600 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' \
          before-sleep 'swaylock -f --image "/home/lynn/.wp.png"' \
 
+for_window [title="emacs-capture-*"] floating enable, move position center
+
 input type:keyboard {
       #xkb_options ctrl:swapcaps,compose:lctrl
       xkb_options ctrl:nocaps,compose:grave
@@ -56,6 +58,7 @@ input type:touchpad {
     bindsym Print exec $screenshot
     bindsym $mod+Shift+s exec grim -g "$(slurp)"
     bindsym $mod+o exec emacsclient -c -n -e '(switch-to-buffer nil)'
+    bindsym $mod+n exec emacsclient -c -n -e '(switch-to-buffer nil)' -e '(org-capture)'
     bindsym $mod+Shift+space floating toggle
     bindsym $mod+space focus mode_toggle
     bindsym $mod+a focus parent

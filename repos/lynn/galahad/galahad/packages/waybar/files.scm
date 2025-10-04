@@ -4,6 +4,7 @@
 (define (waybar-files)
   `(
     (".config/waybar/config" ,(local-file "config"))
+    (".config/waybar/org-clock.sh" ,(local-file "org-clock.sh"))
     (".config/waybar/style.css" ,(local-file "style.css"))
     (".config/waybar/theme.css" ,(local-file "theme.css"))
  ))

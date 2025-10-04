@@ -15,7 +15,8 @@ alias \
     ssh='TERM=xterm ssh' \
     search='guix search' \
     fetch='hyfetch --ascii-file=/home/lynn/.config/fastfetch/logo.txt' \
-	
+    discord='guix shell ungoogled-chromium -- chromium --enable-features=UseOzonePlatform --ozone-platform=wayland --app=https://discord.com/app' \
+    
 zstyle ':vcs_info:git*' formats " %F{blue}%b%f %m%u%c %a "
 zstyle ':vcs_info:*' enable git
 zstyle ':vcs_info:*' check-for-changes true
@@ -35,3 +36,9 @@ PROMPT="${ENV_PART}$USER_PART "
 
 source $HOME/.guix-home/profile/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 source $HOME/.guix-home/profile/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+export PATH="$HOME/.nix-profile/bin:$PATH"
+export NIX_PATH=$HOME/.nix-defexpr/channels
+export NIX_PROFILES="/nix/var/nix/profiles/default $HOME/.nix-profile"
+export XDG_DATA_DIRS="$HOME/.nix-profile/share:$XDG_DATA_DIRS"
+export XDG_CONFIG_DIRS="$HOME/.nix-profile/etc/xdg:$XDG_CONFIG_DIRS"
+

@@ -21,10 +21,6 @@ update-channels:
 		describe --format=channels > channels.tmp && \
 	mv channels.tmp channels.lock
 
-.PHONY: pull
-pull:
-	guix pull --channels=channels.lock $(OPTS)
-
 .PHONY: build
 build:  build-dorphine \
 	\

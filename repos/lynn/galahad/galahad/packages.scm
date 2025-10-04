@@ -24,6 +24,7 @@
   #:use-module (gnu packages xdisorg) ;fuzzel
   #:use-module (gnu packages pdf)
   #:use-module (gnu packages ssh)
+  #:use-module (gnu packages nss)
   #:use-module (gnu packages ncurses)
   #:use-module (gnu packages texinfo) ;info-reader
   #:use-module (gnu packages vim) ;xxd?

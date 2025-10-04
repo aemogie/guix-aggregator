@@ -39,11 +39,11 @@
   #idle_inhibitor,
   #battery,
   #network,
+  #running,
   #pulseaudio {
       margin: 6px 6px 6px 0px;
       padding: 2px 8px;
       color: @fg;
       background-color: rgba(29, 32, 33, 0.95);
       border: 2px solid @bg2;
-
   }
