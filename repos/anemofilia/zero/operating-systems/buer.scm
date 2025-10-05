@@ -87,217 +87,218 @@
 
 (define buer
   (operating-system
-   (host-name "buer")
-   (timezone "America/Sao_Paulo")
-   (locale "en_US.utf8")
+    (host-name "buer")
+    (timezone "America/Sao_Paulo")
+    (locale "en_US.utf8")
 
-   (keyboard-layout
-    (keyboard-layout "us,br"
-                     #:options `("grp:menu_switch"
-                                 "parens:swap_brackets"
-                                 "caps:swapescape")))
+    (keyboard-layout
+      (keyboard-layout "us,br"
+                       #:options `("grp:menu_switch"
+                                   "parens:swap_brackets"
+                                   "caps:swapescape")))
 
-   (bootloader
-    (bootloader-configuration
-     (bootloader grub-bootloader)
-     (targets `("/dev/disk/by-id/wwn-0x50026b7785a0a591"))
-     (theme (grub-theme
-             (resolution `(1366 . 768))
-             (color-normal
-              '((fg . light-gray) (bg . black)))
-             (color-highlight
-              '((fg . black) (bg . light-gray)))
-             (image (file-append %artwork-repository
-                                 "/backgrounds/guix-silver-16-9.svg"))
-             (gfxmode `("1280x720x32"))))))
+    (bootloader
+      (bootloader-configuration
+        (bootloader grub-bootloader)
+        (targets `("/dev/disk/by-id/wwn-0x50026b7785a0a591"))
+        (theme (grub-theme
+                 (resolution `(1366 . 768))
+                 (color-normal
+                   '((fg . light-gray) (bg . black)))
+                 (color-highlight
+                   '((fg . black) (bg . light-gray)))
+                 (image (file-append %artwork-repository
+                                     "/backgrounds/guix-silver-16-9.svg"))
+                 (gfxmode `("1280x720x32"))))))
 
-   (kernel linux-libre-6.16)
-   (kernel-arguments
-    `("console=tty1"
-      "modprobe.blacklist=usbmouse,usbkbd,pcspkr"
-      "thinkpad_acpi.fan_control=1"
-      "quiet"))
+    (kernel linux-libre-6.16)
+    (kernel-arguments
+      `("console=tty1"
+        "modprobe.blacklist=usbmouse,usbkbd,pcspkr"
+        "thinkpad_acpi.fan_control=1"
+        "quiet"))
 
-   (file-systems
-     (append file-system:volumes
-             file-system:persistent-directories))
+    (file-systems
+      (append file-system:volumes
+              file-system:persistent-directories))
 
-   (users
-    (cons* user:radio
-           user:root
-           %base-user-accounts))
+    (users
+      (cons* user:radio
+             user:root
+             %base-user-accounts))
 
-   (packages
-    (list #|admin       |# btop inetutils shadow zzz
-          #|base        |# coreutils diffutils findutils grep sed tar which
-          #|bash        |# bash-minimal
-          #|certs       |# nss-certs
-          #|compression |# gzip xz zstd
-          #|gawk        |# gawk
-          #|guile       |# guile-next guile-colorized guile-readline
-          #|less        |# less
-          #|linux       |# iproute kmod procps usbutils util-linux
-          #|man         |# man-db man-pages
-          #|pciutils    |# pciutils
-          #|texinfo     |# info-reader
-          #|text-editors|# kakoune))
+    (packages
+      (list #|admin       |# btop inetutils shadow zzz
+            #|base        |# coreutils diffutils findutils grep sed tar which
+            #|bash        |# bash-minimal
+            #|certs       |# nss-certs
+            #|compression |# gzip xz zstd
+            #|gawk        |# gawk
+            #|guile       |# guile-next guile-colorized guile-readline
+            #|less        |# less
+            #|linux       |# iproute kmod procps usbutils util-linux
+            #|man         |# man-db man-pages
+            #|pciutils    |# pciutils
+            #|texinfo     |# info-reader
+            #|text-editors|# kakoune))
 
-   #|Do not generate a sudoers file|#
-   (sudoers-file #f)
+    #|Do not generate a sudoers file|#
+    (sudoers-file #f)
 
-   #|Run some programs from with privileges|#
-   (privileged-programs
-     (append privileged-programs:authentication
-             privileged-programs:file-systems
-             privileged-programs:network))
+    #|Run some programs from with privileges|#
+    (privileged-programs
+      (append privileged-programs:authentication
+              privileged-programs:file-systems
+              privileged-programs:network))
 
-   #|Allow resolution of '.local' host names with mDNS|#
-   (name-service-switch %mdns-host-lookup-nss)
+    #|Allow resolution of '.local' host names with mDNS|#
+    (name-service-switch %mdns-host-lookup-nss)
 
-   (services
-    (list #|TTY services|#
-          (service virtual-terminal-service-type)
-          (service console-font-service-type
-                   `(("tty1" . ,%default-console-font)
-                     ("tty2" . ,%default-console-font)))
+    (services
+      (list #|TTY services|#
+            (service virtual-terminal-service-type)
+            (service console-font-service-type
+                     `(("tty1" . ,%default-console-font)
+                       ("tty2" . ,%default-console-font)))
 
-          #|Shepherd services|#
-          (service radix:shepherd-timer-service-type
-                   (list timer:guix-gc))
-          (service shepherd-timer-service-type)
-          (service shepherd-transient-service-type)
+            #|Shepherd services|#
+            (service radix:shepherd-timer-service-type
+                     (list timer:guix-gc))
+            (service shepherd-timer-service-type)
+            (service shepherd-transient-service-type)
 
-          #|Login services|#
-          (service seatd-service-type)
-          (service greetd-service-type
-                   (greetd-configuration
-                    (greeter-supplementary-groups `("seat"))
-                    (terminals
-                      (map (lambda (x)
-                             (greetd-terminal-configuration
-                              (terminal-vt (number->string x))
-                              (terminal-switch (= x 1))
-                              (default-session-command
-                               (greetd-agreety-session
-                                (command
-                                 (greetd-user-session
-                                  (command
-                                   #~(passwd:shell (getpwnam (getenv "USER"))))))))))
-                           (iota 2 1)))))
+            #|Login services|#
+            (service seatd-service-type)
+            (service greetd-service-type
+                     (greetd-configuration
+                       (greeter-supplementary-groups `("seat"))
+                       (terminals
+                         (map (lambda (x)
+                                (greetd-terminal-configuration
+                                  (terminal-vt (number->string x))
+                                  (terminal-switch (= x 1))
+                                  (default-session-command
+                                    (greetd-agreety-session
+                                      (command
+                                        (greetd-user-session
+                                          (command #~(passwd:shell (getpw)))))))))
+                              (iota 2 1)))))
 
-          #|Home environment services|#
-          (service guix-home-service-type
-                   (if (file-exists? "/run/current-system/provenance") '()
-                     `(("radio" ,home-environment:radio))))
+            #|Home environment services|#
+            (service guix-home-service-type
+                     (if (file-exists? "/run/current-system/provenance") '()
+                       `(("radio" ,home-environment:radio))))
 
-          #|Log services|#
-          (service log-rotation-service-type)
-          (service shepherd-system-log-service-type)
-          (service log-cleanup-service-type
-                   (log-cleanup-configuration
-                    (directory "/var/log/guix/drvs")
-                    (expiry (* 2 30 24 3600))))
+            #|Log services|#
+            (service log-rotation-service-type
+                     (log-rotation-configuration
+                       (expiry (* 2 30 24 60 60))))
+            (service shepherd-system-log-service-type)
+            (service log-cleanup-service-type
+                     (log-cleanup-configuration
+                       (directory "/var/log/guix/drvs")
+                       (expiry (* 2 30 24 3600))))
 
-          #|IPC services|#
-          (service dbus-root-service-type)
+            #|IPC services|#
+            (service dbus-root-service-type)
 
-          #|Guix services|#
-          (service guix-service-type
-                   (guix-configuration
-                    (build-accounts 16)
-                    (authorized-keys
-                     (cons* substitute-key:genenetwork.pub
-                            substitute-key:inria.pub
-                            substitute-key:moe.pub
-                            substitute-key:yumiko.pub
-                            %default-authorized-guix-keys))
-                    (substitute-urls
-                      `("https://cache-us-lax.guix.moe"
-                        "https://cuirass.genenetwork.org"
-                        "https://ci.guix.gnu.org"
-                        "https://guix.bordeaux.inria.fr"))
-                    (extra-options
-                      `("--cores=4"
-                        "--gc-keep-derivations=yes"
-                        "--gc-keep-outputs=yes"))))
-          (service shared-cache-service-type
-                   (shared-cache-configuration
-                    (users (list (user-cache (user "radio"))))))
+            #|Guix services|#
+            (service guix-service-type
+                     (guix-configuration
+                      (build-accounts 16)
+                      (authorized-keys
+                        (cons* substitute-key:genenetwork.pub
+                               substitute-key:inria.pub
+                               substitute-key:moe.pub
+                               substitute-key:yumiko.pub
+                               %default-authorized-guix-keys))
+                      (substitute-urls
+                        `("https://cache-us-lax.guix.moe"
+                          "https://cuirass.genenetwork.org"
+                          "https://ci.guix.gnu.org"
+                          "https://guix.bordeaux.inria.fr"))
+                      (extra-options
+                        `("--cores=4"
+                          "--gc-keep-derivations=yes"
+                          "--gc-keep-outputs=yes"))))
+            (service shared-cache-service-type
+                     (shared-cache-configuration
+                       (users (list (user-cache (user "radio"))))))
 
-          #|Device management services|#
-          (service udev-service-type
-                   (udev-configuration
-                    (rules (list crda fuse))))
+            #|Device management services|#
+            (service udev-service-type
+                     (udev-configuration
+                      (rules (list crda fuse))))
 
-          #|Network services|#
-          (service static-networking-service-type
-                   (list %loopback-static-networking))
-          (service ntp-service-type)
-          (service wpa-supplicant-service-type
-                   (wpa-supplicant-configuration
-                    (config-file "/etc/wpa-supplicant.conf")
-                    (interface "wlp2s0")
-                    (extra-options `("-B"))))
-          (service dhcpcd-service-type)
+            #|Network services|#
+            (service static-networking-service-type
+                     (list %loopback-static-networking))
+            (service ntp-service-type)
+            (service wpa-supplicant-service-type
+                     (wpa-supplicant-configuration
+                       (config-file "/etc/wpa-supplicant.conf")
+                       (interface "wlp2s0")
+                       (extra-options `("-B"))))
+            (service dhcpcd-service-type)
 
-          #|Power management services|#
-          (service tlp-service-type
-                   (tlp-configuration
-                    (cpu-scaling-governor-on-ac `("performance"))
-                    (cpu-scaling-governor-on-bat `("powersave"))
-                    (cpu-scaling-min-freq-on-ac 1500000)
-                    (cpu-scaling-max-freq-on-ac 3500000)
-                    (cpu-scaling-min-freq-on-bat 1000000)
-                    (cpu-scaling-max-freq-on-bat 3000000)
-                    (cpu-min-perf-on-ac 0)
-                    (cpu-max-perf-on-ac 100)
-                    (cpu-min-perf-on-bat 0)
-                    (cpu-max-perf-on-bat 40)
-                    (cpu-boost-on-ac? #t)
-                    (cpu-boost-on-bat? #f)
-                    (nmi-watchdog? #t)
-                    (start-charge-thresh-bat0 70)
-                    (stop-charge-thresh-bat0 90)))
-          (service thinkfan-service-type
-                   (thinkfan-configuration
-                    (thinkfan thinkfan-next)
-                    (auto-start? #f)
-                    (config-file file:thinkfan-config)))
+            #|Power management services|#
+            (service tlp-service-type
+                     (tlp-configuration
+                       (cpu-scaling-governor-on-ac `("performance"))
+                       (cpu-scaling-governor-on-bat `("powersave"))
+                       (cpu-scaling-min-freq-on-ac 1500000)
+                       (cpu-scaling-max-freq-on-ac 3500000)
+                       (cpu-scaling-min-freq-on-bat 1000000)
+                       (cpu-scaling-max-freq-on-bat 3000000)
+                       (cpu-min-perf-on-ac 0)
+                       (cpu-max-perf-on-ac 100)
+                       (cpu-min-perf-on-bat 0)
+                       (cpu-max-perf-on-bat 40)
+                       (cpu-boost-on-ac? #t)
+                       (cpu-boost-on-bat? #f)
+                       (nmi-watchdog? #t)
+                       (start-charge-thresh-bat0 70)
+                       (stop-charge-thresh-bat0 90)))
+            (service thinkfan-service-type
+                     (thinkfan-configuration
+                       (thinkfan thinkfan-next)
+                       (auto-start? #f)
+                       (config-file file:thinkfan-config)))
 
-          #|Memory management services|#
-          (service zram-device-service-type
-                   (zram-device-configuration
-                    (priority 100)
-                    (size (* 2 (ram-total)))
-                    (compression-algorithm 'lz4)))
-          (simple-service 'zram-sysctl-settings
-                          sysctl-service-type
-                          `(("vm.swappiness" . "180")
-                            ("vm.watermark_boost_factor" . "0")
-                            ("vm.watermark_scale_factor" . "125")
-                            ("vm.page-cluster" . "0")))
+            #|Memory management services|#
+            (service zram-device-service-type
+                     (zram-device-configuration
+                       (priority 100)
+                       (size (* 2 (ram-total)))
+                       (compression-algorithm 'lz4)))
+            (simple-service 'zram-sysctl-settings
+                            sysctl-service-type
+                            `(("vm.swappiness" . "180")
+                              ("vm.watermark_boost_factor" . "0")
+                              ("vm.watermark_scale_factor" . "125")
+                              ("vm.page-cluster" . "0")))
 
-          #|Permission services|#
-          (service opendoas-service-type
-                   (opendoas-configuration
-                     (rules (append rules:general
-                                    rules:text-editors
-                                    rules:power-management
-                                    rules:service-management))))
+            #|Permission services|#
+            (service opendoas-service-type
+                     (opendoas-configuration
+                       (rules (append rules:general
+                                      rules:text-editors
+                                      rules:power-management
+                                      rules:service-management))))
 
-          #|Special file services|#
-          (service special-files-service-type
-                   `(("/bin/sh" ,(file-append bash-minimal "/bin/bash"))
-                     ("/usr/bin/env" ,(file-append coreutils "/bin/env"))
-                     ("/etc/config.scm" ,buer.scm)))
-          (simple-service 'persistent-files
-                          special-files-service-type
-                          (map (lambda (dir)
-                                 (list dir (string-append "/gnu/persist" dir)))
-                               file-system:persistent-files))
+            #|Special file services|#
+            (service special-files-service-type
+                     `(("/bin/sh" ,(file-append bash-minimal "/bin/bash"))
+                       ("/usr/bin/env" ,(file-append coreutils "/bin/env"))
+                       ("/etc/config.scm" ,buer.scm)))
+            (simple-service 'persistent-files
+                            special-files-service-type
+                            (map (lambda (dir)
+                                   (list dir (string-append "/gnu/persist" dir)))
+                                 file-system:persistent-files))
 
-          #|Base services|#
-          (service sysctl-service-type)
-          (service urandom-seed-service-type)
-          (service nscd-service-type)))))
+            #|Base services|#
+            (service sysctl-service-type)
+            (service urandom-seed-service-type)
+            (service nscd-service-type)))))
 buer

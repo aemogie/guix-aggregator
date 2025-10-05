@@ -80,8 +80,6 @@
   #|W|# #:use-module (saayix packages wm)
 
   #:export (blogging
-            calendar
-            databases
             desktop
             development
             documentation
@@ -89,7 +87,6 @@
             emacs
             file-managing
             games
-            guix-contrib
             haskell
             image
             mathematics
@@ -107,14 +104,9 @@
 (define blogging
   (list #|guile-xyz|# haunt))
 
-(define calendar
-  (list #|calendar|# remind))
-
-(define databases
-  (list #|databases|# recutils))
-
 (define desktop
   (list #|admin      |# fastfetch
+        #|calendar   |# remind
         #|freedesktop|# xdg-utils xdg-desktop-portal xdg-desktop-portal-wlr
                         xdg-desktop-portal-termfilechooser xdg-terminal-exec
         #|glib       |# dbus
@@ -132,6 +124,7 @@
 (define development
   (list #|admin         |# tree
         #|base          |# patch
+        #|databases     |# recutils
         #|gnupg         |# gnupg pinentry
         #|math          |# libqalculate
         #|ssh           |# openssh
@@ -163,10 +156,6 @@
 
 (define games
   (list #|games|# minetest red-eclipse srb2 supertuxkart xonotic))
-
-(define guix-contrib
-  (list #|mail           |# mumi
-        #|version-control|# git `(,git "send-email")))
 
 (define haskell
   (list #|commencement|# gcc-toolchain
