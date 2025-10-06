@@ -168,7 +168,7 @@
             (service home-repositories-service-type
                      `(#|Artwork|#
                        ("resources/artwork/guix-artwork"
-                        ,(savannah-url "guix/guix-artwork"))
+                        ,(codeberg-url "guix" "artwork"))
                        ("resources/artwork/radix-artwork"
                         ,(codeberg-url "anemofilia" "radix-artwork"))
                        #|Code|#
@@ -181,7 +181,7 @@
                        ("resources/code/scm/saayix"
                         ,(codeberg-url "look" "saayix"))
                        ("resources/code/scm/guile"
-                        ,(savannah-url "guile"))
+                        ,(codeberg-url "guile"))
                        ("resources/code/scm/guix"
                         ,(codeberg-url "guix"))
                        ("resources/code/scm/shepherd"
@@ -235,7 +235,7 @@
                        (regular-magenta "fc97ff")
                        (regular-cyan "86adff")
                        (regular-white "a1a1a1")
-                       (bright-black "888888")
+                       (bright-black regular-black)
                        (bright-red regular-red)
                        (bright-green regular-green)
                        (bright-yellow regular-yellow)

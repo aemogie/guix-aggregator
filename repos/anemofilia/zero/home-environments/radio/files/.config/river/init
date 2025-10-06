@@ -256,7 +256,7 @@ riverctl rule-add -app-id 'imv' ssd
 
 # telegram
 riverctl rule-add -app-id 'org.telegram' position 493 31
-riverctl rule-add -app-id 'org.telegram' dimensions 380 728
+riverctl rule-add -app-id 'org.telegram' dimensions 380 727
 riverctl rule-add -app-id 'org.telegram' float
 riverctl rule-add -app-id 'org.telegram' ssd
 riverctl rule-add -app-id 'org.telegram' tags ${scratch_tag}
