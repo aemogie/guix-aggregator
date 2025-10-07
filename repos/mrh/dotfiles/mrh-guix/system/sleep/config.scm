@@ -7,7 +7,7 @@
   #:use-module (gnu)
   #:use-module (gnu services dns))
 
-(use-package-modules admin cryptsetup curl cups file-systems nfs version-control wm)
+(use-package-modules admin cryptsetup curl cups nfs version-control wm)
 (use-service-modules cups dbus desktop networking ssh vpn xorg)
 
 (define-public %sleep-operating-system
@@ -42,9 +42,7 @@
                      curl
                      git
                      fwupd-nonfree
-                     libnfs
                      nfs-utils
-                     nfs4-acl-tools
                      %base-packages))
 
     (services

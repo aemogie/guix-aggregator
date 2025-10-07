@@ -228,7 +228,8 @@ Args: update? represents whether we should update a template or create a new one
   (test)
   ($ '("sudo guix system reconfigure"
        "-L ./per-host -L ./system/packages -L ./src" "./system/config.scm"
-       "--fallback --on-error=backtrace"))
+       "--fallback --on-error=backtrace"
+       "--substitute-urls='https://ci.guix.gnu.org https://bordeaux.guix.gnu.org https://substitutes.nonguix.org'"))
   ($ '("sudo fc-cache -frv >/dev/null 2>&1 &"))
   (log-done)
   (notify (G_ "SSS system-reconfigure")

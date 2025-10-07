@@ -138,22 +138,22 @@
                    (provision "sabnzbd")
                    (network "host")
                    (ports '("[::1]:8081:8081"))
-                   (volumes '(("/home/mrh/.config/sabnzbd" . "/config")
-                              ("/mnt/wd/media" . "/media")))
                    (environment `(("PUID" . ,oci-uid)
                                   ("PGID" . ,oci-gid)
-                                  ("TZ" . "Etc/UTC"))))
+                                  ("TZ" . "Etc/UTC")))
+                   (volumes '(("/home/mrh/.config/sabnzbd" . "/config")
+                              ("/mnt/wd/media" . "/media"))))
 
                  (oci-container-configuration
                    (image "jellyfin/jellyfin")
                    (provision "jellyfin")
                    (network "host")
                    (ports '("[::1]:8096:8096"))
+                   (environment `(("PUID" . ,oci-uid)
+                                  ("PGID" . ,oci-gid)))
                    (volumes '(("jellyfin-config" . "/config")
                               ("jellyfin-cache" . "/cache")
-                              ("/mnt/wd/media" . "/media")))
-                   (environment `(("PUID" . ,oci-uid)
-                                  ("PGID" . ,oci-gid))))
+                              ("/mnt/wd/media" . "/media"))))
 
                  (oci-container-configuration
                    (image "filebrowser/filebrowser:s6")

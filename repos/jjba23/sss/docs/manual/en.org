@@ -389,7 +389,7 @@ Find here an example configuration of a SSS overrides file for one of my machine
   "gnu-framework")
 
 (define override-extra-packages
-  '("amd-microcode" "amdgpu-firmware" "prismlauncher"))
+  '("amd-microcode" "amdgpu-firmware"))
 
 (define override-hyprland-extra-startups
   '("sudo warp-svc" "sudo mkdir -p /usr/share/warp/images"

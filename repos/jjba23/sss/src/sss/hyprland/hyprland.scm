@@ -27,7 +27,7 @@
                        hypr-general
                        hypr-gestures
                        hypr-decoration
-                       hypr-animations
+                       ;; hypr-animations
                        hypr-misc
                        hypr-media-binds
                        hypr-workspace-binds
@@ -113,8 +113,8 @@
                          'false))
             (range . 4))))
 
-(define hypr-animations
-  `((enabled . true) (first_launch_animation . true)))
+;; (define hypr-animations
+;;   `((enabled . true) (first_launch_animation . true)))
 
 (define hypr-xwayland
   `((force_zero_scaling . true)))
@@ -369,9 +369,9 @@
                                                                     with-blur
                                                                     #:with-shadow
                                                                     with-shadow)))
-         (serialized-animations (serialize-hypr-section #:section 'animations
-                                                        #:settings
-                                                        hypr-animations))
+         ;; (serialized-animations (serialize-hypr-section #:section 'animations
+         ;; #:settings
+         ;; hypr-animations))
          (serialized-xwayland (serialize-hypr-section #:section 'xwayland
                                                       #:settings hypr-xwayland))
          (serialized-key-bindings (string-join (hypr-binds #:clone-dir
@@ -400,8 +400,8 @@
                                  ,serialized-decoration)
                                `("" "# ====== Misc configuration ======"
                                  ,serialized-misc)
-                               `("" "# ====== Animations configuration ======"
-                                 ,serialized-animations)
+                               ;; `("" "# ====== Animations configuration ======"
+                               ;; ,serialized-animations)
                                `("" "# ====== Key bindings ======"
                                  ,serialized-key-bindings)
                                `("" "# ====== Window rules ======"

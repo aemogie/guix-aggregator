@@ -100,19 +100,19 @@
     (vanilla-emacs . "emacs -Q")
     (restart-emacs . "pkill emacs && emacs --daemon")
     (fr unquote
-        (format #f "cd ~a && make fr" clone-dir))
+        (format #f "cd ~a && maak fr" clone-dir))
     (sr unquote
-        (format #f "cd ~a && make sr" clone-dir))
+        (format #f "cd ~a && maak sr" clone-dir))
     (jr unquote
-        (format #f "cd ~a && make jr" clone-dir))
+        (format #f "cd ~a && maak jr" clone-dir))
     (npi unquote
-         (format #f "cd ~a && make npi" clone-dir))
+         (format #f "cd ~a && maak npi" clone-dir))
     (npu unquote
-         (format #f "cd ~a && make npu" clone-dir))
+         (format #f "cd ~a && maak npu" clone-dir))
     (fpi unquote
-         (format #f "cd ~a && make fpi" clone-dir))
+         (format #f "cd ~a && maak fpi" clone-dir))
     (fpu unquote
-         (format #f "cd ~a && make fpu" clone-dir))
+         (format #f "cd ~a && maak fpu" clone-dir))
     (direnv-mode . "direnv export bash")
     (scala-dev unquote
                (format #f "nix develop ~a/resources/flakes/scala-dev/"

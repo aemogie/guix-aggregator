@@ -13,9 +13,11 @@
   (match (command-line)
     ((_ command)
      (if (member command commands)
-         (system (format #f
-                         "echo '{\"command\": [\"keypress\", \"~a\"]}' | socat - /tmp/mpv-socket"
-                         (assoc-ref commands-alist command)))
+         (system
+          (format
+           #f
+           "echo '{\"command\": [\"keypress\", \"~a\"]}' | socat - /tmp/mpv-socket"
+           (assoc-ref commands-alist command)))
          (display usage)))
     (else
      (display usage))))

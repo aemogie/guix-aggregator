@@ -207,6 +207,7 @@
   '(app.drey.Dialect app.drey.Warp
                      app.zen_browser.zen
                      com.anydesk.Anydesk
+                     com.usebruno.Bruno
                      com.belmoussaoui.Decoder
                      com.github.hugolabe.Wike
                      com.github.tchx84.Flatseal
@@ -226,6 +227,7 @@
                      io.github.revisto.drum-machine
                      io.github.seadve.Mousai
                      io.gitlab.adhami3310.Converter
+                     org.prismlauncher.PrismLauncher
                      org.gaphor.Gaphor
                      org.gnome.design.Emblem
                      org.gnome.design.Lorem

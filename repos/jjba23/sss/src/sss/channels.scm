@@ -23,14 +23,14 @@
   #:use-module (guix channels)
   #:export (channels-capability))
 
-(define guix-gaming-games-channel
-  (channel
-    (name 'guix-gaming-games)
-    (url "https://gitlab.com/guix-gaming-channels/games.git")
-    (introduction
-     (make-channel-introduction "c23d64f1b8cc086659f8781b27ab6c7314c5cca5"
-                                (openpgp-fingerprint
-                                 "50F3 3E2E 5B0C 3D90 0424  ABE8 9BDC F497 A4BB CC7F")))))
+;; (define guix-gaming-games-channel
+;;   (channel
+;;     (name 'guix-gaming-games)
+;;     (url "https://gitlab.com/guix-gaming-channels/games.git")
+;;     (introduction
+;;      (make-channel-introduction "c23d64f1b8cc086659f8781b27ab6c7314c5cca5"
+;;                                 (openpgp-fingerprint
+;;                                  "50F3 3E2E 5B0C 3D90 0424  ABE8 9BDC F497 A4BB CC7F")))))
 
 (define nonguix-channel
   (channel
@@ -41,18 +41,7 @@
                                 (openpgp-fingerprint
                                  "2A39 3FFF 68F4 EF7A 3D29 12AF 6F51 20A0 22FB B2D5")))))
 
-;; WIP
-(define iter-vitae-channel
-  (channel
-    (name 'iter-vitae)
-    (url "https://codeberg.org/jjba23/iter-vitae.git")
-    (branch "trunk")
-    (introduction
-     (make-channel-introduction "738a940f72e9a0053272c75e550cb06b6726a5e0"
-                                (openpgp-fingerprint
-                                 "83BC 6E1C 8726 B8C2 97F8 D16E 24F4 6738 CE11 4AF6")))))
-
 (define channels-capability
   (simple-service 'channels-capability home-channels-service-type
-                  (list nonguix-channel guix-gaming-games-channel)))
+                  (list nonguix-channel)))
 

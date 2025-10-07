@@ -31,7 +31,7 @@ tooltip label {
 }
 
 #workspaces button.focused {
-	border-top: 3px solid #ffa21f;
+	border-top: 5px solid #ffa21f;
 }
 
 #workspaces button:hover {
@@ -45,13 +45,12 @@ tooltip label {
 }
 
 #pulseaudio,#wireplumber,#network,#cpu,#memory,#backlight,#battery,#clock {
-	margin-left: 3px;
-	margin-right: 3px;
-	padding: 0 3px;
+	margin-left: 5px;
+	margin-right: 5px;
 }
 
 #wireplumber {
-    border-top: 3px solid #ffa21f;
+    border-top: 5px solid #ffa21f;
     color:  #ffffff;
 }
 
@@ -60,47 +59,47 @@ tooltip label {
 }
 
 #network {
-	border-top: 3px solid #6fd560;
+	border-top: 5px solid #6fd560;
     color: #ffffff;
 }
 
 #network.disconnected {
-	border-top: 3px solid #b02930;
+	border-top: 5px solid #b02930;
     color: #ffffff;
 }
 
 #cpu {
-    border-top: 3px solid #57aff6;
+    border-top: 5px solid #57aff6;
     color: #ffffff;
 }
 
 #memory {
-    border-top: 3px solid #90918a;
+    border-top: 5px solid #90918a;
     color: #ffffff;
 }
 
 #backlight {
-    border-top: 3px solid #6fcad0;
+    border-top: 5px solid #6fcad0;
     color: #ffffff;
 }
 
 #battery.full {
-    border-top: 3px solid #a0d13a;
+    border-top: 5px solid #a0d13a;
     color: #ffffff;
 }
 
 #battery.good {
-    border-top: 3px solid #e4b53f;
+    border-top: 5px solid #e4b53f;
     color: #ffffff;
 }
 
 #battery.critical {
-    border-top: 3px solid #b02930;
+    border-top: 5px solid #b02930;
     color: #ffffff;
 }
 
 #clock {
-    border-top: 3px solid #f0aac5;
+    border-top: 5px solid #f0aac5;
     color: #ffffff;
 }
 

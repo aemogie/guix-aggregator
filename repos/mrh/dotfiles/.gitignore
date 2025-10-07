@@ -6,7 +6,6 @@ home/.config/guix/shell-authorized-directories
 *.bkp
 feeds.el
 wumpus.pizza
-cl-scripts
 publish-website
 output.png
 wpa-supplicant.conf

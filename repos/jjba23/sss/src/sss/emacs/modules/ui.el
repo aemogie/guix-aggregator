@@ -88,8 +88,9 @@ According to size, color and font family"
     (set-face-attribute 'button nil :background 'unspecified
                         :weight 'bold)
 
-    (set-face-attribute 'font-lock-doc-face nil
-                        :foreground (ef-themes-get-color-value 'yellow-faint))
+    (ignore-errors
+      (set-face-attribute 'font-lock-doc-face nil
+                          :foreground (ef-themes-get-color-value 'yellow-faint)))
 
     (ignore-errors
       (set-face-attribute 'markdown-pre-face nil

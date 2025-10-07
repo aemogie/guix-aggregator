@@ -1,4 +1,0 @@
-#!/bin/sh
-
-yt-dlp --extract-audio --embed-thumbnail --add-metadata "$1" &&
-"$HOME/Programs/Scripts/makealbum"

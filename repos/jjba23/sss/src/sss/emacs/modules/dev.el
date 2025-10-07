@@ -209,6 +209,12 @@
                 '(("CSS"     (prettierd))
                   ("HTML" (prettierd)))))
 
+(use-package just-mode
+  :ensure t)
+
+(use-package justl
+  :ensure t)
+
 (provide 'sss/dev)
 
 ;;; dev.el ends here

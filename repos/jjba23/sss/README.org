@@ -3,7 +3,7 @@
 #+email: jjbigorra@gmail.com
 #+language: en
 
-[[https://jointhefreeworld.org/ggg/dist/scheme-guile.svg]] [[https://jointhefreeworld.org/ggg/dist/gnu-guix.svg]]  [[https://jointhefreeworld.org/ggg/dist/gnu-emacs.svg]] [[https://jointhefreeworld.org/ggg/dist/shell-eshell.svg]]  [[https://jointhefreeworld.org/ggg/dist/shell-bash.svg]] 
+[[https://jointhefreeworld.org/ggg/dist/scheme-guile.svg]] [[https://jointhefreeworld.org/ggg/dist/gnu-guix.svg]]  [[https://jointhefreeworld.org/ggg/dist/gnu-emacs.svg]]   [[https://jointhefreeworld.org/ggg/dist/shell-bash.svg]] 
 [[https://jointhefreeworld.org/ggg/dist/gnu-make.svg]] 
 [[https://jointhefreeworld.org/ggg/dist/license-gpl3+.svg]]    [[https://jointhefreeworld.org/ggg/dist/license-fdl13+.svg]] [[https://jointhefreeworld.org/ggg/dist/i18n-gnu-gettext.svg]] [[https://jointhefreeworld.org/ggg/dist/jointhefreeworld-org.svg]] 
 
@@ -66,8 +66,8 @@ Some of the features:
 An operating system unto itself 🐂.
 
 - Advanced and modular Emacs configurations with Emacs Lisp + Elpaca
-- Dev setup for: Scheme, Scala, Haskell, Lisp, Rust, Python, Shell, Nix, Golang and more
-
+- Dev setup for: Scheme, Scala, Haskell, Lisp, Rust, Python, Shell, Nix, JavaScript, CSS, Golang and more
+- Power user EShell configuration with many niceties  
 
 ------------------
 

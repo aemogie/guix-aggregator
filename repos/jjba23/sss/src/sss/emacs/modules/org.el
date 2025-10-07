@@ -44,7 +44,6 @@
     (org-indent-mode)
     (auto-fill-mode 0)
     (org-restart-font-lock)
-    (olivetti-mode)
     (font-lock-add-keywords
      nil
      '(("^-\\{5,\\}"  0 '(:inherit font-lock-comment-face))))

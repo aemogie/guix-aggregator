@@ -283,7 +283,8 @@ time in `current-time' format."
 (defun my/publish-html-head (level)
   (jack-html
    `((:link (@ :rel "stylesheet" :type "text/css" :href ,(my/get-up-directory level "static/css/stylesheet.css")))
-     (:link (@ :rel "icon" :href ,(my/get-up-directory level "static/images/icons/favicon.png"))))))
+     (:link (@ :rel "icon" :href ,(my/get-up-directory level "static/images/icons/favicon.png")))
+     (:link (@ :rel "me" :href (format "https://%s/@%s" mastodon-domain mastodon-user))))))
 
 (defun my/publish-html-preamble (level)
   (jack-html
