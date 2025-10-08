@@ -87,10 +87,10 @@ bindsym XF86AudioRaiseVolume exec pactl set-sink-volume @DEFAULT_SINK@ +5%
 bindsym Shift+XF86AudioRaiseVolume exec pactl set-sink-volume @DEFAULT_SINK@ +10%
 bindsym XF86AudioMute exec pactl set-sink-mute @DEFAULT_SINK@ toggle
 bindsym XF86AudioMicMute exec pactl set-source-volume @DEFAULT_SOURCE@ toggle
-bindsym $mod+XF86AudioMute exec control-music toggle-play
-bindsym $mod+XF86AudioLowerVolume exec control-music prev
-bindsym $mod+XF86AudioRaiseVolume exec control-music next
-bindsym $mod+a exec control-music track
+bindsym $mod+XF86AudioMute exec control-music.scm toggle-play
+bindsym $mod+XF86AudioLowerVolume exec control-music.scm prev
+bindsym $mod+XF86AudioRaiseVolume exec control-music.scm next
+bindsym $mod+a exec control-music.scm track
 bindsym XF86MonBrightnessUp exec $brightnessctl set +5%
 bindsym XF86MonBrightnessDown exec $brightnessctl set 5%-
 bindsym Shift+XF86MonBrightnessUp exec $brightnessctl set +10%
@@ -118,6 +118,10 @@ exec swayidle -w timeout 900 'swaymsg "output * power off"' resume 'swaymsg "out
 # Programs to execute (at startup & after reload).
 ##################################################
 exec_always fnott
+
+# Theming.
+##########
+bindsym $mod+Shift+t exec toggle-theme.scm
 
 # Extra-content
 ###############

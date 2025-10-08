@@ -169,6 +169,10 @@
                    azure-cli
                    bash-language-server
                    black
+                   bruno
+                   bruno-cli
+                   signal-desktop
+                   signal-cli
                    cloudflare-warp
                    deadnix
                    discord
@@ -207,7 +211,7 @@
   '(app.drey.Dialect app.drey.Warp
                      app.zen_browser.zen
                      com.anydesk.Anydesk
-                     com.usebruno.Bruno
+                     ;; com.usebruno.Bruno ;; better via Nix
                      com.belmoussaoui.Decoder
                      com.github.hugolabe.Wike
                      com.github.tchx84.Flatseal

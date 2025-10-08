@@ -1,4 +1,4 @@
-.PHONY: test docs
+.PHONY: docs test
 
 # Makefile - installing and working with sss - Supreme Sexp System
 
@@ -274,7 +274,7 @@ endef
 # This ensures the .po file stays up-to-date with the latest changes in the template
 define sss-merge
 	msgmerge -U $(I18N_LOCATION)/$(1)/LC_MESSAGES/sss.po \
-		$(I18N_LOCATION)/sss.pot 
+		$(I18N_LOCATION)/sss.pot
 endef
 
 # Define a function to extract translatable strings from Scheme source files using xgettext

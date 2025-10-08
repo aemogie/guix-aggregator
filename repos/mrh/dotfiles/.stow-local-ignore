@@ -4,3 +4,4 @@ mrh-guix
 ^LICENSE.*
 ^README.*
 .*\.git.*
+.stfolder

@@ -519,6 +519,10 @@ Helpful advice for face changing functions."
   :custom
   (eww-default-download-directory "~/downloads"))
 
+(use-package mail-source
+  :custom
+  (mail-source-directory (expand-file-name "mail" user-emacs-directory)))
+
 (use-package mu4e
   :commands mu4e
   :custom
@@ -563,6 +567,8 @@ and save an appropriate entry for `elfeed-feeds' to the kill ring."
   :defer t
   :custom
   (gnus-use-dribble-file nil)
+  (gnus-directory (expand-file-name "news" user-emacs-directory))
+  (gnus-startup-file (expand-file-name "newsrc" user-emacs-directory))
   :after gnus)
 
 (defun my/play-album ()

@@ -1000,6 +1000,13 @@ See [[*Publish][Org Publish]] section and [[https://codeberg.org/mrh/dotfiles/sr
 
 * Messaging
 ** Mail
+
+#+begin_src emacs-lisp
+(use-package mail-source
+  :custom
+  (mail-source-directory (expand-file-name "mail" user-emacs-directory)))
+#+end_src
+
 *** Mu4e
 
 #+begin_src emacs-lisp
@@ -1059,6 +1066,8 @@ and save an appropriate entry for `elfeed-feeds' to the kill ring."
   :defer t
   :custom
   (gnus-use-dribble-file nil)
+  (gnus-directory (expand-file-name "news" user-emacs-directory))
+  (gnus-startup-file (expand-file-name "newsrc" user-emacs-directory))
   :after gnus)
 #+end_src
 

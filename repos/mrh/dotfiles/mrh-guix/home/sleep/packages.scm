@@ -49,6 +49,8 @@
    brightnessctl
    fnott
    fuzzel
+   gnome-themes-extra
+   gsettings-desktop-schemas
    gtk+
    libnotify
    librewolf
