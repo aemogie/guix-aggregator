@@ -809,6 +809,13 @@ Export to pdf presentations via LaTeX beamer
 (use-package ox-beamer
   :after org)
 #+end_src
+**** HTML
+
+#+begin_src emacs-lisp
+(use-package ox-html
+  :custom
+  (org-html-htmlize-output-type 'css))
+#+end_src
 
 **** Publish
 

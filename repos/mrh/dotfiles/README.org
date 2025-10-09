@@ -38,6 +38,7 @@ I use emacs for just about everything on my computer other than browsing the web
 - [[https://github.com/skeeto/elfeed][Elfeed]] for RSS
 - [[https://www.gnu.org/software/emacs/erc.html][ERC]] for IRC
 - [[https://www.nongnu.org/geiser/][Geiser]] for Guile Scheme hacking
+- [[https://www.gnus.org/][Gnus]] for usenet
 - [[https://magit.vc/][Magit]] for git
 - [[https://www.djcbsoftware.nl/code/mu/][Mu4e]] for email
 - [[https://orgmode.org/][Org Mode]] for so much (including this readme!)

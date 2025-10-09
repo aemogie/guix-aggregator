@@ -6,11 +6,18 @@
 
 (define (switch-theme theme dark)
   (system
-   (format #f "gsettings set org.gnome.desktop.interface color-scheme prefer-~a"
-           (if dark "dark" "light")))
-  (system
-   (format #f "gsettings set org.gnome.desktop.interface gtk-theme ~a"
-           theme)))
+   (format #f "gsettings set org.gnome.desktop.interface gtk-theme ~a" theme))
+  (if dark
+      (begin
+        (system
+         "gsettings set org.gnome.desktop.interface color-scheme prefer-dark")
+        (system
+         "emacsclient -e \"(ef-themes-load-theme 'ef-melissa-dark)\""))
+      (begin
+        (system
+         "gsettings set org.gnome.desktop.interface color-scheme prefer-light")
+        (system
+         "emacsclient -e \"(ef-themes-load-theme 'ef-melissa-light)\""))))
 
 (define current-theme
   (string-trim-both

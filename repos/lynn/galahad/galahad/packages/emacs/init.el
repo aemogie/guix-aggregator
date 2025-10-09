@@ -103,7 +103,7 @@
   "Write the current org-clock status to ~/.cache/org-clock-current."
   (let ((file "~/.cache/org-clock-current"))
     (with-temp-file file
-      (if (org-clocking-p)
+      (when (org-clock-is-active)
           (insert (format "%s"
                           (org-clock-get-clock-string)))
         (insert "")))))

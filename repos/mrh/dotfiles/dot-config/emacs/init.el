@@ -406,6 +406,10 @@ Helpful advice for face changing functions."
 (use-package ox-beamer
   :after org)
 
+(use-package ox-html
+  :custom
+  (org-html-htmlize-output-type 'css))
+
 (use-package ox-publish
   :commands org-publish
   :config
