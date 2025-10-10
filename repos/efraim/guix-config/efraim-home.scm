@@ -670,6 +670,17 @@
       ;; End with a newline.
       "\n" 'suffix)))
 
+(define %sq-config
+  (mixed-text-file
+    "sq-config.toml"
+    "[encrypt]\n"
+    "for-self = [\"0x41AAE7DCCA3D8351\"]\n"
+    "[pki]\n"
+    "vouch.certifier-self = [\"0x41AAE7DCCA3D8351\"]\n"
+    "[sign]\n"
+    "signer-self = [\"0x41AAE7DCCA3D8351\"]\n"))
+
+
 (define %streamlink-config
   (mixed-text-file
     "streamlink-config"
@@ -1376,6 +1387,7 @@ rm ${XDG_CACHE_HOME:-~/.cache}/tofi-drun\n")))))
            ("newsboat/config" ,%newsboat-config)
            ("nano/nanorc" ,%default-nanorc)
            ("qutebrowser/config.py" ,%qutebrowser-config-py)
+           ("sequoia/sq/config.toml" ,%sq-config)
            ("streamlink/config" ,%streamlink-config)
            ;("tig/config" ,%tig-config)
            ("user-dirs.dirs" ,%xdg-user-dirs)
