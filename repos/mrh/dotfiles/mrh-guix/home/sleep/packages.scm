@@ -54,7 +54,6 @@
    gtk+
    libnotify
    librewolf
-   ;; sway
    swayfx
    swaybg
    swayidle
@@ -158,5 +157,6 @@
    rlwrap
    texlive
    unzip
+   xdg-desktop-portal
    xdg-utils
    ))

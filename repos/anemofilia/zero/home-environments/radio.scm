@@ -16,10 +16,6 @@
 
   #|GNU packages|#
   #|F|# #:use-module (gnu packages fonts)
-  #|G|# #:use-module (gnu packages gnome)
-        #:use-module (gnu packages gnupg)
-  #|L|# #:use-module (gnu packages linux)
-  #|S|# #:use-module (gnu packages shells)
 
   #|Guix|#
   #|G|# #:use-module (guix gexp)
@@ -103,12 +99,6 @@
                                  ('mpv.desktop mime-types:audio+video)
                                  ('imv.desktop mime-types:image)
                                  ('sioyek.desktop mime-types:document)))))
-
-            (service home-xdg-configuration-files-service-type
-                     (let ((adwaita-theme
-                            (file-append gnome-themes-extra
-                                         "/share/themes/Adwaita-dark/gtk-2.0")))
-                       `(("gtk-2.0" ,adwaita-theme))))
 
             #|Font services|#
             (simple-service 'font-packages
@@ -248,7 +238,6 @@
                      (home-fish-configuration
                        (plugins
                          (list fish-autopair
-                               fish-foreign-env
                                fish-puffer))
                        (environment-variables
                          `(#|GNU Privacy Guard|#
@@ -412,7 +401,8 @@
                      (home-gpg-agent-configuration
                        (gnupg-home "~/.local/share/gnupg")
                        (pinentry-program
-                         (file-append pinentry "/bin/pinentry-curses"))))
+                         (file-append (@ (radix packages gnupg) pinentry-fuzzel)
+                                      "/bin/pinentry-fuzzel"))))
 
             #|Session services|#
             (service home-dbus-service-type)
@@ -420,7 +410,7 @@
             #|Sound services|#
             (service home-pipewire-service-type
                      (home-pipewire-configuration
-                       (wireplumber wireplumber-minimal)))
+                       (wireplumber (@ (gnu packages linux) wireplumber-minimal))))
 
             #|Battery services|#
             (service home-batsignal-service-type
@@ -428,8 +418,8 @@
                        (poll-delay (* 5 60))
                        (full-level 90)
                        (warning-level 70)
-                       (critical-level 20)
-                       (danger-level 10)
+                       (critical-level 30)
+                       (danger-level 20)
                        (danger-command "doas zzz")
                        (full-message "Unplug the cable")
                        (warning-message "You may want to plug the cable")

@@ -81,8 +81,8 @@
       (service wireguard-service-type (wireguard-client-config 2))
 
       ;; doesn't work
-      ;; (simple-service 'fwupd-dbus dbus-root-service-type
-      ;;                 (list fwupd-nonfree))
+      (simple-service 'fwupd-dbus dbus-root-service-type
+                      (list fwupd-nonfree))
 
       (modify-services %base-services
         (guix-service-type

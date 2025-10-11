@@ -5,7 +5,7 @@ show-keyboard-layout
 indicator-caps-lock
 
 image=$HOME/media/pictures/wallpapers/lockscreen
-scaling=fill
+scaling=stretch
 font=DejaVu Sans Mono
 indicator-radius=80
 indicator-thickness=15

@@ -1,7 +1,6 @@
 #!/bin/sh
 
 # Autostart applications ______________________________________________________
-eww daemon
 eww open bar
 dbus-update-activation-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=river
 wbg ~/media/pictures/wallpapers/wall.png &

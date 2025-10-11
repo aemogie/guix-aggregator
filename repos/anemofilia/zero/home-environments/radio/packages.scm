@@ -67,7 +67,8 @@
   #|G|# #:use-module (radix packages games)
   #|K|# #:use-module (radix packages kak-xyz)
   #|M|# #:use-module (radix packages music)
-  #|P|# #:use-module (radix packages pulseaudio)
+  #|P|# #:use-module (radix packages pdf)
+        #:use-module (radix packages pulseaudio)
   #|S|# #:use-module (radix packages seninha)
   #|T|# #:use-module (radix packages text-editors)
         #:use-module (radix packages toys)
@@ -180,7 +181,7 @@
 
 (define reading
   (list #|dictionaries|# translate-shell
-        #|pdf         |# sioyek
+        #|pdf         |# sioyek-kebab
         #|syndication |# newsraft))
 
 (define scheme

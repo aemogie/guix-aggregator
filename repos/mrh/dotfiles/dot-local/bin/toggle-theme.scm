@@ -25,6 +25,6 @@
               "gsettings get org.gnome.desktop.interface gtk-theme"))
    #\'))
 
-(if (string= current-theme "Adwaita")
+(if (string=? current-theme "Adwaita")
     (switch-theme "Adwaita-dark" #t)
     (switch-theme "Adwaita" #f))

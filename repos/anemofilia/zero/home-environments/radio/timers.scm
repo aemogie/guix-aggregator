@@ -9,6 +9,6 @@
    (name 'alarm)
    (event #~(calendar-event #:hours '(5) #:minutes '(0)))
    (action #~(lambda ()
-               (spawn-shell-command
+               (spawn-command
                  "notify-send \"$(rem)\" --expire-time 0; \
                   mpv --shuffle ~/media/music/by-artist")))))

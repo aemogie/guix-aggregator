@@ -102,7 +102,9 @@
                         ("C-c b h" . my/hide-buffer)
                         ("C-c b u" . my/unhide-buffer)
                         ("C-c m v" . my/mpv)
-                        ("C-c m a" . my/play-album)))
+                        ("C-c m a" . my/play-album)
+                        ("C-c p p" . org-publish)
+                        ("C-c p c" . org-publish-current-file)))
 
   (defun my/activate-keybinds (&optional local)
     "Activate personal keybinds stored in `my/keybinds'.
@@ -411,7 +413,8 @@ Helpful advice for face changing functions."
   (org-html-htmlize-output-type 'css))
 
 (use-package ox-publish
-  :commands org-publish
+  :commands
+  (org-publish org-publish-current-file)
   :config
   (use-package org-publish-rss
     :custom
@@ -419,6 +422,10 @@ Helpful advice for face changing functions."
 
   (load (expand-file-name "org-publish.el" user-emacs-directory))
   :after jack)
+
+(defun my/org-publish-on-save ()
+  (interactive)
+  (add-hook 'after-save-hook 'org-publish-current-file 1 t))
 
 (use-package org-capture
   :commands org-capture
