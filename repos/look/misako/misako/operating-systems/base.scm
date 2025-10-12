@@ -152,6 +152,7 @@
           (guix-configuration
             (substitute-urls
               '(
+                "https://ci.guix.moe"
                 "https://cuirass.genenetwork.org"
                 "https://substitutes.nonguix.org"
                 ; "https://guix.bordeaux.inria.fr"
