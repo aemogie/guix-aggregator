@@ -1,5 +1,5 @@
-(define-module (home services emacs)
-  ; #:use-module (daviwil packages emacs)
+(define-module (anon home services emacs)
+  ;; #:use-module (daviwil packages emacs)
   #:use-module (guix gexp)
   #:use-module (guix transformations)
 
@@ -14,28 +14,28 @@
   #:use-module (gnu home services)
 
   #:use-module (gnu services)
-  #:use-module (gnu services configuration) 
+  #:use-module (gnu services configuration)
 
   #:export (home-emacs-config-service-type))
 
 (define (home-emacs-config-profile-service config)
-  (list
-    ;; crafted completion packages
-   emacs-cape
-   emacs-consult
-   emacs-corfu
-   emacs-corfu-terminal
-   emacs-embark
-   emacs-embark-consult
-   emacs-marginalia
-   emacs-orderless
-   emacs-vertico))
+  (list emacs-ef-themes
+        ;; crafted completion packages
+        emacs-cape
+        emacs-consult
+        emacs-corfu
+        emacs-corfu-terminal
+        emacs-embark
+        ;; emacs-embark-consult
+        emacs-marginalia
+        emacs-orderless
+        emacs-vertico
+
+        ))
 
 (define home-emacs-config-service-type
   (service-type (name 'home-emacs-config)
                 (description "Applies my personal Emacs configuration.")
-                (extensions
-                 (list (service-extension
-                        home-profile-service-type
-                        home-emacs-config-profile-service)))
+                (extensions (list (service-extension home-profile-service-type
+                                   home-emacs-config-profile-service)))
                 (default-value #f)))

@@ -96,3 +96,9 @@
         "5dd51367dd00d47058e0009fa2260e65edc6f01e"
         (openpgp-fingerprint
           "3FFA 7335 973E 0A49 47FC  0A8C 38D5 96BE 07D3 34AB")))))
+
+(list guix
+      nonguix
+      saayix
+      radix
+      sops-guix)

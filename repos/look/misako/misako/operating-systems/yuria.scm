@@ -47,6 +47,7 @@
              realtek-firmware
              %base-firmware))
 
+    (kernel linux-6.12)
     (kernel-arguments
       (cons* "amdgpu.backlight=0"
              (operating-system-user-kernel-arguments base)))
@@ -71,8 +72,8 @@
             (use-default-interface? #f)
             (address-randomization #f)
             (address-randomization-range 'full)
-            (roam-threshold -70)
-            (roam-threshold-5g -76)
+            (roam-threshold -75)
+            (roam-threshold-5g -80)
             (roam-retry-interval 60)
             (country "BR")
             (enable-ipv6? #t)

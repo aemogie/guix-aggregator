@@ -12,7 +12,7 @@
 
 ;;; Code:
 
-;;; Initial phase
+;; Initial phase
 
 ;; Load the custom file if it exists.  Among other settings, this will
 ;; have the list `package-selected-packages', so we need to load that
@@ -27,11 +27,15 @@
 ;; Bootstrap crafted-emacs in init.el
 ;; Adds crafted-emacs modules to the `load-path', sets up a module
 ;; writing template, sets the `crafted-emacs-home' variable.
-(load (expand-file-name "../../Projects/crafted-emacs/modules/crafted-init-config"
-                        user-emacs-directory))
+;; (load (expand-file-name "../../modules/crafted-init-config"
+;;                         user-emacs-directory))
 ;; Adjust the path (e.g. to an absolute one)
 ;; depending where you cloned Crafted Emacs.
-;; (load "/path/to/crafted-emacs/modules/crafted-init-config")
+(load "$HOME/src/crafted-emacs/modules/crafted-init-config")
+
+(add-to-list 'load-path (expand-file-name "modules"
+                                          user-emacs-directory))
+
 
 ;;; Packages phase
 ;; Collect list of packages to install. Do not just blindly copy this
@@ -46,9 +50,18 @@
 ;; Add package definitions for completion packages
 ;; to `package-selected-packages'.
 (require 'crafted-completion-packages)
+;; (require 'crafted-ide-packages)
+(require 'crafted-lisp-packages)
+(require 'crafted-org-packages)
+;; (require 'crafted-ui-packages)
+;; (require 'crafted-workspaces-packages)
+;; (require 'crafted-writing-packages)
 
-;; Manually select "ef-themes" package
-(add-to-list 'package-selected-packages 'ef-themes)
+;; Additional packages
+(add-to-list 'package-selected-packages 'meow)
+(require 'anon-core-packages)
+(require 'anon-ide-packages)
+(require 'anon-latex-packages)
 
 ;; Install the packages listed in the `package-selected-packages' list.
 (package-install-selected-packages :noconfirm)
@@ -60,23 +73,34 @@
 
 ;; Load configuration for the completion module
 (require 'crafted-completion-config)
+;; (require 'crafted-ide-config)
+(require 'crafted-lisp-config)
+(require 'crafted-org-config)
+;; (require 'crafted-ui-config)
+;; (require 'crafted-workspaces-config)
+;; (require 'crafted-writing-config)
 
 ;; Some more configurations that don't require packages to be installed
 (require 'crafted-defaults-config)
-(require 'crafted-startup-config)
+;; (require 'crafted-speedbar-config)
+;; (require 'crafted-startup-config)
 
-;;; Optional configuration
+;;; Additional configuration
+(require 'anon-core-config)
+(require 'anon-defaults)
+(require 'anon-ide-config)
+(require 'anon-keys-meow)
+(require 'anon-latex-config)
 
 ;; Profile emacs startup
-(defun ce-base-example/display-startup-time ()
+(defun anon/display-startup-time ()
   "Display the startup time after Emacs is fully initialized."
-  (message "Crafted Emacs loaded in %s."
+  (message "Emacs loaded in %s."
            (emacs-init-time)))
-(add-hook 'emacs-startup-hook #'ce-base-example/display-startup-time)
+(add-hook 'emacs-startup-hook #'anon/display-startup-time)
 
 ;; Set default coding system (especially for Windows)
 (set-default-coding-systems 'utf-8)
 
-;;; _
 (provide 'init)
 ;;; init.el ends here

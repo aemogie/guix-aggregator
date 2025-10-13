@@ -136,7 +136,7 @@
         #|Shell           |# fish
         #|Terminal        |# foot ghostty
         #|Guile           |# guile-next guile-readline guile-colorized guile-gcrypt
-        #|Text Editor     |# helix #|optional|# guile-lsp-server parinfer-rust helix-pdf
+        #|Text Editor     |# helix #|optional|# guile-lsp-server parinfer-rust ;helix-pdf
         #|Typst           |# typst tinymist
         #|Emacs           |# emacs-pgtk emacs-magit
         #|                |# emacs-paredit emacs-yasnippet emacs-which-key emacs-eat

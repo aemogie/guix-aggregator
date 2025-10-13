@@ -1,0 +1,230 @@
+;;; tex-config.el --- Provides and changes how I want to work with TeX-based docs -*- lexical-binding: t -*-
+;;; Commentary:
+;;
+;; Auctex provides many QoL things for editing TeX/LaTeX documents
+;; However, it also defaults to the BibTeX citation database. BibTeX
+;; is fairly old, so I prefer to use BibLaTeX instead. To go along
+;; with BibLaTeX, I use Biber as the backend citation and
+;; cross-referencing manager.
+;;
+;;; Code:
+
+;; https://karthinks.com/software/latex-input-for-impatient-scholars/#
+;; https://speckhofer.github.io/posts/latex-auto-activating-snippets-in-emacs/
+
+;; This elisp code uses use-package, a macro to simplify configuration. It will
+;; install it if it's not available, so please edit the following code as
+;; appropriate before running it.
+
+;; Note that this file does not define any auto-expanding YaSnippets.
+
+;; AucTeX settings - almost no changes
+;; (use-package latex
+  ;; :ensure auctex
+  ;; :hook ((LaTeX-mode . prettify-symbols-mode))
+  ;; :bind (:map LaTeX-mode-map
+  ;;       ("C-S-e" . latex-math-from-calc))
+  ;; :config
+  ;; (setq tex-fontify-script nil))
+  ;; Format math as a Latex string with Calc
+  ;; (defun latex-math-from-calc ()
+  ;;   "Evaluate `calc' on the contents of line at point."
+  ;;   (interactive)
+  ;;   (cond ((region-active-p)
+  ;;          (let* ((beg (region-beginning))
+  ;;                 (end (region-end))
+  ;;                 (string (buffer-substring-no-properties beg end)))
+  ;;            (kill-region beg end)
+  ;;            (insert (calc-eval `(,string calc-language latex
+  ;;                                         calc-prefer-frac t
+  ;;                                         calc-angle-mode rad)))))
+  ;;         (t (let ((l (thing-at-point 'line)))
+  ;;              (end-of-line 1) (kill-line 0)
+  ;;              (insert (calc-eval `(,l
+  ;;                                   calc-language latex
+  ;;                                   calc-prefer-frac t
+;;                                   calc-angle-mode rad))))))))
+
+;; (require 'tex-mode)
+
+(use-package auctex
+  :init
+  ;; Force auctex (the strictly superior (La)TeX major-mode) to be used by setting
+  ;; both the auto-mode-alist and remapping the built-in latex-mode and tex-mode
+  ;; major modes to the auctex versions.
+  (add-to-list 'auto-mode-alist '("\\.tex\\'" . LaTeX-mode))
+  (add-to-list 'major-mode-remap-alist '(latex-mode . LaTeX-mode))
+  (add-to-list 'major-mode-remap-alist '(tex-mode . TeX-mode))
+  :hook
+  ((LaTeX-mode . turn-on-auto-fill)
+   (LaTeX-mode . LaTeX-math-mode))
+  :custom
+  (TeX-parse-self t) ;; Parse multifile documents automagically
+  (TeX-auto-save t) ;; Enables parsing upon saving the document
+  (TeX-show-compilation nil) ;; Always show compilation output
+  (TeX-global-PDF-mode t) ;; Make the default TeX mode PDF mode
+  (TeX-command-default "pdflatex") ;; Default compile to PDF
+  ;; (LaTeX-biblatex-use-Biber t) ;; Make biblatex use Biber automatically
+  (TeX-electric-sub-and-superscript t) ;; Inserts {} automaticly on _ and ^
+  (TeX-source-correlate-mode t) ;; Correlate output to input so we can easily navigate
+  (TeX-source-correlate-method 'synctex)
+  (TeX-source-correlate-start-server t))
+
+;; (use-package preview
+;;   :after latex
+;;   :hook ((LaTeX-mode . preview-larger-previews))
+;;   :config
+;;   (defun preview-larger-previews ()
+;;     (setq preview-scale-function
+;;           (lambda () (* 1.25
+;;                    (funcall (preview-scale-from-face)))))))
+
+;; CDLatex settings
+(use-package cdlatex
+  ;; :ensure t
+  :hook (LaTeX-mode . turn-on-cdlatex)
+  :bind (:map cdlatex-mode-map
+              ("<tab>" . cdlatex-tab))
+  :config
+  (define-key LaTeX-mode-map "'" nil)
+  (define-key cdlatex-mode-map "'" nil)
+  :custom
+  (cdlatex-math-modify-prefix ?\#)
+  (cdlatex-math-symbol-prefix ?\;)
+  (cdlatex-sub-super-scripts-outside-math-mode nil))
+
+;; Yasnippet settings
+;; (use-package yasnippet
+;;   ;; :ensure t
+;;   :hook ((LaTeX-mode . yas-minor-mode)
+;;          (post-self-insert . my/yas-try-expanding-auto-snippets))
+;;   :config
+;;   (use-package warnings
+;;     :config
+;;     (cl-pushnew '(yasnippet backquote-change)
+;;                 warning-suppress-types
+;;                 :test 'equal))
+;; 
+;;   (setq yas-triggers-in-field t)
+;;   
+;;   ;; Function that tries to autoexpand YaSnippets
+;;   ;; The double quoting is NOT a typo!
+;;   (defun my/yas-try-expanding-auto-snippets ()
+;;     (when (and (boundp 'yas-minor-mode) yas-minor-mode)
+;;       (let ((yas-buffer-local-condition ''(require-snippet-condition . auto)))
+;;         (yas-expand)))))
+
+;; (use-package yasnippet
+;;  :hook (LaTeX-mode . yas-minor-mode))
+
+(use-package aas
+  :hook ((LaTeX-mode . aas-activate-for-major-mode)
+         (org-mode . aas-activate-for-major-mode))
+  :config
+  (aas-set-snippets 'text-mode
+    ;; expand unconditionally
+        "mk" (lambda () (interactive)
+         (yas-expand-snippet "\\\\($0\\\\)"))
+        "dm" (lambda () (interactive)
+         ;; (yas-expand-snippet "\\begin{equation*}\n  $0\n\\end{equation*}"))
+         ;; alternative snippet:
+         (yas-expand-snippet "\\[\n  $0\n\\]"))
+        ;; "alig" (lambda () (interactive)
+        ;;   (yas-expand-snippet "\\begin{align*}\n  $0\n\\end{align*}"))
+        ;; "eqn" (lambda () (interactive)
+        ;;   (yas-expand-snippet "\\begin{equation}\n  $0\n\\end{equation}"))
+        ;; "cite" (lambda () (interactive)
+        ;;   (yas-expand-snippet "\\cite{$0}"))
+        ;; "cref" (lambda () (interactive)
+        ;;   (yas-expand-snippet "\\Cref{$0}"))
+        ;; "eqref" (lambda () (interactive)
+        ;;   (yas-expand-snippet "~\\eqref{$0}"))
+        ;; "latex"  "\\LaTeX"
+        ;; "TEMPLATE" (lambda () (interactive)
+        ;;              (yas-expand-snippet "\\documentclass[12pt,a4paper,oneside]{article}\n\\usepackage[utf8]{inputenc}\n\\usepackage[T1]{fontenc}\n\\usepackage{lmodern}\n\\usepackage[left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm,headsep=1.2cm]{geometry}\n\\usepackage{amsmath, amsfonts, amssymb, amsthm, graphicx, tikz, float, pdfpages, enumerate, mathrsfs, hyperref}\n%=========================================================\n\n\\begin{document}\n\n$0\n\n\\end{document}\n\n"))))
+        ))
+
+(use-package laas
+  :load-path "plugins/laas/"
+  :hook ((LaTeX-mode . laas-mode)
+         (org-mode . laas-mode))
+  :config
+  (aas-set-snippets 'laas-mode
+    :cond #'texmathp ; expand only while in math. You can add some snippets here.
+    "+dint" (lambda () (interactive)
+            (yas-expand-snippet "\\int_{$1}^{$2} $0"))))
+
+;; CDLatex integration with YaSnippet: Allow cdlatex tab to work inside Yas
+;; fields
+(use-package cdlatex
+  :hook ((cdlatex-tab . yas-expand)
+         (cdlatex-tab . cdlatex-in-yas-field))
+  :config
+  (use-package yasnippet
+    :bind (:map yas-keymap
+           ("<tab>" . yas-next-field-or-cdlatex)
+           ("TAB" . yas-next-field-or-cdlatex))
+    :config
+    (defun cdlatex-in-yas-field ()
+      ;; Check if we're at the end of the Yas field
+      (when-let* ((_ (overlayp yas--active-field-overlay))
+                  (end (overlay-end yas--active-field-overlay)))
+        (if (>= (point) end)
+            ;; Call yas-next-field if cdlatex can't expand here
+            (let ((s (thing-at-point 'sexp)))
+              (unless (and s (assoc (substring-no-properties s)
+                                    cdlatex-command-alist-comb))
+                (yas-next-field-or-maybe-expand)
+                t))
+          ;; otherwise expand and jump to the correct location
+          (let (cdlatex-tab-hook minp)
+            (setq minp
+                  (min (save-excursion (cdlatex-tab)
+                                       (point))
+                       (overlay-end yas--active-field-overlay)))
+            (goto-char minp) t))))
+
+    (defun yas-next-field-or-cdlatex nil
+      (interactive)
+      "Jump to the next Yas field correctly with cdlatex active."
+      (if
+          (or (bound-and-true-p cdlatex-mode)
+              (bound-and-true-p org-cdlatex-mode))
+          (cdlatex-tab)
+        (yas-next-field-or-maybe-expand)))))
+
+;; Make cdlatex play nice inside org tables
+(use-package lazytab
+  :load-path "plugins/lazytab/"
+  :bind (:map orgtbl-mode-map
+              ("<tab>" . lazytab-org-table-next-field-maybe)
+              ("TAB" . lazytab-org-table-next-field-maybe))
+  :after cdlatex
+  :demand t
+  :config
+  (add-hook 'cdlatex-tab-hook #'lazytab-cdlatex-or-orgtbl-next-field 90)
+  (dolist (cmd '(("smat" "Insert smallmatrix env"
+                  "\\left( \\begin{smallmatrix} ? \\end{smallmatrix} \\right)"
+                  lazytab-position-cursor-and-edit
+                  nil nil t)
+                 ("bmat" "Insert bmatrix env"
+                  "\\begin{bmatrix} ? \\end{bmatrix}"
+                  lazytab-position-cursor-and-edit
+                  nil nil t)
+                 ("pmat" "Insert pmatrix env"
+                  "\\begin{pmatrix} ? \\end{pmatrix}"
+                  lazytab-position-cursor-and-edit
+                  nil nil t)
+                 ("tbl" "Insert table"
+                  "\\begin{table}\n\\centering ? \\caption{}\n\\end{table}\n"
+                  lazytab-position-cursor-and-edit
+                  nil t nil)))
+    (push cmd cdlatex-command-alist))
+  (cdlatex-reset-mode))
+
+(use-package auctex-latexmk
+  :defer t
+  :after auctex)
+
+(provide 'anon-latex-config)
+;;; anon-latex-config.el ends here

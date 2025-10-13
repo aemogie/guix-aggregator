@@ -1,4 +1,4 @@
-(define-module (home services desktop)
+(define-module (anon home services desktop)
   #:use-module (gnu)
   #:use-module (gnu packages))
 

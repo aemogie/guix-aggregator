@@ -1,6 +1,3 @@
-[submodule "crafted-emacs"]
-	path = crafted-emacs
-	url = https://github.com/SystemCrafters/crafted-emacs
 [submodule "files/.config/nvim"]
 	path = files/.config/nvim
 	url = https://github.com/SunJukebox/nvim-conf
