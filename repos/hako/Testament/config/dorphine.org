@@ -36,12 +36,14 @@
       (packages
        (append (specs->pkgs+out
                 "curl"
+                "digikam"
                 "dino"
                 "fd"
                 "foot"
                 "git"
                 "gnupg"
                 "imv"
+                "kdenlive"
                 "mosh"
                 "mpv-nvidia"
                 "niri"
@@ -55,6 +57,7 @@
                 "xdg-desktop-portal"
                 "xdg-desktop-portal-gnome"
                 "xdg-desktop-portal-gtk"
+                "xdg-utils"
 
                 "librewolf"
                 "adaptive-tab-bar-colour-icecat"
@@ -209,7 +212,7 @@ Personal account.
   (user-account
     (name "hako")
     (group "users")
-    (supplementary-groups '("adbusers" "audio" "docker" "plugdev" "video" "wheel"))
+    (supplementary-groups '("adbusers" "audio" "docker" "kvm" "plugdev" "video" "wheel"))
     (shell (file-append (spec->pkg "fish") "/bin/fish")))
 #+end_src
 

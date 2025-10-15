@@ -4,8 +4,8 @@
 
 ARGS  :=
 OPTS  := --keep-going --verbosity=1 $(ARGS)
-# GUIX  := ./pre-inst-env guix
 GUIX  := guix time-machine --channels=channels.lock --
+# GUIX  := ./pre-inst-env guix
 EMACS := $(GUIX) shell emacs-minimal -- emacs
 
 %.scm: %.org
@@ -17,9 +17,13 @@ EMACS := $(GUIX) shell emacs-minimal -- emacs
 
 .PHONY: update-channels
 update-channels:
-	guix time-machine --channels=channels.scm $(ARGS) -- \
+	@guix time-machine --channels=channels.scm $(ARGS) -- \
 		describe --format=channels > channels.tmp && \
 	mv channels.tmp channels.lock
+
+.PHONY: pull
+pull:
+	@guix pull --channels=channels.lock $(OPTS)
 
 .PHONY: build
 build:  build-dorphine \
@@ -30,7 +34,7 @@ build:  build-dorphine \
 	build-gokuraku \
 	build-rakuen
 build-%: config/%.scm
-	$(GUIX) system build $< $(OPTS)
+	@$(GUIX) system build $< $(OPTS)
 
 .PHONY: deploy
 deploy: deploy-dorphine \
@@ -44,13 +48,13 @@ deploy: deploy-dorphine \
 	deploy-mirror \
 	deploy-worker
 deploy-%: config/%.scm
-	$(GUIX) deploy files/deploy/$(notdir $<) $(OPTS)
+	@$(GUIX) deploy files/deploy/$(notdir $<) $(OPTS)
 
 .PHONY: live
 live: live-console live-desktop
 live-%: config/live-%.scm
-	@mkdir --parents dist
-	@cp "$(shell $(GUIX) system image --image-type=iso9660 $< $(OPTS))" \
+	@mkdir --parents dist && \
+	cp "$(shell $(GUIX) system image --image-type=iso9660 $< $(OPTS))" \
 	"dist/guix-system-$(shell date +%Y%m%d)-$(notdir $(basename $<)).iso"
 
 .PHONY: authenticate
@@ -58,7 +62,3 @@ live-%: config/live-%.scm
 authenticate:
 	@$(GUIX) git authenticate c5d46fdfdfbc84fe413f1d930049d1f703f9a0ff \
 		"F4C2 D1DF 3FDE EA63 D1D3  0776 ACC6 6D09 CA52 8292"
-
-.PHONY: clean
-clean:
-	-$(RM) config/*.scm channels.lock

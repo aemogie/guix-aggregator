@@ -19,7 +19,7 @@
             home-environment-variables-service-type
             '(("ASPELL_DICT_DIR" . "$HOME/.guix-home/profile/lib/aspell/")
               ("BROWSER" . "librewolf")
-              ("EDITOR" . "emacs")
+              ("EDITOR" . "emacsclient -c")
               ("GNUPGHOME" . "$XDG_DATA_HOME/gnupg")
               ("GUILE_LOAD_PATH" . "$HOME/.guix-home/profile/share/guile/site/3.0:$HOME/.config/guix/current/share/guile/site/3.0:$GUILE_LOAD_PATH")
               ("GUILE_EXTENSIONS_PATH" . "$HOME/.guix-home/profile/lib:/run/current-system/profile/lib:$GUILE_EXTENSIONS_PATH")

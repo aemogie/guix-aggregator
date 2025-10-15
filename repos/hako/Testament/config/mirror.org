@@ -40,12 +40,7 @@
        (list (swap-space
                (target (file-system-label "swap")))))
       (users (cons* <<user>> %base-user-accounts))
-      (packages
-       (append (specs->pkgs+out
-                "mosh"
-                "rsync"
-                <<package>>)
-               %base-packages))
+      (packages (append (specs->pkgs+out "mosh" "rsync") %base-packages))
       (services (cons* <<service>> %base-services))))
 
   %os

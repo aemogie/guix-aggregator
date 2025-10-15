@@ -309,10 +309,10 @@ time in `current-time' format."
               " Donate")
           " | "
           (:a (@ :href ,(my/get-up-directory level "about.html"))
-              (:img (@ :style "border-width:0" :src ,(my/get-up-directory level "static/images/icons/lisp-circle.png")))
+              (:img (@ :style "border-width:0" :src ,(my/get-up-directory level "static/images/icons/yes-man-sepia.jpg")))
               " About"))))
 
-(defun my/publish-html-postamble (html-info)
+(defun my/publish-html-postamble (level)
   (jack-html
    `((:center
       (:a (@ :rel "license" :href "https://creativecommons.org/licenses/by-sa/4.0/")
@@ -325,7 +325,14 @@ time in `current-time' format."
       " is licensed under a "
       (:a (@ :rel "license" :href "https://creativecommons.org/licenses/by-sa/4.0/")
           "Creative Commons Attribution-ShareAlike 4.0 License")
-      "."))))
+      "."
+      (:br)
+      (:a (@ :href "https://www.gnu.org/software/emacs")
+          (:img (@ :alt "emacs badge" :style "border-width:0" :src ,(my/get-up-directory level "static/images/badges/emacs.gif"))))
+      (:a (@ :href "https://guix.gnu.org")
+          (:img (@ :alt "guix badge" :style "border-width:0" :src ,(my/get-up-directory level "static/images/badges/gnu-guix-deployed.svg"))))
+      (:a (@ :href "https://scheme.org")
+          (:img (@ :alt "lisp badge" :style "border-width:0" :src ,(my/get-up-directory level "static/images/badges/lisp.png"))))))))
 
 (defun my/publish-rss-filter (filename)
   (not (string-match "tags.org" filename)))
@@ -371,7 +378,7 @@ time in `current-time' format."
            :html-metadata-timestamp-format "%Y-%m-%d"           
            :html-head ,(my/publish-html-head 0)
            :html-preamble ,(my/publish-html-preamble 0)
-           :html-postamble my/publish-html-postamble)
+           :html-postamble ,(my/publish-html-postamble 0))
           ("site.blog"
            :base-directory ,(concat site-source-directory "blog/")
            :publishing-directory ,(concat site-target-directory "blog/")
@@ -408,7 +415,7 @@ time in `current-time' format."
            :html-link-home ,(format "https://%s/" my/website-domain)
            :html-head ,(my/publish-html-head 1)
            :html-preamble ,(my/publish-html-preamble 1)
-           :html-postamble my/publish-html-postamble
+           :html-postamble ,(my/publish-html-postamble 1)
 
            :preparation-function (my/publish-html-tags)
            :completion-function (org-publish-rss))

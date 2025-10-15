@@ -287,14 +287,6 @@ rsync://cache.boiledscript.com
 * Containers & Virtualization
 #+begin_src scheme :noweb-ref module
   (gnu services docker)
-  (gnu services virtualization)
-#+end_src
-
-** binfmt_misc
-#+begin_src scheme :noweb-ref service
-  (service qemu-binfmt-service-type
-    (qemu-binfmt-configuration
-      (platforms (lookup-qemu-platforms "aarch64"))))
 #+end_src
 
 ** containerd
@@ -365,7 +357,6 @@ Remember to open TCP port 5555 and 5556.
 #+begin_src scheme :noweb yes :noweb-ref service
   (service cuirass-service-type
     (cuirass-configuration
-      (cuirass (spec->pkg "cuirass-dolly"))
       ;; 6 hours
       (interval (* 6 3600))
       (parameters

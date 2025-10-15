@@ -99,6 +99,7 @@
    emacs-elfeed
    emacs-geiser
    emacs-geiser-guile
+   emacs-guix
    emacs-htmlize
    emacs-jack
    emacs-magit

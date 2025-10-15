@@ -177,6 +177,7 @@
                    deadnix
                    discord
                    gh
+                   natscli
                    ibm-plex
                    jdt-language-server
                    jetbrains.idea-community
