@@ -33,6 +33,7 @@
                      package-management
                      password-utils
                      pdf
+                     photo
                      readline
                      rsync
                      terminals
@@ -82,6 +83,7 @@
    imagemagick
    imv
    mpv
+   perl-image-exiftool
    yt-dlp
 
    ;; emacs

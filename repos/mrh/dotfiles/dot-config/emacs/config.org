@@ -1,5 +1,5 @@
 #+title: Emacs Config
-#+author: Alec Barreto
+#+author: Alec
 #+date: [{{{time(%Y-%m-%d)}}}]
 #+export_file_name: emacs-config
 #+options: toc:1 num:2
