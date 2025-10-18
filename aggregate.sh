@@ -21,20 +21,25 @@ while IFS='|' read -r first dir url branch _ || [[ -n "$first" ]]; do
   branch=$(echo $branch)
 
   mkdir -p "$dir"
-  git clone --depth 1 --no-tags --branch "$branch" "$url" "$dir"
-
-  hash=$(git -C "$dir" rev-parse HEAD)
-  echo "$dir $hash" >> "$LOCK_FILE"
-
-  rm -rf "$dir/.git"
+  if git clone --depth 1 --no-tags --branch "$branch" "$url" "$dir"; then
+     hash=$(git -C "$dir" rev-parse HEAD)
+     echo "$dir $hash" >> "$LOCK_FILE"
+     rm -rf "$dir/.git"
+  else
+     git show HEAD:"$LOCK_FILE" | grep "$dir" >> "$LOCK_FILE"
+     git reset --hard HEAD -- "$dir"
+  fi
 done <<< $(sed -n '/# BEGIN REPOLIST/,/# END REPOLIST/{//!p}' "$REPOS_FILE")
 
-last_update=$(git log -1 --format=%cd --date=short 2>/dev/null || echo "initial")
-current_date=$(date +%Y-%m-%d)
-commit_title="Update repositories: $last_update to $current_date"
-# get lines starting with `+` or `-`, but skip first two results (---,+++)
-commit_body="$(git diff -- "$LOCK_FILE" | grep '^[\+\-]' | tail -n +3)"
-
-git add .
-git commit --quiet -m "$commit_title" -m "$commit_body" || true
-git push origin HEAD
+if ! git diff --quiet -- "$LOCK_FILE"; then
+    last_update=$(git log -1 --format=%cd --date=short 2>/dev/null || echo "initial")
+    current_date=$(date +%Y-%m-%d)
+    commit_title="Update repositories: $last_update to $current_date"
+    # get lines starting with `+` or `-`, but skip first two results (---,+++)
+    commit_body="$(git diff -- "$LOCK_FILE" | grep '^[\+\-]' | tail -n +3)"
+    git add .
+    git commit --quiet -m "$commit_title" -m "$commit_body"
+    git push origin HEAD
+else
+    echo all up to date
+fi
