@@ -137,7 +137,6 @@
 
    ;; security
    gnupg
-   mrh-i2pd
    keepassxc
    ksshaskpass
    pinentry-emacs

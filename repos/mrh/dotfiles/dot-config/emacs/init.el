@@ -12,7 +12,8 @@
   :custom
   (large-file-warning-threshold 10000000)
   (backup-by-copying t)
-  (safe-local-variable-directories '("~/.config/guix/current/share/guile/site/3.0/"))
+  (safe-local-variable-directories '("~/.config/guix/current/share/guile/site/3.0/"
+                                     "~/src/repos/guix"))
   :config
   (add-to-list 'backup-directory-alist
                `("." . ,(expand-file-name "backups" user-emacs-directory))))
@@ -381,6 +382,17 @@ Helpful advice for face changing functions."
           (set-buffer buffer)
           (when (eq major-mode 'org-mode)
             (font-lock-fontify-buffer))))))
+
+  (defun my/org-audio-link (path desc format)
+    "Allow org to handle audio links."
+    (when (equal format 'html)
+      (format "<center><audio controls src=\"%s\">%s</audio></center>"
+              path (or desc ""))))
+
+  (org-link-set-parameters "audio"
+                           :follow #'my/mpv
+                           :export #'my/org-audio-link
+                           :complete #'org-link-complete-file)
 
   (add-to-list 'org-structure-template-alist '("m" . "src emacs-lisp"))
 

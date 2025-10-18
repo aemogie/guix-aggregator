@@ -17,7 +17,7 @@
            (simple-service
             'environment-variables-service
             home-environment-variables-service-type
-            '(("ASPELL_DICT_DIR" . "$HOME/.guix-home/profile/lib/aspell/")
+            '(("ASPELL_DICT_DIR" . "$HOME/.guix-home/profile/lib/aspell")
               ("BROWSER" . "librewolf")
               ("EDITOR" . "emacsclient -c")
               ("GNUPGHOME" . "$XDG_DATA_HOME/gnupg")

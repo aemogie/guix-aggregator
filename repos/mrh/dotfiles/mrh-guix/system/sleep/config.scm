@@ -1,9 +1,7 @@
 (define-module (mrh-guix system sleep config)
-  #:use-module (mrh-guix personal)
   #:use-module (mrh-guix vpn)
   #:use-module (nongnu packages linux)
   #:use-module (nongnu packages firmware)
-  #:use-module (nongnu system linux-initrd)
   #:use-module (gnu)
   #:use-module (gnu services dns))
 
@@ -90,7 +88,7 @@
                      (inherit config)
                      (authorized-keys
                       (cons
-                       (local-file (format #f "~a/nonguix.pub" %guix-dots-dir))
+                       (local-file "../../nonguix.pub")
                        %default-authorized-guix-keys))
                      (substitute-urls
                       (cons "https://substitutes.nonguix.org"
