@@ -12,7 +12,7 @@ your dotfiles instead, also please, PRs are welcome.
 | [[repos/abcdw/rde]]              | https://git.sr.ht/~abcdw/rde                    | master  |
 | [[repos/anemofilia/zero]]        | https://codeberg.org/anemofilia/zero.git        | main    |
 | [[repos/look/misako]]            | https://codeberg.org/look/misako.git            | main    |
-| [[repos/hako/Testament]]         | https://codeberg.org/hako/Testament.git | trunk   |
+| [[repos/hako/Testament]]         | https://codeberg.org/hako/Testament.git         | trunk   |
 | [[repos/jjba23/sss]]             | https://codeberg.org/jjba23/sss.git             | trunk   |
 | [[repos/divyaranjan/dotfiles]]   | https://codeberg.org/divyaranjan/dotfiles.git   | master  |
 | [[repos/wloxyz/guix-configs]]    | https://codeberg.org/wloxyz/guix-configs.git    | main    |
