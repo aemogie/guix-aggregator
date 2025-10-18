@@ -8,6 +8,8 @@
   #:use-module ((gnu home services shepherd) #:select (home-shepherd-service-type
                                                        home-shepherd-configuration))
   #:use-module ((gnu packages fonts) #:select (font-iosevka
+                                               font-iosevka-aile
+                                               font-iosevka-etoile
                                                font-iosevka-comfy
                                                font-sarasa-gothic
                                                font-google-noto
@@ -29,8 +31,10 @@
 
 (define %default-font-packages
   (list font-iosevka
+        font-iosevka-aile
+        font-iosevka-etoile
         font-iosevka-comfy
-        ;; font-sarasa-gothic
+        font-sarasa-gothic
         ;; no tofu or something, i dont really know
         font-google-noto
         font-google-noto-emoji

@@ -74,7 +74,15 @@ signingKey = 1B39BA52B26B3DBB
 gpgSign = true
 
 [tag]
-gpgSign = true")))))
+gpgSign = true"))
+     ("git/ignore" ,(plain-file "git-ignore" "\
+# emacs
+*~
+.#*
+\\#*#
+# gcc
+a.out
+")))))
 
 (define* (make-aemogie-home hostname)
   (home-environment
