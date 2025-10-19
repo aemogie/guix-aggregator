@@ -29,17 +29,7 @@
 }
 
 
-(tailscale) {
-	@tailscale client_ip 100.64.0.0/10 fd7a:115c:a1e0::/48
-	handle @tailscale {
-		{block}
-	}
-}
-
-
 # qBittorrent
 download.ultrarare.space {
-	import tailscale {
-		reverse_proxy localhost:35951
-	}
+	reverse_proxy localhost:35951
 }

@@ -29,34 +29,17 @@
 }
 
 
-(tailscale) {
-	@tailscale client_ip 100.64.0.0/10 fd7a:115c:a1e0::/48
-	handle @tailscale {
-		{block}
-	}
-}
-
-
 # Komga
 http://manga.boiledscript.com, manga.ultrarare.space {
-	import tailscale {
-		reverse_proxy localhost:44293
-	}
 	reverse_proxy localhost:44293
 }
 
 # Navidrome
 http://music.boiledscript.com, music.ultrarare.space {
-	import tailscale {
-		reverse_proxy localhost:43502
-	}
 	reverse_proxy localhost:43502
 }
 
 # Jellyfin
 http://shows.boiledscript.com, shows.ultrarare.space {
-	import tailscale {
-		reverse_proxy localhost:22443
-	}
 	reverse_proxy localhost:22443
 }

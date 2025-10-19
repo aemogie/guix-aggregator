@@ -34,66 +34,73 @@
                 (uuid "7de33202-1010-4297-ba9c-8e7fa419f891")))))
       (users (cons* <<user>> %base-user-accounts))
       (packages
-       (append (specs->pkgs+out
-                "curl"
-                "digikam"
-                "dino"
-                "fd"
-                "foot"
-                "git"
-                "gnupg"
-                "imv"
-                "kdenlive"
-                "mosh"
-                "mpv-nvidia"
-                "niri"
-                "obs-nvidia"
-                "ripgrep"
-                "rsync"
-                "sops"
-                "steam-nvidia"
-                "wl-clipboard"
+       (replace-mesa
+        (append (specs->pkgs+out
+                 "curl"
+                 "digikam"
+                 "dino"
+                 "fd"
+                 "foot"
+                 "git"
+                 "gnupg"
+                 "imv"
+                 "kdenlive"
+                 "mosh"
+                 "mpv-nvidia"
+                 "niri"
+                 #;"obs-nvidia"
+                 "openjdk:jdk"
+                 "prismlauncher-dolly"
+                 "ripgrep"
+                 "rsync"
+                 "sops"
+                 "steam-nvidia"
+                 "telegram-desktop"
+                 "wl-clipboard"
 
-                "xdg-desktop-portal"
-                "xdg-desktop-portal-gnome"
-                "xdg-desktop-portal-gtk"
-                "xdg-utils"
+                 "xdg-desktop-portal"
+                 "xdg-desktop-portal-gnome"
+                 "xdg-desktop-portal-gtk"
+                 "xdg-utils"
 
-                "librewolf"
-                "adaptive-tab-bar-colour-icecat"
-                "bitwarden-icecat"
-                "livemarks-icecat"
-                "ohmyech-icecat"
-                "ublock-origin-icecat"
+                 "librewolf"
+                 "adaptive-tab-bar-colour-icecat"
+                 "bitwarden-icecat"
+                 "livemarks-icecat"
+                 "ohmyech-icecat"
+                 "ublock-origin-icecat"
 
-                "exo"
-                "file-roller"
-                "thunar"
-                "thunar-archive-plugin"
-                "thunar-media-tags-plugin"
-                "thunar-volman"
-                "unzip"
+                 "exo"
+                 "file-roller"
+                 "thunar"
+                 "thunar-archive-plugin"
+                 "thunar-media-tags-plugin"
+                 "thunar-volman"
+                 "unzip"
 
-                <<package>>)
-               %base-packages))
+                 <<package>>)
+                %base-packages)))
       (services
-       (cons* <<service>>
-              (modify-services %rosenthal-desktop-services
-                (guix-service-type
-                 config => (guix-configuration
-                             (inherit config)
-                             (discover? #t)
-                             (extra-options '("--cores=16"))))
-                (network-manager-service-type
-                 config => (network-manager-configuration
-                             (inherit config)
-                             (extra-configuration-files
-                              (list %network-manager-ipv6-privacy
-                                    %network-manager-random-mac-address)))))))
+       (replace-mesa
+        (cons* <<service>>
+               (modify-services %rosenthal-desktop-services
+                 (guix-service-type
+                  config => (guix-configuration
+                              (inherit config)
+                              (substitute-urls
+                               '("https://ci.guix.gnu.org"
+                                 "https://bordeaux.guix.gnu.org"))
+                              (discover? #t)
+                              (extra-options '("--cores=16"))))
+                 (network-manager-service-type
+                  config => (network-manager-configuration
+                              (inherit config)
+                              (extra-configuration-files
+                               (list %network-manager-ipv6-privacy
+                                     %network-manager-random-mac-address))))))))
       (name-service-switch %mdns-host-lookup-nss)))
 
-  ((compose replace-mesa
-            (nonguix-transformation-nvidia)
+  ((compose (nonguix-transformation-nvidia)
             (rosenthal-transformation-zfs #:boot? #t)
             (nonguix-transformation-linux #:linux (spec->pkg "linux@6.12")))
    %os)
@@ -487,7 +494,8 @@ Open TCP port 5558 and connect to server IPv4 address.
       (server "100.97.195.93:5555")       ;gokuraku (Tailscale)
       (substitute-urls
        `("https://ci.guix.moe"
-         ,@%default-substitute-urls))))
+         "https://ci.guix.gnu.org"
+         "https://bordeaux.guix.gnu.org"))))
 #+end_src
 
 * Monitoring
@@ -526,6 +534,7 @@ Open TCP port 5558 and connect to server IPv4 address.
                (specs->pkgs "foot"
                             "light"
                             "rofi"
+                            "setxkbmap"
                             "swaylock-effects"
                             "wireplumber"
                             "xwayland-satellite"))))))
@@ -712,7 +721,7 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
 #+begin_src scheme :noweb yes :noweb-ref package
   "emacs-pgtk"
 
-  "emacs-beancount"
+  #;"emacs-beancount"
   "emacs-caddyfile-mode"
   "emacs-edit-indirect"
   "emacs-fish-mode"

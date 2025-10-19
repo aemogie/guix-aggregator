@@ -94,6 +94,8 @@
     ("GOPATH" . "$XDG_DATA_HOME/go")
     ;; guile
     ("GUILE_HISTORY" . "$XDG_STATE_HOME/guile/history")
+    ;; java
+    ("_JAVA_OPTIONS" . "-Djava.util.prefs.userRoot=$XDG_CONFIG_HOME/java")
     ;; node
     ("NPM_CONFIG_USERCONFIG" . "$XDG_CONFIG_HOME/npm/npmrc")
     ;; nvidia-driver

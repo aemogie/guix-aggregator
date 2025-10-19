@@ -133,9 +133,11 @@ Administration accounts.
                (file rakuen.yaml)
                (user "caddy"))
              (sops-secret
-               (key '("postgres" "vaultwarden"))
-               (file rakuen.yaml)
-               (group "postgres"))))))
+               (key '("docker-mailserver" "ecprivkey.pem"))
+               (file rakuen.yaml))
+             (sops-secret
+               (key '("docker-mailserver" "ecpubkey.pem"))
+               (file rakuen.yaml))))))
 #+end_src
 
 * Networking & SSH
@@ -282,14 +284,7 @@ Administration accounts.
 #+end_src
 
 ** docker-mailserver
-#+name: rspamd-redis-conf
-#+begin_src scheme
-  (plain-file "rspamd-redis.conf" "\
-  servers = \"127.0.0.1:6379\";
-  expand_keys = true;")
-#+end_src
-
-#+begin_src scheme :noweb yes :noweb-ref service
+#+begin_src scheme :noweb-ref service
   (service docker-mailserver-service-type
     (docker-mailserver-configuration
       (shepherd-requirement '(redis))
@@ -311,6 +306,7 @@ Administration accounts.
          ("SSL_TYPE" . "letsencrypt")))
       (extra-arguments
        `("--cap-add=NET_ADMIN"      ;For fail2ban.
+
          "--volume"
          ,(string-append
            "/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/mail.boiledscript.com/mail.boiledscript.com.crt"
@@ -319,13 +315,23 @@ Administration accounts.
          ,(string-append
            "/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/mail.boiledscript.com/mail.boiledscript.com.key"
            ":/etc/letsencrypt/live/mail.boiledscript.com/privkey.pem")
+
          "--volume"
          ,(file-append
-           <<rspamd-redis-conf>> ":/etc/rspamd/local.d/redis.conf:ro")
+           (plain-file "rspamd-redis.conf" "\
+  servers = \"127.0.0.1:6379\";
+  expand_keys = true;")
+           ":/etc/rspamd/local.d/redis.conf:ro")
          "--volume"
          ,(file-append
            (local-file (testament-plain "rspamd-dkim-signing.conf"))
-           ":/etc/rspamd/override.d/dkim_signing.conf:ro")))))
+           ":/etc/rspamd/override.d/dkim_signing.conf:ro")
+
+         "--volume"
+         ,(file-append
+           (local-file (testament-plain "mail-crypt.conf"))
+           ":/etc/dovecot/conf.d/10-custom.conf:ro")
+         "--volume" "/run/secrets/docker-mailserver:/certs:ro"))))
 #+end_src
 
 ** miniflux
@@ -343,10 +349,8 @@ Administration accounts.
 #+begin_src scheme :noweb-ref service
   (service vaultwarden-service-type
     (vaultwarden-configuration
-      (postgresql-password-file "/run/secrets/postgres/vaultwarden")
-      (database-url
-       (format #f "postgresql://vaultwarden:~a@localhost/vaultwarden"
-               (sops-str rakuen.yaml '("postgres" "vaultwarden"))))
+      (postgresql-password-file "")
+      (database-url "postgresql://vaultwarden:placeholder@localhost/vaultwarden")
       (port 23263)
       (extra-options '(("ROCKET_ADDRESS" . "127.0.0.1")))))
 #+end_src

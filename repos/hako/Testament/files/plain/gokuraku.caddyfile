@@ -104,7 +104,6 @@ git.ultrarare.space {
 # Misskey
 boiledscript.com {
 	import block_bots
-	import logging social.boiledscript.com
 
 	reverse_proxy localhost:54493
 }
@@ -113,7 +112,6 @@ boiledscript.com {
 # Cuirass
 ci.guix.moe {
 	import block_bots
-	import logging ci.guix.moe
 
 	@guix_publish {
 		path /*.narinfo || /file/* || /nar/* || /nix-cache-info || /signing-key.pub

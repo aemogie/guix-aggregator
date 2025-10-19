@@ -51,6 +51,9 @@
                 (guix-service-type
                  config => (guix-configuration
                              (inherit config)
+                             (substitute-urls
+                              '("https://ci.guix.gnu.org"
+                                "https://bordeaux.guix.gnu.org"))
                              (discover? #t))))))
       (name-service-switch %mdns-host-lookup-nss)))
 
@@ -267,7 +270,8 @@ Administration accounts.
   (service cloudflare-tunnel-service-type
     (cloudflare-tunnel-configuration
       (log-level "error")
-      (token-file "/run/secrets/cloudflared")))
+      (token-file "/run/secrets/cloudflared")
+      (extra-options '("--protocol" "http2"))))
 #+end_src
 
 ** jellyfin

@@ -34,6 +34,7 @@ overview {
 xwayland-satellite {
     path "$$bin/xwayland-satellite$$"
 }
+spawn-at-startup "$$bin/setxkbmap$$ us dvorak ctrl:nocaps"
 
 layout {
     focus-ring {

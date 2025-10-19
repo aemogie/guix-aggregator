@@ -35,6 +35,9 @@ table inet filter {
         # allow guix-publish
         tcp dport 49637 accept
 
+        # allow minecraft
+        tcp dport 25565 accept
+
         # allow qbittorrent
         meta l4proto { tcp, udp } th dport 15308 accept
 

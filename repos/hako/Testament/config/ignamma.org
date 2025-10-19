@@ -46,6 +46,9 @@
                 (guix-service-type
                  config => (guix-configuration
                              (inherit config)
+                             (substitute-urls
+                              '("https://ci.guix.gnu.org"
+                                "https://bordeaux.guix.gnu.org"))
                              (discover? #t)
                              (extra-options '("--cores=4")))))))
       (name-service-switch %mdns-host-lookup-nss)))
@@ -222,7 +225,8 @@ Open TCP port 5558 and connect to server IPv4 address.
       (server "100.97.195.93:5555")       ;gokuraku (Tailscale)
       (substitute-urls
        `("https://ci.guix.moe"
-         ,@%default-substitute-urls))))
+         "https://ci.guix.gnu.org"
+         "https://bordeaux.guix.gnu.org"))))
 #+end_src
 
 * Monitoring

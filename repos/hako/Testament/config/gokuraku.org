@@ -47,6 +47,9 @@
                 (guix-service-type
                  config => (guix-configuration
                              (inherit config)
+                             (substitute-urls
+                              '("https://ci.guix.gnu.org"
+                                "https://bordeaux.guix.gnu.org"))
                              (extra-options '("--max-jobs=2")))))))))
 
   ((compose (rosenthal-transformation-zfs #:boot? #t))
@@ -382,10 +385,11 @@ Remember to open TCP port 5555 and 5556.
       (publish-port 5558)
       (workers 1)
       (systems '("x86_64-linux" "i686-linux"))
-      (server "127.0.0.1:5555")
+      (server "100.97.195.93:5555")       ;gokuraku (Tailscale)
       (substitute-urls
        `("https://ci.guix.moe"
-         ,@%default-substitute-urls))))
+         "https://ci.guix.gnu.org"
+         "https://bordeaux.guix.gnu.org"))))
 #+end_src
 
 ** cuirass specifications
@@ -396,16 +400,18 @@ Remember to open TCP port 5555 and 5556.
     (name "emacs-master")
     (build '(channels emacs-master))
     (channels
-     (cons* (channel
-              (name 'emacs-master)
-              (url "https://github.com/gs-101/emacs-master.git")
-              (branch "main")
-              (introduction
-               (make-channel-introduction
-                "568579841d0ca41a9d222a2cfcad9a7367f9073b"
-                (openpgp-fingerprint
-                 "3049 BF6C 0829 94E4 38ED  4A15 3033 E0E9 F7E2 5FE4"))))
-            %default-channels))
+     (list (channel
+             (inherit %default-guix-channel)
+             (url "https://git.ultrarare.space/mirror/guix.git"))
+           (channel
+             (name 'emacs-master)
+             (url "https://github.com/gs-101/emacs-master.git")
+             (branch "main")
+             (introduction
+              (make-channel-introduction
+               "568579841d0ca41a9d222a2cfcad9a7367f9073b"
+               (openpgp-fingerprint
+                "3049 BF6C 0829 94E4 38ED  4A15 3033 E0E9 F7E2 5FE4"))))))
     (priority 5)
     (systems '("x86_64-linux")))
 #+end_src
@@ -418,7 +424,7 @@ Remember to open TCP port 5555 and 5556.
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://codeberg.org/hako/guix-pinned.git")
+             (url "https://git.ultrarare.space/hako/guix.git")
              (branch "pinned"))))
     (priority 9)
     (systems '("x86_64-linux" "aarch64-linux")))
@@ -430,15 +436,17 @@ Remember to open TCP port 5555 and 5556.
     (name "guixcn")
     (build '(channels guixcn))
     (channels
-     (cons* (channel
-              (name 'guixcn)
-              (url "https://codeberg.org/guixcn/guix-channel.git")
-              (introduction
-               (make-channel-introduction
-                "993d200265630e9c408028a022f32f34acacdf29"
-                (openpgp-fingerprint
-                 "7EBE A494 60CE 5E2C 0875  7FDB 3B5A A993 E1A2 DFF0"))))
-            %default-channels))
+     (list (channel
+             (inherit %default-guix-channel)
+             (url "https://git.ultrarare.space/mirror/guix.git"))
+           (channel
+             (name 'guixcn)
+             (url "https://codeberg.org/guixcn/guix-channel.git")
+             (introduction
+              (make-channel-introduction
+               "993d200265630e9c408028a022f32f34acacdf29"
+               (openpgp-fingerprint
+                "7EBE A494 60CE 5E2C 0875  7FDB 3B5A A993 E1A2 DFF0"))))))
     (priority 5)
     (systems '("x86_64-linux"))
     (properties '((forge-type . forgejo))))
@@ -450,15 +458,17 @@ Remember to open TCP port 5555 and 5556.
     (name "nonguix")
     (build '(channels nonguix))
     (channels
-     (cons* (channel
-              (name 'nonguix)
-              (url "https://gitlab.com/nonguix/nonguix")
-              (introduction
-               (make-channel-introduction
-                "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
-                (openpgp-fingerprint
-                 "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))
-            %default-channels))
+     (list (channel
+             (inherit %default-guix-channel)
+             (url "https://git.ultrarare.space/mirror/guix.git"))
+           (channel
+             (name 'nonguix)
+             (url "https://gitlab.com/nonguix/nonguix")
+             (introduction
+              (make-channel-introduction
+               "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
+               (openpgp-fingerprint
+                "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))))
     (priority 3)
     (systems '("x86_64-linux" "aarch64-linux")))
 #+end_src
@@ -469,15 +479,17 @@ Remember to open TCP port 5555 and 5556.
     (name "rde")
     (build '(channels rde))
     (channels
-     (cons* (channel
-              (name 'rde)
-              (url "https://git.sr.ht/~abcdw/rde")
-              (introduction
-               (make-channel-introduction
-                "257cebd587b66e4d865b3537a9a88cccd7107c95"
-                (openpgp-fingerprint
-                 "2841 9AC6 5038 7440 C7E9  2FFA 2208 D209 58C1 DEB0"))))
-            %default-channels))
+     (list (channel
+             (inherit %default-guix-channel)
+             (url "https://git.ultrarare.space/mirror/guix.git"))
+           (channel
+             (name 'rde)
+             (url "https://git.sr.ht/~abcdw/rde")
+             (introduction
+              (make-channel-introduction
+               "257cebd587b66e4d865b3537a9a88cccd7107c95"
+               (openpgp-fingerprint
+                "2841 9AC6 5038 7440 C7E9  2FFA 2208 D209 58C1 DEB0"))))))
     (priority 5)
     (systems '("x86_64-linux")))
 #+end_src
@@ -488,23 +500,25 @@ Remember to open TCP port 5555 and 5556.
     (name "rosenthal")
     (build '(channels rosenthal))
     (channels
-     (cons* (channel
-              (name 'rosenthal)
-              (url "https://codeberg.org/hako/rosenthal.git")
-              (branch "trunk")
-              (introduction
-               (make-channel-introduction
-                "7677db76330121a901604dfbad19077893865f35"
-                (openpgp-fingerprint
-                 "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7"))))
-            %default-channels))
+     (list (channel
+             (inherit %default-guix-channel)
+             (url "https://git.ultrarare.space/mirror/guix.git"))
+           (channel
+             (name 'rosenthal)
+             (url "https://codeberg.org/hako/rosenthal.git")
+             (branch "trunk")
+             (introduction
+              (make-channel-introduction
+               "7677db76330121a901604dfbad19077893865f35"
+               (openpgp-fingerprint
+                "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7"))))))
     (priority 5)
     (systems '("x86_64-linux" "aarch64-linux"))
     (properties '((forge-type . forgejo))))
 #+end_src
 
 *** source
-**** guix-pinned
+**** guix
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification
     (name "source")
@@ -512,8 +526,7 @@ Remember to open TCP port 5555 and 5556.
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://codeberg.org/hako/guix-pinned.git")
-             (branch "pinned"))))
+             (url "https://git.ultrarare.space/mirror/guix.git"))))
     (priority 9)
     (systems '("x86_64-linux")))
 #+end_src
