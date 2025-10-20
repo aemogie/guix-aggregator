@@ -88,8 +88,6 @@
 
 files.boiledscript.com {
 	import block_bots
-	import logging files.boiledscript.com
-
 	root * /var/lib/webpublic/files
 	file_server browse
 }

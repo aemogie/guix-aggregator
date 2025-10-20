@@ -201,6 +201,36 @@
             #:requirement '(user-processes))))
 #+end_src
 
+#+begin_src scheme :noweb-ref service
+  (simple-service 'zfs-snapshot-hourly
+      shepherd-root-service-type
+    (list (shepherd-timer '(zfs-snapshot-hourly)
+            #~(calendar-event #:minutes '(0))
+            #~(#$(program-file "zfs-snapshot-hourly"
+                   (with-imported-modules '((guix build utils))
+                     #~(begin
+                         (use-modules (guix build utils))
+                         (setenv "PATH" "/run/current-system/profile/bin:/run/current-system/profile/sbin")
+                         (invoke #$(file-append (spec->pkg "zfs-auto-snapshot") "/sbin/zfs-auto-snapshot")
+                                 "--skip-scrub" "--keep=72" "--label=hourly" "//")))))
+            #:requirement '(user-processes))))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'zfs-snapshot-daily
+      shepherd-root-service-type
+    (list (shepherd-timer '(zfs-snapshot-daily)
+            #~(calendar-event #:hours '(0) #:minutes '(0))
+            #~(#$(program-file "zfs-snapshot-daily"
+                   (with-imported-modules '((guix build utils))
+                     #~(begin
+                         (use-modules (guix build utils))
+                         (setenv "PATH" "/run/current-system/profile/bin:/run/current-system/profile/sbin")
+                         (invoke #$(file-append (spec->pkg "zfs-auto-snapshot") "/sbin/zfs-auto-snapshot")
+                                 "--skip-scrub" "--keep=31" "--label=daily" "//")))))
+            #:requirement '(user-processes))))
+#+end_src
+
 ** Users
 Generate password hash:
 #+begin_src shell
@@ -765,17 +795,19 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
                 '("emacsclient" "--eval" "(kill-emacs)"))))))
 #+end_src
 
-** guix-label-teams
+** email
 #+begin_src scheme :noweb-ref home-service
-  (simple-service 'guix-label-teams
+  (simple-service 'l2md
       home-shepherd-service-type
-    (list (shepherd-timer '(guix-label-teams)
-            #~(calendar-event #:minutes '(0 15 30 45))
-            #~("/home/hako/Workspace/guix-label-teams.scm"))))
+    (list (shepherd-service
+            (provision '(l2md))
+            (start
+             #~(make-forkexec-constructor
+                (list #$(file-append (spec->pkg "l2md") "/bin/l2md") "--verbose")))
+            (stop
+             #~(make-kill-destructor)))))
 #+end_src
 
-** notmuch
-Fetch from mail server:
 #+begin_src scheme :noweb-ref home-service
   (simple-service 'update-mailbox
       home-shepherd-service-type
@@ -791,9 +823,45 @@ Fetch from mail server:
                     (invoke #$(file-append (spec->pkg "isync") "/bin/mbsync") "-a"
                             "--config" #$(local-file (testament-plain "mbsync.conf")))
                     ;; Index.
-                    (false-if-exception
-                     (invoke #$(file-append (spec->pkg "mu") "/bin/mu") "index"))
+                    (let ((notmuch #$(file-append (spec->pkg "notmuch") "/bin/notmuch")))
+                      (invoke notmuch "new")
+                      (map (match-lambda
+                             ((query . tags)
+                              (apply invoke notmuch "tag"
+                                     `(,@(map symbol->string tags) "--" ,query))))
+                           '(;; self
+                             ("tag:new AND from:hako@ultrarare.space"
+                              . (+sent))
+                             ("tag:new AND (tag:replied OR tag:sent)"
+                              . (-unread))
+                             ;; folders
+                             ("tag:new AND folder:local/Drafts"
+                              . (+draft -unread -inbox -new))
+                             ("tag:new AND folder:imap/Archive"
+                              . (+archive -unread -inbox -new))
+                             ("tag:new AND folder:imap/Junk"
+                              . (+spam -inbox -new))
+                             ;; mailing lists
+                             ("tag:new AND folder:lists/emacs-devel"
+                              . (+lists +lists/emacs-devel -inbox -new))
+                             ("tag:new AND folder:lists/guile-devel"
+                              . (+lists +lists/guile-devel -inbox -new))
+                             ("tag:new AND folder:lists/guix-devel"
+                              . (+lists +lists/guix-devel -inbox -new))
+                             ("tag:new AND folder:lists/guix-user"
+                              . (+lists +lists/guix-user -inbox -new))
+                             ;; others
+                             ("tag:new"
+                              . (+inbox -new)))))
                     ;; Send queued mail.
-                    (invoke #$(file-append (spec->pkg "emacs-pgtk") "/bin/emacsclient")
-                            "--eval" "(smtpmail-send-queued-mail)"))))))))
+                    (invoke "emacsclient" "--eval" "(smtpmail-send-queued-mail)"))))))))
+#+end_src
+
+** guix-label-teams
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'guix-label-teams
+      home-shepherd-service-type
+    (list (shepherd-timer '(guix-label-teams)
+            #~(calendar-event #:minutes '(0 15 30 45))
+            #~("/home/hako/Workspace/guix-label-teams.scm"))))
 #+end_src

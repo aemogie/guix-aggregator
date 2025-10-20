@@ -417,28 +417,25 @@
 (use-package forge
   :after (magit))
 
-;;guix:mu
-(use-package mu4e
+;;guix:emacs-notmuch
+(use-package notmuch
   :custom
-  (mu4e-sent-folder "/Sent")
-  (mu4e-drafts-folder "/Drafts")
-  (mu4e-trash-folder "/Trash")
-  (mu4e-refile-folder "/Archive")
-  (mu4e-change-filenames-when-moving t)
-  ;; Search.
-  (mu4e-query-rewrite-function
-   (lambda (expr)
-     (if (string-match "maildir:\"/\\(Junk\\|Trash\\)\"" expr)
-         expr
-       (concat expr " AND NOT (maildir:/Junk OR maildir:/Trash)"))))
-  ;; Compose.
-  (message-dont-reply-to-names mu4e-personal-or-alternative-address-p)
+  (mail-user-agent 'notmuch-user-agent)
+  (message-hidden-headers '("^Face:" "^X-Face:" "^X-Draft-From:"))
   (message-kill-buffer-on-exit t)
   (mml-secure-openpgp-encrypt-to-self t)
   (mml-secure-openpgp-signers '("220F98D95E86204C0036DA7B6DEC4360408B4185"))
+  (notmuch-show-logo nil)
+  (notmuch-draft-folder "local/Drafts")
+  (notmuch-fcc-dirs "imap/INBOX")
+  (notmuch-message-headers
+   '("Subject" "To" "Cc" "Date" "Message-ID" "In-Reply-To" "References"))
+  (notmuch-search-oldest-first nil)
   :config
-  (dolist (format '("text/html" "text/richtext"))
-    (add-to-list 'mm-discouraged-alternatives format))
+  (remove-hook 'notmuch-show-hook 'notmuch-show-turn-on-visual-line-mode)
+  (remove-hook 'notmuch-show-insert-text/plain-hook 'notmuch-wash-excerpt-citations)
+  :hook
+  (notmuch-show-insert-text/plain . notmuch-wash-convert-inline-patch-to-part)
   :bind
   ("C-c M-m" . message-mark-inserted-region))
 

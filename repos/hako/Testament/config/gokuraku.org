@@ -108,6 +108,38 @@
             #:requirement '(user-processes))))
 #+end_src
 
+#+begin_src scheme :noweb-ref service
+  (simple-service 'zfs-snapshot-hourly
+      shepherd-root-service-type
+    (list (shepherd-timer '(zfs-snapshot-hourly)
+            #~(calendar-event #:minutes '(0))
+            #~(#$(program-file "zfs-snapshot-hourly"
+                   (with-imported-modules '((guix build utils))
+                     #~(begin
+                         (use-modules (guix build utils))
+                         (setenv "PATH" "/run/current-system/profile/bin:/run/current-system/profile/sbin")
+                         (invoke "sh" "-c" "echo 'CHECKPOINT;' | sudo -u postgres psql -X")
+                         (invoke #$(file-append (spec->pkg "zfs-auto-snapshot") "/sbin/zfs-auto-snapshot")
+                                 "--skip-scrub" "--keep=72" "--label=hourly" "//")))))
+            #:requirement '(user-processes))))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'zfs-snapshot-daily
+      shepherd-root-service-type
+    (list (shepherd-timer '(zfs-snapshot-daily)
+            #~(calendar-event #:hours '(0) #:minutes '(0))
+            #~(#$(program-file "zfs-snapshot-daily"
+                   (with-imported-modules '((guix build utils))
+                     #~(begin
+                         (use-modules (guix build utils))
+                         (setenv "PATH" "/run/current-system/profile/bin:/run/current-system/profile/sbin")
+                         (invoke "sh" "-c" "echo 'CHECKPOINT;' | sudo -u postgres psql -X")
+                         (invoke #$(file-append (spec->pkg "zfs-auto-snapshot") "/sbin/zfs-auto-snapshot")
+                                 "--skip-scrub" "--keep=31" "--label=daily" "//")))))
+            #:requirement '(user-processes))))
+#+end_src
+
 ** Users
 Personal account.
 #+begin_src scheme :noweb-ref user

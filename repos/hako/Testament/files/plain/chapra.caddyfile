@@ -30,16 +30,16 @@
 
 
 # Komga
-http://manga.boiledscript.com, manga.ultrarare.space {
+manga.ultrarare.space {
 	reverse_proxy localhost:44293
 }
 
 # Navidrome
-http://music.boiledscript.com, music.ultrarare.space {
+music.ultrarare.space {
 	reverse_proxy localhost:43502
 }
 
 # Jellyfin
-http://shows.boiledscript.com, shows.ultrarare.space {
+shows.ultrarare.space {
 	reverse_proxy localhost:22443
 }

@@ -116,6 +116,36 @@
             #:requirement '(user-processes))))
 #+end_src
 
+#+begin_src scheme :noweb-ref service
+  (simple-service 'zfs-snapshot-hourly
+      shepherd-root-service-type
+    (list (shepherd-timer '(zfs-snapshot-hourly)
+            #~(calendar-event #:minutes '(0))
+            #~(#$(program-file "zfs-snapshot-hourly"
+                   (with-imported-modules '((guix build utils))
+                     #~(begin
+                         (use-modules (guix build utils))
+                         (setenv "PATH" "/run/current-system/profile/bin:/run/current-system/profile/sbin")
+                         (invoke #$(file-append (spec->pkg "zfs-auto-snapshot") "/sbin/zfs-auto-snapshot")
+                                 "--skip-scrub" "--keep=72" "--label=hourly" "//")))))
+            #:requirement '(user-processes))))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'zfs-snapshot-daily
+      shepherd-root-service-type
+    (list (shepherd-timer '(zfs-snapshot-daily)
+            #~(calendar-event #:hours '(0) #:minutes '(0))
+            #~(#$(program-file "zfs-snapshot-daily"
+                   (with-imported-modules '((guix build utils))
+                     #~(begin
+                         (use-modules (guix build utils))
+                         (setenv "PATH" "/run/current-system/profile/bin:/run/current-system/profile/sbin")
+                         (invoke #$(file-append (spec->pkg "zfs-auto-snapshot") "/sbin/zfs-auto-snapshot")
+                                 "--skip-scrub" "--keep=31" "--label=daily" "//")))))
+            #:requirement '(user-processes))))
+#+end_src
+
 ** Users
 Personal account.
 #+begin_src scheme :noweb-ref user
@@ -161,11 +191,7 @@ Administration accounts.
        (list (sops-secret
                (key '("cloudflare"))
                (file chapra.yaml)
-               (user "caddy"))
-             (sops-secret
-               (key '("cloudflared"))
-               (file chapra.yaml)
-               (user "cloudflared"))))))
+               (user "caddy"))))))
 #+end_src
 
 * Networking & SSH
@@ -263,15 +289,6 @@ Administration accounts.
     (caddy-configuration
       (caddy (spec->pkg "caddy-dolly"))
       (caddyfile (local-file (testament-plain "chapra.caddyfile")))))
-#+end_src
-
-** cloudflared
-#+begin_src scheme :noweb-ref service
-  (service cloudflare-tunnel-service-type
-    (cloudflare-tunnel-configuration
-      (log-level "error")
-      (token-file "/run/secrets/cloudflared")
-      (extra-options '("--protocol" "http2"))))
 #+end_src
 
 ** jellyfin
