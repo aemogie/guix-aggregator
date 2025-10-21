@@ -234,12 +234,19 @@
             (service static-networking-service-type
                      (list %loopback-static-networking))
             (service ntp-service-type)
-            (service wpa-supplicant-service-type
-                     (wpa-supplicant-configuration
-                       (config-file "/etc/wpa-supplicant.conf")
-                       (interface "wlp2s0")
-                       (extra-options `("-B"))))
-            (service dhcpcd-service-type)
+            (service iwd-service-type
+                     (iwd-configuration
+                      (config
+                       (iwd-settings
+                        (general
+                         (iwd-general-settings
+                          (enable-network-configuration? #t)
+                          (extra-options `(("Country" . "BR")))))
+                        (network
+                         (iwd-network-settings
+                          (name-resolving-service 'resolvconf)))))
+                      (shepherd-provision
+                       '(iwd wireless-daemon networking))))
 
             #|Power management services|#
             (service tlp-service-type

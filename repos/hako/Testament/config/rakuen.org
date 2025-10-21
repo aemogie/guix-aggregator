@@ -71,7 +71,10 @@
   (simple-service 'extend-sysctl
       sysctl-service-type
     '(("net.core.default_qdisc" . "fq_pie")
-      ("net.ipv4.tcp_congestion_control" . "bbr")))
+      ("net.ipv4.tcp_congestion_control" . "bbr")
+      ;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
+      ("net.core.rmem_max" . "7500000")
+      ("net.core.wmem_max" . "7500000")))
 #+end_src
 
 ** File Systems

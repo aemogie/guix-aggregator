@@ -141,6 +141,9 @@ riverctl map normal Super b spawn "$TERMINAL -e btop"
 # application launcher
 riverctl map normal Super Semicolon spawn fuzzel
 
+# password manager
+riverctl map normal Super p spawn "tessen --action=autotype"
+
 # webcam
 riverctl map normal None XF86WebCam spawn "cam"
 riverctl map normal None XF86Sleep spawn "doas zzz"
@@ -197,12 +200,12 @@ done
 
 ## Clipboard related keybindings ______________________________________________
 
+# screenshot
 riverctl map normal None Print \
          spawn 'region="$(slurp)" \
                 && sleep 0.1 \
                 && grim -g "$region" -t png - | wl-copy -t image/png'
 
-# screenshot
 riverctl map normal Super Print \
          spawn 'region="$(slurp)" \
                 && sleep 0.1 \

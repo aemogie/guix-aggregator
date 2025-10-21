@@ -8,7 +8,6 @@ export XDG_DATA_DIRS="$HOME/.local/share:$HOME/.nix-profile/share:$HOME/.local/s
 
 # env variables
 export PATH="$PATH:$HOME/.local/bin"
-# export PATH="$PATH:$HOME/.nix-profile/bin"
 export PATH="$PATH:$HOME/.bin"
 
 # many build scripts expect CC to contain compiler command

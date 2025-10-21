@@ -132,6 +132,24 @@ ci.guix.moe {
 	reverse_proxy localhost:17732
 }
 
+cache-cdn.guix.moe {
+	import block_bots
+	import logging cache-cdn.guix.moe
+
+	handle /*.narinfo {
+		root * /var/cache/guix-moe/narinfo
+		file_server
+	}
+
+	handle /nar/* {
+		redir https://nars.guix.moe{uri}
+	}
+
+	respond "Visit guix [dot] moe for more information." 404 {
+		close
+	}
+}
+
 cache-de.guix.moe {
 	import block_bots
 	import logging cache-de.guix.moe

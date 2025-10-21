@@ -171,6 +171,8 @@
                        ("resources/code/scm/saayix"
                         ,(codeberg-url "look" "saayix"))
                        ("resources/code/scm/guile"
+                        ,(codeberg-url "spritely" "goblins"))
+                       ("resources/code/scm/guile"
                         ,(codeberg-url "guile"))
                        ("resources/code/scm/guix"
                         ,(codeberg-url "guix"))

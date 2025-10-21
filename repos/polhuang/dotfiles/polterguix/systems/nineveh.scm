@@ -15,6 +15,7 @@
              (gnu packages image)
              (gnu packages librewolf)
              (gnu packages mail)
+             (gnu packages pdf)
              (gnu packages qt)
              (gnu packages shells)
              (gnu packages shellutils)
@@ -53,6 +54,7 @@
              papirus-icon-theme
              swappy
              wireguard-tools
+             xournalpp
              zsh
              zsh-completions
              zsh-autosuggestions

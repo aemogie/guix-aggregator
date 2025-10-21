@@ -38,12 +38,4 @@
                          (nopass? #t)
                          (command "herd")
                          (args `(,action "snapshot-/home"))))
-               `("doc" "status" "trigger"))
-          (flat-map (lambda (service action)
-                      (permit (identity ":wheel")
-                              (nopass? #t)
-                              (command "herd")
-                              (args (map symbol->string
-                                         (list action service)))))
-                    '(networking wpa-supplicant)
-                    '(doc stop start enable status restart disable))))
+               `("doc" "status" "trigger"))))

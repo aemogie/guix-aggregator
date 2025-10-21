@@ -110,24 +110,6 @@ mail.boiledscript.com {
 }
 
 # Guix Moe
-cache-cdn.guix.moe {
-	import block_bots
-	import logging cache-cdn.guix.moe
-
-	handle /*.narinfo {
-		root * /var/cache/guix-moe/narinfo
-		file_server
-	}
-
-	handle /nar/* {
-		redir https://nars.guix.moe{uri}
-	}
-
-	respond "Visit guix [dot] moe for more information." 404 {
-		close
-	}
-}
-
 cache-fi.guix.moe {
 	import block_bots
 	import logging cache-fi.guix.moe

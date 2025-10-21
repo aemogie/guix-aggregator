@@ -93,7 +93,7 @@
 
 ;; exclude from recentf
 (require 'recentf)
-(setq recentf-exclude '("schedule.org" "tasks.org" "init.el" "COMMIT_EDITMSG" "oauth2-auto.plist"))
+(setq recentf-exclude '("schedule.org" "tasks.org" "init.el" "bookmark-default.el" "COMMIT_EDITMSG" "oauth2-auto.plist"))
 
 ;;;;;;;;;;;;;;;;;
 ;; ui settings ;;
@@ -425,18 +425,8 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
 
 ;; custom scrolling keybinds
 (defvar my/scroll-unit 20)
-(global-set-key (kbd "C-M-s-3") (lambda () (interactive) (forward-line (* my/scroll-unit -1))))
-(global-set-key (kbd "C-M-s-4") (lambda () (interactive) (forward-line (* my/scroll-unit -2))))
-(global-set-key (kbd "C-M-s-0") (lambda () (interactive) (forward-line (* my/scroll-unit -4))))
-(global-set-key (kbd "C-M-s-1") (lambda () (interactive) (forward-line (* my/scroll-unit -8))))
-(global-set-key (kbd "C-M-s-2") (lambda () (interactive) (forward-line (* my/scroll-unit -16))))
-
-
-(global-set-key (kbd "C-M-s-5") (lambda () (interactive) (forward-line my/scroll-unit)))
-(global-set-key (kbd "C-M-s-6") (lambda () (interactive) (forward-line (* my/scroll-unit 2))))
-(global-set-key (kbd "C-M-s-8") (lambda () (interactive) (forward-line (* my/scroll-unit 8))))
-(global-set-key (kbd "C-M-s-7") (lambda () (interactive) (forward-line (* my/scroll-unit 4))))
-(global-set-key (kbd "C-M-s-9") (lambda () (interactive) (forward-line (* my/scroll-unit 16))))
+(global-set-key (kbd "<prior>") (lambda () (interactive) (forward-line (* my/scroll-unit -1))))
+(global-set-key (kbd "<next>") (lambda () (interactive) (forward-line my/scroll-unit)))
 
 ;; keep cursor in same position
 (setq scroll-preserve-screen-position t)
@@ -470,6 +460,7 @@ Use prefix argument ARG for number of lines, otherwise use default."
 
 ;; registers
 (set-register ?a (cons 'file "~/.dotfiles/.config/"))
+(set-register ?c (cons 'file "~/org/captures.org"))
 (set-register ?d (cons 'file "~/org/dictionary"))
 (set-register ?e (cons 'file "~/.dotfiles/.emacs.d/init.el"))
 (set-register ?h (cons 'file "~/polterguix/files/hypr/hyprland-base.conf"))
@@ -574,7 +565,7 @@ Use prefix argument ARG for number of lines, otherwise use default."
   (org-preview-latex-default-process 'dvipng)
 
   (org-agenda-start-with-archives-mode t)
-  (org-agenda-files '("~/org/tasks.org" "~/org/projects.org" "~/org/schedule.org" "~/org/ticktick.org"))
+  (org-agenda-files '("~/org/tasks.org" "~/org/projects.org" "~/org/schedule.org" "~/org/habits.org" "~/org/ticktick.org"))
   (org-agenda-format-date (lambda (date)
                             (require 'cal-iso)
                             (let* ((dayname (calendar-day-name date))
@@ -804,8 +795,28 @@ Use prefix argument ARG for number of lines, otherwise use default."
   (defun my/alarm-long (&rest _)
     "Wrapper function for alarm to fit :actions list below"
     (my/alarm "long"))
+
+  ;; Define a custom action for org-notify
+  (org-notify-add-action
+   "delete"                                     ;; label shown in the notification
+   (lambda (plist)
+     "Delete the Org entry associated with this notification."
+     (let ((file (plist-get plist :file))
+           (pos  (plist-get plist :position)))
+       (when (and file pos (file-exists-p file))
+         (with-current-buffer (find-file-noselect file)
+           (goto-char pos)
+           (when (org-before-first-heading-p)
+             (org-next-visible-heading 1))
+           (org-cut-subtree)                   ;; delete the whole event heading
+           (save-buffer))
+         (message "Deleted org entry: %s" (plist-get plist :heading))))))
+  
   (org-notify-start)
   (org-notify-add 'default
+                  '(:time "0s" :duration 1200
+                          :actions (-notify)))
+  (org-notify-add 'event
                   '(:time "5s" :duration 50 :urgency critical
                           :actions (my/alarm-long -notify))
         	  '(:time "1m" :duration 55
@@ -814,7 +825,8 @@ Use prefix argument ARG for number of lines, otherwise use default."
                           :actions (-notify))
                   '(:time "15m" :duration 60
                           :actions -notify)
-                  '(:time "30m" :duration 1200 :actions -notify)))
+                  '(:time "30m" :duration 1200 :actions -notify))
+  )
 
 ;; add snooze functionality to org-notify
 (load "~/projects/org-notify-snooze/org-notify-snooze.el")
@@ -2219,23 +2231,33 @@ Otherwise, call eat."
 
   :config
   (defun my/org-gcal-format (_calendar-id event _update-mode)
-      "Format org-gcal events in the schedule.org buffer."
-      (if (eq _update-mode 'newly-fetched)
-          (progn
-            (when-let* ((stime (plist-get (plist-get event :start) :dateTime))
-                        (etime (plist-get (plist-get event :end) :dateTime))
-                        (start-time (date-to-time stime))
-                        (end-time (date-to-time etime))
-                        (formatted-stime (format-time-string "%Y-%m-%d %a %H:%M" start-time))
-                        (formatted-etime (format-time-string "%H:%M" end-time)))
-              (org-todo "UPCOMING")
-              (org-schedule nil (format "<%s-%s>" formatted-stime formatted-etime)))
-            (when-let* ((stime (plist-get (plist-get event :start) :date)))
-              (if (string= _calendar-id "997d9ee06bb6de8790f30e0fe0e8a52e60a15bf1301173490f0e92247a2eb4ad@group.calendar.google.com")
-                  (org-todo "TODO")
-                (org-todo "UPCOMING"))
-              (org-schedule nil (format "<%s>" stime))))
-        (org-sort-entries nil ?o)))
+  "Format org-gcal events in the schedule.org buffer and add :notify: event on import."
+  (if (eq _update-mode 'newly-fetched)
+      (progn
+        ;; Timed events
+        (when-let* ((stime (plist-get (plist-get event :start) :dateTime))
+                    (etime (plist-get (plist-get event :end) :dateTime))
+                    (start-time (date-to-time stime))
+                    (end-time (date-to-time etime))
+                    (formatted-stime (format-time-string "%Y-%m-%d %a %H:%M" start-time))
+                    (formatted-etime (format-time-string "%H:%M" end-time)))
+          (org-todo "UPCOMING")
+          (org-schedule nil (format "<%s-%s>" formatted-stime formatted-etime)))
+
+        ;; All-day events
+        (when-let* ((stime (plist-get (plist-get event :start) :date)))
+          (if (string= _calendar-id "997d9ee06bb6de8790f30e0fe0e8a52e60a15bf1301173490f0e92247a2eb4ad@group.calendar.google.com") ;; this is for TickTick tasks - import as tasks instead of as events
+              (org-todo "TODO")
+            (org-todo "UPCOMING"))
+          (org-schedule nil (format "<%s>" stime)))
+
+        ;; Add :notify: event once on import
+        (let ((cur (or (org-entry-get (point) "notify") "")))
+          (unless (string= cur "event")
+            (org-entry-put (point) "notify" "event"))))
+    ;; On updates: just keep your sort behavior
+    (org-sort-entries nil ?o)))
+
 
   )
 
@@ -2245,7 +2267,7 @@ Otherwise, call eat."
 
 (load "~/projects/scratchpad/scratchpad.el")
 (load "~/projects/org-linear/org-linear.el")
-(load "~/.emacs.d/private/org-linear-credentials.el")
+;; (load "~/.emacs.d/private/org-linear-credentials.el")
 (scratchpad-enable)
 (global-set-key (kbd "C-M-z") 'scratchpad-toggle)
 (setq scratchpad-save-directory "~/org/scratchpad")
