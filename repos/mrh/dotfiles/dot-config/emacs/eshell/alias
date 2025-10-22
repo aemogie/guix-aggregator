@@ -9,5 +9,3 @@ alias sr sudo guix system reconfigure -L $HOME/src/dotfiles $HOME/src/dotfiles/m
 alias hr guix home reconfigure -L $HOME/src/dotfiles $HOME/src/dotfiles/mrh-guix/home/$MACHINE_ROLE/config.scm
 
 alias dots stow --dotfiles -t $HOME -d $HOME/src dotfiles
-
-alias ls ls -1Ah

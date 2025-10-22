@@ -87,15 +87,21 @@
 (define %testament-xdg-base-directory-env-vars
   '(;; bash
     ("HISTFILE" . "$XDG_STATE_HOME/bash/history")
+    ;; docker
+    ("DOCKER_CONFIG" . "$XDG_CONFIG_HOME/docker")
     ;; gdb
     ("GDBHISTFILE" . "$XDG_STATE_HOME/gdb/history")
     ;; go
     ("GOMODCACHE" . "$XDG_CACHE_HOME/go/mod")
     ("GOPATH" . "$XDG_DATA_HOME/go")
+    ;; gradle
+    ("GRADLE_USER_HOME" . "$XDG_DATA_HOME/gradle")
     ;; guile
     ("GUILE_HISTORY" . "$XDG_STATE_HOME/guile/history")
     ;; java
     ("_JAVA_OPTIONS" . "-Djava.util.prefs.userRoot=$XDG_CONFIG_HOME/java")
+    ;; luanti
+    ("MINETEST_USER_PATH" . "$XDG_DATA_HOME/luanti")
     ;; node
     ("NPM_CONFIG_USERCONFIG" . "$XDG_CONFIG_HOME/npm/npmrc")
     ;; nvidia-driver

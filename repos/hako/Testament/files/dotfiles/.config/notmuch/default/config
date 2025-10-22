@@ -16,4 +16,4 @@ extra_headers=Message-ID;In-Reply-To;References
 tags=new
 
 [search]
-exclude_tags=spam
+exclude_tags=draft;spam

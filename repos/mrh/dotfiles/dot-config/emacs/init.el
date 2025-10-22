@@ -4,7 +4,7 @@
 (load personal-data)
 
 (use-package cus-edit
-  :defer t
+  :defer nil
   :custom
   (custom-file null-device))
 
@@ -326,12 +326,14 @@ See `my/dired-run-command'."
     (add-hook 'sly-mrepl-mode-hook 'rainbow-delimiters-mode)))
 
 (use-package agda2-mode
-  :defer t
+  :disabled t
+  :defer nil
   :init
   (add-to-list 'auto-mode-alist '("\\.lagda.md$" . agda2-mode)))
 
 (use-package go-mode
-  :defer t
+  :disabled t
+  :defer nil
   :bind
   (:map go-mode-map
         ("C-c C-r" . my/go-run))
@@ -352,7 +354,7 @@ See `my/dired-run-command'."
         org-agenda-files (list (expand-file-name "agenda/" org-directory)))
 
 (use-package org
-  :defer t
+  :defer nil
   :hook
   (org-mode . org-indent-mode)
   :bind
@@ -361,6 +363,7 @@ See `my/dired-run-command'."
   :custom
   (org-startup-folded t)
   (org-M-RET-may-split-line '((default . nil)))
+  (org-clock-sound t)
   (org-insert-heading-respect-content t)
   (org-image-actual-width '(300))
 
@@ -449,10 +452,10 @@ Helpful advice for face changing functions."
       (file+headline "" "Miscellaneous")))))
 
 (use-package markdown-mode
-  :defer t)
+  :defer nil)
 
 (use-package latex
-  :defer t
+  :defer nil
   :hook
   (LaTeX-mode . my/set-latex-compile)
   :bind
@@ -537,7 +540,7 @@ Helpful advice for face changing functions."
 (use-package jack)
 
 (use-package eww
-  :defer t
+  :defer nil
   :commands eww
   :custom
   (eww-default-download-directory "~/downloads"))
@@ -584,10 +587,10 @@ and save an appropriate entry for `elfeed-feeds' to the kill ring."
   (advice-add 'elfeed-search-quit-window :after #'my/kill-elfeed-search-buffer))
 
 (use-package gnus
-  :defer t)
+  :defer nil)
 
 (use-package gnus-start
-  :defer t
+  :defer nil
   :custom
   (gnus-use-dribble-file nil)
   (gnus-directory (expand-file-name "news" user-emacs-directory))

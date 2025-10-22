@@ -110,7 +110,7 @@
     (variable-pitch-mode 1)))
 
 (use-package text-mode
-  :defer t
+  :defer nil
   :config
   (add-hook 'text-mode-hook #'my/enable-variable-pitch-mode))
 

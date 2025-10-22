@@ -48,7 +48,7 @@
                  "mosh"
                  "mpv-nvidia"
                  "niri"
-                 #;"obs-nvidia"
+                 "obs-nvidia"
                  "openjdk:jdk"
                  "prismlauncher-dolly"
                  "ripgrep"
@@ -837,13 +837,6 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
                               . (+sent))
                              ("tag:new AND (tag:replied OR tag:sent)"
                               . (-unread))
-                             ;; folders
-                             ("tag:new AND folder:local/Drafts"
-                              . (+draft -unread -inbox -new))
-                             ("tag:new AND folder:imap/Archive"
-                              . (+archive -unread -inbox -new))
-                             ("tag:new AND folder:imap/Junk"
-                              . (+spam -inbox -new))
                              ;; mailing lists
                              ("tag:new AND folder:lists/emacs-devel"
                               . (+lists +lists/emacs-devel -inbox -new))
@@ -853,6 +846,13 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
                               . (+lists +lists/guix-devel -inbox -new))
                              ("tag:new AND folder:lists/guix-user"
                               . (+lists +lists/guix-user -inbox -new))
+                             ;; folders
+                             ("folder:local/Drafts"
+                              . (+draft -unread -inbox -new))
+                             ("folder:imap/Archive"
+                              . (+archive -unread -inbox -new))
+                             ("folder:imap/Junk"
+                              . (+spam -inbox -new))
                              ;; others
                              ("tag:new"
                               . (+inbox -new)))))

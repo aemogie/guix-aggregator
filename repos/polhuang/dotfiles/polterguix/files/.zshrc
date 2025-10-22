@@ -27,13 +27,18 @@ TRAPALRM() {
 }
 
 # aliases
-alias ll="ls -alh --color=auto"
-alias ls="ls -aF --color=auto"
+alias ll="eza -lah --icons --group-directories-first"
+alias ls="eza -la --icons --git"
+alias cat="bat"
+alias less="bat --paging=always"
 alias config="cd ~/.config/"
 alias dotfiles="cd ~/.dotfiles/"
 alias dl="cd ~/Downloads/"
 alias docs="cd ~/Documents/"
 alias vim="nvim"
+
+#zoxide
+eval "$(zoxide init zsh)"
 
 # starship
 # use starship only in kitty

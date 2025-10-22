@@ -153,15 +153,7 @@
                                   ("PGID" . ,oci-gid)))
                    (volumes '(("jellyfin-config" . "/config")
                               ("jellyfin-cache" . "/cache")
-                              ("/mnt/wd/media" . "/media"))))
-
-                 (oci-container-configuration
-                   (image "filebrowser/filebrowser:s6")
-                   (provision "filebrowser")
-                   (ports '("[::1]:8080:80"))
-                   (volumes '(("/mnt/wd/shared/config" . "/config")
-                              ("/mnt/wd/shared/database" . "/database")
-                              ("/mnt/wd/shared/srv" . "/srv")))))))))
+                              ("/mnt/wd/media" . "/media")))))))))
 
       %nginx-service
 

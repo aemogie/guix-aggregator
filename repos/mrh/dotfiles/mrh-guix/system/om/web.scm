@@ -1,7 +1,6 @@
 (define-module (mrh-guix system om web)
   #:use-module (mrh-guix personal)
   #:use-module (mrh-guix vpn)
-  #:use-module (mrh-guix system om networking)
   #:use-module (gnu services)
   #:use-module (gnu services web))
 
@@ -36,7 +35,6 @@
       (list
        (root-server-config %ipv6-gua-om "pub")
        (root-server-config %ipv6-wireguard-host "home")
-       (app-server-config %ipv6-wireguard-host "files.home" 8080)
        (app-server-config %ipv6-wireguard-host "syncthing.home" 8384)
        (app-server-config %ipv6-wireguard-host "sab.home" 8081)
        (app-server-config %ipv6-wireguard-host "i2p.home" 7070)
