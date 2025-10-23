@@ -67,7 +67,6 @@
                      kde-plasma
                      kde-frameworks
                      wm
-                     kde
                      gnome
                      freedesktop
                      cups
@@ -177,9 +176,10 @@
                    (rootless-podman-configuration (subgids (get-setting 'subgids))
                                                   (subuids (get-setting 'subuids))))
           (service screen-locker-service-type
-                   (screen-locker-configuration (name "hyprlock")
-                                                (program (file-append hyprlock
-                                                          "/bin/hyprlock"))
+                   (screen-locker-configuration (name "swaylock")
+                                                (program (file-append
+                                                          swaylock-effects
+                                                          "/bin/swaylock"))
                                                 (using-pam? #t)
                                                 (using-setuid? #f)))
           (service libvirt-service-type

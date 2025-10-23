@@ -94,7 +94,7 @@
                               #:name 'Close)
               ,(labwc-keybind #:bind "W-l"
                               #:name 'Execute
-                              #:command "hyprlock")
+                              #:command "swaylock")
               ,(labwc-keybind #:bind "W-i"
                               #:name 'Execute
                               #:command "firefox")

@@ -24,13 +24,16 @@
   #:use-module (gnu packages xorg)
   #:use-module (gnu packages audio)
   #:use-module (gnu packages linux)
+  #:use-module (gnu packages gnome)
   #:use-module (gnu packages xdisorg)
+  #:use-module (gnu packages xorg)
   #:use-module (gnu packages terminals)
   #:use-module (gnu packages image)
   #:export (wm-packages))
 
 (define wm-packages
-  (make-parameter (list rofi-wayland
+  (make-parameter (list niri
+                        rofi-wayland
                         fzf
                         slurp
                         waybar-experimental
@@ -43,18 +46,21 @@
                         qpwgraph
                         wireplumber
                         pipewire
+                        swaylock-effects
+                        swayidle
 
                         wl-clipboard
 
                         ;; Wayland portals
                         xdg-desktop-portal
-                        xdg-desktop-portal-hyprland
                         xdg-desktop-portal-gtk
+                        xdg-desktop-portal-gnome
 
                         ;; Compatibility for older Xorg applications
                         xorg-server-xwayland
                         polkit-gnome
                         wvkbd
+                        xwayland-satellite
                         ;; Flatpak and XDG utilities
                         flatpak-xdg-utils
                         xdg-utils

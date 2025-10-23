@@ -26,7 +26,7 @@
 (setq joe-welkomscherm/bookmarks-list
       `((("sss" . ,(string-replace "$HOME" "~" sss-clone-dir))
          ("emacs cfg" . ,(format "%s/src/sss/emacs/init.el" (string-replace "$HOME" "~" sss-clone-dir)))
-         ("hyprland" . ,(format "%s/src/sss/hyprland/" (string-replace "$HOME" "~" sss-clone-dir))))
+         ("niri" . ,(format "%s/src/sss/niri.scm" (string-replace "$HOME" "~" sss-clone-dir))))
         (("notes" . "~/hacking/private-notes/")
          ("pop-test" . "~/hacking/pop-test/")
          ("iter-vitae" . "~/hacking/iter-vitae/")

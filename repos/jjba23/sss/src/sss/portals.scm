@@ -21,10 +21,13 @@
   #:use-module (sss prelude)
   #:export (portals-capability))
 
-(define* (portals-capability #:key (portals '((default . "hyprland;gtk")
-                                              (org.freedesktop.impl.portal.Screenshot . hyprland)
-                                              (org.freedesktop.impl.portal.ScreenCast . hyprland)
-                                              (org.freedesktop.impl.portal.FileChooser . gtk))))
+(define* (portals-capability #:key (portals '((default . "gnome;gtk")
+                                              (org.freedesktop.impl.portal.Access . gtk)
+                                              (org.freedesktop.impl.portal.Notification . gtk)
+                                              (org.freedesktop.impl.portal.Secret . gnome-keyring)
+                                              (org.freedesktop.impl.portal.FileChooser . gtk)
+                                              (org.freedesktop.impl.portal.ScreenCast . gnome)
+                                              (org.freedesktop.impl.portal.Settings . "gtk;gnome"))))
   `((".config/xdg-desktop-portal/portals.conf" ,(plain-file "portals.conf"
                                                             (string-append
                                                              "[preferred]\n"

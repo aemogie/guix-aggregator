@@ -4,7 +4,6 @@
 #+language: en
 
 [[https://jointhefreeworld.org/ggg/dist/scheme-guile.svg]] [[https://jointhefreeworld.org/ggg/dist/gnu-guix.svg]]  [[https://jointhefreeworld.org/ggg/dist/gnu-emacs.svg]]   [[https://jointhefreeworld.org/ggg/dist/shell-bash.svg]] 
-[[https://jointhefreeworld.org/ggg/dist/gnu-make.svg]] 
 [[https://jointhefreeworld.org/ggg/dist/license-gpl3+.svg]]    [[https://jointhefreeworld.org/ggg/dist/license-fdl13+.svg]] [[https://jointhefreeworld.org/ggg/dist/i18n-gnu-gettext.svg]] [[https://jointhefreeworld.org/ggg/dist/jointhefreeworld-org.svg]] 
 
 SSS is a Lisp machine adventure, where the hacking culture is celebrated. Let me help you achieve /GNUrvana/.
@@ -45,7 +44,7 @@ It is recommended to use tagged releases of SSS, as those are considered as stab
 
 Some of the features:  
 - 🎨 Many theme palettes that affect the entire system 
-- Hyprland configuration (power user session)
+- Niri configuration (power user session)
 - Labwc configuration (universal session)
 - Bash and Fish shell configuration
 - Alacritty terminal emulator
@@ -90,7 +89,7 @@ The documentation and examples, including this document, which are provided with
 
 https://www.gnu.org/licenses/fdl-1.3.html
 
----------
+--------
 
 * Code of conduct
 
@@ -113,4 +112,14 @@ Find here the Backlog and Kanban boards for SSS: https://lucidplan.jointhefreewo
 
 ----------
 
+* Project Changelog
 
+v1.x Initial Sway,  Move to Wayland,  Stumpwm X11 setup
+
+v2.0.0 Major code refactor (Sway) - v2.3.35
+
+v3.0.0 Hyprland window manager (dropped Sway support) - v3.4.16
+
+after v3  (dropped Hyprland and Hypr ecosystem support)
+
+v4.0.0 Niri WM

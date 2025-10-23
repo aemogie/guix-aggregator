@@ -29,8 +29,8 @@
                                              default-flatpak-pkgs
                                              default-flatpak-user-remotes
                                              default-hostname
-                                             default-hyprland-extra-startups
-                                             default-hyprland-monitors
+                                             default-niri-extra-startups
+                                             default-niri-monitors
                                              default-keyboard-layout
                                              default-labwc-extra-startups
                                              default-lang
@@ -212,7 +212,7 @@
   '(app.drey.Dialect app.drey.Warp
                      app.zen_browser.zen
                      com.anydesk.Anydesk
-                     ;; com.usebruno.Bruno ;; better via Nix
+                     com.brave.Browser
                      com.belmoussaoui.Decoder
                      com.github.hugolabe.Wike
                      com.github.tchx84.Flatseal
@@ -225,6 +225,7 @@
                      dev.bragefuglseth.Fretboard
                      dev.geopjr.Collision
                      engineer.atlas.Nyxt
+                     org.gnome.Fractal
                      io.bassi.Amberol
                      io.beekeeperstudio.Studio
                      io.github.fizzyizzy05.binary
@@ -238,22 +239,22 @@
                      org.gnome.design.Lorem
                      se.sjoerd.Graphs))
 
-;; Additional Hyprland startup commands on per-host basis
-(define default-hyprland-extra-startups
+;; Additional Niri startup commands on per-host basis
+(define default-niri-extra-startups
   '())
 
 ;; Additional Labwc startup commands on per-host basis
 (define default-labwc-extra-startups
   '())
 
-;; Hyprland monitor configurations as a list of strings (lines)
+;; Niri monitor configurations as a list of strings (lines)
 ;;
 ;; you can have a sensible default like "monitor = , preferred, auto, 1"
 ;; or more detailed config like "monitor=DP-1,1920x1080@144,0x0,1"
-;; see https://wiki.hyprland.org/hyprland-wiki/pages/Configuring/Monitors/
+;; see https://wiki.niri.org/niri-wiki/pages/Configuring/Monitors/
 ;;
-(define default-hyprland-monitors
-  '("monitor = , preferred, auto, 1"))
+;; (define default-niri-monitors
+;;   '("monitor = , preferred, auto, 1"))
 
 ;; Seconds after which we will decrease the screen brightness.
 (define default-brightness-timeout-seconds

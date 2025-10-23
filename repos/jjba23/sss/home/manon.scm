@@ -80,7 +80,6 @@
                    (mako-capability #:palette ($$$ 'palette)
                                     #:sans-font ($$$ 'sans-font))
                    (containers-capability)
-                   (hyprlock-capability #:clone-dir ($$$ 'clone-dir))
                    (dirs-capability)
                    (gtk-dconf-capability #:palette ($$$ 'palette)
                                          #:sans-font ($$$ 'sans-font)

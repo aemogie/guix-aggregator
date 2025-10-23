@@ -23,7 +23,7 @@
   #:use-module (sxml simple)
   #:use-module (json)
   #:export (waybar-capability waybar-css
-                              waybar-button-css
+                              waybar-bar-bg
                               waybar-power-menu
                               waybar-power-button
                               waybar-start-button
@@ -31,7 +31,6 @@
                               waybar-power-profiles
                               waybar-battery-2
                               waybar-battery
-                              waybar-hyprland-workspaces
                               waybar-clock
                               waybar-taskbar
                               waybar-backlight
@@ -78,7 +77,7 @@
 
 (define* (waybar-start-button #:key (content "λ  SSS/GNU"))
   `(custom/waybar-start-button (format unquote content)
-                               (on-click . "rofi -show drun")))
+                               (on-click . "pkill rofi || true && rofi -show drun")))
 
 (define waybar-audio-icon
   `(pulseaudio (format . "{volume}% {icon} {format_source}")
@@ -118,23 +117,6 @@
             (format-alt . "{time} {icon}")
             (format-icons . #("\uf244" "\uf243" "\uf242" "\uf241" "\uf240"))))
 
-(define waybar-hyprland-workspaces
-  `(hyprland/workspaces (disable-scroll . #t)
-                        (all-outputs . #t)
-                        (warp-on-scroll . #f)
-                        (format . "{icon}")
-                        (format-icons ("1" . "1")
-                                      ("2" . "2")
-                                      ("3" . "3")
-                                      ("4" . "4")
-                                      ("5" . "5")
-                                      ("6" . "6")
-                                      ("7" . "7")
-                                      ("8" . "8")
-                                      ("9" . "9")
-                                      ("10" . "10")
-                                      ("default" . "\uf111"))))
-
 (define waybar-clock
   `(clock (on-click . "gnome-calendar")
           (format . "{:%H:%M - %a, %d %B %Y}")
@@ -156,14 +138,14 @@
 
 ;; My WayBar configurations, defined in Guile Scheme, a status bar with a detailed, modular setup.
 (define* (waybar-conf #:key palette
-                      (hyprland-session #f)
+                      (niri-session #f)
                       (labwc-session #f)
                       (with-memory #f)
                       (with-numlock #f)
                       (with-capslock #f))
   (let ((modules-left (if labwc-session
                           #(custom/waybar-start-button clock wlr/taskbar)
-                          #(custom/waybar-start-button clock hyprland/workspaces custom/media)))
+                          #(custom/waybar-start-button clock custom/media)))
         (modules-right (if labwc-session
                            #(pulseaudio power-profiles-daemon custom/vkbd cpu memory backlight keyboard-state battery custom/power tray)
                            #(pulseaudio power-profiles-daemon custom/vkbd cpu memory backlight keyboard-state battery custom/power tray))))
@@ -172,15 +154,12 @@
       (modules-center)
       (modules-right unquote modules-right)
       ,(waybar-start-button)
-      ,(cond
-         (hyprland-session waybar-hyprland-workspaces)
-         (else `(hyprland/workspaces . null)))
       (keyboard-state (numlock unquote with-numlock)
                       (capslock unquote with-capslock)
                       (format . "{name} {icon} ")
                       (format-icons (locked . "\uf023")
                                     (unlocked . "\uf09c")))
-      (hyprland/mode (format . "<span style=\"italic\">{}</span>"))
+      (niri/mode (format . "<span style=\"italic\">{}</span>"))
       (tray (spacing . 12))
       ,waybar-clock
       (cpu (format . "\uf2db cpu: {usage}%")
@@ -199,11 +178,11 @@
       ,waybar-audio-icon
       ,waybar-power-button)))
 
-(define* (waybar-button-css #:key palette)
+(define* (waybar-bar-bg #:key palette sans-font)
   `((background unquote
                 (hex-to-rgba (get-color palette
                                         'background)
-                             #:alpha 0.7))
+                             #:alpha 0.8))
     (border unquote
             (format #f "1px solid ~a"
                     (hex-to-rgba (get-color palette
@@ -213,26 +192,22 @@
            (hex-to-rgba (get-color palette
                                    'text-l)
                         #:alpha 1))
-    (font-weight . 700)
-    (margin-top . "4px")
-    (margin-bottom . "4px")
-    (margin-left . "4px")
-    (margin-right . "4px")
-    (font-size . "11pt")
-    (padding-left . "10px")
-    (padding-right . "10px")
-    (border-radius . "16px")))
+    (font-family unquote
+                 (format #f "FontAwesome, ~a" sans-font))
+
+    (margin-top . "5px")
+    (margin-bottom . "5px")
+    (margin-left . "14px")
+    (margin-right . "14px")
+    (font-size . "12pt")))
+
+(define* (waybar-section-css)
+  `((font-weight . 500)))
 
 ;; Defines a CSS configuration for SSS Waybar using Scheme.
 ;; This configuration customizes various UI elements, such as background color,
-;; padding, font styles, and colors, with dynamic values derived from functions
-;; like `get-color` and `hex-to-rgba`.
-;;
-;; Key Features:
-;; - Transparent background for the Waybar module with consistent padding.
-;; - Specific styles for workspace buttons, clocks, and tooltips.
-;; - Dynamic colors fetched from `get-color` for consistency with theme settings.
-;; - Use of transition effects and alpha blending to enhance UI responsiveness.
+;; padding, font styles, and colors, with dynamic values.
+
 (define* (waybar-css #:key palette sans-font)
   `((module (background . transparent)
             (font-family unquote
@@ -241,82 +216,33 @@
             (color unquote
                    (get-color palette
                               'text)))
-    ("#workspaces" unquote
-     (waybar-button-css #:palette palette))
-    ("#workspaces button" (font-size . "11pt"))
-    ("#power-profiles-daemon" unquote
-     (waybar-button-css #:palette palette))
+    ("*" (padding . "2px 9px 2px 9px"))
     ("#custom-power" unquote
-     (waybar-button-css #:palette palette))
+     (waybar-section-css))
     ("#battery" unquote
-     (waybar-button-css #:palette palette))
+     (waybar-section-css))
     ("#custom-vkbd" unquote
-     (waybar-button-css #:palette palette))
+     (waybar-section-css))
     ("#backlight" unquote
-     (waybar-button-css #:palette palette))
+     (waybar-section-css))
     ("#clock" unquote
-     (waybar-button-css #:palette palette))
-    ("window#waybar" (background unquote
-                                 (hex-to-rgba (get-color palette
-                                                         'background)
-                                              #:alpha 0.0))
-     (padding . "8px")
-     (font-family unquote
-                  (format #f "FontAwesome, ~a" sans-font))
-     (color unquote
-            (get-color palette
-                       'text)))
-    (tooltip (background unquote
-                         (get-color palette
-                                    'background-l))
-             (border-radius . 0))
+     (waybar-section-css))
     ("#custom-waybar-start-button" unquote
-     (waybar-button-css #:palette palette))
-    ("#workspaces" (padding-right . 0))
-    ("#workspaces button" (padding . "4px")
-     (font-weight . 700)
-     (color unquote
-            (get-color palette
-                       'text)))
-    ("#workspaces button.active" (background unquote
-                                             (get-color palette
-                                                        'primary-l))
-     (border-radius . "10px")
-     (color unquote
-            (get-color palette
-                       'background))
-     (margin-top . "4px")
-     (margin-bottom . "4px")
-     (transition . none))
-    ("#workspaces button.focused" (color unquote
-                                         (get-color palette
-                                                    'primary-l)))
-    ("#workspaces button.urgent" (color . "#ef6560"))
-    ("#workspaces button.hover" (color unquote
-                                       (get-color palette
-                                                  'text))
-     (background unquote
-                 (hex-to-rgba (get-color palette
-                                         'background)
-                              #:alpha 0.7)))
-    ("window#waybar.empty #window" (padding . 0)
-     (margin . 0)
-     (opacity . 0))
-    ("#tray" unquote
-     (append (waybar-button-css #:palette palette)
-             '((transition . "all .3s ease"))))
-    ("#keyboard-state" (font-size . "11pt"))
-    ("#pulseaudio" unquote
-     (waybar-button-css #:palette palette))
+     (waybar-section-css))
     ("#cpu" unquote
-     (waybar-button-css #:palette palette))
+     (waybar-section-css))
     ("#memory" unquote
-     (waybar-button-css #:palette palette))))
+     (waybar-section-css))
+    ("window" (margin-left . "4px")
+     (margin-right . "4px"))
+    ("window#waybar" unquote
+     (waybar-bar-bg #:palette palette
+                    #:sans-font sans-font))))
 
 (define* (waybar-capability #:key palette
                             with-memory
                             labwc-session
-                            hyprland-session
+                            niri-session
                             sans-font)
   `( ;Waybar configuration (for status bar)
      (".config/waybar/config.jsonc" ,(plain-file "config.jsonc"
@@ -325,8 +251,8 @@
                                                                     palette
                                                                     #:labwc-session
                                                                     labwc-session
-                                                                    #:hyprland-session
-                                                                    hyprland-session
+                                                                    #:niri-session
+                                                                    niri-session
                                                                     #:with-memory
                                                                     with-memory)
                                                                    #:pretty #t)))

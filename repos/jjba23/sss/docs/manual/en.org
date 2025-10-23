@@ -7,7 +7,6 @@
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=IBM+Plex+Serif:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" />
 
 [[https://jointhefreeworld.org/ggg/dist/scheme-guile.svg]] [[https://jointhefreeworld.org/ggg/dist/gnu-guix.svg]]  [[https://jointhefreeworld.org/ggg/dist/gnu-emacs.svg]] [[https://jointhefreeworld.org/ggg/dist/shell-eshell.svg]]  [[https://jointhefreeworld.org/ggg/dist/shell-bash.svg]] 
-[[https://jointhefreeworld.org/ggg/dist/gnu-make.svg]] 
 [[https://jointhefreeworld.org/ggg/dist/license-gpl3+.svg]]    [[https://jointhefreeworld.org/ggg/dist/license-fdl13+.svg]] [[https://jointhefreeworld.org/ggg/dist/i18n-gnu-gettext.svg]] [[https://jointhefreeworld.org/ggg/dist/jointhefreeworld-org.svg]] 
 
 
@@ -51,8 +50,7 @@ The documentation and examples, including this manual, which are provided with s
 
 https://www.gnu.org/licenses/fdl-1.3.html
 
----------
-
+------------------
 
 * What lies here?
 
@@ -65,7 +63,7 @@ https://www.gnu.org/licenses/fdl-1.3.html
 
 Some of the features:  
 - 🎨 Many theme palettes that affect the entire system
-- Hyprland configuration (power user session)
+- Niri configuration (power user session)
 - Labwc configuration (universal session)
 - Bash and Fish shell configuration
 - Alacritty terminal emulator
@@ -94,6 +92,19 @@ An operating system unto itself 🐂.
 I also include a (work in progress) Windows-like session for "non-geek" users, with "normal floating windows".
 This session uses labwc compositor and waybar.
 
+
+---------
+
+* Changelog
+
+v4.0.0 Niri window manager (dropped Hyprland and Hypr ecosystem support)
+
+v3.0.0 Hyprland window manager (dropped Sway support) - v3.4.16
+
+v2.0.0 Major code refactor (Sway) - v2.3.35
+
+v1.0.0 Move to Wayland
+
 -----
 
 * Code of conduct
@@ -104,12 +115,9 @@ https://jointhefreeworld.org/blog/articles/personal/jointhefreeworld-code-of-con
 
 In summary, we foster an inclusive, respectful, and cooperative environment for all contributors and users of this free software project. Inspired by the ideals of the GNU Project, we strive to uphold freedom, equality, and community as guiding principles. We believe that collaboration in a community of mutual respect is essential to creating excellent free software.
 
+----------------
 
 * Why ?
-
-Find the divine sayings, and the destined computer configurations, all my Guix, Scheme, Hyprland, and Emacs Lisp and more configurations here for learning you a fully Lisp machine with GNU/Linux for a great good.
-
-⚠️ Warning: parts of the code and settings might default to the Dutch language ( ~nl_NL.UTF-8~ ).
 
 I refer to SSS lovingly as the modern Lisp machine. With this one obtains a computing style and programming environment that can be referred to as Lisp user space. This is a modern iteration of the Lisp machines of yore.
 
@@ -235,9 +243,7 @@ recommended minimums:
   more if you plan to install a large number of packages, store many
   files, or use virtual machines extensively. SSDs are strongly
   recommended for optimal performance.
-- *Graphics:* SSS leverages Wayland and Hyprland. Most modern graphics cards
-  should work well. If you encounter issues, consult the Hyprland
-  documentation for compatibility information.
+- *Graphics:* SSS leverages Wayland. Most modern graphics cards  should work well. 
 
 Download and the Guix GNU/Linux distribution from the official Guix page: https://guix.gnu.org/download/ and make a bootable installation medium convenient for your use case.
 
@@ -311,8 +317,7 @@ Find here an example configuration of a SSS overrides file for one of my machine
   #:use-module (gnu system accounts)
   #:export (override-extra-packages override-filesystems
                                     override-hostname
-                                    override-hyprland-extra-startups
-                                    override-hyprland-monitors
+                                    override-niri-extra-startups
                                     override-keyboard-layout
                                     override-lang
                                     override-mapped-devices
@@ -391,7 +396,7 @@ Find here an example configuration of a SSS overrides file for one of my machine
 (define override-extra-packages
   '("amd-microcode" "amdgpu-firmware"))
 
-(define override-hyprland-extra-startups
+(define override-niri-extra-startups
   '("sudo warp-svc" "sudo mkdir -p /usr/share/warp/images"
     "sleep 1 && warp-taskbar"))
 
@@ -416,8 +421,7 @@ Find here an example configuration of a SSS overrides file for one of my machine
                         'fat32))
           (type "vfat"))))
 
-(define override-hyprland-monitors
-  '("monitor = , preferred, auto, 1.33333"))
+
 #+end_src
 
 
@@ -463,8 +467,7 @@ When doing a system or home reconfigure, SSS will try to give you as much inform
 (get-setting 'hostname): "gnu-framework"
 (get-setting 'clone-dir): "$HOME/hacking/sss"
 (get-setting 'palette): ef-dream
-(get-setting 'hyprland-monitors): ("monitor = , preferred, auto, 1.33333")
-(get-setting 'hyprland-extra-startups): ("sudo warp-svc" "sudo mkdir -p /usr/share/warp/images" "sleep 1 && warp-taskbar")
+(get-setting 'niri-extra-startups): ("sudo warp-svc" "sudo mkdir -p /usr/share/warp/images" "sleep 1 && warp-taskbar")
 (get-setting 'labwc-extra-startups): ()
 (get-setting 'flatpak-user-remotes): ((flathub . "https://dl.flathub.org/repo/flathub.flatpakrepo"))
 (length (get-setting 'flatpak-pkgs)): 5
@@ -530,7 +533,7 @@ After adding the channel, perform a ~guix pull~ from your user account (*no sudo
 
 Once you have followed all those above steps, you can enter a temporary Guix shell, so as to bootstrap SSS.
 
-You can do this with ~guix shell make git icecat~. Icecat is a 100% libre version of Firefox, and it will be temporarily used for you to browse temporarily to Codeberg and download and install SSS.
+You can do this with ~guix shell maak git icecat~. Icecat is a 100% libre version of Firefox, and it will be temporarily used for you to browse temporarily to Codeberg and download and install SSS.
 
 Then proceed to clone SSS with ~git clone --recursive https://codeberg.org/jjba23/sss.git~ to your favourite location. This location will need to be added to your ~per-host/sss/overrides.scm~. You can skip the ~--recursive~ option if you are not interested in the wallpapers and other art.
 
@@ -544,13 +547,13 @@ https://git-scm.com/book/en/v2/Git-Tools-Submodules
 
 You should have by now written an appropriate ~per-host/sss/overrides.scm~ for your setup. See the above section on this topic.
 
-Enter the directory of SSS: ~cd sss~ and do a ~make sr~.
+Enter the directory of SSS: ~cd sss~ and do a ~maak sr~.
 
-Note: ~make sr~ translates to ~sudo guix system reconfigure~ with some extra settings.
+Note: ~maak sr~ translates to ~sudo guix system reconfigure~ with some extra settings.
 
 While unlikely, it's possible that some packages fail to install/build for your setup. I would encourage to temporarily comment those out of the configuration (likely at ~src/sss/packages/~) and try again. After a working SSS setup, you can uncomment them and try again.
 
-For more commands take a look at the ~maak.scm~ or ~Makefile~.
+For more commands take a look at the ~maak.scm~ or maak file.
 
 The ~--fallback~ option is optional, and simply helps when upstream substitute (cache) servers are less available.
 
@@ -569,7 +572,7 @@ You can then reboot and you should be greeted by a simple TTY.
 
 ** Keeping SSS updated
 
-You should every now and then update the SSS repo with ~git pull~. You also should regularly do a ~guix pull~ from your regular user, and then rebuild this system with the root user (~make sr~).
+You should every now and then update the SSS repo with ~git pull~. You also should regularly do a ~guix pull~ from your regular user, and then rebuild this system with the root user (~maak sr~).
 
 It's important to also keep the SSS modules updated, and thus from time to time run ~git submodule update --recursive --remote~.
 
@@ -582,7 +585,7 @@ Guix is a rolling distribution and you don't need to be always on bleeding edge 
 SSS uses *no login managers* like GDM or SDDM. Simply login to the TTY and start your favorite GUI (or not).
 That being said, feel free to use your own.
 
-I like to alias my login command to ~gui~, or sometimes I directly run ~hyprland~ or ~labwc~ from the TTY.
+I like to alias my login command to ~gui~, or sometimes I directly run ~niri --session~ or ~labwc~ from the TTY.
 
 Sometimes for the fun I work in Emacs from the TTY for that 60's and 70's computer vibe.
 
@@ -899,9 +902,9 @@ The installed software will be available, for example at: ~$HOME/.nix-profile/bi
 
 SSS provides some scripts that allow you to maintain your Nix configuration and installed packages programatically with Lisp.
 
-You can find these scripts and the list file at ~system/scripts~ in this repo and in the ~maak.scm~ and ~Makefile~.
+You can find these scripts and the list file at ~system/scripts~ in this repo and in the ~maak.scm~.
 
-Installing all wanted Nix packages can be done with ~make npi~ for example and updating them with ~make npu~.
+Installing all wanted Nix packages can be done with ~maak npi~ for example and updating them with ~maak npu~.
 
 -----
 
@@ -909,9 +912,9 @@ Installing all wanted Nix packages can be done with ~make npi~ for example and u
 
 SSS takes care of flatpak origins and installing and maintaining your flatpaks up to date, all programatically and with Lisp.
 
-You can find these scripts and the list file at ~system/scripts~ in this repo and in the Makefile.
+You can find these scripts and the list file at ~system/scripts~ in this repo and in the maak file.
 
-Installing all wanted Flatpak packages can be done with ~make fpi~ for example and updating them with ~make fpu~.
+Installing all wanted Flatpak packages can be done with ~maak fpi~ for example and updating them with ~maak fpu~.
 
 Bear in mind you might need to use ~Flatseal~ in order to grant additional permissions to some of your Flatpak packages.
 
@@ -1134,13 +1137,13 @@ text/html=firefox.desktop;emacsclient.desktop
 
 Q: I ran out of disk space, and have too much garbage in the system!
 
-A: Check the ~maak.scm~ or ~Makefile~ of SSS and run a ~full-gc~ followed by a ~sr~
+A: Check the ~maak.scm~ or maak file of SSS and run a ~full-gc~ followed by a ~sr~
 
 -----
 
 Q: Grub install fails due to missing disk space / input-output error!
 
-A: It's recommended to delete some old generations of the system (perhaps also a ~make full-gc~) and to clean the dump file at: ~/sys/firmware/efi/efivars/dump*~
+A: It's recommended to delete some old generations of the system (perhaps also a ~maak full-gc~) and to clean the dump file at: ~/sys/firmware/efi/efivars/dump*~
 
 -----
 
@@ -1150,9 +1153,9 @@ Q: I have a strange error, where ~guix system reconfigure~ or ~guix home reconfi
 A: Sorry, your guix store is partially corrupted. There is some things you can do luckily. First of all backup your important data. Then try to identify the culprit, i.e. the file in the store which is being read and not successfully parsed.
 
 You could first try to do a ~sudo guix gc --verify=repair,contents~, but that may not help. If it does then great you are done!
-Otherwise try to find a way to disable the dependency on this in your config if possible. Proceed to delete all Guix home generations (except current), after which you should delete all system generations (except current) and do an intensive garbage collection (~make full-gc~).
+Otherwise try to find a way to disable the dependency on this in your config if possible. Proceed to delete all Guix home generations (except current), after which you should delete all system generations (except current) and do an intensive garbage collection (~maak full-gc~).
 
-You can optionally do a ~guix pull~ now to see if maybe a new version of things comes along and helps. In any case try to ~reconfigure~ (~make jr~ / ~make sr~) again and it should work, after which you can turn the "offender" back on.
+You can optionally do a ~guix pull~ now to see if maybe a new version of things comes along and helps. In any case try to ~reconfigure~ (~maak jr~ / ~maak sr~) again and it should work, after which you can turn the "offender" back on.
 
 -----
 
@@ -1200,9 +1203,9 @@ Then you will get a password prompt. Type the password and press ENTER. Don't wo
 
 If the details were not correct, you will get prompted to login again.
 
-If they were correct, then you will enter the user's shell, at which point you could type ~gui~ followed by ENTER to start a graphical user interface. If it doesn't work, try ~hyprland~ or ~labwc~.
+If they were correct, then you will enter the user's shell, at which point you could type ~gui~ followed by ENTER to start a graphical user interface. If it doesn't work, try ~niri --session~ or ~labwc~.
 
-You should have then booted into a more familiar environment. If the user you logged into has the Hyprland session, the keyboard bindings are documented in sections above. You could for example use ~Super+/~ to open the fuzzy application finder (Super is often the "Windows" or "command" key).
+You should have then booted into a more familiar environment. If the user you logged into has the Niri session, the keyboard bindings are documented in sections above. You could for example use ~Super+/~ to open the fuzzy application finder (Super is often the "Windows" or "command" key).
 
 Good luck!
 
@@ -1211,7 +1214,7 @@ Good luck!
 * SSS keybindings
 
 Please refer to the ~keybindings-docs.scm~ file located in the ~src/sss/~ directory of this project for a comprehensive listing of keybindings in SSS, for the window manager, text editor and more.
-When configuring a user via SSS, the ~maak.scm~ and ~Makefile~ contain targets to write the keybinding reference in JSON format and base16 encoding to dconf, in order to be read easily by other software at ~/sss/power-user-keybindings-docs~ and (WIP) ~/sss/universal-session-keybindings-docs~.
+When configuring a user via SSS, the ~maak.scm~ contain targets to write the keybinding reference in JSON format and base16 encoding to dconf, in order to be read easily by other software at ~/sss/power-user-keybindings-docs~ and (WIP) ~/sss/universal-session-keybindings-docs~.
 In a nutshell, the power user session leverages Emacs-like keybindings, and the universal session leverages CUA-like keybindings.
 
 ----------
@@ -1379,7 +1382,7 @@ You will then just do a one time ~direnv allow~ and now your editor will magical
 - *TTY (TeleTYpewriter)*: A text terminal for interacting with a computer system.
 - *Scheme*: A Lisp dialect often used for scripting in GNU Guix.
 - *Wayland*: A protocol for a display server, often used as a modern alternative to X11.
-- *Hyprland*: A Wayland compositor with great and smooth graphics.
+- *Niri*: A scrolling tiling Wayland compositor and window manager with great and smooth graphics.
 - *PipeWire*: A modern multimedia framework for managing audio and video streams.
 - *Elpaca*: A package manager for Emacs that supports advanced configuration options.
 - *Libre*: Free and open-source software that respects user freedom.
@@ -1406,7 +1409,7 @@ The SSS project has been inspired by countless free software projects and amazin
 
 *Inspiring Projects*
 
-GNU Emacs, GNU Guix, Arch Linux, Void Linux, Nix, NixOS, Hyprland, ...
+GNU Emacs, GNU Guix, Arch Linux, Void Linux, Nix, NixOS, Niri ...
 
 *Inspiring People*
 
@@ -1418,3 +1421,16 @@ GNU Emacs, GNU Guix, Arch Linux, Void Linux, Nix, NixOS, Hyprland, ...
 
 
 
+--------------------------
+
+* Project Changelog
+
+v1.x Initial Sway,  Move to Wayland,  Stumpwm X11 setup
+
+v2.0.0 Major code refactor (Sway) - v2.3.35
+
+v3.0.0 Hyprland window manager (dropped Sway support) - v3.4.16
+
+after v3  (dropped Hyprland and Hypr ecosystem support)
+
+v4.0.0 Niri WM

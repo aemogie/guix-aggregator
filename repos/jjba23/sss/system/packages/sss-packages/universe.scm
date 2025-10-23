@@ -23,7 +23,6 @@
   #:use-module (sss-packages core)
   #:use-module (sss-packages music)
   #:use-module (sss-packages qt)
-  #:use-module (sss-packages hypr)
   #:use-module (sss-packages tree-sitter)
   #:use-module (sss-packages universal-session)
   #:use-module (sss-packages dict)
@@ -106,7 +105,6 @@
                      image-viewers
                      imagemagick
                      inkscape
-                     kde
                      kde-frameworks
                      kde-plasma
                      kde-systemtools
@@ -288,7 +286,6 @@
           (dev-packages)
           (container-packages)
           (tree-sitter-packages)
-          (hypr-packages)
           (terminal-emulator-packages)
           (browser-packages)
           (latex-packages)

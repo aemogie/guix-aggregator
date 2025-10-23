@@ -24,6 +24,7 @@
              (gnu packages guile-xyz)
              (gnu packages texinfo)
              (gnu packages rust-apps)
+             (gnu packages build-tools)
              ((guix licenses)
               #:prefix license:))
 
@@ -60,7 +61,7 @@ runs them concurrently by default to ensure robust testing practices.")
                           emacs
                           guile-veritas
                           (specification->package "gettext")
-                          (specification->package "make")
+                          maak
                           coreutils
                           guile-documenta
                           watchexec
