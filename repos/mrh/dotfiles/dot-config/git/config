@@ -1,5 +1,3 @@
-[core]
-    askPass = ksshaskpass
 [init]
     defaultBranch = trunk
 [user]

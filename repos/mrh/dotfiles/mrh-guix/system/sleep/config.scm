@@ -74,7 +74,9 @@
       (service screen-locker-service-type
                (screen-locker-configuration
                  (name "swaylock")
-                 (program (file-append swaylock "/bin/swaylock"))))
+                 (program (file-append swaylock "/bin/swaylock"))
+                 (using-pam? #t)
+                 (using-setuid? #f)))
 
       (service wireguard-service-type (wireguard-client-config 2))
 

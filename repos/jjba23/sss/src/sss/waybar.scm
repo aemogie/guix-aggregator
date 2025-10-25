@@ -75,7 +75,7 @@
                 (tooltip-format . "Toggle a virtual on-screen keyboard")
                 (on-click . "pgrep wvkbd-mobintl && pkill wvkbd-mobintl || wvkbd-mobintl")))
 
-(define* (waybar-start-button #:key (content "λ  SSS/GNU"))
+(define* (waybar-start-button #:key (content "λ  SSS/GNU   |"))
   `(custom/waybar-start-button (format unquote content)
                                (on-click . "pkill rofi || true && rofi -show drun")))
 
@@ -147,8 +147,8 @@
                           #(custom/waybar-start-button clock wlr/taskbar)
                           #(custom/waybar-start-button clock custom/media)))
         (modules-right (if labwc-session
-                           #(pulseaudio power-profiles-daemon custom/vkbd cpu memory backlight keyboard-state battery custom/power tray)
-                           #(pulseaudio power-profiles-daemon custom/vkbd cpu memory backlight keyboard-state battery custom/power tray))))
+                           #(niri/language pulseaudio power-profiles-daemon custom/vkbd cpu memory backlight keyboard-state battery custom/power tray)
+                           #(niri/language pulseaudio power-profiles-daemon custom/vkbd cpu memory backlight keyboard-state battery custom/power tray))))
     `((position . bottom) (height . 38)
       (modules-left unquote modules-left)
       (modules-center)
@@ -202,7 +202,7 @@
     (font-size . "12pt")))
 
 (define* (waybar-section-css)
-  `((font-weight . 500)))
+  `())
 
 ;; Defines a CSS configuration for SSS Waybar using Scheme.
 ;; This configuration customizes various UI elements, such as background color,
@@ -212,11 +212,11 @@
   `((module (background . transparent)
             (font-family unquote
                          (format #f "FontAwesome, ~a" sans-font))
-            (font-weight . 500)
             (color unquote
                    (get-color palette
                               'text)))
-    ("*" (padding . "2px 9px 2px 9px"))
+    ("*" (padding . "2px 9px 2px 9px")
+     (font-weight . 500))
     ("#custom-power" unquote
      (waybar-section-css))
     ("#battery" unquote

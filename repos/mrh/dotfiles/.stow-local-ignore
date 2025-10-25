@@ -5,3 +5,4 @@ mrh-guix
 ^README.*
 .*\.git.*
 .stfolder
+guix/channels.scm

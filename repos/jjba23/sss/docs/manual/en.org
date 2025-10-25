@@ -585,7 +585,7 @@ Guix is a rolling distribution and you don't need to be always on bleeding edge 
 SSS uses *no login managers* like GDM or SDDM. Simply login to the TTY and start your favorite GUI (or not).
 That being said, feel free to use your own.
 
-I like to alias my login command to ~gui~, or sometimes I directly run ~niri --session~ or ~labwc~ from the TTY.
+I like to alias my login command to ~gui~, or sometimes I directly run ~dbus-run-session niri --session~ or ~dbus-run-session labwc~ from the TTY.
 
 Sometimes for the fun I work in Emacs from the TTY for that 60's and 70's computer vibe.
 

@@ -88,6 +88,10 @@
 (define default-keyboard-layout
   "us")
 
+;; Niri keyboard layout
+(define default-niri-keyboard-layout
+  "us")
+
 ;; caps to control enabled
 (define default-caps-to-ctrl?
   #t)

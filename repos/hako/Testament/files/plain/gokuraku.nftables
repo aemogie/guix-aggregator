@@ -25,11 +25,11 @@ table inet filter {
         ip protocol icmp accept
         ip6 nexthdr icmpv6 accept
 
-        tcp dport http accept
         tcp dport https accept
+        udp dport https accept
+
         tcp dport rsync accept
         tcp dport ssh accept
-        udp dport https accept
 
         # allow cuirass
         tcp dport {5555, 5556} accept

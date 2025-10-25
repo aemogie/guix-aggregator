@@ -86,7 +86,8 @@
       (service wireguard-service-type
                (wireguard-host-config
                 (list (wireguard-host-peer "sleep" 2 %sleep-wireguard-key)
-                      (wireguard-host-peer "phone" 3 %phone-wireguard-key))))
+                      (wireguard-host-peer "phone" 3 %phone-wireguard-key)
+                      (wireguard-host-peer "vps" 4 %vps-wireguard-key))))
 
       (service syncthing-service-type
                (syncthing-configuration

@@ -23,11 +23,14 @@
              (endpoint (format #f "pub.~a:~a" %domain-name %wireguard-port))
              (public-key %om-wireguard-key)
              (allowed-ips '("::/0" "0.0.0.0/0")))))
-    (dns (list %ipv6-wireguard-host %ipv4-wireguard-host))))
+    (dns (list %ipv6-wireguard-host
+               %ipv4-wireguard-host))))
 
 (define-public (wireguard-host-config peers)
   (wireguard-configuration
-    (addresses (list %ipv6-wireguard-host %ipv4-wireguard-host))
+    (addresses
+     (list %ipv6-wireguard-host
+           %ipv4-wireguard-host))
     (port %wireguard-port)
     (peers peers)))
 

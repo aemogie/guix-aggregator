@@ -69,7 +69,6 @@
 (setopt delete-by-moving-to-trash t)
 
 (use-package trashed
-  :commands trashed
   :custom
   (trashed-sort-key '("Date deleted" . t))
   (trashed-date-format "%Y-%m-%d %H:%M:%S")
@@ -176,7 +175,6 @@ Otherwise set locally with `keymap-local-set'."
                             consult--source-project-root-hidden)))
 
 (use-package isearch
-  :commands (isearch-forward isearch-backward)
   :custom
   (isearch-lazy-count t))
 
@@ -222,9 +220,6 @@ See also `my/hide-buffer'."
                 my/hidden-buffers)))
 
 (setopt split-width-threshold 90)
-
-(use-package server
-  :commands server-start)
 
 (use-package delsel
   :config
@@ -310,26 +305,10 @@ See `my/dired-run-command'."
 (use-package geiser)
 
 (use-package geiser-guile
-  :commands geiser-guile
+  :commands (geiser geiser-guile)
   :custom
   (geiser-guile-load-init-file t)
   :after geiser)
-
-(use-package sly
-  :commands sly
-  :custom
-  (inferior-lisp-program "sbcl")
-  (sly-mrepl-history-file-
-   (expand-file-name "sly/sly-mrepl-history" user-emacs-directory))
-  :config
-  (with-eval-after-load 'rainbow-delimiters
-    (add-hook 'sly-mrepl-mode-hook 'rainbow-delimiters-mode)))
-
-(use-package agda2-mode
-  :disabled t
-  :defer nil
-  :init
-  (add-to-list 'auto-mode-alist '("\\.lagda.md$" . agda2-mode)))
 
 (use-package go-mode
   :disabled t
@@ -466,10 +445,9 @@ Helpful advice for face changing functions."
     (my/set-compile-command (format "pdflatex %s" (buffer-file-name)))))
 
 (use-package eshell
-  :commands eshell
   :hook
   (eshell-mode . (lambda ()
-                   (keymap-set eshell-mode-map "C-c M-o" 'my/eshell-clear)))
+                   (keymap-set eshell-mode-map "C-c M-o" #'my/eshell-clear)))
   :custom
   (eshell-prompt-function
    (lambda ()
@@ -498,14 +476,12 @@ Helpful advice for face changing functions."
     (cd "/sudo::/")
     (async-shell-command command)))
 
-(use-package buffer-env
-  :commands
-  (buffer-env-update buffer-env-reset))
+(use-package buffer-env)
 
 (use-package eat
-  :commands eat
-  :hook
-  (eshell-load . eat-eshell-mode))
+  :config
+  (with-eval-after-load 'eshell
+    (add-hook 'eshell-mode-hook #'eat-eshell-mode)))
 
 (use-package magit
   :commands magit
@@ -531,8 +507,7 @@ Helpful advice for face changing functions."
   :commands
   (tldr tldr-update-docs))
 
-(use-package wgrep
-  :commands wgrep)
+(use-package wgrep)
 
 (use-package nm)
 
@@ -548,6 +523,10 @@ Helpful advice for face changing functions."
 (use-package mail-source
   :custom
   (mail-source-directory (expand-file-name "mail" user-emacs-directory)))
+
+(use-package smtpmail
+  :custom
+  (smtpmail-queue-dir (expand-file-name "mail/queued-mail" user-emacs-directory)))
 
 (use-package mu4e
   :commands mu4e

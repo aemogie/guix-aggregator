@@ -270,6 +270,7 @@
         xf86-input-libinput
         xf86-video-fbdev
         xxd
+        localed
         grimblast
         xz
         yt-dlp))

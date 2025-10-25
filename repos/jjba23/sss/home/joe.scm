@@ -84,7 +84,7 @@
                    (alacritty-capability #:palette ($$$ 'palette)
                                          #:mono-font ($$$ 'mono-font))
                    (niri-capability #:palette ($$$ 'palette)
-                                    #:keyboard-layout ($$$ 'keyboard-layout)
+                                    #:keyboard-layout ($$$ 'niri-keyboard-layout)
                                     #:caps-to-ctrl? ($$$ 'caps-to-ctrl?)
                                     #:sans-font ($$$ 'sans-font)
                                     #:mono-font ($$$ 'mono-font)
@@ -97,7 +97,8 @@
                    (fastfetch-capability #:clone-dir ($$$ 'clone-dir))
                    (fish-capability #:clone-dir ($$$ 'clone-dir)
                                     #:palette ($$$ 'palette)
-                                    #:gui-cmd "niri --session")
+                                    #:gui-cmd
+                                    "dbus-run-session niri --session")
                    (mako-capability #:palette ($$$ 'palette)
                                     #:sans-font ($$$ 'sans-font))
                    (emacs-capability #:palette ($$$ 'palette)
@@ -147,7 +148,7 @@
                                            #:extra-vars `(("GH_PACKAGES_USERNAME" . "jjbavdb")
                                                           ("GH_PACKAGES_TOKEN" . "$(/home/joe/.nix-profile/bin/gh auth token)")))
                  (bash-capability #:clone-dir ($$$ 'clone-dir)
-                                  #:gui-cmd "niri --session")
+                                  #:gui-cmd "dbus-run-session niri --session")
                  openpgp-capability
                  (simple-service 'sss-home-cron-service
                                  home-mcron-service-type

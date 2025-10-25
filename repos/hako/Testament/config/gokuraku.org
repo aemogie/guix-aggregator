@@ -50,7 +50,7 @@
                              (substitute-urls
                               '("https://ci.guix.gnu.org"
                                 "https://bordeaux.guix.gnu.org"))
-                             (extra-options '("--max-jobs=2")))))))))
+                             (extra-options '("--cores=4")))))))))
 
   ((compose (rosenthal-transformation-zfs #:boot? #t))
    %os)
@@ -325,6 +325,14 @@ rsync://cache.boiledscript.com
 * Containers & Virtualization
 #+begin_src scheme :noweb-ref module
   (gnu services docker)
+  (gnu services virtualization)
+#+end_src
+
+** binfmt_misc
+#+begin_src scheme :noweb-ref service
+  (service qemu-binfmt-service-type
+    (qemu-binfmt-configuration
+      (platforms (lookup-qemu-platforms "aarch64"))))
 #+end_src
 
 ** containerd
@@ -418,8 +426,8 @@ Remember to open TCP port 5555 and 5556.
   (service cuirass-remote-worker-service-type
     (cuirass-remote-worker-configuration
       (publish-port 5558)
-      (workers 1)
-      (systems '("x86_64-linux" "i686-linux"))
+      (workers 2)
+      (systems '("x86_64-linux" "i686-linux" "aarch64-linux"))
       (server "100.97.195.93:5555")       ;gokuraku (Tailscale)
       (substitute-urls
        `("https://ci.guix.moe"
@@ -429,6 +437,29 @@ Remember to open TCP port 5555 and 5556.
 
 ** cuirass specifications
 *** channels
+**** cast
+#+begin_src scheme :noweb-ref cuirass-spec
+  (specification
+    (name "cast")
+    (build '(channels cast))
+    (channels
+     (list (channel
+             (inherit %default-guix-channel)
+             (url "https://git.ultrarare.space/mirror/guix.git"))
+           (channel
+             (name 'cast)
+             (branch "main")
+             (url "https://codeberg.org/vnpower/cast.git")
+             (introduction
+              (make-channel-introduction
+               "fab73647fd9f0f2167d9ef9d42cddd77500fffb3"
+               (openpgp-fingerprint
+                "D430 1F59 A65F 49DA 918A  3C0D 8D4C 3248 29DE D156"))))))
+    (priority 5)
+    (systems '("x86_64-linux"))
+    (properties '((forge-type . forgejo))))
+#+end_src
+
 **** emacs-master
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification

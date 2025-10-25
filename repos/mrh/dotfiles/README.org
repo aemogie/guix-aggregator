@@ -5,7 +5,7 @@ These are the configuration files for my personal guix + emacs setup.
 Feel free to take anything you find helpful and tell me your thoughts!
 
 #+caption: desktop screenshot
-[[file:screenshot.png]]
+[[file:screenshot.jpg]]
 
 * Free Software
 The most important part of my system is that it uses as much [[https://www.gnu.org/philosophy/free-sw.en.html][free software]] as possible.

@@ -1,10 +1,13 @@
 (define-module (mrh-guix home sleep config)
   #:use-module (mrh-guix home sleep packages)
   #:use-module (gnu)
+  #:use-module (gnu packages gnupg)
   #:use-module (gnu home)
   #:use-module (gnu home services)
   #:use-module (gnu home services desktop)
+  #:use-module (gnu home services gnupg)
   #:use-module (gnu home services sound)
+  #:use-module (gnu home services ssh)
   #:use-module (gnu home services syncthing))
 
 (define-public %sleep-home-config
@@ -14,20 +17,25 @@
      (list (service home-dbus-service-type)
            (service home-pipewire-service-type)
            (service home-syncthing-service-type)
+           (service home-gpg-agent-service-type
+                    (home-gpg-agent-configuration
+                      (pinentry-program (file-append pinentry-tty "/bin/pinentry"))
+                      (default-cache-ttl 86400)
+                      (max-cache-ttl 86400)
+                      (extra-content "allow-emacs-pinentry\n")))
+           (service home-ssh-agent-service-type
+                    (home-ssh-agent-configuration
+                      (extra-options '("-t" "1d"))))
            (simple-service
-            'environment-variables-service
+            'extra-env-vars
             home-environment-variables-service-type
             '(("ASPELL_DICT_DIR" . "$HOME/.guix-home/profile/lib/aspell")
               ("BROWSER" . "librewolf")
               ("EDITOR" . "emacsclient -c")
-              ("GNUPGHOME" . "$XDG_DATA_HOME/gnupg")
               ("GUILE_LOAD_PATH" . "$HOME/.guix-home/profile/share/guile/site/3.0:$HOME/.config/guix/current/share/guile/site/3.0:$GUILE_LOAD_PATH")
               ("GUILE_EXTENSIONS_PATH" . "$HOME/.guix-home/profile/lib:/run/current-system/profile/lib:$GUILE_EXTENSIONS_PATH")
               ("PATH" . "$HOME/.local/bin:$PATH")
               ("TERM" . "xterm-color")
-              ("SSH_ASKPASS" . "ksshaskpass")
-              ("SDL_VIDEODRIVER" . "wayland")
-              ;; ("SSH_ASKPASS_REQUIRE" . "prefer")
-              ))))))
+              ("SDL_VIDEODRIVER" . "wayland")))))))
 
 %sleep-home-config

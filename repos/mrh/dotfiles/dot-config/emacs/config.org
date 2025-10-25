@@ -320,7 +320,6 @@ Fix bug causing hangups upon re-encryption of files
 (setopt delete-by-moving-to-trash t)
 
 (use-package trashed
-  :commands trashed
   :custom
   (trashed-sort-key '("Date deleted" . t))
   (trashed-date-format "%Y-%m-%d %H:%M:%S")
@@ -469,7 +468,6 @@ Otherwise set locally with `keymap-local-set'."
 
 #+begin_src emacs-lisp
 (use-package isearch
-  :commands (isearch-forward isearch-backward)
   :custom
   (isearch-lazy-count t))
 #+end_src
@@ -533,13 +531,6 @@ See also `my/hide-buffer'."
 
 #+begin_src emacs-lisp
 (setopt split-width-threshold 90)
-#+end_src
-
-** Frames
-
-#+begin_src emacs-lisp
-(use-package server
-  :commands server-start)
 #+end_src
 
 * Writing
@@ -686,35 +677,10 @@ Compile without showing compile buffer
 (use-package geiser)
 
 (use-package geiser-guile
-  :commands geiser-guile
+  :commands (geiser geiser-guile)
   :custom
   (geiser-guile-load-init-file t)
   :after geiser)
-#+end_src
-
-**** Common Lisp
-
-#+begin_src emacs-lisp
-(use-package sly
-  :commands sly
-  :custom
-  (inferior-lisp-program "sbcl")
-  (sly-mrepl-history-file-
-   (expand-file-name "sly/sly-mrepl-history" user-emacs-directory))
-  :config
-  (with-eval-after-load 'rainbow-delimiters
-    (add-hook 'sly-mrepl-mode-hook 'rainbow-delimiters-mode)))
-#+end_src
-
-*** Agda
-See [[https://unimath.github.io/agda-unimath/HOWTO-INSTALL.html#emacs][agda-unimath]] for more details.
-
-#+begin_src emacs-lisp
-(use-package agda2-mode
-  :disabled t
-  :defer nil
-  :init
-  (add-to-list 'auto-mode-alist '("\\.lagda.md$" . agda2-mode)))
 #+end_src
 
 *** Go
@@ -896,10 +862,9 @@ Export to pdf presentations via LaTeX beamer
 
 #+begin_src emacs-lisp
 (use-package eshell
-  :commands eshell
   :hook
   (eshell-mode . (lambda ()
-                   (keymap-set eshell-mode-map "C-c M-o" 'my/eshell-clear)))
+                   (keymap-set eshell-mode-map "C-c M-o" #'my/eshell-clear)))
   :custom
   (eshell-prompt-function
    (lambda ()
@@ -936,19 +901,16 @@ Export to pdf presentations via LaTeX beamer
 **** Environment
 
 #+begin_src emacs-lisp
-(use-package buffer-env
-  :commands
-  (buffer-env-update buffer-env-reset))
+(use-package buffer-env)
 #+end_src
 
 *** Terminal
-Allow =eshell= to run within =eat= terminals.
 
 #+begin_src emacs-lisp
 (use-package eat
-  :commands eat
-  :hook
-  (eshell-load . eat-eshell-mode))
+  :config
+  (with-eval-after-load 'eshell
+    (add-hook 'eshell-mode-hook #'eat-eshell-mode)))
 #+end_src
 
 ** Version Control
@@ -996,8 +958,7 @@ NOTE: On my machine there is a bug of some kind which requires me to restart pin
 ** Grep
 
 #+begin_src emacs-lisp
-(use-package wgrep
-  :commands wgrep)
+(use-package wgrep)
 #+end_src
 
 ** Network Management
@@ -1034,6 +995,10 @@ See [[*Publish][Org Publish]] section and [[https://codeberg.org/mrh/dotfiles/sr
 (use-package mail-source
   :custom
   (mail-source-directory (expand-file-name "mail" user-emacs-directory)))
+
+(use-package smtpmail
+  :custom
+  (smtpmail-queue-dir (expand-file-name "mail/queued-mail" user-emacs-directory)))
 #+end_src
 
 *** Mu4e
