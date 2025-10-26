@@ -6,16 +6,39 @@
   #:use-module (gnu)
   #:use-module (gnu services certbot)
   #:use-module (gnu services networking)
+  #:use-module (gnu services ssh)
   #:use-module (gnu services vpn)
+  #:use-module (gnu services web)
   #:use-module (gnu packages admin)
-  #:use-module (gnu packages rsync))
+  #:use-module (gnu packages package-management)
+  #:use-module (gnu packages rsync)
+  #:use-module (ice-9 match))
 
-(let ((certs-path (format #f "/etc/certs/~a" %domain-name)))
-  (-> (minimal-ovh %ssh-pub)
+(let ((user "mrh")
+      (user-groups '("netdev" "input" "wheel" "docker"))
+      (ssh-user-file (plain-file "ssh-mrh.pub" %ssh-pub))
+      (certs-path (format #f "/etc/certs/~a" %domain-name)))
+
+  (-> (minimal-ovh)
+
+      (groups @ user-groups)
+
+      (users
+       (user-account
+         (name user)
+         (group "users")
+         (supplementary-groups user-groups)
+         (home-directory (string-append "/home/" user))))
+
+      (add-service openssh
+                   (permit-root-login 'prohibit-password)
+                   (password-authentication? #f)
+                   (authorized-keys
+                    `((,user ,ssh-user-file))))
 
       (os/hostname "vps")
 
-      (packages btop rsync)
+      (packages btop rsync stow)
 
       (add-service nftables
                    (ruleset (local-file "nftables.conf")))
@@ -29,7 +52,7 @@
                     (list (wireguard-peer
                             (name "om")
                             (endpoint
-                             (format #f "pub.~a:~a" %domain-name %wireguard-port))
+                             (format #f "~a:~a" %ipv4-home %wireguard-port))
                             (public-key %om-wireguard-key)
                             (allowed-ips
                              (list
@@ -52,19 +75,36 @@
                                                "pub.~a"
                                                "*.pub.~a")))))))
 
-      (httpx-reverse-proxy
-       #:from-host (format #f "www.~a" %domain-name)
-       #:to-port 8080
-       #:fullchain-path (format #f "~a/fullchain.pem" certs-path)
-       #:privkey-path (format #f "~a/privkey.pem" certs-path))
+      (add-service nginx
+                   (server-blocks
+                    (list (nginx-server-configuration
+                            (server-name
+                             (list  %domain-name
+                                    (format #f "www.~a" %domain-name)))
+                            (root (format #f "/var/www/~a" %domain-name))
+                            (ssl-certificate
+                             (format #f "~a/fullchain.pem" certs-path))
+                            (ssl-certificate-key
+                             (format #f "~a/privkey.pem" certs-path)))
 
-      (httpx-reverse-proxy
-       #:from-host %domain-name
-       #:to-port 8081
-       #:fullchain-path (format #f "~a/fullchain.pem" certs-path)
-       #:privkey-path (format #f "~a/privkey.pem" certs-path))
-
-      (http-static-content
-       #:from-host "localhost"
-       #:from-port 8081
-       #:to-dir (format #f "/var/www/~a" %domain-name))))
+                          (nginx-server-configuration
+                            (listen '("443 ssl"))
+                            (server-name
+                             (list (format #f "*.pub.~a" %domain-name)))
+                            (locations
+                             (list (nginx-location-configuration
+                                     (uri "/")
+                                     (body
+                                      (list (format #f "proxy_pass http://[~a]/;"
+                                                    %ipv6-wireguard-host)
+                                            "proxy_set_header Host $host;"
+                                            "proxy_set_header X-Real-IP $remote_addr;"
+                                            "proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;"
+                                            "proxy_set_header X-Forwarded-Proto $scheme;"
+                                            "proxy_set_header X-Forwarded-Protocol $scheme;"
+                                            "proxy_set_header X-Forwarded-Host $http_host;"
+                                            "proxy_buffering off;")))))
+                            (ssl-certificate
+                             (format #f "~a/fullchain.pem" certs-path))
+                            (ssl-certificate-key
+                             (format #f "~a/privkey.pem" certs-path))))))))

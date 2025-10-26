@@ -381,7 +381,7 @@
   (dired-create-destination-dirs-on-trailing-dirsep t)
   (dired-vc-rename-file t))
 
-;;guix:emacs-eat-hako
+;;guix:emacs-eat-dolly
 (use-package eat
   :custom
   (eat-kill-buffer-on-exit t)

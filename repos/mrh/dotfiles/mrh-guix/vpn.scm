@@ -20,7 +20,7 @@
     (peers
      (list (wireguard-peer
              (name "om")
-             (endpoint (format #f "pub.~a:~a" %domain-name %wireguard-port))
+             (endpoint (format #f "~a:~a" %ipv4-home %wireguard-port))
              (public-key %om-wireguard-key)
              (allowed-ips '("::/0" "0.0.0.0/0")))))
     (dns (list %ipv6-wireguard-host

@@ -126,15 +126,6 @@
 (define testament-path
   (getcwd))
 
-(define (testament-blobs . name)
-  (let ((blobs (in-vicinity testament-path "files/blobs")))
-    (match name
-      (()
-       (local-file blobs #:recursive? #t))
-      ((file)
-       (or (search-path (list blobs) file)
-           (leave (G_ "file '~a' not found.~%") file))))))
-
 (define (testament-plain . name)
   (let ((plain (in-vicinity testament-path "files/plain")))
     (match name

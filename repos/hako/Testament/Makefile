@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 ARGS  :=
+CMD   :=
 OPTS  := --keep-going --verbosity=1 $(ARGS)
 GUIX  := guix time-machine --channels=channels.lock --
 # GUIX  := ./pre-inst-env guix
@@ -49,6 +50,20 @@ deploy: deploy-dorphine \
 	deploy-worker
 deploy-%: config/%.scm
 	@$(GUIX) deploy files/deploy/$(notdir $<) $(OPTS)
+
+.PHONY: run
+run: run-dorphine \
+	\
+	run-chapra \
+	run-ignamma \
+	\
+	run-gokuraku \
+	run-rakuen \
+	\
+	run-mirror \
+	run-worker
+run-%: config/%.scm
+	@$(GUIX) deploy files/deploy/$(notdir $<) $(OPTS) -x -- $(CMD)
 
 .PHONY: live
 live: live-console live-desktop

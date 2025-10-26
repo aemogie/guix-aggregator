@@ -563,14 +563,13 @@ Open TCP port 5558 and connect to server IPv4 address.
       (config
        (computed-substitution-with-inputs "niri.kdl"
          (local-file (testament-plain "niri.kdl"))
-         (cons (testament-blobs)
-               (specs->pkgs "foot"
-                            "light"
-                            "rofi"
-                            "setxkbmap"
-                            "swaylock-effects"
-                            "wireplumber"
-                            "xwayland-satellite"))))))
+         (specs->pkgs "foot"
+                      "light"
+                      "rofi"
+                      "setxkbmap"
+                      "swaylock-effects"
+                      "wireplumber"
+                      "xwayland-satellite")))))
 
   (service home-rofi-service-type
     (home-rofi-configuration
@@ -600,7 +599,7 @@ Open TCP port 5558 and connect to server IPv4 address.
 #+begin_src scheme :noweb-ref home-service
   (service home-swaybg-service-type
     (home-swaybg-configuration
-      (background (local-file (testament-blobs "101361103_p0.jpg")))))
+      (background (local-file "../../Pictures/Pixez/101361103_p0.jpg"))))
 #+end_src
 
 *** mako
@@ -722,8 +721,8 @@ Open TCP port 5558 and connect to server IPv4 address.
 
 ** steam
 #+begin_src scheme :noweb-ref home-environment-variable
-  ("GUIX_SANDBOX_HOME" . "/mnt/Mentha/Sandbox")
-  ("GUIX_SANDBOX_EXTRA_SHARES" . "$HOME/Downloads:$HOME/Screenshots")
+  ("GUIX_SANDBOX_HOME" . "$XDG_DATA_HOME/steam")
+  ("GUIX_SANDBOX_EXTRA_SHARES" . "$HOME/Downloads:$HOME/Pictures/Screenshots")
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref service
@@ -754,7 +753,7 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
 #+begin_src scheme :noweb yes :noweb-ref package
   "emacs-pgtk"
 
-  #;"emacs-beancount"
+  "emacs-beancount"
   "emacs-caddyfile-mode"
   "emacs-edit-indirect"
   "emacs-fish-mode"

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: CC0-1.0
 
 prefer-no-csd
-screenshot-path "/home/hako/Screenshots/%Y%m%d-%H%M%S.png"
+screenshot-path "~/Pictures/Screenshots/%Y%m%d-%H%M%S.png"
 
 spawn-sh-at-startup "pgrep --uid $USER shepherd > /dev/null || shepherd"
 
@@ -77,7 +77,7 @@ binds {
 
     Mod+Return hotkey-overlay-title="Open Editor: emacsclient"  { spawn "emacsclient" "--create-frame" "--no-wait"; }
     Mod+Space  hotkey-overlay-title="Run an Application: rofi"  { spawn "$$bin/rofi$$" "-show" "drun"; }
-    Mod+L      hotkey-overlay-title="Lock the Screen: swaylock" { spawn "$$bin/swaylock$$" "--clock" "--daemonize" "--ignore-empty-password" "--image" "$$115008128_p0.jpg$$"; }
+    Mod+L      hotkey-overlay-title="Lock the Screen: swaylock" { spawn "$$bin/swaylock$$" "--clock" "--daemonize" "--ignore-empty-password" "--image" "~/Pictures/Pixez/115008128_p0.jpg"; }
     Mod+T      hotkey-overlay-title="Open Terminal: foot"       { spawn "$$bin/foot$$"; }
 
     Mod+Left                  { focus-column-left; }

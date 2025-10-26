@@ -79,9 +79,7 @@
 
       (service openssh-service-type
                (openssh-configuration
-                 (port-number 2222)
-                 (password-authentication? #f)
-                 (max-connections 5)))
+                 (password-authentication? #f)))
 
       (service wireguard-service-type
                (wireguard-host-config

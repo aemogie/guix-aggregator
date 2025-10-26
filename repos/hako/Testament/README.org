@@ -11,7 +11,6 @@ Part of them are also used for the [[https://ultrarare.space/en/posts/guix-build
 + [[file:files/deploy][files/deploy]] :: Configurations for ~guix deploy~.
 + [[file:files/dotfiles][files/dotfiles]] :: Dotfiles for =home-dotfiles-service-type=.
 + [[file:files/plain][files/plain]] :: Files to be referenced in configurations.
-+ [[file:files/blobs][files/blobs]] :: Likewise but private.
 
 See [[file:Makefile][Makefile]] for usage.
 

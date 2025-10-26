@@ -1,8 +1,10 @@
 mrh-guix
 .*\.png
+.*\.jpg
 .*\.md
 ^LICENSE.*
 ^README.*
 .*\.git.*
 .stfolder
 guix/channels.scm
+sabnzbd

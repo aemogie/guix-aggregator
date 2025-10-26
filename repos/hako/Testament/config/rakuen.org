@@ -283,7 +283,7 @@ Administration accounts.
       (config
        (computed-substitution-with-inputs "iocaine.toml"
          (local-file (testament-plain "iocaine.toml"))
-         (list (testament-blobs))))))
+         (list (local-file "../../Workspace/iocaine" #:recursive? #t))))))
 #+end_src
 
 ** docker-mailserver
