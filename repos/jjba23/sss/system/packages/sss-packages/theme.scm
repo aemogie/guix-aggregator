@@ -23,5 +23,5 @@
   #:export (theme-packages))
 
 (define theme-packages
-  (make-parameter (list adwaita-icon-theme gnome-themes-standard
+  (make-parameter (list adwaita-icon-theme gnome-themes-extra
                         hicolor-icon-theme)))

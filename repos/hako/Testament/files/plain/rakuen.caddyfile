@@ -55,13 +55,7 @@
 (block_bots) {
 	import $$share/ai-robots-txt/Caddyfile$$
 	handle @aibots {
-		respond /robots.txt 200 {
-			body <<EOF
-			User-Agent: *
-			Disallow: /
-
-			EOF
-		}
+		log_skip
 		respond /* "Access denied" 403 {
 			close
 		}
@@ -74,7 +68,9 @@
 	}
 	handle @fake {
 		log_skip
-		reverse_proxy localhost:54504
+		respond /* "Access denied" 403 {
+			close
+		}
 	}
 }
 
@@ -101,14 +97,6 @@ vault.boiledscript.com {
 	reverse_proxy localhost:23263
 }
 
-# Certificates for mail server
-mail.boiledscript.com {
-	import block_bots
-	respond /* "Access denied" 403 {
-		close
-	}
-}
-
 # Guix Moe
 cache-fi.guix.moe {
 	import block_bots
@@ -126,6 +114,13 @@ cache-fi.guix.moe {
 	}
 
 	respond "Visit guix [dot] moe for more information." 404 {
+		close
+	}
+}
+
+
+:80, :443, mail.boiledscript.com {
+	respond /* "Access denied" 403 {
 		close
 	}
 }

@@ -1,4 +1,5 @@
 (define-module (mrh-guix system sleep config)
+  #:use-module (mrh-guix personal)
   #:use-module (mrh-guix vpn)
   #:use-module (nongnu packages linux)
   #:use-module (nongnu packages firmware)
@@ -6,7 +7,7 @@
   #:use-module (gnu services dns))
 
 (use-package-modules admin cryptsetup curl cups nfs version-control wm)
-(use-service-modules cups dbus desktop networking ssh vpn xorg)
+(use-service-modules cups dbus desktop networking ssh syncthing vpn xorg)
 
 (define-public %sleep-operating-system
   (operating-system
@@ -49,6 +50,10 @@
       (service network-manager-service-type)
       (service ntp-service-type)
 
+      (service nftables-service-type
+               (nftables-configuration
+                 (ruleset (local-file "nftables.conf"))))
+
       (service openssh-service-type
                (openssh-configuration
                  (port-number 2222)
@@ -56,6 +61,27 @@
                  (max-connections 5)))
 
       (service elogind-service-type)
+
+      (service syncthing-service-type
+               (syncthing-configuration
+                 (user "mrh")
+                 (config-file
+                  (syncthing-config-file
+                    (gui-address "[::1]:8384")
+                    (gui-user "wumpus")
+                    (gui-password %syncthing-password)
+                    (folders
+                     (let ((om (syncthing-device
+                                 (name "om")
+                                 (id %om-syncthing-id)))
+                           (phone (syncthing-device
+                                    (name "phone")
+                                    (id %phone-syncthing-id))))
+                       (list (syncthing-folder
+                               (id "default")
+                               (label "default folder")
+                               (path "~/sync")
+                               (devices (list om phone))))))))))
 
       (service bluetooth-service-type
                (bluetooth-configuration
@@ -77,6 +103,14 @@
                  (program (file-append swaylock "/bin/swaylock"))
                  (using-pam? #t)
                  (using-setuid? #f)))
+
+      (service yggdrasil-service-type
+               (yggdrasil-configuration
+                 (config-file
+                  "/home/mrh/.config/yggdrasil/yggdrasil-private.conf")
+                 (json-config
+                  '((peers . #("tcp://ygg-us-ny.nadeko.net:44441"
+                               "tls://ygg.jjolly.dev:3443"))))))
 
       (service wireguard-service-type (wireguard-client-config 2))
 

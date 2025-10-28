@@ -22,7 +22,6 @@
         "wm",
         "terminal",
         {
-            "type": "terminalfont",
             "format": "{/name}{-}{/}{name}{?size} {size}{?}"
         },
         "cpu",

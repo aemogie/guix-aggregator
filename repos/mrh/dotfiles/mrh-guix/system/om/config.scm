@@ -15,6 +15,7 @@
                      curl
                      dns
                      package-management
+                     rsync
                      tls
                      version-control)
 
@@ -60,6 +61,7 @@
                      git
                      (list isc-bind "utils")
                      openssl
+                     rsync
                      %base-packages))
 
     (services
@@ -70,16 +72,24 @@
                  (handle-lid-switch-docked 'ignore)
                  (handle-lid-switch-external-power 'ignore)))
 
-      %wpa-supplicant-service
       %nftables-service
+      %static-networking-service
+      %wpa-supplicant-service
       %unbound-service
-      %dhcpcd-service
 
       (service ntp-service-type)
 
       (service openssh-service-type
                (openssh-configuration
                  (password-authentication? #f)))
+
+      (service yggdrasil-service-type
+               (yggdrasil-configuration
+                 (config-file
+                  "/home/mrh/.config/yggdrasil/yggdrasil-private.conf")
+                 (json-config
+                  '((Peers . #("tcp://ygg-us-ny.nadeko.net:44441"
+                               "tls://ygg.jjolly.dev:3443"))))))
 
       (service wireguard-service-type
                (wireguard-host-config
@@ -92,7 +102,7 @@
                  (user "mrh")
                  (config-file
                   (syncthing-config-file
-                    (gui-address (format #f "[::1]:8384" %ipv6-wireguard-host))
+                    (gui-address "[::1]:8384")
                     (gui-user "wumpus")
                     (gui-password %syncthing-password)
                     (folders
@@ -107,13 +117,7 @@
                                (id "default")
                                (label "default folder")
                                (path "~/sync")
-                               (devices (list sleep phone)))
-
-                             (syncthing-folder
-                               (id "dotfiles")
-                               (label "dotfiles folder")
-                               (path "~/src/dotfiles")
-                               (devices (list sleep))))))))))
+                               (devices (list sleep phone))))))))))
 
       (service nfs-service-type
                (nfs-configuration
@@ -193,14 +197,19 @@
 
     (file-systems
      (cons* (file-system
+              (mount-point "/boot/efi")
+              (device (uuid "1921-C31A" 'fat32))
+              (type "vfat"))
+            (file-system
               (mount-point "/")
               (device
                (uuid "6ec680cc-bf14-49d2-b4d0-d4feac003ae1" 'ext4))
               (type "ext4"))
             (file-system
-              (mount-point "/boot/efi")
-              (device (uuid "1921-C31A" 'fat32))
-              (type "vfat"))
+              (mount-point "/mnt/wd")
+              (device
+               (uuid "5781ea1d-72c6-4dd7-9af0-9442a0502fc4" 'ext4))
+              (type "ext4"))
             %base-file-systems))))
 
 %om-operating-system

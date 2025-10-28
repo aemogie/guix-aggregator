@@ -67,3 +67,10 @@ MIRROR_NAME.guix.moe {
 		close
 	}
 }
+
+
+:80, :443 {
+	respond /* "Access denied" 403 {
+		close
+	}
+}

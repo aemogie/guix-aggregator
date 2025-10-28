@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: CC0-1.0
 
-BaseUrl = 'https://music.boiledscript.com'
+BaseUrl = 'https://music.urspace.moe'
 Address = '127.0.0.1'
 Port = 43502
 MusicFolder = '/mnt/Ocimeae/Library/Music'

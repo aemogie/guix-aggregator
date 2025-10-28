@@ -11,9 +11,11 @@ application/xhtml+xml=librewolf.desktop
 application/x-extension-xhtml=librewolf.desktop
 application/x-extension-xht=librewolf.desktop
 # pdfs
-application/pdf=org.pwmt.zathura.desktop
+application/pdf=librewolf.desktop;org.pwmt.zathura.desktop
+# email
+x-scheme-handler/mailto=emacsclient-mail.desktop;emacs-mail.desktop
 
 [Added Associations]
 application/vnd.openxmlformats-officedocument.wordprocessingml.document=libreoffice-writer.desktop;librewolf.desktop;
-binary/octet-stream=emacs.desktop;
-application/gzip=emacs.desktop;
+binary/octet-stream=emacsclient.desktop;emacs.desktop
+application/gzip=emacsclient.desktop;emacs.desktop

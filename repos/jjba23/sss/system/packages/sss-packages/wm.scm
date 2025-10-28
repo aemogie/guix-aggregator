@@ -33,7 +33,7 @@
 
 (define wm-packages
   (make-parameter (list niri
-                        rofi-wayland
+                        rofi
                         fzf
                         slurp
                         waybar-experimental

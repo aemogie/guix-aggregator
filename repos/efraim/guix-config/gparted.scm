@@ -273,7 +273,7 @@
   (bootloader (bootloader-configuration
                (bootloader
                  (bootloader (inherit grub-bootloader)
-                             (package (minimized-package (specification->package "grub")))))
+                             (package (minimized-package (specification->package "grub-pc")))))
                (targets '("/dev/vda"))
                (terminal-outputs '(console))))
   (file-systems (cons (file-system

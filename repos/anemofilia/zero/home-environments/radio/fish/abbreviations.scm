@@ -41,8 +41,7 @@
           (expansion "doas guix system reconfigure /etc/config.scm"))
         (abbreviation
           (name '!network)
-          (expansion "doas herd restart networking \
-                      && doas herd restart wpa-supplicant"))))
+          (expansion "doas herd restart iwd"))))
 
 (define misc
   (list (abbreviation

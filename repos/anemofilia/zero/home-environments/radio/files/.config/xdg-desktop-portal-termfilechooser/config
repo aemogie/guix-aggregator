@@ -1,4 +1,4 @@
 [filechooser]
 cmd=$HOME/.guix-home/profile/share/xdg-desktop-portal-termfilechooser/lf-wrapper.sh
-default_dir=$XDG_DOWNLOAD_DIR
+default_dir=$HOME
 env=TERMCMD=foot

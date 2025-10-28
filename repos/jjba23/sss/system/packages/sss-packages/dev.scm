@@ -25,10 +25,5 @@
   #:export (dev-packages))
 
 (define dev-packages
-  (make-parameter (list (specification->package "openjdk@21")
-                        node
-                        (specification->package "python@3.11")
-                        cl-asdf
-                        sbcl
-                        httpd
-                        inxi)))
+  (make-parameter (list (specification->package "openjdk@21") cl-asdf sbcl
+                        httpd inxi)))

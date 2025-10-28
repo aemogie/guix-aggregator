@@ -3,6 +3,7 @@
   #|A|# #:use-module (gnu packages admin)
   #|B|# #:use-module (gnu packages base)
         #:use-module (gnu packages bittorrent)
+        #:use-module (gnu packages books)
   #|C|# #:use-module (gnu packages c)
         #:use-module (gnu packages calendar)
         #:use-module (gnu packages commencement)
@@ -30,10 +31,10 @@
   #|L|# #:use-module (gnu packages lean)
         #:use-module (gnu packages libcanberra)
         #:use-module (gnu packages linux)
+        #:use-module (gnu packages luanti)
   #|M|# #:use-module (gnu packages mail)
         #:use-module (gnu packages maths)
         #:use-module (gnu packages messaging)
-        #:use-module (gnu packages minetest)
   #|N|# #:use-module (gnu packages ncurses)
   #|O|# #:use-module (gnu packages ocr)
   #|P|# #:use-module (gnu packages password-utils)
@@ -67,8 +68,7 @@
   #|G|# #:use-module (radix packages games)
   #|K|# #:use-module (radix packages kak-xyz)
   #|M|# #:use-module (radix packages music)
-  #|P|# #:use-module (radix packages pdf)
-        #:use-module (radix packages pulseaudio)
+  #|P|# #:use-module (radix packages pulseaudio)
   #|S|# #:use-module (radix packages seninha)
   #|T|# #:use-module (radix packages text-editors)
         #:use-module (radix packages toys)
@@ -119,7 +119,7 @@
         #|video      |# wf-recorder
         #|wm         |# eww/wayland fnott lswt river-bedload rivercarro wbg
         #|web        |# jq
-        #|xdisorg    |# fuzzel-lowercase gammastep wl-clipboard wlrctl
+        #|xdisorg    |# fuzzel-lowercase gammastep-minimal wl-clipboard wlrctl
         #|zig-xyz    |# river))
 
 (define development
@@ -131,15 +131,16 @@
         #|ssh           |# openssh
         #|text-editors  |# kakoune kak-lsp
         #|kak-xyz       |# kak-auto-pairs kak-board kak-buffers
-                           kak-phantom-selection kak-rainbower kak-state-save
-                           kak-snippets kak-surround kak-tree-sitter
+                           kak-phantom-selection kak-popup kak-rainbower
+                           kak-state-save kak-snippets kak-surround kak-tree-sitter
         #|tmux          |# tmux
         #|vesion-control|# diff-so-fancy git))
 
 (define documentation
-  (list #|c      |# c-intro-and-ref
+  (list #|books  |# book-sicp
+        #|c      |# c-intro-and-ref
         #|gnu-doc|# gnu-standards
-        #|scheme |# r7rs-small-texinfo sicp))
+        #|scheme |# r7rs-small-texinfo))
 
 (define downloads
   (list #|bittorrent|# aria2 qbittorrent
@@ -156,7 +157,7 @@
         #|video        |# ffmpegthumbnailer))
 
 (define games
-  (list #|games|# minetest red-eclipse srb2 supertuxkart xonotic))
+  (list #|games|# luanti red-eclipse srb2 supertuxkart xonotic))
 
 (define haskell
   (list #|commencement|# gcc-toolchain
@@ -181,7 +182,7 @@
 
 (define reading
   (list #|dictionaries|# translate-shell
-        #|pdf         |# sioyek-kebab
+        #|pdf         |# sioyek
         #|syndication |# newsraft))
 
 (define scheme

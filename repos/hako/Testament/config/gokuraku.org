@@ -445,7 +445,7 @@ Remember to open TCP port 5555 and 5556.
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.ultrarare.space/mirror/guix.git"))
+             (url "https://git.urspace.moe/mirror/guix.git"))
            (channel
              (name 'cast)
              (branch "main")
@@ -468,7 +468,7 @@ Remember to open TCP port 5555 and 5556.
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.ultrarare.space/mirror/guix.git"))
+             (url "https://git.urspace.moe/mirror/guix.git"))
            (channel
              (name 'emacs-master)
              (url "https://github.com/gs-101/emacs-master.git")
@@ -490,7 +490,7 @@ Remember to open TCP port 5555 and 5556.
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.ultrarare.space/hako/guix.git")
+             (url "https://git.urspace.moe/hako/guix.git")
              (branch "pinned"))))
     (priority 9)
     (systems '("x86_64-linux" "aarch64-linux")))
@@ -504,7 +504,7 @@ Remember to open TCP port 5555 and 5556.
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.ultrarare.space/mirror/guix.git"))
+             (url "https://git.urspace.moe/mirror/guix.git"))
            (channel
              (name 'guixcn)
              (url "https://codeberg.org/guixcn/guix-channel.git")
@@ -526,7 +526,7 @@ Remember to open TCP port 5555 and 5556.
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.ultrarare.space/mirror/guix.git"))
+             (url "https://git.urspace.moe/mirror/guix.git"))
            (channel
              (name 'nonguix)
              (url "https://gitlab.com/nonguix/nonguix")
@@ -547,7 +547,7 @@ Remember to open TCP port 5555 and 5556.
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.ultrarare.space/mirror/guix.git"))
+             (url "https://git.urspace.moe/mirror/guix.git"))
            (channel
              (name 'rde)
              (url "https://git.sr.ht/~abcdw/rde")
@@ -568,7 +568,7 @@ Remember to open TCP port 5555 and 5556.
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.ultrarare.space/mirror/guix.git"))
+             (url "https://git.urspace.moe/mirror/guix.git"))
            (channel
              (name 'rosenthal)
              (url "https://codeberg.org/hako/rosenthal.git")
@@ -592,7 +592,7 @@ Remember to open TCP port 5555 and 5556.
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.ultrarare.space/mirror/guix.git"))))
+             (url "https://git.urspace.moe/mirror/guix.git"))))
     (priority 9)
     (systems '("x86_64-linux")))
 #+end_src
@@ -616,16 +616,6 @@ Remember to open TCP port 5555 and 5556.
     (local-file (testament-plain "gokuraku.caddyfile"))
     (cons (testament-plain)
           (specs->pkgs "ai-robots-txt")))
-#+end_src
-
-** iocaine
-#+begin_src scheme :noweb-ref service
-  (service iocaine-service-type
-    (iocaine-configuration
-      (config
-       (computed-substitution-with-inputs "iocaine.toml"
-         (local-file (testament-plain "iocaine.toml"))
-         (list (local-file "../../Workspace/iocaine" #:recursive? #t))))))
 #+end_src
 
 ** forgejo

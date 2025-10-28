@@ -852,6 +852,8 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
                               . (+archive -unread -inbox -new))
                              ("folder:imap/Junk"
                               . (+spam -inbox -new))
+                             ("folder:imap/Trash"
+                              . (+trashed -inbox -new))
                              ;; others
                              ("tag:new"
                               . (+inbox -new)))))

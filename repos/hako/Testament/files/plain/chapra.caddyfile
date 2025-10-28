@@ -30,16 +30,23 @@
 
 
 # Komga
-manga.ultrarare.space {
+manga.urspace.moe {
 	reverse_proxy localhost:44293
 }
 
 # Navidrome
-music.ultrarare.space {
+music.urspace.moe {
 	reverse_proxy localhost:43502
 }
 
 # Jellyfin
-shows.ultrarare.space {
+shows.urspace.moe {
 	reverse_proxy localhost:22443
+}
+
+
+:80, :443 {
+	respond /* "Access denied" 403 {
+		close
+	}
 }

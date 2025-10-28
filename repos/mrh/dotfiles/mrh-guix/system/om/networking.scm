@@ -1,5 +1,6 @@
 (define-module (mrh-guix system om networking)
   #:use-module (mrh-guix personal)
+  #:use-module (mrh-guix services)
   #:use-module (mrh-guix vpn)
   #:use-module (guix gexp)
   #:use-module (gnu services)
@@ -8,16 +9,43 @@
   #:use-module (gnu services dns)
   #:use-module (gnu services networking))
 
+(define-public %nftables-service
+  (service nftables-service-type
+           (nftables-configuration
+             (ruleset (local-file "nftables.conf")))))
+
+(define-public %static-networking-service
+  (service static-networking-service-type
+           (list (static-networking
+                   (addresses
+                    (list (network-address
+                            (device %wlan-interface)
+                            (value (format #f "~a/64" %ipv6-ula-om)))
+                          (network-address
+                            (device %wlan-interface)
+                            (value (format #f "~a/64" %ipv6-gua-om)))
+                          (network-address
+                            (device %wlan-interface)
+                            (value (format #f "~a/24" %ipv4-lan-om)))))
+                   (routes
+                    (list (network-route
+                            (device %wlan-interface)
+                            (destination "default")
+                            (gateway %ipv6-lan-gateway))
+                          (network-route
+                            (device %wlan-interface)
+                            (destination "default")
+                            (gateway %ipv4-lan-gateway))))
+                   (name-servers
+                    (list "::1"
+                          %ipv6-ula-om
+                          "9.9.9.9"))))))
+
 (define-public %wpa-supplicant-service
   (service wpa-supplicant-service-type
            (wpa-supplicant-configuration
              (interface %wlan-interface)
              (config-file (local-file "wpa-supplicant.conf")))))
-
-(define-public %nftables-service
-  (service nftables-service-type
-           (nftables-configuration
-             (ruleset (local-file "nftables.conf")))))
 
 (define dns-interfaces (list "::1"
                              %ipv6-ula-om
@@ -31,7 +59,7 @@
                       ))
 
 (define-public %unbound-service
-  (service unbound-service-type
+  (service unbound-after-wg-service-type
            (unbound-configuration
              (server (unbound-server
                        (interface dns-interfaces)
@@ -43,7 +71,7 @@
                       (name ".")
                       (forward-addr dns-servers)
                       (forward-tls-upstream #t))))
-             ;; can't be in config because of a formatting bug in the guix service
+             ;; can't be in config because of a formatting bug in the service definition
              (extra-content (format #f "
 server:
 aggressive-nsec: yes

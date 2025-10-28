@@ -130,11 +130,11 @@
     (packages
       (list #|admin       |# btop inetutils shadow zzz
             #|base        |# coreutils diffutils findutils grep sed tar which
-            #|bash        |# bash-minimal
+            #|bash        |# bash
             #|certs       |# nss-certs
             #|compression |# gzip xz zstd
             #|gawk        |# gawk
-            #|guile       |# guile-next guile-colorized guile-readline
+            #|guile       |# guile-3.0 guile-colorized guile-readline
             #|less        |# less
             #|linux       |# iproute kmod procps usbutils util-linux
             #|man         |# man-db man-pages
@@ -295,7 +295,7 @@
 
             #|Special file services|#
             (service special-files-service-type
-                     `(("/bin/sh" ,(file-append bash-minimal "/bin/bash"))
+                     `(("/bin/sh" ,(file-append bash "/bin/bash"))
                        ("/usr/bin/env" ,(file-append coreutils "/bin/env"))
                        ("/etc/config.scm" ,buer.scm)))
             (simple-service 'persistent-files

@@ -2,12 +2,14 @@
 (use-modules (guix packages)
              (gnu)
              (gnu bootloader u-boot)
+             (gnu system images pine64)
              (gnu system locale)
              (config filesystems)
              (config guix-daemon)
              (dfsg contrib services tailscale)
              (srfi srfi-1))
 (use-service-modules
+  guix
   linux
   mcron
   networking
@@ -18,6 +20,7 @@
 
 (define %pine64-system
  (operating-system
+  (inherit pine64-barebones-os)
   (host-name "pine64")
   (timezone "Asia/Jerusalem")
   (locale "en_IL.utf8")
@@ -31,11 +34,10 @@
 
   (bootloader
     (bootloader-configuration
+      ;; The kickstarter board, not the LTS board.
       (bootloader u-boot-pine64-plus-bootloader)
       (targets '("/dev/mmcblk0"))))     ; SD card/eMMC (SD priority) storage
 
-  (initrd-modules '())
-  (kernel linux-libre-arm64-generic)
   (firmware '())
 
   (file-systems
@@ -69,7 +71,10 @@
       (delete (specification->package "guix-icons") %base-packages)))
 
   (services
-    (cons* (service openssh-service-type
+    (cons* (service guix-home-service-type
+                    `(("efraim" ,(@@ (efraim-home) efraim-offload-home-environment))))
+
+           (service openssh-service-type
                     (openssh-configuration
                       (openssh (specification->package "openssh-sans-x"))
                       (authorized-keys
@@ -84,15 +89,7 @@
                       (jobs
                         (list
                           #~(job '(next-hour '(3))
-                                 "guix gc --free-space=15G")
-                          ;; The board powers up at unix date 0.
-                          ;; Restart ntpd regularly to set the clock.
-                          #~(job '(next-hour '(0 6 12 18))
-                                 "/run/current-system/profile/bin/herd restart ntpd")))))
-
-           (service ntp-service-type)
-
-           (service dhcpcd-service-type)
+                                 "guix gc --free-space=15G")))))
 
            (service earlyoom-service-type
                     (earlyoom-configuration
@@ -106,7 +103,7 @@
                       (priority 100)))
 
            (modify-services
-             %base-services
+             (operating-system-user-services pine64-barebones-os)
              (guix-service-type
                config =>
                (guix-configuration

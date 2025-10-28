@@ -108,8 +108,8 @@
                                   `(,font-adobe-source-han-sans "kr")
                                   `(,font-adobe-source-han-sans "tw")
                                   font-adobe-source-han-sans
-                                  font-adobe-source-sans-pro
-                                  font-adobe-source-serif-pro
+                                  font-adobe-source-sans
+                                  font-adobe-source-serif
                                   font-openmoji
                                   font-juliamono
                                   font-meslo-lg-dz
@@ -141,7 +141,7 @@
 
             #|File services|#
             (service home-directories-service-type
-                     `(".archives"
+                     `(".archive"
                        "areas/code"
                        "areas/finances"
                        "areas/health"

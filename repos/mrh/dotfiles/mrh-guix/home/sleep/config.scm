@@ -7,8 +7,7 @@
   #:use-module (gnu home services desktop)
   #:use-module (gnu home services gnupg)
   #:use-module (gnu home services sound)
-  #:use-module (gnu home services ssh)
-  #:use-module (gnu home services syncthing))
+  #:use-module (gnu home services ssh))
 
 (define-public %sleep-home-config
   (home-environment
@@ -16,7 +15,6 @@
     (services
      (list (service home-dbus-service-type)
            (service home-pipewire-service-type)
-           (service home-syncthing-service-type)
            (service home-gpg-agent-service-type
                     (home-gpg-agent-configuration
                       (pinentry-program (file-append pinentry-tty "/bin/pinentry"))

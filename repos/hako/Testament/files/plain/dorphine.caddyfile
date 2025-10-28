@@ -30,6 +30,13 @@
 
 
 # qBittorrent
-download.ultrarare.space {
+dl.urspace.moe {
 	reverse_proxy localhost:35951
+}
+
+
+:80, :443 {
+	respond /* "Access denied" 403 {
+		close
+	}
 }

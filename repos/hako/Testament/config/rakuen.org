@@ -276,16 +276,6 @@ Administration accounts.
             #:requirement '(user-processes))))
 #+end_src
 
-** iocaine
-#+begin_src scheme :noweb-ref service
-  (service iocaine-service-type
-    (iocaine-configuration
-      (config
-       (computed-substitution-with-inputs "iocaine.toml"
-         (local-file (testament-plain "iocaine.toml"))
-         (list (local-file "../../Workspace/iocaine" #:recursive? #t))))))
-#+end_src
-
 ** docker-mailserver
 #+begin_src scheme :noweb-ref service
   (service docker-mailserver-service-type

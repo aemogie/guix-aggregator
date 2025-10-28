@@ -62,13 +62,7 @@
 (block_bots) {
 	import $$share/ai-robots-txt/Caddyfile$$
 	handle @aibots {
-		respond /robots.txt 200 {
-			body <<EOF
-			User-Agent: *
-			Disallow: /
-
-			EOF
-		}
+		log_skip
 		respond /* "Access denied" 403 {
 			close
 		}
@@ -81,7 +75,9 @@
 	}
 	handle @fake {
 		log_skip
-		reverse_proxy localhost:54504
+		respond /* "Access denied" 403 {
+			close
+		}
 	}
 }
 
@@ -93,7 +89,7 @@ files.boiledscript.com {
 }
 
 # Forgejo
-git.ultrarare.space {
+git.urspace.moe {
 	import tailscale {
 		reverse_proxy localhost:48071
 	}
@@ -102,7 +98,6 @@ git.ultrarare.space {
 # Misskey
 boiledscript.com {
 	import block_bots
-
 	reverse_proxy localhost:54493
 }
 
@@ -172,7 +167,7 @@ cache-de.guix.moe {
 
 
 # Grafana
-dash.ultrarare.space {
+dash.urspace.moe {
 	import tailscale {
 		reverse_proxy localhost:13064
 	}
@@ -190,4 +185,11 @@ metrics.boiledscript.com {
 	import block_bots
 	import /run/secrets/caddy/mimir
 	reverse_proxy localhost:49951
+}
+
+
+:80, :443 {
+	respond /* "Access denied" 403 {
+		close
+	}
 }
