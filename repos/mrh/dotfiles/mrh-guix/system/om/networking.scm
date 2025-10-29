@@ -119,8 +119,7 @@ local-data: \"home.~a 86400 IN A ~a\"
                                     %ipv4-lan-prefix
 
                                     %router-domain-name
-                                    %router-domain-name
-                                    %ipv6-gua-prefix
+                                    %router-domain-name %ipv6-gua-prefix
 
                                     %ipv6-ula-om
 
@@ -154,7 +153,8 @@ local-data: \"home.~a 86400 IN A ~a\"
              (addresses
               (list (format #f "/~a/~a::1" %router-domain-name %ipv6-gua-prefix)
                     (format #f "/om/~a" %ipv6-ula-om)
-                    (format #f "/sleep/~a" %ipv6-ula-sleep)))
+                    (format #f "/sleep/~a" %ipv6-ula-sleep)
+                    (format #f "/home.~a/~a" %domain-name %ipv6-wireguard-host)))
              (extra-options '("--filterwin2k")))))
 
 (define-public %adguard-config

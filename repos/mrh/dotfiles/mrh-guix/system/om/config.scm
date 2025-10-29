@@ -88,7 +88,7 @@
                  (config-file
                   "/home/mrh/.config/yggdrasil/yggdrasil-private.conf")
                  (json-config
-                  '((Peers . #("tcp://ygg-us-ny.nadeko.net:44441"
+                  '((peers . #("tcp://ygg-us-ny.nadeko.net:44441"
                                "tls://ygg.jjolly.dev:3443"))))))
 
       (service wireguard-service-type
@@ -109,7 +109,6 @@
                      (let ((sleep (syncthing-device
                                     (name "sleep")
                                     (id %sleep-syncthing-id)))
-
                            (phone (syncthing-device
                                     (name "phone")
                                     (id %phone-syncthing-id))))

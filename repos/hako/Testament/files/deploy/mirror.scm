@@ -25,7 +25,7 @@
       (mirror
        #:mirror-name "cache-sg"
        #:system "x86_64-linux"
-       #:ssh-host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJoulqC/uqoFzuaYJVFkPJoIL+XPDemTI+69s/p2TMgp"
+       #:ssh-host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM9Ad1hMSRW2+mP8UTx6XCK8ioLA+1ZyBmCHChvvBvzk"
        #:bios-boot "/dev/vda")
       (mirror
        #:mirror-name "cache-us-lax"

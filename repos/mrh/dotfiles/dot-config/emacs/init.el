@@ -412,7 +412,8 @@ Helpful advice for face changing functions."
   :config
   (use-package org-publish-rss
     :custom
-    (org-publish-rss-publish-immediately t))
+    (org-publish-rss-publish-immediately t)
+    (org-publish-rss-guid-method 'org-file-id-get-create))
 
   (load (expand-file-name "org-publish.el" user-emacs-directory))
   :after jack)

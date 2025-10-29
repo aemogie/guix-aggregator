@@ -47,6 +47,7 @@
                  "kdenlive"
                  "mosh"
                  "mpv-nvidia"
+                 "ncurses"
                  "niri"
                  "obs-nvidia"
                  "openjdk:jdk"
@@ -56,6 +57,7 @@
                  "sops"
                  "steam-nvidia"
                  "telegram-desktop"
+                 "unzip"
                  "wl-clipboard"
 
                  "xdg-desktop-portal"
@@ -69,14 +71,6 @@
                  "livemarks-icecat"
                  "ohmyech-icecat"
                  "ublock-origin-icecat"
-
-                 "exo"
-                 "file-roller"
-                 "thunar"
-                 "thunar-archive-plugin"
-                 "thunar-media-tags-plugin"
-                 "thunar-volman"
-                 "unzip"
 
                  <<package>>)
                 %base-packages)))
@@ -526,7 +520,8 @@ Open TCP port 5558 and connect to server IPv4 address.
       (systems '("x86_64-linux" "i686-linux"))
       (server "100.97.195.93:5555")       ;gokuraku (Tailscale)
       (substitute-urls
-       `("https://ci.guix.moe"
+       '("https://cache-cdn.guix.moe"
+         "https://ci.guix.moe"
          "https://ci.guix.gnu.org"
          "https://bordeaux.guix.gnu.org"))))
 #+end_src

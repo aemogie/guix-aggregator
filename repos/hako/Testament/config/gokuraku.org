@@ -430,7 +430,8 @@ Remember to open TCP port 5555 and 5556.
       (systems '("x86_64-linux" "i686-linux" "aarch64-linux"))
       (server "100.97.195.93:5555")       ;gokuraku (Tailscale)
       (substitute-urls
-       `("https://ci.guix.moe"
+       '("https://cache-cdn.guix.moe"
+         "https://ci.guix.moe"
          "https://ci.guix.gnu.org"
          "https://bordeaux.guix.gnu.org"))))
 #+end_src

@@ -47,7 +47,7 @@ Assumes \"tags.html\" file exists in same directory after export."
 
 Removes some preamble navigation.
 Adds author and date after title.
-Adds link to tags file before postamble (for blog posts)."
+Adds link to tags file before postamble (for posts)."
   (concat
    (when (and (not (org-html-html5-p info)) (org-html-xhtml-p info))
      (let* ((xml-declaration (plist-get info :html-xml-declaration))
@@ -177,7 +177,7 @@ time in `current-time' format."
 		  (org-publish-find-title entry project)
           (org-publish-find-property entry :author project)))
 
-(defun my/publish-html-blog-index-entry (entry style project)
+(defun my/publish-html-posts-index-entry (entry style project)
   (cond ((string-match (org-publish-property :sitemap-exclude project) entry)
          "exclude-me")
         ((not (directory-name-p entry))
@@ -187,7 +187,7 @@ time in `current-time' format."
 	     (file-name-nondirectory (directory-file-name entry)))
         (t entry)))
 
-(defun my/publish-html-blog-index-function (title list)
+(defun my/publish-html-posts-index-function (title list)
   (concat "#+title: " title "\n\n"
           (org-list-to-org
            (cons (car list)
@@ -292,11 +292,11 @@ time in `current-time' format."
           (:a (@ :href ,(my/get-up-directory level "index.html"))
               "The Wumpus Warehouse")
           " | "
-          (:a (@ :href ,(my/get-up-directory level "blog/index.html"))
+          (:a (@ :href ,(my/get-up-directory level "posts/index.html"))
               (:img (@ :style "border-width:0" :src (my/get-up-directory level "static/images/icons/blog.png")))
-              " Blog")
+              " Posts")
           " | "
-          (:a (@ :href ,(my/get-up-directory level "blog/rss.xml"))
+          (:a (@ :href ,(my/get-up-directory level "posts/rss.xml"))
               (:img (@ :style "border-width:0" :src (my/get-up-directory level "static/images/icons/rss.png")))
               " RSS")
           " | "
@@ -367,7 +367,7 @@ time in `current-time' format."
            :publishing-function my/publish-to-html
            
            :base-extension "org"
-           :exclude ,(regexp-opt '("blog/" ".git"))
+           :exclude ,(regexp-opt '("posts/" ".git"))
            :recursive t
            
            :author ""
@@ -379,9 +379,9 @@ time in `current-time' format."
            :html-head ,(my/publish-html-head 0)
            :html-preamble ,(my/publish-html-preamble 0)
            :html-postamble ,(my/publish-html-postamble 0))
-          ("site.blog"
-           :base-directory ,(concat site-source-directory "blog/")
-           :publishing-directory ,(concat site-target-directory "blog/")
+          ("site.posts"
+           :base-directory ,(concat site-source-directory "posts/")
+           :publishing-directory ,(concat site-target-directory "posts/")
            :publishing-function my/publish-to-html
            
            :base-extension "org"
@@ -396,16 +396,16 @@ time in `current-time' format."
            
            :auto-sitemap t
            :sitemap-filename "index.org"
-           :sitemap-title "Blog Index"
+           :sitemap-title "Posts Index"
            :sitemap-exclude "tags.org"
            :sitemap-sort-files anti-chronologically
-           :sitemap-format-entry my/publish-html-blog-index-entry
-           :sitemap-function my/publish-html-blog-index-function
+           :sitemap-format-entry my/publish-html-posts-index-entry
+           :sitemap-function my/publish-html-posts-index-function
            
            :auto-rss t
            :rss-title "Wumpus Feed"
            :rss-description "rss feed for The Wumpus Warehouse"
-           :rss-root-url ,(format "https://%s/blog/" my/website-domain)
+           :rss-root-url ,(format "https://%s/posts/" my/website-domain)
            :rss-with-content all
            :rss-webmaster ,user-full-name
            :rss-editor ,user-full-name
@@ -420,4 +420,4 @@ time in `current-time' format."
            :preparation-function (my/publish-html-tags)
            :completion-function (org-publish-rss))
           ("site"
-           :components ("site.static" "site.pages" "site.blog")))))
+           :components ("site.static" "site.pages" "site.posts")))))

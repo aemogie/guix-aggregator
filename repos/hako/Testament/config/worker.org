@@ -167,7 +167,8 @@ Open TCP port 5558 and connect to server IPv4 address.
          `("aarch64-linux"
            ,@(if 32bit-support? '("armhf-linux") '())))))
       (substitute-urls
-       `("https://ci.guix.moe"
+       '("https://cache-cdn.guix.moe"
+         "https://ci.guix.moe"
          "https://ci.guix.gnu.org"
          "https://bordeaux.guix.gnu.org"))))
 #+end_src
