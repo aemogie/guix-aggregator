@@ -234,7 +234,7 @@ Open TCP port 5558 and connect to server IPv4 address.
       (publish-port 5558)
       (workers 4)
       (systems '("x86_64-linux" "i686-linux" "aarch64-linux"))
-      (server "100.97.195.93:5555")       ;gokuraku (Tailscale)
+      (server "100.97.195.93:5555")       ;nuporta (Tailscale)
       (substitute-urls
        '("https://cache-cdn.guix.moe"
          "https://ci.guix.moe"

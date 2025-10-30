@@ -38,6 +38,7 @@
                      rsync
                      terminals
                      texlive
+                     tree-sitter
                      version-control
                      video
                      wm
@@ -124,6 +125,7 @@
    git
    (list git "send-email")
    gnu-make
+   tree-sitter-go
 
    ;; lisp
    guile-swayer

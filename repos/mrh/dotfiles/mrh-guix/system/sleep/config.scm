@@ -1,6 +1,5 @@
 (define-module (mrh-guix system sleep config)
   #:use-module (mrh-guix personal)
-  #:use-module (mrh-guix vpn)
   #:use-module (nongnu packages linux)
   #:use-module (nongnu packages firmware)
   #:use-module (gnu)
@@ -17,6 +16,33 @@
     (timezone "America/New_York")
     (locale "en_US.utf8")
     (keyboard-layout (keyboard-layout "us" "dvorak"))
+
+    (bootloader
+      (bootloader-configuration
+        (bootloader grub-efi-bootloader)
+        (targets (list "/boot/efi"))
+        (keyboard-layout keyboard-layout)))
+
+    (swap-devices
+     (list (swap-space
+             (target (uuid "e5f30f68-8021-45bf-9768-5895f5c9eb54")))))
+
+    (mapped-devices
+     (list (mapped-device
+             (source (uuid "b7913f43-e874-4862-a40e-823cc136795c"))
+             (target "cryptroot")
+             (type luks-device-mapping))))
+
+    (file-systems (cons* (file-system
+                           (mount-point "/")
+                           (device "/dev/mapper/cryptroot")
+                           (type "ext4")
+                           (dependencies mapped-devices))
+                         (file-system
+                           (mount-point "/boot/efi")
+                           (device (uuid "F6FD-DB47" 'fat32))
+                           (type "vfat"))
+                         %base-file-systems))
 
     (groups (cons* (user-group (name "docker"))
                    (user-group (name "realtime"))
@@ -46,77 +72,109 @@
 
     (services
      (cons*
-      (service wpa-supplicant-service-type)
-      (service network-manager-service-type)
-      (service ntp-service-type)
+      (service
+       wpa-supplicant-service-type)
 
-      (service nftables-service-type
-               (nftables-configuration
-                 (ruleset (local-file "nftables.conf"))))
+      (service
+       network-manager-service-type)
+      
+      (service
+       ntp-service-type)
 
-      (service openssh-service-type
-               (openssh-configuration
-                 (port-number 2222)
-                 (password-authentication? #f)
-                 (max-connections 5)))
+      (service
+       nftables-service-type
+       (nftables-configuration
+         (ruleset (local-file "nftables.conf"))))
 
-      (service elogind-service-type)
+      (service
+       openssh-service-type
+       (openssh-configuration
+         (port-number 2222)
+         (password-authentication? #f)
+         (max-connections 5)))
 
-      (service syncthing-service-type
-               (syncthing-configuration
-                 (user "mrh")
-                 (config-file
-                  (syncthing-config-file
-                    (gui-address "[::1]:8384")
-                    (gui-user "wumpus")
-                    (gui-password %syncthing-password)
-                    (folders
-                     (let ((om (syncthing-device
-                                 (name "om")
-                                 (id %om-syncthing-id)))
-                           (phone (syncthing-device
-                                    (name "phone")
-                                    (id %phone-syncthing-id))))
-                       (list (syncthing-folder
-                               (id "default")
-                               (label "default folder")
-                               (path "~/sync")
-                               (devices (list om phone))))))))))
+      (service
+       elogind-service-type)
 
-      (service bluetooth-service-type
-               (bluetooth-configuration
-                 (name "sleep")
-                 (auto-enable? #t)))
+      (service
+       syncthing-service-type
+       (syncthing-configuration
+         (user "mrh")
+         (config-file
+          (syncthing-config-file
+            (gui-address "[::1]:8384")
+            (gui-user "wumpus")
+            (gui-password %syncthing-password)
+            (folders
+             (let ((om (syncthing-device
+                         (name "om")
+                         (id %om-syncthing-id)))                   
+                   (lamb (syncthing-device
+                           (name "lamb")
+                           (id %lamb-syncthing-id))))
+               (list (syncthing-folder
+                       (id "default")
+                       (label "default folder")
+                       (path "~/sync")
+                       (devices (list om lamb))))))))))
 
-      (service cups-service-type
-               (cups-configuration
-                 (web-interface? #t)))
+      (service
+       bluetooth-service-type
+       (bluetooth-configuration
+         (name "sleep")
+         (auto-enable? #t)))
 
-      (service pam-limits-service-type
-               (list (pam-limits-entry "@realtime" 'both 'rtprio 99)
-                     (pam-limits-entry "@realtime" 'both 'memlock 'unlimited)
-                     (pam-limits-entry "*" 'both 'nofile 100000)))
+      (service
+       cups-service-type
+       (cups-configuration
+         (web-interface? #t)))
 
-      (service screen-locker-service-type
-               (screen-locker-configuration
-                 (name "swaylock")
-                 (program (file-append swaylock "/bin/swaylock"))
-                 (using-pam? #t)
-                 (using-setuid? #f)))
+      (service
+       pam-limits-service-type
+       (list (pam-limits-entry "@realtime" 'both 'rtprio 99)
+             (pam-limits-entry "@realtime" 'both 'memlock 'unlimited)
+             (pam-limits-entry "*" 'both 'nofile 100000)))
 
-      (service yggdrasil-service-type
-               (yggdrasil-configuration
-                 (config-file
-                  "/home/mrh/.config/yggdrasil/yggdrasil-private.conf")
-                 (json-config
-                  '((peers . #("tcp://ygg-us-ny.nadeko.net:44441"
-                               "tls://ygg.jjolly.dev:3443"))))))
+      (service
+       screen-locker-service-type
+       (screen-locker-configuration
+         (name "swaylock")
+         (program (file-append swaylock "/bin/swaylock"))
+         (using-pam? #t)
+         (using-setuid? #f)))
 
-      (service wireguard-service-type (wireguard-client-config 2))
+      (service
+       yggdrasil-service-type
+       (yggdrasil-configuration
+         (config-file
+          "/home/mrh/.config/yggdrasil/yggdrasil-private.conf")
+         (json-config
+          '((peers . #("tcp://ygg-us-ny.nadeko.net:44441"
+                       "tls://ygg.jjolly.dev:3443"))))))
+
+      (service
+       wireguard-service-type
+       (wireguard-configuration
+         (addresses
+          (list (format #f "~a::2" %ipv6-wireguard-prefix)
+                (format #f "~a.2" %ipv4-wireguard-prefix)))
+         (port %wireguard-port)
+         (peers
+          (list (wireguard-peer
+                  (name "vps")
+                  (endpoint (format #f "[~a]:~a"
+                                    %ipv6-gua-vps %wireguard-port))
+                  (public-key %vps-wireguard-key)
+                  (allowed-ips '("::/0" "0.0.0.0/0")))))
+         (dns
+          (list (format #f "~a::1" %ipv6-wireguard-prefix)
+                (format #f "~a.1" %ipv4-wireguard-prefix)))))
 
       ;; doesn't work
-      (simple-service 'fwupd-dbus dbus-root-service-type
-                      (list fwupd-nonfree))
+      (simple-service
+       'fwupd-dbus
+       dbus-root-service-type
+       (list fwupd-nonfree))
 
       (modify-services %base-services
         (guix-service-type
@@ -128,33 +186,6 @@
                        %default-authorized-guix-keys))
                      (substitute-urls
                       (cons "https://substitutes.nonguix.org"
-                            %default-substitute-urls)))))))
-
-    (bootloader
-      (bootloader-configuration
-        (bootloader grub-efi-bootloader)
-        (targets (list "/boot/efi"))
-        (keyboard-layout keyboard-layout)))
-
-    (swap-devices
-     (list (swap-space
-             (target (uuid "e5f30f68-8021-45bf-9768-5895f5c9eb54")))))
-
-    (mapped-devices
-     (list (mapped-device
-             (source (uuid "b7913f43-e874-4862-a40e-823cc136795c"))
-             (target "cryptroot")
-             (type luks-device-mapping))))
-
-    (file-systems (cons* (file-system
-                           (mount-point "/")
-                           (device "/dev/mapper/cryptroot")
-                           (type "ext4")
-                           (dependencies mapped-devices))
-                         (file-system
-                           (mount-point "/boot/efi")
-                           (device (uuid "F6FD-DB47" 'fat32))
-                           (type "vfat"))
-                         %base-file-systems))))
+                            %default-substitute-urls)))))))))
 
 %sleep-operating-system

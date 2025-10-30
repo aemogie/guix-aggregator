@@ -6,8 +6,7 @@ keys:
     - &hako     576C8A836723183D34C98D12C66DF7E30ED48083
     - &chapra   6AF468407A7BEE532CD6DD48F867327C967BE500
     - &dorphine 3B6C92CB84BB392FD8DF3609D7428FE2857261AE
-    - &gokuraku 66B835AD84C711E56CF020AA0CB8F483D75EB481
-    - &rakuen   E499696C49311CD59BC8A8CEBCD24D8A506659C5
+    - &nuporta  66B835AD84C711E56CF020AA0CB8F483D75EB481
 
 creation_rules:
     - path_regex: .*chapra\.yaml$
@@ -20,13 +19,8 @@ creation_rules:
           - pgp:
                 - *hako
                 - *dorphine
-    - path_regex: .*gokuraku\.yaml$
+    - path_regex: .*nuporta\.yaml$
       key_groups:
           - pgp:
                 - *hako
-                - *gokuraku
-    - path_regex: .*rakuen\.yaml$
-      key_groups:
-          - pgp:
-                - *hako
-                - *rakuen
+                - *nuporta

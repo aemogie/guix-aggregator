@@ -22,17 +22,17 @@ RCLONE_ARGS="\
     --verbose --size-only --no-traverse \
     --s3-no-check-bucket --s3-upload-concurrency=8 --s3-chunk-size=16M"
 
-NARINFO_OLD=/var/cache/r2/narinfo-old.txt
-NARINFO_NEW=/var/cache/r2/narinfo-new.txt
-NARINFO_DIFF=/var/cache/r2/nar.diff
-NARINFO_TO_DELETE=/var/cache/r2/narinfo-to-delete.txt
-NARINFO_TO_COPY=/var/cache/r2/narinfo-to-copy.txt
+NARINFO_OLD=/var/cache/guix-moe/narinfo-old.txt
+NARINFO_NEW=/var/cache/guix-moe/narinfo-new.txt
+NARINFO_DIFF=/var/cache/guix-moe/nar.diff
+NARINFO_TO_DELETE=/var/cache/guix-moe/narinfo-to-delete.txt
+NARINFO_TO_COPY=/var/cache/guix-moe/narinfo-to-copy.txt
 
-NAR_OLD=/var/cache/r2/nar-old.txt
-NAR_NEW=/var/cache/r2/nar-new.txt
-NAR_DIFF=/var/cache/r2/narinfo.diff
-NAR_TO_DELETE=/var/cache/r2/nar-to-delete.txt
-NAR_TO_COPY=/var/cache/r2/nar-to-copy.txt
+NAR_OLD=/var/cache/guix-moe/nar-old.txt
+NAR_NEW=/var/cache/guix-moe/nar-new.txt
+NAR_DIFF=/var/cache/guix-moe/narinfo.diff
+NAR_TO_DELETE=/var/cache/guix-moe/nar-to-delete.txt
+NAR_TO_COPY=/var/cache/guix-moe/nar-to-copy.txt
 
 list_narinfo() {
     msg "listing narinfo changes"
@@ -129,7 +129,7 @@ clean_up() {
 main() {
     [[ -e $NARINFO_NEW || -e $NAR_NEW ]] && die "previous syncing process unfinished"
 
-    mkdir --parents /var/cache/r2 /var/cache/guix-moe/narinfo
+    mkdir --parents /var/cache/guix-moe/narinfo
     touch $NARINFO_OLD $NAR_OLD
 
     list_narinfo

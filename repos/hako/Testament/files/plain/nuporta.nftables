@@ -26,12 +26,17 @@ table inet filter {
         ip6 nexthdr icmpv6 accept
 
         tcp dport https accept
+        udp dport https accept
+
         tcp dport imap accept
         tcp dport imaps accept
+        tcp dport rsync accept
         tcp dport smtp accept
         tcp dport smtps accept
         tcp dport ssh accept
-        udp dport https accept
+
+        # allow cuirass
+        tcp dport {5555, 5556} accept
 
         # allow mosh
         udp dport 60000-61000 accept

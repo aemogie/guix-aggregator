@@ -1,6 +1,5 @@
 (define-module (mrh-guix system om config)
   #:use-module (mrh-guix personal)
-  #:use-module (mrh-guix vpn)
   #:use-module (mrh-guix system om networking)
   #:use-module (mrh-guix system om web)
   #:use-module (mrh services)
@@ -42,148 +41,6 @@
     (locale "en_US.utf8")
     (keyboard-layout (keyboard-layout "us" "dvorak"))
 
-    (users (cons (user-account
-                   (name "mrh")
-                   (group "users")
-                   (home-directory "/home/mrh")
-                   (supplementary-groups '("wheel"
-                                           "docker"
-                                           "netdev"
-                                           "audio"
-                                           "video"
-                                           "input"
-                                           "lp")))
-                 %base-user-accounts))
-
-    (packages (cons* btop
-                     cryptsetup
-                     curl
-                     git
-                     (list isc-bind "utils")
-                     openssl
-                     rsync
-                     %base-packages))
-
-    (services
-     (cons*
-      (service elogind-service-type
-               (elogind-configuration
-                 (handle-lid-switch 'ignore)
-                 (handle-lid-switch-docked 'ignore)
-                 (handle-lid-switch-external-power 'ignore)))
-
-      %nftables-service
-      %static-networking-service
-      %wpa-supplicant-service
-      %unbound-service
-
-      (service ntp-service-type)
-
-      (service openssh-service-type
-               (openssh-configuration
-                 (password-authentication? #f)))
-
-      (service yggdrasil-service-type
-               (yggdrasil-configuration
-                 (config-file
-                  "/home/mrh/.config/yggdrasil/yggdrasil-private.conf")
-                 (json-config
-                  '((peers . #("tcp://ygg-us-ny.nadeko.net:44441"
-                               "tls://ygg.jjolly.dev:3443"))))))
-
-      (service wireguard-service-type
-               (wireguard-host-config
-                (list (wireguard-host-peer "sleep" 2 %sleep-wireguard-key)
-                      (wireguard-host-peer "phone" 3 %phone-wireguard-key)
-                      (wireguard-host-peer "vps" 4 %vps-wireguard-key))))
-
-      (service syncthing-service-type
-               (syncthing-configuration
-                 (user "mrh")
-                 (config-file
-                  (syncthing-config-file
-                    (gui-address "[::1]:8384")
-                    (gui-user "wumpus")
-                    (gui-password %syncthing-password)
-                    (folders
-                     (let ((sleep (syncthing-device
-                                    (name "sleep")
-                                    (id %sleep-syncthing-id)))
-                           (phone (syncthing-device
-                                    (name "phone")
-                                    (id %phone-syncthing-id))))
-                       (list (syncthing-folder
-                               (id "default")
-                               (label "default folder")
-                               (path "~/sync")
-                               (devices (list sleep phone))))))))))
-
-      (service nfs-service-type
-               (nfs-configuration
-                 (exports
-                  '(("/mnt/wd"
-                     "sleep(rw,sync,insecure,no_root_squash,no_subtree_check)")))))
-
-      ;; required for oci-service-type
-      (service containerd-service-type)
-      (service docker-service-type)
-
-      (simple-service
-       'oci-provisioning
-       oci-service-type
-       (oci-extension
-        (containers
-         (let ((oci-uid (get-line (open-input-pipe "id oci-container -u")))
-               (oci-gid (get-line (open-input-pipe "id oci-container -g"))))
-           (list (oci-container-configuration
-                   (image "linuxserver/sabnzbd")
-                   (provision "sabnzbd")
-                   (network "host")
-                   (ports '("[::1]:8081:8081"))
-                   (environment `(("PUID" . ,oci-uid)
-                                  ("PGID" . ,oci-gid)
-                                  ("TZ" . "Etc/UTC")))
-                   (volumes '(("/home/mrh/.config/sabnzbd" . "/config")
-                              ("/mnt/wd/media" . "/media"))))
-
-                 (oci-container-configuration
-                   (image "jellyfin/jellyfin")
-                   (provision "jellyfin")
-                   (network "host")
-                   (ports '("[::1]:8096:8096"))
-                   (environment `(("PUID" . ,oci-uid)
-                                  ("PGID" . ,oci-gid)))
-                   (volumes '(("jellyfin-config" . "/config")
-                              ("jellyfin-cache" . "/cache")
-                              ("/mnt/wd/media" . "/media")))))))))
-
-      %nginx-service
-
-      (service i2pd-service-type
-               (i2pd-configuration
-                (user "mrh")
-                (conf "/home/mrh/.config/i2pd/i2pd.conf")
-                (datadir "/home/mrh/.config/i2pd")))
-
-      (modify-services %base-services
-        (sysctl-service-type
-         config => (sysctl-configuration
-                     (settings
-                      (append '(("net.ipv6.conf.all.forwarding" . "1")
-                                ("net.ipv4.ip_forward" . "1"))
-                              %default-sysctl-settings))))
-
-        (guix-service-type
-         config => (guix-configuration
-                     (inherit config)
-                     (authorized-keys
-                      (cons*
-                       (local-file (format #f "~a/nonguix.pub" %guix-dots-dir))
-                       %default-authorized-guix-keys))
-                     (substitute-urls
-                      (cons* "https://substitutes.nonguix.org"
-                             %default-substitute-urls)))))))
-
     (bootloader
       (bootloader-configuration
         (bootloader grub-efi-bootloader)
@@ -209,6 +66,168 @@
               (device
                (uuid "5781ea1d-72c6-4dd7-9af0-9442a0502fc4" 'ext4))
               (type "ext4"))
-            %base-file-systems))))
+            %base-file-systems))
+
+    (users (cons (user-account
+                   (name %username)
+                   (group "users")
+                   (supplementary-groups '("wheel"
+                                           "docker"
+                                           "netdev"
+                                           "audio"
+                                           "video"
+                                           "input"
+                                           "lp"))
+                   (home-directory %user-home))
+                 %base-user-accounts))
+
+    (packages (cons* btop
+                     cryptsetup
+                     curl
+                     git
+                     (list isc-bind "utils")
+                     openssl
+                     rsync
+                     %base-packages))
+
+    (services
+     (cons*
+      (service elogind-service-type
+               (elogind-configuration
+                 (handle-lid-switch 'ignore)
+                 (handle-lid-switch-docked 'ignore)
+                 (handle-lid-switch-external-power 'ignore)))
+
+      %nftables-service
+      %static-networking-service
+      %wpa-supplicant-service
+      %unbound-service
+
+      (service
+       ntp-service-type)
+
+      (service
+       openssh-service-type
+       (openssh-configuration
+         (password-authentication? #f)))
+
+      (service
+       wireguard-service-type
+       (wireguard-configuration
+         (addresses
+          (list (format #f "~a::1" %ipv6-wireguard-prefix)
+                (format #f "~a.1" %ipv4-wireguard-prefix)))
+         (port %wireguard-port)
+         (peers
+          (list (wireguard-peer
+                  (name "vps")
+                  (endpoint (format #f "[~a]:~a"
+                                    %ipv6-gua-vps %wireguard-port))
+                  (public-key %vps-wireguard-key)
+                  (allowed-ips
+                   (list (format #f "~a::/64" %ipv6-wireguard-prefix)
+                         (format #f "~a.0/24" %ipv4-wireguard-prefix))))))))
+
+      (service
+       yggdrasil-service-type
+       (yggdrasil-configuration
+         (config-file
+          (format #f "~a/.config/yggdrasil/yggdrasil-private.conf" %user-home))
+         (json-config
+          '((peers . #("tcp://ygg-us-ny.nadeko.net:44441"
+                       "tls://ygg.jjolly.dev:3443"))))))
+
+      (service
+       syncthing-service-type
+       (syncthing-configuration
+         (user %username)
+         (config-file
+          (syncthing-config-file
+            (gui-address "[::1]:8384")
+            (gui-user "wumpus")
+            (gui-password %syncthing-password)
+            (folders
+             (let ((sleep (syncthing-device
+                            (name "sleep")
+                            (id %sleep-syncthing-id)))
+                   (lamb (syncthing-device
+                           (name "lamb")
+                           (id %lamb-syncthing-id))))
+               (list (syncthing-folder
+                       (id "default")
+                       (label "default folder")
+                       (path "~/sync")
+                       (devices (list sleep lamb))))))))))
+
+      (service
+       nfs-service-type
+       (nfs-configuration
+         (exports '(("/mnt/wd"
+                     "sleep(rw,sync,insecure,no_root_squash,no_subtree_check)")))))
+
+      ;; required for oci-service-type
+      (service
+       containerd-service-type)
+      (service
+       docker-service-type)
+
+      (simple-service
+       'oci-provisioning
+       oci-service-type
+       (oci-extension
+        (containers
+         (let ((oci-uid (get-line (open-input-pipe "id oci-container -u")))
+               (oci-gid (get-line (open-input-pipe "id oci-container -g"))))
+           (list (oci-container-configuration
+                   (image "linuxserver/sabnzbd")
+                   (provision "sabnzbd")
+                   (network "host")
+                   (ports '("[::1]:8081:8081"))
+                   (environment `(("PUID" . ,oci-uid)
+                                  ("PGID" . ,oci-gid)
+                                  ("TZ" . "Etc/UTC")))
+                   (volumes
+                    `((,(format #f "~a/.config/sabnzbd" %user-home) . "/config")
+                      ("/mnt/wd/media" . "/media"))))
+
+                 (oci-container-configuration
+                   (image "jellyfin/jellyfin")
+                   (provision "jellyfin")
+                   (network "host")
+                   (ports '("[::1]:8096:8096"
+                            "[::]:7359:7359"))
+                   (environment `(("PUID" . ,oci-uid)
+                                  ("PGID" . ,oci-gid)))
+                   (volumes '(("jellyfin-config" . "/config")
+                              ("jellyfin-cache" . "/cache")
+                              ("/mnt/wd/media" . "/media")))))))))
+
+      %nginx-service
+
+      (service
+       i2pd-service-type
+       (i2pd-configuration
+        (user %username)
+        (conf (format #f "~a/.config/i2pd/i2pd.conf" %user-home))
+        (datadir (format #f "~a/.config/i2pd" %user-home))))
+
+      (modify-services %base-services
+        (sysctl-service-type
+         config => (sysctl-configuration
+                     (settings
+                      (append '(("net.ipv6.conf.all.forwarding" . "1")
+                                ("net.ipv4.ip_forward" . "1"))
+                              %default-sysctl-settings))))
+
+        (guix-service-type
+         config => (guix-configuration
+                     (inherit config)
+                     (authorized-keys
+                      (cons* (local-file
+                              (format #f "~a/nonguix.pub" %guix-dots-dir))
+                             %default-authorized-guix-keys))
+                     (substitute-urls
+                      (cons* "https://substitutes.nonguix.org"
+                             %default-substitute-urls)))))))))
 
 %om-operating-system

@@ -51,14 +51,6 @@
 	}
 }
 
-(tailscale) {
-	@tailscale client_ip 100.64.0.0/10 fd7a:115c:a1e0::/48
-	handle @tailscale {
-		{block}
-	}
-}
-
-
 (block_bots) {
 	import $$share/ai-robots-txt/Caddyfile$$
 	handle @aibots {
@@ -81,11 +73,24 @@
 	}
 }
 
+(tailscale) {
+	@tailscale client_ip 100.64.0.0/10 fd7a:115c:a1e0::/48
+	handle @tailscale {
+		{block}
+	}
+}
+
 
-files.boiledscript.com {
-	import block_bots
-	root * /var/lib/webpublic/files
-	file_server browse
+# URSpace
+
+# Blog
+ultrarare.space {
+	root * /var/lib/webpublic/ultrarare.space
+	handle_errors {
+		rewrite * /{err.status_code}.html
+		file_server
+	}
+	file_server
 }
 
 # Forgejo
@@ -95,13 +100,54 @@ git.urspace.moe {
 	}
 }
 
+# Grafana
+dash.urspace.moe {
+	import tailscale {
+		reverse_proxy localhost:13064
+	}
+}
+
+# Loki
+logs.boiledscript.com {
+	import block_bots
+	import /run/secrets/caddy/loki
+	reverse_proxy localhost:50968
+}
+
+# Mimir
+metrics.boiledscript.com {
+	import block_bots
+	import /run/secrets/caddy/mimir
+	reverse_proxy localhost:49951
+}
+
+# Miniflux
+reader.boiledscript.com {
+	import block_bots
+	reverse_proxy localhost:51787
+}
+
 # Misskey
 boiledscript.com {
 	import block_bots
 	reverse_proxy localhost:54493
 }
 
+# Vaultwarden
+vault.boiledscript.com {
+	import block_bots
+	reverse_proxy localhost:23263
+}
+
+files.boiledscript.com {
+	import block_bots
+	root * /var/lib/webpublic/files
+	file_server browse
+}
+
 
+# Guix Moe
+
 # Cuirass
 ci.guix.moe {
 	import block_bots
@@ -127,6 +173,7 @@ ci.guix.moe {
 	reverse_proxy localhost:17732
 }
 
+# Mirrors
 cache-cdn.guix.moe {
 	import block_bots
 	import logging cache-cdn.guix.moe
@@ -145,9 +192,9 @@ cache-cdn.guix.moe {
 	}
 }
 
-cache-de.guix.moe {
+cache-fi.guix.moe, cache-de.guix.moe {
 	import block_bots
-	import logging cache-de.guix.moe
+	import logging cache-fi.guix.moe
 
 	handle /*.narinfo {
 		root * /var/cache/guix-moe/narinfo
@@ -166,29 +213,7 @@ cache-de.guix.moe {
 }
 
 
-# Grafana
-dash.urspace.moe {
-	import tailscale {
-		reverse_proxy localhost:13064
-	}
-}
-
-# Loki
-logs.boiledscript.com {
-	import block_bots
-	import /run/secrets/caddy/loki
-	reverse_proxy localhost:50968
-}
-
-# Mimir
-metrics.boiledscript.com {
-	import block_bots
-	import /run/secrets/caddy/mimir
-	reverse_proxy localhost:49951
-}
-
-
-:80, :443 {
+:80, :443, mail.boiledscript.com {
 	respond /* "Access denied" 403 {
 		close
 	}

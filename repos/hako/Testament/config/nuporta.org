@@ -2,17 +2,17 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-License-Identifier: CC-BY-SA-4.0
 
-#+TITLE: gokuraku
+#+TITLE: nuporta
 #+PROPERTY: header-args :noweb-prefix no
 
 * Guix System
-#+begin_src scheme :tangle gokuraku.scm :noweb yes
+#+begin_src scheme :tangle nuporta.scm :noweb yes
   (load "../common.scm")
   (use-modules (rosenthal) <<module>>)
 
   (define %os
     (operating-system
-      (host-name "gokuraku")
+      (host-name "nuporta")
       (timezone "Etc/GMT-8")
       (bootloader
         (bootloader-configuration
@@ -27,7 +27,7 @@
       (file-systems (append <<file-systems>> %base-file-systems))
       (swap-devices
        (list (swap-space
-               (target (uuid "0316f295-36d1-4948-8c95-c1a8d8a8ab8b")))))
+               (target (file-system-label "swap")))))
       (users (cons* <<user>> %base-user-accounts))
       (packages
        (append (specs->pkgs+out
@@ -60,6 +60,7 @@
 #+begin_src scheme :noweb-ref module
   (sops secrets)
   (gnu services linux)
+  (gnu services rsync)
   (gnu services ssh)
   (gnu services sysctl)
   (sops services sops)
@@ -81,13 +82,39 @@
 #+end_src
 
 ** File Systems
+
+| ZFS Dataset                   | Mount Point                 | Options                    | com.sun:auto-snapshot |
+|-------------------------------+-----------------------------+----------------------------+-----------------------|
+| Lycoris                       | /mnt/Lycoris                | acltype=posix              |                       |
+| Lycoris/Root                  | legacy (/)                  |                            |                       |
+| Lycoris/Config                | legacy (/etc)               |                            | true                  |
+| Lycoris/Store                 | legacy (/gnu)               | atime=off                  |                       |
+| Lycoris/Cache                 | /var/cache                  |                            |                       |
+| Lycoris/Cache/GuixMoe         | /var/cache/guix-moe         |                            | true                  |
+| Lycoris/Cache/GuixMoe/Narinfo | /var/cache/guix-moe/narinfo | recordsize=8K              | true                  |
+| Lycoris/Cache/GuixPublish     | /var/cache/guix/publish     | recordsize=8K              | true                  |
+| Lycoris/Cache/GuixPublish/Nar | /var/cache/guix/publish/nar | compress=off,recordsize=1M | true                  |
+| Lycoris/Data                  | /var/lib                    |                            |                       |
+| Lycoris/Data/Forgejo          | /var/lib/forgejo            |                            | true                  |
+| Lycoris/Data/Grafana          | /var/lib/grafana            |                            | true                  |
+| Lycoris/Data/Loki             | /var/lib/loki               |                            | true                  |
+| Lycoris/Data/Mail             | /var/lib/docker-mailserver  |                            | true                  |
+| Lycoris/Data/Mimir            | /var/lib/mimir              |                            | true                  |
+| Lycoris/Data/PostgreSQL       | /var/lib/postgresql         | recordsize=32K             | true                  |
+| Lycoris/Data/Redis            | /var/lib/redis              |                            | true                  |
+| Lycoris/Data/SOPS             | /var/lib/sops               |                            | true                  |
+| Lycoris/Data/Tailscale        | /var/lib/tailscale          |                            | true                  |
+| Lycoris/Data/WebPublic        | /var/lib/webpublic          |                            | true                  |
+| Lycoris/Data/Vaultwarden      | /var/lib/vaultwarden        |                            | true                  |
+|-------------------------------+-----------------------------+----------------------------+-----------------------|
+
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
           (device "zfs:Lycoris/Root")
           (mount-point "/")
           (type "zfs"))
         (file-system
-          (device (uuid "C633-92CC" 'fat))
+          (device (file-system-label "boot"))
           (mount-point "/efi")
           (type "vfat"))
         (file-system
@@ -123,7 +150,7 @@
                          (setenv "PATH" "/run/current-system/profile/bin:/run/current-system/profile/sbin")
                          (invoke "sh" "-c" "echo 'CHECKPOINT;' | sudo -u postgres psql -X")
                          (invoke #$(file-append (spec->pkg "zfs-auto-snapshot") "/sbin/zfs-auto-snapshot")
-                                 "--skip-scrub" "--keep=72" "--label=hourly" "//")))))
+                                 "--default-exclude" "--skip-scrub" "--keep=72" "--label=hourly" "//")))))
             #:requirement '(user-processes))))
 #+end_src
 
@@ -139,7 +166,7 @@
                          (setenv "PATH" "/run/current-system/profile/bin:/run/current-system/profile/sbin")
                          (invoke "sh" "-c" "echo 'CHECKPOINT;' | sudo -u postgres psql -X")
                          (invoke #$(file-append (spec->pkg "zfs-auto-snapshot") "/sbin/zfs-auto-snapshot")
-                                 "--skip-scrub" "--keep=31" "--label=daily" "//")))))
+                                 "--default-exclude" "--skip-scrub" "--keep=31" "--label=daily" "//")))))
             #:requirement '(user-processes))))
 #+end_src
 
@@ -222,41 +249,34 @@ rsync://cache.boiledscript.com
       (secrets
        (list (sops-secret
                (key '("cloudflare"))
-               (file gokuraku.yaml)
+               (file nuporta.yaml)
                (user "caddy"))
              (sops-secret
+               (key '("docker-mailserver" "ecprivkey.pem"))
+               (file nuporta.yaml))
+             (sops-secret
+               (key '("docker-mailserver" "ecpubkey.pem"))
+               (file nuporta.yaml))
+             (sops-secret
                (key '("rclone"))
-               (file gokuraku.yaml))
+               (file nuporta.yaml))
 
              (sops-secret
                (key '("caddy" "cuirass" "admin"))
-               (file gokuraku.yaml)
+               (file nuporta.yaml)
                (group "caddy"))
              (sops-secret
                (key '("caddy" "cuirass" "forgejo"))
-               (file gokuraku.yaml)
+               (file nuporta.yaml)
                (group "caddy"))
              (sops-secret
                (key '("caddy" "loki"))
-               (file gokuraku.yaml)
+               (file nuporta.yaml)
                (group "caddy"))
              (sops-secret
                (key '("caddy" "mimir"))
-               (file gokuraku.yaml)
-               (group "caddy"))
-
-             (sops-secret
-               (key '("postgres" "forgejo"))
-               (file gokuraku.yaml)
-               (group "postgres"))
-             (sops-secret
-               (key '("postgres" "grafana"))
-               (file gokuraku.yaml)
-               (group "postgres"))
-             (sops-secret
-               (key '("postgres" "misskey"))
-               (file gokuraku.yaml)
-               (group "postgres"))))))
+               (file nuporta.yaml)
+               (group "caddy"))))))
 #+end_src
 
 * Networking & SSH
@@ -289,7 +309,7 @@ rsync://cache.boiledscript.com
 #+begin_src scheme :noweb-ref service
   (service nftables-service-type
     (nftables-configuration
-      (ruleset (local-file (testament-plain "gokuraku.nftables")))))
+      (ruleset (local-file (testament-plain "nuporta.nftables")))))
 #+end_src
 
 ** tailscale
@@ -342,9 +362,7 @@ rsync://cache.boiledscript.com
 
 ** docker
 #+begin_src scheme :noweb-ref service
-  (service docker-service-type
-    (docker-configuration
-      (enable-iptables? #f)))
+  (service docker-service-type)
 #+end_src
 
 * Databases
@@ -361,23 +379,23 @@ rsync://cache.boiledscript.com
        (postgresql-config-file
          (log-destination "stderr")
          (extra-config
-          '(("max_connections" 500)
-            ("shared_buffers" "16GB")
-            ("effective_cache_size" "48GB")
+          '(("max_connections" 200)
+            ("shared_buffers" "8GB")
+            ("effective_cache_size" "24GB")
             ("maintenance_work_mem" "2GB")
             ("checkpoint_completion_target" 0.9)
             ("wal_buffers" "16MB")
             ("default_statistics_target" 100)
             ("random_page_cost" 4)
             ("effective_io_concurrency" 2)
-            ("work_mem" "80659kB")
+            ("work_mem" "41120kB")
             ("huge_pages" "try")
             ("min_wal_size" "1GB")
             ("max_wal_size" "4GB")
-            ("max_worker_processes" 8)
-            ("max_parallel_workers_per_gather" 4)
-            ("max_parallel_workers" 8)
-            ("max_parallel_maintenance_workers" 4)
+            ("max_worker_processes" 4)
+            ("max_parallel_workers_per_gather" 2)
+            ("max_parallel_workers" 4)
+            ("max_parallel_maintenance_workers" 2)
             ;; ZFS
             ("full_page_writes" #f)
             ;; Logging
@@ -392,10 +410,7 @@ rsync://cache.boiledscript.com
 
 * Continuous Integration
 #+begin_src scheme :noweb-ref module
-  (guix packages)
-  (guix git-download)
   (gnu services cuirass)
-  (gnu services rsync)
 #+end_src
 
 ** cuirass
@@ -426,9 +441,9 @@ Remember to open TCP port 5555 and 5556.
   (service cuirass-remote-worker-service-type
     (cuirass-remote-worker-configuration
       (publish-port 5558)
-      (workers 2)
+      (workers 4)
       (systems '("x86_64-linux" "i686-linux" "aarch64-linux"))
-      (server "100.97.195.93:5555")       ;gokuraku (Tailscale)
+      (server "100.97.195.93:5555")       ;nuporta (Tailscale)
       (substitute-urls
        '("https://cache-cdn.guix.moe"
          "https://ci.guix.moe"
@@ -600,6 +615,8 @@ Remember to open TCP port 5555 and 5556.
 
 * Web Servers & Services
 #+begin_src scheme :noweb-ref module
+  (gnu services web)
+  (rosenthal services mail)
   (rosenthal services web)
 #+end_src
 
@@ -613,10 +630,61 @@ Remember to open TCP port 5555 and 5556.
 
 #+name: caddy-config
 #+begin_src scheme
-  (computed-substitution-with-inputs "gokuraku.caddyfile"
-    (local-file (testament-plain "gokuraku.caddyfile"))
+  (computed-substitution-with-inputs "nuporta.caddyfile"
+    (local-file (testament-plain "nuporta.caddyfile"))
     (cons (testament-plain)
           (specs->pkgs "ai-robots-txt")))
+#+end_src
+
+** docker-mailserver
+#+begin_src scheme :noweb-ref service
+  (service docker-mailserver-service-type
+    (docker-mailserver-configuration
+      (shepherd-requirement '(redis))
+      (options
+       '(("ENABLE_AMAVIS" . "0")
+         ("ENABLE_FAIL2BAN" . "1")
+         ("ENABLE_MTA_STS" . "1")
+         ("ENABLE_OPENDKIM" . "0")
+         ("ENABLE_OPENDMARC" . "0")
+         ("ENABLE_POLICYD_SPF" . "0")
+         ("ENABLE_RSPAMD" . "1")
+         ("ENABLE_RSPAMD_REDIS" . "0")
+         ("ENABLE_SPAMASSASSIN" . "0")
+         ("NETWORK_INTERFACE" . "enp35s0")
+         ("OVERRIDE_HOSTNAME" . "mail.boiledscript.com")
+         ("POSTMASTER_ADDRESS" . "admin@boiledscript.com")
+         ("RSPAMD_LEARN" . "1")
+         ("SPOOF_PROTECTION" . "1")
+         ("SSL_TYPE" . "letsencrypt")))
+      (extra-arguments
+       `("--cap-add=NET_ADMIN"      ;For fail2ban.
+
+         "--volume"
+         ,(string-append
+           "/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/mail.boiledscript.com/mail.boiledscript.com.crt"
+           ":/etc/letsencrypt/live/mail.boiledscript.com/fullchain.pem")
+         "--volume"
+         ,(string-append
+           "/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/mail.boiledscript.com/mail.boiledscript.com.key"
+           ":/etc/letsencrypt/live/mail.boiledscript.com/privkey.pem")
+
+         "--volume"
+         ,(file-append
+           (plain-file "rspamd-redis.conf" "\
+  servers = \"127.0.0.1:6379\";
+  expand_keys = true;")
+           ":/etc/rspamd/local.d/redis.conf:ro")
+         "--volume"
+         ,(file-append
+           (local-file (testament-plain "rspamd-dkim-signing.conf"))
+           ":/etc/rspamd/override.d/dkim_signing.conf:ro")
+
+         "--volume"
+         ,(file-append
+           (local-file (testament-plain "mail-crypt.conf"))
+           ":/etc/dovecot/conf.d/10-custom.conf:ro")
+         "--volume" "/run/secrets/docker-mailserver:/certs:ro"))))
 #+end_src
 
 ** forgejo
@@ -630,7 +698,15 @@ Remember to open TCP port 5555 and 5556.
           ("RUN_USER" . "forgejo")
           ("WORK_PATH" . "/var/lib/forgejo")
           ("RUN_MODE" . "prod"))
-         ,@(call-with-input-string (sops-str gokuraku.yaml '("forgejo")) read)
+         ,@(call-with-input-string (sops-str nuporta.yaml '("forgejo")) read)
+         ("database"
+          ("DB_TYPE" . "postgres")
+          ("HOST" . "127.0.0.1:5432")
+          ("NAME" . "forgejo")
+          ("USER" . "forgejo")
+          ("PASSWD" . "placeholder")
+          ("SSL_MODE" . "disable")
+          ("LOG_SQL" . "false"))
          ("ui"
           ("AMBIGUOUS_UNICODE_DETECTION" . "false"))
          ("repository"
@@ -686,7 +762,7 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
           ("port" . 5432)
           ("db" . "misskey")
           ("user" . "misskey")
-          ("pass" . ,(sops-str gokuraku.yaml '("postgres" "misskey"))))
+          ("pass" . "placeholder"))
          ("dbReplications" . #f)
          ("redis"
           ("host" . "localhost")
@@ -694,10 +770,31 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
          ("fulltextSearch"
           ("provider" . "sqlLike"))
          ("id" . "aidx")
-         ("clusterLimit" . 4)
+         ("clusterLimit" . 1)
          ("outgoingAddressFamily" . "dual")
          ("proxyRemoteFiles" . #t)
          ("signToActivityPubGet" . #t)))))
+#+end_src
+
+** miniflux
+#+begin_src scheme :noweb-ref service
+  (service miniflux-service-type
+    (miniflux-configuration
+      (listen-address "127.0.0.1:51787")
+      (base-url "https://reader.boiledscript.com/")
+      (extra-settings
+       '("CLEANUP_ARCHIVE_READ_DAYS=-1"
+         "CLEANUP_ARCHIVE_UNREAD_DAYS=-1"))))
+#+end_src
+
+** vaultwarden
+#+begin_src scheme :noweb-ref service
+  (service vaultwarden-service-type
+    (vaultwarden-configuration
+      (postgresql-password-file "")
+      (database-url "postgresql://vaultwarden:placeholder@localhost/vaultwarden")
+      (port 23263)
+      (extra-options '(("ROCKET_ADDRESS" . "127.0.0.1")))))
 #+end_src
 
 * Monitoring
@@ -709,7 +806,7 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
 #+begin_src scheme :noweb-ref service
   (service grafana-service-type
     (grafana-configuration
-      (postgresql-password-file "/run/secrets/postgres/grafana")
+      (postgresql-password-file "")
       (config
        `(("paths"
           ("data" . "/var/lib/grafana")
@@ -722,7 +819,7 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
           ("type" . "postgres")
           ("host" . "127.0.0.1:5432")
           ("user" . "grafana")
-          ("password" . ,(sops-str gokuraku.yaml '("postgres" "grafana")))
+          ("password" . "placeholder")
           ("ssl_mode" . "disable"))))))
 #+end_src
 
@@ -737,7 +834,7 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
           ("http_listen_port" . 49951)
           ("grpc_listen_port" . 32773)
           ("log_level" . "error"))
-         ,@(call-with-input-string (sops-str gokuraku.yaml '("mimir")) read)
+         ,@(call-with-input-string (sops-str nuporta.yaml '("mimir")) read)
          ("ingester"
           ("ring"
            ("replication_factor" . 1)))
@@ -763,7 +860,7 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
           ("grpc_listen_port" . 11365))
          ("common"
           ("path_prefix" . "/var/lib/loki")
-          ,@(call-with-input-string (sops-str gokuraku.yaml '("loki")) read)
+          ,@(call-with-input-string (sops-str nuporta.yaml '("loki")) read)
           ("ring"
            ("kvstore"
             ("store" . "inmemory")))
@@ -788,7 +885,7 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
   (service alloy-service-type
     (alloy-configuration
       (config
-       (plain-file "gokuraku.alloy"
+       (plain-file "nuporta.alloy"
          (string-join
           (list (sops-str dorphine.yaml '("alloy"))
                 (file-content (testament-plain "alloy/node-exporter.alloy"))

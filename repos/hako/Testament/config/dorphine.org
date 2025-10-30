@@ -164,6 +164,21 @@
 #+end_src
 
 ** File Systems
+
+| ZFS Dataset                | Mount Point             | Options        | com.sun:auto-snapshot |
+|----------------------------+-------------------------+----------------+-----------------------|
+| Mentha                     | /mnt/Mentha             | acltype=posix  |                       |
+| Mentha/Root                | legacy (/)              |                |                       |
+| Mentha/Config              | legacy (/etc)           |                | true                  |
+| Mentha/Home                | legacy (/home)          |                | true                  |
+| Mentha/Store               | legacy (/gnu)           | atime=off      |                       |
+| Mentha/Data                | /var/lib                |                |                       |
+| Mentha/Data/Bluetooth      | /var/lib/bluetooth      |                | true                  |
+| Mentha/Data/SOPS           | /var/lib/sops           |                | true                  |
+| Mentha/Data/Tailscale      | /var/lib/tailscale      |                | true                  |
+| Mentha/Data/qBittorrent    | /var/lib/qbittorrent    | recordsize=16K |                       |
+|----------------------------+-------------------------+----------------+-----------------------|
+
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
           (device "zfs:Mentha/Root")
@@ -209,7 +224,7 @@
                          (use-modules (guix build utils))
                          (setenv "PATH" "/run/current-system/profile/bin:/run/current-system/profile/sbin")
                          (invoke #$(file-append (spec->pkg "zfs-auto-snapshot") "/sbin/zfs-auto-snapshot")
-                                 "--skip-scrub" "--keep=72" "--label=hourly" "//")))))
+                                 "--default-exclude" "--skip-scrub" "--keep=72" "--label=hourly" "//")))))
             #:requirement '(user-processes))))
 #+end_src
 
@@ -224,7 +239,7 @@
                          (use-modules (guix build utils))
                          (setenv "PATH" "/run/current-system/profile/bin:/run/current-system/profile/sbin")
                          (invoke #$(file-append (spec->pkg "zfs-auto-snapshot") "/sbin/zfs-auto-snapshot")
-                                 "--skip-scrub" "--keep=31" "--label=daily" "//")))))
+                                 "--default-exclude" "--skip-scrub" "--keep=31" "--label=daily" "//")))))
             #:requirement '(user-processes))))
 #+end_src
 
@@ -518,7 +533,7 @@ Open TCP port 5558 and connect to server IPv4 address.
       (publish-port 5558)
       (workers 2)
       (systems '("x86_64-linux" "i686-linux"))
-      (server "100.97.195.93:5555")       ;gokuraku (Tailscale)
+      (server "100.97.195.93:5555")       ;nuporta (Tailscale)
       (substitute-urls
        '("https://cache-cdn.guix.moe"
          "https://ci.guix.moe"

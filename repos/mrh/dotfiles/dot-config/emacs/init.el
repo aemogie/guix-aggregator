@@ -521,6 +521,18 @@ Helpful advice for face changing functions."
   :custom
   (eww-default-download-directory "~/downloads"))
 
+(use-package message
+  :config
+  (defun my/disable-auto-fill-mode ()
+    (auto-fill-mode -1))
+
+  (add-hook 'message-send-hook 'mml-secure-message-sign-pgpmime)
+  (add-hook 'message-mode-hook 'my/disable-auto-fill-mode))
+
+(use-package mml-sec
+  :custom
+  (mml-secure-openpgp-sign-with-sender t))
+
 (use-package mail-source
   :custom
   (mail-source-directory (expand-file-name "mail" user-emacs-directory)))

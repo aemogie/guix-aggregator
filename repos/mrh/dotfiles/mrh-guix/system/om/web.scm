@@ -1,6 +1,5 @@
 (define-module (mrh-guix system om web)
   #:use-module (mrh-guix personal)
-  #:use-module (mrh-guix vpn)
   #:use-module (gnu services)
   #:use-module (gnu services web))
 

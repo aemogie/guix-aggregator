@@ -4,7 +4,6 @@
 #+TITLE: Testament - Personal dot(?)files
 
 This repository contains my dotfiles and Guix System literate configurations.
-Part of them are also used for the [[https://ultrarare.space/en/posts/guix-build-farm/][public Guix build farm and mirrors]] I run.
 
 * Structure
 + [[file:config][config]] :: Guix System configurations.
@@ -22,22 +21,20 @@ Guix channels in use:
 
 * Systems
 ** [[file:config/dorphine.org][dorphine]] (x86_64-linux, UEFI, ZFS, NVIDIA) | [[file:files/deploy/dorphine.scm][deploy]]
-#+html: <img src="https://s3.boiledscript.com/misskey/29eb35e9-11fb-46b6-8b64-594f521b4309.webp">
-#+html: <img src="https://s3.boiledscript.com/misskey/0d658beb-e5b2-418b-a7b6-e2882c906b61.webp">
+#+html: <img src="https://s3.boiledscript.com/misskey/de2120e3-0e92-4e0d-8816-3c8b5b1cd248.webp">
+#+html: <img src="https://s3.boiledscript.com/misskey/8a5bbc67-5a29-49d1-8223-da2543a3dd66.webp">
 
 ** [[file:config/chapra.org][chapra]] (x86_64-linux, UEFI, ZFS) | [[file:files/deploy/chapra.scm][deploy]]
 
-** [[file:config/gokuraku.org][gokuraku]] (x86_64-linux, UEFI, ZFS) | [[file:files/deploy/gokuraku.scm][deploy]]
+** [[file:config/nuporta.org][nuporta]] (x86_64-linux, UEFI, ZFS) | [[file:files/deploy/nuporta.scm][deploy]]
 
 ** [[file:config/ignamma.org][ignamma]] (x86_64-linux, UEFI, XFS) | [[file:files/deploy/ignamma.scm][deploy]]
 
-** [[file:config/rakuen.org][rakuen]] (aarch64-linux, UEFI, XFS) | [[file:files/deploy/rakuen.scm][deploy]]
-
 ** [[file:config/worker.org][worker]] | [[file:files/deploy/worker.scm][deploy]]
-Temporary build workers for Guix Moe CI.
+Build workers for Guix Moe CI.
 
 ** [[file:config/mirror.org][mirror]] | [[file:files/deploy/mirror.scm][deploy]]
-Mirrors for Guix Moe CI substitutes.
+Substitute mirrors for Guix Moe CI.
 
 * LiveCDs
 I provide two LiveCDs for the [[https://guix.gnu.org/manual/devel/en/html_node/Manual-Installation.html][manual installation]] of Guix System.  Pre-built

@@ -990,7 +990,22 @@ See [[*Publish][Org Publish]] section and [[https://codeberg.org/mrh/dotfiles/sr
 #+end_src
 
 * Messaging
-** Mail
+
+#+begin_src emacs-lisp
+(use-package message
+  :config
+  (defun my/disable-auto-fill-mode ()
+    (auto-fill-mode -1))
+
+  (add-hook 'message-send-hook 'mml-secure-message-sign-pgpmime)
+  (add-hook 'message-mode-hook 'my/disable-auto-fill-mode))
+
+(use-package mml-sec
+  :custom
+  (mml-secure-openpgp-sign-with-sender t))
+#+end_src
+
+** Email
 
 #+begin_src emacs-lisp
 (use-package mail-source

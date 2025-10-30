@@ -1,13 +1,15 @@
 (define-module (mrh-guix system om networking)
   #:use-module (mrh-guix personal)
   #:use-module (mrh-guix services)
-  #:use-module (mrh-guix vpn)
   #:use-module (guix gexp)
   #:use-module (gnu services)
   #:use-module (gnu services base)
   #:use-module (gnu services containers)
   #:use-module (gnu services dns)
   #:use-module (gnu services networking))
+
+(define ipv6-wireguard (format #f "~a::1" %ipv6-wireguard-prefix))
+(define ipv4-wireguard (format #f "~a.1" %ipv4-wireguard-prefix))
 
 (define-public %nftables-service
   (service nftables-service-type
@@ -19,21 +21,21 @@
            (list (static-networking
                    (addresses
                     (list (network-address
-                            (device %wlan-interface)
+                            (device %om-wlan-interface)
                             (value (format #f "~a/64" %ipv6-ula-om)))
                           (network-address
-                            (device %wlan-interface)
+                            (device %om-wlan-interface)
                             (value (format #f "~a/64" %ipv6-gua-om)))
                           (network-address
-                            (device %wlan-interface)
+                            (device %om-wlan-interface)
                             (value (format #f "~a/24" %ipv4-lan-om)))))
                    (routes
                     (list (network-route
-                            (device %wlan-interface)
+                            (device %om-wlan-interface)
                             (destination "default")
                             (gateway %ipv6-lan-gateway))
                           (network-route
-                            (device %wlan-interface)
+                            (device %om-wlan-interface)
                             (destination "default")
                             (gateway %ipv4-lan-gateway))))
                    (name-servers
@@ -44,13 +46,13 @@
 (define-public %wpa-supplicant-service
   (service wpa-supplicant-service-type
            (wpa-supplicant-configuration
-             (interface %wlan-interface)
+             (interface %om-wlan-interface)
              (config-file (local-file "wpa-supplicant.conf")))))
 
 (define dns-interfaces (list "::1"
                              %ipv6-ula-om
-                             %ipv6-wireguard-host
-                             %ipv4-wireguard-host))
+                             ipv6-wireguard
+                             ipv4-wireguard))
 
 (define dns-servers '("2a07:e340::4@853#base.dns.mullvad.net"
                       "2620:fe::9@853#dns.quad9.net"
@@ -126,20 +128,20 @@ local-data: \"home.~a 86400 IN A ~a\"
                                     %ipv6-ula-sleep
 
                                     %domain-name
-                                    %domain-name %ipv6-wireguard-host
-                                    %domain-name %ipv4-wireguard-host
+                                    %domain-name ipv6-wireguard
+                                    %domain-name ipv4-wireguard
                                     )))))
 
 (define-public %dhcpcd-service
   (service dhcpcd-service-type
            (dhcpcd-configuration
-             (interfaces (list %wlan-interface))
+             (interfaces (list %om-wlan-interface))
              (static
               (list (format #f "ip6_address=~a/64" %ipv6-ula-om)
                     (format #f "domain_name_servers=::1 ~a ~a ~a"
                             %ipv6-ula-om
-                            %ipv6-wireguard-host
-                            %ipv4-wireguard-host))))))
+                            ipv6-wireguard
+                            ipv4-wireguard))))))
 
 (define-public %dnsmasq-service
   (service dnsmasq-service-type
@@ -154,7 +156,7 @@ local-data: \"home.~a 86400 IN A ~a\"
               (list (format #f "/~a/~a::1" %router-domain-name %ipv6-gua-prefix)
                     (format #f "/om/~a" %ipv6-ula-om)
                     (format #f "/sleep/~a" %ipv6-ula-sleep)
-                    (format #f "/home.~a/~a" %domain-name %ipv6-wireguard-host)))
+                    (format #f "/home.~a/~a" %domain-name ipv6-wireguard)))
              (extra-options '("--filterwin2k")))))
 
 (define-public %adguard-config

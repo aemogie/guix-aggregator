@@ -30,8 +30,7 @@ build:  build-dorphine \
 	build-chapra \
 	build-ignamma \
 	\
-	build-gokuraku \
-	build-rakuen
+	build-nuporta
 build-%: config/%.scm
 	@$(GUIX) system build $< $(OPTS)
 
@@ -41,8 +40,7 @@ deploy: deploy-dorphine \
 	deploy-chapra \
 	deploy-ignamma \
 	\
-	deploy-gokuraku \
-	deploy-rakuen \
+	deploy-nuporta \
 	\
 	deploy-mirror \
 	deploy-worker
@@ -55,8 +53,7 @@ run: run-dorphine \
 	run-chapra \
 	run-ignamma \
 	\
-	run-gokuraku \
-	run-rakuen \
+	run-nuporta \
 	\
 	run-mirror \
 	run-worker
