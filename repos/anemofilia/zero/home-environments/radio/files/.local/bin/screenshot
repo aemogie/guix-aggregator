@@ -1,0 +1,22 @@
+#!/bin/sh
+
+save_to_file=$(echo -en 'y\nn' \
+               | fuzzel --dmenu --lines=2 --prompt="Save to file? ")
+
+if [ $save_to_file = "y" ]; then
+    filename="$XDG_PICTURES_DIR/screenshots/$(date +%Y-%m-%d--%H-%M-%S.png)"
+    if [ $# -eq 1 ]; then
+       grim -g "$1" "$filename"
+    else
+       grim "$filename"
+    fi
+    notify-send "Screenshot saved as $filename" -t 1000
+else
+    if [ $# -eq 1 ]; then
+        grim -g "$1" -t png -
+    else
+        grim -t png -
+    fi | wl-copy -t image/png
+    notify-send "Screenshot saved to clipboard" -t 1000
+fi
+

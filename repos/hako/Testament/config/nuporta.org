@@ -18,7 +18,7 @@
         (bootloader-configuration
           (bootloader uefi-uki-removable-bootloader)
           (targets '("/efi"))))
-      (kernel (spec->pkg "linux-libre@6.12"))
+      (kernel linux-libre-lts/dolly)
       (kernel-arguments
        (cons* "kernel.sysrq=0"
               "zswap.enabled=1"
@@ -200,7 +200,7 @@ Administration accounts.
   (simple-service 'extend-guix
       guix-service-type
     (guix-extension
-      (authorized-keys %hako-guix-authorized-keys-head)
+      (authorized-keys %guix-keys)
       (substitute-urls '("https://cache-cdn.guix.moe"))))
 #+end_src
 

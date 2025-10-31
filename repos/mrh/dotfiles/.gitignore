@@ -13,3 +13,4 @@ wpa-supplicant.conf
 i2pd
 sabnzbd
 *.pac
+torrc

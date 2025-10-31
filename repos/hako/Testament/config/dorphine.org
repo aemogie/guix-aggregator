@@ -96,7 +96,7 @@
 
   ((compose (nonguix-transformation-nvidia)
             (rosenthal-transformation-zfs #:boot? #t)
-            (nonguix-transformation-linux #:linux (spec->pkg "linux@6.12")))
+            (nonguix-transformation-linux #:linux linux-lts/dolly))
    %os)
 #+end_src
 
@@ -312,7 +312,7 @@ Administration accounts.
   (simple-service 'extend-guix
       guix-service-type
     (guix-extension
-      (authorized-keys %hako-guix-authorized-keys-lan)
+      (authorized-keys %guix-keys)
       (substitute-urls '("https://cache-cdn.guix.moe"))))
 #+end_src
 
@@ -485,7 +485,7 @@ Generate passwordless ECC key:
 #+begin_src scheme :noweb-ref service
   (service qemu-binfmt-service-type
     (qemu-binfmt-configuration
-      (platforms (lookup-qemu-platforms "aarch64" "powerpc64le" "riscv64"))))
+      (platforms (lookup-qemu-platforms "aarch64"))))
 #+end_src
 
 ** containerd
@@ -532,7 +532,7 @@ Open TCP port 5558 and connect to server IPv4 address.
     (cuirass-remote-worker-configuration
       (publish-port 5558)
       (workers 2)
-      (systems '("x86_64-linux" "i686-linux"))
+      (systems '("x86_64-linux" "i686-linux" "aarch64-linux"))
       (server "100.97.195.93:5555")       ;nuporta (Tailscale)
       (substitute-urls
        '("https://cache-cdn.guix.moe"

@@ -22,7 +22,7 @@
            (grub-theme
              (inherit (grub-theme))
              (resolution #f)))))
-      (kernel (spec->pkg "linux-libre@6.12"))
+      (kernel linux-libre-lts/dolly)
       (kernel-arguments
        (cons* "consoleblank=60"
               "kernel.sysrq=0"
@@ -119,7 +119,7 @@ Administration accounts.
   (simple-service 'extend-guix
       guix-service-type
     (guix-extension
-      (authorized-keys %hako-guix-authorized-keys-lan)
+      (authorized-keys %guix-keys)
       (substitute-urls '("https://cache-cdn.guix.moe"))))
 #+end_src
 

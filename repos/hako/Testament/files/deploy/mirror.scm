@@ -20,7 +20,7 @@
 (list (mirror
        #:mirror-name "cache-hk"
        #:system "x86_64-linux"
-       #:ssh-host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMWzJQ0Os3j0sO2F2QTqjKCAzS99nhaz9K7xeYXMrSL9"
+       #:ssh-host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPfURzADzVsKpcwBAx0VfcOejhde1amjP9zav/ZFIJ0Y"
        #:bios-boot "/dev/vda")
       (mirror
        #:mirror-name "cache-sg"

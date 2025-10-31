@@ -9,78 +9,78 @@
              (ice-9 textual-ports)
              (guix diagnostics)
              (guix i18n)
+             (guix packages)
              (guix store)
              (nonguix transformations)
              (rosenthal)
-             (sops secrets))
+             (sops secrets)
+             (gnu packages linux)
+             (nongnu packages linux))
 
-(define %guix-authorized-key-dorphine
-  (plain-file "dorphine.pub" "
-(public-key
- (ecc
-  (curve Ed25519)
-  (q #A279175682D0DAE3E11268E67E1F3FA47C38D7E509F7725567CF891E248E719F#)))"))
+(define %xdg-data-home
+  (or (getenv "XDG_DATA_HOME")
+      (in-vicinity (getenv "HOME") ".local/share")))
 
-(define %guix-authorized-key-gokuraku
-  (plain-file "gokuraku.pub" "
-(public-key
- (ecc
-  (curve Ed25519)
-  (q #374EC58F5F2EC0412431723AF2D527AD626B049D657B5633AAAEBC694F3E33F9#)))"))
+(define testament-path
+  (getcwd))
 
-(define %guix-authorized-key-nuporta
-  (plain-file "nuporta.pub" "
-(public-key
- (ecc
-  (curve Ed25519)
-  (q #552F670D5005D7EB6ACF05284A1066E52156B51D75DE3EBD3030CD046675D543#)))"))
+(define (testament-plain . name)
+  (let ((plain (in-vicinity testament-path "files/plain")))
+    (match name
+      (()
+       (local-file plain #:recursive? #t))
+      ((file)
+       (or (search-path (list plain) file)
+           (leave (G_ "file '~a' not found.~%") file))))))
 
-(define %guix-authorized-key-bocis
-  (plain-file "bocis.pub" "
-(public-key
- (ecc
-  (curve Ed25519)
-  (q #4048CC570B57B6399A8F561B1EC624C3BE5E1465175AD568AADC3F3DFB1B5A8A#)))"))
+
+(define* (get-sops-secret key #:key file (number? #f))
+  "Return a string (or number if NUMBER? is set to #t) of SOPS secret for KEY
+stored in FILE.  The result will be publicly available in '/gnu/store', YOU ARE
+WARNED."
+  (let* ((file-path
+          (with-store store
+            (run-with-store store
+              (lower-object file))))
+         (cmd
+          (format #f "sops --decrypt --extract '~a' '~a'"
+                  (sanitize-sops-key key)
+                  file-path))
+         (port (open-input-pipe cmd))
+         (secret (get-string-all port)))
+    (close-pipe port)
+    (if number?
+        (string->number secret)
+        secret)))
 
-(define %guix-authorized-key-ignamma
-  (plain-file "ignamma.pub" "
-(public-key
- (ecc
-  (curve Ed25519)
-  (q #6FEEB15C4363F9975EB15C908EC911A4362E486DA642431FA2438C0B1C3D55F5#)))"))
+(define (sops-str file key)
+  (get-sops-secret key #:file file))
 
-(define %guix-authorized-key-workers-hako
-  (plain-file "workers-hako.pub" "
-(public-key
- (ecc
-  (curve Ed25519)
-  (q #7927EA1162184C1FAA62D20C111121A4604F00956E69F0FEB89EEE1721647897#)))"))
+(define (sops-num file key)
+  (get-sops-secret key #:file file #:number? #t))
 
-(define %guix-authorized-key-workers-poesty
-  (plain-file "workers-poesty.pub" "
-(public-key
- (ecc
-  (curve Ed25519)
-  (q #8C4662FA0BC955B33261EEA5AA15F33081A7BEC991E5F990F7382F0988459B37#)))"))
+
+(define chapra.yaml
+  (local-file (testament-plain "chapra.yaml")))
+(define dorphine.yaml
+  (local-file (testament-plain "dorphine.yaml")))
+(define nuporta.yaml
+  (local-file (testament-plain "nuporta.yaml")))
 
-(define %hako-guix-authorized-keys-lan
-  (list %guix-authorized-key-dorphine
-        %guix-authorized-key-gokuraku
-        %guix-authorized-key-nuporta
-
-        %guix-authorized-key-bocis
-        %guix-authorized-key-ignamma))
-
-(define %hako-guix-authorized-keys-head
-  (list %guix-authorized-key-dorphine
-        %guix-authorized-key-gokuraku
-        %guix-authorized-key-nuporta
-
-        %guix-authorized-key-bocis
-        %guix-authorized-key-ignamma
-
-        %guix-authorized-key-workers-hako
-        %guix-authorized-key-workers-poesty))
+
+(define %guix-keys
+  (list (plain-file "dorphine.pub"
+          "(public-key (ecc (curve Ed25519) (q #A279175682D0DAE3E11268E67E1F3FA47C38D7E509F7725567CF891E248E719F#)))")
+        (plain-file "gokuraku.pub"
+          "(public-key (ecc (curve Ed25519) (q #374EC58F5F2EC0412431723AF2D527AD626B049D657B5633AAAEBC694F3E33F9#)))")
+        (plain-file "nuporta.pub"
+          "(public-key (ecc (curve Ed25519) (q #552F670D5005D7EB6ACF05284A1066E52156B51D75DE3EBD3030CD046675D543#)))")
+        (plain-file "ignamma.pub"
+          "(public-key (ecc (curve Ed25519) (q #6FEEB15C4363F9975EB15C908EC911A4362E486DA642431FA2438C0B1C3D55F5#)))")
+        (plain-file "workers-hako.pub"
+          "(public-key (ecc (curve Ed25519) (q #7927EA1162184C1FAA62D20C111121A4604F00956E69F0FEB89EEE1721647897#)))")
+        (plain-file "workers-poesty.pub"
+          "(public-key (ecc (curve Ed25519) (q #8C4662FA0BC955B33261EEA5AA15F33081A7BEC991E5F990F7382F0988459B37#)))")))
 
 
 (define %ssh-key-deploy
@@ -90,6 +90,52 @@
 (define %ssh-key-hako
   (plain-file "hako.pub"
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2\n"))
+
+
+(define %network-manager-ipv6-privacy
+  `("ip6-privacy.conf"
+    ,(plain-file "ip6-privacy.conf" "\
+# Use IPv6 Privacy Extensions.
+[connection]
+ipv6.ip6-privacy=2\n")))
+
+;; NOTE: When using on cloud machines, refer to the terms of the provider
+;; first.
+(define %network-manager-random-mac-address
+  `("rand_mac.conf"
+   ,(plain-file "rand_mac.conf" "\
+# Generate a random MAC for each network connection and associate the two
+# permanently.
+[connection-mac-randomization]
+ethernet.cloned-mac-address=stable
+wifi.cloned-mac-address=stable\n")))
+
+
+(define linux-libre-lts/dolly
+  (customize-linux
+   #:name "linux-libre-dolly"
+   #:linux linux-libre-lts
+   #:source
+   (origin
+     (inherit (package-source linux-libre-lts))
+     (patches
+      (map (lambda (patch)
+             (local-file (canonicalize-path (in-vicinity "../Workspace/Repository/linux/kernel-patches/6.12" patch))))
+           '("arch-patches-sep/0002-arch-Kconfig-Default-to-maximum-amount-of-ASLR-bits.patch"
+             "bbr3-patches/0001-tcp-bbr3-initial-import.patch"))))))
+
+(define linux-lts/dolly
+  (customize-linux
+   #:name "linux-dolly"
+   #:linux linux-lts
+   #:source
+   (origin
+     (inherit (package-source linux-lts))
+     (patches
+      (map (lambda (patch)
+             (local-file (canonicalize-path (in-vicinity "../Workspace/Repository/linux/kernel-patches/6.12" patch))))
+           '("arch-patches-sep/0002-arch-Kconfig-Default-to-maximum-amount-of-ASLR-bits.patch"
+             "bbr3-patches/0001-tcp-bbr3-initial-import.patch"))))))
 
 
 ;; Source: <https://wiki.archlinux.org/title/XDG_Base_Directory>
@@ -126,72 +172,3 @@
     ("SQLITE_HISTORY" . "$XDG_STATE_HOME/sqlite_history")
     ;; wget
     ("WGETRC" . "$XDG_CONFIG_HOME/wgetrc")))
-
-(define %xdg-data-home
-  (or (getenv "XDG_DATA_HOME")
-      (in-vicinity (getenv "HOME") ".local/share")))
-
-
-(define testament-path
-  (getcwd))
-
-(define (testament-plain . name)
-  (let ((plain (in-vicinity testament-path "files/plain")))
-    (match name
-      (()
-       (local-file plain #:recursive? #t))
-      ((file)
-       (or (search-path (list plain) file)
-           (leave (G_ "file '~a' not found.~%") file))))))
-
-
-(define %network-manager-ipv6-privacy
-  `("ip6-privacy.conf"
-    ,(plain-file "ip6-privacy.conf" "\
-# Use IPv6 Privacy Extensions.
-[connection]
-ipv6.ip6-privacy=2\n")))
-
-;; NOTE: When using on cloud machines, refer to the terms of the provider
-;; first.
-(define %network-manager-random-mac-address
-  `("rand_mac.conf"
-   ,(plain-file "rand_mac.conf" "\
-# Generate a random MAC for each network connection and associate the two
-# permanently.
-[connection-mac-randomization]
-ethernet.cloned-mac-address=stable
-wifi.cloned-mac-address=stable\n")))
-
-
-(define* (get-sops-secret key #:key file (number? #f))
-  "Return a string (or number if NUMBER? is set to #t) of SOPS secret for KEY
-stored in FILE.  The result will be publicly available in '/gnu/store', YOU ARE
-WARNED."
-  (let* ((file-path
-          (with-store store
-            (run-with-store store
-              (lower-object file))))
-         (cmd
-          (format #f "sops --decrypt --extract '~a' '~a'"
-                  (sanitize-sops-key key)
-                  file-path))
-         (port (open-input-pipe cmd))
-         (secret (get-string-all port)))
-    (close-pipe port)
-    (if number?
-        (string->number secret)
-        secret)))
-
-(define (sops-str file key)
-  (get-sops-secret key #:file file))
-
-(define (sops-num file key)
-  (get-sops-secret key #:file file #:number? #t))
-
-(define chapra.yaml
-  (local-file (testament-plain "chapra.yaml")))
-(define dorphine.yaml
-  (local-file (testament-plain "dorphine.yaml")))
-(define nuporta.yaml
-  (local-file (testament-plain "nuporta.yaml")))

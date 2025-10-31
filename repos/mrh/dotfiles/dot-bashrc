@@ -8,6 +8,7 @@ alias dots="stow --dotfiles -t $HOME -d $HOME/src dotfiles"
 alias wu="sudo herd start wireguard-wg0"
 alias wd="sudo herd stop wireguard-wg0"
 alias wr="sudo herd restart wireguard-wg0"
+alias ip="ip --color"
 # Bash initialization for interactive non-login shells and
 # for remote shells (info "(bash) Bash Startup Files").
 

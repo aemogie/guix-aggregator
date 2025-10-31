@@ -1,14 +1,19 @@
 (define-module (mrh-guix system vps config)
   #:use-module (mrh-guix personal)
+  #:use-module (mrh-guix services)
+  #:use-module (mrh-guix web)
+  #:use-module (mrh services)
   #:use-module (gnu)
   #:use-module (gnu services security)
   #:use-module (gnu services certbot)
+  #:use-module (gnu services dns)
   #:use-module (gnu services networking)
   #:use-module (gnu services ssh)
   #:use-module (gnu services sysctl)
   #:use-module (gnu services vpn)
   #:use-module (gnu services web)
   #:use-module (gnu packages admin)
+  #:use-module (gnu packages i2p)
   #:use-module (gnu packages package-management)
   #:use-module (gnu packages rsync))
 
@@ -89,6 +94,74 @@
          (ruleset (local-file "nftables.conf"))))
 
       (service
+       unbound-after-wg-service-type
+       (unbound-configuration
+         (server
+          (unbound-server
+            (interface
+             (list "::1"
+                   %ipv6-wireguard-vps
+                   "127.0.0.1"
+                   %ipv4-wireguard-vps))
+            (hide-version #t)
+            (hide-identity #t)
+            (tls-cert-bundle "/etc/ssl/certs/ca-certificates.crt")))
+         ;; can't be in config because of a formatting bug in the service definition
+         (extra-content (format #f "
+server:
+aggressive-nsec: yes
+do-ip4: yes
+do-ip6: yes
+do-tcp: yes
+prefetch: yes
+rrset-roundrobin: yes
+so-reuseport: yes
+use-caps-for-id: yes
+
+access-control: ::1/128 allow
+access-control: 127.0.0.1/32 allow
+access-control: ~a::/64 allow
+access-control: ~a.0/24 allow
+
+private-address: ~a::/64
+private-address: ~a.0/24
+
+local-zone: \"~a\" static
+local-data: \"~a IN AAAA ~a::1\"
+
+local-zone: \"om\" static
+local-data: \"om IN AAAA ~a\"
+
+local-zone: \"sleep\" static
+local-data: \"sleep IN AAAA ~a\"
+
+local-zone: \"home.~a\" redirect
+local-data: \"home.~a 86400 IN AAAA ~a\"
+
+local-zone: \"i2p.pub.~a\" redirect
+local-data: \"i2p.pub.~a 86400 IN AAAA ~a\"
+"
+                                %ipv6-wireguard-prefix
+                                %ipv4-wireguard-prefix
+
+                                %ipv6-wireguard-prefix
+                                %ipv4-wireguard-prefix
+
+                                %router-domain-name
+                                %router-domain-name %ipv6-gua-prefix
+
+                                %ipv6-wireguard-om
+
+                                %ipv6-wireguard-sleep
+
+                                %domain-name
+                                %domain-name %ipv6-wireguard-om
+
+                                %domain-name
+                                %domain-name %ipv6-wireguard-vps
+                                ))))
+
+      (service
        openssh-service-type
        (openssh-configuration
          (permit-root-login 'prohibit-password)
@@ -119,6 +192,39 @@
                          %ipv4-home)))))))
 
       (service
+       wireguard-service-type
+       (wireguard-configuration
+         (addresses
+          (list %ipv6-wireguard-vps
+                %ipv4-wireguard-vps))
+         (port %wireguard-port)
+         (peers
+          (list (wireguard-peer
+                  (name "om")
+                  (endpoint (format #f "[~a]:~a" %ipv6-gua-om %wireguard-port))
+                  (public-key %om-wireguard-key)
+                  (allowed-ips
+                   (list %ipv6-wireguard-om
+                         %ipv4-wireguard-om)))
+
+                (wireguard-peer
+                  (name "sleep")
+                  (public-key %sleep-wireguard-key)
+                  (allowed-ips
+                   (list %ipv6-wireguard-sleep
+                         %ipv4-wireguard-sleep)))
+
+                (wireguard-peer
+                  (name "lamb")
+                  (public-key %lamb-wireguard-key)
+                  (allowed-ips
+                   (list %ipv6-wireguard-lamb
+                         %ipv4-wireguard-lamb)))))
+         (dns
+          (list %ipv6-wireguard-vps
+                %ipv4-wireguard-vps))))
+
+      (service
        yggdrasil-service-type
        (yggdrasil-configuration
          (config-file
@@ -129,38 +235,22 @@
                        "tls://ygg.jjolly.dev:3443"))))))
 
       (service
-       wireguard-service-type
-       (wireguard-configuration
-         (addresses
-          (list (format #f "~a::4" %ipv6-wireguard-prefix)
-                (format #f "~a.4" %ipv4-wireguard-prefix)))
-         (port %wireguard-port)
-         (peers
-          (list (wireguard-peer
-                  (name "om")
-                  (endpoint (format #f "[~a]:~a" %ipv6-gua-om %wireguard-port))
-                  (public-key %om-wireguard-key)
-                  (allowed-ips
-                   (list (format #f "~a::1" %ipv6-wireguard-prefix)
-                         (format #f "~a.1" %ipv4-wireguard-prefix)))
-                  (keep-alive 300))
+       i2pd-service-type
+       (i2pd-configuration
+        (i2pd i2pd)
+        (user %username)
+        (conf (format #f "~a/.config/i2pd/i2pd.conf" %user-home))
+        (datadir (format #f "~a/.config/i2pd" %user-home))))
 
-                (wireguard-peer
-                  (name "sleep")
-                  (public-key %sleep-wireguard-key)
-                  (allowed-ips
-                   (list (format #f "~a::2" %ipv6-wireguard-prefix)
-                         (format #f "~a.2" %ipv4-wireguard-prefix))))
-
-                (wireguard-peer
-                  (name "lamb")
-                  (public-key %lamb-wireguard-key)
-                  (allowed-ips
-                   (list (format #f "~a::3" %ipv6-wireguard-prefix)
-                         (format #f "~a.3" %ipv4-wireguard-prefix))))))
-         (dns
-          (list (format #f "~a::1" %ipv6-wireguard-prefix)
-                (format #f "~a.1" %ipv4-wireguard-prefix)))))
+      (service
+       tor-service-type
+       (tor-configuration
+         (auto-start? #f)
+         (config-file (local-file (format #f "~a/.config/torrc" %user-home)))
+         (hidden-services
+          (list (tor-onion-service-configuration
+                  (name "wumpus.life")
+                  (mapping '((80 "[::1]:80"))))))))
 
       (service
        certbot-service-type
@@ -180,6 +270,7 @@
        nginx-service-type
        (let ((certs-path (format #f "/etc/certs/~a" %domain-name)))
          (nginx-configuration
+           (shepherd-requirement '(wireguard-wg0))
            (server-blocks
             (list
              (nginx-server-configuration
@@ -210,6 +301,9 @@
                    (body
                     (list (format #f "return 301 $scheme://~a/posts$request_uri;"
                                   %domain-name)))))))
+
+             (app-server-block
+              "i2p.pub" %ipv6-wireguard-vps 7070)
 
              (nginx-server-configuration
                (listen '("[::]:443 ssl" "443 ssl"))

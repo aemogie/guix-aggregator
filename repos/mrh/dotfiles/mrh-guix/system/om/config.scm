@@ -1,8 +1,7 @@
 (define-module (mrh-guix system om config)
   #:use-module (mrh-guix personal)
-  #:use-module (mrh-guix system om networking)
-  #:use-module (mrh-guix system om web)
   #:use-module (mrh services)
+  #:use-module (mrh-guix web)
   #:use-module (nongnu packages linux)
   #:use-module (nongnu system linux-initrd)
   #:use-module (gnu)
@@ -92,16 +91,80 @@
 
     (services
      (cons*
-      (service elogind-service-type
-               (elogind-configuration
-                 (handle-lid-switch 'ignore)
-                 (handle-lid-switch-docked 'ignore)
-                 (handle-lid-switch-external-power 'ignore)))
+      (service
+       elogind-service-type
+       (elogind-configuration
+         (handle-lid-switch 'ignore)
+         (handle-lid-switch-docked 'ignore)
+         (handle-lid-switch-external-power 'ignore)))
 
-      %nftables-service
-      %static-networking-service
-      %wpa-supplicant-service
-      %unbound-service
+      (service
+       nftables-service-type
+       (nftables-configuration
+         (ruleset (local-file "nftables.conf"))))
+
+      (service
+       static-networking-service-type
+       (list (static-networking
+               (addresses
+                (list (network-address
+                        (device %om-wlan-interface)
+                        (value (format #f "~a/64" %ipv6-ula-om)))
+                      (network-address
+                        (device %om-wlan-interface)
+                        (value (format #f "~a/64" %ipv6-gua-om)))
+                      (network-address
+                        (device %om-wlan-interface)
+                        (value (format #f "~a/24" %ipv4-lan-om)))))
+               (routes
+                (list (network-route
+                        (device %om-wlan-interface)
+                        (destination "default")
+                        (gateway %ipv6-lan-gateway))
+                      (network-route
+                        (device %om-wlan-interface)
+                        (destination "default")
+                        (gateway %ipv4-lan-gateway))))
+               (name-servers
+                (list %ipv6-wireguard-vps
+                      %ipv4-wireguard-vps
+                      "2620:fe::9"
+                      "9.9.9.9")))))
+
+      (service
+       dnsmasq-service-type
+       (dnsmasq-configuration
+         (listen-addresses
+          (list "::1"
+                %ipv6-ula-om
+                %ipv6-wireguard-om
+
+                "127.0.0.1"
+                %ipv4-lan-om
+                %ipv4-wireguard-om))
+         (servers
+          (list %ipv6-wireguard-vps
+                %ipv4-wireguard-vps
+
+                "2620:fe::9"
+                "9.9.9.9"))
+         (cache-size 5000)
+         (no-hosts? #t)
+         (no-resolv? #t)
+         (query-servers-in-order? #t)
+         (addresses
+          (list (format #f "/~a/~a::1" %router-domain-name %ipv6-gua-prefix)
+                (format #f "/om/~a" %ipv6-ula-om)
+                (format #f "/sleep/~a" %ipv6-ula-sleep)
+                (format #f "/home.~a/~a" %domain-name %ipv6-wireguard-om)
+                (format #f "/i2p.pub.~a/~a" %domain-name %ipv6-wireguard-vps)))
+         (extra-options '("--filterwin2k"))))
+
+      (service
+       wpa-supplicant-service-type
+       (wpa-supplicant-configuration
+         (interface %om-wlan-interface)
+         (config-file (local-file "wpa-supplicant.conf"))))
 
       (service
        ntp-service-type)
@@ -115,14 +178,13 @@
        wireguard-service-type
        (wireguard-configuration
          (addresses
-          (list (format #f "~a::1" %ipv6-wireguard-prefix)
-                (format #f "~a.1" %ipv4-wireguard-prefix)))
+          (list %ipv6-wireguard-om
+                %ipv4-wireguard-om))
          (port %wireguard-port)
          (peers
           (list (wireguard-peer
                   (name "vps")
-                  (endpoint (format #f "[~a]:~a"
-                                    %ipv6-gua-vps %wireguard-port))
+                  (endpoint (format #f "~a:~a" %domain-name %wireguard-port))
                   (public-key %vps-wireguard-key)
                   (allowed-ips
                    (list (format #f "~a::/64" %ipv6-wireguard-prefix)
@@ -202,14 +264,27 @@
                               ("jellyfin-cache" . "/cache")
                               ("/mnt/wd/media" . "/media")))))))))
 
-      %nginx-service
-
-      (service
-       i2pd-service-type
-       (i2pd-configuration
-        (user %username)
-        (conf (format #f "~a/.config/i2pd/i2pd.conf" %user-home))
-        (datadir (format #f "~a/.config/i2pd" %user-home))))
+      (let ((listen-address (format #f "~a::1" %ipv6-wireguard-prefix)))
+        (service
+         nginx-service-type
+         (nginx-configuration
+           (shepherd-requirement '(wireguard-wg0))
+           (server-blocks
+            (list (root-server-block "pub" listen-address)
+                  (root-server-block "home" listen-address)
+                  (app-server-block
+                   "syncthing.home" listen-address 8384)
+                  (app-server-block
+                   "sab.home" listen-address 8081)
+                  (app-server-block
+                   "jelly.home" listen-address 8096
+                   "proxy_set_header Host $host;"
+                   "proxy_set_header X-Real-IP $remote_addr;"
+                   "proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;"
+                   "proxy_set_header X-Forwarded-Proto $scheme;"
+                   "proxy_set_header X-Forwarded-Protocol $scheme;"
+                   "proxy_set_header X-Forwarded-Host $http_host;"
+                   "proxy_buffering off;"))))))
 
       (modify-services %base-services
         (sysctl-service-type

@@ -201,15 +201,12 @@ done
 ## Clipboard related keybindings ______________________________________________
 
 # screenshot
-riverctl map normal None Print \
-         spawn 'region="$(slurp)" \
-                && sleep 0.1 \
-                && grim -g "$region" -t png - | wl-copy -t image/png'
+riverctl map normal None Print spawn 'screenshot'
+riverctl map normal Super Print spawn 'screenshot "$(slurp)"'
 
-riverctl map normal Super Print \
-         spawn 'region="$(slurp)" \
-                && sleep 0.1 \
-                && grim -g "$region" ~/media/pictures/screenshots/$(date +%Y-%m-%d--%H-%M-%S.png)'
+# screenrec
+riverctl map normal None Sys_Req spawn 'screenrec'
+riverctl map normal Super Sys_Req spawn 'screenrec "$(slurp)"'
 
 ## Audio related keybindings __________________________________________________
 for mode in normal locked wlrctl

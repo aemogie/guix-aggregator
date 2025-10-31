@@ -49,9 +49,9 @@
                    %base-groups))
 
     (users (cons (user-account
-                   (name "mrh")
+                   (name %username)
                    (group "users")
-                   (home-directory "/home/mrh")
+                   (home-directory %user-home)
                    (supplementary-groups '("audio"
                                            "docker"
                                            "input"
@@ -99,7 +99,7 @@
       (service
        syncthing-service-type
        (syncthing-configuration
-         (user "mrh")
+         (user %username)
          (config-file
           (syncthing-config-file
             (gui-address "[::1]:8384")
@@ -129,6 +129,7 @@
        (cups-configuration
          (web-interface? #t)))
 
+      ;; I don't remember what this is...
       (service
        pam-limits-service-type
        (list (pam-limits-entry "@realtime" 'both 'rtprio 99)
@@ -147,7 +148,7 @@
        yggdrasil-service-type
        (yggdrasil-configuration
          (config-file
-          "/home/mrh/.config/yggdrasil/yggdrasil-private.conf")
+          (format #f "~a/.config/yggdrasil/yggdrasil-private.conf" %user-home))
          (json-config
           '((peers . #("tcp://ygg-us-ny.nadeko.net:44441"
                        "tls://ygg.jjolly.dev:3443"))))))
@@ -156,19 +157,21 @@
        wireguard-service-type
        (wireguard-configuration
          (addresses
-          (list (format #f "~a::2" %ipv6-wireguard-prefix)
-                (format #f "~a.2" %ipv4-wireguard-prefix)))
+          (list %ipv6-wireguard-sleep
+                %ipv4-wireguard-sleep))
          (port %wireguard-port)
          (peers
           (list (wireguard-peer
+                  ;; (name "om")
+                  ;; (endpoint (format #f "[~a]:~a" %ipv6-gua-om %wireguard-port))
+                  ;; (public-key %om-wireguard-key)
                   (name "vps")
-                  (endpoint (format #f "[~a]:~a"
-                                    %ipv6-gua-vps %wireguard-port))
+                  (endpoint (format #f "~a:~a" %domain-name %wireguard-port))
                   (public-key %vps-wireguard-key)
                   (allowed-ips '("::/0" "0.0.0.0/0")))))
          (dns
-          (list (format #f "~a::1" %ipv6-wireguard-prefix)
-                (format #f "~a.1" %ipv4-wireguard-prefix)))))
+          (list %ipv6-wireguard-vps
+                %ipv4-wireguard-vps))))
 
       ;; doesn't work
       (simple-service

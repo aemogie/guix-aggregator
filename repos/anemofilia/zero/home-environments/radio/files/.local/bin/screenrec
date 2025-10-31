@@ -1,0 +1,43 @@
+#!/bin/sh
+
+save_to_file=$(echo -en 'y\nn' \
+               | fuzzel --dmenu --lines=2 --prompt="Save to file? ")
+
+wayneko --background-colour 0x8185e0 --layer top
+notify-send "Press ESC to stop recording" -t 2
+
+if [ $save_to_file = "y" ]; then
+    filename="$XDG_VIDEOS_DIR/screenrecs/$(date +%Y-%m-%d--%H-%M-%S.mp4)"
+    riverctl map normal None Escape \
+      spawn "pkill --signal SIGINT wf-recorder \
+             && pkill --newest wayneko \
+             && notify-send 'Screen recording saved as '$filename -t 1000"
+    if [ $# -eq 1 ]; then
+        wf-recorder --audio \
+                    --audio-backend=pipewire \
+                    --geometry="$1" \
+                    --file="$filename"
+    else
+        wf-recorder --audio \
+                    --audio-backend=pipewire \
+                    --file="$filename"
+    fi
+else
+    riverctl map normal None Escape \
+      spawn 'pkill --signal SIGINT wf-recorder \
+             && pkill --newest wayneko \
+             && notify-send "Screen recording saved to clipboard" -t 1000'
+    if [ $# -eq 1 ]; then
+        wf-recorder --audio \
+                    --audio-backend=pipewire \
+                    --geometry="$1" \
+                    --muxer=mp4 \
+                    -f >(wl-copy -t video/mp4)
+    else
+        wf-recorder --audio \
+                    --audio-backend=pipewire \
+                    --muxer=mp4 \
+                    -f >(wl-copy -t video/mp4)
+    fi
+fi
+riverctl unmap normal None Escape
