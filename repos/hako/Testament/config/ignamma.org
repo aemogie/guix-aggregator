@@ -42,13 +42,19 @@
                %base-packages))
       (services
        (cons* <<service>>
+
+              (service guix-publish-service-type
+                (guix-publish-configuration
+                  (port 49637)
+                  (host "0.0.0.0")
+                  (advertise? #t)))
+
               (modify-services %base-services
                 (guix-service-type
                  config => (guix-configuration
                              (inherit config)
-                             (substitute-urls
-                              '("https://ci.guix.gnu.org"
-                                "https://bordeaux.guix.gnu.org"))
+                             (authorized-keys %guix-keys)
+                             (substitute-urls '("https://cache-cdn.guix.moe"))
                              (discover? #t)
                              (extra-options '("--cores=4")))))))
       (name-service-switch %mdns-host-lookup-nss)))
@@ -112,23 +118,6 @@ Administration accounts.
       openssh-service-type
     `(("root" ,%ssh-key-deploy)
       ("hako" ,%ssh-key-hako)))
-#+end_src
-
-** Guix Daemon
-#+begin_src scheme :noweb-ref service
-  (simple-service 'extend-guix
-      guix-service-type
-    (guix-extension
-      (authorized-keys %guix-keys)
-      (substitute-urls '("https://cache-cdn.guix.moe"))))
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (service guix-publish-service-type
-    (guix-publish-configuration
-      (port 49637)
-      (host "0.0.0.0")
-      (advertise? #t)))
 #+end_src
 
 * Power Management
@@ -236,8 +225,7 @@ Open TCP port 5558 and connect to server IPv4 address.
       (systems '("x86_64-linux" "i686-linux" "aarch64-linux"))
       (server "100.97.195.93:5555")       ;nuporta (Tailscale)
       (substitute-urls
-       '("https://cache-cdn.guix.moe"
-         "https://ci.guix.moe"
+       '("https://ci.guix.moe"
          "https://ci.guix.gnu.org"
          "https://bordeaux.guix.gnu.org"))))
 #+end_src

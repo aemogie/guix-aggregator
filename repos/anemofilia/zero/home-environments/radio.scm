@@ -329,6 +329,7 @@
             (simple-service 'home-shell-environment-variables
                             home-environment-variables-service-type
                             `(("PATH" . "$HOME/.local/bin:$PATH")
+                              ("HISTFILE" . "$XDG_STATE_HOME/bash/history")
                               ("INPUTRC" . "$XDG_CONFIG_HOME/readline/inputrc")))
 
             (simple-service 'home-guile-environment-variables

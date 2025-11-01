@@ -1,0 +1,8 @@
+#!/bin/sh
+
+for file in $@; do
+    relative_path="$(realpath -s --relative-to=$HOME $file)"
+    archive_directory="$HOME/.archive/$(date +%Y-%m-%d)"
+    mkdir -p "$archive_directory/$(dirname $relative_path)"
+    mv "$file" "$archive_directory/$relative_path"
+done

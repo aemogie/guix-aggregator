@@ -21,9 +21,6 @@
         "editor",
         "wm",
         "terminal",
-        {
-            "format": "{/name}{-}{/}{name}{?size} {size}{?}"
-        },
         "cpu",
         {
             "type": "gpu",

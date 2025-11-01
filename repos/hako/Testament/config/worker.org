@@ -53,9 +53,8 @@
                  config => (guix-configuration
                              (inherit config)
                              (build-accounts (* 2 workers))
-                             (substitute-urls
-                              '("https://ci.guix.gnu.org"
-                                "https://bordeaux.guix.gnu.org"))
+                             (authorized-keys %guix-keys)
+                             (substitute-urls '("https://cache-cdn.guix.moe"))
                              (extra-options
                               (list "--cores" (number->string threads-per-worker))))))))))
 
@@ -101,15 +100,6 @@
   (simple-service 'extend-openssh
       openssh-service-type
     `(("root" ,%ssh-key-deploy)))
-#+end_src
-
-** Guix Daemon
-#+begin_src scheme :noweb-ref service
-  (simple-service 'extend-guix
-      guix-service-type
-    (guix-extension
-      (authorized-keys %guix-keys)
-      (substitute-urls '("https://cache-cdn.guix.moe"))))
 #+end_src
 
 * Networking & SSH
@@ -166,8 +156,7 @@ Open TCP port 5558 and connect to server IPv4 address.
          `("aarch64-linux"
            ,@(if 32bit-support? '("armhf-linux") '())))))
       (substitute-urls
-       '("https://cache-cdn.guix.moe"
-         "https://ci.guix.moe"
+       '("https://ci.guix.moe"
          "https://ci.guix.gnu.org"
          "https://bordeaux.guix.gnu.org"))))
 #+end_src

@@ -108,21 +108,21 @@ dash.urspace.moe {
 }
 
 # Loki
-logs.boiledscript.com {
+logs.urspace.moe {
 	import block_bots
 	import /run/secrets/caddy/loki
 	reverse_proxy localhost:50968
 }
 
 # Mimir
-metrics.boiledscript.com {
+metrics.urspace.moe {
 	import block_bots
 	import /run/secrets/caddy/mimir
 	reverse_proxy localhost:49951
 }
 
 # Miniflux
-reader.boiledscript.com {
+reader.urspace.moe {
 	import block_bots
 	reverse_proxy localhost:51787
 }
@@ -134,7 +134,7 @@ boiledscript.com {
 }
 
 # Vaultwarden
-vault.boiledscript.com {
+vault.urspace.moe {
 	import block_bots
 	reverse_proxy localhost:23263
 }

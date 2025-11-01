@@ -22,7 +22,7 @@ Guix channels in use:
 * Systems
 ** [[file:config/dorphine.org][dorphine]] (x86_64-linux, UEFI, ZFS, NVIDIA) | [[file:files/deploy/dorphine.scm][deploy]]
 #+html: <img src="https://s3.boiledscript.com/misskey/de2120e3-0e92-4e0d-8816-3c8b5b1cd248.webp">
-#+html: <img src="https://s3.boiledscript.com/misskey/8a5bbc67-5a29-49d1-8223-da2543a3dd66.webp">
+#+html: <img src="https://s3.boiledscript.com/misskey/a0a3bbe0-b8d9-455c-9d97-0c38ee737653.webp">
 
 ** [[file:config/chapra.org][chapra]] (x86_64-linux, UEFI, ZFS) | [[file:files/deploy/chapra.scm][deploy]]
 

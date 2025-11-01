@@ -111,7 +111,7 @@
                                      "/backgrounds/guix-silver-16-9.svg"))
                  (gfxmode `("1280x720x32"))))))
 
-    (kernel linux-libre-6.16)
+    (kernel linux-libre-6.17)
     (kernel-arguments
       `("console=tty1"
         "modprobe.blacklist=usbmouse,usbkbd,pcspkr"

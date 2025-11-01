@@ -43,13 +43,24 @@
                %base-packages))
       (services
        (cons* <<service>>
+
+              (service guix-publish-service-type
+                (guix-publish-configuration
+                  (guix (spec->pkg "guix-dolly"))
+                  (port 49637)
+                  (compression '(("zstd" 19)))
+                  (cache "/var/cache/guix/publish")
+                  ;; 180 days
+                  (ttl (* 180 24 3600))
+                  ;; 2 minutes
+                  (negative-ttl (* 2 60))))
+
               (modify-services %base-services
                 (guix-service-type
                  config => (guix-configuration
                              (inherit config)
-                             (substitute-urls
-                              '("https://ci.guix.gnu.org"
-                                "https://bordeaux.guix.gnu.org"))
+                             (authorized-keys %guix-keys)
+                             (substitute-urls '("https://cache-cdn.guix.moe"))
                              (extra-options '("--cores=4")))))))))
 
   ((compose (rosenthal-transformation-zfs #:boot? #t))
@@ -195,50 +206,6 @@ Administration accounts.
       ("hako" ,%ssh-key-hako)))
 #+end_src
 
-** Guix Daemon
-#+begin_src scheme :noweb-ref service
-  (simple-service 'extend-guix
-      guix-service-type
-    (guix-extension
-      (authorized-keys %guix-keys)
-      (substitute-urls '("https://cache-cdn.guix.moe"))))
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (service guix-publish-service-type
-    (guix-publish-configuration
-      (guix (spec->pkg "guix-dolly"))
-      (port 49637)
-      (compression '(("zstd" 19)))
-      (cache "/var/cache/guix/publish")
-      ;; 6 months
-      (ttl (* 6 30 24 3600))
-      ;; 2 minutes
-      (negative-ttl (* 2 60))))
-#+end_src
-
-rsync://cache.boiledscript.com
-#+begin_src scheme :noweb-ref service
-  (service rsync-service-type
-    (rsync-configuration
-      (modules
-       (list #;(rsync-module
-               (name "substitutes")
-               (file-name "/var/cache/guix/publish"))
-             (rsync-module
-               (name "narinfo")
-               (file-name "/var/cache/guix-moe/narinfo"))))))
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (simple-service 'setup-mirror
-      shepherd-root-service-type
-    (list (shepherd-timer '(setup-mirror)
-            #~(calendar-event #:hours '(0 6 12 18) #:minutes '(0))
-            #~("/bin/sh" #$(local-file (testament-plain "setup-mirror.sh")))
-            #:requirement '(user-processes))))
-#+end_src
-
 ** SOPS Secrets
 #+begin_src scheme :noweb-ref service
   (service sops-secrets-service-type
@@ -345,14 +312,6 @@ rsync://cache.boiledscript.com
 * Containers & Virtualization
 #+begin_src scheme :noweb-ref module
   (gnu services docker)
-  (gnu services virtualization)
-#+end_src
-
-** binfmt_misc
-#+begin_src scheme :noweb-ref service
-  (service qemu-binfmt-service-type
-    (qemu-binfmt-configuration
-      (platforms (lookup-qemu-platforms "aarch64"))))
 #+end_src
 
 ** containerd
@@ -442,11 +401,10 @@ Remember to open TCP port 5555 and 5556.
     (cuirass-remote-worker-configuration
       (publish-port 5558)
       (workers 4)
-      (systems '("x86_64-linux" "i686-linux" "aarch64-linux"))
+      (systems '("x86_64-linux" "i686-linux"))
       (server "100.97.195.93:5555")       ;nuporta (Tailscale)
       (substitute-urls
-       '("https://cache-cdn.guix.moe"
-         "https://ci.guix.moe"
+       '("https://ci.guix.moe"
          "https://ci.guix.gnu.org"
          "https://bordeaux.guix.gnu.org"))))
 #+end_src
@@ -611,6 +569,29 @@ Remember to open TCP port 5555 and 5556.
              (url "https://git.urspace.moe/mirror/guix.git"))))
     (priority 9)
     (systems '("x86_64-linux")))
+#+end_src
+
+** Mirroring
+rsync://cache.guix.moe
+#+begin_src scheme :noweb-ref service
+  (service rsync-service-type
+    (rsync-configuration
+      (modules
+       (list #;(rsync-module
+               (name "substitutes")
+               (file-name "/var/cache/guix/publish"))
+             (rsync-module
+               (name "narinfo")
+               (file-name "/var/cache/guix-moe/narinfo"))))))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'setup-mirror
+      shepherd-root-service-type
+    (list (shepherd-timer '(setup-mirror)
+            #~(calendar-event #:hours '(0 6 12 18) #:minutes '(0))
+            #~("/bin/sh" #$(local-file (testament-plain "setup-mirror.sh")))
+            #:requirement '(user-processes))))
 #+end_src
 
 * Web Servers & Services
@@ -781,7 +762,7 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
   (service miniflux-service-type
     (miniflux-configuration
       (listen-address "127.0.0.1:51787")
-      (base-url "https://reader.boiledscript.com/")
+      (base-url "https://reader.urspace.moe/")
       (extra-settings
        '("CLEANUP_ARCHIVE_READ_DAYS=-1"
          "CLEANUP_ARCHIVE_UNREAD_DAYS=-1"))))

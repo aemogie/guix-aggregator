@@ -69,18 +69,19 @@ WARNED."
 
 
 (define %guix-keys
-  (list (plain-file "dorphine.pub"
-          "(public-key (ecc (curve Ed25519) (q #A279175682D0DAE3E11268E67E1F3FA47C38D7E509F7725567CF891E248E719F#)))")
-        (plain-file "gokuraku.pub"
-          "(public-key (ecc (curve Ed25519) (q #374EC58F5F2EC0412431723AF2D527AD626B049D657B5633AAAEBC694F3E33F9#)))")
-        (plain-file "nuporta.pub"
-          "(public-key (ecc (curve Ed25519) (q #552F670D5005D7EB6ACF05284A1066E52156B51D75DE3EBD3030CD046675D543#)))")
-        (plain-file "ignamma.pub"
-          "(public-key (ecc (curve Ed25519) (q #6FEEB15C4363F9975EB15C908EC911A4362E486DA642431FA2438C0B1C3D55F5#)))")
-        (plain-file "workers-hako.pub"
-          "(public-key (ecc (curve Ed25519) (q #7927EA1162184C1FAA62D20C111121A4604F00956E69F0FEB89EEE1721647897#)))")
-        (plain-file "workers-poesty.pub"
-          "(public-key (ecc (curve Ed25519) (q #8C4662FA0BC955B33261EEA5AA15F33081A7BEC991E5F990F7382F0988459B37#)))")))
+  (cons* (plain-file "dorphine.pub"
+           "(public-key (ecc (curve Ed25519) (q #A279175682D0DAE3E11268E67E1F3FA47C38D7E509F7725567CF891E248E719F#)))")
+         (plain-file "gokuraku.pub"
+           "(public-key (ecc (curve Ed25519) (q #374EC58F5F2EC0412431723AF2D527AD626B049D657B5633AAAEBC694F3E33F9#)))")
+         (plain-file "nuporta.pub"
+           "(public-key (ecc (curve Ed25519) (q #552F670D5005D7EB6ACF05284A1066E52156B51D75DE3EBD3030CD046675D543#)))")
+         (plain-file "ignamma.pub"
+           "(public-key (ecc (curve Ed25519) (q #6FEEB15C4363F9975EB15C908EC911A4362E486DA642431FA2438C0B1C3D55F5#)))")
+         (plain-file "workers-hako.pub"
+           "(public-key (ecc (curve Ed25519) (q #7927EA1162184C1FAA62D20C111121A4604F00956E69F0FEB89EEE1721647897#)))")
+         (plain-file "workers-poesty.pub"
+           "(public-key (ecc (curve Ed25519) (q #8C4662FA0BC955B33261EEA5AA15F33081A7BEC991E5F990F7382F0988459B37#)))")
+         %default-authorized-guix-keys))
 
 
 (define %ssh-key-deploy

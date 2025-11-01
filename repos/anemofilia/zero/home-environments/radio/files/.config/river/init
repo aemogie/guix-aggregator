@@ -202,11 +202,9 @@ done
 
 # screenshot
 riverctl map normal None Print spawn 'screenshot'
-riverctl map normal Super Print spawn 'screenshot "$(slurp)"'
 
 # screenrec
 riverctl map normal None Sys_Req spawn 'screenrec'
-riverctl map normal Super Sys_Req spawn 'screenrec "$(slurp)"'
 
 ## Audio related keybindings __________________________________________________
 for mode in normal locked wlrctl

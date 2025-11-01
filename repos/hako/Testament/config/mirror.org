@@ -41,7 +41,14 @@
                (target (file-system-label "swap")))))
       (users (cons* <<user>> %base-user-accounts))
       (packages (append (specs->pkgs+out "mosh" "rsync") %base-packages))
-      (services (cons* <<service>> %base-services))))
+      (services
+       (cons* <<service>>
+              (modify-services %base-services
+                (guix-service-type
+                 config => (guix-configuration
+                             (inherit config)
+                             (authorized-keys %guix-keys)
+                             (substitute-urls '("https://cache-cdn.guix.moe")))))))))
 
   %os
 #+end_src
@@ -96,15 +103,6 @@ Administration accounts.
   (simple-service 'extend-openssh
       openssh-service-type
     `(("root" ,%ssh-key-deploy)))
-#+end_src
-
-** Guix Daemon
-#+begin_src scheme :noweb-ref service
-  (simple-service 'extend-guix
-      guix-service-type
-    (guix-extension
-      (authorized-keys %guix-keys)
-      (substitute-urls '("https://cache-cdn.guix.moe"))))
 #+end_src
 
 * Networking & SSH

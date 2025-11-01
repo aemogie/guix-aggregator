@@ -51,9 +51,8 @@
                 (guix-service-type
                  config => (guix-configuration
                              (inherit config)
-                             (substitute-urls
-                              '("https://ci.guix.gnu.org"
-                                "https://bordeaux.guix.gnu.org"))
+                             (authorized-keys %guix-keys)
+                             (substitute-urls '("https://cache-cdn.guix.moe"))
                              (discover? #t))))))
       (name-service-switch %mdns-host-lookup-nss)))
 
@@ -185,15 +184,6 @@ Administration accounts.
       openssh-service-type
     `(("root" ,%ssh-key-deploy)
       ("hako" ,%ssh-key-hako)))
-#+end_src
-
-** Guix Daemon
-#+begin_src scheme :noweb-ref service
-  (simple-service 'extend-guix
-      guix-service-type
-    (guix-extension
-      (authorized-keys %guix-keys)
-      (substitute-urls '("https://cache-cdn.guix.moe"))))
 #+end_src
 
 ** SOPS Secrets
