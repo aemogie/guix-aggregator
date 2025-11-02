@@ -44,6 +44,9 @@ table inet filter {
         # allow tailscale
         tcp dport 41641 accept
 
+        # allow tuwunel
+        tcp dport 8448 accept
+
         # reject everything else
         reject with icmpx type port-unreachable
     }

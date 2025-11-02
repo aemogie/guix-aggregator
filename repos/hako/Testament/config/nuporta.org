@@ -115,6 +115,7 @@
 | Lycoris/Data/Redis            | /var/lib/redis              |                            | true                  |
 | Lycoris/Data/SOPS             | /var/lib/sops               |                            | true                  |
 | Lycoris/Data/Tailscale        | /var/lib/tailscale          |                            | true                  |
+| Lycoris/Data/Tuwunel          | /var/lib/tuwunel            |                            | true                  |
 | Lycoris/Data/WebPublic        | /var/lib/webpublic          |                            | true                  |
 | Lycoris/Data/Vaultwarden      | /var/lib/vaultwarden        |                            | true                  |
 |-------------------------------+-----------------------------+----------------------------+-----------------------|
@@ -464,8 +465,7 @@ Remember to open TCP port 5555 and 5556.
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.urspace.moe/hako/guix.git")
-             (branch "pinned"))))
+             (url "https://git.urspace.moe/mirror/guix.git"))))
     (priority 9)
     (systems '("x86_64-linux" "aarch64-linux")))
 #+end_src
@@ -766,6 +766,15 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
       (extra-settings
        '("CLEANUP_ARCHIVE_READ_DAYS=-1"
          "CLEANUP_ARCHIVE_UNREAD_DAYS=-1"))))
+#+end_src
+
+** tuwunel
+#+begin_src scheme :noweb-ref service
+  (service conduit-service-type
+    (conduit-configuration
+      (conduit (file-append (spec->pkg "tuwunel-bin") "/bin/tuwunel"))
+      (database-path "/var/lib/tuwunel")
+      (config (local-file (testament-plain "tuwunel.toml")))))
 #+end_src
 
 ** vaultwarden

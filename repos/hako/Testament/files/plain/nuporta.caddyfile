@@ -148,6 +148,37 @@ files.boiledscript.com {
 
 # Guix Moe
 
+# Homepage
+guix.moe {
+	import block_bots
+
+	handle /.well-known/matrix/* {
+		reverse_proxy 127.0.0.1:26372
+	}
+
+	handle {
+		redir https://ultrarare.space/en/posts/guix-build-farm/
+	}
+}
+
+# Tuwunel
+matrix.guix.moe, matrix.guix.moe:8448 {
+	import block_bots
+
+	@tuwunel {
+		path /_matrix/* || /_tuwunel/*
+	}
+	handle @tuwunel {
+		reverse_proxy 127.0.0.1:26372
+	}
+
+	handle {
+		root * /var/lib/webpublic/cinny
+		try_files {path} / index.html
+		file_server
+	}
+}
+
 # Cuirass
 ci.guix.moe {
 	import block_bots
