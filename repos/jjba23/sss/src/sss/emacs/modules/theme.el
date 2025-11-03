@@ -24,6 +24,9 @@
 (use-package ef-themes
   :ensure (:host github :repo "protesilaos/ef-themes" :branch "main")
   :config
+  (setq modus-themes-mixed-fonts t
+        modus-themes-italic-constructs t)
+  (modus-themes-include-derivatives-mode 1)
   (cond ((equal sss-emacs-theme 'ef-dream) (load-theme sss-emacs-theme t))
         ((equal sss-emacs-theme 'ef-bio)
          (setq ef-bio-palette-overrides '((variable fg-main)

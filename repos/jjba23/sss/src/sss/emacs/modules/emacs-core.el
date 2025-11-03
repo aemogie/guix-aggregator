@@ -64,8 +64,7 @@
          ("C-c t c" . display-fill-column-indicator-mode)
          ("C-c t p" . kbd-scheme-make-parameter)
          ("C-c t h" . kbd-scheme-hygguile-abstraction))
-  :hook ((text-mode . visual-line-mode)
-         (prog-mode . display-fill-column-indicator-mode))
+  :hook ((text-mode . visual-line-mode))
   :config
   (setq-default line-spacing 6
                 pgtk-wait-for-event-timeout 0

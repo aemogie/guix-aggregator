@@ -61,6 +61,7 @@
                       #:prefix channel:)
 
   #|Radix packages|#
+  #|A|# #:use-module (radix packages admin)
   #|D|# #:use-module (radix packages disk)
   #|E|# #:use-module (radix packages emacs-xyz)
   #|F|# #:use-module (radix packages fish-xyz)
@@ -106,7 +107,7 @@
   (list #|guile-xyz|# haunt))
 
 (define desktop
-  (list #|admin      |# fastfetch
+  (list #|admin      |# fastfetch-minimal
         #|calendar   |# remind
         #|freedesktop|# xdg-utils xdg-desktop-portal xdg-desktop-portal-wlr
                         xdg-desktop-portal-termfilechooser xdg-terminal-exec

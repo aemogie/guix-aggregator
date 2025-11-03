@@ -3,7 +3,10 @@
 region="$(slurp)" || region="0,0 1366x768"
 
 save_to_file=$(echo -en 'y\nn' \
-               | fuzzel --dmenu --lines=2 --prompt="Save recording to disk? ")
+               | fuzzel --dmenu \
+                        --lines=2 \
+                        --auto-select \
+                        --prompt="Save recording to disk? ")
 
 if  [ $? -ne 0 ]; then
     notify-send "Screen recording aborted" -t 1000

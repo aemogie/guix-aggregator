@@ -41,6 +41,24 @@
 (use-package olivetti
   :ensure t)
 
+(defun set-mode-line-faces()
+  (progn
+    (ignore-errors
+      (set-face-attribute 'mode-line nil
+                          :box `(:line-width 3 :color ,(face-attribute 'mode-line :background))
+                          :height (tekengrootte-mk-font-size 0.7)
+                          :font sss-font-sans))
+    (ignore-errors
+      (set-face-attribute 'mode-line-active nil
+                          :box `(:line-width 3 :color ,(face-attribute 'mode-line :background))
+                          :height (tekengrootte-mk-font-size 0.7)
+                          :font sss-font-sans))
+    (ignore-errors
+      (set-face-attribute 'mode-line-inactive nil
+                          :box `(:line-width 3 :color ,(face-attribute 'mode-line-inactive :background))
+                          :height (tekengrootte-mk-font-size 0.7)
+                          :font sss-font-sans))))
+
 (use-package tekengrootte
   :ensure (:host codeberg :repo "jjba23/tekengrootte.el" :branch "trunk")
   :demand t
@@ -56,30 +74,14 @@
                                      (sss-set-base-faces))))
   :after (ef-themes solarized-theme gruvbox-theme)
   :config
+
   (defun sss-set-base-faces ()
     "Adjust the base Emacs faces to my preferences.
 According to size, color and font family"
     (interactive)
-
     (set-face-attribute 'default nil
                         :height (round (tekengrootte-mk-font-size 114))
                         :font sss-font-mono)
-
-    (ignore-errors
-      (set-face-attribute 'mode-line nil
-                          :box `(:line-width 3 :color ,(face-attribute 'mode-line :background))
-                          :height (tekengrootte-mk-font-size 0.7)
-                          :font sss-font-sans))
-    (ignore-errors
-      (set-face-attribute 'mode-line-active nil
-                          :box `(:line-width 3 :color ,(face-attribute 'mode-line :background))
-                          :height (tekengrootte-mk-font-size 0.7)
-                          :font sss-font-sans))
-    (ignore-errors
-      (set-face-attribute 'mode-line-inactive nil
-                          :box `(:line-width 3 :color ,(face-attribute 'mode-line-inactive :background))
-                          :height (tekengrootte-mk-font-size 0.7)
-                          :font sss-font-sans))
 
     (set-face-attribute 'variable-pitch nil
                         :font sss-font-sans
@@ -87,6 +89,8 @@ According to size, color and font family"
 
     (set-face-attribute 'button nil :background 'unspecified
                         :weight 'bold)
+
+    (set-mode-line-faces)
 
     (ignore-errors
       (set-face-attribute 'font-lock-doc-face nil
@@ -179,8 +183,8 @@ According to size, color and font family"
     (when (string-prefix-p "ef-" (format "%s" sss-emacs-theme))
       (ignore-errors
         (set-face-attribute 'window-divider nil
-                            :foreground (ef-themes-get-color-value 'bg-dim)
-                            :background (ef-themes-get-color-value 'bg-dim))))
+                            :foreground (modus-themes-get-color-value 'bg-alt t sss-emacs-theme)
+                            :background (modus-themes-get-color-value 'bg-alt t sss-emacs-theme))))
 
     ;; ======= Gruvbox specific tweaks ===========
 
@@ -246,6 +250,8 @@ According to size, color and font family"
                                    :background "#96b070")
                (set-face-attribute 'dired-directory nil
                                    :inherit '(font-lock-string-face))))))
+    ;; Set mode-line faces
+    (set-mode-line-faces)
     )
 
   (setq sss-emacs-is-first-frame t)
