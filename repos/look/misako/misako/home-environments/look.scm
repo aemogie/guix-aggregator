@@ -151,7 +151,7 @@
                                        ;; (lutris-wrapped-for nvda)
                                        mangohud
                                        prismlauncher
-                                       ; mcpelauncher-ui
+                                       mcpelauncher-client
                                        osu-lazer-bin)
         #|                |# python-wrapper xdotool ydotool
         #|File Manager    |# yazi
@@ -176,8 +176,8 @@
                                  (list ffmpeg obs))
         #|                |# (nvidia?* cuda)
         #|Fonts           |# font-adobe-source-han-sans
-        #|                |# font-adobe-source-sans-pro
-        #|                |# font-adobe-source-serif-pro
+        #|                |# font-adobe-source-sans
+        #|                |# font-adobe-source-serif
         #|                |# font-microsoft-times-new-roman
         #|                |# font-microsoft-arial
         #|                |# font-ipa-mj-mincho

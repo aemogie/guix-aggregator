@@ -164,7 +164,7 @@ well.")
 (define vesktop
   (package
     (name "vesktop")
-    (version "1.5.8")
+    (version "1.6.1")
     (source
       (origin
         (method url-fetch)
@@ -172,7 +172,7 @@ well.")
           (string-append "https://github.com/Vencord/Vesktop/releases/download/"
                          "v" version "/" name "-" version ".tar.gz"))
         (sha256
-          (base32 "0l9xrn0z3a0b5cyrn1vbb29hcxl53b2ay55z7mgmfv2qva223vf2"))))
+          (base32 "01wrdlfcj9vxgzd7nhxvhjy6cnx4jl81qb089jk6pldakk48k167"))))
     (build-system chromium-binary-build-system)
     (arguments
       (list
@@ -191,8 +191,8 @@ well.")
         #~`(("." "opt/vesktop")
             ("vesktop" "bin/vesktop"))
         #:native-inputs `(("alsa-lib" ,alsa-lib)
-                          ("atk" ,atk)
-                          ("at-spi2-atk" ,at-spi2-atk)
+                          ("atk" ,at-spi2-core)
+                          ("at-spi2-atk" ,at-spi2-core)
                           ("at-spi2-core" ,at-spi2-core)
                           ("bash-minimal" ,bash-minimal)
                           ("cairo" ,cairo)
@@ -254,7 +254,7 @@ well.")
                      (list v
                            "${WAYLAND_DISPLAY:+"
                            "--enable-features=UseOzonePlatform"
-                           "--ozone-platform-hint=auto"
+                           ; "--ozone-platform-hint=auto"
                            "--enable-features=WebRTCPipeWireCapturer"
                            "--enable-features=VaapiVideoDecoder"
                            "--enable-features=VaapiIgnoreDriverChecks"
@@ -265,14 +265,14 @@ well.")
                            "--enable-features=AcceleratedVideoEncoder"
                            "--disable-features=UseChromeOSDirectVideoDecoder"
                            "--ignore-gpu-blocklist"
-                           "--enable-zero-copy"
-                           "--enable-features=WaylandLinuxDrmSyncobj"
-                           "--enable-gpu-rasterization"
-                           "--enable-gpu-compositing"
-                           "--use-angle=vulkan"
-                           "--use-vulkan"
-                           "--enable-features=Vulkan,VulkanFromANGLE,DefaultANGLEVulkan"
-                           "--ozone-platform-hint=x11"
+                           ; "--enable-zero-copy"
+                           ; "--enable-features=WaylandLinuxDrmSyncobj"
+                           ; "--enable-gpu-rasterization"
+                           ; "--enable-gpu-compositing"
+                           ; "--use-angle=vulkan"
+                           ; "--use-vulkan"
+                           ; "--enable-features=Vulkan,VulkanFromANGLE,DefaultANGLEVulkan"
+                           ; "--ozone-platform-hint=x11"
                            "}")))))))))
     (inputs
       (list ffmpeg

@@ -436,7 +436,7 @@
                                           "dbus-update-activation-environment --all"
                                           "transmission-daemon"
                                           "waybar"
-                                          "herd trigger set-random-wallpaper"
+                                          "herd trigger user-timer-set-random-wallpaper"
                                           "transmission-daemon"
                                           "podman system service --time=0 unix:///tmp/podman.sock"
                                           "xdg-user-dirs-update"

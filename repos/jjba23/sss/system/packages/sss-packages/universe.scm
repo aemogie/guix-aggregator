@@ -272,6 +272,7 @@
         xxd
         localed
         grimblast
+        zenity
         xz
         yt-dlp))
 

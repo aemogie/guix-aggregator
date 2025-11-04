@@ -170,6 +170,8 @@
                   (public-key %vps-wireguard-key)
                   (allowed-ips '("::/0" "0.0.0.0/0")))))
          (dns
+          ;; (list %ipv6-wireguard-om
+          ;;       %ipv4-wireguard-om)
           (list %ipv6-wireguard-vps
                 %ipv4-wireguard-vps))))
 

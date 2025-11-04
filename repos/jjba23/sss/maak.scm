@@ -91,7 +91,7 @@
   ($ '("fc-cache -frv >/dev/null 2>&1 &"))
   (run-installed-script 'write-gtk-dconf-settings)
   (run-installed-script 'write-sss-dconf-settings)
-  ($ '("herd trigger set-random-wallpaper"))
+  ($ '("herd trigger user-timer-set-random-wallpaper"))
   (document-keybindings-dconf)
   (log-done)
   (notify (G_ "SSS user-reconfigure")

@@ -199,7 +199,7 @@
              #:cmd (spawn-sh "alacritty msg create-window || alacritty"))
         (bnd #:mod "s-S"
              #:bind "B"
-             #:cmd (spawn-sh "herd trigger set-random-wallpaper"))
+             #:cmd (spawn-sh "herd trigger user-timer-set-random-wallpaper"))
         (bnd #:mod "s-S"
              #:bind "T"
              #:cmd (spawn-sh
@@ -427,7 +427,7 @@
          (xs (append extra-startups
                      `("mako" "dbus-update-activation-environment --all"
                        "waybar"
-                       "herd trigger set-random-wallpaper"
+                       "herd trigger user-timer-set-random-wallpaper"
                        "alacritty --daemon"
                        "emacs --daemon"
                        "transmission-daemon"

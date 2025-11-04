@@ -188,7 +188,15 @@
                   (public-key %vps-wireguard-key)
                   (allowed-ips
                    (list (format #f "~a::/64" %ipv6-wireguard-prefix)
-                         (format #f "~a.0/24" %ipv4-wireguard-prefix))))))))
+                         (format #f "~a.0/24" %ipv4-wireguard-prefix))))
+
+                ;; (wireguard-peer
+                ;;   (name "sleep")
+                ;;   (public-key %sleep-wireguard-key)
+                ;;   (allowed-ips
+                ;;    (list %ipv6-wireguard-sleep
+                ;;          %ipv4-wireguard-sleep)))
+                ))))
 
       (service
        yggdrasil-service-type

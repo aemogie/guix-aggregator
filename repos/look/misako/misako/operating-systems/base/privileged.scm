@@ -1,6 +1,7 @@
 (define-module (misako operating-systems base privileged)
   #:use-module (gnu packages admin)
   #:use-module (gnu packages linux)
+  #:use-module (gnu packages rust-apps)
   #:use-module (gnu system privilege)
   #:use-module (saayix packages binaries)
   #:use-module (guix gexp)
@@ -49,6 +50,9 @@
   (list (privileged-program
           (program (file-append inetutils "/bin/ping"))
           (capabilities "cap_net_raw=ep"))
+        (privileged-program
+          (program (file-append espanso-wayland "/bin/espanso"))
+          (capabilities "cap_dac_override+p"))
         (privileged-program
           (program (file-append mullvad-bin "/bin/mullvad-exclude"))
           (setuid? #t))

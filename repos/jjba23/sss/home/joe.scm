@@ -40,6 +40,7 @@
              (sss mako)
              (sss channels)
              (sss fastfetch)
+             (sss user-timers)
              (sss enchant)
              (sss nix)
              (sss nyxt)
@@ -89,8 +90,6 @@
                                     #:sans-font ($$$ 'sans-font)
                                     #:mono-font ($$$ 'mono-font)
                                     #:extra-startups ($$$ 'niri-extra-startups))
-                   (random-wallpaper-capability #:clone-dir ($$$ 'clone-dir)
-                                                #:palette ($$$ 'palette))
                    (mime-capability)
                    (dirs-capability)
                    (firefox-capability #:palette ($$$ 'palette))
@@ -134,7 +133,34 @@
                                          #:lock-screen-seconds ($$$ 'lock-screen-seconds)
                                          #:monitor-power-seconds ($$$ 'monitor-power-seconds))
                    (labwc-capability #:sans-font ($$$ 'sans-font)
-                                     #:extra-startups ($$$ 'labwc-extra-startups)))))
+                                     #:extra-startups ($$$ 'labwc-extra-startups))
+                   (user-timer-script #:name 'set-random-wallpaper
+                                      #:cmd (mk-random-wall-cmd (wallpapers
+                                                                            #:clone-dir
+                                                                            ($$$ 'clone-dir)
+                                                                            #:palette
+                                                                            ($$$ 'palette))))
+                   (user-timer-script #:name 'remind-back-stretches
+                                      #:cmd (format #f
+                                             "zenity --info --text=\"~a\" --display=:0.0"
+                                             (G_
+                                              "It's time to stretch your back! Cobra, Child pose, Cat-cow!")))
+                   (user-timer-script #:name 'remind-pushups-squats-situps
+                                      #:cmd (format #f
+                                             "zenity --info --text=\"~a\" --display=:0.0"
+                                             (G_
+                                              "It's time to move! Push-ups, squats and sit-ups!"))))))
+
+(define joe-shepherd-timers
+  (list (user-timer #:user 'joe
+                    #:name 'set-random-wallpaper
+                    #:gexp #~(cron-string->calendar-event "*/10 * * * *"))
+        (user-timer #:user 'joe
+                    #:name 'remind-back-stretches
+                    #:gexp #~(cron-string->calendar-event "15 9 * * 1-5"))
+        (user-timer #:user 'joe
+                    #:name 'remind-pushups-squats-situps
+                    #:gexp #~(cron-string->calendar-event "45 12 * * 1-5"))))
 
 (log-info (G_ "Configuring home environment for user: ~a") "joe")
 
@@ -150,18 +176,8 @@
                  (bash-capability #:clone-dir ($$$ 'clone-dir)
                                   #:gui-cmd "dbus-run-session niri --session")
                  openpgp-capability
-                 (simple-service 'sss-home-cron-service
-                                 home-mcron-service-type
-                                 '())
-                 (simple-service 'set-random-wallpaper
-                                 home-shepherd-service-type
-                                 (list (shepherd-timer '(set-random-wallpaper)
-                                                       #~(cron-string->calendar-event
-                                                          "*/10 * * * *")
-                                                       `("sh" ,(format #f
-                                                                "/home/joe/.local/bin/set-random-wallpaper.sh")))))
                  (service home-dbus-service-type)
                  (service home-pipewire-service-type)
                  (fontconfig-capability #:mono-font ($$$ 'mono-font))
-                 channels-capability) %base-home-services)))
+                 channels-capability) joe-shepherd-timers %base-home-services)))
 

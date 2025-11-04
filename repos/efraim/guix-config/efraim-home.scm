@@ -194,9 +194,6 @@
          `((tune . "znver2")))
         ((string=? (gethostname) "X1")
          `((tune . "cannonlake")))
-        ((target-aarch64?)
-         `(;; go-1.16 FTBFS on aarch64.
-           (with-input . "go@1.16=gccgo@11")))
         (#t `())))))
 
 (define (S pkg)
@@ -286,6 +283,8 @@
       ;; End with a newline.
       "\n" 'suffix)))
 
+(define %self-gpg-signature "0x41AAE7DCCA3D8351")
+
 ;;;
 
 (define %aria2-config
@@ -324,7 +323,7 @@
     "[user]\n"
     "    name = Efraim Flashner\n"
     "    email = efraim@flashner.co.il\n"
-    "    signingkey = 0xCA3D8351\n"
+    (string-append "    signingkey = " %self-gpg-signature "\n")
     "[am]\n"
     "    threeWay = true\n"
     "[commit]\n"
@@ -425,7 +424,7 @@
 (define %gpg.conf
   (mixed-text-file
     "gpg.conf"
-    "default-key 0x41AAE7DCCA3D8351\n"
+    (string-append "default-key " %self-gpg-signature "\n")
     "display-charset utf-8\n"
     "with-fingerprint\n"
     "keyserver hkp://keys.openpgp.org\n"
@@ -522,7 +521,7 @@
     (string-join
       (list
         "set pgp_use_gpg_agent = yes"
-        "set pgp_default_key=0x41AAE7DCCA3D8351"
+        (string-append "set pgp_default_key=" %self-gpg-signature)
         "set pgp_timeout = 600"
         "set crypt_autosign = yes"
         "set crypt_replyencrypt = yes"
@@ -534,8 +533,8 @@
         "set pgp_decrypt_command=\"gpg --passphrase-fd 0 --no-verbose --batch --output - %f\""
         "set pgp_sign_command=\"gpg --no-verbose --batch --output - --passphrase-fd 0 --armor --detach-sign --textmode %?a?-u %a? %f\""
         "set pgp_clearsign_command=\"gpg --no-verbose --batch --output - --passphrase-fd 0 --armor --textmode --clearsign %?a?-u %a? %f\""
-        "set pgp_encrypt_only_command=\"pgpewrap gpg --batch --quiet --no-verbose --output - --encrypt --textmode --armor --always-trust --encrypt-to 0xCA3D8351 -- -r %r -- %f\""
-        "set pgp_encrypt_sign_command=\"pgpewrap gpg --passphrase-fd 0 --batch --quiet --no-verbose --textmode --output - --encrypt --sign %?a?-u %a? --armor --always-trust --encrypt-to 0xCA3D8351 -- -r %r -- %f\""
+        (string-append "set pgp_encrypt_only_command=\"pgpewrap gpg --batch --quiet --no-verbose --output - --encrypt --textmode --armor --always-trust --encrypt-to " %self-gpg-signature " -- -r %r -- %f\"")
+        (string-append "set pgp_encrypt_sign_command=\"pgpewrap gpg --passphrase-fd 0 --batch --quiet --no-verbose --textmode --output - --encrypt --sign %?a?-u %a? --armor --always-trust --encrypt-to " %self-gpg-signature " -- -r %r -- %f\"")
         "set pgp_import_command=\"gpg --no-verbose --import -v %f\""
         "set pgp_export_command=\"gpg --no-verbose --export --armor %r\""
         "set pgp_verify_key_command=\"gpg --no-verbose --batch --fingerprint --check-sigs %r\""
@@ -551,7 +550,7 @@
     "pgp-sq.rc"
     (string-join
       (list
-        "set pgp_default_key=0x41AAE7DCCA3D8351"
+        (string-append "set pgp_default_key=" %self-gpg-signature)
         "set crypt_use_gpgme=no"
         "#unset pgp_use_gpg_agent"
         "set pgp_timeout=600"
@@ -624,7 +623,7 @@
     "BASETGZ=/var/cache/pbuilder/base-$DISTRIBUTION-$ARCHITECTURE.tgz\n"
     "DEBOOTSTRAPOPTS=( '--arch' $ARCHITECTURE ${DEBOOTSTRAPOPTS[@]} )\n"
 
-    "if [ $ARCHITECTURE == powerpc -o $ARCHITECTURE == riscv64 ]; then\n"
+    "if [ $ARCHITECTURE == powerpc ]; then\n"
     ;; These are only needed when it's a ports architecture.
     "    MIRRORSITE=http://deb.debian.org/debian-ports\n"
     ;; These two courtesy of John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
@@ -648,9 +647,9 @@
     "qutebrowser-config-py"
     ;; "autoconfig.yml is ignored unless it's explicitly loaded\n"
     "config.load_autoconfig(True)\n"
-    "config.bind('<Ctrl-Shift-u>', 'spawn --userscript qute-keepassxc --key 0xCA3D8351', mode='insert')\n"
-    "config.bind('pw', 'spawn --userscript qute-keepassxc --key 0xCA3D8351', mode='normal')\n"
-    "config.bind('pt', 'spawn --userscript qute-keepassxc --key 0xCA3D8351 --totp', mode='normal')\n"
+    (string-append "config.bind('<Ctrl-Shift-u>', 'spawn --userscript qute-keepassxc --key " %self-gpg-signature "', mode='insert')\n")
+    (string-append "config.bind('pw', 'spawn --userscript qute-keepassxc --key " %self-gpg-signature "', mode='normal')\n")
+    (string-append "config.bind('pt', 'spawn --userscript qute-keepassxc --key " %self-gpg-signature " --totp', mode='normal')\n")
     "config.bind(',m', 'spawn mpv {url}')\n"
     "config.bind(',M', 'hint links spawn mpv {hint-url}')\n"
     "config.bind(',j', 'jseval (function() {    location.href = \"https://12ft.io/\" + location.href;})();')\n"
@@ -687,11 +686,11 @@
   (mixed-text-file
     "sq-config.toml"
     "[encrypt]\n"
-    "for-self = [\"0x41AAE7DCCA3D8351\"]\n"
+    (string-append "for-self = [\"" %self-gpg-signature "\"]\n")
     "[pki]\n"
-    "vouch.certifier-self = [\"0x41AAE7DCCA3D8351\"]\n"
+    (string-append "vouch.certifier-self = [\"" %self-gpg-signature "\"]\n")
     "[sign]\n"
-    "signer-self = [\"0x41AAE7DCCA3D8351\"]\n"))
+    (string-append "signer-self = [\"" %self-gpg-signature "\"]\n")))
 
 
 (define %streamlink-config

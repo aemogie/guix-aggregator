@@ -327,12 +327,14 @@ time in `current-time' format."
           "Creative Commons Attribution-ShareAlike 4.0 License")
       "."
       (:br)
-      (:a (@ :href "https://www.gnu.org/software/emacs")
+      (:a (@ :href "http://www.gnu.org/software/emacs")
           (:img (@ :alt "emacs badge" :style "border-width:0" :src ,(my/get-up-directory level "static/images/badges/emacs.gif"))))
-      (:a (@ :href "https://guix.gnu.org")
+      (:a (@ :href "http://guix.gnu.org")
           (:img (@ :alt "guix badge" :style "border-width:0" :src ,(my/get-up-directory level "static/images/badges/gnu-guix-deployed.svg"))))
-      (:a (@ :href "https://scheme.org")
-          (:img (@ :alt "lisp badge" :style "border-width:0" :src ,(my/get-up-directory level "static/images/badges/lisp.png"))))))))
+      (:a (@ :href "http://scheme.org")
+          (:img (@ :alt "lisp badge" :style "border-width:0" :src ,(my/get-up-directory level "static/images/badges/lisp.png"))))
+      (:a (@ :href "http://en.wikipedia.org/wiki/IPv6")
+          (:img (@ :alt "ipv6 badge" :style "border-width:0" :src ,(my/get-up-directory level "static/images/badges/ipv6.gif"))))))))
 
 (defun my/publish-rss-filter (filename)
   (not (string-match "tags.org" filename)))

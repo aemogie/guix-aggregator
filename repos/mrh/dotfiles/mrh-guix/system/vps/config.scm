@@ -13,6 +13,7 @@
   #:use-module (gnu services vpn)
   #:use-module (gnu services web)
   #:use-module (gnu packages admin)
+  #:use-module (gnu packages golang-crypto)
   #:use-module (gnu packages i2p)
   #:use-module (gnu packages package-management)
   #:use-module (gnu packages rsync))
@@ -94,6 +95,48 @@
          (ruleset (local-file "nftables.conf"))))
 
       (service
+       openssh-service-type
+       (openssh-configuration
+         (permit-root-login 'prohibit-password)
+         (password-authentication? #f)
+         (authorized-keys
+          `((,%username ,(plain-file (format #f "ssh-~a.pub" %username)
+                                     %ssh-pub))))))
+
+      (service
+       wireguard-service-type
+       (wireguard-configuration
+         (addresses
+          (list %ipv6-wireguard-vps
+                %ipv4-wireguard-vps))
+         (port %wireguard-port)
+         (peers
+          (list (wireguard-peer
+                  (name "om")
+                  (endpoint (format #f "[~a]:~a" %ipv6-gua-om %wireguard-port))
+                  (public-key %om-wireguard-key)
+                  (allowed-ips
+                   (list %ipv6-wireguard-om
+                         %ipv4-wireguard-om)))
+
+                (wireguard-peer
+                  (name "sleep")
+                  (public-key %sleep-wireguard-key)
+                  (allowed-ips
+                   (list %ipv6-wireguard-sleep
+                         %ipv4-wireguard-sleep)))
+
+                (wireguard-peer
+                  (name "lamb")
+                  (public-key %lamb-wireguard-key)
+                  (allowed-ips
+                   (list %ipv6-wireguard-lamb
+                         %ipv4-wireguard-lamb)))))
+         (dns
+          (list %ipv6-wireguard-vps
+                %ipv4-wireguard-vps))))
+
+      (service
        unbound-after-wg-service-type
        (unbound-configuration
          (server
@@ -113,6 +156,12 @@ aggressive-nsec: yes
 do-ip4: yes
 do-ip6: yes
 do-tcp: yes
+harden-glue: yes
+harden-dnssec-stripped: yes
+cache-min-ttl: 3600
+cache-max-ttl: 86400
+num-threads: 1
+so-rcvbuf: 1m
 prefetch: yes
 rrset-roundrobin: yes
 so-reuseport: yes
@@ -160,97 +209,6 @@ local-data: \"i2p.pub.~a 86400 IN AAAA ~a\"
                                 %domain-name
                                 %domain-name %ipv6-wireguard-vps
                                 ))))
-
-      (service
-       openssh-service-type
-       (openssh-configuration
-         (permit-root-login 'prohibit-password)
-         (password-authentication? #f)
-         (authorized-keys
-          `((,%username ,(plain-file (format #f "ssh-~a.pub" %username)
-                                     %ssh-pub))))))
-
-      (service
-       fail2ban-service-type
-       (fail2ban-configuration
-         (extra-jails
-          (list (fail2ban-jail-configuration
-                  (name "sshd")
-                  (enabled? #t)
-                  (max-retry 3)
-                  (find-time "1d")
-                  (ban-time "1w")
-                  (ban-time-increment? #t)
-                  (ban-time-factor "2")
-                  (ban-time-max-time "1mo")
-                  (ban-time-overall-jails? #t)
-                  (ignore-self? #t)
-                  (ignore-ip
-                   (list (format #f "~a::/64" %ipv6-wireguard-prefix)
-                         (format #f "~a.0/24" %ipv4-wireguard-prefix)
-                         %ipv6-gua-om
-                         %ipv4-home)))))))
-
-      (service
-       wireguard-service-type
-       (wireguard-configuration
-         (addresses
-          (list %ipv6-wireguard-vps
-                %ipv4-wireguard-vps))
-         (port %wireguard-port)
-         (peers
-          (list (wireguard-peer
-                  (name "om")
-                  (endpoint (format #f "[~a]:~a" %ipv6-gua-om %wireguard-port))
-                  (public-key %om-wireguard-key)
-                  (allowed-ips
-                   (list %ipv6-wireguard-om
-                         %ipv4-wireguard-om)))
-
-                (wireguard-peer
-                  (name "sleep")
-                  (public-key %sleep-wireguard-key)
-                  (allowed-ips
-                   (list %ipv6-wireguard-sleep
-                         %ipv4-wireguard-sleep)))
-
-                (wireguard-peer
-                  (name "lamb")
-                  (public-key %lamb-wireguard-key)
-                  (allowed-ips
-                   (list %ipv6-wireguard-lamb
-                         %ipv4-wireguard-lamb)))))
-         (dns
-          (list %ipv6-wireguard-vps
-                %ipv4-wireguard-vps))))
-
-      (service
-       yggdrasil-service-type
-       (yggdrasil-configuration
-         (config-file
-          (format #f "~a/.config/yggdrasil/yggdrasil-private.conf" %user-home))
-         (json-config
-          '((listen . #("tcp://[::]:31341"))
-            (peers . #("tcp://ygg-us-ny.nadeko.net:44441"
-                       "tls://ygg.jjolly.dev:3443"))))))
-
-      (service
-       i2pd-service-type
-       (i2pd-configuration
-        (i2pd i2pd)
-        (user %username)
-        (conf (format #f "~a/.config/i2pd/i2pd.conf" %user-home))
-        (datadir (format #f "~a/.config/i2pd" %user-home))))
-
-      (service
-       tor-service-type
-       (tor-configuration
-         (auto-start? #f)
-         (config-file (local-file (format #f "~a/.config/torrc" %user-home)))
-         (hidden-services
-          (list (tor-onion-service-configuration
-                  (name "wumpus.life")
-                  (mapping '((80 "[::1]:80"))))))))
 
       (service
        certbot-service-type
@@ -327,6 +285,59 @@ local-data: \"i2p.pub.~a 86400 IN AAAA ~a\"
                 (format #f "~a/fullchain.pem" certs-path))
                (ssl-certificate-key
                 (format #f "~a/privkey.pem" certs-path))))))))
+
+      (service
+       yggdrasil-service-type
+       (yggdrasil-configuration
+         (config-file
+          (format #f "~a/.config/yggdrasil/yggdrasil-private.conf" %user-home))
+         (json-config
+          '((listen . #("tcp://[::]:31341"))
+            (peers . #("tcp://ygg-us-ny.nadeko.net:44441"
+                       "tls://ygg.jjolly.dev:3443"))))))
+
+      (service
+       i2pd-service-type
+       (i2pd-configuration
+        (i2pd i2pd)
+        (user %username)
+        (conf (format #f "~a/.config/i2pd/i2pd.conf" %user-home))
+        (datadir (format #f "~a/.config/i2pd" %user-home))))
+
+      (service
+       tor-service-type
+       (tor-configuration
+         (config-file (local-file (format #f "~a/.config/torrc" %user-home)))
+         (hidden-services
+          (list (tor-onion-service-configuration
+                  (name "wumpus.life")
+                  (mapping '((80 "[::1]:80"))))))
+         ;; (transport-plugins
+         ;;  (list (tor-transport-plugin
+         ;;          (role 'server)
+         ;;          (program (file-append go-obfs4proxy "/bin/obfs4proxy")))))
+         ))
+
+      (service
+       fail2ban-service-type
+       (fail2ban-configuration
+         (extra-jails
+          (list (fail2ban-jail-configuration
+                  (name "sshd")
+                  (enabled? #t)
+                  (max-retry 3)
+                  (find-time "1d")
+                  (ban-time "1w")
+                  (ban-time-increment? #t)
+                  (ban-time-factor "2")
+                  (ban-time-max-time "1mo")
+                  (ban-time-overall-jails? #t)
+                  (ignore-self? #t)
+                  (ignore-ip
+                   (list (format #f "~a::/64" %ipv6-wireguard-prefix)
+                         (format #f "~a.0/24" %ipv4-wireguard-prefix)
+                         %ipv6-gua-om
+                         %ipv4-home)))))))
 
       (modify-services %base-services
         (sysctl-service-type

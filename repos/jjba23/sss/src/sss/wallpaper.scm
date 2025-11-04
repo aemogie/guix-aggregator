@@ -21,7 +21,7 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 exceptions)
   #:use-module (sss palette)
-  #:export (wallpapers mk-random-wall-cmd random-wallpaper-capability))
+  #:export (wallpapers mk-random-wall-cmd))
 
 (define* (wallpapers #:key clone-dir palette)
   "Define diverse wallpapers based on the active color scheme. "
@@ -92,12 +92,4 @@
                                       (+ 1 wall-idx))
                                 (format #f "\t~a) WALL=\"~a\";;" wall-idx w))
                               walls) "\n"))))
-
-(define* (random-wallpaper-capability #:key clone-dir palette)
-  (let* ((walls (wallpapers #:clone-dir clone-dir
-                            #:palette palette))
-         (random-wall-cmd (mk-random-wall-cmd walls)))
-    `((".local/bin/set-random-wallpaper.sh" ,(plain-file
-                                              "set-random-wallpaper.sh"
-                                              random-wall-cmd)))))
 
