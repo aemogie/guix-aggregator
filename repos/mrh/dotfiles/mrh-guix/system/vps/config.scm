@@ -8,6 +8,7 @@
   #:use-module (gnu services certbot)
   #:use-module (gnu services dns)
   #:use-module (gnu services networking)
+  #:use-module (gnu services shepherd)
   #:use-module (gnu services ssh)
   #:use-module (gnu services sysctl)
   #:use-module (gnu services vpn)
@@ -18,11 +19,41 @@
   #:use-module (gnu packages package-management)
   #:use-module (gnu packages rsync))
 
+(define restart-when-oom-timer
+  (shepherd-service
+    (provision '(restart-when-oom))
+    (modules '((shepherd service timer)))
+    (start #~(make-timer-constructor
+              (calendar-event #:minutes '(0))
+              (lambda ()
+                (let ((mem-available
+                       (string->number
+                        (car
+                         (string-split
+                          (string-trim
+                           (cadar
+                            (filter
+                             (lambda (strings)
+                               (string= (car strings) "MemAvailable"))
+                             (map
+                              (lambda (string)
+                                (string-split string #\:))
+                              (string-split
+                               (get-string-all (open-input-file "/proc/meminfo"))
+                               #\newline)))))
+                          #\space)))))
+                  (if (< mem-available 50000)
+                      (system "reboot")
+                      (format #t "not restarting, available memory is: ~A~%"
+                              mem-available))))))
+    (stop #~(make-timer-destructor))
+    (actions (list shepherd-trigger-action))))
+
 (define-public %vps-operating-system
   (operating-system
     (locale "en_US.utf8")
     (timezone "UTC")
-    (keyboard-layout (keyboard-layout "fr"))
+    (keyboard-layout (keyboard-layout "us"))
     (host-name "vps")
 
     (bootloader
@@ -338,6 +369,11 @@ local-data: \"i2p.pub.~a 86400 IN AAAA ~a\"
                          (format #f "~a.0/24" %ipv4-wireguard-prefix)
                          %ipv6-gua-om
                          %ipv4-home)))))))
+
+      (simple-service
+       'my-timers
+       shepherd-root-service-type
+       (list restart-when-oom-timer))
 
       (modify-services %base-services
         (sysctl-service-type
