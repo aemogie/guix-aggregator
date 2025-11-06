@@ -89,7 +89,7 @@
       (service
        openssh-service-type
        (openssh-configuration
-         (port-number 2222)
+         (port-number %ssh-port)
          (password-authentication? #f)
          (max-connections 5)))
 

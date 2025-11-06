@@ -172,6 +172,7 @@
       (service
        openssh-service-type
        (openssh-configuration
+         (port-number %ssh-port)
          (password-authentication? #f)))
 
       (service

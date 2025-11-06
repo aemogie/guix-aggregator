@@ -128,6 +128,7 @@
       (service
        openssh-service-type
        (openssh-configuration
+         (port-number %ssh-port)
          (permit-root-login 'prohibit-password)
          (password-authentication? #f)
          (authorized-keys
