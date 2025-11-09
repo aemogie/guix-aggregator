@@ -305,7 +305,7 @@ local-data: \"i2p.pub.~a 86400 IN AAAA ~a\"
                    (uri "/")
                    (body
                     (list
-                     (format #f "proxy_pass http://[~a::1]/;" %ipv6-wireguard-prefix)
+                     (format #f "proxy_pass http://[~a]/;" %ipv6-wireguard-om)
                      "proxy_set_header Host $host;"
                      "proxy_set_header X-Real-IP $remote_addr;"
                      "proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;"
@@ -331,7 +331,8 @@ local-data: \"i2p.pub.~a 86400 IN AAAA ~a\"
       (service
        i2pd-service-type
        (i2pd-configuration
-        (i2pd i2pd)
+        (i2pd (symlink-to
+               "/gnu/store/h0a0z01j87azzr61bfc1z9w5lyaqw5p2-i2pd-2.58.0"))
         (user %username)
         (conf (format #f "~a/.config/i2pd/i2pd.conf" %user-home))
         (datadir (format #f "~a/.config/i2pd" %user-home))))
@@ -350,33 +351,21 @@ local-data: \"i2p.pub.~a 86400 IN AAAA ~a\"
          ;;          (program (file-append go-obfs4proxy "/bin/obfs4proxy")))))
          ))
 
-      (service
-       fail2ban-service-type
-       (fail2ban-configuration
-         (extra-jails
-          (list (fail2ban-jail-configuration
-                  (name "sshd")
-                  (enabled? #t)
-                  (max-retry 3)
-                  (find-time "1d")
-                  (ban-time "1w")
-                  (ban-time-increment? #t)
-                  (ban-time-factor "2")
-                  (ban-time-max-time "1mo")
-                  (ban-time-overall-jails? #t)
-                  (ignore-self? #t)
-                  (ignore-ip
-                   (list (format #f "~a::/64" %ipv6-wireguard-prefix)
-                         (format #f "~a.0/24" %ipv4-wireguard-prefix)
-                         %ipv6-gua-om
-                         %ipv4-home)))))))
-
       (simple-service
        'my-timers
        shepherd-root-service-type
        (list restart-when-oom-timer))
 
       (modify-services %base-services
+        (guix-service-type
+         config => (guix-configuration
+                     (inherit config)
+                     (authorized-keys
+                      (cons*
+                       (local-file (format #f "~a/sleep-guix.pub" %guix-dots-dir))
+                       (local-file (format #f "~a/vps-guix.pub" %guix-dots-dir))
+                       %default-authorized-guix-keys))))
+
         (sysctl-service-type
          config => (sysctl-configuration
                      (settings

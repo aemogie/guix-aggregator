@@ -175,7 +175,7 @@
           (list %ipv6-wireguard-vps
                 %ipv4-wireguard-vps))))
 
-      ;; doesn't work
+      ;; doesn't work?
       (simple-service
        'fwupd-dbus
        dbus-root-service-type
@@ -186,8 +186,10 @@
          config => (guix-configuration
                      (inherit config)
                      (authorized-keys
-                      (cons
-                       (local-file "../../nonguix.pub")
+                      (cons*
+                       (local-file (format #f "~a/sleep-guix.pub" %guix-dots-dir))
+                       (local-file (format #f "~a/vps-guix.pub" %guix-dots-dir))
+                       (local-file (format #f "~a/nonguix.pub" %guix-dots-dir))
                        %default-authorized-guix-keys))
                      (substitute-urls
                       (cons "https://substitutes.nonguix.org"

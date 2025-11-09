@@ -296,22 +296,22 @@
                    "proxy_buffering off;"))))))
 
       (modify-services %base-services
+        (guix-service-type
+         config => (guix-configuration
+                     (inherit config)
+                     (authorized-keys
+                      (cons (local-file
+                             (format #f "~a/nonguix.pub" %guix-dots-dir))
+                            %default-authorized-guix-keys))
+                     (substitute-urls
+                      (cons "https://substitutes.nonguix.org"
+                            %default-substitute-urls))))
+
         (sysctl-service-type
          config => (sysctl-configuration
                      (settings
                       (append '(("net.ipv6.conf.all.forwarding" . "1")
                                 ("net.ipv4.ip_forward" . "1"))
-                              %default-sysctl-settings))))
-
-        (guix-service-type
-         config => (guix-configuration
-                     (inherit config)
-                     (authorized-keys
-                      (cons* (local-file
-                              (format #f "~a/nonguix.pub" %guix-dots-dir))
-                             %default-authorized-guix-keys))
-                     (substitute-urls
-                      (cons* "https://substitutes.nonguix.org"
-                             %default-substitute-urls)))))))))
+                              %default-sysctl-settings)))))))))
 
 %om-operating-system
