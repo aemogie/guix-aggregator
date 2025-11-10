@@ -162,6 +162,7 @@
         #|Window Manager  |# hyprpaper hyprlock hypridle hyprcursor hyprland
         #|                |# hyprland-qtutils hyprsunset eww/wayland
         #|                |# mako waybar grim slurp bemenu fuzzel
+        #|                |# pipectl wl-mirror
         #|                |# wl-clipboard wlsunset dbus qtwayland
         #|                |# hyprcursor-mcmojave cursor-mcmojave
         #|                |# (nvidia?* nvidia-vaapi-driver)

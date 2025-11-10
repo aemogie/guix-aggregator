@@ -7,6 +7,7 @@
     "reload_style_on_change": true,
     "modules-left": [
         "custom/launch_wofi",
+        "hyprland/submap",
         "hyprland/workspaces",
         "tray",
         "pulseaudio#speakers",
@@ -41,6 +42,12 @@
     "custom/launch_wofi": {
         "format": "",
         "on-click": "bemenu-run -i -n -l 5 -p spawn:",
+        "tooltip": false
+    },
+
+    "hyprland/submap": {
+        "format": "{}",
+        "max-length": 16,
         "tooltip": false
     },
 
