@@ -122,7 +122,7 @@
 (define default-extra-packages
   '())
 
-;; color palette choices:
+;; many color palette choices:
 ;;   - ef-bio
 ;;   - ef-cyprus
 ;;   - ef-dream
@@ -132,8 +132,12 @@
 ;;   - solarized-light
 ;;   - everforest-dark
 ;;   - everforest-light
-;;   - gruvbox-dark (WIP)
-;;   - gruvbox-light (WIP)
+;;   - gruvbox-dark 
+;;   - gruvbox-light
+;;   - modus-vivendi
+;;
+;; More as well...
+
 (define default-palette
   'ef-dream)
 

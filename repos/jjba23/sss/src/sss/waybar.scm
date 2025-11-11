@@ -182,7 +182,7 @@
   `((background unquote
                 (hex-to-rgba (get-color palette
                                         'background)
-                             #:alpha 0.8))
+                             #:alpha 0.7))
     (border unquote
             (format #f "1px solid ~a"
                     (hex-to-rgba (get-color palette

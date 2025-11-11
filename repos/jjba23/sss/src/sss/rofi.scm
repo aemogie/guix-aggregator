@@ -47,7 +47,7 @@
      (backlight unquote
                 (hex-to-rgba (get-color palette
                                         'background)
-                             #:alpha 0.8))
+                             #:alpha 0.7))
      (background-color . "transparent")
      (highlight . "underline bold #ffffff")
      (font unquote
@@ -87,7 +87,7 @@
      (background-color unquote
                        (hex-to-rgba (get-color palette
                                                'background)
-                                    #:alpha 0.8))
+                                    #:alpha 0.7))
      (dynamic . "false")
      (lines . "20"))
     ("element-text" (text-color unquote
@@ -100,7 +100,7 @@
      (background-color unquote
                        (hex-to-rgba (get-color palette
                                                'primary)
-                                    #:alpha 0.5))
+                                    #:alpha 0.7))
      (border-radius . "4px"))
     ("element-icon" (size . "1.1em"))
     ("inputbar" (color unquote
@@ -112,7 +112,7 @@
      (background-color unquote
                        (hex-to-rgba (get-color palette
                                                'background-l)
-                                    #:alpha 0.9)))))
+                                    #:alpha 0.7)))))
 
 (define* (rofi-capability #:key palette sans-font)
   `((".config/rofi/config.rasi" ,(plain-file "config.rasi"

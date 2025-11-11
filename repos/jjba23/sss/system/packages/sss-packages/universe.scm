@@ -204,7 +204,6 @@
         gnome-font-viewer
         gnome-system-monitor
         gnome-keyring
-        evolution-data-server
         gnome-themes-extra
         glibc-locales
         gnuplot

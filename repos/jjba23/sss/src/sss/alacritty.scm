@@ -39,8 +39,8 @@
   `((live_config_reload . true) (ipc_socket . true)))
 
 (define alacritty-window
-  `((padding . "{ x = 14, y = 14}") (decorations . None)
-    (opacity . 0.9)
+  `((padding . "{ x = 16, y = 16}") (decorations . None)
+    (opacity . 0.8)
     (blur . false) ;let WM take care of it
     ))
 

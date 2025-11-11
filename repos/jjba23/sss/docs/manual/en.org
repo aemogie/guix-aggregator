@@ -425,29 +425,38 @@ Find here an example configuration of a SSS overrides file for one of my machine
 #+end_src
 
 
-*** Available palettes
+*** Available palettes / themes
 
 You can set your active theme by modifying the ~override-palette~ (as symbol in Scheme) to the values:
 
-ef-themes:
+/ef-themes/
+
 - ef-melissa-light 
 - ef-bio 
 - ef-dream
 - ef-cyprus 
 - ef-autumn
 
-Solarized:  
+/Modus Vivendi/
+
+- modus-vivendi
+
+/Solarized/
+
 - solarized-light
 
-Everforest:  
+/Everforest/
+
 - everforest-light
 - everforest-dark
 
-Gruvbox:  
+/Gruvbox/
+
 - gruvbox-light
 - gruvbox-dark
 
-Catppuccin:
+/Catppuccin/
+
 - catppuccin-latte
 - catppuccin-mocha  
 

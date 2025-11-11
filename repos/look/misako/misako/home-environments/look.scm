@@ -10,7 +10,11 @@
   #:use-module ((misako home-environments look ssh)
                 #:prefix ssh-host:)
   #:use-module (misako home-environments look tokens)
-  #:use-module (misako home-environments look packages)
+  #:use-module ((misako home-environments look packages)
+                #:prefix packages:)
+  #|GNU Packages|#
+  #:use-module (gnu packages gnupg)
+  #:use-module (gnu packages linux)
   #|GNU Services|#
   #:use-module (gnu services)
   #|GNU Home Services|#
@@ -26,100 +30,22 @@
   #:use-module (gnu home services ssh)
   #:use-module (gnu home services syncthing)
   #:use-module (gnu home services xdg)
-  #|GNU Packages|#
-  #:use-module ((gnu packages rust-apps) #:select (helvum))
-  #:use-module (gnu packages admin)
-  #:use-module (gnu packages audio)
-  #:use-module (gnu packages bittorrent)
-  #:use-module (gnu packages browser-extensions)
-  #:use-module (gnu packages chromium)
-  #:use-module (gnu packages compression)
-  #:use-module (gnu packages emacs)
-  #:use-module (gnu packages emacs-xyz)
-  #:use-module (gnu packages fonts)
-  #:use-module (gnu packages freedesktop)
-  #:use-module (gnu packages glib)
-  #:use-module (gnu packages gnome)
-  #:use-module (gnu packages gnupg)
-  #:use-module (gnu packages graphics)
-  #:use-module (gnu packages gtk)
-  #:use-module (gnu packages guile)
-  #:use-module (gnu packages guile-xyz)
-  #:use-module (gnu packages image)
-  #:use-module (gnu packages image-viewers)
-  #:use-module (gnu packages libcanberra)
-  #:use-module (gnu packages linux)
-  #:use-module (gnu packages mail)
-  #:use-module (gnu packages messaging)
-  #:use-module (gnu packages music)
-  #:use-module (gnu packages ncurses)
-  #:use-module (gnu packages password-utils)
-  #:use-module (gnu packages pciutils)
-  #:use-module (gnu packages pdf)
-  #:use-module (gnu packages python)
-  #:use-module (gnu packages qt)
-  #:use-module (gnu packages rust-apps)
-  #:use-module (gnu packages shells)
-  #:use-module (gnu packages ssh)
-  #:use-module (gnu packages syndication)
-  #:use-module (gnu packages telegram)
-  #:use-module (gnu packages terminals)
-  #:use-module (gnu packages text-editors)
-  #:use-module (gnu packages version-control)
-  #:use-module (gnu packages video)
-  #:use-module (gnu packages vim)
-  #:use-module (gnu packages web-browsers)
-  #:use-module (gnu packages wm)
-  #:use-module (gnu packages xdisorg)
   #|Guix|#
   #:use-module (guix channels)
   #:use-module (guix gexp)
   #:use-module (guix utils)
   #:use-module (guix transformations)
-  #|NonGNU|#
-  #:use-module (nongnu packages game-client)
+  #|Nonguix|#
   #:use-module (nongnu packages nvidia)
-  #:use-module (nongnu packages productivity)
-  #:use-module (nongnu packages video)
-  #:use-module (nongnu packages dotnet)
-  #:use-module (nongnu packages fonts)
   #|Radix|#
   #:use-module (radix utils)
+  #:use-module (radix packages fish-xyz)
   #|Radix Home Services|#
   #:use-module (radix home services shells)
-  #|Radix Packages|#
-  #:use-module (radix packages fish-xyz)
-  #:use-module (radix packages freedesktop)
-  #:use-module (radix packages pulseaudio)
-  #:use-module (radix packages toys)
-  #:use-module (radix packages video)
-  #:use-module (radix packages xdisorg)
-  #|Saayix|#
-  #:use-module (saayix utils)
   #|Saayix Home Services|#
-  #:use-module (saayix services home wm)
   #:use-module (saayix services home dotfiles)
-  #:use-module (saayix services home hyprland)
-  #|Saayix Packages|#
-  #:use-module (saayix packages binaries)
-  #:use-module (saayix packages browser-extensions)
-  #:use-module (saayix packages emacs-xyz)
-  #:use-module (saayix packages file-managers)
-  #:use-module (saayix packages fonts)
-  #:use-module (saayix packages lsp)
-  #:use-module (saayix packages minecraft)
-  #:use-module (saayix packages pdf)
-  #:use-module (saayix packages productivity)
-  #:use-module (saayix packages terminals)
-  #:use-module (saayix packages text-editors)
-  #:use-module (saayix packages wm)
-  #|Misako Packages|#
-  #:use-module (misako packages binaries)
-  #:use-module (misako packages cuda)
   #|SOPS-Guix Secrets|#
   #:use-module (sops secrets)
-  #|SOPS-Guix Packages|#
-  #:use-module (sops packages sops)
   #|SOPS-Guix Home Services|#
   #:use-module (sops home services sops)
   #:export (look))
@@ -127,68 +53,38 @@
 (define look
   (nvidia-home-environment
     (packages
-      (plist
-        #|Utils           |# hyfetch xdg-utils gnupg pinentry-bemenu aria2
-        #|                |# light ncurses git sops kexec-tools pciutils
-        #|                |# gtk gtk+ gsettings-desktop-schemas
-        #|                |# p7zip dotnet
-        #|Productivity    |# wayneko newsraft playerctl spotify obsidian ;kew
-        #|Shell           |# fish
-        #|Terminal        |# foot ghostty
-        #|Guile           |# guile-next guile-readline guile-colorized guile-gcrypt
-        #|Text Editor     |# helix #|optional|# guile-lsp-server parinfer-rust ;helix-pdf
-        #|Typst           |# typst tinymist
-        #|Emacs           |# emacs-pgtk emacs-magit
-        #|                |# emacs-paredit emacs-yasnippet emacs-which-key emacs-eat
-        #|                |# emacs-vertico emacs-modus-themes emacs-debbugs emacs-modalka
-        #|                |# emacs-meow emacs-multiple-cursors emacs-catppuccin-theme
-        #|                |# emacs-mc-extras emacs-parinfer-rust-mode emacs-expand-region
-        #|                |# emacs-tabspaces emacs-activities emacs-move-text
-        #|                |# emacs-arei guile-ares-rs
-        #|                |# zen-browser-bin
-        #|Games           |# (nvidia?* (steam-for nvda)
-                                       (heroic-for nvda)
-                                       ;; (lutris-wrapped-for nvda)
-                                       mangohud
-                                       prismlauncher
-                                       mcpelauncher-client
-                                       osu-lazer-bin)
-        #|                |# python-wrapper xdotool ydotool
-        #|File Manager    |# yazi
-        #|Image Viewer    |# imv
-        #|Sound           |# wireplumber-minimal ncpamixer helvum easyeffects
-        #|Password Manager|# keepassxc password-store passff-host
-        #|PDF             |# sioyek zaread zathura zathura-pdf-poppler
-        #|Window Manager  |# hyprpaper hyprlock hypridle hyprcursor hyprland
-        #|                |# hyprland-qtutils hyprsunset eww/wayland
-        #|                |# mako waybar grim slurp bemenu fuzzel
-        #|                |# pipectl wl-mirror
-        #|                |# wl-clipboard wlsunset dbus qtwayland
-        #|                |# hyprcursor-mcmojave cursor-mcmojave
-        #|                |# (nvidia?* nvidia-vaapi-driver)
-        #|Messaging       |# senpai vesktop ;; telegram-desktop
-        #|E-mail          |# aerc #|required|# sound-theme-freedesktop
-        #|                |# libnotify
-        #|SSH             |# openssh
-        #|Video           |# mpv-minimal/wayland yt-dlp
-                             (if nvidia?
-                                 (list ffmpeg-nvenc obs-nvidia
-                                       obs-pipewire-audio-capture)
-                                 (list ffmpeg obs))
-        #|                |# (nvidia?* cuda)
-        #|Fonts           |# font-adobe-source-han-sans
-        #|                |# font-adobe-source-sans
-        #|                |# font-adobe-source-serif
-        #|                |# font-microsoft-times-new-roman
-        #|                |# font-microsoft-arial
-        #|                |# font-ipa-mj-mincho
-        #|                |# font-jetbrains-mono
-        #|                |# font-nerd-symbols
-        #|                |# font-google-noto-emoji
-        #|XDG Portals     |# xdg-desktop-portal xdg-desktop-portal-hyprland
-        #|                |# xdg-desktop-portal-termfilechooser
-        #|                |# xdg-desktop-portal-gtk))
-
+      (glist packages:bar
+             packages:browser
+             packages:clipboard
+             packages:compression
+             packages:cursor
+             packages:desktop
+             packages:downloads
+             ; packages:emacs
+             packages:file-management
+             packages:fonts
+             packages:games
+             packages:guile
+             packages:hypr*
+             packages:image
+             packages:mail
+             packages:messaging
+             ; packages:music
+             packages:news
+             packages:notifications
+             packages:password
+             packages:pdf
+             packages:portals
+             packages:presentation
+             packages:python
+             packages:screenshot
+             packages:selectors
+             packages:sound
+             packages:terminals
+             packages:text-editor
+             packages:typst
+             packages:video
+             packages:virtual-keyboard))
     (services
       (list
         (service home-channels-service-type

@@ -61,7 +61,7 @@ runs them concurrently by default to ensure robust testing practices.")
 (define-public maak
   (package
     (name "maak")
-    (version "0.2.7")
+    (version "0.2.9")
     (source
      (origin
        (method git-fetch)
@@ -70,7 +70,7 @@ runs them concurrently by default to ensure robust testing practices.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "12vvbvkfqdrsqyxplgg5skdi1akr3h6pvv67iln8zk1rnqkyhqx6"))))
+        (base32 "0108sj9rdqwprcx2ihlsfhbqiig08kah3k2yxc5w0yxzxdh8hzwv"))))
     (arguments
      (list
       #:source-directory "src"

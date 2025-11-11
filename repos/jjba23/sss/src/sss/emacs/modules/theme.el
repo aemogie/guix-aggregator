@@ -32,6 +32,8 @@
          (setq ef-bio-palette-overrides '((variable fg-main)
                                           (string green-faint)))
          (load-theme sss-emacs-theme t))
+        ((equal sss-emacs-theme 'modus-vivendi)
+         (load-theme sss-emacs-theme t))
         ((equal sss-emacs-theme 'ef-cyprus)
          (setq ef-cyprus-palette-overrides '((variable fg-main)
                                              (bg-main bg-dim)

@@ -54,6 +54,7 @@
 
 (define-syntax-rule (get-color palette sym)
   (match palette
+    ('modus-vivendi (cdr (assoc sym modus-vivendi)))
     ('ef-melissa-light (cdr (assoc sym ef-melissa-light)))
     ('ef-bio (cdr (assoc sym ef-bio)))
     ('ef-dream (cdr (assoc sym ef-dream)))
@@ -75,6 +76,7 @@
 
 (define-syntax-rule (is-dark-palette palette)
   (match palette
+    ('modus-vivendi #t)
     ('ef-melissa-light #f)
     ('ef-bio #t)
     ('ef-dream #t)
@@ -96,6 +98,7 @@
 
 (define-syntax-rule (get-emacs-theme palette)
   (match palette
+    ('modus-vivendi "'modus-vivendi")
     ('ef-melissa-light "'ef-melissa-light")
     ('ef-bio "'ef-bio")
     ('ef-dream "'ef-dream")
@@ -114,6 +117,7 @@
 
 (define-syntax-rule (get-fish-color palette)
   (match palette
+    ('modus-vivendi "feacd0")
     ('ef-melissa-light "ba5205")
     ('ef-bio "3fb83f")
     ('ef-dream "b0a0cf")
@@ -132,6 +136,7 @@
 
 (define-syntax-rule (get-gtk-accent-color palette)
   (match palette
+    ('modus-vivendi "'purple'")
     ('ef-melissa-light "'yellow'")
     ('ef-bio "'green'")
     ('ef-dream "'purple'")
@@ -153,6 +158,8 @@
 
 (define-syntax-rule (get-ansi-color palette)
   (match palette
+    ('modus-vivendi (assoc ansi-color-escapes
+                           'magenta))
     ('ef-melissa-light (assoc-ref ansi-color-escapes
                                   'yellow))
     ('ef-bio (assoc-ref ansi-color-escapes
@@ -305,3 +312,10 @@
     (text-l . "#bac2de")
     (background . "#1e1e2e")
     (background-l . "#181825")))
+
+(define modus-vivendi
+  `((primary . "#feacd0") (primary-l . "#caa6df")
+    (text . "#ffffff")
+    (text-l . "#989898")
+    (background . "#000000")
+    (background-l . "#1e1e1e")))

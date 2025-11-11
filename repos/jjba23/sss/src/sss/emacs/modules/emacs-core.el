@@ -101,7 +101,7 @@
 
   (ignore-errors
     (set-frame-parameter nil 'alpha-background 90)
-    (add-to-list 'default-frame-alist '(alpha-background . 90)))
+    (add-to-list 'default-frame-alist '(alpha-background . 80)))
 
   (when (fboundp 'windmove-default-keybindings)
     (windmove-default-keybindings))

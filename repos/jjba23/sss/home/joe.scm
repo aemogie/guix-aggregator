@@ -58,6 +58,7 @@
              (sss openpgp)
              (sss dirs)
              (sss waybar)
+             (sss user-scripts)
              (sss rofi)
              (sss niri)
              (sss labwc)
@@ -134,6 +135,7 @@
                                          #:monitor-power-seconds ($$$ 'monitor-power-seconds))
                    (labwc-capability #:sans-font ($$$ 'sans-font)
                                      #:extra-startups ($$$ 'labwc-extra-startups))
+                   ;; User Timer Scripts
                    (user-timer-script #:name 'set-random-wallpaper
                                       #:cmd (mk-random-wall-cmd (wallpapers
                                                                             #:clone-dir
@@ -149,7 +151,15 @@
                                       #:cmd (format #f
                                              "zenity --info --text=\"~a\" --display=:0.0"
                                              (G_
-                                              "It's time to move! Push-ups, squats and sit-ups!"))))))
+                                              "It's time to move! Push-ups, squats and sit-ups!")))
+                   ;; User Scripts
+                   (user-script #:name 'restart-emacs
+                                #:cmd (string-join (list (format #f
+                                                          "zenity --question --text=\"~a\" &&"
+                                                          (G_
+                                                           "Do you really want to fully restart Emacs?"))
+                                                         "pkill emacs &&"
+                                                         "emacs --daemon"))))))
 
 (define joe-shepherd-timers
   (list (user-timer #:user 'joe

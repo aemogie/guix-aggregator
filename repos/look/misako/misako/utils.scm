@@ -27,7 +27,6 @@
   #:export (nvidia-operating-system
             nvidia-home-environment
             obs-nvenc
-            plist
             glist
             misako-dir
             yumiko-dir
@@ -109,13 +108,6 @@
                   (flatten-package-list tail)))
          (else (list x))))
 
-(define (flatten lst)
-  (cond
-    ((null? lst) '())
-    ((pair? (car lst))
-     (append (flatten (car lst)) (flatten (cdr lst))))
-    (else (cons (car lst) (flatten (cdr lst))))))
-
 (define (filter-f lst)
   (filter (lambda (x)
             (if (eq? x #f)
@@ -124,10 +116,7 @@
           lst))
 
 (define glist
-  (compose filter-f flatten list))
-
-(define plist
-  (compose flatten-package-list list))
+  (compose filter-f flatten-package-list list))
 
 (define obs-nvenc
   (package/inherit obs

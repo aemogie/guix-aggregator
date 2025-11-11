@@ -1,8 +1,44 @@
 (define-module (misako home-environments look packages)
+  #:use-module (gnu packages admin)
+  #:use-module (gnu packages audio)
+  #:use-module (gnu packages bittorrent)
+  #:use-module (gnu packages browser-extensions)
+  #:use-module (gnu packages compression)
+  #:use-module (gnu packages cpp)
+  #:use-module (gnu packages emacs)
+  #:use-module (gnu packages emacs-xyz)
+  #:use-module (gnu packages fonts)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages gcc)
-  #:use-module (gnu packages cpp)
+  #:use-module (gnu packages glib)
+  #:use-module (gnu packages gnome)
+  #:use-module (gnu packages gnupg)
+  #:use-module (gnu packages graphics)
+  #:use-module (gnu packages guile)
+  #:use-module (gnu packages guile-xyz)
+  #:use-module (gnu packages guile-xyz)
+  #:use-module (gnu packages image)
+  #:use-module (gnu packages image-viewers)
+  #:use-module (gnu packages libcanberra)
+  #:use-module (gnu packages linux)
+  #:use-module (gnu packages mail)
+  #:use-module (gnu packages messaging)
+  #:use-module (gnu packages music)
+  #:use-module (gnu packages ncurses)
+  #:use-module (gnu packages password-utils)
+  #:use-module (gnu packages pciutils)
+  #:use-module (gnu packages pdf)
+  #:use-module (gnu packages python)
+  #:use-module (gnu packages qt)
+  #:use-module ((gnu packages rust-apps)
+                #:select (helvum
+                          typst))
+  #:use-module (gnu packages ssh)
+  #:use-module (gnu packages syndication)
+  #:use-module (gnu packages terminals)
+  #:use-module (gnu packages text-editors)
   #:use-module (gnu packages version-control)
+  #:use-module (gnu packages video)
   #:use-module (gnu packages wm)
   #:use-module (gnu packages xdisorg)
   #:use-module (guix gexp)
@@ -10,9 +46,227 @@
   #:use-module (guix packages)
   #:use-module (guix transformations)
   #:use-module (guix utils)
+  #:use-module (misako packages binaries)
+  #:use-module (misako utils)
+  #:use-module (nongnu packages fonts)
+  #:use-module (nongnu packages game-client)
+  #:use-module (nongnu packages nvidia)
+  #:use-module (nongnu packages video)
+  #:use-module (radix packages freedesktop)
+  #:use-module (radix packages music)
+  #:use-module (radix packages pulseaudio)
+  #:use-module (radix packages video)
+  #:use-module (saayix packages binaries)
+  #:use-module (saayix packages emacs-xyz)
+  #:use-module (saayix packages file-managers)
+  #:use-module (saayix packages fonts)
+  #:use-module (saayix packages lsp)
+  #:use-module (saayix packages minecraft)
+  #:use-module (saayix packages pdf)
+  #:use-module (saayix packages productivity)
   #:use-module (saayix packages terminals)
-  #:export (ghostty-tip
+  #:use-module (saayix packages wm)
+  #:use-module (sops packages sops)
+  #:export (bar
+            browser
+            clipboard
+            compression
+            cursor
+            desktop
+            downloads
+            emacs
+            file-management
+            fonts
+            games
+            guile
+            hypr*
+            image
+            mail
+            messaging
+            music
+            news
+            notifications
+            password
+            pdf
+            portals
+            presentation
+            python
+            screenshot
+            selectors
+            sound
+            terminals
+            text-editor
+            typst
+            video
+            virtual-keyboard
+
+            ghostty-tip
             hyprland-latest))
+
+(define bar
+  (list eww/wayland waybar))
+
+(define browser
+  (list zen-browser-bin))
+
+(define clipboard
+  (list wl-clipboard))
+
+(define compression
+  (list 7zip))
+
+(define cursor
+  (list cursor-mcmojave hyprcursor-mcmojave))
+
+(define desktop
+  (list git
+        gnupg
+        gsettings-desktop-schemas
+        hyfetch
+        light
+        ncurses
+        openssh
+        pciutils
+        qtwayland
+        sops
+        xdg-utils))
+
+(define downloads
+  (list aria2))
+
+(define emacs
+  (list emacs-activities
+        emacs-arei
+        emacs-catppuccin-theme
+        emacs-debbugs
+        emacs-eat
+        emacs-expand-region
+        emacs-magit
+        emacs-mc-extras
+        emacs-meow
+        emacs-modalka
+        emacs-modus-themes
+        emacs-move-text
+        emacs-multiple-cursors
+        emacs-paredit
+        emacs-parinfer-rust-mode
+        emacs-pgtk
+        emacs-tabspaces
+        emacs-vertico
+        emacs-which-key
+        emacs-yasnippet
+        guile-ares-rs))
+
+(define file-management
+  (list yazi))
+
+(define fonts
+  (list font-adobe-source-han-sans
+        font-adobe-source-sans
+        font-adobe-source-serif
+        font-google-noto-emoji
+        font-ipa-mj-mincho
+        font-jetbrains-mono
+        font-microsoft-arial
+        font-microsoft-times-new-roman
+        font-nerd-symbols))
+
+(define games
+  (nvidia?* (steam-for nvda)
+            (heroic-for nvda)
+            mangohud
+            mcpelauncher-client
+            osu-lazer-bin
+            prismlauncher))
+
+(define guile
+  (list guile-next guile-colorized guile-gcrypt guile-readline
+        guile-lsp-server
+        parinfer-rust))
+
+(define hypr*
+  (list hyprcursor
+        hypridle
+        hyprland dbus
+        hyprland-qtutils
+        hyprlock
+        hyprpaper
+        hyprsunset))
+
+(define image
+  (list imv))
+
+(define mail
+  (list aerc))
+
+(define messaging
+  (list senpai
+        vesktop))
+
+(define music
+  (list kew
+        spotify))
+
+(define news
+  (list newsraft))
+        ; helix-pdf))
+
+(define notifications
+  (list libnotify
+        mako
+        sound-theme-freedesktop))
+
+(define password
+  (list password-store passff-host))
+
+(define pdf
+  (list sioyek
+        zaread zathura zathura-pdf-poppler))
+
+(define portals
+  (list xdg-desktop-portal
+        xdg-desktop-portal-gtk
+        xdg-desktop-portal-hyprland
+        xdg-desktop-portal-termfilechooser))
+
+(define presentation
+  (list wl-mirror pipectl))
+
+(define python
+  (list python-wrapper))
+
+(define screenshot
+  (list grim slurp))
+
+(define selectors
+  (list bemenu fuzzel))
+
+(define sound
+  (list wireplumber-minimal
+        ncpamixer
+        helvum
+        playerctl
+        easyeffects))
+
+(define terminals
+  (list ghostty foot))
+
+(define text-editor
+  (list helix))
+
+(define video
+  (list mpv-minimal/wayland
+        yt-dlp
+        obs-pipewire-audio-capture
+        (yumiko?* ffmpeg-nvenc obs-nvidia nvidia-vaapi-driver)
+        (yuria?* ffmpeg obs)))
+
+(define virtual-keyboard
+  (list xdotool ydotool))
+
+(define typst
+  (list (@ (gnu packages rust-apps) typst)
+        tinymist))
 
 (define ghostty-tip
   ((options->transformation

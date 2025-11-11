@@ -35,8 +35,8 @@
       ('ef-cyprus (map digital-art-dreams-sss-wallpaper
                        '("joshua.jpg" "PXL_20250326_193029385.MP.jpg")))
       ('ef-dream (map digital-art-dreams-sss-wallpaper
-                      '("1362745.png" "inazuma.jpg" "diluc-tree.jpg"
-                        "tempel-pink-sun.jpg")))
+                      '("paisaje-de-la-luna-en-el-anime.jpg" "1362745.png"
+                        "inazuma.jpg" "diluc-tree.jpg" "tempel-pink-sun.jpg")))
       ('heavy-metal (map digital-art-dreams-sss-wallpaper
                          '("heavy-wall3.jpg" "heavy-wall2.jpg"
                            "heavy-wall.jpg" "tempel-red-sun.jpg")))
@@ -56,11 +56,14 @@
                            '("joshua.jpg" "PXL_20250326_193029385.MP.jpg")))
 
       ('dracula (map digital-art-dreams-sss-wallpaper
-                     '("dracula/Dracula.png" "dracula/Kraken.png"
+                     '("paisaje-de-la-luna-en-el-anime.jpg"
+                       "dracula/Dracula.png" "dracula/Kraken.png"
                        "dracula/dracula-soft-waves-44475a.png"
                        "tempel-pink-sun.jpg")))
       ('catppuccin-latte (map digital-art-dreams-sss-wallpaper
                               '("joshua.jpg" "PXL_20250326_193029385.MP.jpg")))
+      ('modus-vivendi (map digital-art-dreams-sss-wallpaper
+                           '("modo-vida-1.png")))
       ('catppuccin-mocha (map digital-art-dreams-sss-wallpaper
                               '("1362745.png" "inazuma.jpg" "diluc-tree.jpg"
                                 "tempel-pink-sun.jpg")))
