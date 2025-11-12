@@ -63,7 +63,8 @@
       ('catppuccin-latte (map digital-art-dreams-sss-wallpaper
                               '("joshua.jpg" "PXL_20250326_193029385.MP.jpg")))
       ('modus-vivendi (map digital-art-dreams-sss-wallpaper
-                           '("modo-vida-1.png")))
+                           '("space/heic2002a.jpg" "space/heic2007a.jpg"
+                             "space/potw2006a.jpg")))
       ('catppuccin-mocha (map digital-art-dreams-sss-wallpaper
                               '("1362745.png" "inazuma.jpg" "diluc-tree.jpg"
                                 "tempel-pink-sun.jpg")))

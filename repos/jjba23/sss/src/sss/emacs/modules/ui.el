@@ -186,6 +186,13 @@ According to size, color and font family"
                             :foreground (modus-themes-get-color-value 'bg-alt t sss-emacs-theme)
                             :background (modus-themes-get-color-value 'bg-alt t sss-emacs-theme))))
 
+    ;; ====== Modus theme specific tweaks =============
+    (when (string-prefix-p "modus-" (format "%s" sss-emacs-theme))
+      (ignore-errors
+        (set-face-attribute 'window-divider nil
+                            :foreground (modus-themes-get-color-value 'bg-active t sss-emacs-theme)
+                            :background (modus-themes-get-color-value 'bg-active t sss-emacs-theme))))
+
     ;; ======= Gruvbox specific tweaks ===========
 
     (when (equal sss-emacs-theme 'gruvbox-light-hard)
