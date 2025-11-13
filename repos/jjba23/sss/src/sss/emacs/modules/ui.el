@@ -39,7 +39,13 @@
     (add-hook 'consult-after-jump-hook #'pulsar-reveal-entry)))
 
 (use-package olivetti
-  :ensure t)
+  :ensure t
+  :bind (("C-c t o" . olivetti-mode))
+  :config
+  (setq olivetti-style 'fancy
+        olivetti-margin-width 100
+        olivetti-body-width 94)
+  (olivetti-set-width 94))
 
 (defun set-mode-line-faces()
   (progn
