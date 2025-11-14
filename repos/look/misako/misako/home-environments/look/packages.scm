@@ -19,7 +19,9 @@
   #:use-module (gnu packages guile-xyz)
   #:use-module (gnu packages image)
   #:use-module (gnu packages image-viewers)
+  #:use-module (gnu packages irc)
   #:use-module (gnu packages libcanberra)
+  #:use-module (gnu packages libreoffice)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages mail)
   #:use-module (gnu packages messaging)
@@ -201,6 +203,7 @@
 
 (define messaging
   (list senpai
+        catgirl
         vesktop))
 
 (define music
@@ -212,7 +215,7 @@
         ; helix-pdf))
 
 (define notifications
-  (list libnotify
+  (list ;libnotify
         mako
         sound-theme-freedesktop))
 

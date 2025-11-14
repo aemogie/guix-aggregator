@@ -1,0 +1,12 @@
+host = irc.libera.chat
+cert = libera.pem
+sasl-external
+join = #guix,#nonguix,#whereiseveryone
+highlight = look
+highlight = saayix
+highlight = cargo2guix
+highlight = misako
+highlight = ghostty
+highlight = helix
+highlight = look:
+highlight = look,

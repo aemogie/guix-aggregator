@@ -85,6 +85,7 @@
 
 (define* (niri-layout-config #:key palette)
   (rul 'layout
+       (dec 'background-color "transparent")
        (dec 'gaps 16)
        (dec 'center-focused-column "never")
        (rul 'preset-column-widths
@@ -477,6 +478,11 @@
         (rul 'hotkey-overlay
              (dec 'skip-at-startup #t))
         (dec 'prefer-no-csd #t)
+        (rul 'layer-rule
+             (dec 'match
+                  (prop '((namespace "\"^wallpaper$\""))))
+             (dec 'place-within-backdrop
+                  'true))
         (dec 'screenshot-path
              "~/pictures/screenshots/screen-%Y-%m-%d-%H-%M-%S.png")
         (rul 'animations

@@ -118,29 +118,11 @@
 (define glist
   (compose filter-f flatten-package-list list))
 
-(define obs-nvenc
-  (package/inherit obs
-    (name "obs-nvenc")
-    (arguments
-     (substitute-keyword-arguments (package-arguments obs)
-       ((#:configure-flags flags)
-        #~(cons* "-DENABLE_NVENC=ON"
-                 (delete "-DENABLE_NVENC=OFF" #$flags)))))
-    (inputs
-      (modify-inputs (package-inputs obs)
-        (prepend nv-codec-headers)
-        (replace "ffmpeg" ffmpeg-nvenc)))))
-
-(define replace-all-nvidia
-  (package-input-grafting
-    `((,mesa   . ,nvda)
-      (,ffmpeg . ,ffmpeg-nvenc))))
-
 (define-syntax-rule (nvidia-home-environment exp ...)
   "Like 'home-environment' but graft Mesa with the proprietary NVIDIA driver."
   (if nvidia?
       (with-transformation
-        replace-all-nvidia
+        replace-mesa
         (home-environment exp ...))
       (home-environment exp ...)))
 

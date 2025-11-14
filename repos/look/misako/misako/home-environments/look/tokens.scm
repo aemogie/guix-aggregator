@@ -48,4 +48,4 @@
   (map (lambda (x)
          (cons (string->symbol (string-join x "."))
                (secret x)))
-       (append secrets:aerc-keys secrets:senpai-keys)))
+       (append secrets:all-keys)))
