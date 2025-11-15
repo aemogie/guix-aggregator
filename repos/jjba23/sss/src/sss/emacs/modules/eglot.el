@@ -86,11 +86,13 @@
                                                         :indentSize 2
                                                         :semicolons "remove"
                                                         :tabSize 2))
-                  :rust-analyzer (:cargo (:sysroot "discover"
-                                                   :features "all"
-                                                   :buildScripts (:enable t))
+                  :rust-analyzer (:check (:command "clippy")
+                                         :cargo (:sysroot "discover"
+                                                          :features "all"
+                                                          :buildScripts (:enable t))
                                          :diagnostics (:disabled ["macro-error"])
                                          :procMacro (:enable t))
+
                   :yaml ( :format (:enable t)
                           :validate t
                           :hover t
