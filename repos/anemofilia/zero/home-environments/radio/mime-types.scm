@@ -13,12 +13,12 @@
     "application/x-extension-htm"
     "application/x-extension-xhtml"
     "application/x-extension-xht"
+    "text/html"
     "x-scheme-handler/http"
     "x-scheme-handler/https"))
 
 (define editor
-  `("text/html"
-    "text/plain"
+  `("text/plain"
     "text/troff"
     "text/xml"
     "text/x-c"

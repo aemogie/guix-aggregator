@@ -49,8 +49,8 @@
 }
 
 
-MIRROR_NAME.guix.moe {
-	import logging MIRROR_NAME.guix.moe
+cache-us-lax.guix.moe {
+	import logging cache-us-lax.guix.moe
 
 	handle /*.narinfo {
 		root * /var/cache/guix-moe/narinfo

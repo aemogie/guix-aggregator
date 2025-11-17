@@ -60,7 +60,7 @@
                  config => (guix-configuration
                              (inherit config)
                              (authorized-keys %guix-keys)
-                             (substitute-urls '("https://cache-cdn.guix.moe"))
+                             (substitute-urls '("https://cache-fi.guix.moe"))
                              (extra-options '("--cores=4")))))))))
 
   ((compose (rosenthal-transformation-zfs #:boot? #t))
@@ -606,7 +606,9 @@ rsync://cache.guix.moe
   (service caddy-service-type
     (caddy-configuration
       (caddy (spec->pkg "caddy-dolly"))
-      (caddyfile <<caddy-config>>)))
+      (caddyfile <<caddy-config>>)
+      (group-id 967)
+      (user-id 972)))
 #+end_src
 
 #+name: caddy-config
@@ -725,7 +727,10 @@ rsync://cache.guix.moe
          ("repository.pull-request"
           ("DEFAULT_MERGE_STYLE" . "rebase"))
          ("repository.signing"
-          ("DEFAULT_TRUST_MODEL" . "committer"))))))
+          ("DEFAULT_TRUST_MODEL" . "committer"))))
+      (group-id 969)
+      (user-id 974)))
+#+end_src
 #+end_src
 
 ** misskey
@@ -754,7 +759,8 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
          ("clusterLimit" . 1)
          ("outgoingAddressFamily" . "dual")
          ("proxyRemoteFiles" . #t)
-         ("signToActivityPubGet" . #t)))))
+         ("signToActivityPubGet" . #t)))
+      (user-id 975)))
 #+end_src
 
 ** miniflux
@@ -774,7 +780,9 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
     (conduit-configuration
       (conduit (file-append (spec->pkg "tuwunel-bin") "/bin/tuwunel"))
       (database-path "/var/lib/tuwunel")
-      (config (local-file (testament-plain "tuwunel.toml")))))
+      (config (local-file (testament-plain "tuwunel.toml")))
+      (group-id 968)
+      (user-id 973)))
 #+end_src
 
 ** vaultwarden
@@ -784,7 +792,8 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
       (postgresql-password-file "")
       (database-url "postgresql://vaultwarden:placeholder@localhost/vaultwarden")
       (port 23263)
-      (extra-options '(("ROCKET_ADDRESS" . "127.0.0.1")))))
+      (extra-options '(("ROCKET_ADDRESS" . "127.0.0.1")))
+      (user-id 977)))
 #+end_src
 
 * Monitoring
@@ -810,7 +819,9 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
           ("host" . "127.0.0.1:5432")
           ("user" . "grafana")
           ("password" . "placeholder")
-          ("ssl_mode" . "disable"))))))
+          ("ssl_mode" . "disable"))))
+      (group-id 971)
+      (user-id 978)))
 #+end_src
 
 ** mimir
@@ -835,7 +846,9 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
           ("sharding_ring"
            ("replication_factor" . 1)))
          ("usage_stats"
-          ("enabled" . #f))))))
+          ("enabled" . #f))))
+      (group-id 972)
+      (user-id 979)))
 #+end_src
 
 ** loki
@@ -867,7 +880,9 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
          ("pattern_ingester"
           ("enabled" . #t))
          ("analytics"
-          ("reporting_enabled" . #f))))))
+          ("reporting_enabled" . #f))))
+      (group-id 973)
+      (user-id 980)))
 #+end_src
 
 ** alloy

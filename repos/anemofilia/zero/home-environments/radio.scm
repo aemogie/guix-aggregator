@@ -214,8 +214,7 @@
             (service home-shepherd-timer-service-type)
             (service home-shepherd-transient-service-type)
             (service radix:home-shepherd-timer-service-type
-                     (list timer:alarm
-                           timer:remind))
+                     (list timer:alarm))
 
             #|Shell services|#
             (service home-tty-colorscheme-service-type

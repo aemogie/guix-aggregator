@@ -37,26 +37,18 @@
        (replace-mesa
         (append (specs->pkgs+out
                  "curl"
-                 "digikam"
                  "dino"
                  "fd"
                  "foot"
                  "git"
                  "gnupg"
-                 "imv"
-                 "kdenlive"
                  "mosh"
-                 "mpv-nvidia"
                  "ncurses"
                  "niri"
-                 "obs-nvidia"
                  "openjdk:jdk"
-                 "prismlauncher-dolly"
                  "ripgrep"
                  "rsync"
                  "sops"
-                 "steam-nvidia"
-                 "telegram-desktop"
                  "unzip"
                  "wl-clipboard"
 
@@ -65,12 +57,29 @@
                  "xdg-desktop-portal-gtk"
                  "xdg-utils"
 
+                 "exo"
+                 "file-roller"
+                 "thunar"
+                 "thunar-archive-plugin"
+                 "thunar-media-tags-plugin"
+                 "thunar-volman"
+
                  "librewolf"
                  "adaptive-tab-bar-colour-icecat"
                  "bitwarden-icecat"
                  "livemarks-icecat"
                  "ohmyech-icecat"
                  "ublock-origin-icecat"
+
+                 "digikam"
+                 "gimp"
+                 "imv"
+                 "kdenlive"
+                 "mpv-nvidia"
+                 "obs-nvidia"
+
+                 "prismlauncher-dolly"
+                 "steam-nvidia"
 
                  <<package>>)
                 %base-packages)))
@@ -556,7 +565,6 @@ Open TCP port 5558 and connect to server IPv4 address.
          (specs->pkgs "foot"
                       "light"
                       "rofi"
-                      "setxkbmap"
                       "swaylock-effects"
                       "wireplumber"
                       "xwayland-satellite")))))
@@ -694,6 +702,7 @@ Open TCP port 5558 and connect to server IPv4 address.
 
 * Multimedia & Miscellaneous
 #+begin_src scheme :noweb-ref module
+  (gnu services syncthing)
   (rosenthal services bittorrent)
 #+end_src
 
@@ -712,7 +721,6 @@ Open TCP port 5558 and connect to server IPv4 address.
 ** steam
 #+begin_src scheme :noweb-ref home-environment-variable
   ("GUIX_SANDBOX_HOME" . "$XDG_DATA_HOME/steam")
-  ("GUIX_SANDBOX_EXTRA_SHARES" . "$HOME/Downloads:$HOME/Pictures/Screenshots")
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref service
@@ -726,6 +734,13 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
   (udev-rule "60-controller-permission.rules" "\
   KERNEL==\"event*\", ATTRS{idVendor}==\"045e\", ATTRS{idProduct}==\"028e\", \
   MODE=\"0660\", GROUP=\"users\"")
+#+end_src
+
+** syncthing
+#+begin_src scheme :noweb-ref service
+  (service syncthing-service-type
+    (syncthing-configuration
+      (user "hako")))
 #+end_src
 
 ** adb
@@ -788,18 +803,6 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
 #+end_src
 
 ** email
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'l2md
-      home-shepherd-service-type
-    (list (shepherd-service
-            (provision '(l2md))
-            (start
-             #~(make-forkexec-constructor
-                (list #$(file-append (spec->pkg "l2md") "/bin/l2md") "--verbose")))
-            (stop
-             #~(make-kill-destructor)))))
-#+end_src
-
 #+begin_src scheme :noweb-ref home-service
   (simple-service 'update-mailbox
       home-shepherd-service-type

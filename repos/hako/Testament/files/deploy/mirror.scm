@@ -18,11 +18,6 @@
        (host-key ssh-host-key)))))
 
 (list (mirror
-       #:mirror-name "cache-hk"
-       #:system "x86_64-linux"
-       #:ssh-host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPfURzADzVsKpcwBAx0VfcOejhde1amjP9zav/ZFIJ0Y"
-       #:bios-boot "/dev/vda")
-      (mirror
        #:mirror-name "cache-sg"
        #:system "x86_64-linux"
        #:ssh-host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM9Ad1hMSRW2+mP8UTx6XCK8ioLA+1ZyBmCHChvvBvzk"

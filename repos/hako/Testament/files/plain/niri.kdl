@@ -34,7 +34,6 @@ overview {
 xwayland-satellite {
     path "$$bin/xwayland-satellite$$"
 }
-spawn-at-startup "$$bin/setxkbmap$$ us dvorak ctrl:nocaps"
 
 layout {
     focus-ring {
@@ -76,7 +75,7 @@ binds {
     XF86MonBrightnessUp   allow-when-locked=true { spawn "$$bin/light$$" "-A" "5"; }
 
     Mod+Return hotkey-overlay-title="Open Editor: emacsclient"  { spawn "emacsclient" "--create-frame" "--no-wait"; }
-    Mod+Space  hotkey-overlay-title="Run an Application: rofi"  { spawn "$$bin/rofi$$" "-show" "drun"; }
+    Mod+D      hotkey-overlay-title="Run an Application: rofi"  { spawn "$$bin/rofi$$" "-show" "drun"; }
     Mod+L      hotkey-overlay-title="Lock the Screen: swaylock" { spawn "$$bin/swaylock$$" "--clock" "--daemonize" "--ignore-empty-password" "--image" "~/Pictures/Pixez/115008128_p0.jpg"; }
     Mod+T      hotkey-overlay-title="Open Terminal: foot"       { spawn "$$bin/foot$$"; }
 
@@ -104,7 +103,7 @@ binds {
 
     Mod+Shift+Q               { close-window; }
 
-    Alt+Tab repeat=false      { toggle-overview; }
+    Mod+Tab repeat=false      { toggle-overview; }
 
     Print                     { screenshot; }
     Ctrl+Print                { screenshot-screen; }

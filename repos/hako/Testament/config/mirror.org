@@ -153,14 +153,7 @@ Administration accounts.
   (service caddy-service-type
     (caddy-configuration
       (caddy (spec->pkg "caddy-dolly"))
-      (caddyfile
-       (with-imported-modules '((guix build utils))
-         (computed-file "mirror.caddyfile"
-           #~(begin
-               (use-modules (guix build utils))
-               (copy-file #$(local-file (testament-plain "mirror.caddyfile")) #$output)
-               (substitute* #$output
-                 (("MIRROR_NAME") #$mirror-name))))))))
+      (caddyfile (local-file (testament-plain (string-append mirror-name ".caddyfile"))))))
 #+end_src
 
 ** mirroring
@@ -175,7 +168,7 @@ Administration accounts.
                          (use-modules (guix build utils))
                          (mkdir-p "/var/cache/guix-moe/narinfo")
                          (invoke #$(file-append (spec->pkg "rsync") "/bin/rsync")
-                                 "-azvh" "--delete"
+                                 "-avh" "--delete"
                                  "rsync://cache.guix.moe/narinfo/"
                                  "/var/cache/guix-moe/narinfo/")))))
             #:requirement '(user-processes))))

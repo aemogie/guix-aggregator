@@ -151,7 +151,6 @@
 (define file-managing
   (list #|disk         |# lf
         #|file         |# file
-        #|haskell-xyz  |# pandoc
         #|image-viewers|# chafa
         #|pdf          |# img2pdf poppler
         #|seninha      |# fmutils

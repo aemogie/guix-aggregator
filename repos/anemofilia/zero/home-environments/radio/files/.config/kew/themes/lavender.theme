@@ -1,0 +1,60 @@
+# ============================================
+# Lavender
+# ============================================
+
+[theme]
+name=Lavender
+author=Anemofilia
+
+# Core colors
+accent=#a790d3
+text=#a790d3
+textDim=#a790d3
+textMuted=#a790d3
+
+# General Colors
+logo=#a790d3
+header=#626262
+footer=#626262
+help=#626262
+link=#a790d3
+nowplaying=#a790d3
+
+# Playlist View
+playlist.rownum=#a790d3
+playlist.title=#a790d3
+playlist.playing=#a790d3
+
+# Track View
+trackview.title=#a790d3
+trackview.artist=#a790d3
+trackview.album=#a790d3
+trackview.year=#a790d3
+trackview.time=#a790d3
+trackview.visualizer=#a790d3
+trackview.lyrics=#a790d3
+
+# Library View
+library.artist=#a790d3
+library.album=#a790d3
+library.track=#a790d3
+library.enqueued=#a790d3
+library.playing=#a790d3
+
+# Search
+search.label=#a790d3
+search.query=#a790d3
+search.result=#a790d3
+search.enqueued=#a790d3
+search.playing=#a790d3
+
+# Progress
+progress.filled=#a790d3
+progress.empty=#313131
+progress.elapsed=#a790d3
+
+# Status
+status.info=-1          # Default foreground
+status.warning=#a790d3  # The old school gray, this works on most terminals
+status.error=#a790d3    # The old school gray, this works on most terminals
+status.success=#a790d3  # The old school gray, this works on most terminals

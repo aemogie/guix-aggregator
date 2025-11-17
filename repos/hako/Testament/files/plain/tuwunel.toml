@@ -6,6 +6,7 @@ database_path = "/var/lib/tuwunel"
 new_user_displayname_suffix = ""
 require_auth_for_profile_requests = true
 allow_public_room_directory_over_federation = true
+trusted_servers = ["matrix.org"]
 
 [global.well_known]
 client = "https://matrix.guix.moe"

@@ -1,0 +1,76 @@
+# SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+{
+	metrics
+	log {
+		output file /var/log/caddy/caddy.log
+		format filter {
+			request>remote_ip ip_mask {
+				ipv4 20
+				ipv6 44
+			}
+			request>client_ip ip_mask {
+				ipv4 20
+				ipv6 44
+			}
+			wrap json
+		}
+	}
+	servers {
+		trusted_proxies static private_ranges
+		client_ip_headers X-Forwarded-For X-Real-IP
+		trusted_proxies_strict
+	}
+}
+
+
+(logging) {
+	log {
+		output file /var/log/caddy/{args[0]}.log
+		format filter {
+			wrap json
+			request>remote_ip ip_mask {
+				ipv4 20
+				ipv6 44
+			}
+			request>client_ip ip_mask {
+				ipv4 20
+				ipv6 44
+			}
+			fields {
+				request>uri query {
+					delete access_token
+				}
+			}
+		}
+	}
+}
+
+
+cache-sg.guix.moe, cache-hk.guix.moe {
+	import logging cache-sg.guix.moe
+
+	handle /*.narinfo {
+		root * /var/cache/guix-moe/narinfo
+		file_server
+	}
+
+	handle /nar/* {
+		reverse_proxy https://nars.guix.moe {
+			header_up Host {upstream_hostport}
+		}
+	}
+
+	respond "Visit guix [dot] moe for more information." 404 {
+		close
+	}
+}
+
+
+:80, :443 {
+	respond /* "Access denied" 403 {
+		close
+	}
+}

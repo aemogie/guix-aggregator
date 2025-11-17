@@ -4,7 +4,7 @@
 
 [general]
         base = ~/.local/share/l2md/
-        period = 43200
+        oneshot = 1
 
 # emacs-devel@gnu.org
 [repo emacs-devel]

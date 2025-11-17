@@ -33,6 +33,8 @@
 	pushInsteadOf = "https://github.com/"
 [url "git@gitlab.com:"]
 	pushInsteadOf = "https://gitlab.com/"
+[url "forgejo@git.urspace.moe:"]
+	pushInsteadOf = "https://git.urspace.moe/"
 
 # emacs-forge
 [github]

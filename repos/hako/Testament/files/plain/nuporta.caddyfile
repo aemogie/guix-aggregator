@@ -223,7 +223,7 @@ cache-cdn.guix.moe {
 	}
 }
 
-cache-fi.guix.moe, cache-de.guix.moe {
+cache-fi.guix.moe, cache-de.guix.moe, cache-it.guix.moe {
 	import block_bots
 	import logging cache-fi.guix.moe
 
