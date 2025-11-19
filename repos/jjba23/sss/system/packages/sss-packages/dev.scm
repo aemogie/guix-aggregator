@@ -21,9 +21,14 @@
   #:use-module (gnu packages lisp)
   #:use-module (gnu packages node)
   #:use-module (gnu packages admin)
+  #:use-module (gnu packages rust-apps)
   #:use-module (gnu packages web)
   #:export (dev-packages))
 
 (define dev-packages
-  (make-parameter (list (specification->package "openjdk@21") cl-asdf sbcl
-                        httpd inxi)))
+  (make-parameter (list (specification->package "openjdk@21")
+                        cl-asdf
+                        sbcl
+                        httpd
+                        inxi
+                        hyperfine)))
