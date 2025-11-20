@@ -62,6 +62,7 @@
 
   #|Radix packages|#
   #|A|# #:use-module (radix packages admin)
+        #:use-module (radix packages audio)
   #|D|# #:use-module (radix packages disk)
   #|E|# #:use-module (radix packages emacs-xyz)
   #|F|# #:use-module (radix packages fish-xyz)
@@ -69,7 +70,6 @@
   #|G|# #:use-module (radix packages games)
   #|K|# #:use-module (radix packages kak-xyz)
   #|M|# #:use-module (radix packages music)
-  #|P|# #:use-module (radix packages pulseaudio)
   #|S|# #:use-module (radix packages seninha)
   #|T|# #:use-module (radix packages text-editors)
         #:use-module (radix packages toys)
@@ -194,9 +194,9 @@
   (list #|lean|# lean4))
 
 (define sound
-  (list #|linux     |# wireplumber-minimal
-        #|pulseaudio|# ncpamixer
-        #|rust-apps |# helvum))
+  (list #|linux    |# wireplumber-minimal
+        #|audio    |# pipemixer
+        #|rust-apps|# helvum))
 
 (define tex
   (list #|tex|# rubber

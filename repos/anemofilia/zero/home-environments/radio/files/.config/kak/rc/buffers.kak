@@ -46,6 +46,3 @@ map global buffer Q ': delete-buffer!<ret>' \
 
 map global buffer <space> ': open-buffer-picker<ret>' \
   -docstring 'open buffer picker'
-
-map global goto b ': open-buffer-picker<ret>' \
-  -docstring 'open buffer picker'

@@ -24,24 +24,24 @@ define-command -override lf-open \
   terminal /bin/sh -c %{
     # Local variables
     kak_buffile=$1 kak_session=$2 kak_client=$3
- 
+
     # Create temporary file for selection
     lf_tmp=$(mktemp "${TMPDIR:-/tmp}"/lf-open.XXXXXXXXXX)
- 
+
     # Get working directory of current buffer
     kak_pwd=$(dirname "${kak_buffile}")
- 
+
     # Pick a file with lf
     $(lf -selection-path "${lf_tmp}" "${kak_pwd}")
- 
+
     # Get first line of selection file (ignoring multiple selections)
     filename=$(head -n 1 "${lf_tmp}")
- 
+
     # Only echo a command back if there was a selection
     if [ -n "$filename" ]; then
       # Construct the command to pass to kakoune
       kak_cmd="evaluate-commands -client $kak_client edit $filename"
- 
+
       # Echo the command back to the parent session
       echo $kak_cmd | kak -p $kak_session
     fi
