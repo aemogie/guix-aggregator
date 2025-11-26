@@ -24,23 +24,36 @@
          :text {focused-toplevel[0].title}))
 
 ;; (network) __________________________________________________________________
+(defpoll wireless
+  :interval "0s"
+  `ip a | grep -Ewom1 'wl[^:]+'`)
+
+(defpoll ethernet
+  :interval "0s"
+  `ip a | grep -Ewom1 'en[^:]+'`)
+
+(defvar current-interface "wlp1s0")
+
+(defwidget net-block [value]
+ (box :space-evenly false
+      {value > powi(10,6) ?
+       "${round(value/powi(10,6),1)}MB/s" :
+       value > powi(10,3) ?
+       "${round(value/powi(10,3),1)}KB/s" :
+       "${round(value,1)}B/s"}))
+
 (defwidget net []
-  (box :class "net"
-       :orientation "horizontal"
-       :halign "end"
-       :space-evenly false
-       (image :path "icons/net-upload.png")
-       {EWW_NET["wlp2s0"]["NET_UP"] > powi(10,6) ?
-        "${round(EWW_NET["wlp2s0"]["NET_UP"]/powi(10,6),1)}MB/s" :
-        EWW_NET["wlp2s0"]["NET_UP"] > powi(10,3) ?
-        "${round(EWW_NET["wlp2s0"]["NET_UP"]/powi(10,3),1)}KB/s" :
-        "${round(EWW_NET["wlp2s0"]["NET_UP"],1)}B/s"}
-       (image :path "icons/net-download.png")
-       {EWW_NET["wlp2s0"]["NET_DOWN"] > powi(10,6) ?
-        "${round(EWW_NET["wlp2s0"]["NET_DOWN"]/powi(10,6),1)}MB/s" :
-        EWW_NET["wlp2s0"]["NET_DOWN"] > powi(10,3) ?
-        "${round(EWW_NET["wlp2s0"]["NET_DOWN"]/powi(10,3),1)}KB/s" :
-        "${round(EWW_NET["wlp2s0"]["NET_DOWN"],1)}B/s"}))
+  (eventbox :class "net"
+            :orientation "horizontal"
+            :halign "end"
+            :onclick {current-interface =~ '^wl.*' ?
+                      "${EWW_CMD} update current-interface=${ethernet}" :
+                      "${EWW_CMD} update current-interface=${wireless}"}
+  (box :space-evenly false
+       (image :path "/home/radio/.config/eww/icons/net-upload.png")
+       (net-block :value {EWW_NET[current-interface]["NET_UP"]})
+       (image :path "/home/radio/.config/eww/icons/net-download.png")
+       (net-block :value {EWW_NET[current-interface]["NET_DOWN"]}))))
 
 ;; (memory) ___________________________________________________________________
 (defwidget memory []
@@ -92,25 +105,29 @@
                  "${sink.volume}%")))
 
 ;; (battery) __________________________________________________________________
+(defpoll bat
+  :interval "0s"
+  `fd BAT /sys/class/power_supply/ | xargs basename`)
+
 (defwidget battery []
   (box :class "battery"
        :orientation "horizontal"
        :halign "end"
        :space-evenly false
-       (image :path {EWW_BATTERY["BAT0"].status == "Charging" ?
+       (image :path {EWW_BATTERY[bat].status == "Charging" ?
                      "icons/battery-charging.png" :
-                     EWW_BATTERY["BAT0"].capacity == 0 ?
+                     EWW_BATTERY[bat].capacity == 0 ?
                      "icons/battery-empty.png" :
-                     EWW_BATTERY["BAT0"].capacity <= 25 ?
+                     EWW_BATTERY[bat].capacity <= 25 ?
                      "icons/battery-very-low.png" :
-                     EWW_BATTERY["BAT0"].capacity <= 45 ?
+                     EWW_BATTERY[bat].capacity <= 45 ?
                      "icons/battery-low.png" :
-                     EWW_BATTERY["BAT0"].capacity <= 65 ?
+                     EWW_BATTERY[bat].capacity <= 65 ?
                      "icons/battery-medium.png" :
-                     EWW_BATTERY["BAT0"].capacity <= 85 ?
+                     EWW_BATTERY[bat].capacity <= 85 ?
                      "icons/battery-high.png" :
                      "icons/battery-full.png"})
-       "${EWW_BATTERY["BAT0"].capacity}%"))
+       "${EWW_BATTERY[bat].capacity}%"))
 
 ;; (time) _____________________________________________________________________
 (defvar calendar-visible false)

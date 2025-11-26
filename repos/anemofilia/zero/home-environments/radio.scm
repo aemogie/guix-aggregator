@@ -170,7 +170,7 @@
                         ,(codeberg-url "look" "misako"))
                        ("resources/code/scm/saayix"
                         ,(codeberg-url "look" "saayix"))
-                       ("resources/code/scm/guile"
+                       ("resources/code/scm/goblins"
                         ,(codeberg-url "spritely" "goblins"))
                        ("resources/code/scm/guile"
                         ,(codeberg-url "guile"))

@@ -688,7 +688,7 @@
     "[encrypt]\n"
     (string-append "for-self = [\"" %self-gpg-signature "\"]\n")
     "[pki]\n"
-    (string-append "vouch.certifier-self = [\"" %self-gpg-signature "\"]\n")
+    (string-append "vouch.certifier-self = \"" %self-gpg-signature "\"\n")
     "[sign]\n"
     (string-append "signer-self = [\"" %self-gpg-signature "\"]\n")))
 
@@ -1028,22 +1028,6 @@
 
 ;;; Executables for the $HOME/bin folder.
 
-(define %connect-to-UTHSC-VPN
-  (program-file
-    "GN_vpn_connect"
-    #~(system*
-        #$(file-append (S "dbus") "/bin/dbus-launch")
-        #$(file-append (S "openconnect-sso") "/bin/openconnect-sso")
-        "--server" "uthscvpn1.uthsc.edu" "--authgroup" "UTHSC"
-        "--" "--script"
-        ;; This needs to be one string but I can't get it to work correctly.
-        ;#$(string-append "'"
-        ;                 (file-append (S "vpn-slice") "/bin/vpn-slice")
-                         #$(file-append (S "vpn-slice") "/bin/vpn-slice")
-                         "128.169.0.0/16"
-        ;                 "'")
-        )))
-
 (define %update-guix-gpg-keyring
   (program-file
     "update-guix-members-gpg-keys"
@@ -1374,7 +1358,6 @@ rm ${XDG_CACHE_HOME:-~/.cache}/tofi-drun\n")))))
            (".local/share/qutebrowser/pdfjs"
             ,(file-append (S "pdfjs") "/share/pdfjs"))
            ;; Also files into the bin directory.
-           ;("bin/GN_vpn_connect" ,%connect-to-UTHSC-VPN)
            ("bin/update-guix-keyring" ,%update-guix-gpg-keyring)
            ("bin/openbsd-netcat"
             ,(file-append (S "netcat-openbsd") "/bin/nc"))))
@@ -1503,7 +1486,6 @@ rm ${XDG_CACHE_HOME:-~/.cache}/tofi-drun\n")))))
            (".local/share/qutebrowser/pdfjs"
             ,(file-append (S "pdfjs") "/share/pdfjs"))
            ;; Also files into the bin directory.
-           ;("bin/GN_vpn_connect" ,%connect-to-UTHSC-VPN)
            ("bin/openbsd-netcat"
             ,(file-append (S "netcat-openbsd") "/bin/nc"))))
 

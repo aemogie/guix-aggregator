@@ -440,6 +440,7 @@
                        "transmission-daemon"
                        "podman system service --time=0 unix:///tmp/podman.sock"
                        "xdg-user-dirs-update"
+                       "nm-applet"
                        ,(format #f "fyi \\\"~a\\\" \\\"~a\\\""
                                 (G_
                                  "Welcome to the SSS/GNU power user session")

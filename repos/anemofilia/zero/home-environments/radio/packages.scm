@@ -118,7 +118,7 @@
         #|terminals  |# foot
         #|toys       |# wayneko
         #|video      |# wf-recorder
-        #|wm         |# eww/wayland fnott lswt river-bedload rivercarro wbg
+        #|wm         |# eww/wayland fnott lswt river-bedload rivercarro wbg wlr-randr
         #|web        |# jq
         #|xdisorg    |# fuzzel-lowercase gammastep-minimal wl-clipboard wlrctl
         #|zig-xyz    |# river))

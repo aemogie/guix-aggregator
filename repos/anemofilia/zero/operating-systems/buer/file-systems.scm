@@ -147,5 +147,4 @@
          "/etc/ssh")))
 
 (define persistent-files
-  (list "/etc/machine-id"
-        "/etc/wpa-supplicant.conf"))
+  `("/etc/machine-id"))
