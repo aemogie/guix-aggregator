@@ -18,6 +18,9 @@ zstyle ':completion:*:default' menu select=1
 bindkey -e
 bindkey "^[[3~" delete-char
 
+# word characters are alphanumeric characters only
+WORDCHARS='*?_-.[]~=&;!#$%^(){}<>'
+
 # on guix systems, go to ~/.config/zsh/ and delete the cache to reconfigure if using a package manager. avoiding here.
 
 TMOUT=600

@@ -5,21 +5,24 @@
   "Variable indicating whether system is managed by guix.")
 
 (setq is-guix (not (string-equal (system-name) "nineveh")))
-(setq package-enable-at-startup nil)
 
-;; set gc threshold for startup performance
-(setq gc-cons-threshold (* 50 1000 1000))
+;; set high gc at startup, then restore to sane defaults after init
+(setq gc-cons-threshold (* 50 1000 1000)
+      gc-cons-percentage 0.6)
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            (setq gc-cons-threshold (* 8 1024 1024)
+                  gc-cons-percentage 0.1)))
 
 ;; define personal keybinding prefix (an unpragmatic keybinding repurposed for reprogrammed keyboard)
 (defvar my-map (make-sparse-keymap))
 (define-key global-map (kbd "C-M-]") my-map)
 
-;; remap keyboard-quit for qmk keyboards
+;; remap keyboard-quit For qmk keyboards
 (global-set-key (kbd "C-M-s-]") 'keyboard-quit)
 
 ;; an all-purpose emacs alarm
 (defun my/alarm (&optional length &rest _)
-  (interactive)
   "My Emacs alarm. If optional parameter LENGTH is `long`, plays the longer alarm."
   (let ((file (expand-file-name (if (equal length "long")
                                     "sounds/bell_multiple.wav"
@@ -42,12 +45,12 @@
   			 ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
 
 ;; enable packages from quelpa
-(use-package quelpa
-  :ensure t)
+;; (use-package quelpa
+;;   :ensure t)
 
 ;; refresh package lists
-;; (unless package-archive-contents
-;;   (package-refresh-contents))
+ (unless package-archive-contents
+   (package-refresh-contents))
 
 ;; straight package manager
 (defvar bootstrap-version)
@@ -62,9 +65,6 @@
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
-
-;; upgrade all packages
-;; (package-upgrade-all)
 
 ;;;;;;;;;;;;;;;;;;;
 ;; file settings ;;
@@ -109,47 +109,15 @@
   (load-theme 'everforest-hard-olddark t t)
   (load-theme 'everforest-hard-oldlight t t))
 
-;; (use-package everforest-hard-dark-theme
-;;   :load-path "~/.emacs.d/everforest-emacs/"
-;;   :config
-;;   (set-face-attribute 'line-number nil :foreground "#7e968d")
-;;   (set-face-attribute 'line-number-current-line nil :weight 'bold)
-;;   (with-eval-after-load 'org
-;;     (set-face-attribute 'org-priority nil :weight 'bold)
-;;     (set-face-attribute 'org-agenda-structure nil :weight 'bold)))
-
-;; (use-package everforest-hard-light-theme
-;;   :load-path "~/.emacs.d/everforest-emacs/")
-
 (use-package cherry-seoul256-theme
+  :commands (cherry-seoul256-create)
   :straight (cherry-seoul256 :type git :host github :repo "polhuang/cherry-seoul256")
   :custom
-  (cherry-seoul256-background 233))
+  (cherry-seoul256-background 233)
+  :config
+  )
 
 (load-theme 'cherry-seoul256 t)
-
-
-;; (defvar current-theme 'everforest-hard-dark
-;;   "Stores the currently active theme name.")
-
-;; (defun my/cycle-theme ()
-;;   "Cycle between everforest-hard-dark, everforest-hard-light, and cherry-seoul256 themes."
-;;   (interactive)
-;;   (cond
-;;    ((eq current-theme 'everforest-hard-dark)
-;;     (disable-theme 'everforest-hard-dark)
-;;     (load-theme 'everforest-hard-light t)
-;;     (setq current-theme 'everforest-hard-light))
-
-;;    ((eq current-theme 'everforest-hard-light)
-;;     (disable-theme 'everforest-hard-light)
-;;     (load-theme 'cherry-seoul256 t)
-;;     (setq current-theme 'cherry-seoul256))
-
-;;    ((eq current-theme 'cherry-seoul256)
-;;     (disable-theme 'cherry-seoul256)
-;;     (load-theme 'everforest-hard-dark t)
-;;     (setq current-theme 'everforest-hard-dark))))
 
 ;; ;; Initially load the first theme
 ;; (load-theme current-theme t)
@@ -162,25 +130,29 @@
 
 ;; ansi colors
 (require 'ansi-color)
-(set-face-attribute 'ansi-color-black nil :foreground "#1b1b23" :background (face-attribute 'default :background))
-(set-face-attribute 'ansi-color-red nil :foreground "#ebb9b9" :background "#ebb9b9")
-(set-face-attribute 'ansi-color-green nil :foreground "#caf6bb" :background "#caf6bb")
-(set-face-attribute 'ansi-color-yellow nil :foreground "#e6dfb8" :background "#e6dfb8")
-(set-face-attribute 'ansi-color-blue nil :foreground "#cddbf9" :background "#cddbf9")
-(set-face-attribute 'ansi-color-magenta nil :foreground "#f6bbe7" :background "#f6bbe7")
-(set-face-attribute 'ansi-color-cyan nil :foreground "#b8dceb" :background "#b8dceb")
-(set-face-attribute 'ansi-color-white nil :foreground "#c8cedc" :background "#c8cedc")
+(dolist (pair
+         '((ansi-color-black           . "#1b1b23")
+           (ansi-color-red             . "#ebb9b9")
+           (ansi-color-green           . "#caf6bb")
+           (ansi-color-yellow          . "#e6dfb8")
+           (ansi-color-blue            . "#cddbf9")
+           (ansi-color-magenta         . "#f6bbe7")
+           (ansi-color-cyan            . "#b8dceb")
+           (ansi-color-white           . "#c8cedc")
+           (ansi-color-bright-black    . "#3a3a45")
+           (ansi-color-bright-red      . "#d95e59")
+           (ansi-color-bright-green    . "#8fc587")
+           (ansi-color-bright-yellow   . "#ffcf85")
+           (ansi-color-bright-blue     . "#4a83c3")
+           (ansi-color-bright-magenta  . "#f6bbe7")
+           (ansi-color-bright-cyan     . "#4eb3cd")
+           (ansi-color-bright-white    . "#e6e6ee")))
+  (let ((face (car pair)) (fg (cdr pair)))
+    (set-face-attribute face nil :foreground fg :background 'unspecified)))
 
-(set-face-attribute 'ansi-color-bright-black nil :foreground "#1b1b23" :background (face-attribute 'default :background))
-(set-face-attribute 'ansi-color-bright-red nil :foreground "#d95e59" :background "#d95e59")
-(set-face-attribute 'ansi-color-bright-green nil :foreground "#8fc587" :background "#8fc587")
-(set-face-attribute 'ansi-color-bright-yellow nil :foreground "#ffcf85" :background "#ffcf85")
-(set-face-attribute 'ansi-color-bright-blue nil :foreground "#4a83c3" :background "#4a83c3")
-(set-face-attribute 'ansi-color-bright-magenta nil :foreground "#f6bbe7" :background "#f6bbe7")
-(set-face-attribute 'ansi-color-bright-cyan nil :foreground "#4eb3cd" :background "#4eb3cd")
 
-(use-package autothemer
-  :defer t)
+;; (use-package autothemer
+;;   :ensure t)
 
 (with-eval-after-load 'marginalia
   (set-face-attribute 'marginalia-documentation nil :inherit 'doom-mode-line :slant 'italic))
@@ -208,17 +180,19 @@
 ;; transparency
 (add-to-list 'default-frame-alist '(alpha-background . 65))
 
-(defun my/toggle-frametransparency ()
-  "Toggle frame transparency."
-  (interactive)
-  (let ((current-alpha (frame-parameter nil 'alpha-background)))
-    (if (or (not current-alpha) (= current-alpha 100))
+(declare-function cherry-seoul256-create "cherry-seoul256")
+(with-eval-after-load 'cherry-seoul256
+  (defun my/toggle-frametransparency ()
+    "Toggle frame transparency and adjust cherry-seoul256 background."
+    (interactive)
+    (let ((current-alpha (frame-parameter nil 'alpha-background)))
+      (if (or (not current-alpha) (= current-alpha 100))
+          (progn
+            (set-frame-parameter nil 'alpha-background 60)
+            (cherry-seoul256-create 'cherry-seoul256 233))
         (progn
-          (set-frame-parameter nil 'alpha-background 60)
-          (cherry-seoul256-create 'cherry-seoul256 233))
-      (progn
-        (set-frame-parameter nil 'alpha-background 100)
-        (cherry-seoul256-create 'cherry-seoul256 235)))))
+          (set-frame-parameter nil 'alpha-background 100)
+          (cherry-seoul256-create 'cherry-seoul256 235))))))
 
 ;; fonts
 (defvar my/font-options
@@ -240,6 +214,7 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
   "Index of the currently selected font in `my/font-options`.")
 
 (defun my/set-font (font-name)
+  "Set Emacs font."
   (let* ((font (if (string= font-name "Random")
                    (nth (random (length (remove (assoc "Random" my/font-options) my/font-options))) my/font-options)
                  (assoc font-name my/font-options)))
@@ -250,6 +225,7 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
       (message "Font set to: %s with height %d" font-name (or height 120)))))
 
 (defun my/select-font ()
+  "Select font from a list."
   (interactive)
   (let* ((font-names (mapcar #'car my/font-options))
          (selected-font (completing-read "Select font: " font-names nil t)))
@@ -274,25 +250,24 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
 (use-package fontify-face
   :ensure t)
 
-;; define non-breaking space
-(defface my/non-breaking-space
-  '((t :inherit default))
-  "My non-breaking space face.")
-(font-lock-add-keywords 'org-mode '(("\u00a0" . 'my/non-breaking-space)))
+;; define non-breaking space (not sure why i wrote this)
+;; (defface my/non-breaking-space
+;;   '((t :inherit default))
+;;   "My non-breaking space face.")
+;; (font-lock-add-keywords 'org-mode '(("\u00a0" . 'my/non-breaking-space)))
 
 ;; rainbow mode
 (use-package rainbow-mode
   :ensure t)
 
 ;; chinese font
-(defface my/chinese-face
-  '((t :family "Noto Sans CJK TC"))
-  "Face for Chinese characters.")
+(set-fontset-font t
+                  (cons (decode-char 'ucs #x4E00) (decode-char 'ucs #x9FFF))
+                  "Noto Sans CJK TC")
 
 ;; add the new face to the `face-font-family-alternatives` variable
 (setq face-font-family-alternatives
       '(("Noto Sans CJK TC" "han" "cjk")
-        ("my-chinese-face" "cjk")
         ("Sans Serif" "latin")))
 
 ;; apply the new face to Chinese characters
@@ -308,7 +283,7 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
   :ensure t)
 
 ;; uncomment on new systems / move to guix
-;; (nerd-icons-install-fonts) 
+;; (nerd-icons-install-fonts)
 
 (use-package nerd-icons-corfu
   :ensure t
@@ -376,8 +351,7 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
     (visual-line-mode . "")
     (latex-mode . "TeX")
     (tsx-ts-mode . "TypeScript")
-    (outline-minor-mode . " ֍" ;; " [o]"
-                        )
+    (outline-minor-mode . " ֍") ;; " [o]")
     (org-roam-ui-mode . "UI")
     ;; Evil modes
     (latex-extra-mode . "")
@@ -403,8 +377,10 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
 (add-hook 'after-change-major-mode-hook 'clean-mode-line)
 
 ;; notifications
-;; (require 'alert)
-(setq alert-default-style "notifications")
+(use-package alert
+  :ensure nil
+  :custom
+  (alert-default-style 'notifications))
 
 ;; display line numbers
 (require 'display-line-numbers)
@@ -420,29 +396,22 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; scrolling
-(defvar my/default-scroll-lines 60)
-(setq scroll-conservatively 5)
-
-;; custom scrolling keybinds
-(defvar my/scroll-unit 20)
-(global-set-key (kbd "<prior>") (lambda () (interactive) (forward-line (* my/scroll-unit -1))))
-(global-set-key (kbd "<next>") (lambda () (interactive) (forward-line my/scroll-unit)))
-
-;; keep cursor in same position
+(setq scroll-conservatively 101)
+(setq scroll-margin 8)
 (setq scroll-preserve-screen-position t)
 
-(defun my/scroll (orig-func direction &optional arg)
-  "Redefine upward scroll distance.
-ORIG-FUNC is the original function passed by `advice-add`.
-DIRECTION IS \\='up or \\='down.
-Use prefix argument ARG for number of lines, otherwise use default."
-  ;; (apply orig-func (list (or arg my/default-scroll-lines)))
-  (funcall orig-func (or arg my/default-scroll-lines)))
+(defun my-scroll-half-page-down ()
+  "Scroll down half a page."
+  (interactive)
+  (scroll-up-command (/ (window-body-height) 2)))
 
-(advice-add 'scroll-up :around (lambda (orig-func &optional arg)
-                                 (my/scroll orig-func 'up arg)))
-(advice-add 'scroll-down :around (lambda (orig-func &optional arg)
-                                   (my/scroll orig-func 'down arg)))
+(defun my-scroll-half-page-up ()   
+  "Scroll up half a page."
+  (interactive)
+  (scroll-down-command (/ (window-body-height) 2)))
+
+(global-set-key (kbd "<prior>") #'my-scroll-half-page-up)
+(global-set-key (kbd "<next>") #'my-scroll-half-page-down)
 
 (setq mouse-wheel-scroll-amount '(1 ((shift) . 1) ((control) . nil))
       mouse-wheel-progressive-speed nil
@@ -472,7 +441,7 @@ Use prefix argument ARG for number of lines, otherwise use default."
                                      (system-name)
                                      ".scm")))
 
-;; use ibuffer
+;; use ibuffer 
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 
 ;; switch to mini-buffer
@@ -789,28 +758,13 @@ Use prefix argument ARG for number of lines, otherwise use default."
 ;; org-notify
 (use-package org-notify
   :ensure t
+  :commands (org-notify-start org-notify-add)
   :custom
   (org-notify-timestamp-types '(:deadline :scheduled))
   :config
   (defun my/alarm-long (&rest _)
     "Wrapper function for alarm to fit :actions list below"
     (my/alarm "long"))
-
-  ;; Define a custom action for org-notify
-  (org-notify-add-action
-   "delete"                                     ;; label shown in the notification
-   (lambda (plist)
-     "Delete the Org entry associated with this notification."
-     (let ((file (plist-get plist :file))
-           (pos  (plist-get plist :position)))
-       (when (and file pos (file-exists-p file))
-         (with-current-buffer (find-file-noselect file)
-           (goto-char pos)
-           (when (org-before-first-heading-p)
-             (org-next-visible-heading 1))
-           (org-cut-subtree)                   ;; delete the whole event heading
-           (save-buffer))
-         (message "Deleted org entry: %s" (plist-get plist :heading))))))
   
   (org-notify-start)
   (org-notify-add 'default
@@ -825,8 +779,7 @@ Use prefix argument ARG for number of lines, otherwise use default."
                           :actions (-notify))
                   '(:time "15m" :duration 60
                           :actions -notify)
-                  '(:time "30m" :duration 1200 :actions -notify))
-  )
+                  '(:time "30m" :duration 1200 :actions -notify)))
 
 ;; add snooze functionality to org-notify
 (load "~/projects/org-notify-snooze/org-notify-snooze.el")
@@ -1086,7 +1039,7 @@ T - tag prefix
 (define-key dired-mode-map "." 'dired-hydra/body)
 
 (with-eval-after-load 'dired
-  (define-key dired-mode-map "." 'hydra-dired/body))
+  (define-key dired-mode-map "." 'dired-hydra/body))
 
 ;; major-mode hydra
 (use-package major-mode-hydra
@@ -1232,7 +1185,7 @@ T - tag prefix
 
 ;; tramp
 (use-package tramp
-  :ensure t
+  :ensure nil
   :custom
   (tramp-default-method "ssh"))
 
@@ -1292,9 +1245,9 @@ T - tag prefix
 (use-package orderless
   :ensure t
   :custom
-  (completion-styles '(orderless basic)
-                     'completion-category-defaults nil
-                     completion-category-overrides '((file (styles partial-completion)))))
+  (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
+  (completion-category-overrides '((file (styles partial-completion)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; vertico --------------------------------------------------------------------- ;;
@@ -1456,9 +1409,9 @@ T - tag prefix
   (global-corfu-mode)
   (corfu-popupinfo-mode)
   (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter)
+  (corfu-history-mode 1)
   :custom
   (corfu-auto t)                    ;; Enable auto completion
-  (corfu-history-mode)
   ;; (corfu-separator ?\s)          ;; Orderless field separator
   ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
   (corfu-quit-no-match 'separator)  ;; Never quit, even if there is no match
@@ -1533,18 +1486,23 @@ T - tag prefix
 (use-package prescient
   :ensure t
   :commands (prescient-persist-mode)
+  :custom
+  (prescient-enable-filtering nil)
+  (prescient-sort-full-matches-first t)
   :config
-  (prescient-persist-mode))
+  (prescient-persist-mode 1))
 
 (use-package corfu-prescient
+  :after (corfu prescient)
   :ensure t
   :config
-  (corfu-prescient-mode))
+  (corfu-prescient-mode 1))
 
 (use-package vertico-prescient
+  :after (vertico prescient)
   :ensure t
   :config
-  (vertico-prescient-mode))
+  (vertico-prescient-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; embark----------------------------------------------------------------------- ;;
@@ -1786,7 +1744,6 @@ Otherwise, call eat."
 (use-package lsp-mode
   :ensure t
   :commands (lsp lsp-deferred)
-  :bind (:map lsp-key-)
   :custom
   (lsp-keymap-prefix "C-c l")
   (lsp-completion-provider :none)
@@ -1933,15 +1890,6 @@ Otherwise, call eat."
   ;;                                    ' ((jupyter . t))))
   )
 
-(use-package claude-code-ide
-  :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :rev :newest)
-  :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
-  :config
-  (setq claude-code-ide-terminal-backend 'eat)
-  (claude-code-ide-emacs-tools-setup)) ; Optionally enable Emacs MCP tools
-
-
-
 ;; jupyter
 (use-package jupyter
   :ensure t
@@ -1984,17 +1932,19 @@ Otherwise, call eat."
             :query "mime:image/*"
             :key ?p)))
   (mail-user-agent 'mu4e-user-agent)
+  (mu4e-user-mail-address-list
+      '("paulleehuang@proton.me"
+        "paulleehuang@protonmail.com"
+        "plh135464@protonmail.com"))
   (mu4e-update-interval (* 5 60))
   (mu4e-mu-version "1.12.8")
   (message-send-mail-function 'smtpmail-send-it)
   (smtpmail-smtp-server "127.0.0.1")
   (smtpmail-smtp-service 1025)
-  (mu4e-get-mail-command "mbsync -a & offlineimap")
+  (mu4e-get-mail-command "mbsync -a")
   (message-kill-buffer-on-exit t)
   (mu4e-context-policy 'pick-first)
   :config
-  (setq message-signature
-        "Paul Huang\n[[https://github.com/polhuang][Github]] | [[https://linkedin.com/in/paulleehuang][LinkedIn]]\n")
   (set-face-attribute 'mu4e-highlight-face nil :inherit 'mu4e-title-face)
 
   ;; Fancy header marks
@@ -2014,52 +1964,83 @@ Otherwise, call eat."
         mu4e-headers-calendar-mark  '("c" . "📅"))
 
   (setq mu4e-contexts
-        `(,(make-mu4e-context
-            :name "Personal"
-            :enter-func (lambda () (mu4e-message "Switch to the Personal context"))
-            :match-func (lambda (msg)
-                          (when msg
-                            (mu4e-message-contact-field-matches msg
-                                                                 :to "paulleehuang@proton.me")))
-            :vars '((user-mail-address . "paulleehuang@proton.me")
-                    (user-full-name    . "Paul Huang")
-                    (mu4e-sent-folder  . "/Protonmail/Sent")
-                    (mu4e-drafts-folder . "/Protonmail/Drafts")
-                    (mu4e-trash-folder  . "/Protonmail/Trash")
-                    (mu4e-refile-folder . "/Protonmail/All Mail")
-                    (mu4e-maildir-shortcuts . ((:maildir "/Protonmail/inbox" :key ?i :name "Inbox")
-                                               (:maildir "/Protonmail/Sent" :key ?s :name "Sent")
-                                               (:maildir "/Protonmail/Trash" :key ?t :name "Trash")
-                                               (:maildir "/Protonmail/All Mail" :key ?a :name "All Mail")))))
+      `(,(make-mu4e-context
+          :name "protonmail"
+          :enter-func (lambda () (mu4e-message "Switch to Protonmail context"))
+          ;; Match based on maildir instead of email address
+          :match-func (lambda (msg)
+                        (when msg
+                          (string-prefix-p "/Protonmail" (mu4e-message-field msg :maildir))))
+          :vars '((user-mail-address . "paulleehuang@protonmail.com")
+                  (user-full-name    . "Paul Huang")
+                  (mu4e-sent-folder  . "/Protonmail/Sent")
+                  (mu4e-drafts-folder . "/Protonmail/Drafts")
+                  (mu4e-trash-folder  . "/Protonmail/Trash")
+                  (mu4e-refile-folder . "/Protonmail/All Mail")
+                  (smtpmail-smtp-server . "127.0.0.1")
+                  (smtpmail-smtp-service . 1025)
+                  (smtpmail-stream-type . starttls)
+                  (smtpmail-smtp-user . "paulleehuang@protonmail.com")
+                  (mu4e-maildir-shortcuts . ((:maildir "/Protonmail/inbox" :key ?i :name "Inbox")
+                                             (:maildir "/Protonmail/Sent" :key ?s :name "Sent")
+                                             (:maildir "/Protonmail/Trash" :key ?t :name "Trash")
+                                             (:maildir "/Protonmail/All Mail" :key ?a :name "All Mail")))))
+        
+        ,(make-mu4e-context
+          :name "gmail"
+          :enter-func (lambda () (mu4e-message "Switch to Gmail context"))
+          :match-func (lambda (msg)
+                        (when msg
+                          (string-prefix-p "/Gmail" (mu4e-message-field msg :maildir))))
+          :vars '((user-mail-address . "paulleehuang@gmail.com")
+                  (user-full-name    . "Paul Huang")
+                  (mu4e-sent-folder  . "/Gmail/[Gmail]/Sent Mail")
+                  (mu4e-drafts-folder . "/Gmail/[Gmail]/Drafts")
+                  (mu4e-trash-folder  . "/Gmail/[Gmail]/Trash")
+                  (mu4e-refile-folder . "/Gmail/INBOX")
+                  (smtpmail-smtp-server . "smtp.gmail.com")
+                  (smtpmail-smtp-service . 587)
+                  (smtpmail-stream-type . starttls)
+                  (smtpmail-smtp-user . "paulleehuang@gmail.com")
+                  (mu4e-maildir-shortcuts . ((:maildir "/Gmail/INBOX" :key ?i :name "Inbox")
+                                             (:maildir "/Gmail/[Gmail]/Sent Mail" :key ?s :name "Sent")
+                                             (:maildir "/Gmail/[Gmail]/Drafts" :key ?d :name "Drafts")
+                                             (:maildir "/Gmail/[Gmail]/Trash" :key ?t :name "Trash")))))))
+  )
 
-          ,(make-mu4e-context
-            :name "Work"
-            :enter-func (lambda () (mu4e-message "Switch to the Work context"))
-            :match-func (lambda (msg)
-                          (when msg
-                            (mu4e-message-contact-field-matches msg
-                                                                 :to "phuang@missioncloud.com")))
-            :vars '((user-mail-address . "phuang@missioncloud.com")
-                    (user-full-name    . "Paul Huang")
-                    (mu4e-sent-folder  . "/Gmail/[Gmail].Sent Mail")
-                    (mu4e-drafts-folder . "/Gmail/[Gmail].Drafts")
-                    (mu4e-trash-folder  . "/Gmail/[Gmail].Trash")
-                    (mu4e-refile-folder . "/Gmail/[Gmail].All Mail")
-                    (mu4e-maildir-shortcuts . (("/Gmail/INBOX"      . ?i)
-                                               ("/Gmail/[Gmail].Sent Mail" . ?s)
-                                               ("/Gmail/[Gmail].Trash" . ?t)
-                                               ("/Gmail/[Gmail].All Mail" . ?a))))))))
+(use-package org-msg
+  :ensure t
+  :after mu4e
+  :config
+  (setq org-msg-options "html-postamble:nil H:5 num:nil ^:{} toc:nil author:nil email:nil \\n:t"
+        org-msg-startup "hidestars indent inlineimages"
+        org-msg-greeting-fmt "\nHi%s,\n\n"
+        org-msg-recipient-names '(("paulleehuang@gmail.com" . "Paul Huang"))
+        org-msg-greeting-name-limit 3
+        org-msg-default-alternatives '((new           . (text html))
+                                       (reply-to-html . (text html))
+                                       (reply-to-text . (text)))
+        org-msg-convert-citation t
+        ;; Your signature
+        org-msg-signature "
+
+#+begin_signature
+--
+*Paul Huang*
+
+[[https://github.com/polhuang][Github]] | [[https://linkedin.com/in/paulleehuang][LinkedIn]]
+#+end_signature")
+  
+  (org-msg-mode))
 
 ;; org-mime
 (use-package org-mime
   :ensure t
   :custom
-  (setq org-mime-mail-signature-separator "a string preventing separating signature from email body")
-  :config
-  (setq org-mime-export-options '(:section-numbers nil
-				:with-author nil
-				:with-toc nil
-				:preserve-breaks t)))
+  (org-mime-export-options '(:section-numbers nil
+				              :with-author nil
+				              :with-toc nil
+				              :preserve-breaks t)))
 
 ;;;;;;;;;;;;;;;;;;;
 ;; miscellaneous ;;
@@ -2204,7 +2185,9 @@ Otherwise, call eat."
 
 ;; org-gcal
 (use-package org-gcal
-  :commands (org-todo org-sort-entries org-gcal-sync org-gcal--sync-unlock)
+  :ensure t
+  :after org
+  :commands (org-entry-get org-entry-put org-todo org-sort-entries org-gcal-sync org-gcal--sync-unlock)
   :custom
   (org-gcal-up-days 0)
   (org-gcal-down-days 30)
@@ -2231,7 +2214,8 @@ Otherwise, call eat."
 
   :config
   (defun my/org-gcal-format (_calendar-id event _update-mode)
-  "Format org-gcal events in the schedule.org buffer and add :notify: event on import."
+    "Format org-gcal events in the schedule.org buffer.
+Add :notify: event on import."
   (if (eq _update-mode 'newly-fetched)
       (progn
         ;; Timed events
@@ -2286,7 +2270,7 @@ Otherwise, call eat."
   :load-path "~/projects/ticktick.el/ticktick.el"
   :custom
   (ticktick-client-id "uxXCDqEv3nV3C2M1hn")
-  (ticktick-client-secret "6eh+gE#66+3lKHJv56d)EU8&eru_k$*8")
+  ;; (ticktick-client-secret "6eh+gE#66+3lKHJv56d)EU8&eru_k$*8")
   (ticktick-sync-file "~/org/ticktick.org")
   (ticktick-autosync nil))
 

@@ -479,6 +479,9 @@
         (rul 'hotkey-overlay
              (dec 'skip-at-startup #t))
         (dec 'prefer-no-csd #t)
+        (rul 'cursor
+             (dec 'xcursor-theme
+                  (get-cursor-theme palette)))
         (rul 'layer-rule
              (dec 'match
                   (prop '((namespace "\"^wallpaper$\""))))

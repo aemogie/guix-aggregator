@@ -1,8 +1,10 @@
 (define-module (polterguix systems core-system)
   #:use-module (gnu)
+  #:use-module (gnu system)
+  #:use-module (gnu system privilege)
   #:use-module (gnu packages admin)
   #:use-module (gnu packages audio)
-  #:use-module (gnu packages emacs)  
+  #:use-module (gnu packages emacs)
   #:use-module (gnu packages emacs-xyz)
   #:use-module (gnu packages file-systems)
   #:use-module (gnu packages fonts)
@@ -14,27 +16,23 @@
   #:use-module (gnu packages nfs)
   #:use-module (gnu packages package-management)
   #:use-module (gnu packages shells)
-  #:use-module (gnu packages suckless) 
+  #:use-module (gnu packages suckless)
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages video)
   #:use-module (gnu packages vim)
   #:use-module (gnu packages wm)
   #:use-module (gnu packages xdisorg)
   #:use-module (gnu services avahi)
+  #:use-module (gnu services base)
   #:use-module (gnu services cups)
   #:use-module (gnu services dbus)
   #:use-module (gnu services desktop)
+  #:use-module (gnu services nix)
+  #:use-module (gnu services networking)
   #:use-module (gnu services pm)
+  #:use-module (gnu services sound)
   #:use-module (gnu services ssh)
   #:use-module (gnu services xorg)
-  ;; #:use-module (gnu services guix)
-  #:use-module (gnu services networking)
-  #:use-module (gnu services nix)
-  ;; #:use-module (gnu services ssh)
-  #:use-module (gnu services sound) 
-  #:use-module (gnu services xorg)
-  #:use-module (gnu system)
-  #:use-module (gnu system privilege)  
   #:use-module (nongnu packages linux)
   #:use-module (nongnu system linux-initrd))
 
@@ -107,43 +105,83 @@
                     zsh
                     %base-packages))
    
-   (services (append (list (service gnome-desktop-service-type)
-                           (service tor-service-type)
-                           (service cups-service-type)
-                           (service bluetooth-service-type
-                                    (bluetooth-configuration
-                                     (auto-enable? #t)))
-                           (service nix-service-type)
 
-                           (service openssh-service-type
-                                    (openssh-configuration
-                                     (port-number 2222)))
+   (services
+     (append
+      (list
+       ;; core desktop plumbing
+       (service dbus-root-service-type)
+       (service polkit-service-type)
+       (service elogind-service-type)
+       (service udev-service-type)
 
-                           (service tlp-service-type)
-                           (service gvfs-service-type)
-                           (udev-rules-service 'pipewire-add-udev-rules pipewire)
-			   (simple-service 'add-nonguix-substitutes
-                                           guix-service-type
-                                           (guix-extension
-                                            (substitute-urls
-                                             (append (list "https://substitutes.nonguix.org" "https://nonguix-proxy.ditigal.xyz")
-                                                     %default-substitute-urls))
-                                            (authorized-keys
-                                             (append (list (plain-file "nonguix.pub"
-                                                                       "(public-key (ecc (curve Ed25519) (q #C1FD53E5D4CE971933EC50C9F307AE2171A2D3B52C804642A7A35F84F3A4EA98#)))"))
-                                         %default-authorized-guix-keys))))
-                           (set-xorg-configuration
-                            (xorg-configuration (keyboard-layout keyboard-layout)
-                                                (extra-config
-                                                 '((Section "InputClass"
-                                                            Identifier "Trackpoint"
-                                                            MatchProduct "TPPS/2 IBM TrackPoint"
-                                                            Option "AccelProfile" "flat"
-                                                            Option "Sensitivity" "200"
-                                                            Option "Speed" "1.0"
-                                                            EndSection))))))
-                     (modify-services %desktop-services
-				      (network-manager-service-type config => (network-manager-configuration
-                                                                               (inherit config)
-									       (vpn-plugins
-										(list network-manager-openvpn)))))))))
+       ;; firmware updates
+       (service fwupd-service-type)
+
+       ;; time-sync
+       (service ntp-service-type)
+
+       ;; laptop QoL
+       (service upower-service-type)
+       (service fstrim-service-type)
+       (service tlp-service-type)
+
+       ;; storage / desktop integration
+       (service gvfs-service-type)
+
+       ;; printing & discovery
+       (service avahi-service-type)
+       (service cups-service-type)
+
+       ;; bluetooth
+       (service bluetooth-service-type
+                (bluetooth-configuration (auto-enable? #t)))
+
+       ;; networking
+       (service iwd-service-type (iwd-configuration))
+       (service network-manager-service-type
+                (network-manager-configuration
+                 (wifi-backend 'iwd)
+                 (vpn-plugins (list network-manager-openvpn))))
+
+       ;; sound
+       (pipewire-service-type
+        (pipewire-configuration
+         (enable-alsa? #t)
+         (enable-pulse? #t)
+         (enable-jack?  #f)))
+
+       ;; wayland compositors expect seatd
+       (service seatd-service-type)
+
+       ;; xdg portals: prefer hyprland backend
+       (simple-service 'xdg-portals
+                       xdg-desktop-portal-service-type
+                       (list xdg-desktop-portal-hyprland))
+
+       ;; security
+       (service openssh-service-type
+                (openssh-configuration (port-number 2222)))
+       (service nix-service-type)
+       (service tor-service-type)
+
+       (service gnome-desktop-service-type)
+
+       ;; x-org 
+       (set-xorg-configuration
+        (xorg-configuration (keyboard-layout keyboard-layout)))
+
+
+       (simple-service 'add-nonguix-substitutes
+                       guix-service-type
+                       (guix-extension
+                        (substitute-urls
+                         (append (list "https://substitutes.nonguix.org"
+                                       "https://nonguix-proxy.digital.xyz")
+                                 %default-substitute-urls))
+                        (authorized-keys
+                         (append (list (plain-file "nonguix.pub"
+                                                   "(public-key (ecc (curve Ed25519) (q #C1FD53E5D4CE971933EC50C9F307AE2171A2D3B52C804642A7A35F84F3A4EA98#)))"))
+                                 %default-authorized-guix-keys)))))
+      
+      %base-services))))

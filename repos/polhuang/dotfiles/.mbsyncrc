@@ -1,8 +1,9 @@
+# Protonmail
 IMAPAccount proton
 Host 127.0.0.1
 Port 1143
-User paulleehuang@proton.me
-Pass HG6FmrFtXLlUc0aS51FJWg
+User paulleehuang@protonmail.com
+PassCmd "pass email/proton"
 AuthMechs LOGIN
 SSLType STARTTLS
 SSLVersion TLSv1.2
@@ -20,6 +21,32 @@ Channel proton
 Far :proton-remote:
 Near :proton-local:
 Patterns "*"
+CopyArrivalDate yes
+Create Both
+Expunge Both
+SyncState *
+
+# Gmail
+IMAPAccount gmail
+Host imap.gmail.com
+Port 993
+User paulleehuang@gmail.com
+PassCmd "pass email/gmail"
+SSLType IMAPS
+AuthMechs LOGIN
+
+MaildirStore gmail-local
+Path ~/mail/Gmail/
+Inbox ~/mail/Gmail/INBOX/
+SubFolders Verbatim
+
+IMAPStore gmail-remote
+Account gmail
+
+Channel gmail
+Far :gmail-remote:
+Near :gmail-local:
+Patterns * ![Gmail]* "[Gmail]/Sent Mail" "[Gmail]/Drafts" "[Gmail]/Trash"
 CopyArrivalDate yes
 Create Both
 Expunge Both

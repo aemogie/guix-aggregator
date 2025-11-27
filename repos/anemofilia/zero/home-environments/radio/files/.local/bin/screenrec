@@ -2,7 +2,7 @@
 
 region="$(slurp 2>/dev/null)" || \
 region="0,0 $(wlr-randr --json \
-              | jq -r '.[0].modes[0] | \"\(.width)x\(.height)\"')"
+              | jq -r '.[0].modes[0] | "\(.width)x\(.height)"')"
 
 save_to_file=$(echo -en 'y\nn' \
                | fuzzel --dmenu \

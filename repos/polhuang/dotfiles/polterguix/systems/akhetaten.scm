@@ -47,8 +47,12 @@
    (inherit core-operating-system)
    (host-name "akhetaten")
 
+   (kernel-arguments
+    '("amd_pstate=active"              ; modern amd cpu scaling
+      "nvme.noacpi=1"                  ; sometimes helps resume on some nvme's
+      "mem_sleep_default=deep"         ; try deeper suspend; revert if issues
+      "modprobe.blacklist=pcspkr"))
    (firmware (list linux-firmware amdgpu-firmware))
-
    (mapped-devices (list (mapped-device
                           (source (uuid
                                    "ce94eff8-f142-403f-96e0-208784bb7892"))
@@ -101,6 +105,7 @@
                    fzf
                    hunspell
                    hyprpaper
+                   kanshi
                    kitty
                    libreoffice
 		   librewolf
@@ -110,10 +115,12 @@
                    obs
                    qutebrowser
 		   password-store
+                   powertop
                    ripgrep
                    rofi-wayland
                    rust
                    rust-analyzer
+                   seatd
                    sh-z
                    starship-bin
                    swaynotificationcenter
@@ -159,24 +166,53 @@
                                          (user "git")
                                          (identity-file "/home/pol/.ssh/github_ed25519"))))
                     (add-keys-to-agent "confirm")))
+          
           (simple-service 'dotfiles
                           home-xdg-configuration-files-service-type
                           `(("hypr/hyprland.conf"  ,(local-file "../files/hypr/hyprland-akhetaten.conf"))
                             ("hypr/hyprland-base.conf"  ,(local-file "../files/hypr/hyprland-base.conf"))))
 
-          (service home-dbus-service-type)
-          (service home-pipewire-service-type)
-          (service home-network-manager-applet-service-type)
-          (service home-fcitx5-service-type
-                   (home-fcitx5-configuration
-                    (themes (map specification->package '("fcitx5-material-color-theme")))
-                    (input-method-editors (map specification->package '("fcitx5-chinese-addons" "fcitx5-rime")))))
-
           (simple-service 'dotfiles
                           home-xdg-configuration-files-service-type
                           `(("waybar/style.css"  ,(local-file "../files/waybar/style-akhetaten.css"))
                             ("waybar/theme.css"  ,(local-file "../files/waybar/theme.css"))
-                            ("waybar/config"  ,(local-file "../files/waybar/config"))))))))
+                            ("waybar/config"  ,(local-file "../files/waybar/config"))))
+
+          (service home-dbus-service-type)
+          (service home-pipewire-service-type)
+          (service home-network-manager-applet-service-type)
+          (service power-profiles-daemon-service-type)
+          (service tlp-service-type
+                   (tlp-configuration
+                    (cpu-scaling-governor-on-ac "schedutil")
+                    (cpu-scaling-governor-on-bat "powersave")
+                    (pcie-aspm-on-bat "powersupersave")
+                    (radeon-dpm-state "battery")
+                    (start-charge-thresh-bat0 40)
+                    (stop-charge-thresh-bat0 80)))
+          (service alsa-service-type)
+          (service home-fcitx5-service-type
+                   (home-fcitx5-configuration
+                    (themes (map specification->package '("fcitx5-material-color-theme")))
+                    (input-method-editors (map specification->package '("fcitx5-chinese-addons" "fcitx5-rime")))))
+                           
+                    ;; trackpoint tuning
+          (set-xorg-configuration
+           (xorg-configuration
+            (keyboard-layout keyboard-layout)
+            (extra-config
+             '((Section "InputClass"
+                        Identifier "Trackpoint"
+                        MatchProduct "TPPS/2 IBM TrackPoint"
+                        Option "AccelProfile" "flat"
+                        Option "Sensitivity" "200"
+                        Option "Speed" "1.0"
+                        EndSection)))))
+
+
+          ))))
+
+
 
 (if (equal? (getenv "GUIX_TARGET") "home")
     home
