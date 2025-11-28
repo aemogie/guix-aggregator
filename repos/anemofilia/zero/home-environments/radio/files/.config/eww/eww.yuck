@@ -25,11 +25,11 @@
 
 ;; (network) __________________________________________________________________
 (defpoll wireless
-  :interval "0s"
+  :interval "${365*24*60*60}s"
   `ip a | grep -Ewom1 'wl[^:]+'`)
 
 (defpoll ethernet
-  :interval "0s"
+  :interval "${365*24*60*60}s"
   `ip a | grep -Ewom1 'en[^:]+'`)
 
 (defvar current-interface "wlp1s0")
@@ -106,7 +106,7 @@
 
 ;; (battery) __________________________________________________________________
 (defpoll bat
-  :interval "0s"
+  :interval "${365*24*60*60}s"
   `fd BAT /sys/class/power_supply/ | xargs basename`)
 
 (defwidget battery []

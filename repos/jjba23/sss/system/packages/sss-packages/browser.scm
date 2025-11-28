@@ -18,8 +18,7 @@
 (define-module (sss-packages browser)
   #:declarative? #t
   #:use-module (nongnu packages mozilla)
-  #:use-module (nongnu packages chrome)
   #:export (browser-packages))
 
 (define browser-packages
-  (make-parameter (list firefox google-chrome-beta)))
+  (make-parameter (list firefox)))
