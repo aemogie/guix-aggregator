@@ -23,6 +23,7 @@
   #:use-module (sss-packages core)
   #:use-module (sss-packages music)
   #:use-module (sss-packages qt)
+  #:use-module (sss-packages iter-vitae)
   #:use-module (sss-packages tree-sitter)
   #:use-module (sss-packages universal-session)
   #:use-module (sss-packages dict)
@@ -271,6 +272,7 @@
         xxd
         localed
         grimblast
+        iter-vitae
         zenity
         xz
         yt-dlp))

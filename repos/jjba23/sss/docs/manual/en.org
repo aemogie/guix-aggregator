@@ -179,6 +179,7 @@ When keybindings (shortcuts) are defined or mentioned, the following legend appl
 
 Note: Screenshots below might be outdated and no longer representative of the current, ever-changing state of SSS.
 
+[[https://jointhefreeworld.org/static-assets/sss/screenshots/small-screen-2025-11-28-08-10-30.png]]
 
 [[https://jointhefreeworld.org/static-assets/sss/screenshots/7bdfaa50fbc45b63.png]]
 

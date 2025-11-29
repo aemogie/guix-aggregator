@@ -118,12 +118,14 @@
 
   (setopt initial-buffer-choice
           (lambda () (ignore-errors
-                       (welkomscherm)
-                       (get-buffer welkomscherm/buffer-name))))
+                  (welkomscherm)
+                  (get-buffer welkomscherm/buffer-name))))
 
   (recentf-mode 1)
   (setopt recentf-max-menu-items 100
           recentf-max-saved-items 100)
+
+  (add-to-list 'auto-mode-alist '("\\.hbs\\'" . html-mode))
 
   (global-hl-line-mode +1)
   (setq-default cursor-type 'bar))
