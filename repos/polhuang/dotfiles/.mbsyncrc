@@ -3,19 +3,19 @@ IMAPAccount proton
 Host 127.0.0.1
 Port 1143
 User paulleehuang@protonmail.com
-PassCmd "pass email/proton"
+PassCmd "pass email/protonmail"
 AuthMechs LOGIN
 SSLType STARTTLS
 SSLVersion TLSv1.2
 CertificateFile ~/.config/protonmail/cert.pem    
 
-MaildirStore proton-local
-Path ~/mail/Protonmail/
-Inbox ~/mail/Protonmail/inbox/
-SubFolders Verbatim
-
 IMAPStore proton-remote
 Account proton
+
+MaildirStore proton-local
+SubFolders Verbatim
+Path ~/mail/Protonmail/
+Inbox ~/mail/Protonmail/inbox
 
 Channel proton
 Far :proton-remote:
@@ -35,19 +35,46 @@ PassCmd "pass email/gmail"
 SSLType IMAPS
 AuthMechs LOGIN
 
-MaildirStore gmail-local
-Path ~/mail/Gmail/
-Inbox ~/mail/Gmail/INBOX/
-SubFolders Verbatim
-
 IMAPStore gmail-remote
 Account gmail
+
+MaildirStore gmail-local
+SubFolders Verbatim
+Path ~/mail/Gmail/
+Inbox ~/mail/Gmail/INBOX
 
 Channel gmail
 Far :gmail-remote:
 Near :gmail-local:
-Patterns * ![Gmail]* "[Gmail]/Sent Mail" "[Gmail]/Drafts" "[Gmail]/Trash"
+Patterns *
 CopyArrivalDate yes
 Create Both
 Expunge Both
 SyncState *
+
+# Work
+IMAPAccount work
+Host imap.gmail.com
+Port 993
+User paul.huang@vercel.com
+PassCmd "pass email/gmail-work"
+SSLType IMAPS
+AuthMechs LOGIN
+
+IMAPStore work-remote
+Account work
+
+MaildirStore work-local
+SubFolders Verbatim
+Path ~/mail/Work/
+Inbox ~/mail/Work/INBOX
+
+Channel work
+Far :work-remote:
+Near :work-local:
+Patterns *
+CopyArrivalDate yes
+Create Both
+Expunge Both
+SyncState *
+
