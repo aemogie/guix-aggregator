@@ -77,14 +77,14 @@
 			     ;; later, look into making this graphical.
 			     ;; manual login isn't too bad for now though.
 			     (greetd-agreety-session
-                              (command (file-append swayfx "/bin/sway"))
+                              (command (file-append niri "/bin/niri --session"))
                               ;; default arg is -l for bash login, we want none
                               (command-args '()))))))))
 
          (service pam-limits-service-type
                   (list
                    ;; esync in wine
-                   (pam-limits-entry "*"
+                   (pam-limits-entry "willow"
                                      'hard 'nofile 1048576)
                    ;; for audio work
                    (pam-limits-entry "@realtime"
@@ -103,18 +103,20 @@
                                       (inherit config)
                                       (substitute-urls
                                        (append (list "https://substitutes.nonguix.org"
-                                                     "https://cuirass.genenetwork.org")
+                                                     )
                                                %default-substitute-urls))
                                       (authorized-keys
                                        (append (list (local-file "./nonguix-signing-key.pub")
                                                      (local-file "./guix-hpc-signing-key.pub")
-                                                     (local-file "./wlo-tower-signing-key.pub")
-                                                     (local-file "./na-substitute-genenetwork-signing-key.pub"))
+                                                     (local-file "./wlo-tower-signing-key.pub"))
+                                                     ;; (local-file "./na-substitute-genenetwork-signing-key.pub"))
                                                %default-authorized-guix-keys)))))))
 
 (define wlo-common-packages
   (append (specifications->packages
            (list "htop"
+                 "xwayland-satellite"
+                 "niri"
                  "swayfx"
                  "swaylock-effects"
                  "light" ;; change screen brightness

@@ -147,7 +147,7 @@ input '20547:21570:PloopyCo_Trackball_Mouse' {
 input '1:1:AT_Translated_Set_2_keyboard' {
     xkb_layout "us"
     xkb_variant "colemak_dh"
-    xkb_options "ctrl:nocaps"
+    xkb_options "ctrl:nocaps,compose:ralt"
 }
 
 input '1386:21241:Wacom_HID_52F9_Finger' {
@@ -335,7 +335,7 @@ for_window {
 
 layer_effects {
     # "panel" blur enable; corner_radius 0
-    "mako" blue enable
+    "mako" blur enable
 }
 
 

@@ -211,22 +211,28 @@ mode "resize" {
 }
 bindsym $mod+r mode "resize"
 
+# Programs to execute (at startup).
+###################################
+exec swayidle -w timeout 900 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' before-sleep 'swaylock'
+
+# Programs to execute (at startup & after reload).
+##################################################
+exec_always mako
+
+# Extra-content
+###############
+
+# font pango:DejaVu Sans Mono 0.5
+# titlebar_border_thickness 0
+# titlebar_padding 0
+# client.focused "ebdbb2" "ffa21f" "282828"
 #
-# Status Bar:
-#
-# Read `man 5 sway-bar` for more information about this section.
+# blur enable
+# layer_effects "waybar" {blur enable;}
+
 bar {
+    swaybar_command waybar
     position top
-
-    # When the status_command prints a new line to stdout, swaybar updates.
-    # The default just shows the current date and time.
-    status_command while date +'%Y-%m-%d %X'; do sleep 1; done
-
-    colors {
-        statusline #ffffff
-        background #323232
-        inactive_workspace #32323200 #32323200 #5c5c5c
-    }
 }
 
-include @sysconfdir@/sway/config.d/*
+# include @sysconfdir@/sway/config.d/*

@@ -50,12 +50,14 @@
               "adwaita-icon-theme"
               "pcmanfm"  ; for anything that might need a file manager
 	      ;; screensharing and other wlroots stuff
-	      ;; "xdg-desktop-portal"
-	      "xdg-desktop-portal-wlr"
+	      "xdg-desktop-portal"
+	      "xdg-desktop-portal-gnome"
 	      "xdg-desktop-portal-gtk"
 	      "slurp"
 	      "grimshot"                ; for screenshots
 	      "wl-clipboard"
+              "fuzzel"
+              "swww"
 	      ;; experimental
 	      "nyxt"
               ;; essentials
@@ -64,6 +66,7 @@
 	      ;; "passff-host" ; - no worky
 	      "htop"
 	      "flatpak"
+              "flatpak-xdg-utils"
 	      "isync"
 	      "tmux"
 	      ;; email
@@ -99,15 +102,38 @@
 	      "imv"
 	      ;; music
 	      "carla"
-	      "reaper"                  ; nonguix
+	      ;; "reaper"                  ; nonguix
 	      "lsp-plugins"
 	      "lsp-plugins:lv2"
 	      "calf"
 	      "distrho-ports"
-	      ;; "airwindows-lv2"          ; from nebula channel
+              "swh-plugins-lv2"
+              "sherlock-lv2"
+              "omins-lv2"
+              "caps-plugins-lv2"
+              "bankstown-lv2"
+              "avldrums-lv2"
+              "shiru-lv2"
               "x42-plugins"
               "zynaddsubfx"
               "lv2-speech-denoiser"
+              "infamous-plugins"
+              "bchoppr"
+              "bshapr"
+              "bsequencer"
+              "bschaffl"
+              "bjumblr"
+              "artyfx"
+              "wolf-spectrum"
+              "wolf-shaper"
+              "liquidsfz"
+              "helm"
+              "dpf-plugins"
+              ;; Busted stuff below
+              ;; "regrader"
+              ;; "fogpad"
+	      ;; "airwindows-lv2"          ; from nebula channel
+              
 	      ;; fonts
 	      "font-liberation"
 	      "font-linuxlibertine"
@@ -166,7 +192,8 @@
                      ("_JAVA_AWT_WM_NONREPARENTING" . "1")     ; for java programs under sway
                      ("EDITOR" . "emacsclient")
                      ("VISUAL" . "emacsclient")
-		     ("XDG_CURRENT_DESKTOP" . "sway")
+                     ("TERMINAL" . "foot")
+		     ;; ("XDG_CURRENT_DESKTOP" . "sway")
                      ;; make flatpak work regardless of shell
                      ("XDG_DATA_DIRS" . "${XDG_DATA_HOME}/flatpak/exports/share:${XDG_DATA_DIRS}")
                      ("XCURSOR_PATH" . "${XCURSOR_PATH}:~/.local/share/icons")))

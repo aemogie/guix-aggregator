@@ -30,6 +30,7 @@ riverctl focus-follows-cursor normal
 # Inputs ______________________________________________________________________
 riverctl input pointer-2-10-TPPS/2_IBM_TrackPoint accel-profile none
 riverctl input pointer-2-10-TPPS/2_IBM_TrackPoint pointer-accel 1.0
+riverctl input pointer-1739-10353-SYN2602:00_06CB:2871_Touchpad tap enabled
 
 # Keyboard ____________________________________________________________________
 
@@ -240,6 +241,8 @@ riverctl map normal Super F12 enter-mode passthrough
 riverctl map passthrough Super F12 enter-mode normal
 
 # Application rules ___________________________________________________________
+DISPLAY_WIDTH=$(wlr-randr --json | jq -r '.[0].modes[0].width')
+DISPLAY_HEIGHT=$(wlr-randr --json | jq -r '.[0].modes[0].height')
 
 # browser
 riverctl rule-add -app-id 'zen' tags 2
@@ -252,8 +255,11 @@ riverctl rule-add -app-id 'emacs' ssd
 riverctl rule-add -app-id 'imv' ssd
 
 # telegram
-riverctl rule-add -app-id 'org.telegram' position 493 31
-riverctl rule-add -app-id 'org.telegram' dimensions 380 727
+TELEGRAM_WIDTH=$(qalc -t "${DISPLAY_WIDTH}*7/24")
+TELEGRAM_HEIGHT=$(qalc -t "${DISPLAY_HEIGHT}*19/20")
+TELEGRAM_H_POSITION=$(qalc -t "(${DISPLAY_WIDTH}-${TELEGRAM_WIDTH})/2")
+riverctl rule-add -app-id 'org.telegram' position ${TELEGRAM_H_POSITION} 32
+riverctl rule-add -app-id 'org.telegram' dimensions ${TELEGRAM_WIDTH} ${TELEGRAM_HEIGHT}
 riverctl rule-add -app-id 'org.telegram' float
 riverctl rule-add -app-id 'org.telegram' ssd
 riverctl rule-add -app-id 'org.telegram' tags ${scratch_tag}

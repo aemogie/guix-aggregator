@@ -118,8 +118,8 @@
 
   (setopt initial-buffer-choice
           (lambda () (ignore-errors
-                  (welkomscherm)
-                  (get-buffer welkomscherm/buffer-name))))
+                       (welkomscherm)
+                       (get-buffer welkomscherm/buffer-name))))
 
   (recentf-mode 1)
   (setopt recentf-max-menu-items 100

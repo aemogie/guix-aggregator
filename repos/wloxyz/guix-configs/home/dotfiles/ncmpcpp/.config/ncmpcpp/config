@@ -1,0 +1,6 @@
+mpd_music_dir = ~/Music
+
+# ui
+user_interface = alternative
+
+progressbar_look = ->

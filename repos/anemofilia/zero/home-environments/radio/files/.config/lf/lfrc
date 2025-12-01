@@ -48,6 +48,9 @@ ZERO="~/projects/code/scm/zero"
 # Open lf config
 cmd config $$EDITOR "$ZERO/home-environments/radio/files/.config/lf/lfrc"
 
+# touch with :touch
+cmd touch %touch -- "$@"
+
 # mkdir with :mkdir
 cmd mkdir %mkdir -- "$@"
 
@@ -152,8 +155,6 @@ map r
 map dd
 
 # File openers
-map ee $$EDITOR "$f"
-map e! $doas $EDITOR "$f"
 map b  &setsid -f $BROWSER "$f"
 
 # Basic functions

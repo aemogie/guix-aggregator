@@ -198,10 +198,13 @@
             #|Guix service|#
             (simple-service 'home-extra-channels
                             home-channels-service-type
-                            (list channel:guix
-                                  channel:radix
-                                  channel:saayix
-                                  channel:sops-guix))
+                            (cons* channel:guix
+                                   channel:radix
+                                   channel:saayix
+                                   (if (equal? (gethostname) "buer")
+                                     (list channel:sops-guix)
+                                     (list channel:nonguix
+                                           channel:sops-guix))))
 
             #|Log services|#
             (service home-log-rotation-service-type
@@ -219,14 +222,14 @@
             #|Shell services|#
             (service home-tty-colorscheme-service-type
                      (home-tty-colorscheme-configuration
-                       (regular-black "000000")
-                       (regular-red "df6760")
-                       (regular-green "8be760")
-                       (regular-yellow "ffd17a")
-                       (regular-blue "9688d9")
-                       (regular-magenta "fc97ff")
-                       (regular-cyan "86adff")
-                       (regular-white "a1a1a1")
+                       (regular-black #x000000)
+                       (regular-red #xdf6760)
+                       (regular-green #x8be760)
+                       (regular-yellow #xffd17a)
+                       (regular-blue #x9688d9)
+                       (regular-magenta #xfc97ff)
+                       (regular-cyan #x86adff)
+                       (regular-white #xa1a1a1)
                        (bright-black regular-black)
                        (bright-red regular-red)
                        (bright-green regular-green)

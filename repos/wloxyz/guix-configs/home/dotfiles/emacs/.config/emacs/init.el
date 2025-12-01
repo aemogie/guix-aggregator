@@ -4,6 +4,7 @@
 (setq guixp (fboundp 'guix-emacs-autoload-packages))
 (setq guix-src-dir "~/Documents/code/guix/")
 (setq user-font "New Heterodox Mono-12")
+(setq meowp nil)
 
 ;; handle non-guix systems by installing a nice lil package manager
 (unless guixp
@@ -153,6 +154,7 @@
   (which-key-mode))
 
 (use-package meow
+  :when meowp
   :config
   (meow-global-mode 1)
   (setq meow-use-clipboard t)
@@ -276,7 +278,8 @@
          ("C-x C-S-b" . 'ibuffer))
   :hook (completion-list-mode . consult-preview-at-point-mode)
   :config
-  (meow-normal-define-key '("P" . consult-yank-pop)))
+  (when meowp
+    (meow-normal-define-key '("P" . consult-yank-pop))))
 
 (use-package savehist
   :ensure nil ;; builtin
@@ -284,7 +287,6 @@
   (savehist-mode))
 
 (use-package marginalia
-  ;; :ensure t ;; TODO remove this line when guix gets vertico working on emacs 30
   :after vertico
   :custom
   (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
@@ -352,24 +354,23 @@
 
 ;; banger terminal emulator
 (use-package eat
-  :after meow
   :hook ((eshell-load . eat-eshell-mode)
          (eshell-load . eat-eshell-visual-command-mode))
   :config
-
   ;; hopefully make eat operate better with meow -- https://github.com/meow-edit/meow/issues/505
-  (defun eat-meow-setup ()
-   (add-hook 'meow-normal-mode-hook 'eat-emacs-mode nil t)
-   (add-hook 'meow-insert-mode-hook
-             (lambda ()
-               (goto-char (point-max))
-               (eat-char-mode))
-             nil
-             t))
+  (when meowp
+    (defun eat-meow-setup ()
+      (add-hook 'meow-normal-mode-hook 'eat-emacs-mode nil t)
+      (add-hook 'meow-insert-mode-hook
+                (lambda ()
+                  (goto-char (point-max))
+                  (eat-char-mode))
+                nil
+                t))
+    (add-hook 'eat-mode-hook 'eat-meow-setup))
+    (add-hook 'eat-mode-hook 'eat-emacs-mode)
   ;; Replace semi-char mode with emacs mode
-  (advice-add 'eat-semi-char-mode :after 'eat-emacs-mode)
-  (add-hook 'eat-mode-hook 'eat-emacs-mode)
-  (add-hook 'eat-mode-hook 'eat-meow-setup))
+  (advice-add 'eat-semi-char-mode :after 'eat-emacs-mode))
 
 
 (use-package app-launcher
@@ -405,7 +406,8 @@
 
 (use-package expand-region
   :config
-  (meow-normal-define-key '("m" . er/expand-region)))
+  (when meowp
+    (meow-normal-define-key '("m" . er/expand-region))))
 
 (use-package smartparens
   :hook (lisp-mode emacs-lisp-mode scheme-mode lisp-interaction-mode)
@@ -493,9 +495,7 @@
   :ensure nil
   :custom
   (org-directory "~/Documents/notes/org/")
-  :config
-  (meow-leader-define-key
-   '("n a" . org-agenda)))
+  :bind (("C-c n a" . org-agenda)))
 
 (use-package ol-man
   :load-path "site-lisp"
@@ -512,6 +512,14 @@
 (use-package org-roam
   :custom
   (org-roam-directory (concat org-directory "roam/"))
+  :bind (("C-c n t" . org-roam-dailies-capture-today)
+         ("C-c n r b" . org-roam-buffer-toggle)
+         ("C-c n r f" . org-roam-node-find)
+         ("C-c n r d d" . org-roam-dailies-goto-date)
+         ("C-c n r d t" . org-roam-dailies-goto-today)
+         ("C-c n r d y" . org-roam-dailies-goto-yesterday)
+         ("C-c n r d T" . org-roam-dailies-goto-tomorrow))
+
   :config
   (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
   (setq org-directory "~/Documents/notes/org/")
@@ -533,14 +541,7 @@
               #'org-roam-unlinked-references-section))
   (org-roam-db-autosync-mode)
   ;; keybindings
-  (meow-leader-define-key
-   '("n t" . org-roam-dailies-capture-today)
-   '("n r b" . org-roam-buffer-toggle)
-   '("n r f" . org-roam-node-find)
-   '("n r d d" . org-roam-dailies-goto-date)
-   '("n r d t" . org-roam-dailies-goto-today)
-   '("n r d y" . org-roam-dailies-goto-yesterday)
-   '("n r d T" . org-roam-dailies-goto-tomorrow)))
+  )
 
 (use-package org-roam-todo
   :load-path "site-lisp"
@@ -552,9 +553,7 @@
 
 (use-package org-roam-ui
   :after org-roam
-  :config
-  (meow-leader-define-key
-   '("n r u" . org-roam-ui-open)))
+  :bind ("C-c n r u" . org-roam-ui-open))
 
 (use-package yaml-mode
   :config
@@ -637,7 +636,7 @@
                :user "wizard/espernet@erc")
       (erc-tls :server soju
                :port 6698
-               :user "wizard/firebird@erc")
+               :user "wizard/irebird@erc")
       (erc-tls :server soju
                :port 6698
                :user "wizard/akkoma@erc")))
@@ -830,12 +829,13 @@
   :config
   (setq
    ;; gptel-max-tokens 500
-   gptel-model "model"
-   gptel-backend (gptel-make-openai "llama-cpp"
+   gptel-backend (gptel-make-openai "Ollama"
                    :protocol "http"
-                   :host "localhost:8080"
+                   :host "localhost:11434"
                    :stream t
-                   :models '("model"))))
+                   :models '(ren-darkidol:latest ren-cavesofqwen:latest ren-eximius:latest)))
+  (add-hook 'gptel-post-stream-hook 'gptel-auto-scroll)
+  (add-hook 'gptel-post-response-functions 'gptel-end-of-response))
 
 ;; optimizes emacs' garbage collection
 (use-package gcmh

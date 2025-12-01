@@ -30,10 +30,10 @@
   #:use-module (anon home services emacs)
 
   #:use-module (anon packages fonts)
-  #:use-module (anon packages neovim)
+  ;; #:use-module (anon packages neovim)
   #:use-module (anon packages texlab)
-  #:use-module (anon packages textutils)
-  #:use-module (anon packages tree-sitter))
+  #:use-module (anon packages textutils))
+; #:use-module (anon packages tree-sitter))
 ; #:use-module (anon packages xdg-desktop-portal-gtk-sway))
 
 ; #:export (my-home-environment))
@@ -52,7 +52,8 @@
                      image
                      image-viewers
                      inkscape
-                     kde
+                     kde-graphics
+                     kde-multimedia
                      librewolf
                      linux
                      node
@@ -66,6 +67,7 @@
                      sync
                      terminals
                      tree-sitter
+                     video
                      vim
                      web-browsers
                      wm
@@ -88,22 +90,23 @@
                mako
                grimshot
                slurp
-               wofi
-               bemenu
+               waybar
+               ; wofi
+               ; bemenu
 
                unzip
 
                ;; text editor
-               neovim-0.11.1
-               tree-sitter-cli-0.25.3
+               neovim
+               tree-sitter-cli
                texlab
 
                ;; vscodium
                
+               ;; media
                inkscape
-
-               ;; image viewer
                imv
+               ffmpeg
 
                ;; flatpak
                flatpak
@@ -233,39 +236,29 @@
            (service home-emacs-config-service-type)
 
            ;; (service (service-type (name 'home-xdg-desktop-portal)
-           ;;                        (extensions (list (service-extension
-           ;;                                           home-profile-service-type
-           ;;                                           (const (list
-           ;;                                                   xdg-desktop-portal
-           ;;                                                   xdg-desktop-portal-wlr)))
-           ;;                                          (service-extension
-           ;;                                           home-xdg-configuration-files-service-type
-           ;;                                           (const `(("xdg-desktop-portal/portals.conf" ,
-           ;;                                                     (local-file
-           ;;                                                      "../files/.config/xdg-desktop-portal/portals.conf")))))))
-           ;;                        (default-value #f)
-           ;;                        (description #f)))
-
+           ;; (extensions (list (service-extension
+           ;; home-profile-service-type
+           ;; (const (list
+           ;; xdg-desktop-portal
+           ;; xdg-desktop-portal-wlr)))
+           ;; (service-extension
+           ;; home-xdg-configuration-files-service-type
+           ;; (const `(("xdg-desktop-portal/portals.conf" ,
+           ;; (local-file
+           ;; "../files/.config/xdg-desktop-portal/portals.conf")))))))
+           ;; (default-value #f)
+           ;; (description #f)))
+           
            (simple-service 'additional-channels-service
                            home-channels-service-type
-                           (list
-                            ;; (channel
-                            ;; (name 'guix)
-                            ;; (url "https://codeberg.org/guix/guix.git")
-                            ;; (branch "master")
-                            ;; (introduction
-                            ;; (make-channel-introduction
-                            ;; "9edb3f66fd807b096b48283debdcddccfea34bad"
-                            ;; (openpgp-fingerprint
-                            ;; "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA"))))
-                            (channel
-                              (name 'nonguix)
-                              (url "https://gitlab.com/nonguix/nonguix")
-                              ;; Enable signature verification
-                              (introduction
-                               (make-channel-introduction
-                                "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
-                                (openpgp-fingerprint
-                                 "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))))))))
+                           (list (channel
+                                   (name 'nonguix)
+                                   (url "https://gitlab.com/nonguix/nonguix")
+                                   ;; Enable signature verification
+                                   (introduction
+                                    (make-channel-introduction
+                                     "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
+                                     (openpgp-fingerprint
+                                      "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))))))))
 
 my-home-environment
