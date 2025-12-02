@@ -16,7 +16,6 @@
 (use-service-modules dns guix admin sysctl pm nix avahi dbus cups desktop linux
                      mcron networking xorg ssh docker audio virtualization)
 
-
 (define-public %basic-services
   (cons*
    ;; Seat management (can't use seatd because Wireplumber depends on elogind)
@@ -89,6 +88,7 @@
    (service thermald-service-type)
    (service tlp-service-type
             (tlp-configuration
+	     (stop-charge-thresh-bat0 80)
              ;; (cpu-boost-on-ac? #t)
              (wifi-pwr-on-bat? #t)))
 

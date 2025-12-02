@@ -22,8 +22,8 @@ prompt redhat
 
 # eval "$(starship init zsh)"
 
-source "$GUIX_PROFILE/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-source "$GUIX_PROFILE/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
+source "$HOME/.guix-home/profile/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+source "$HOME/.guix-home/profile/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
 # Configure pinentry to use the correct TTY
 gpg-connect-agent updatestartuptty /bye >/dev/null

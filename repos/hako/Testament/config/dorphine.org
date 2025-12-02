@@ -34,79 +34,82 @@
                 (uuid "7de33202-1010-4297-ba9c-8e7fa419f891")))))
       (users (cons* <<user>> %base-user-accounts))
       (packages
-       (replace-mesa
-        (append (specs->pkgs+out
-                 "curl"
-                 "dino"
-                 "fd"
-                 "foot"
-                 "git"
-                 "gnupg"
-                 "mosh"
-                 "ncurses"
-                 "niri"
-                 "openjdk:jdk"
-                 "ripgrep"
-                 "rsync"
-                 "sops"
-                 "unzip"
-                 "wl-clipboard"
+       (append (specs->pkgs+out
+                "curl"
+                "dino"
+                "fd"
+                "foot"
+                "git"
+                "gnupg"
+                "libreoffice"
+                "mosh"
+                "ncurses"
+                "niri"
+                "openjdk:jdk"
+                "ripgrep"
+                "rsync"
+                "sops"
+                "unzip"
+                "wl-clipboard"
 
-                 "xdg-desktop-portal"
-                 "xdg-desktop-portal-gnome"
-                 "xdg-desktop-portal-gtk"
-                 "xdg-utils"
+                "xdg-desktop-portal"
+                "xdg-desktop-portal-gnome"
+                "xdg-desktop-portal-gtk"
+                "xdg-utils"
 
-                 "exo"
-                 "file-roller"
-                 "thunar"
-                 "thunar-archive-plugin"
-                 "thunar-media-tags-plugin"
-                 "thunar-volman"
+                "exo"
+                "file-roller"
+                "thunar"
+                "thunar-archive-plugin"
+                "thunar-media-tags-plugin"
+                "thunar-volman"
+                "tumbler"
 
-                 "librewolf"
-                 "adaptive-tab-bar-colour-icecat"
-                 "bitwarden-icecat"
-                 "livemarks-icecat"
-                 "ohmyech-icecat"
-                 "ublock-origin-icecat"
+                "librewolf"
+                "adaptive-tab-bar-colour-icecat"
+                "bitwarden-icecat"
+                "livemarks-icecat"
+                "ohmyech-icecat"
+                "ublock-origin-icecat"
 
-                 "digikam"
-                 "gimp"
-                 "imv"
-                 "kdenlive"
-                 "mpv-nvidia"
-                 "obs-nvidia"
+                "digikam"
+                "gimp"
+                "imv"
+                "kdenlive"
+                "mpv-nvidia"
+                "obs-nvidia"
 
-                 "prismlauncher-dolly"
-                 "steam-nvidia"
+                "prismlauncher-dolly"
+                "steam-nvidia"
 
-                 <<package>>)
-                %base-packages)))
+                <<package>>)
+               %base-packages))
       (services
-       (replace-mesa
-        (cons* <<service>>
+       (cons* <<service>>
 
-               (service guix-publish-service-type
-                 (guix-publish-configuration
-                   (port 49637)
-                   (host "0.0.0.0")
-                   (advertise? #t)))
+              (service guix-publish-service-type
+                (guix-publish-configuration
+                  (port 49637)
+                  (host "0.0.0.0")
+                  (advertise? #t)))
 
-               (modify-services %rosenthal-desktop-services
-                 (guix-service-type
-                  config => (guix-configuration
-                              (inherit config)
-                              (authorized-keys %guix-keys)
-                              (substitute-urls '("https://cache-cdn.guix.moe"))
-                              (discover? #t)
-                              (extra-options '("--cores=16"))))
-                 (network-manager-service-type
-                  config => (network-manager-configuration
-                              (inherit config)
-                              (extra-configuration-files
-                               (list %network-manager-ipv6-privacy
-                                     %network-manager-random-mac-address))))))))
+              (modify-services %rosenthal-desktop-services
+                (guix-service-type
+                 config => (guix-configuration
+                             (inherit config)
+                             (authorized-keys %guix-keys)
+                             (substitute-urls
+                              '("https://cache-cdn.guix.moe"
+                                "https://ci.guix.gnu.org"
+                                "https://bordeaux.guix.gnu.org"))
+                             (discover? #t)
+                             (extra-options '("--cores=16"))))
+                (network-manager-service-type
+                 config => (network-manager-configuration
+                             (inherit config)
+                             (extra-configuration-files
+                              (list %network-manager-ipv6-privacy
+                                    %network-manager-random-mac-address)))))))
       (name-service-switch %mdns-host-lookup-nss)))
 
   ((compose (nonguix-transformation-nvidia)

@@ -598,6 +598,7 @@ rsync://cache.guix.moe
 #+begin_src scheme :noweb-ref module
   (gnu services web)
   (rosenthal services mail)
+  (rosenthal services messaging)
   (rosenthal services web)
 #+end_src
 
@@ -731,6 +732,15 @@ rsync://cache.guix.moe
       (group-id 969)
       (user-id 974)))
 #+end_src
+
+** heisenbridge
+#+begin_src scheme :noweb-ref service
+  (service heisenbridge-service-type
+    (heisenbridge-configuration
+      (config
+       (plain-file "heisenbridge.yaml"
+         (sops-str nuporta.yaml '("heisenbridge"))))
+      (homeserver "http://localhost:26372")))
 #+end_src
 
 ** misskey

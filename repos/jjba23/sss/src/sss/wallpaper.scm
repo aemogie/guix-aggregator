@@ -65,6 +65,9 @@
       ('modus-vivendi (map digital-art-dreams-sss-wallpaper
                            '("space/heic2002a.jpg" "space/heic2007a.jpg"
                              "space/potw2006a.jpg")))
+      ('kaolin-dark (map digital-art-dreams-sss-wallpaper
+                         '("space/heic2002a.jpg" "space/heic2007a.jpg"
+                           "space/potw2006a.jpg")))
       ('catppuccin-mocha (map digital-art-dreams-sss-wallpaper
                               '("1362745.png" "inazuma.jpg" "diluc-tree.jpg"
                                 "tempel-pink-sun.jpg")))

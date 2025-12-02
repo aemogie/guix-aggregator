@@ -161,14 +161,14 @@ Administration accounts.
   (simple-service 'guix-moe-mirror
       shepherd-root-service-type
     (list (shepherd-timer '(guix-moe-mirror)
-            #~(calendar-event #:hours (list (random 24)) #:minutes '(0))
+            #~(calendar-event #:hours '(3 9 15 21) #:minutes '(0))
             #~(#$(program-file "guix-moe-mirror"
                    (with-imported-modules '((guix build utils))
                      #~(begin
                          (use-modules (guix build utils))
                          (mkdir-p "/var/cache/guix-moe/narinfo")
                          (invoke #$(file-append (spec->pkg "rsync") "/bin/rsync")
-                                 "-avh" "--delete"
+                                 "-az" "--delete"
                                  "rsync://cache.guix.moe/narinfo/"
                                  "/var/cache/guix-moe/narinfo/")))))
             #:requirement '(user-processes))))

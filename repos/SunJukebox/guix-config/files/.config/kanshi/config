@@ -1,0 +1,36 @@
+output eDP-1 {
+  mode 1920x1080
+  position 0,0
+  scale 1
+  alias $INTERNAL
+}
+
+output "Dell Inc. DELL P2423DE DN8PWY3" {
+  mode 2560x1440
+  position 1920,0
+  scale 1
+  alias $WORK
+}
+
+output "Dell Inc. DELL P2723QE DDZVB14" {
+  mode 3840x2160
+  position 1920,0
+  scale 1.5
+  alias $FOUR_K
+}
+
+profile work {
+  output $INTERNAL enable
+  output $WORK enable
+}
+
+profile four_k {
+  output $FOUR_K enable
+  output $INTERNAL enable
+}
+
+profile mirror-work {
+  output eDP-1 enable mode 1920x1080 position 0,0
+  output DP-1 enable position 1920,0
+  exec wl-present mirror eDP-1 --fullscreen-output DP-1 --fullscreen 
+}

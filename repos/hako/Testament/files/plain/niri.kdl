@@ -79,36 +79,50 @@ binds {
     Mod+L      hotkey-overlay-title="Lock the Screen: swaylock" { spawn "$$bin/swaylock$$" "--clock" "--daemonize" "--ignore-empty-password" "--image" "~/Pictures/Pixez/115008128_p0.jpg"; }
     Mod+T      hotkey-overlay-title="Open Terminal: foot"       { spawn "$$bin/foot$$"; }
 
-    Mod+Left                  { focus-column-left; }
-    Mod+Down                  { focus-window-down; }
-    Mod+Up                    { focus-window-up; }
-    Mod+Right                 { focus-column-right; }
-    Mod+Shift+Left            { move-column-left; }
-    Mod+Shift+Down            { move-window-down; }
-    Mod+Shift+Up              { move-window-up; }
-    Mod+Shift+Right           { move-column-right; }
+    Mod+Left                       { focus-column-left; }
+    Mod+Down                       { focus-window-down; }
+    Mod+Up                         { focus-window-up; }
+    Mod+Right                      { focus-column-right; }
 
-    Mod+WheelScrollDown       { focus-column-right; }
-    Mod+WheelScrollUp         { focus-column-left; }
-    Mod+Shift+WheelScrollDown { move-column-right; }
-    Mod+Shift+WheelScrollUp   { move-column-left; }
+    Mod+Shift+Left                 { move-column-left; }
+    Mod+Shift+Down                 { move-window-down; }
+    Mod+Shift+Up                   { move-window-up; }
+    Mod+Shift+Right                { move-column-right; }
 
-    Mod+Comma                 { consume-or-expel-window-left; }
-    Mod+Period                { consume-or-expel-window-right; }
-    Mod+F                     { maximize-column; }
-    Mod+Shift+F               { fullscreen-window; }
-    Mod+C                     { center-column; }
-    Mod+V                     { toggle-window-floating; }
-    Mod+Shift+V               { switch-focus-between-floating-and-tiling; }
+    Mod+WheelScrollDown            { focus-column-right; }
+    Mod+WheelScrollUp              { focus-column-left; }
 
-    Mod+Shift+Q               { close-window; }
+    Mod+Shift+WheelScrollDown      { move-column-right; }
+    Mod+Shift+WheelScrollUp        { move-column-left; }
 
-    Mod+Tab repeat=false      { toggle-overview; }
+    Mod+Ctrl+Left                  { focus-monitor-left; }
+    Mod+Ctrl+Right                 { focus-monitor-right; }
 
-    Print                     { screenshot; }
-    Ctrl+Print                { screenshot-screen; }
-    Alt+Print                 { screenshot-window; }
+    Mod+Ctrl+Shift+Left            { move-column-to-monitor-left; }
+    Mod+Ctrl+Shift+Right           { move-column-to-monitor-right; }
 
-    Mod+Shift+E               { quit; }
-    Ctrl+Alt+Delete           { quit; }
+    Mod+Ctrl+WheelScrollDown       { focus-monitor-right; }
+    Mod+Ctrl+WheelScrollUp         { focus-monitor-left; }
+
+    Mod+Ctrl+Shift+WheelScrollDown { move-column-to-monitor-right; }
+    Mod+Ctrl+Shift+WheelScrollUp   { move-column-to-monitor-left; }
+
+    Mod+Comma                      { consume-or-expel-window-left; }
+    Mod+Period                     { consume-or-expel-window-right; }
+    Mod+F                          { maximize-column; }
+    Mod+Shift+F                    { fullscreen-window; }
+    Mod+C                          { center-column; }
+    Mod+V                          { toggle-window-floating; }
+    Mod+Shift+V                    { switch-focus-between-floating-and-tiling; }
+
+    Mod+Shift+Q                    { close-window; }
+
+    Mod+Tab repeat=false           { toggle-overview; }
+
+    Print                          { screenshot; }
+    Ctrl+Print                     { screenshot-screen; }
+    Alt+Print                      { screenshot-window; }
+
+    Mod+Shift+E                    { quit; }
+    Ctrl+Alt+Delete                { quit; }
 }

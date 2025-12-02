@@ -1,8 +1,3 @@
-;; to reproduce the content of your profile.  This is "symbolic": it only
-;; specifies package names.  To reproduce the exact same profile, you also
-;; need to capture the channels being used, as returned by "guix describe".
-;; See the "Replicating Guix" section in the manual.
-
 (define-module (anon home home-conf)
   #:use-module (guix gexp)
   #:use-module (guix channels)
@@ -27,7 +22,7 @@
   ;; #:use-module (anon home services)
   #:use-module (anon home services dotfiles)
   #:use-module (anon home services texlive)
-  #:use-module (anon home services emacs)
+  ;; #:use-module (anon home services emacs)
 
   #:use-module (anon packages fonts)
   ;; #:use-module (anon packages neovim)
@@ -76,10 +71,6 @@
 
 (define my-home-environment
   (home-environment
-    ;; Below is the list of packages that will show up in your
-    ;; Home profile, under ~/.guix-home/profile.
-    ;; (packages (list ))
-    
     (packages (list
                ;; window manager
                sway
@@ -91,8 +82,8 @@
                grimshot
                slurp
                waybar
-               ; wofi
-               ; bemenu
+               ;; wofi
+               ;; bemenu
 
                unzip
 
@@ -178,8 +169,6 @@
                ;; printers & scanners
                hplip))
 
-    ;; Below is the list of Home services.  To search for available
-    ;; services, run 'guix home search KEYWORD' in a terminal.
     (services
      (list (simple-service 'my-env-vars-service
                            home-environment-variables-service-type
@@ -233,7 +222,7 @@
 
            (service home-texlive-service-type)
 
-           (service home-emacs-config-service-type)
+           ;; (service home-emacs-config-service-type)
 
            ;; (service (service-type (name 'home-xdg-desktop-portal)
            ;; (extensions (list (service-extension

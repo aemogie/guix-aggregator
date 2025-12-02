@@ -135,6 +135,7 @@
 ;;   - gruvbox-dark 
 ;;   - gruvbox-light
 ;;   - modus-vivendi
+;;   - kaolin-dark
 ;;
 ;; More as well...
 

@@ -64,6 +64,9 @@
   #|Radix system|#
   #|M|# #:use-module (radix system monitoring)
 
+  #|Operating-systems Base|#
+  #|•|# #:use-module (operating-systems base)
+
   #|Operating-systems Buer|#
   #|F|# #:use-module ((operating-systems buer files)
                       #:prefix file:)
@@ -87,6 +90,7 @@
 
 (define buer
   (operating-system
+    (inherit base)
     (host-name "buer")
     (timezone "America/Sao_Paulo")
     (locale "en_US.utf8")
@@ -296,8 +300,7 @@
             #|Special file services|#
             (service special-files-service-type
                      `(("/bin/sh" ,(file-append bash "/bin/bash"))
-                       ("/usr/bin/env" ,(file-append coreutils "/bin/env"))
-                       ("/etc/config.scm" ,buer.scm)))
+                       ("/usr/bin/env" ,(file-append coreutils "/bin/env"))))
             (simple-service 'persistent-files
                             special-files-service-type
                             (map (lambda (dir)

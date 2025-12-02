@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: CC0-1.0
 
-OPTS  = --keep-going --verbosity=1 $(ARGS)
+OPTS  = --keep-going --verbosity=2 $(ARGS)
 GUIX  = guix time-machine --channels=channels.lock --
 # GUIX  = ./pre-inst-env guix
 EMACS = $(GUIX) shell emacs-minimal -- emacs

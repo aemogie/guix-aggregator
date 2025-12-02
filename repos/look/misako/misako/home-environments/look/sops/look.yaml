@@ -1,6 +1,6 @@
 senpai:
     sourcehut:
-        password: ENC[AES256_GCM,data:TyfAfP2Jzg28MXwpAiIISjfoiHdIB7BGS0XotxF3v6udsdZbBuLjcKkwzU5QZ44z/eOOv/Lq4O1+yD151DOqa0ucJNtHDQ72K72l/YGiYVP/+BC/aWw49WPInoA=,iv:9Yimx9NSkRcohu7CDK+aLH6D2qiA7UnGJKk7MAhJLSk=,tag:f3QIdLwkwVyUvLBsYH3N1w==,type:str]
+        password: ENC[AES256_GCM,data:jotiXpn56HT2MnsTAQnqwCh8aZmjGfdqbFc+Af0xJQTnwDp3+lKGreEF+64mpR5S8i3/bZpTrQQdpOgMa8ly95Xy4ndTaVpmQgKX3cKtIAhOQVrdE7Mf841UtlY=,iv:Bis8Ms/IMhGVW9l7/EKzy24xWFe4shwiwVuni2Y27SY=,tag:ZqMgUbMs9/gV+kK0aXe8Hw==,type:str]
 irc:
     libera:
         name: ENC[AES256_GCM,data:6VcC+w==,iv:+IW/yAX95Bbel9iXhwpEM4fPzCBAi0/8/FasMMj81tU=,tag:w8vkGxs1Q8LbyNzZcKiKxQ==,type:str]
@@ -35,8 +35,8 @@ sops:
     azure_kv: []
     hc_vault: []
     age: []
-    lastmodified: "2025-11-13T22:39:28Z"
-    mac: ENC[AES256_GCM,data:KvMftglT2xi6mRFwE0CudCY+AUx1HADJKS4rUoL1rvdMkm5QfBUUErIHYtUKBkC0I9QdDrageZa9mXfHomr0hKCVXZ6T4nA4EtnZJm1t8YAFqSUhZt1QRWu5kkj6FaJSuDb2SV3jPSHQ5pRhZhnqcrq8k8FG2g94fYjTMu4LUdg=,iv:QiPYRrijD9eYVkq/TmhIVZ4WogBsXc6iQ6jg0si8YGo=,tag:oaFRPS9MsNbBywHY4H24+g==,type:str]
+    lastmodified: "2025-12-01T20:27:46Z"
+    mac: ENC[AES256_GCM,data:VffdXB6k27OHThm1YWe7yFESlnlcVwL38ojkvPXKhNDLSujUyMfAWDTjHduhFHkGUdUjoScstG9tOwKTj33bPvbNXtP/T9dc6eOYwizY/SdJS+Egwl8j+MH4cnBOM7+wCKV7fdoIyI3GQYuJ0okzC8/cUvaCjnEBH/lX6BmFq5s=,iv:fPv6loRt6p9cEeVcUFSEHKkq2SkXolxi7nug4MJ2lHY=,tag:f6T+l/luErHJsV1WGTzu2g==,type:str]
     pgp:
         - created_at: "2025-05-22T12:55:34Z"
           enc: |-

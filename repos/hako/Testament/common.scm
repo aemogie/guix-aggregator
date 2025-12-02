@@ -61,11 +61,11 @@ WARNED."
 
 
 (define chapra.yaml
-  (local-file (testament-plain "chapra.yaml")))
+  (local-file "../Workspace/SOPS/chapra.yaml"))
 (define dorphine.yaml
-  (local-file (testament-plain "dorphine.yaml")))
+  (local-file "../Workspace/SOPS/dorphine.yaml"))
 (define nuporta.yaml
-  (local-file (testament-plain "nuporta.yaml")))
+  (local-file "../Workspace/SOPS/nuporta.yaml"))
 
 
 (define %guix-keys

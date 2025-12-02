@@ -34,6 +34,7 @@
                                             hex-to-rgba
                                             everforest-light
                                             everforest-dark
+                                            kaolin-dark
                                             heavy-metal
                                             solarized-light
                                             ef-autumn
@@ -69,6 +70,7 @@
     ('dracula (cdr (assoc sym dracula)))
     ('catppuccin-latte (cdr (assoc sym catppuccin-latte)))
     ('catppuccin-mocha (cdr (assoc sym catppuccin-mocha)))
+    ('kaolin-dark (cdr (assoc sym kaolin-dark)))
     (_ (raise-unknown-palette-exception palette))))
 
 (define-syntax-rule (get-gtk-theme palette)
@@ -91,6 +93,7 @@
     ('dracula #t)
     ('catppuccin-latte #f)
     ('catppuccin-mocha #t)
+    ('kaolin-dark #t)
     (_ (raise-unknown-palette-exception palette))))
 
 (define-syntax-rule (get-icon-theme palette)
@@ -113,6 +116,7 @@
     ('dracula "'dracula")
     ('catppuccin-latte "'catppuccin-latte")
     ('catppuccin-mocha "'catppuccin-mocha")
+    ('kaolin-dark "'kaolin-dark")
     (_ (raise-unknown-palette-exception palette))))
 
 (define-syntax-rule (get-fish-color palette)
@@ -132,6 +136,7 @@
     ('dracula "bd93f9")
     ('catppuccin-latte "ba5205")
     ('catppuccin-mocha "b0a0cf")
+    ('kaolin-dark "3fb83f")
     (_ (raise-unknown-palette-exception palette))))
 
 (define-syntax-rule (get-gtk-accent-color palette)
@@ -151,6 +156,7 @@
     ('dracula "'pink'")
     ('catppuccin-latte "'yellow'")
     ('catppuccin-mocha "'pink'")
+    ('kaolin-dark "'green'")
     (_ (raise-unknown-palette-exception palette))))
 
 (define-syntax-rule (get-cursor-theme palette)
@@ -188,6 +194,8 @@
                                   'magenta))
     ('catppuccin-mocha (assoc-ref ansi-color-escapes
                                   'magenta))
+    ('kaolin-dark (assoc-ref ansi-color-escapes
+                             'green))
     (_ (raise-unknown-palette-exception palette))))
 
 (define-syntax-rule (hex-to-decimal n)
@@ -319,3 +327,10 @@
     (text-l . "#989898")
     (background . "#000000")
     (background-l . "#1e1e1e")))
+
+(define kaolin-dark
+  `((primary . "#80bcb6") (primary-l . "#4d9391")
+    (text . "#e6e6e8")
+    (text-l . "#f2f2f2")
+    (background . "#18181B")
+    (background-l . "#222225")))

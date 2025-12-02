@@ -106,6 +106,24 @@
          (load-theme 'catppuccin t)))
   )
 
+(use-package kaolin-themes
+  :ensure t
+  :config
+  (setq kaolin-themes-bold t
+        kaolin-themes-italic t
+        kaolin-themes-underline t)
+
+
+  (setq kaolin-themes-modeline-border nil
+        kaolin-themes-underline-wave nil
+        kaolin-themes-distinct-metakeys nil
+        kaolin-themes-italic-comments t
+        kaolin-themes-hl-line-colored t
+        kaolin-themes-distinct-fringe t
+        kaolin-themes-git-gutter-solid t)
+
+  (cond ((equal sss-emacs-theme 'kaolin-dark)
+         (load-theme 'kaolin-dark t))))
 
 (provide 'sss/theme)
 
