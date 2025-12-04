@@ -11,22 +11,24 @@
 
   #:export (base))
 
-(define symlink-/etc/config.scm-gexp
-  #~(service '(symlink-/etc/config.scm)
-             #:transient? #t
-             #:requirement '(user-processes host-name)
-             #:start (lambda _
-                       (symlink
-                        (string-append
-                         "/home/radio/areas/code/scm/zero/"
-                         "operating-systems/" (gethostname) ".scm")
-                        "/etc/config.scm"))))
+(define symlink-/etc/config.scm-shepherd-service
+  (shepherd-service
+   (provision '(symlink-/etc/config.scm))
+   (requirement '(user-processes host-name))
+   (start #~(lambda _
+              (let* ((zero "/home/radio/areas/code/scm/zero/")
+                     (host-config (string-append zero "operating-systems/"
+                                                 (gethostname) ".scm")))
+                (symlink host-config "/etc/config.scm")
+                host-config)))
+   (stop #~(lambda _
+             (when (file-exists? "/etc/config.scm")
+               (delete-file "/etc/config.scm"))))))
 
 (define symlink-/etc/config.scm
-  (simple-service 'symlink-/etc/config.scm shepherd-root-service-type
-                  (list (shepherd-service
-                         (provision '(symlink-/etc/config.scm))
-                         (free-form symlink-/etc/config.scm-gexp)))))
+  (simple-service 'symlink-/etc/config.scm
+                  shepherd-root-service-type
+                  (list symlink-/etc/config.scm-shepherd-service)))
 
 (define base
   (operating-system
