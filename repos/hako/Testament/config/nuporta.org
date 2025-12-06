@@ -35,7 +35,7 @@
                 "fd"
                 "gnupg"
                 "mosh"
-                "rclone-bin"
+                "rclone"
                 "ripgrep"
                 "rsync"
                 "sops"
@@ -378,6 +378,7 @@ Remember to open TCP port 5555 and 5556.
 #+begin_src scheme :noweb yes :noweb-ref service
   (service cuirass-service-type
     (cuirass-configuration
+      (cuirass (spec->pkg "cuirass-dolly"))
       ;; 6 hours
       (interval (* 6 3600))
       (parameters
@@ -741,6 +742,17 @@ rsync://cache.guix.moe
        (plain-file "heisenbridge.yaml"
          (sops-str nuporta.yaml '("heisenbridge"))))
       (homeserver "http://localhost:26372")))
+#+end_src
+
+** mautrix-telegram
+#+begin_src scheme :noweb-ref service
+  (service mautrix-telegram-service-type
+    (mautrix-telegram-configuration
+      (config
+       (plain-file "mautrix-telegram.yaml"
+         (sops-str nuporta.yaml '("mautrix-telegram"))))
+      (group-id 964)
+      (user-id 968)))
 #+end_src
 
 ** misskey

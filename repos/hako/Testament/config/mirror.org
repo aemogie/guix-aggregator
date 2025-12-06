@@ -168,7 +168,7 @@ Administration accounts.
                          (use-modules (guix build utils))
                          (mkdir-p "/var/cache/guix-moe/narinfo")
                          (invoke #$(file-append (spec->pkg "rsync") "/bin/rsync")
-                                 "-az" "--delete"
+                                 "-az" ;"--delete" TODO: Upgrade mirrors with more RAM.
                                  "rsync://cache.guix.moe/narinfo/"
                                  "/var/cache/guix-moe/narinfo/")))))
             #:requirement '(user-processes))))

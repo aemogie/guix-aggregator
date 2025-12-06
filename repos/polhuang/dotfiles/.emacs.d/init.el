@@ -177,6 +177,11 @@
       initial-scratch-message nil)
 (fset #'display-startup-echo-area-message #'ignore)
 
+;; frame + window management
+(use-package activities
+  :init
+  (activities-mode))
+
 ;; transparency
 (add-to-list 'default-frame-alist '(alpha-background . 65))
 
@@ -715,10 +720,11 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
   (org-roam-dailies-capture-templates
    '(("d" "default" entry "* %<%I:%M %p> \n%?"
       :if-new (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n"))))
-  :config
+  :init
   (require 'org-roam-dailies)
+  :config
+  (require 'org-roam-protocol)
   (org-roam-db-autosync-mode)
-  
   (defun org-roam-node-insert-immediate (arg &rest args)
     (interactive "P")
     (let ((args (cons arg args))
@@ -726,23 +732,20 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
 						    '(:immediate-finish t)))))
       (apply #'org-roam-node-insert args)))
 
-  ;; update org roam ids
-  (org-roam-update-org-id-locations)
-
   (advice-add #'corfu-insert
               :after (lambda ()
                        (when
                            (eq major-mode 'org-mode)
                          (org-roam-link-replace-all)))))
 
-(use-package org-roam-ui
-  :ensure t
-  :after org-roam
-  :custom
-  (org-roam-ui-sync-theme t)
-  (org-roam-ui-follow t)
-  (org-roam-ui-update-on-save t)
-  (org-roam-ui-open-on-start t))
+;; (use-package org-roam-ui
+;;   :ensure t
+;;   :after org-roam
+;;   :custom
+;;   (org-roam-ui-sync-theme t)
+;;   (org-roam-ui-follow t)
+;;   (org-roam-ui-update-on-save t)
+;;   (org-roam-ui-open-on-start t))
 
 (use-package org-super-agenda ;; if there's a problem with loading the package, it could be because of dash conflicts - needs to be installed internally, not externally
   :ensure t
@@ -1558,6 +1561,24 @@ T - tag prefix
 	 ("C-S-<return>" . crux-smart-open-line-above)
 	 ("C-<return>" . crux-smart-open-line)))
 
+;; tempel
+(use-package tempel
+  :init
+
+  ;; setup completion at point
+  (defun tempel-setup-capf ()
+    (setq-local corfu-auto-trigger "@"
+                completion-at-point-functions
+                (cons (cape-capf-trigger #'tempel-complete ?@)
+                      completion-at-point-functions)))
+
+  (add-hook 'conf-mode-hook 'tempel-setup-capf)
+  (add-hook 'prog-mode-hook 'tempel-setup-capf)
+  (add-hook 'text-mode-hook 'tempel-setup-capf)
+  :custom
+  (tempel-path "/home/pol/.emacs.d/templates"))
+
+
 ;;;;;;;;;;;;;;;
 ;; utilities ;;
 ;;;;;;;;;;;;;;;
@@ -2151,7 +2172,7 @@ Otherwise, call eat."
   :ensure t
   :commands gptel-end-of-response
   :custom
-  (gptel-model "gpt-4o")
+  (gptel-model "gpt-5")
   (gptel-default-mode 'org-mode)
   :config
   (require 'gptel-integrations))
@@ -2166,6 +2187,14 @@ Otherwise, call eat."
             (gptel-end-of-response)
             (insert "\n#+END_RESPONSE")
             (insert "\n\n")))
+
+(use-package gptel-agent
+  :vc ( :url "https://github.com/karthink/gptel-agent"
+        :rev :newest)
+  :config (gptel-agent-update))         ;Read files from agents directories
+
+
+
 
 ;; install external dependencies enchant, pkgconf, and lang dict
 ;; pacman: enchant, pkgconf, hunspell-en_us
