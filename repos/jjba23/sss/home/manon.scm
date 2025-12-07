@@ -48,7 +48,6 @@
              (sss wallpaper)
              (sss portals)
              (sss qt)
-             (sss channels)
              (sss mime)
              (sss openpgp)
              (sss dconf)
@@ -115,6 +114,6 @@
                  openpgp-capability
                  (service home-dbus-service-type)
                  (service home-pipewire-service-type)
-                 (fontconfig-capability #:mono-font ($$$ 'mono-font))
-                 channels-capability) %base-home-services)))
+                 (fontconfig-capability #:mono-font ($$$ 'mono-font)))
+           %base-home-services)))
 

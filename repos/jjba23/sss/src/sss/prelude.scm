@@ -77,16 +77,12 @@
                       (append (list #f msg) args))))
 
 (define (log-info msg . args)
-  (log-message (format #f "[INFO][~a] ~a"
-                       (strftime (preferred-strftime-format)
-                                 (localtime (current-time)))
+  (log-message (format #f "~a"
                        (apply format
                               (append (list #f msg) args)))))
 
 (define (log-error msg . args)
-  (log-message (format #f "[ERROR][~a] ~a"
-                       (strftime (preferred-strftime-format)
-                                 (localtime (current-time)))
+  (log-message (format #f "[error] ~a"
                        (apply format
                               (append (list #f msg) args)))))
 

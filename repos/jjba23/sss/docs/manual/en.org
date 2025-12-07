@@ -520,24 +520,28 @@ When everything is in place, if it's a new user, you can add a password to the u
 
 -----
 
-* Adding channels
+* On channels
 
-Add ~nonguix~ in your channels file (=$HOME/.config/guix/channels.scm=). This will later be overwritten by SSS.
+See ~channels.scm~ for the reproducible pinned commits for the various channels being used.
 
-#+begin_src  scheme
-  (cons* (channel
-        (name 'nonguix)
-        (url "https://gitlab.com/nonguix/nonguix")
-        (introduction
-         (make-channel-introduction
-          "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
-          (openpgp-fingerprint
-           "2A39 3FFF 68F4 EF7A 3D29 12AF 6F51 20A0 22FB B2D5"))))
-       %default-channels)
+SSS uses guix, nonguix.
 
+warning: always guix pull from your user account (*no sudo or root*) and let all channels get updated
+
+To update and load these onto a system do (in the root of this repository):
+
+#+begin_src shell
+guix pull --channels=channels.scm
+# or: maak pull
 #+end_src
 
-After adding the channel, perform a ~guix pull~ from your user account (*no sudo or root*) and let all channels get updated.
+#+begin_src scheme
+(define (pull)
+  "Guix pull using wanted channels"
+  ($ '("guix pull" "--channels=channels.scm" "--allow-downgrades")
+     #:verbose? #t))
+#+end_src
+
 
 * Installation of SSS
 
@@ -582,11 +586,15 @@ You can then reboot and you should be greeted by a simple TTY.
 
 ** Keeping SSS updated
 
-You should every now and then update the SSS repo with ~git pull~. You also should regularly do a ~guix pull~ from your regular user, and then rebuild this system with the root user (~maak sr~).
+You should every now and then update the SSS repo with ~git pull~.
+
+You also should regularly do a ~maak pull~ from your regular user, and then rebuild this system with the root user (~maak sr~).
 
 It's important to also keep the SSS modules updated, and thus from time to time run ~git submodule update --recursive --remote~.
 
-Guix is a rolling distribution and you don't need to be always on bleeding edge releases, but it's nice to stay updated.
+Guix is a rolling distribution. SSS keeps up-to-date with Guix, but curates known well-functioning versions, also using the guix time machine.
+
+Therefore, updating SSS (from Git) also means likely (auto) updating Guix commit.
 
 --------
 
@@ -940,6 +948,22 @@ You can optionally do a ~guix pull~ now to see if maybe a new version of things 
 Q: I am unable to generate  a GPG key! I get errors about pin-item or pinentry!
 
 A: Try with ~gpg --pinentry-mode loopback --full-gen-key~. Otherwise try other options and check you have the right pinentry programs installed.
+
+-----
+
+Q: guix system reconfigure: problem on detecting channels
+
+A: in some cases, users might face issues related to reading custom channels during system reconfigure:
+
+no code for module ~(nongnu packages linux)~.
+we need to check if the channels file is located in ~/.config/guix/channels.scm and it’s accessible by current user (reconfigure needs to be performed by root user).
+
+later in order fix we need to perform following steps:
+login with root user (you also can have root access over ssh using: ssh -p 2222 root@127.0.0.1 command)
+remove guix cache folder located in /root/.cache/guix/
+run guix pull to get a fresh copy of package repositories from server
+run guix system reconfigure ... to reconfigure the based on system configuration file
+
 
 -----
 

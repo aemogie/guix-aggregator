@@ -38,7 +38,6 @@
              (sss git)
              (sss vars)
              (sss mako)
-             (sss channels)
              (sss fastfetch)
              (sss user-timers)
              (sss enchant)
@@ -188,6 +187,6 @@
                  openpgp-capability
                  (service home-dbus-service-type)
                  (service home-pipewire-service-type)
-                 (fontconfig-capability #:mono-font ($$$ 'mono-font))
-                 channels-capability) joe-shepherd-timers %base-home-services)))
+                 (fontconfig-capability #:mono-font ($$$ 'mono-font)))
+           joe-shepherd-timers %base-home-services)))
 
