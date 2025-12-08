@@ -28,6 +28,7 @@
   #:use-module (gnu packages ncurses)
   #:use-module (gnu packages texinfo) ;info-reader
   #:use-module (gnu packages vim) ;xxd?
+  #:use-module (gnu packages ocr)
   #:use-module (gnu packages wm)
 
   #:export (galahad-system-packages))
@@ -91,6 +92,9 @@
 	slurp
 	foot
 	fuzzel
+	tesseract-ocr
+	tesseract-ocr-tessdata-fast
+	wl-clipboard
 	zathura
 	fnott
         light))

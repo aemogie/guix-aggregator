@@ -1,0 +1,3 @@
+#+TITLE: Niri Config @lynn
+#+auto_tangle: t
+#+PROPERTY: header-args :tangle ./config.kdl

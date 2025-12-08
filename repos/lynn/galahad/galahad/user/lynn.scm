@@ -23,7 +23,6 @@
   #:use-module (gnu packages llvm)
   #:use-module (gnu packages qt)
   #:use-module (gnu packages ibus)
-  #:use-module (gnu packages fcitx)
   #:use-module (gnu services) ;simple service
   #:use-module (guix gexp) ;plain-file
   #:use-module (gnu home)
@@ -72,7 +71,8 @@
   (list font-awesome
 	font-iosevka-etoile
 	font-iosevka-term
-	font-google-noto
+	font-google-noto-serif-cjk
+	font-google-noto-sans-cjk
 	font-google-noto-emoji
 	font-sarasa-gothic))
 
@@ -85,7 +85,6 @@
   (list
    (service home-channels-service-type
 	    (list %channels-guix
-		  %channels-guix-gaming
 		  %channels-nonguix))
    (service home-dotfiles-service-type
             (home-dotfiles-configuration
@@ -134,6 +133,8 @@
 		     ("XCOMPOSEFILE" . "$HOME/.XCompose")
 		     ("XCOMPOSECACHE" . "$HOME/.xcompose-cache")
 		     ("ANKI_WAYLAND" . "1")
+		     ("QT_FONT_DPI" . "144")
+		     ("HYFETCH_DONT_WARN_RUST" . "1")
 		     ("TERM" . "xterm-256color")))
    (service home-xdg-configuration-files-service-type
            `(("gtk-3.0/settings.ini"

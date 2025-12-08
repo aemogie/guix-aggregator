@@ -94,24 +94,25 @@
        ":CAPTURED: %a\n"
        ":END:\n%?")
 	("i" "Immersion" entry
-	 (file+datetree "~/docs/org/immersion.org")
+	 (file+olp+datetree "~/docs/org/immersion.org")
 	  "* %^{Immersion|Passive|Active|Reading} %U  :%\\1:"
 	 :clock-in t
 	 :clock-keep t)))
 
-(defun my/org-write-clock-status ()
-  "Write the current org-clock status to ~/.cache/org-clock-current."
-  (let ((file "~/.cache/org-clock-current"))
-    (with-temp-file file
-      (when (org-clock-is-active)
-          (insert (format "%s"
-                          (org-clock-get-clock-string)))
-        (insert "")))))
-(add-hook 'org-clock-in-hook #'my/org-write-clock-status)
-(add-hook 'org-clock-out-hook #'my/org-write-clock-status)
-(add-hook 'org-clock-cancel-hook #'my/org-write-clock-status)
-(add-hook 'org-clock-in-resume-hook #'my/org-write-clock-status)
-(run-with-timer 0 60 #'my/org-write-clock-status)
+;; (defun my/org-write-clock-status ()
+;;   "Write the current org-clock status to ~/.cache/org-clock-current."
+;;   (require 'org-clock)
+;;   (let ((file "~/.cache/org-clock-current"))
+;;     (with-temp-file file
+;;       (if (org-clocking-p)
+;;           (insert (format "%s"
+;;                           (org-clock-get-clock-string)))
+;;         (insert "")))))
+;; (add-hook 'org-clock-in-hook #'my/org-write-clock-status)
+;; (add-hook 'org-clock-out-hook #'my/org-write-clock-status)
+;; (add-hook 'org-clock-cancel-hook #'my/org-write-clock-status)
+;; (add-hook 'org-clock-in-resume-hook #'my/org-write-clock-status)
+;; (run-with-timer 0 60 #'my/org-write-clock-status)
 
 (use-package org-roam
   :custom
@@ -146,6 +147,14 @@
   (add-to-list 'eglot-server-programs
 	       '(zig-mode . ("zls")))
   (setq eglot-autoshutdown t))
+
+(setq compilation-save-buffers-predicate nil)
+(setq compilation-scroll-output 'first-error)
+(setq compilation-ask-about-save nil)
+(setq compilation-always-kill t)
+(setq ansi-color-for-compilation-mode t)
+(setq eglot-events-buffer-size 0)
+(add-hook 'compilation-filter-hook #'ansi-color-compilation-filter)
 
 (use-package buffer-env
   :config

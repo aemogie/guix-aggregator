@@ -51,12 +51,12 @@ input type:touchpad {
     bindsym $mod+Shift+4 move container to workspace number 4
     bindsym $mod+b splith
     bindsym $mod+v splitv
-    bindsym $mod+s layout stacking
     bindsym $mod+w layout tabbed
     bindsym $mod+e layout toggle split
     bindsym $mod+f fullscreen
     bindsym Print exec $screenshot
     bindsym $mod+Shift+s exec grim -g "$(slurp)"
+    bindsym $mod+s exec sh -c 'tmp=$(mktemp /tmp/ocr.XXXXXX.png) && grim -g "$(slurp)" "$tmp" && TESSDATA_PREFIX=$(guix build tesseract-ocr-tessdata-fast)/share/tessdata tesseract -l chi_sim "$tmp" stdout | wl-copy && rm "$tmp"'
     bindsym $mod+o exec emacsclient -c -n -e '(switch-to-buffer nil)'
     bindsym $mod+n exec emacsclient -c -n -e '(switch-to-buffer nil)' -e '(org-capture)'
     bindsym $mod+Shift+space floating toggle

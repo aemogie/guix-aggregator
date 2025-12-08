@@ -132,6 +132,7 @@ Which sets the default font to be the monospaced variant, at a font-size of =200
 #+end_src
 And this sets the font used for text writing. We don't have to set the font-size here, because our default face already has it set. Iosevka supports ligatures, which I prefer:
 #+begin_src scheme :tangle ./info.scm
+
   ;; font
   emacs-ligature
   #+end_src
@@ -214,25 +215,26 @@ For note taking, I use the ever popular =org-roamn= combined with org-capture. I
          ":CAPTURED: %a\n"
          ":END:\n%?")
   	("i" "Immersion" entry
-  	 (file+datetree "~/docs/org/immersion.org")
+  	 (file+olp+datetree "~/docs/org/immersion.org")
   	  "* %^{Immersion|Passive|Active|Reading} %U  :%\\1:"
   	 :clock-in t
   	 :clock-keep t)))
   #+end_src
 #+begin_src emacs-lisp
-(defun my/org-write-clock-status ()
-  "Write the current org-clock status to ~/.cache/org-clock-current."
-  (let ((file "~/.cache/org-clock-current"))
-    (with-temp-file file
-      (when (org-clock-is-active)
-          (insert (format "%s"
-                          (org-clock-get-clock-string)))
-        (insert "")))))
-(add-hook 'org-clock-in-hook #'my/org-write-clock-status)
-(add-hook 'org-clock-out-hook #'my/org-write-clock-status)
-(add-hook 'org-clock-cancel-hook #'my/org-write-clock-status)
-(add-hook 'org-clock-in-resume-hook #'my/org-write-clock-status)
-(run-with-timer 0 60 #'my/org-write-clock-status)
+  ;; (defun my/org-write-clock-status ()
+  ;;   "Write the current org-clock status to ~/.cache/org-clock-current."
+  ;;   (require 'org-clock)
+  ;;   (let ((file "~/.cache/org-clock-current"))
+  ;;     (with-temp-file file
+  ;;       (if (org-clocking-p)
+  ;;           (insert (format "%s"
+  ;;                           (org-clock-get-clock-string)))
+  ;;         (insert "")))))
+  ;; (add-hook 'org-clock-in-hook #'my/org-write-clock-status)
+  ;; (add-hook 'org-clock-out-hook #'my/org-write-clock-status)
+  ;; (add-hook 'org-clock-cancel-hook #'my/org-write-clock-status)
+  ;; (add-hook 'org-clock-in-resume-hook #'my/org-write-clock-status)
+  ;; (run-with-timer 0 60 #'my/org-write-clock-status)
  #+end_src
   #+begin_src emacs-lisp
     (use-package org-roam
@@ -273,6 +275,17 @@ Eglot is my preferred LSP for programming. It requires jsonrpc to communicate:
     (setq eglot-autoshutdown t))
 #+end_src
 This just sets up the basic eglot experience, ensures that C/C++ uses it, and adds some useful keybindings. One I find particularly useful is =eglot-code-actions= which allows you to automate a lot of obvious steps, such as =#include='ing a necessary file.
+
+This is a TODO area that helps make compilation buffers more usable.
+#+begin_src emacs-lisp
+  (setq compilation-save-buffers-predicate nil)
+  (setq compilation-scroll-output 'first-error)
+  (setq compilation-ask-about-save nil)
+  (setq compilation-always-kill t)
+  (setq ansi-color-for-compilation-mode t)
+  (setq eglot-events-buffer-size 0)
+  (add-hook 'compilation-filter-hook #'ansi-color-compilation-filter)
+#+end_src
 
 When programming in guix I make use of the =guix shell= functionality, which allows me to setup a reproducable environment. This is important for a clean, reproducable project. To this end, I use =buffer-env= to automatically run any =guix shell= environment for my buffers, described in a =manifest.scm= file.
 #+begin_src scheme :tangle ./info.scm

@@ -48,5 +48,15 @@ face global StatusLineValue    blue,rgb:313131
 face global StatusCursor       default+r
 face global Prompt             white,default
 face global MatchingChar       default,default+b
-face global Whitespace         default,default+fd
+face global Whitespace         rgb:888888,default+fd
 face global BufferPadding      blue,default
+
+#|Rainbow delimiters|#
+set-option global rainbow_mode 0
+set-option global background_rainbow_colors \
+  "rgb:000000" "rgb:000000" "rgb:000000" \
+  "rgb:000000" "rgb:000000" "rgb:000000"
+
+set-option global rainbow_colors \
+  "rgb:a790d3" "rgb:ff7f50" "rgb:6cdae0" \
+  "rgb:ffea8c" "rgb:eba4d4" "rgb:83dcaf"

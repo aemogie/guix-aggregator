@@ -48,8 +48,78 @@
   #:use-module (gnu)
   #:use-module (guix packages)
   #:use-module (guix)
-  
+  #:use-module (srfi srfi-1)
+
   #:use-module (nongnu packages linux))
+
+
+(define galahad-utils-packages
+  (list acpi
+        bat
+        eza
+        coreutils
+        curl
+        dbus
+        debianutils
+        e2fsprogs
+        eudev
+        file
+        findutils
+        gawk
+        grep
+        gzip
+        tar
+        ripgrep
+        inetutils
+        iproute
+        kbd
+        kmod
+        less
+        man-db
+        man-pages
+        nss-certs
+        ncurses ;; literally only for 'clear' command
+        procps
+        gnupg
+        psmisc
+        shadow
+        unzip
+        usbutils
+        util-linux
+        xxd
+        xz))
+
+(define galahad-cli-packages
+  (list bash-minimal
+        zsh
+        stow
+        btop
+        hyfetch
+        gnome-keyring
+        guile-3.0
+        info-reader
+        git
+        neovim
+        openssh))
+
+(define galahad-wm-packages
+  (list swaybg
+        waybar
+        swayfx
+        swayidle
+        swaylock-effects
+        grim
+        slurp
+        foot
+        fuzzel
+        zathura
+        fnott
+        light))
+
+(define galahad-system-packages
+  (append galahad-utils-packages
+          galahad-cli-packages
+          galahad-wm-packages))
 
 (define galahad-user-lynn
   (user-account
@@ -61,7 +131,7 @@
 (define galahad-desktop-services
   (cons*
    (simple-service 'podman-subuid-subgid
-		   etc-service-type
+                   etc-service-type
                    `(("subuid" ,(plain-file "subuid"
                                             (string-append "lynn"
                                                            ":100000:65536\n")))
@@ -107,14 +177,14 @@
    ;; TODO: look into if pipewire can replace this?
    (service pulseaudio-service-type)
    (service alsa-service-type)
-   
+
    (service gnome-keyring-service-type)
    (udev-rules-service 'light light)
    (udev-rules-service 'vial
-		       (file-append
-			(plain-file "99-vial.rules"
-				    "KERNEL==\"hidraw*\", SUBSYSTEM==\"hidraw\", ATTRS{serial}==\"*vial:f64c2b3c*\", MODE=\"0660\", GROUP=\"users\", TAG+=\"uaccess\"")
-			"/lib/udev/rules.d/99-vial.rules"))
+                       (file-append
+                        (plain-file "99-vial.rules"
+                                    "KERNEL==\"hidraw*\", SUBSYSTEM==\"hidraw\", ATTRS{serial}==\"*vial:f64c2b3c*\", MODE=\"0660\", GROUP=\"users\", TAG+=\"uaccess\"")
+                        "/lib/udev/rules.d/99-vial.rules"))
    ;; Screen lock is important if using a desktop environment, for
    ;; security.
    (service screen-locker-service-type
@@ -126,59 +196,48 @@
                                          (using-setuid? #f)))
    ;; nix
    (service nix-service-type
-	    (nix-configuration
-	     (extra-config
-	      '("experimental-features = nix-command flakes"))))
-   
+            (nix-configuration
+             (extra-config
+              '("experimental-features = nix-command flakes"))))
+
    (modify-services %base-services
-		    (guix-service-type
-		     config => (guix-configuration
-				(inherit config)
-				(substitute-urls
-				 (append (list "https://substitutes.nonguix.org")
-					 %default-substitute-urls))
-				(authorized-keys
-				 (append
-				  (list %authorized-guix-key-nonguix)
-				  %default-authorized-guix-keys)))))))
+                    (guix-service-type
+                     config => (guix-configuration
+                                (inherit config)
+                                (substitute-urls
+                                 (append (list "https://substitutes.nonguix.org")
+                                         %default-substitute-urls))
+                                (authorized-keys
+                                 (append
+                                  (list %authorized-guix-key-nonguix)
+                                  %default-authorized-guix-keys)))))))
+
+(define galahad-file-systems
+  (list
+   (file-system
+    (mount-point "/boot/efi")
+    (device (uuid "6780-06EA" 'fat32))
+    (type "vfat"))
+   (file-system
+    (mount-point "/")
+    (device (uuid "4a1b54e0-dd1c-4eaa-ab1f-c60c1af5c381" 'ext4))
+    (type "ext4"))))
 
 (operating-system
  (host-name galahad-hostname)
  (timezone galahad-timezone)
  (locale (format #f "~a.utf8" galahad-language))
  (bootloader (bootloader-configuration
-	      (bootloader grub-efi-bootloader)
-	      (targets (list "/boot/efi"))))
+              (bootloader grub-efi-bootloader)
+              (targets (list "/boot/efi"))))
  (kernel linux)
  (kernel-arguments
   '("quiet" "splash"))
  (firmware
   (list linux-firmware))
-
-  (swap-devices (list (swap-space
-                        (target (uuid
-                                 "0881fb03-4053-4010-b3b7-5a9ea35ccf60")))))
-
-  (file-systems (cons* (file-system
-                         (mount-point "/boot/efi")
-                         (device (uuid "6332-F4BA"
-                                       'fat32))
-                         (type "vfat"))
-                       (file-system
-                         (mount-point "/")
-                         (device (uuid
-                                  "d2c8af8a-5b78-4aa6-930d-1ac1b0d237ca"
-                                  'ext4))
-                         (type "ext4"))
-                       (file-system
-                         (mount-point "/home")
-                         (device (uuid
-                                  "14f1680f-52d6-4285-bef9-41a4946803f0"
-                                  'ext4))
-                         (type "ext4")) %base-file-systems))
+ (file-systems galahad-file-systems)  ;; <-- Added here
  (users
   (cons* galahad-user-lynn %base-user-accounts))
  (packages
   (append galahad-system-packages galahad-per-host-packages))
  (services galahad-desktop-services))
-

@@ -1,7 +1,6 @@
 #|Specific settings|#
 source "%val{config}/rc/buffers.kak"
 source "%val{config}/rc/colorscheme.kak"
-source "%val{config}/rc/git.kak"
 source "%val{config}/rc/languages.kak"
 source "%val{config}/rc/projects.kak"
 source "%val{config}/rc/state.kak"

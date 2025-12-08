@@ -75,6 +75,7 @@ Config file:
         border: none;
         border-radius: 0;
         min-height: 0;
+        color: @fg;
         font-family: "Iosevka Etoile";
         font-weight: 500;
         font-size: 14px;

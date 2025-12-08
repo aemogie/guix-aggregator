@@ -6,7 +6,7 @@ Referencing https://codeberg.org/agx-r/agx-guix-home/src/branch/main/dotfiles/qu
 #+begin_src python
 
   import os #start page
-  STARTPAGE = "https://smol.ch/~lynn/chinese"
+  STARTPAGE = "file://" + os.path.expanduser("~/.config/qutebrowser/start.html") 
   DEFAULT_PAGE = STARTPAGE
   SEARCH = "https://duckduckgo.com?q={}"
 

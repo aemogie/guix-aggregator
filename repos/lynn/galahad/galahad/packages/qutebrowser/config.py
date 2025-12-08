@@ -1,5 +1,5 @@
 import os #start page
-STARTPAGE = "https://smol.ch/~lynn/chinese"
+STARTPAGE = "file://" + os.path.expanduser("~/.config/qutebrowser/start.html") 
 DEFAULT_PAGE = STARTPAGE
 SEARCH = "https://duckduckgo.com?q={}"
 
