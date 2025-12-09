@@ -71,6 +71,13 @@
 
 (setq column-number-mode t)
 
+(setq display-time-24hr-format t
+      display-time-format "%H:%M")
+(setq display-time-day-and-date t)
+(when (not (display-graphic-p))
+  (display-battery-mode 1)
+  (display-time-mode 1))
+
 (global-hl-line-mode t)
 
 (use-package org-auto-tangle

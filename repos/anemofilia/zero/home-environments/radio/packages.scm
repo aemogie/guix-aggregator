@@ -36,6 +36,7 @@
         #:use-module (gnu packages maths)
         #:use-module (gnu packages messaging)
   #|N|# #:use-module (gnu packages ncurses)
+        #:use-module (gnu packages networking)
   #|O|# #:use-module (gnu packages ocr)
   #|P|# #:use-module (gnu packages password-utils)
         #:use-module (gnu packages pdf)
@@ -115,6 +116,7 @@
         #|image      |# grim slurp
         #|libcanberra|# sound-theme-freedesktop
         #|ncurses    |# ncurses
+        #|networking |# socat
         #|terminals  |# foot
         #|toys       |# wayneko
         #|video      |# wf-recorder

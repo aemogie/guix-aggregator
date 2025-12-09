@@ -159,6 +159,15 @@ There are also line and column numbers we can show in the modeline:
 #+begin_src emacs-lisp
   (setq column-number-mode t)
 #+end_src
+Some useful information for when we are in tty mode:
+#+begin_src emacs-lisp
+  (setq display-time-24hr-format t
+        display-time-format "%H:%M")
+  (setq display-time-day-and-date t)
+  (when (not (display-graphic-p))
+    (display-battery-mode 1)
+    (display-time-mode 1))
+  #+end_src
 Finally I prefer to highlight the line I am currently working on:
 #+begin_src emacs-lisp
   (global-hl-line-mode t)  

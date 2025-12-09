@@ -5,9 +5,13 @@
 
   #|GNU system|#
   #|•|# #:use-module (gnu system)
+  #|P|# #:use-module (gnu system pam)
 
   #|Guix|#
   #|G|# #:use-module (guix gexp)
+
+  #|Ice-9|#
+  #|M|# #:use-module (ice-9 match)
 
   #:export (base))
 
@@ -25,10 +29,11 @@
              (when (file-exists? "/etc/config.scm")
                (delete-file "/etc/config.scm"))))))
 
-(define symlink-/etc/config.scm
-  (simple-service 'symlink-/etc/config.scm
-                  shepherd-root-service-type
-                  (list symlink-/etc/config.scm-shepherd-service)))
+(define freetype-properties
+  `((cff:no-stem-darkening . 0)
+    (cff:darkening-parameters . (500 400 1000 350 1500 325 2000 300))
+    (autofitter:no-stem-darkening . 0)
+    (autofitter:darkening-parameters . (500 400 1000 350 1500 325 2000 300))))
 
 (define base
   (operating-system
@@ -36,6 +41,17 @@
    (file-systems '())
    (bootloader #f)
    (essential-services
-    (cons symlink-/etc/config.scm
-          (operating-system-default-essential-services
-           this-operating-system)))))
+    (cons* (simple-service 'symlink-/etc/config.scm
+                           shepherd-root-service-type
+                           (list symlink-/etc/config.scm-shepherd-service))
+           (simple-service 'global-environment-variables
+                           session-environment-service-type
+                           `(("FREETYPE_PROPERTIES"
+                              . ,(string-join
+                                   (map (match-lambda
+                                          [(var . (? number? val))
+                                           (format #f "~a=~a" var val)]
+                                          [(var . (? list? val))
+                                           (apply format #f "~a=~a~@{,~a~}" var val)])
+                                        freetype-properties)))))
+           (operating-system-default-essential-services this-operating-system)))))

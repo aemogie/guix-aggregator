@@ -12,6 +12,7 @@
   #|GNU system|#
   #|•|# #:use-module (gnu system)
   #|L|# #:use-module (gnu system linux-initrd)
+  #|P|# #:use-module (gnu system privilege)
 
   #|Guix|#
   #|G|# #:use-module (guix gexp)
@@ -57,6 +58,11 @@
    (firmware
     (cons* linux-firmware
            realtek-firmware
-           %base-firmware))))
+           %base-firmware))
+   (privileged-programs
+    (cons (privileged-program
+           (program (file-append brightnessctl "/bin/brightnessctl"))
+           (setuid? #t))
+          (operating-system-privileged-programs buer)))))
 
 phenex

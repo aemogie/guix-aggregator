@@ -213,15 +213,15 @@
                                   %default-authorized-guix-keys)))))))
 
 (define galahad-file-systems
-  (list
-   (file-system
-    (mount-point "/boot/efi")
-    (device (uuid "6780-06EA" 'fat32))
-    (type "vfat"))
-   (file-system
-    (mount-point "/")
-    (device (uuid "4a1b54e0-dd1c-4eaa-ab1f-c60c1af5c381" 'ext4))
-    (type "ext4"))))
+  (cons* (file-system
+          (mount-point "/boot/efi")
+          (device (uuid "6780-06EA" 'fat32))
+          (type "vfat"))
+         (file-system
+          (mount-point "/")
+          (device (uuid "4a1b54e0-dd1c-4eaa-ab1f-c60c1af5c381" 'ext4))
+          (type "ext4"))
+         %base-file-systems))
 
 (operating-system
  (host-name galahad-hostname)
@@ -235,7 +235,7 @@
   '("quiet" "splash"))
  (firmware
   (list linux-firmware))
- (file-systems galahad-file-systems)  ;; <-- Added here
+ (file-systems galahad-file-systems)
  (users
   (cons* galahad-user-lynn %base-user-accounts))
  (packages
