@@ -18,6 +18,7 @@ emacs-swiper
 emacs-counsel
 emacs-which-key
 emacs-projectile
+emacs-diminish
 
 ;; theme
 emacs-gruvbox-theme

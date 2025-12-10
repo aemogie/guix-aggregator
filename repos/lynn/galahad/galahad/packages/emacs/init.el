@@ -13,6 +13,7 @@
 
 (setq create-lockfiles nil)
 
+(use-package diminish)
 (use-package swiper)
 (use-package counsel
   :bind (("M-x" . counsel-M-x)
@@ -21,11 +22,12 @@
   	 :map minibuffer-local-map
   	 ("C-r" . counsel-minibuffer-history)))
 (use-package ivy
-  :diminish
+  :diminish ivy-mode
   :bind (("C-s" . swiper-isearch))
   :config
   (ivy-mode 1))
 (use-package projectile
+  :diminish projectile-mode
   :init
   (setq projectile-project-search-path'("~/dev/"))
   :config
@@ -33,8 +35,8 @@
   (setq projectile-enable-caching t)
   (setq projectile-completion-system 'ivy))
 (use-package which-key
-  :defer 0
   :diminish which-key-mode
+  :defer 0
   :config
   (which-key-mode)
   (setq which-key-idle-delay 1))
@@ -81,15 +83,19 @@
 (global-hl-line-mode t)
 
 (use-package org-auto-tangle
+  :diminish
   :hook (org-mode . org-auto-tangle-mode))
 
 (use-package org-modern
+  :diminish org-modern-mode
   :hook (org-mode . org-modern-mode))
 
 (use-package olivetti
+  :diminish olivetti-mode
   :hook (org-mode . olivetti-mode))
 
 (use-package mixed-pitch
+  :diminish mixed-pitch-mode
   :hook (org-mode . mixed-pitch-mode))
 
 (setq org-capture-templates

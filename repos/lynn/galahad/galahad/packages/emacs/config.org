@@ -27,6 +27,7 @@ and the packages that need to be included for this to work, =emacs-packages=. Ne
   	
 #+end_src
 * Emacs Setup
+
 Despite using Guix for the package managing, we still need =use-package=, as it is very powerful. It is also built-in, so one less dependency!
 #+begin_src emacs-lisp
   (require 'package)
@@ -59,8 +60,10 @@ I'm going to cover a collection of packages that just make using emacs a much be
   emacs-counsel
   emacs-which-key
   emacs-projectile
+  emacs-diminish
 #+end_src
 #+begin_src emacs-lisp
+  (use-package diminish)
   (use-package swiper)
   (use-package counsel
     :bind (("M-x" . counsel-M-x)
@@ -69,11 +72,12 @@ I'm going to cover a collection of packages that just make using emacs a much be
     	 :map minibuffer-local-map
     	 ("C-r" . counsel-minibuffer-history)))
   (use-package ivy
-    :diminish
+    :diminish ivy-mode
     :bind (("C-s" . swiper-isearch))
     :config
     (ivy-mode 1))
   (use-package projectile
+    :diminish projectile-mode
     :init
     (setq projectile-project-search-path'("~/dev/"))
     :config
@@ -81,8 +85,8 @@ I'm going to cover a collection of packages that just make using emacs a much be
     (setq projectile-enable-caching t)
     (setq projectile-completion-system 'ivy))
   (use-package which-key
-    :defer 0
     :diminish which-key-mode
+    :defer 0
     :config
     (which-key-mode)
     (setq which-key-idle-delay 1))
@@ -181,7 +185,9 @@ Org mode is the programming mode but for writing beautiful documents. This liter
 And the configuration:
 #+begin_src emacs-lisp
   (use-package org-auto-tangle
+    :diminish
     :hook (org-mode . org-auto-tangle-mode))
+  
 #+end_src
 That =:hook= there allows us to tell emacs that anytime =org-mode= is activated, to also activate =org-auto-tangle-mode=. If you aren't familiar, a mode is basically a set of rules to treat a specific buffer with.
 ** Look & Feel
@@ -195,19 +201,23 @@ Org mode is great, but it has some visual issues. To make editing org files a bi
 Org modern mode is just a visual upgrade to org mode:
 #+begin_src emacs-lisp
   (use-package org-modern
+    :diminish org-modern-mode
     :hook (org-mode . org-modern-mode))
 #+end_src
 Olivetti balances the margins on either side, so that the text is centered, which is nice when writing text:
 #+begin_src emacs-lisp
   (use-package olivetti
+    :diminish olivetti-mode
     :hook (org-mode . olivetti-mode))
 #+end_src
 Finally, org mode can contain both text and code. Most preferences would have the text be a regular font, while the code is a monospaced font to preserve indentation and alignment. In emacs, this is called =mixed-pitch-mode=:
 #+begin_src emacs-lisp
   (use-package mixed-pitch
+    :diminish mixed-pitch-mode
     :hook (org-mode . mixed-pitch-mode))
 #+end_src
 If it suits you, =org-indent-mode= is available to indent text blocks beneath headers. I prefer a straight-down look, personally.
+
 ** Note-taking
 For note taking, I use the ever popular =org-roamn= combined with org-capture. If you are familiar with note-taking apps like Obsidian, it's similar to that:
 #+begin_src :scheme :tangle ./info.scm

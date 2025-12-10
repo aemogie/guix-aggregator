@@ -45,6 +45,7 @@
 	pinentry-qt
 	nheko
 	signal-desktop
+	tmux
 	zathura
 	;;firefox
 	qutebrowser
