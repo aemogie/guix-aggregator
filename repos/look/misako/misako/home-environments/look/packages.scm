@@ -174,7 +174,7 @@
         font-nerd-symbols))
 
 (define games
-  (nvidia?* (steam-for nvda)
+  (yumiko?* (steam-for nvda)
             (heroic-for nvda)
             mangohud
             mcpelauncher-client
@@ -258,10 +258,11 @@
   (list helix))
 
 (define video
-  (list mpv-minimal/wayland
+  (list
+        mpv-minimal/wayland
         yt-dlp
         obs-pipewire-audio-capture
-        (yumiko?* ffmpeg-nvenc obs-nvidia nvidia-vaapi-driver)
+        (yumiko?* ffmpeg/nvidia obs-nvidia nvidia-vaapi-driver)
         (yuria?* ffmpeg obs)))
 
 (define virtual-keyboard

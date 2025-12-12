@@ -152,7 +152,7 @@
           (guix-configuration
             (substitute-urls
               '(
-                "https://ci.guix.moe"
+                "https://cache-cdn.guix.moe"
                 ; "https://cuirass.genenetwork.org"
                 "https://substitutes.nonguix.org"
                 ; "https://guix.bordeaux.inria.fr"
@@ -166,6 +166,7 @@
                     substitute-key:buer.pub
                     substitute-key:nonguix.pub
                     substitute-key:inria.pub
+                    substitute-key:guix.moe.pub
                     substitute-key:boiledscript.pub
                     substitute-key:genenetwork.pub))
             (build-accounts 300)
@@ -272,8 +273,8 @@
                 (list (network-address
                         (device "lo")
                         (value "127.0.0.1/8"))))
-              (provision '(loopback))
-              (name-servers '("127.0.0.1" "::1")))))
+              (provision '(loopback)))))
+              ; (name-servers '("127.0.0.1" "::1")))))
 
         (simple-service 'extra-hosts hosts-service-type
           (list (host "192.168.100.30" "yuria.local"
