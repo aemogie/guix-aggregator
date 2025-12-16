@@ -8,6 +8,8 @@
 
 SSS is a Lisp machine adventure, where the hacking culture is celebrated. Let me help you achieve /GNUrvana/.
 
+I have moved on to different projects and don't maintain this anymore, but this Guix system could be a great learning point for you.
+
 If you like my work, please support me by [[https://bmc.link/jjbigorra][buying me a cup of coffee ☕]] so I can continue with a lot of motivation.
 
 You can follow the project here on Codeberg, or on the fediverse at Mastodon: https://mastodon.social/@sss_project

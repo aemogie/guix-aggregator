@@ -186,7 +186,6 @@
         gnome-tweaks
         gnome-mime-data
         gnome-music
-        gnome-photos
         gnome-control-center
         gnome-builder
         gnome-bluetooth
