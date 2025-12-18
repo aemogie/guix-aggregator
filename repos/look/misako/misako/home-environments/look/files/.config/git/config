@@ -3,12 +3,13 @@ ui = true
 
 [core]
 editor = hx
+hookspath = ~/.config/git/hooks
 
 [commit]
 gpgsign = false
 
 [user]
-signingkey = 3FFA7335973E0A4947FC0A8C38D596BE07D334AB
+signingkey = 8B37296FCE5C491047373BAA3BF514F584DC25AD
 
 [init]
 defaultBranch = main

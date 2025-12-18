@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# List of branches that require signed commits
+PROTECTED_BRANCHES="master main entropy"
+
+while read local_ref local_sha remote_ref remote_sha
+do
+  # Extract branch name from the ref
+  branch=$(echo $remote_ref | sed 's/refs\/heads\///')
+  
+  # Check if this branch is in the protected list
+  if echo "$PROTECTED_BRANCHES" | grep -qw "$branch"; then
+    for commit in $(git rev-list --reverse $remote_sha..$local_sha)
+    do
+      if ! git verify-commit $commit >/dev/null 2>&1
+      then
+        echo "ERROR: Unsigned commit detected on protected branch '$branch'!"
+        exit 1
+      fi
+    done
+  fi
+done

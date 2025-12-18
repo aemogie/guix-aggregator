@@ -51,6 +51,7 @@
   #:use-module (misako packages binaries)
   #:use-module (misako utils)
   #:use-module (nongnu packages fonts)
+  #:use-module (nongnu packages compression)
   #:use-module (nongnu packages game-client)
   #:use-module (nongnu packages nvidia)
   #:use-module (nongnu packages video)
@@ -134,7 +135,8 @@
         xdg-utils))
 
 (define downloads
-  (list aria2))
+  (list aria2
+        qbittorrent))
 
 (define emacs
   (list emacs-activities

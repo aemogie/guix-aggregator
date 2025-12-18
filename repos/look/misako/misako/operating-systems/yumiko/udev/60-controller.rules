@@ -1,0 +1,1 @@
+KERNEL=="uinput", ATTRS{idVendor}=="0079", ATTRS{idProduct}=="0006", MODE="0660", TAG+="uaccess", GROUP="controller"

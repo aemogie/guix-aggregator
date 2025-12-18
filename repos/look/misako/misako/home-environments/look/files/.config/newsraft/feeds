@@ -1,12 +1,14 @@
 # @ Articles
 
 # @ News < reload-period 60
-# https://hnrss.org/best                                              "Hacker News"
+# https://hnrss.org/best                             "Hacker News"
+# https://blog.kagi.com/rss.xml                        "Kagi"
 
 @ Guix
 # https://codeberg.org/guix/guix.rss "Guix"
 # https://codeberg.org/guix/guix.rss?1 "New issue" < reload-period 2; item-rule title LIKE '%created issue%'
 # https://codeberg.org/guix/guix.rss?2 "New pull request" < reload-period 2; item-rule title LIKE '%created pull request%'
+$(~/.config/newsraft/guix.sh) "New event" < reload-period 2; item-rule link REGEXP 'https://codeberg.org/guix/guix/(issues|pulls)/[0-9]+$' AND title REGEXP '#[0-9]+:.+'
 https://codeberg.org/guix/guix/rss/branch/master "New commit" < reload-period 30
 
 
@@ -37,3 +39,10 @@ https://github.com/hyprwm/hypridle/releases.atom                    "hypridle"
 https://github.com/hyprwm/hyprland-protocols/releases.atom          "hyprland-protocols"
 https://github.com/hyprwm/hyprwayland-scanner/releases.atom         "hyprwayland-scanner"
 https://github.com/hyprwm/xdg-desktop-portal-hyprland/releases.atom "xdg-desktop-portal-hyprland"
+https://github.com/hyprwm/hyprsunset/releases.atom                  "hyprsunset"
+https://github.com/hyprwm/hyprwire/releases.atom                    "hyprwire"
+https://github.com/hyprwm/hyprlauncher/releases.atom                "hyprlauncher"
+https://github.com/hyprwm/hyprtoolkit/releases.atom                 "hyprtoolkit"
+https://github.com/hyprwm/hyprshutdown/releases.atom                "hyprshutdown"
+https://github.com/hyprwm/hyprpwcenter/releases.atom                "hyprpwcenter"
+https://github.com/hyprwm/hyprland-guiutils/releases.atom           "hyprland-guiutils"
