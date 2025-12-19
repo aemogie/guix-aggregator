@@ -208,7 +208,7 @@ chmod 700 /mnt/@root
 chmod 644 /mnt/@gnu/persist/etc/machine-id
 chmod 600 /mnt/@gnu/persist/etc/wireguard
 chmod 600 /mnt/@gnu/persist/etc/ssh
-chmod 600 /mnt/@gnu/persist/etc/guix
+chmod 555 /mnt/@gnu/persist/etc/guix
 ```
 
 ## Reboot

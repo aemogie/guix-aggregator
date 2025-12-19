@@ -68,12 +68,12 @@
 (define (yumiko?* . thing)
   (if (equal? (gethostname) "yumiko")
       thing
-      #f))
+      '()))
 
 (define (yuria?* . thing)
   (if (equal? (gethostname) "yuria")
       thing
-      #f))
+      '()))
 
 (define (secret key)
   (call-with-input-file
@@ -108,15 +108,8 @@
                   (flatten-package-list tail)))
          (else (list x))))
 
-(define (filter-f lst)
-  (filter (lambda (x)
-            (if (eq? x #f)
-                #f
-                x))
-          lst))
-
 (define glist
-  (compose filter-f flatten-package-list list))
+  (compose flatten-package-list list))
 
 (define-syntax-rule (nvidia-home-environment exp ...)
   "Like 'home-environment' but graft Mesa with the proprietary NVIDIA driver."
