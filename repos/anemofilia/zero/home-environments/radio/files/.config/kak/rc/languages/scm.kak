@@ -86,16 +86,17 @@ hook -group config global WinSetOption filetype=scheme %{
   evaluate-commands %sh{ exec awk -f - <<'EOF'
     BEGIN {
       split("chain chain-and chain-lambda chain-when nest nest-reverse "\
-            "with-monad mlet mlet* mbegin mwhen munless define-template "\
-            "define-monad match match-lambda match-lambda* match-let "\
-            "match-let* match-record match-record-lambda lambda* define* "\
-            "define-inlinable define-module define-record-type*", keywords);
+            "with-monad with-store with-store/non-blocking mlet mlet* mbegin "\
+            "mwhen munless define-template define-monad match match-lambda "\
+            "match-lambda* match-let match-let* match-record "\
+            "match-record-lambda lambda* define* define-inlinable "\
+            "define-module define-record-type*", keywords);
 
       # Macro expressions, imports/exports/library
       split("define-syntax-rule define-syntax-parameter", meta);
 
       # Basic operators.
-      split(">>= ->", operators);
+      split(">>= -> 1+ 1-", operators);
 
       # Builtins
       split("format with-input-from-string add-to-load-path use-modules "\
@@ -105,7 +106,8 @@ hook -group config global WinSetOption filetype=scheme %{
             "remove span split-at take take-right take-while drop drop-right "\
             "drop-while delete unfold unfold-right lift0 lift1 lift2 lift3 "\
             "lift4 lift5 lift6 lift7 lift listm foldm mapm sequence anym "\
-            "mparameterize run-with-state state-with-parameters", builtins);
+            "mparameterize run-with-state run-with-store "\
+            "derivation->output-path state-with-parameters", builtins);
 
       # Procedures that create a base type and their predicates
       split("cons*", types);

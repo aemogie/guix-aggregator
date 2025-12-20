@@ -146,7 +146,7 @@
         #|scheme |# r7rs-small-texinfo))
 
 (define downloads
-  (list #|bittorrent|# aria2 qbittorrent
+  (list #|bittorrent|# aria2
         #|curl      |# curl
         #|video     |# yt-dlp))
 

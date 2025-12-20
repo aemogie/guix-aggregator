@@ -343,13 +343,13 @@
                                . ,(format #f "~@{~?~}"
                                              "~@{$HOME/areas/code/scm/~a:~}"
                                              '(zero)
-                                             "~@{~a/share/guile/site/3.0:~}"
+                                             "~@{~a/share/guile/site/3.0~^:~}"
                                              '($HOME/.config/guix/current
                                                $HOME/.guix-home/profile
                                                /run/current-system/profile)))
                               ("GUILE_LOAD_COMPILED_PATH"
                                . ,(format #f "~{~a/lib/guile/3.0/site-ccache:~:*~
-                                                ~a/share/guile/site/3.0:~}"
+                                                ~a/share/guile/site/3.0~^:~}"
                                              '($HOME/.config/guix/current
                                                $HOME/.guix-home/profile
                                                /run/current-system/profile)))))
