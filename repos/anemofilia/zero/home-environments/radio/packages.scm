@@ -38,8 +38,7 @@
   #|N|# #:use-module (gnu packages ncurses)
         #:use-module (gnu packages networking)
   #|O|# #:use-module (gnu packages ocr)
-  #|P|# #:use-module (gnu packages password-utils)
-        #:use-module (gnu packages pdf)
+  #|P|# #:use-module (gnu packages pdf)
   #|R|# #:use-module (gnu packages rust-apps)
   #|S|# #:use-module (gnu packages scheme)
         #:use-module (gnu packages shells)
@@ -71,6 +70,7 @@
   #|G|# #:use-module (radix packages games)
   #|K|# #:use-module (radix packages kak-xyz)
   #|M|# #:use-module (radix packages music)
+  #|P|# #:use-module (radix packages password-utils)
   #|S|# #:use-module (radix packages seninha)
   #|T|# #:use-module (radix packages text-editors)
         #:use-module (radix packages toys)
@@ -110,8 +110,9 @@
 (define desktop
   (list #|admin      |# fastfetch-minimal
         #|calendar   |# remind
-        #|freedesktop|# xdg-utils xdg-desktop-portal xdg-desktop-portal-wlr
-                        xdg-desktop-portal-termfilechooser xdg-terminal-exec
+        #|freedesktop|# xdg-utils/wayland xdg-desktop-portal-minimal
+                        xdg-desktop-portal-wlr xdg-desktop-portal-termfilechooser
+                        xdg-terminal-exec
         #|glib       |# dbus
         #|image      |# grim slurp
         #|libcanberra|# sound-theme-freedesktop
@@ -148,7 +149,7 @@
 (define downloads
   (list #|bittorrent|# aria2
         #|curl      |# curl
-        #|video     |# yt-dlp))
+        #|video     |# yt-dlp-minimal))
 
 (define file-managing
   (list #|disk         |# lf
@@ -180,7 +181,7 @@
   (list #|music|# kew))
 
 (define password
-  (list #|password-utils|# password-store tessen))
+  (list #|password-utils|# password-store-minimal/wayland tessen/wayland))
 
 (define reading
   (list #|dictionaries|# translate-shell
@@ -216,7 +217,7 @@
         #|tree-sitter|# tree-sitter-typst))
 
 (define video
-  (list #|video|# ani-cli ffmpeg mpv-minimal/wayland))
+  (list #|video|# ani-cli/wayland ffmpeg mpv-minimal/wayland))
 
 (define web
   (list #|binaries|# zen-browser-bin
