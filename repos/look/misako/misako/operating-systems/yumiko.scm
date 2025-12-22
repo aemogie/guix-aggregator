@@ -49,7 +49,7 @@
     (inherit base)
     (host-name "yumiko")
 
-    (kernel linux-6.12)
+    (kernel linux)
     (initrd microcode-initrd)
     (firmware (list linux-firmware))
 
@@ -115,7 +115,7 @@
              ;           (permissions #o400))))))
 
              (service kernel-module-loader-service-type
-               '("v4l2loopback"))
+               '("v4l2loopback" "ntsync"))
              (simple-service 'v4l2loopback-config etc-service-type
                (list `("modprobe.d/v4l2loopback.conf"
                        ,(plain-file "v4l2loopback.conf"

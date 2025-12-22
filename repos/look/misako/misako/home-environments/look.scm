@@ -131,19 +131,19 @@
         ;     (package hyprland)))
 
         (service home-dotfiles-service-type
-                 (home-dotfiles-configuration
-                  (source-directory look-files-dir)
-                  (layout 'plain)
-                  (directories (list look-files-dir))
-                  (tokens
-                   (list (token
-                          (link-to-store? #f)
-                          (start "{{{ #")
-                          (substitutes theme:modus-operandi))
-                         ;; HERE!
-                         (token
-                          (link-to-store? #f)
-                          (substitutes secrets:all))))))
+          (home-dotfiles-configuration
+            (source-directory look-files-dir)
+            (layout 'plain)
+            (directories (list look-files-dir))
+            (tokens
+              (list (token
+                      (link-to-store? #f)
+                      (start "{{{ #")
+                      (substitutes theme:modus-operandi))
+                    ;; HERE!
+                    (token
+                      (link-to-store? #f)
+                      (substitutes secrets:all))))))
 
         (service home-syncthing-service-type)
 
