@@ -4,7 +4,13 @@
 (defvar is-guix nil
   "Variable indicating whether system is managed by guix.")
 
-(setq is-guix (not (string-equal (system-name) "nineveh")))
+(defvar is-mac nil
+  "Variable indicating whether system is managed by guix.")
+
+(when is-mac
+  (setq mac-command-modifier 'meta))
+
+(setq is-mac (not (string-equal (system-name) "persepolis.local")))
 
 ;; set high gc at startup, then restore to sane defaults after init
 (setq gc-cons-threshold (* 50 1000 1000)
@@ -1799,6 +1805,7 @@ Otherwise, call eat."
 
 (use-package lsp-tailwindcss
   :ensure t
+  :after lsp-mode
   :custom
   (lsp-tailwindcss-add-on-mode t)
   (lsp-tailwindcss-major-modes '(typescript-ts-mode js-ts-mode tsx-ts-mode typescript-ts-mode web-mode)))
@@ -1829,9 +1836,8 @@ Otherwise, call eat."
 (use-package treesit-auto
   :commands (treesit-auto-add-to-auto-mode-alist global-treesit-auto-mode)
   :ensure t
-  :init
-  (treesit-auto-add-to-auto-mode-alist 'all)
   :custom
+  (treesit-auto-add-to-auto-mode-alist 'all)
   (treesit-auto-install 'prompt)
   :config
   (global-treesit-auto-mode))
@@ -2227,7 +2233,7 @@ Otherwise, call eat."
   :custom
   (erc-nick "polhuang")
   (erc-user-full-name "polhuang")
-  (erc-autojoin-channels-alist '(("#systemcrafters" "#emacsatx")))
+  (erc-autojoin-channels-alist '((Libera.Chat "#systemcrafters" "#emacsatx")))
   (erc-hide-list '("JOIN" "PART" "QUIT"))
   :functions my/connect-to-erc
   :config
@@ -2237,6 +2243,7 @@ Otherwise, call eat."
          :port "6667"
          :password (cadr (auth-source-user-and-password "irc.libera.chat")))))
 
+(my/connect-to-erc)
 
 ;; org-gcal
 (use-package org-gcal

@@ -114,9 +114,10 @@
 (define-syntax-rule (nvidia-home-environment exp ...)
   "Like 'home-environment' but graft Mesa with the proprietary NVIDIA driver."
   (if nvidia?
-      (replace-mesa (home-environment exp ...))
+      (replace-mesa (home-environment exp ...) #:driver nvdb)
       (home-environment exp ...)))
 
 (define-syntax-rule (nvidia-operating-system exp ...)
-  ((nonguix-transformation-nvidia #:open-source-kernel-module? #t)
+  ((nonguix-transformation-nvidia #:open-source-kernel-module? #t
+                                  #:driver nvdb)
    (operating-system exp ...)))
