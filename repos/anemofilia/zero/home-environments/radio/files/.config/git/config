@@ -18,6 +18,7 @@
     whitespace = red reverse
 [core]
     editor = kak
+    hookspath = ~/.config/git/hooks
     pager = diff-so-fancy | less --tabs=4 -RFX
 [filter "lfs"]
     required = true
@@ -46,3 +47,7 @@
     smtpencryption = ssl
     smtpserverport = 465
     annotate = true
+[remote "origin"]
+    fetch = +refs/pull/*/head:refs/remotes/origin/pr/*
+[remote "upstream"]
+    fetch = +refs/pull/*/head:refs/remotes/upstream/pr/*

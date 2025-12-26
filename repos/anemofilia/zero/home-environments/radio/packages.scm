@@ -56,6 +56,11 @@
         #:use-module (gnu packages wm)
   #|X|# #:use-module (gnu packages xdisorg)
 
+  #|Guix|#
+  #|C|# #:use-module (guix channels)
+  #|I|# #:use-module (guix inferior)
+  #|P|# #:use-module (guix packages)
+
   #|home-environments radio|#
   #|C|# #:use-module ((home-environments radio channels)
                       #:prefix channel:)
@@ -110,9 +115,9 @@
 (define desktop
   (list #|admin      |# fastfetch-minimal
         #|calendar   |# remind
-        #|freedesktop|# xdg-utils/wayland xdg-desktop-portal-minimal
-                        xdg-desktop-portal-wlr xdg-desktop-portal-termfilechooser
-                        xdg-terminal-exec
+        #|freedesktop|# xdg-desktop-portal-minimal xdg-desktop-portal-wlr-minimal
+                        xdg-desktop-portal-termfilechooser xdg-terminal-exec
+                        xdg-utils/wayland
         #|glib       |# dbus
         #|image      |# grim slurp
         #|libcanberra|# sound-theme-freedesktop
@@ -124,7 +129,7 @@
         #|wm         |# eww/wayland fnott lswt river-bedload rivercarro wbg wlr-randr
         #|web        |# jq
         #|xdisorg    |# fuzzel-lowercase gammastep-minimal wl-clipboard wlrctl
-        #|zig-xyz    |# river))
+        #|zig-xyz    |# river-minimal))
 
 (define development
   (list #|admin         |# tree
@@ -174,8 +179,23 @@
         #|ocr          |# tesseract-ocr))
 
 (define messaging
-  (list #|mail     |# aerc
-        #|messaging|# senpai))
+  (let* ((channels
+          (list (channel
+                 (name 'guix)
+                 (url "https://git.guix.gnu.org/guix.git")
+                 (branch "master")
+                 (commit "28fe5b67cd65744638081f049f641db4ea79ea75")
+                 (introduction
+                   (make-channel-introduction
+                     "9edb3f66fd807b096b48283debdcddccfea34bad"
+                     (openpgp-fingerprint
+                       "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA"))))))
+         (inferior (inferior-for-channels channels))
+         (telegram-desktop
+          (car (lookup-inferior-packages inferior "telegram-desktop"))))
+    (list #|mail     |# aerc
+          #|messaging|# senpai
+          #|telegram |# telegram-desktop)))
 
 (define music
   (list #|music|# kew))
@@ -190,16 +210,15 @@
 
 (define scheme
   (list #|guile    |# guile-next guile-colorized guile-readline
-        #|guile-xyz|# guile-goblins guile-hoot guile-lib guile-lsp-server
-                      guile-srfi-197 guile-srfi-232))
+        #|guile-xyz|# guile-goblins guile-lib guile-lsp-server guile-srfi-197
+                      guile-srfi-232))
 
 (define mathematics
   (list #|lean|# lean4))
 
 (define sound
   (list #|linux    |# wireplumber-minimal
-        #|audio    |# pipemixer
-        #|rust-apps|# helvum))
+        #|audio    |# pipemixer))
 
 (define tex
   (list #|tex|# rubber
@@ -232,6 +251,7 @@
 (define emacs:buffer-management
   (list emacs-activities
         emacs-ace-window
+        emacs-infinite
         emacs-perspective
         emacs-perspective-tabs))
 
