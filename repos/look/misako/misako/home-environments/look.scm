@@ -177,8 +177,7 @@
               (local-file
                 (string-append look-sops-dir "/.sops.yaml")
                 "sops.yaml"))
-            (secrets
-              (append sops-secrets:all))))
+            (secrets sops-secrets:all)))
 
         (service home-xdg-user-directories-service-type
           (home-xdg-user-directories-configuration

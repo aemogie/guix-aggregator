@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Only run this hook for specific repository
+REMOTE_URL=$(git config --get remote.origin.url)
+
+if [[ ! "$REMOTE_URL" =~ (codeberg\.org.*guix) ]]; then
+    exit 0
+fi
+
+# Authenticate the repo upon 'git pull' and similar.
+exec guix git authenticate

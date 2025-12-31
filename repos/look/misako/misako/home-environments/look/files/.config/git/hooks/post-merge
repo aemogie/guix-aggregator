@@ -1,6 +1,6 @@
 #!/bin/sh
 
-HOOK_DIR="$(dirname "$0")/pre-push.d"
+HOOK_DIR="$(dirname "$0")/post-merge.d"
 
 if [ -d "$HOOK_DIR" ]; then
     for hook in "$HOOK_DIR"/*; do

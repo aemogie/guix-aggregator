@@ -37,6 +37,7 @@
                           typst))
   #:use-module (gnu packages ssh)
   #:use-module (gnu packages syndication)
+  #:use-module (gnu packages telegram)
   #:use-module (gnu packages terminals)
   #:use-module (gnu packages text-editors)
   #:use-module (gnu packages version-control)
@@ -206,7 +207,8 @@
 (define messaging
   (list senpai
         catgirl
-        vesktop))
+        vesktop
+        telegram-desktop))
 
 (define music
   (list kew
