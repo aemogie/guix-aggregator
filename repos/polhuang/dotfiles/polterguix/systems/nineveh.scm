@@ -58,7 +58,6 @@
             ripgrep
             swappy
             wireguard-tools
-            xournalpp
             zoxide
             zsh
             zsh-completions

@@ -5,9 +5,13 @@
 (define-module (misako packages binaries)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages base)
+  #:use-module (gnu packages algebra)
+  #:use-module (gnu packages maths)
+  #:use-module (gnu packages multiprecision)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages bootstrap)
   #:use-module (gnu packages cmake)
+  #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages commencement)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages cups)
@@ -24,6 +28,8 @@
   #:use-module (gnu packages image)
   #:use-module (gnu packages kerberos)
   #:use-module (gnu packages linux)
+  #:use-module (gnu packages python)
+  #:use-module (gnu packages sdl)
   #:use-module (gnu packages music)
   #:use-module (gnu packages node)
   #:use-module (gnu packages nss)
@@ -38,6 +44,7 @@
   #:use-module (gnu packages xml)
   #:use-module (gnu packages xorg)
   #:use-module (guix build-system copy)
+  #:use-module (guix build-system cmake)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system qt)
   #:use-module (guix download)
@@ -46,6 +53,7 @@
   #:use-module (guix packages)
   #:use-module (guix utils)
   #:use-module (ice-9 match)
+  #:use-module (radix packages video)
   #:use-module (misako packages cuda)
   #:use-module (nongnu packages chromium)
   #:use-module (nongnu packages nvidia)
@@ -544,3 +552,151 @@ possible with the highest compatibility in an easily configurable graphical
 user interface.")
     (properties '((saayix-update? . #f)))
     (license (list license:lgpl3+))))
+
+(define chromium-embedded-framework-src
+  (let ((git-revision "cbc1c5b")
+        (chromium-version "135.0.7049.52")
+        (arch "linux64"))
+    (package/inherit chromium-embedded-framework
+      (name "chromium-embedded-framework-src")
+      (version "135.0.17")
+      (source (origin
+                (method url-fetch)
+                (uri (string-append
+                      "https://cef-builds.spotifycdn.com/cef_binary_"
+                      version
+                      "+g" git-revision
+                      "+chromium-" chromium-version
+                      "_" arch "_minimal.tar.bz2"))
+                (sha256
+                 (base32
+                  "1ijdxh9pyfabp5nprr1pig6xqw679fyxcdy3lapb3rrbws01kb14"))))
+      (arguments
+       `(#:patchelf-plan
+         `(("Release/libcef.so" ("alsa-lib" "at-spi2-core" "cairo" "cups" "dbus"
+                                 "expat" "gcc" "glib" "glibc" "eudev" "gtk+" "libdrm"
+                                 "libx11" "libxcb" "libxcomposite" "libxdamage"
+                                 "libxext" "libxfixes" "libxkbcommon" "libxrandr"
+                                 "libxshmfence" "mesa" "nspr" ("nss" "/lib/nss")
+                                 "pango")))
+         #:install-plan
+         `(("." ""))))
+      (inputs
+        (modify-inputs (package-inputs chromium-embedded-framework)
+          (append eudev))))))
+
+(define-public linux-wallpaperengine
+  (let ((commit "f79c29f067b2613895419e351033582464577154")
+        (revision "1"))
+    (package
+      (name "linux-wallpaperengine")
+      (version (git-version "0.1.0" revision commit))
+      (source
+        (origin
+          (method git-fetch)
+          (uri (git-reference
+                 (url "https://github.com/Almamu/linux-wallpaperengine")
+                 (commit commit)
+                 (recursive? #t)))
+          (file-name (git-file-name name version))
+          (sha256
+            (base32 "1l17fh30ysni4dlxpp1lpjbayzz41jx4ya5l2bc78cbawni9v100"))))
+      (build-system cmake-build-system)
+      (arguments
+        (list #:tests? #f
+              #:configure-flags
+              #~(list (string-append "-DCEF_ROOT="
+                                     #$(this-package-input "chromium-embedded-framework-src"))
+                      "-DCMAKE_BUILD_TYPE=Release")
+              #:phases
+              #~(modify-phases %standard-phases
+                  (add-after 'unpack 'disable-chrome-sandbox-copy
+                    (lambda _
+                      (substitute* "CMakeLists.txt"
+                        ((".*copy_if_different.*chrome-sandbox.*") ""))))
+                  (add-after 'unpack 'patch-steam-path
+                    (lambda _
+                      (substitute* "src/Steam/FileSystem/FileSystem.cpp"
+                        (("\\.var/app/com.valvesoftware.Steam/\\.local/share/Steam/steamapps")
+                         ".local/share/guix-sandbox-home/.local/share/Steam/steamapps")
+                        (("snap/steam/common/.local/share/Steam/steamapps")
+                         "games/SteamLibrary/steamapps"))))
+                  (replace 'install
+                    (lambda* (#:key inputs #:allow-other-keys)
+                      (let* ((l "linux-wallpaperengine")
+                             (ld.so (string-append #$(this-package-input "glibc")
+                                                   #$(glibc-dynamic-linker)))
+                             (rpath (string-join
+                                      (cons*
+                                        (string-append #$output "/opt/" l)
+                                        (string-append #$(this-package-input "nss") "/lib/nss")
+                                        (map
+                                          (lambda (input)
+                                            (string-append (cdr input) "/lib"))
+                                          inputs))
+                                      ":")))
+                        (define (patch-elf file)
+                          (format #t "Patching ~a ..." file)
+                          (chmod file #o755)
+                          (invoke "patchelf" "--shrink-rpath" "--allowed-rpath-prefixes" "/gnu/store" file)
+                          (unless (string-contains file ".so")
+                            (invoke "patchelf" "--set-interpreter" ld.so file))
+                          (invoke "patchelf" "--set-rpath" rpath file)
+                          (display " done\n"))
+
+                        (define (string-has-substring? str substr)
+                          (and (string-contains str substr) #t))
+
+                        (with-directory-excursion "output"
+                          (let* ((bin (string-append #$output "/bin"))
+                                 (wrapper (string-append bin "/" l))
+                                 (dst (string-append #$output "/opt/" l))
+                                 (wrappee (string-append dst "/" l)))
+                            (for-each (lambda (x)
+                                        (when (not (string-has-substring? (basename x) "."))
+                                          (patch-elf x))
+                                        (when (string-has-substring? (basename x) ".so")
+                                          (patch-elf x))
+                                        (if (string-has-substring? x "locales")
+                                            (install-file x (string-append dst "/locales"))
+                                            (install-file x dst)))
+                                      (find-files "."))
+                            ; (wrap-program wrappee
+                            ;   `("LD_LIBRARY_PATH" ":" prefix (,dst)))
+                            (mkdir-p bin)
+                            (symlink wrappee wrapper)))))))))
+      (native-inputs
+        (list pkg-config patchelf))
+      (inputs
+        (list chromium-embedded-framework-src
+              glibc
+              fftw
+              freeglut
+              glew
+              glfw-3.4
+              gcc-toolchain
+              glm
+              gmp
+              nss
+              nspr
+              at-spi2-core
+              cups
+              libxcomposite
+              pango
+              cairo
+              eudev
+              kissfft
+              libglvnd
+              lz4
+              mpv-minimal/wayland
+              pulseaudio
+              python
+              sdl2
+              wayland-protocols
+              xrandr
+              zlib))
+      (home-page "https://github.com/Almamu/linux-wallpaperengine")
+      (synopsis "Wallpaper Engine backgrounds for Linux")
+      (description "This project allows you to run animated wallpapers from
+Steam’s Wallpaper Engine right on your desktop.")
+      (license license:gpl3))))

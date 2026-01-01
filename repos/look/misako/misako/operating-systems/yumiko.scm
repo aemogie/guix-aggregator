@@ -68,10 +68,10 @@
                  (pam-limits-entry "*" 'hard 'nofile 1048576)))
 
              ; (service nvidia-unload-service-type)
-             (service samba-service-type
-               (samba-configuration
-                 (enable-smbd? #t)
-                 (config-file (local-file (string-append yumiko-dir "/samba/smb.conf")))))
+             ; (service samba-service-type
+             ;   (samba-configuration
+             ;     (enable-smbd? #t)
+             ;     (config-file (local-file (string-append yumiko-dir "/samba/smb.conf")))))
 
              (udev-rules-service 'otd
                (let ((rules "70-opentabletdriver.rules"))
