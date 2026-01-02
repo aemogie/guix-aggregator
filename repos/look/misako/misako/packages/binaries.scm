@@ -447,9 +447,7 @@ well.")
         (list p7zip patchelf))
       (inputs
         (list alsa-lib
-              at-spi2-atk
               at-spi2-core
-              atk
               cairo
               chromium-embedded-framework
               cups
