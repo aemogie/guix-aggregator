@@ -13,9 +13,9 @@ scope = "source.scheme"
 injection-regex = "scheme"
 file-types = ["ss", "scm"]
 shebangs = ["scheme", "guile", "chicken"]
-comment-token = ";"
+comment-token = ";;"
 indent = { tab-width = 2, unit = "  " }
-language-servers = [ "guile-lsp-server" ]
+# language-servers = [ "guile-lsp-server" ]
 auto-format = false
 formatter = { command = "parinfer-rust" }
 

@@ -107,6 +107,24 @@
             ghostty-tip
             hyprland-latest))
 
+(define mpvpaper-minimal
+  (let* ((commit "01b2b92a989e57001947945fa21c31dce3e51c9b")
+         (revision "1"))
+    (package/inherit mpvpaper
+      (name "mpvpaper-minimal")
+      (version (git-version (package-version mpvpaper) revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/GhostNaN/mpvpaper")
+                      (commit commit)))
+                (sha256
+                 (base32 "1d6sc89v6z798rbmf54j2rv3jcmkfbrhym5lj3xy5ybyww72gw73"))
+                (file-name (git-file-name name version))))
+      (inputs
+        (modify-inputs (package-inputs mpvpaper)
+          (replace "mpv" mpv-minimal/wayland))))))
+
 (define bar
   (list eww/wayland waybar))
 
@@ -262,7 +280,7 @@
   (list helix))
 
 (define video
-  (list
+  (list mpvpaper-minimal
         mpv-minimal/wayland
         yt-dlp
         obs-pipewire-audio-capture
