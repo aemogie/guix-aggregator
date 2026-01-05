@@ -55,6 +55,7 @@
   (read-file-name-completion-ignore-case t)
   :bind
   ([remap list-buffers] . switch-to-buffer)
+  ("M-o" . other-window)
   :hook
   ;; Scrolling enhancement.
   (after-init . pixel-scroll-precision-mode)
@@ -98,12 +99,12 @@
 ;;guix:emacs-helpful
 (use-package helpful
   :bind
-  (([remap describe-function] . helpful-callable)
-   ([remap describe-variable] . helpful-variable)
-   ([remap describe-key]      . helpful-key)
-   ([remap describe-command]  . helpful-command)
-   ([remap describe-symbol]   . helpful-symbol)
-   ("C-c C-d" . helpful-at-point)))
+  ([remap describe-function] . helpful-callable)
+  ([remap describe-variable] . helpful-variable)
+  ([remap describe-key]      . helpful-key)
+  ([remap describe-command]  . helpful-command)
+  ([remap describe-symbol]   . helpful-symbol)
+  ("C-c C-d" . helpful-at-point))
 
 ;;guix:emacs-hl-todo
 (use-package hl-todo
@@ -122,8 +123,8 @@
 ;;guix:emacs-mwim
 (use-package mwim
   :bind
-  (([remap move-beginning-of-line] . mwim-beginning)
-   ([remap move-end-of-line] . mwim-end)))
+  ([remap move-beginning-of-line] . mwim-beginning)
+  ([remap move-end-of-line] . mwim-end))
 
 ;;guix:emacs-orderless
 (use-package orderless
@@ -173,6 +174,11 @@
     (hako/get-tree-sitter-mode mode))
   :hook
   (after-init . global-treesit-auto-mode))
+
+;;guix:emacs-valign
+(use-package valign
+  :hook
+  (org-mode . valign-mode))
 
 ;;guix:emacs-vertico
 (use-package vertico

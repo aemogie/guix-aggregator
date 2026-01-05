@@ -52,7 +52,6 @@
                 "unzip"
                 "wl-clipboard"
 
-                "xdg-desktop-portal"
                 "xdg-desktop-portal-gnome"
                 "xdg-desktop-portal-gtk"
                 "xdg-utils"
@@ -79,6 +78,7 @@
                 "mpv-nvidia"
                 "obs-nvidia"
 
+                "mangohud"
                 "prismlauncher-dolly"
                 "steam-nvidia"
 
@@ -855,13 +855,4 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
                               . (+inbox -new)))))
                     ;; Send queued mail.
                     (invoke "emacsclient" "--eval" "(smtpmail-send-queued-mail)"))))))))
-#+end_src
-
-** guix-label-teams
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'guix-label-teams
-      home-shepherd-service-type
-    (list (shepherd-timer '(guix-label-teams)
-            #~(calendar-event #:minutes '(0 15 30 45))
-            #~("/home/hako/Workspace/guix-label-teams.scm"))))
 #+end_src

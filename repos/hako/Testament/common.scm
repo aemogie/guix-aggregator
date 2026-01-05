@@ -112,19 +112,6 @@ ethernet.cloned-mac-address=stable
 wifi.cloned-mac-address=stable\n")))
 
 
-(define linux-libre-lts/dolly
-  (customize-linux
-   #:name "linux-libre-dolly"
-   #:linux linux-libre-lts
-   #:source
-   (origin
-     (inherit (package-source linux-libre-lts))
-     (patches
-      (map (lambda (patch)
-             (local-file (canonicalize-path (in-vicinity "../Workspace/Repository/linux/kernel-patches/6.12" patch))))
-           '("arch-patches-sep/0002-arch-Kconfig-Default-to-maximum-amount-of-ASLR-bits.patch"
-             "bbr3-patches/0001-tcp-bbr3-initial-import.patch"))))))
-
 (define linux-lts/dolly
   (customize-linux
    #:name "linux-dolly"

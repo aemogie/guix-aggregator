@@ -25,7 +25,7 @@
           (grub-theme
            (inherit (grub-theme))
            (resolution #f)))))
-      (kernel linux-libre-lts/dolly)
+      (kernel linux-lts/dolly)
       (kernel-arguments
        (cons* "kernel.sysrq=0"
               "zswap.enabled=1"
