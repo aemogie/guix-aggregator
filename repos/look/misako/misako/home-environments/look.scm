@@ -249,6 +249,7 @@
             ,@(if (not nvidia?) '()
                 `(("QT_WAYLAND_DISABLE_WINDOWDECORATION" . "1")
                   ; ("QT_OPENGL_NO_SANITY_CHECK"           . "1") ;; Bad flag
+                  ("CUDA_DISABLE_PERF_BOOST"             . "1")
                   ("__GLX_VENDOR_LIBRARY_NAME"           . "nvidia")
                   ; ("__EGL_VENDOR_LIBRARY_FILENAMES"      . ,(file-append nvidia-driver "/share/glvnd/egl_vendor.d/10_nvidia.x86_64.json"))
                   ; ("__NV_PRIME_RENDER_OFFLOAD"           . "1")

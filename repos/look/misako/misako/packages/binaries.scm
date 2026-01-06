@@ -43,7 +43,6 @@
   #:use-module (gnu packages xdisorg)
   #:use-module (gnu packages xml)
   #:use-module (gnu packages xorg)
-  #:use-module (guix build-system copy)
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system qt)
@@ -54,69 +53,16 @@
   #:use-module (guix utils)
   #:use-module (ice-9 match)
   #:use-module (radix packages video)
+  #:use-module (saayix packages gtk)
   #:use-module (misako packages cuda)
   #:use-module (nongnu packages chromium)
   #:use-module (nongnu packages nvidia)
   #:use-module (nongnu packages dotnet)
-  #:use-module (nonguix build utils)
-  #:use-module (nonguix build-system binary)
-  #:use-module (nonguix build-system chromium-binary)
-  #:export (vesktop
-            path-of-building-bin
-            libdeep-filter-ladspa-bin
+  #:use-module (saayix build-system binary)
+  #:use-module (saayix build-system chromium-binary)
+  #:export (libdeep-filter-ladspa-bin
             ollama-bin
-            spotify
             opentabletdriver-bin))
-
-(define path-of-building-bin
-  (package
-    (name "path-of-building-bin")
-    (version "2.55.3")
-    (source
-      (origin
-        (method url-fetch/zipbomb)
-        (uri
-          (string-append "https://github.com/PathOfBuildingCommunity/PathOfBuilding"
-                        "/releases/download/v" version
-                        "/PathOfBuildingCommunity-Portable.zip"))
-        (sha256
-          (base32 "177vnrsr1waia8gm9aqjxs3vi6cwfaaja3413r8k3zhm3684k5k7"))))
-    (build-system copy-build-system)
-    (arguments
-      (list #:install-plan
-            #~'(("." "opt/pob/"))
-            #:phases
-            #~(modify-phases %standard-phases
-                (add-after 'install 'make-bin
-                  (lambda _
-                    (let* ((pob (string-append #$output "/opt/pob/pob"))
-                           (bin (string-append #$output "/bin/pob")))
-                      (with-output-to-file pob
-                         (lambda _
-                           (define (line . args)
-                             (display (apply string-append args)) (newline))
-                           (define pob "$HOME/.local/share/pob")
-                           (line "#!/bin/sh")
-                           (line "if [ ! -d \"$HOME/.local/share/pob\" ]; then")
-                           (line "    mkdir -p \"" pob "\"")
-                           (line (string-append "    cp -r " #$output "/opt/pob/* \"" pob "\""))
-                           (line "fi")
-                           (line (string-append "cd " pob))
-                           (line (string-append #$wine64-staging
-                                                "/bin/wine Path\\ of\\ Building.exe"))))
-                      (chmod pob #o755)
-                      (mkdir-p (dirname bin))
-                      (symlink pob bin)))))))
-    (native-inputs (list unzip))
-    (inputs (list wine64-staging))
-    (home-page "https://pathofbuilding.community/")
-    (synopsis "Offline build planner for Path of Exile")
-    (description "Path of Building Community is a fork of the original Path of
-Building by Openarl. It is now actively maintained by Path of Exile community
-members. Features not originally present have been added, new mechanics are
-getting supported regularly, and any work on the original is integrated as
-well.")
-    (license license:expat)))
 
 (define libdeep-filter-ladspa-bin
   (package
@@ -131,7 +77,7 @@ well.")
                          version "-x86_64-unknown-linux-gnu.so"))
         (sha256
           (base32 "0di2bqrjn9a8h8fbijmma81db5smfh728sl299h8klqi55f218rc"))))
-    (build-system copy-build-system)
+    (build-system binary-build-system)
     (arguments
       (list #:install-plan
             #~'(("libdeep_filter_ladspa-0.5.6-x86_64-unknown-linux-gnu.so" "lib/ladspa/libdeep_filter_ladspa.so"))
@@ -141,35 +87,14 @@ well.")
                   (lambda _
                     (for-each (lambda (f)
                                 (chmod f #o777))
-                              (find-files (string-append #$output "/lib")))))
-                (add-after 'fix-permission 'patch-elf
-                  (lambda* (#:key inputs #:allow-other-keys)
-                    (let ((ld.so (string-append #$(this-package-input "glibc")
-                                                #$(glibc-dynamic-linker)))
-                          (rpath (string-join
-                                   (map
-                                     (lambda (input)
-                                       (string-append (cdr input) "/lib"))
-                                     inputs)
-                                   ":")))
-                      (define (patch-elf file)
-                        (format #t "Patching ~a ..." file)
-                        (unless (string-contains file ".so")
-                          (invoke "patchelf" "--set-interpreter" ld.so file))
-                        (invoke "patchelf" "--set-rpath" rpath file)
-                        (display " done\n"))
-                      (for-each
-                        (lambda (binary)
-                          (patch-elf binary))
-                        (find-files (string-append #$output "/lib") ".*\\.so.*"))))))))
+                              (find-files (string-append #$output "/lib"))))))))
     (inputs (list glibc gcc-toolchain))
-    (native-inputs (list patchelf))
     (home-page "https://github.com/Rikorose/DeepFilterNet")
     (synopsis "Noise supression using deep filtering")
     (description "A Low Complexity Speech Enhancement Framework for Full-Band Audio (48kHz) using on Deep Filtering (LASPDA).")
     (license license:expat)))
 
-(define vesktop
+(define-public vesktop
   (package
     (name "vesktop")
     (version "1.6.3")
@@ -184,120 +109,28 @@ well.")
     (build-system chromium-binary-build-system)
     (arguments
       (list
-        #:wrapper-plan
-        #~`("vesktop"
-            "chrome-sandbox"
-            "chrome_crashpad_handler"
-            "libEGL.so"
-            "libffmpeg.so"
-            "libGLESv2.so"
-            "libvk_swiftshader.so"
-            "libvulkan.so.1")
-        #:patchelf-plan
-        #~`(("vesktop") ("chrome_crashpad_handler") ("chrome-sandbox"))
         #:install-plan
-        #~`(("." "opt/vesktop")
-            ("vesktop" "bin/vesktop"))
-        #:native-inputs `(("alsa-lib" ,alsa-lib)
-                          ("at-spi2-core" ,at-spi2-core)
-                          ("bash-minimal" ,bash-minimal)
-                          ("cairo" ,cairo)
-                          ("cups" ,cups)
-                          ("dbus" ,dbus)
-                          ("eudev" ,eudev)
-                          ("expat" ,expat)
-                          ("fontconfig" ,fontconfig)
-                          ("freetype" ,freetype)
-                          ("gcc:lib" ,gcc-13 "lib")
-                          ("glib" ,glib)
-                          ("gtk+" ,gtk+)
-                          ("libdrm" ,libdrm)
-                          ("libnotify" ,libnotify)
-                          ("librsvg" ,librsvg)
-                          ("libsecret" ,libsecret)
-                          ("libx11" ,libx11)
-                          ("libxcb" ,libxcb)
-                          ("libxcomposite" ,libxcomposite)
-                          ("libxcursor" ,libxcursor)
-                          ("libxdamage" ,libxdamage)
-                          ("libxext" ,libxext)
-                          ("libxfixes" ,libxfixes)
-                          ("libxi" ,libxi)
-                          ("libxkbcommon" ,libxkbcommon)
-                          ("libxkbfile" ,libxkbfile)
-                          ("libxrandr" ,libxrandr)
-                          ("libxrender" ,libxrender)
-                          ("libxshmfence" ,libxshmfence)
-                          ("libxtst" ,libxtst)
-                          ("mesa" ,mesa)
-                          ("mit-krb5" ,mit-krb5)
-                          ("nspr" ,nspr)
-                          ("nss" ,nss)
-                          ("pango" ,pango)
-                          ("pulseaudio" ,pulseaudio)
-                          ("sqlcipher" ,sqlcipher)
-                          ("xcb-util" ,xcb-util)
-                          ("xcb-util-image" ,xcb-util-image)
-                          ("xcb-util-keysyms" ,xcb-util-keysyms)
-                          ("xcb-util-renderutil" ,xcb-util-renderutil)
-                          ("xcb-util-wm" ,xcb-util-wm)
-                          ("zlib" ,zlib)
-                          ,@(standard-packages))
+        #~`(("." "opt/vesktop"))
         #:phases
         #~(modify-phases %standard-phases
-            (add-before 'install-wrapper 'wrap-where-patchelf-does-not-work
+            (add-after 'patchelf 'install-bin
               (lambda _
-                (let* ((bin (string-append #$output "/opt/vesktop/vesktop"))
+                (let* ((wrappee (string-append #$output "/opt/vesktop/vesktop"))
                        (wrapper (string-append #$output "/bin/vesktop")))
-                  (mkdir-p (dirname wrapper))
-                  (make-wrapper wrapper bin
-                    `("LD_LIBRARY_PATH" prefix (,(string-append #$output "/opt/vesktop")))))))
-            (add-after 'install-wrapper 'add-wayland-flag
-              (lambda _
-                (substitute* (string-append #$output "/bin/vesktop")
-                  (("(\\.vesktop-real\")" v)
-                   (string-join
-                     (list v
-                           "${WAYLAND_DISPLAY:+"
-                           "--enable-features=UseOzonePlatform"
-                           ; "--ozone-platform-hint=auto"
-                           "--enable-features=WebRTCPipeWireCapturer"
-                           "--enable-features=VaapiVideoDecoder"
-                           "--enable-features=VaapiIgnoreDriverChecks"
-                           "--enable-features=VaapiVideoEncoder"
-                           ; "--enable-features=UseMultiPlaneFormatForHardwareVideo"
-                           "--enable-features=VaapiVideoDecodeLinuxGL"
-                           "--enable-features=AcceleratedVideoDecodeLinuxGL"
-                           "--enable-features=AcceleratedVideoEncoder"
-                           "--disable-features=UseChromeOSDirectVideoDecoder"
-                           "--ignore-gpu-blocklist"
-                           ; "--enable-zero-copy"
-                           ; "--enable-features=WaylandLinuxDrmSyncobj"
-                           ; "--enable-gpu-rasterization"
-                           ; "--enable-gpu-compositing"
-                           ; "--use-angle=vulkan"
-                           ; "--use-vulkan"
-                           ; "--enable-features=Vulkan,VulkanFromANGLE,DefaultANGLEVulkan"
-                           ; "--ozone-platform-hint=x11"
-                           "}")))))))))
-    (inputs
-      (list ffmpeg
-            gdk-pixbuf
-            libappindicator
-            libdbusmenu
-            mesa
-            libxscrnsaver
-            util-linux
-            wayland
-            gzip
-            libsm
-            node
-            pipewire
-            pulseaudio
-            unzip
-            wget
-            xdg-utils))
-    (synopsis "Vesktop is a custom Discord App aiming to give you better performance and improve linux support")
+                  (make-wrapper wrapper wrappee
+                    `("WAYLAND_DISPLAY" + ("--enable-features=UseOzonePlatform"
+                                           "--ozone-platform=wayland"
+                                           "--enable-features=WebRTCPipeWireCapturer"
+                                           "--enable-features=VaapiVideoDecoder"
+                                           "--enable-features=VaapiIgnoreDriverChecks"
+                                           "--enable-features=VaapiVideoEncoder"
+                                           "--enable-features=VaapiVideoDecodeLinuxGL"
+                                           "--enable-features=AcceleratedVideoDecodeLinuxGL"
+                                           "--enable-features=AcceleratedVideoEncoder"
+                                           "--disable-features=UseChromeOSDirectVideoDecoder"
+                                           "--ignore-gpu-blocklist")))))))))
+    (synopsis "Custom Discord App with better performance and improved linux
+support")
     (description "Vesktop main features are:
 @itemize
   @item @command{Vencord} preinstalled
@@ -306,7 +139,7 @@ well.")
   @item Much better privacy, since Discord has no access to your system
 @end itemize")
     (home-page "https://github.com/Vencord/Vesktop")
-    (license (list license:gpl3))))
+    (license license:gpl3)))
 
 (define ollama-bin
   (package
@@ -324,48 +157,19 @@ well.")
     (supported-systems (list "x86_64-linux"))
     (arguments
       (list #:strip-binaries? #f
-            #:patchelf-plan ''(("bin/ollama" ("glibc" "gcc")))
-            #:install-plan ''(("." ""))
-            #:phases
-            #~(modify-phases %standard-phases
-                (add-after 'install 'patch-elf
-                  (lambda* (#:key inputs #:allow-other-keys)
-                    (let ((ld.so (string-append #$(this-package-input "glibc")
-                                                #$(glibc-dynamic-linker)))
-                          (rpath (string-join
-                                   (cons*
-                                     (string-append #$output "/lib")
-                                     (string-append #$output "/lib/ollama")
-                                     (string-append #$output "/lib/ollama/cuda_v12")
-                                     (string-append #$output "/lib/ollama/cuda_v11")
-                                     (map
-                                       (lambda (input)
-                                         (string-append (cdr input) "/lib"))
-                                       inputs))
-                                   ":")))
-                      ;; Got this proc from hako's Rosenthal, thanks
-                      (define (patch-elf file)
-                        (format #t "Patching ~a ..." file)
-                        (unless (string-contains file ".so")
-                          (invoke "patchelf" "--set-interpreter" ld.so file))
-                        (invoke "patchelf" "--set-rpath" rpath file)
-                        (display " done\n"))
-                      (for-each
-                        (lambda (binary)
-                          (patch-elf binary))
-                        (find-files (string-append #$output "/lib") ".*\\.so.*"))))))))
-    (inputs (list (list gcc "lib") glibc nvda cuda))
+            #:install-plan ''(("." ""))))
+    (inputs (list (list gcc "lib") glibc mesa cuda))
     (home-page "https://ollama.com")
     (synopsis "Get up and running with large language models")
     (description "Get up and running with large language models. Run Llama
 2, Code Llama, and other models. Customize and create your own.")
     (license license:expat)))
 
-(define spotify
-  (let ((revision "gcc6305cb"))
+(define-public spotify
+  (let ((revision "g1d0fcf61"))
     (package
       (name "spotify")
-      (version "1.2.60.564")
+      (version "1.2.79.425")
       (source
         (origin
           (method url-fetch)
@@ -373,122 +177,16 @@ well.")
             (string-append "http://repository.spotify.com/pool/non-free/s/spotify-client/spotify-client_"
                            version "." revision "_amd64.deb"))
           (sha256
-            (base32 "0rsamn2y6ippwb2rzjz1qnalbpgg6ykd2grfnvfkb2ac2b17lws3"))))
-      (build-system copy-build-system)
+            (base32 "1s7g2dpdwf1s5mhysyz5jm4r118zv8dj64h2ggm05ggzvnpcfhwq"))))
+      (build-system chromium-binary-build-system)
       (arguments
         (list
           #:install-plan
-          #~`(("usr/share/spotify/" "lib/spotify")
+          #~`(("usr/share/spotify/" "opt/spotify")
               ("usr/share/spotify/icons/" "share/icons")
               ("usr/share/spotify/spotify.desktop" "share/applications/spotify.desktop"))
-          #:imported-modules %binary-build-system-modules
-          #:modules '((nonguix build binary-build-system)
-                      (guix build utils)
-                      (guix build copy-build-system)
-                      (nonguix build utils))
-          #:phases
-          #~(modify-phases %standard-phases
-              (add-after 'unpack 'unpack-deb
-                (lambda _
-                  (for-each (lambda (file)
-                              (invoke "ar" "-x" file))
-                            (find-files "." ".*\\.deb"))
-                  (invoke "tar" "-xf" "data.tar.gz")))
-              (add-after 'install 'make-bin
-                (lambda _
-                  (let* ((spotify (string-append #$output "/lib/spotify/spotify"))
-                         (bin (string-append #$output "/bin/spotify")))
-                    (mkdir-p (dirname bin))
-                    (with-output-to-file bin
-                       (lambda _
-                         (define (line . args)
-                           (display (apply string-append args)) (newline))
-                         (define spotify "$HOME/.local/share/spotify")
-                         (line "#!/bin/sh")
-                         (line (string-append "export LD_LIBRARY_PATH=\"" spotify ":" #$output "/lib${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH\""))
-                         (line (string-append "if [ ! -d \"" spotify "\" ]; then"))
-                         (line "    mkdir -p \"" spotify "\"")
-                         (line (string-append "    cp -r \"" #$output "/lib/spotify/\" \"$HOME/.local/share/\""))
-                         (line (string-append "    chmod -R 755 " spotify))
-                         (line "fi")
-                         (line (string-append "cd " spotify))
-                         (line (string-append "exec -a \"$0\" \"" spotify "/spotify\" ${WAYLAND_DISPLAY:+ --enable-features=UseOzonePlatform --ozone-platform=wayland --enable-features=WebRTCPipeWireCapturer --enable-features=VaapiVideoDecoder --enable-features=VaapiIgnoreDriverChecks --enable-features=VaapiVideoEncoder --enable-features=UseMultiPlaneFormatForHardwareVideo --enable-features=VaapiVideoDecodeLinuxGL --ignore-gpu-blocklist --enable-zero-copy --use-angle=vulkan --disable-gpu-compositing --enable-gpu-rasterization } \"$@\""))))
-                    (chmod bin #o755))))
-              (add-after 'install 'patch-elf
-                (lambda* (#:key inputs #:allow-other-keys)
-                  (let ((ld.so (string-append #$(this-package-input "glibc")
-                                              #$(glibc-dynamic-linker)))
-                        (rpath (string-join
-                                 (cons* (string-append #$output "/lib")
-                                        (string-append #$(this-package-input "nss") "/lib/nss")
-                                        (map (lambda (input)
-                                               (string-append (cdr input) "/lib"))
-                                             inputs))
-                                 ":")))
-                    (define (patch-elf file)
-                      (chmod file #o777)
-                      (format #t "Patching ~a ..." file)
-                      (unless (string-contains file ".so")
-                        (invoke "patchelf" "--set-interpreter" ld.so file))
-                      (invoke "patchelf" "--set-rpath" rpath file)
-                      (chmod file #o555)
-                      (display " done\n"))
-                    (for-each
-                      (lambda (binary)
-                        (patch-elf binary))
-                      (append
-                        (find-files (string-append #$output "/lib/spotify") ".*\\.so.*")
-                        (find-files (string-append #$output "/lib/spotify") "^spotify$"))))))
-              (add-before 'patch-elf 'fix-so
-                (lambda _
-                  (symlink (string-append #$(this-package-input "libappindicator") "/lib/libappindicator3.so")
-                           (string-append #$output "/lib/libayatana-appindicator3.so.1")))))))
-      (native-inputs
-        (list p7zip patchelf))
-      (inputs
-        (list alsa-lib
-              at-spi2-core
-              cairo
-              chromium-embedded-framework
-              cups
-              eudev
-              ffmpeg-4
-              gcc-toolchain
-              gdk-pixbuf
-              glib
-              glibc
-              glibc
-              gtk+
-              harfbuzz
-              libappindicator
-              libdbusmenu
-              libdrm
-              libgcrypt
-              libglvnd
-              libice
-              libnotify
-              libpng
-              libpng
-              libsm
-              libwebp
-              libx11
-              libxcb
-              libxcomposite
-              libxcursor
-              libxdamage
-              libxext
-              libxfixes
-              libxi
-              libxkbcommon
-              libxrandr
-              libxrender
-              libxscrnsaver
-              libxshmfence
-              libxtst
-              nss
-              pango
-              sqlite
-              zlib))
+          #:symlink-plan
+          #~'(("opt/spotify/spotify" "bin/spotify"))))
       (synopsis "Play music from the Spotify music service")
       (description "Spotify is a digital music service that gives you access to
 millions of songs.")
@@ -507,7 +205,7 @@ millions of songs.")
               version "/opentabletdriver-" version "-x64.tar.gz"))
         (sha256
           (base32 "0p74avg03mqrqfvmidaagsq8lwancn1g3an9a2140qwqnc2439lf"))))
-    (build-system copy-build-system)
+    (build-system binary-build-system)
     (arguments
       (list #:install-plan
             #~'(("usr/local/lib/opentabletdriver/OpenTabletDriver.Console" "bin/otd")
@@ -517,27 +215,7 @@ millions of songs.")
                 ("usr/local/share" "share")
                 ("usr/local/lib/modprobe.d" "lib/modprobe.d")
                 ("usr/local/lib/modules-load.d" "lib/modules-load.d")
-                ("usr/local/lib/systemd" "lib/systemd"))
-            #:phases
-            #~(modify-phases %standard-phases
-                (add-after 'install 'patch-elf
-                  (lambda _
-                    (let ((ld.so (string-append #$(this-package-input "glibc")
-                                                #$(glibc-dynamic-linker)))
-                          (rpath (string-join
-                                   (list
-                                     (string-append #$(this-package-input "gcc-toolchain") "/lib")
-                                     (string-append #$(this-package-input "libnotify") "/lib")
-                                     (string-append #$(this-package-input "glibc") "/lib")
-                                     (string-append #$(this-package-input "gtk+") "/lib"))
-                                   ":")))
-                      (for-each (lambda (x)
-                                  (invoke "patchelf" x "--set-interpreter" ld.so)
-                                  (when (equal? (basename x) "otd-gui")
-                                    (invoke "patchelf" x "--add-needed" "libnotify.so.4"))
-                                  (invoke "patchelf" x "--set-rpath" rpath))
-                                (find-files (string-append #$output "/bin")))))))))
-    (native-inputs (list patchelf))
+                ("usr/local/lib/systemd" "lib/systemd"))))
     (inputs (list gcc-toolchain-15
                   glibc
                   gtk+
@@ -569,15 +247,9 @@ user interface.")
                 (sha256
                  (base32
                   "1ijdxh9pyfabp5nprr1pig6xqw679fyxcdy3lapb3rrbws01kb14"))))
+      (build-system binary-build-system)
       (arguments
-       `(#:patchelf-plan
-         `(("Release/libcef.so" ("alsa-lib" "at-spi2-core" "cairo" "cups" "dbus"
-                                 "expat" "gcc" "glib" "glibc" "eudev" "gtk+" "libdrm"
-                                 "libx11" "libxcb" "libxcomposite" "libxdamage"
-                                 "libxext" "libxfixes" "libxkbcommon" "libxrandr"
-                                 "libxshmfence" "mesa" "nspr" ("nss" "/lib/nss")
-                                 "pango")))
-         #:install-plan
+       `(#:install-plan
          `(("." ""))))
       (inputs
         (modify-inputs (package-inputs chromium-embedded-framework)
@@ -606,12 +278,15 @@ user interface.")
               #~(list (string-append "-DCEF_ROOT="
                                      #$(this-package-input "chromium-embedded-framework-src"))
                       "-DCMAKE_BUILD_TYPE=Release")
+              #:imported-modules
+              (append %cmake-build-system-modules
+                      %chromium-binary-build-system-modules)
+              #:modules '((guix build cmake-build-system)
+                          ((saayix build chromium-binary-build-system)
+                           #:prefix chromium-binary:)
+                          (guix build utils))
               #:phases
               #~(modify-phases %standard-phases
-                  (add-after 'unpack 'disable-chrome-sandbox-copy
-                    (lambda _
-                      (substitute* "CMakeLists.txt"
-                        ((".*copy_if_different.*chrome-sandbox.*") ""))))
                   (add-after 'unpack 'patch-steam-path
                     (lambda _
                       (substitute* "src/Steam/FileSystem/FileSystem.cpp"
@@ -620,49 +295,23 @@ user interface.")
                         (("snap/steam/common/.local/share/Steam/steamapps")
                          "games/SteamLibrary/steamapps"))))
                   (replace 'install
-                    (lambda* (#:key inputs #:allow-other-keys)
-                      (let* ((l "linux-wallpaperengine")
-                             (ld.so (string-append #$(this-package-input "glibc")
-                                                   #$(glibc-dynamic-linker)))
-                             (rpath (string-join
-                                      (cons*
-                                        (string-append #$output "/opt/" l)
-                                        (string-append #$(this-package-input "nss") "/lib/nss")
-                                        (map
-                                          (lambda (input)
-                                            (string-append (cdr input) "/lib"))
-                                          inputs))
-                                      ":")))
-                        (define (patch-elf file)
-                          (format #t "Patching ~a ..." file)
-                          (chmod file #o755)
-                          (invoke "patchelf" "--shrink-rpath" "--allowed-rpath-prefixes" "/gnu/store" file)
-                          (unless (string-contains file ".so")
-                            (invoke "patchelf" "--set-interpreter" ld.so file))
-                          (invoke "patchelf" "--set-rpath" rpath file)
-                          (display " done\n"))
-
-                        (define (string-has-substring? str substr)
-                          (and (string-contains str substr) #t))
-
-                        (with-directory-excursion "output"
-                          (let* ((bin (string-append #$output "/bin"))
-                                 (wrapper (string-append bin "/" l))
-                                 (dst (string-append #$output "/opt/" l))
-                                 (wrappee (string-append dst "/" l)))
-                            (for-each (lambda (x)
-                                        (when (not (string-has-substring? (basename x) "."))
-                                          (patch-elf x))
-                                        (when (string-has-substring? (basename x) ".so")
-                                          (patch-elf x))
-                                        (if (string-has-substring? x "locales")
-                                            (install-file x (string-append dst "/locales"))
-                                            (install-file x dst)))
-                                      (find-files "."))
-                            ; (wrap-program wrappee
-                            ;   `("LD_LIBRARY_PATH" ":" prefix (,dst)))
-                            (mkdir-p bin)
-                            (symlink wrappee wrapper)))))))))
+                    (lambda args
+                      (apply (assoc-ref chromium-binary:%standard-phases 'install)
+                             #:install-plan
+                             '(("output/" "opt/linux-wallpaperengine/")
+                               ("lib" ""))
+                             args)))
+                  (add-after 'install 'patchelf
+                    (assoc-ref chromium-binary:%standard-phases 'patchelf))
+                  (add-after 'patchelf 'symlink
+                    (lambda args
+                      (apply (assoc-ref chromium-binary:%standard-phases 'symlink)
+                             #:symlink-plan
+                             '(("opt/linux-wallpaperengine/linux-wallpaperengine"
+                                "bin/linux-wallpaperengine"))
+                             args)))
+                  (add-after 'symlink 'install-wrapper
+                    (assoc-ref chromium-binary:%standard-phases 'install-wrapper)))))
       (native-inputs
         (list pkg-config patchelf))
       (inputs

@@ -506,7 +506,7 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
    )
   :hook
   (org-mode . org-indent-mode)
-  (org-mode . turn-on-org-cdlatex)
+  ;; (org-mode . turn-on-org-cdlatex)
   (org-mode . my/org-syntax-table-modify)
   (org-mode . my/org-add-electric-pairs)
   (org-agenda-mode . (lambda () (setq-local nobreak-char-display nil)))
@@ -520,7 +520,7 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
                  (window-height . fit-window-to-buffer)))
   (display-line-numbers-mode 1)
 
-  ;; Kill the frame if one was created for the capture
+  ;; kill the frame if one was created for the capture
   (defvar my/delete-frame-after-capture 0 "Whether to delete the last frame after the current capture")
 
   ;; delete pop-up capture frames after finalize/kill/refile. at popup, set `my/delete-frame-after-capture' to 1
@@ -582,7 +582,8 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
              ))
   (org-agenda-custom-commands 
       '(("d" "Daily view (grouped)" agenda ""
-         ((org-agenda-span 'day)
+         ((org-agenda-span '1)
+          (org-deadline-warning-days 0)
           (org-habit-show-habits t)
           (org-super-agenda-groups
            '((:name "Tasks"
@@ -724,8 +725,8 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
    (list #'org-roam-backlinks-section
 	 #'org-roam-reflinks-section))
   (org-roam-dailies-capture-templates
-   '(("d" "default" entry "* %<%I:%M %p> \n%?"
-      :if-new (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n"))))
+   '(("d" "default" entry "* %<%I:%M %p> \n:PROPERTIES:\n:MOOD: %?\n:END:"
+      :if-new (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>"))))
   :init
   (require 'org-roam-dailies)
   :config
@@ -744,14 +745,17 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
                            (eq major-mode 'org-mode)
                          (org-roam-link-replace-all)))))
 
-;; (use-package org-roam-ui
-;;   :ensure t
-;;   :after org-roam
-;;   :custom
-;;   (org-roam-ui-sync-theme t)
-;;   (org-roam-ui-follow t)
-;;   (org-roam-ui-update-on-save t)
-;;   (org-roam-ui-open-on-start t))
+(use-package org-roam-ui
+  :ensure t
+  :after org-roam
+  :custom
+  (org-roam-ui-sync-theme t)
+  (org-roam-ui-follow t)
+  (org-roam-ui-update-on-save t)
+  (org-roam-ui-open-on-start t))
+
+(use-package org-roam-protocol
+  :ensure t)
 
 (use-package org-super-agenda ;; if there's a problem with loading the package, it could be because of dash conflicts - needs to be installed internally, not externally
   :ensure t
@@ -2335,6 +2339,8 @@ Add :notify: event on import."
   ;; (ticktick-client-secret "6eh+gE#66+3lKHJv56d)EU8&eru_k$*8")
   (ticktick-sync-file "~/org/ticktick.org")
   (ticktick-autosync nil))
+
+(load "~/projects/org-roam-obsidian-sync/org-roam-obsidian-sync.el")
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.

@@ -274,7 +274,7 @@
                         (device "lo")
                         (value "127.0.0.1/8"))))
               (provision '(loopback)))))
-              ; (name-servers '("127.0.0.1" "::1")))))
+              ;; (name-servers '("127.0.0.1" "::1")))))
 
         (simple-service 'extra-hosts hosts-service-type
           (list (host "192.168.100.30" "yuria.local"
@@ -285,19 +285,19 @@
                     "substitutes.yumiko"
                     "ci.yumiko"))))
 
-        (service dnsmasq-service-type
-          (dnsmasq-configuration
-           (no-resolv? #t)
-           (no-hosts? #t)
-           (cache-size 10000)
-           (listen-addresses '("127.0.0.1" "::1"))
-           (servers '("1.1.1.1" "1.0.0.1"))))
+        ;; (service dnsmasq-service-type
+        ;;   (dnsmasq-configuration
+        ;;    (no-resolv? #t)
+        ;;    (no-hosts? #t)
+        ;;    (cache-size 10000)
+        ;;    (listen-addresses '("127.0.0.1" "::1"))
+        ;;    (servers '("1.1.1.1" "1.0.0.1"))))
 
         (service mullvad-service-type)
 
-        (service dhcpcd-service-type
-          (dhcpcd-configuration
-            (no-hook '("resolv.conf"))))
+        (service dhcpcd-service-type)
+          ;; (dhcpcd-configuration
+          ;;   (no-hook '("resolv.conf"))))
 
         #|Doas config service|#
         (service opendoas-service-type

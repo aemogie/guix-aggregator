@@ -54,14 +54,5 @@
           (program (file-append espanso-wayland "/bin/espanso"))
           (capabilities "cap_dac_override+p"))
         (privileged-program
-          (program (file-append mullvad-bin "/bin/mullvad-exclude"))
-          (setuid? #t))
-        (privileged-program
-          (program (file-append mullvad-bin "/bin/mullvad-daemon"))
-          (setuid? #t))
-        (privileged-program
-          (program (file-append mullvad-bin "/bin/mullvad"))
-          (setuid? #t))
-        (privileged-program
           (program (file-append inetutils "/bin/ping6"))
           (capabilities "cap_net_raw=ep"))))
