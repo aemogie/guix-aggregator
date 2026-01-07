@@ -19,10 +19,10 @@
 ;; before adding more packages.  The value of the `custom-file'
 ;; variable must be set appropriately, by default the value is nil.
 ;; This can be done here, or in the early-init.el file.
-(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-(when (and custom-file
-           (file-exists-p custom-file))
-  (load custom-file nil :nomessage))
+;; (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+;; (when (and custom-file
+;;            (file-exists-p custom-file))
+;;   (load custom-file nil :nomessage))
 
 ;; Bootstrap crafted-emacs in init.el
 ;; Adds crafted-emacs modules to the `load-path', sets up a module
@@ -35,7 +35,6 @@
 
 (add-to-list 'load-path (expand-file-name "modules"
                                           user-emacs-directory))
-
 
 ;;; Packages phase
 ;; Collect list of packages to install. Do not just blindly copy this

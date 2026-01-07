@@ -88,6 +88,7 @@
    (service thermald-service-type)
    (service tlp-service-type
             (tlp-configuration
+             (start-charge-thresh-bat0 75)
 	     (stop-charge-thresh-bat0 80)
              ;; (cpu-boost-on-ac? #t)
              (wifi-pwr-on-bat? #t)))
@@ -107,8 +108,10 @@
    ;; Enable printing and scanning
    (service sane-service-type)
    (service cups-service-type
-            (cups-configuration (web-interface? #t)
-                                (extensions (list cups-filters))))
+            (cups-configuration
+             (web-interface? #t)
+             (extensions
+              (list cups-filters epson-inkjet-printer-escpr hplip-minimal)))) 
 
    ;; Add udev rules for MTP devices so that non-root users can access
    ;; them.
@@ -119,7 +122,10 @@
    (service x11-socket-directory-service-type)
 
    ;; Nix
-   (service nix-service-type)
+   (service nix-service-type
+            (nix-configuration
+             (extra-config
+              (list "experimental-features = nix-command flakes\n"))))
 
    ;; Schedule cron jobs for system tasks
    (simple-service 'system-cron-jobs mcron-service-type

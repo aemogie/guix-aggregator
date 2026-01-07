@@ -64,6 +64,7 @@
                      tree-sitter
                      video
                      vim
+                     vpn
                      web-browsers
                      wm
                      xdisorg
@@ -71,183 +72,189 @@
 
 (define my-home-environment
   (home-environment
-    (packages (list
-               ;; window manager
-               sway
-               swayidle
-               swaylock
-               foot
-               fuzzel
-               mako
-               grimshot
-               slurp
-               waybar
-               ;; wofi
-               ;; bemenu
+   (packages (list
+              ;; window manager
+              sway
+              swayidle
+              swaylock
+              foot
+              fuzzel
+              mako
+              grimshot
+              slurp
+              waybar
+              kanshi
+              brightnessctl
+              ;; wofi
+              ;; bemenu
 
-               unzip
+              unzip
 
-               ;; text editor
-               neovim
-               tree-sitter-cli
-               texlab
+              ;; text editor
+              neovim
+              tree-sitter-cli
+              texlab
 
-               ;; vscodium
-               
-               ;; media
-               inkscape
-               imv
-               ffmpeg
+              ;; vscodium
+              
+              ;; media
+              inkscape
+              imv
+              ffmpeg
 
-               ;; flatpak
-               flatpak
-               xdg-desktop-portal
-               ;; xdg-desktop-portal-gtk-sway
-               xdg-desktop-portal-wlr
-               xdg-utils ;For xdg-open, etc
-               flatpak-xdg-utils
-               xdg-dbus-proxy
-               shared-mime-info
-               (list glib "bin")
+              ;; flatpak
+              flatpak
+              xdg-desktop-portal
+              ;; xdg-desktop-portal-gtk-sway
+              xdg-desktop-portal-wlr
+              xdg-utils ;For xdg-open, etc
+              flatpak-xdg-utils
+              xdg-dbus-proxy
+              shared-mime-info
+              (list glib "bin")
 
-               ;; xwayland
-               xorg-server-xwayland
+              ;; xwayland
+              xorg-server-xwayland
 
-               ;; password manager
-               gnupg
-               ;; pinentry-emacs
-               password-store
+              ;; password manager
+              gnupg
+              ;; pinentry-emacs
+              password-store
 
-               ;; zsh
-               zsh
-               zsh-autosuggestions
-               zsh-completions
-               zsh-syntax-highlighting
+              ;; zsh
+              zsh
+              zsh-autosuggestions
+              zsh-completions
+              zsh-syntax-highlighting
 
-               ;; font
-               font-jetbrains-mono-nf
-               font-adobe-source-han-sans
-               font-google-noto-emoji
+              ;; font
+              font-jetbrains-mono-nf
+              font-adobe-source-han-sans
+              font-google-noto-emoji
 
-               ;; books, pdf & djvu
-               zathura
-               zathura-djvu
-               zathura-pdf-mupdf
-               okular
-               calibre
+              ;; books, pdf & djvu
+              zathura
+              zathura-djvu
+              zathura-pdf-mupdf
+              okular
+              calibre
 
-               qtwayland
+              qtwayland
 
-               ;; browsers
-               ;; ungoogled-chromium
-               librewolf
-               qutebrowser
+              ;; browsers
+              ;; ungoogled-chromium
+              librewolf
+              qutebrowser
 
-               ;; clipboard
-               ;; xclip
-               wl-clipboard
+              ;; clipboard
+              ;; xclip
+              wl-clipboard
 
-               ;; sync
-               rclone
+              ;; sync
+              rclone
 
-               ;; sound
-               pipewire
-               wireplumber-minimal
-               pulsemixer
+              ;; sound
+              pipewire
+              wireplumber-minimal
+              pulsemixer
 
-               ;; appearance
-               gnome-themes-extra
-               adwaita-icon-theme
+              ;; appearance
+              gnome-themes-extra
+              adwaita-icon-theme
 
-               ;; chinese language input
-               fcitx5
-               fcitx5-chinese-addons
-               fcitx5-configtool
-               fcitx5-gtk
-               fcitx5-qt
+              ;; chinese language input
+              fcitx5
+              fcitx5-chinese-addons
+              fcitx5-configtool
+              fcitx5-gtk
+              fcitx5-qt
 
-               ;; printers & scanners
-               hplip))
+              ;; printers & scanners
+              hplip
 
-    (services
-     (list (simple-service 'my-env-vars-service
-                           home-environment-variables-service-type
-                           `(("SHELL" unquote
-                              (file-append zsh "/bin/zsh"))
-                             ("PATH" . "$HOME/.local/bin:$PATH")
-                             ("GUIX_PROFILE" . "$HOME/.guix-profile")
+              ;; networking
+              openvpn
+              network-manager-openvpn))
 
-                             ;; Configure pinentry to use correct TTY
-                             ("GPG_TTY" . "$(tty)")
+   (services
+    (list (simple-service 'my-env-vars-service
+                          home-environment-variables-service-type
+                          `(("SHELL" unquote
+                             (file-append zsh "/bin/zsh"))
+                            ("PATH" . "$HOME/.local/bin:$PATH")
+                            ("GUIX_PROFILE" . "$HOME/.guix-profile")
 
-                             ;; Use XDG Specification
-                             ("PASSWORD_STORE_DIR" . "$XDG_DATA_HOME/pass")
+                            ;; Configure pinentry to use correct TTY
+                            ("GPG_TTY" . "$(tty)")
 
-                             ;; Fcitx5
-                             ("XMODIFIERS" . "@im=fcitx")
-                             ("GTK_IM_MODULE" . "fcitx")
-                             ("QT_IM_MODULE" . "fcitx")
+                            ;; Use XDG Specification
+                            ("PASSWORD_STORE_DIR" . "$XDG_DATA_HOME/pass")
 
-                             ;; Wayland-specific environment variables
-                             ("XDG_CURRENT_DESKTOP" . "sway")
-                             ("XDG_SESSION_TYPE" . "wayland")
-                             ("RTC_USE_PIPEWIRE" . "true")
-                             ("SDL_VIDEODRIVER" . "wayland")
-                             ("MOZ_ENABLE_WAYLAND" . "1")
-                             ("CLUTTER_BACKEND" . "wayland")
-                             ("ELM_ENGINE" . "wayland_egl")
-                             ("ECORE_EVAS_ENGINE" . "wayland-egl")
-                             ("QT_QPA_PLATFORM" . "wayland-egl")))
+                            ;; Fcitx5
+                            ("XMODIFIERS" . "@im=fcitx")
+                            ("GTK_IM_MODULE" . "fcitx")
+                            ("QT_IM_MODULE" . "fcitx")
 
-           (service home-zsh-service-type)
+                            ;; Wayland-specific environment variables
+                            ("XDG_CURRENT_DESKTOP" . "sway")
+                            ("XDG_SESSION_TYPE" . "wayland")
+                            ("RTC_USE_PIPEWIRE" . "true")
+                            ("SDL_VIDEODRIVER" . "wayland")
+                            ("MOZ_ENABLE_WAYLAND" . "1")
+                            ("CLUTTER_BACKEND" . "wayland")
+                            ("ELM_ENGINE" . "wayland_egl")
+                            ("ECORE_EVAS_ENGINE" . "wayland-egl")
+                            ("QT_QPA_PLATFORM" . "wayland-egl")))
 
-           (service home-dotfiles-service-type
-                    (home-dotfiles-configuration (directories (list (format #f
-                                                                            "~a/src/my-channel/anon/files"
-                                                                            (getenv
-                                                                             "HOME"))))))
-           ;; (excluded '(".*~" ".*\\.swp" "\\.git/.*" ".*/\\.git/.*" "\\.gitignore"))))
-           
-           (service home-dbus-service-type)
+          (service home-zsh-service-type)
 
-           (service home-pipewire-service-type)
+          (service home-dotfiles-service-type
+                   (home-dotfiles-configuration (directories (list (format #f
+                                                                           "~a/src/my-channel/anon/files"
+                                                                           (getenv
+                                                                            "HOME"))))))
+          ;; (excluded '(".*~" ".*\\.swp" "\\.git/.*" ".*/\\.git/.*" "\\.gitignore"))))
+          
+          (service home-dbus-service-type)
 
-           (service home-gpg-agent-service-type
-                    (home-gpg-agent-configuration (pinentry-program (file-append
-                                                                     pinentry
-                                                                     "/bin/pinentry-gtk-2"))
-                                                  (ssh-support? #t)
-                                                  (extra-content
-                                                   "enable-ssh-support")))
+          (service home-pipewire-service-type)
 
-           (service home-texlive-service-type)
+          (service home-gpg-agent-service-type
+                   (home-gpg-agent-configuration (pinentry-program (file-append
+                                                                    pinentry
+                                                                    "/bin/pinentry-gtk-2"))
+                                                 (ssh-support? #t)
+                                                 (extra-content
+                                                  "enable-ssh-support")))
 
-           ;; (service home-emacs-config-service-type)
+          (service home-texlive-service-type)
 
-           ;; (service (service-type (name 'home-xdg-desktop-portal)
-           ;; (extensions (list (service-extension
-           ;; home-profile-service-type
-           ;; (const (list
-           ;; xdg-desktop-portal
-           ;; xdg-desktop-portal-wlr)))
-           ;; (service-extension
-           ;; home-xdg-configuration-files-service-type
-           ;; (const `(("xdg-desktop-portal/portals.conf" ,
-           ;; (local-file
-           ;; "../files/.config/xdg-desktop-portal/portals.conf")))))))
-           ;; (default-value #f)
-           ;; (description #f)))
-           
-           (simple-service 'additional-channels-service
-                           home-channels-service-type
-                           (list (channel
-                                   (name 'nonguix)
-                                   (url "https://gitlab.com/nonguix/nonguix")
-                                   ;; Enable signature verification
-                                   (introduction
-                                    (make-channel-introduction
-                                     "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
-                                     (openpgp-fingerprint
-                                      "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))))))))
+          ;; (service home-emacs-config-service-type)
+
+          ;; (service (service-type (name 'home-xdg-desktop-portal)
+          ;; (extensions (list (service-extension
+          ;; home-profile-service-type
+          ;; (const (list
+          ;; xdg-desktop-portal
+          ;; xdg-desktop-portal-wlr)))
+          ;; (service-extension
+          ;; home-xdg-configuration-files-service-type
+          ;; (const `(("xdg-desktop-portal/portals.conf" ,
+          ;; (local-file
+          ;; "../files/.config/xdg-desktop-portal/portals.conf")))))))
+          ;; (default-value #f)
+          ;; (description #f)))
+          
+          (simple-service 'additional-channels-service
+                          home-channels-service-type
+                          (list (channel
+                                 (name 'nonguix)
+                                 (url "https://gitlab.com/nonguix/nonguix")
+                                 ;; Enable signature verification
+                                 (introduction
+                                  (make-channel-introduction
+                                   "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
+                                   (openpgp-fingerprint
+                                    "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))))))))
 
 my-home-environment

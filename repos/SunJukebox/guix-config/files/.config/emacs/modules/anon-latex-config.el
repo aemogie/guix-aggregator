@@ -145,7 +145,7 @@
         ))
 
 (use-package laas
-  :load-path "plugins/laas/"
+  :load-path "plugins/"
   :hook ((LaTeX-mode . laas-mode)
          (org-mode . laas-mode))
   :config
@@ -195,7 +195,7 @@
 
 ;; Make cdlatex play nice inside org tables
 (use-package lazytab
-  :load-path "plugins/lazytab/"
+  :load-path "plugins/"
   :bind (:map orgtbl-mode-map
               ("<tab>" . lazytab-org-table-next-field-maybe)
               ("TAB" . lazytab-org-table-next-field-maybe))
