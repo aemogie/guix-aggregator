@@ -60,8 +60,6 @@ A-up = ["extend_to_line_bounds", "delete_selection", "move_line_up", "paste_befo
 
 [keys.normal."+"]
 t = ":sh typst compile %{buffer_name} && hx-typ-zathura --watch --kill-on-exit %{buffer_name}"
-m = ":sh guix shell maven-bin icedtea -- mvn"
-M = ":sh guix shell maven-bin icedtea -- mvn && deploy-shadow-plugins"
 
 [keys.normal."@"]
 m = ":cd ~/projects/guile/misako"
@@ -84,14 +82,7 @@ p = ":sh guix pull --allow-downgrades"
 s = "@mammammammammammammammammammammammammammammammams\\(name<ret>f\";mim\"0y:sh guix show <C-r>0<ret>"
 # compute and replace HASH for PACKAGE where cursor is inside the definition
 h = "@mammammammammammammammammammammammammammammammams\\(name<ret>f\";mim\"0ymammammammammammammammammammammammammammammammams\\(base32<ret>f\";mimr0:w!<ret>|guix build -L. <C-r>0<ret>sactual hash: *<ret>lvgl<esc>\"0ymim\"0Rzz:w!<ret>;"
-# call personal committer
-c = [":sh ./committer"]
 # execute guix build on the current PACKAGE where cursor is inside the definition and display in-line
 b = "@mammammammammammammammammammammammammammammammams\\(name<ret>f\";mim\"0y:sh guix build -L. <C-r>0<ret>"
 # execute guix build on the current PACKAGE where cursor is inside the definition and display in a new vertical buffer window
 B = "@mammammammammammammammammammammammammammammammams\\(name<ret>f\";mim\"0y<space>wnv|guix build -L. <C-r>0<ret>"
-
-[keys.normal.g.c]
-S = ["yank_to_clipboard", ":pipe guix-style"]
-c = [":sh ./pre-inst-env etc/committer.scm"]
-i = [":pipe inherit-fix"]

@@ -1,0 +1,12 @@
+#!/bin/sh
+
+doas btrfs subvolume snapshot -r /home /snapshots/ssd/@home/"$(date '+%Y-%m-%d')"
+doas btrfs subvolume snapshot -r /home/look/has /snapshots/has/@has/"$(date '+%Y-%m-%d')"
+doas btrfs subvolume snapshot -r /home/look/books /snapshots/has/@books/"$(date '+%Y-%m-%d')"
+doas btrfs subvolume snapshot -r /home/look/desktop /snapshots/has/@desktop/"$(date '+%Y-%m-%d')"
+doas btrfs subvolume snapshot -r /home/look/documents /snapshots/has/@documents/"$(date '+%Y-%m-%d')"
+doas btrfs subvolume snapshot -r /home/look/downloads /snapshots/has/@downloads/"$(date '+%Y-%m-%d')"
+doas btrfs subvolume snapshot -r /home/look/images /snapshots/has/@images/"$(date '+%Y-%m-%d')"
+doas btrfs subvolume snapshot -r /home/look/music /snapshots/has/@music/"$(date '+%Y-%m-%d')"
+doas btrfs subvolume snapshot -r /home/look/projects /snapshots/has/@projects/"$(date '+%Y-%m-%d')"
+doas btrfs subvolume snapshot -r /home/look/videos /snapshots/has/@videos/"$(date '+%Y-%m-%d')"
