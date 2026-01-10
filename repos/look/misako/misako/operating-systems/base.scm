@@ -87,8 +87,7 @@
     (kernel linux)
     (kernel-arguments
       (list "loglevel=3"
-            "quiet"
-            "console=tty3"))
+            "quiet"))
 
     ;; We don't use any file-systems for the base operating-system
     (file-systems '())
@@ -102,6 +101,7 @@
 
     (users
       (cons* user:look
+             user:root
              %base-user-accounts))
 
     #|System level packages|#

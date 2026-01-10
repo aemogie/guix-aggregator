@@ -4,7 +4,7 @@ hook -group config global WinSetOption filetype=kak %{
 }
 
 #|Set kakrc's filetype to kak|#
-hook -group config global WinCreate 'kakrc' %{
+hook -group config global WinCreate '.*/(\.)?kakrc' %{
   set-option buffer filetype kak
 }
 

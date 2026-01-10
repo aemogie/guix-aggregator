@@ -39,7 +39,6 @@ set-option global rainbow_colors \
 #|Language specific settings|#
 source "%val{config}/rc/languages/c.kak"
 source "%val{config}/rc/languages/cpp.kak"
-source "%val{config}/rc/languages/hs.kak"
 source "%val{config}/rc/languages/kak.kak"
 source "%val{config}/rc/languages/scm.kak"
 source "%val{config}/rc/languages/sh.kak"

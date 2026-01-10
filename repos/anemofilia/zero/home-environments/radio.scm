@@ -69,7 +69,7 @@
               #|D|# packages:desktop packages:development packages:downloads
               #|F|# packages:file-managing
               #|I|# packages:image
-              #|M|# packages:mathematics packages:messaging packages:music
+              #|M|# packages:messaging packages:music
               #|P|# packages:password
               #|R|# packages:reading
               #|S|# packages:scheme packages:sound
@@ -245,8 +245,8 @@
                          (list fish-autopair
                                fish-puffer))
                        (environment-variables
-                         `(#|GNU Privacy Guard|#
-                           ("GPG_TTY" . "(tty)")
+                         `(#|Greeting|#
+                           ("fish_greeting" . #t)
 
                            #|Remind|#
                            ("DOTREMINDERS" . "$XDG_DATA_HOME/reminders")
@@ -260,11 +260,11 @@
                            ("diff" . "diff --color=auto")
                            ("grep" . "grep --color=auto")
                            ("ip" . "ip --color=auto")
-                           ("ls" . "ls --color=auto \
-                                       --group-directories-first \
-                                       --classify \
-                                       --human-readable \
-                                       -v")
+                           ("ls" . #s"ls --color=auto ~
+                                         --group-directories-first ~
+                                         --classify ~
+                                         --human-readable ~
+                                         -v")
                            ("tree" . "tree -CF --dirsfirst")
                            ("info" . "info --init-file $XDG_CONFIG_HOME/info")
 

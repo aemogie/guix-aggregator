@@ -58,7 +58,7 @@
     "(public-key
        (ecc
          (curve Ed25519)
-         (q #D5D0C1203D294B410DA106DDC1713B74CBB27353D53F4EE3D9D26972E8687424#)))"))
+         (q #43A41A58ADCB0F984FA8DEAC55CA7883A95219A1942BE21D443BB03B627FEA85#)))"))
 
 (define genenetwork.pub
   (plain-file "genenetwork.pub"

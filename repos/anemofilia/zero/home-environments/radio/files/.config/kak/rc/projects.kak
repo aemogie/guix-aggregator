@@ -1,3 +1,22 @@
+#|General|#
+hook -group projects global BufCreate '.*' %{
+  evaluate-commands %sh{
+    source_hidden_kakrcs() {
+      local dir="$1"
+      local hidden_kakrc="${dir}/.kakrc"
+      if [ "${dir}" != "/" ] && [ -f "${hidden_kakrc}" ]; then
+         source_hidden_kakrcs "$(dirname "${dir}")"
+         echo "
+           echo -debug \"sourcing ${hidden_kakrc}...\"
+           source \"${hidden_kakrc}\"
+           echo -debug \"done\"
+         "
+      fi
+    }
+    source_hidden_kakrcs "$(dirname "$kak_buffile")"
+  }
+}
+
 #|Radix|#
 declare-option str radix '~/areas/code/scm/radix'
 define-command -override radix \

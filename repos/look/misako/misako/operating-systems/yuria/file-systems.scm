@@ -1,12 +1,21 @@
 (define-module (misako operating-systems yuria file-systems)
   #:use-module (gnu system file-systems)
-  #:export (%btrfs-ephemeral-file-systems))
+  #:use-module (gnu system mapped-devices)
+  #:export (%btrfs-ephemeral-file-systems
+            %mapped-devices))
 
-(define guix-part
-  (uuid "3597c5bc-1a6e-4227-8ba1-2f3e5f3263e2"))
+;; cryptsetup luksUUID /dev/nvme0n1p2
+(define guix-device
+  (uuid "2098de54-2aa0-41a8-91d1-e0d92a8ffeb7"))
 
 (define efi-part
-  (uuid "7C80-2A6D" 'fat))
+  (uuid "67BA-1B94" 'fat))
+
+(define %mapped-devices
+  (list (mapped-device
+          (source guix-device)
+          (target "guix")
+          (type luks-device-mapping))))
 
 (define root
   (file-system
@@ -19,38 +28,42 @@
 
 (define home
   (file-system
-    (device guix-part)
+    (device (file-system-label "guix"))
     (type "btrfs")
     (mount-point "/home")
     (flags '(no-atime))
-    (options "subvol=@home,discard=async,ssd")))
+    (options "subvol=@home,discard=async,ssd")
+    (dependencies %mapped-devices)))
 
 (define snapshots
   (file-system
-    (device guix-part)
+    (device (file-system-label "guix"))
     (type "btrfs")
     (mount-point "/snapshots")
     (needed-for-boot? #t)
     (flags '(no-atime))
-    (options "compress=zstd,subvol=@snapshots")))
+    (options "compress=zstd,subvol=@snapshots")
+    (dependencies %mapped-devices)))
 
 (define root-user
   (file-system
-    (device guix-part)
+    (device (file-system-label "guix"))
     (type "btrfs")
     (mount-point "/root")
     (flags '(no-atime))
-    (options "subvol=@root,discard=async,ssd")))
+    (options "subvol=@root,discard=async,ssd")
+    (dependencies %mapped-devices)))
 
 (define boot
   (file-system
-    (device guix-part)
+    (device (file-system-label "guix"))
     (type "btrfs")
     (mount-point "/boot")
     (check? #f)
     (needed-for-boot? #t)
     (flags '(no-atime))
-    (options "subvol=@boot,discard=async,ssd")))
+    (options "subvol=@boot,discard=async,ssd")
+    (dependencies %mapped-devices)))
 
 (define boot-efi
   (file-system
@@ -86,58 +99,64 @@
 
 (define var-log
   (file-system
-    (device guix-part)
+    (device (file-system-label "guix"))
     (type "btrfs")
     (mount-point "/var/log")
     (check? #f)
     (needed-for-boot? #t)
     (flags '(no-atime))
-    (options "compress=zstd,subvol=@var/log,ssd")))
+    (options "compress=zstd,subvol=@var/log,ssd")
+    (dependencies %mapped-devices)))
 
 (define var-lib
   (file-system
-    (device guix-part)
+    (device (file-system-label "guix"))
     (type "btrfs")
     (mount-point "/var/lib")
     (needed-for-boot? #t)
     (flags '(no-atime))
-    (options "compress=zstd,subvol=@var/lib,ssd")))
+    (options "compress=zstd,subvol=@var/lib,ssd")
+    (dependencies %mapped-devices)))
 
 (define var-guix
   (file-system
-    (device guix-part)
+    (device (file-system-label "guix"))
     (type "btrfs")
     (mount-point "/var/guix")
     (needed-for-boot? #t)
     (flags '(no-atime))
-    (options "compress=zstd,subvol=@var/guix,ssd")))
+    (options "compress=zstd,subvol=@var/guix,ssd")
+    (dependencies %mapped-devices)))
 
 (define var-cache
   (file-system
-    (device guix-part)
+    (device (file-system-label "guix"))
     (type "btrfs")
     (mount-point "/var/cache")
     (needed-for-boot? #t)
     (flags '(no-atime))
-    (options "compress=zstd,subvol=@var/cache,ssd")))
+    (options "compress=zstd,subvol=@var/cache,ssd")
+    (dependencies %mapped-devices)))
 
 (define gnu-store
   (file-system
-    (device guix-part)
+    (device (file-system-label "guix"))
     (type "btrfs")
     (mount-point "/gnu/store")
     (needed-for-boot? #t)
     (flags '(read-only no-atime))
-    (options "compress=zstd,subvol=@gnu/store,ssd")))
+    (options "compress=zstd,subvol=@gnu/store,ssd")
+    (dependencies %mapped-devices)))
 
 (define gnu-persist
   (file-system
-    (device guix-part)
+    (device (file-system-label "guix"))
     (type "btrfs")
     (mount-point "/gnu/persist")
     (needed-for-boot? #t)
     (flags '(no-atime))
-    (options "subvol=@gnu/persist,ssd")))
+    (options "subvol=@gnu/persist,ssd")
+    (dependencies %mapped-devices)))
 
 (define gnu-persist-ssh
   (file-system

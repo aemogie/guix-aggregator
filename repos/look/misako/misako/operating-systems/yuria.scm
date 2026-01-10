@@ -54,6 +54,8 @@
 
     (file-systems %btrfs-ephemeral-file-systems)
 
+    (mapped-devices %mapped-devices)
+
     #|System-level Services|#
     (services
       (cons*

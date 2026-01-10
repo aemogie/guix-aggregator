@@ -258,8 +258,8 @@ riverctl rule-add -app-id 'imv' ssd
 TELEGRAM_WIDTH=$(qalc -t "${DISPLAY_WIDTH}*7/24")
 TELEGRAM_HEIGHT=$(qalc -t "${DISPLAY_HEIGHT}*19/20")
 TELEGRAM_H_POSITION=$(qalc -t "(${DISPLAY_WIDTH}-${TELEGRAM_WIDTH})/2")
-riverctl rule-add -app-id 'org.telegram' position ${TELEGRAM_H_POSITION} 32
-riverctl rule-add -app-id 'org.telegram' dimensions ${TELEGRAM_WIDTH} ${TELEGRAM_HEIGHT}
-riverctl rule-add -app-id 'org.telegram' float
-riverctl rule-add -app-id 'org.telegram' ssd
-riverctl rule-add -app-id 'org.telegram' tags ${scratch_tag}
+riverctl rule-add -app-id 'org.telegram.desktop' position ${TELEGRAM_H_POSITION} 32
+riverctl rule-add -app-id 'org.telegram.desktop' dimensions ${TELEGRAM_WIDTH} ${TELEGRAM_HEIGHT}
+riverctl rule-add -app-id 'org.telegram.desktop' float
+riverctl rule-add -app-id 'org.telegram.desktop' ssd
+riverctl rule-add -app-id 'org.telegram.desktop' tags ${scratch_tag}

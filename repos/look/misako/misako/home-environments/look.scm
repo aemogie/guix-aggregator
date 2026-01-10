@@ -53,7 +53,7 @@
 (define look
   (nvidia-home-environment
     (packages
-      (glist packages:bar
+      (list* packages:bar
              packages:browser
              packages:clipboard
              packages:compression
@@ -107,8 +107,6 @@
                     ssh-host:gitlab
                     ssh-host:forgejo
                     ; HERE !!!
-                    ; ssh-host:shadow-primary
-                    ; ssh-host:shadow-secondary
                     ssh-host:yumiko))))
 
         (service home-gpg-agent-service-type

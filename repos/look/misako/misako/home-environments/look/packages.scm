@@ -280,8 +280,7 @@
   (list helix))
 
 (define video
-  (list mpvpaper-minimal
-        mpv-minimal/wayland
+  (list mpv-minimal/wayland
         yt-dlp
         obs-pipewire-audio-capture
         (yumiko?* ffmpeg/nvidia obs-nvidia nvidia-vaapi-driver)

@@ -27,7 +27,7 @@
   #:export (nvidia-operating-system
             nvidia-home-environment
             obs-nvenc
-            glist
+            list*
             misako-dir
             yumiko-dir
             yuria-dir
@@ -108,7 +108,7 @@
                   (flatten-package-list tail)))
          (else (list x))))
 
-(define glist
+(define list*
   (compose flatten-package-list list))
 
 (define-syntax-rule (nvidia-home-environment exp ...)

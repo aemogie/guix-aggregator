@@ -6,7 +6,7 @@ editor = hx
 hookspath = ~/.config/git/hooks
 
 [commit]
-gpgsign = false
+gpgsign = true
 
 [user]
 signingkey = 8B37296FCE5C491047373BAA3BF514F584DC25AD

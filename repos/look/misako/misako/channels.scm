@@ -12,8 +12,8 @@
 (define guix
   (channel
     (name 'guix)
-    (url "https://codeberg.org/guix/guix")
-    (branch "master")
+    (url "https://codeberg.org/look/guix")
+    (branch "hyprland-updates-12-2")
     (introduction
       (make-channel-introduction
         "9edb3f66fd807b096b48283debdcddccfea34bad"

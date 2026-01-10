@@ -4,17 +4,19 @@
   #:use-module (gnu system accounts)
   #:use-module (guix gexp)
   #:use-module (misako utils)
-  #:export (look))
+  #:export (look
+            root))
 
 (define look
   (user-account
     (name "look")
-    (password "9nQFJ2Nui/G5U")
+    (password "$6$abcds$VKYeQ3Zd5x6WO45Jniq1nOr5eWOBOoaup19xIjQtXBZujNoyUwnPBla6pUwD0aqw1lHUGGVJsBU19IjoYjy7D.")
+    (home-directory "/home/look")
     (shell (file-append fish "/bin/fish"))
     (uid 1000)
     (group "users")
     (supplementary-groups
-      (glist "audio"
+      (list* "audio"
              "seat"
              "input"
              "video"
@@ -22,3 +24,12 @@
              "kvm"
              (yumiko?* "tablet"
                        "usb")))))
+
+(define root
+  (user-account
+    (name "look")
+    (password "$6$abcdk$EUmJC3KLnuXaW3vOHZcec4ogcPG.NqpV/AXHz.h.5Ul5ruLCZ91E696Q0rRzQnBaT.srJXXyp2zH5fqR.IG0F.")
+    (home-directory "/root")
+    (shell (file-append bash "/bin/bash"))
+    (uid 0)
+    (group "root")))
