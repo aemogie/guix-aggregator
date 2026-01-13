@@ -33,6 +33,7 @@
 
 * Bootloader & Kernel
 #+begin_src scheme :noweb-ref module
+  (nongnu packages linux)
   (rosenthal services file-systems)
 #+end_src
 
@@ -50,6 +51,7 @@
 FIXME: Using =microcode-initrd= will make the system image unbootable.
 #+begin_src scheme :noweb-ref transformation
   (nonguix-transformation-linux
+   #:linux linux-lts
    #:initrd base-initrd)
 #+end_src
 

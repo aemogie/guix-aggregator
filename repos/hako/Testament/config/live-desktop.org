@@ -18,63 +18,7 @@
       (bootloader <<bootloader>>)
       (file-systems %base-file-systems)
       (users (cons* <<user>> %base-user-accounts))
-      (skeletons
-       (append `(;; Hide a few desktop entries from the application launcher.
-                 ;; emacs
-                 (".local/share/applications/emacsclient.desktop"
-                  ,(hidden-desktop-entry "emacsclient.desktop"
-                     (file-append (specification->package "emacs-pgtk")
-                                  "/share/applications/emacsclient.desktop")))
-                 ;; fcitx5
-                 (".local/share/applications/org.fcitx.Fcitx5.desktop"
-                  ,(hidden-desktop-entry "org.fcitx.Fcitx5.desktop"
-                     (file-append (specification->package "fcitx5")
-                                  "/share/applications/org.fcitx.Fcitx5.desktop")))
-                 (".local/share/applications/kbd-layout-viewer5.desktop"
-                  ,(hidden-desktop-entry "kbd-layout-viewer5.desktop"
-                     (file-append (specification->package "fcitx5-configtool")
-                                  "/share/applications/kbd-layout-viewer5.desktop")))
-                 (".local/share/applications/org.fcitx.fcitx5-migrator.desktop"
-                  ,(hidden-desktop-entry "org.fcitx.fcitx5-migrator.desktop"
-                     (file-append (specification->package "fcitx5-configtool")
-                                  "/share/applications/org.fcitx.fcitx5-migrator.desktop")))
-                 ;; fish
-                 (".local/share/applications/fish.desktop"
-                  ,(hidden-desktop-entry "fish.desktop"
-                     (file-append (specification->package "fish")
-                                  "/share/applications/fish.desktop")))
-                 ;; foot
-                 (".local/share/applications/foot-server.desktop"
-                  ,(hidden-desktop-entry "foot-server.desktop"
-                     (file-append (specification->package "foot")
-                                  "/share/applications/foot-server.desktop")))
-                 (".local/share/applications/footclient.desktop"
-                  ,(hidden-desktop-entry "footclient.desktop"
-                     (file-append (specification->package "foot")
-                                  "/share/applications/footclient.desktop")))
-                 ;; rofi
-                 (".local/share/applications/rofi.desktop"
-                  ,(hidden-desktop-entry "rofi.desktop"
-                     (file-append (specification->package "rofi")
-                                  "/share/applications/rofi.desktop")))
-                 (".local/share/applications/rofi-theme-selector.desktop"
-                  ,(hidden-desktop-entry "rofi-theme-selector.desktop"
-                     (file-append (specification->package "rofi")
-                                  "/share/applications/rofi-theme-selector.desktop")))
-                 ;; thunar
-                 (".local/share/applications/thunar-bulk-rename.desktop"
-                  ,(hidden-desktop-entry "thunar-bulk-rename.desktop"
-                     (file-append (specification->package "thunar")
-                                  "/share/applications/thunar-bulk-rename.desktop")))
-                 (".local/share/applications/thunar-volman-settings.desktop"
-                  ,(hidden-desktop-entry "thunar-volman-settings.desktop"
-                     (file-append (specification->package "thunar-volman")
-                                  "/share/applications/thunar-volman-settings.desktop")))
-                 (".local/share/applications/org.gnome.FileRoller.desktop"
-                  ,(hidden-desktop-entry "org.gnome.FileRoller.desktop"
-                     (file-append (specification->package "file-roller")
-                                  "/share/applications/org.gnome.FileRoller.desktop"))))
-               %rosenthal-skeletons))
+      (skeletons %rosenthal-skeletons)
       (packages
        (append (specifications->packages '(<<package>>))
                (list %rosenthal-set-keymap)
@@ -98,6 +42,7 @@
 
 * Bootloader & Kernel
 #+begin_src scheme :noweb-ref module
+  (nongnu packages linux)
   (rosenthal services file-systems)
 #+end_src
 
@@ -115,6 +60,7 @@
 FIXME: Using =microcode-initrd= will make the system image unbootable.
 #+begin_src scheme :noweb-ref transformation
   (nonguix-transformation-linux
+   #:linux linux-lts
    #:initrd base-initrd)
 #+end_src
 
@@ -207,6 +153,7 @@ Lock channels to avoid building Guix when using the LiveCD.
   "foot"                                  ;terminal emulator
   "imv"                                   ;image viewer
   "light"                                 ;brightness control
+  "playerctl"                             ;media control
   "pavucontrol"                           ;sound settings
   "rofi"                                  ;application launcher
   "wireplumber"                           ;PipeWire session manager
@@ -218,20 +165,17 @@ Lock channels to avoid building Guix when using the LiveCD.
   "thunar"
   "thunar-archive-plugin"
   "thunar-media-tags-plugin"
-  "thunar-vcs-plugin"
   "thunar-volman"
+  "tumbler"
   "unzip"
 
   ;; Web browser.
   "librewolf"
-  "adaptive-tab-bar-colour-icecat"
-  "ohmyech-icecat"
   "ublock-origin-icecat"
 
   ;; XDG Desktop Portal packages for niri.
-  "xdg-desktop-portal"
-  "xdg-desktop-portal-gtk"
   "xdg-desktop-portal-gnome"
+  "xdg-desktop-portal-gtk"
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service

@@ -71,6 +71,10 @@ binds {
     XF86AudioLowerVolume  allow-when-locked=true { spawn "$$bin/wpctl$$" "set-volume" "@DEFAULT_AUDIO_SINK@"   "0.1-"; }
     XF86AudioMute         allow-when-locked=true { spawn "$$bin/wpctl$$" "set-mute"   "@DEFAULT_AUDIO_SINK@"   "toggle"; }
     XF86AudioMicMute      allow-when-locked=true { spawn "$$bin/wpctl$$" "set-mute"   "@DEFAULT_AUDIO_SOURCE@" "toggle"; }
+    XF86AudioPlay         allow-when-locked=true { spawn "$$bin/playerctl$$" "play-pause"; }
+    XF86AudioStop         allow-when-locked=true { spawn "$$bin/playerctl$$" "stop"; }
+    XF86AudioPrev         allow-when-locked=true { spawn "$$bin/playerctl$$" "previous"; }
+    XF86AudioNext         allow-when-locked=true { spawn "$$bin/playerctl$$" "next"; }
     XF86MonBrightnessDown allow-when-locked=true { spawn "$$bin/light$$" "-U" "5"; }
     XF86MonBrightnessUp   allow-when-locked=true { spawn "$$bin/light$$" "-A" "5"; }
 

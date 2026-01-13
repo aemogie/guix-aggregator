@@ -2,8 +2,6 @@
 ;; "desktop" setup using niri window manager, with driver set up for NVIDIA
 ;; graphics card and applications configured.
 
-;; Note where the `replace-mesa' procedure is used.
-
 (use-modules (nonguix transformations)
              (rosenthal)
              (gnu home services fontutils)
@@ -66,79 +64,76 @@
     (skeletons %rosenthal-skeletons)
 
     (packages
-     (replace-mesa
-      (append (specifications->packages
-               '("niri"
-                 "wl-clipboard"
+     (append (specifications->packages
+              '("niri"
+                "wl-clipboard"
 
-                 "foot"               ;terminal emulator
-                 "imv"                ;image viewer
-                 "light"              ;brightness control
-                 "pavucontrol"        ;sound settings
-                 "rofi"               ;application launcher
-                 "wireplumber"        ;PipeWire session manager
-                 "xwayland-satellite" ;rootless XWayland integration
+                "foot"               ;terminal emulator
+                "imv"                ;image viewer
+                "light"              ;brightness control
+                "playerctl"          ;media control
+                "pavucontrol"        ;sound settings
+                "rofi"               ;application launcher
+                "wireplumber"        ;PipeWire session manager
+                "xwayland-satellite" ;rootless XWayland integration
 
-                 ;; File manager.
-                 "exo"
-                 "file-roller"
-                 "thunar"
-                 "thunar-archive-plugin"
-                 "thunar-media-tags-plugin"
-                 "thunar-vcs-plugin"
-                 "thunar-volman"
-                 "unzip"
+                ;; File manager.
+                "exo"
+                "file-roller"
+                "thunar"
+                "thunar-archive-plugin"
+                "thunar-media-tags-plugin"
+                "thunar-volman"
+                "tumbler"
+                "unzip"
 
-                 ;; Web browser.
-                 "librewolf"
-                 "adaptive-tab-bar-colour-icecat"
-                 "ohmyech-icecat"
-                 "ublock-origin-icecat"
+                ;; Web browser.
+                "librewolf"
+                "ublock-origin-icecat"
 
-                 ;; XDG Desktop Portal packages for niri.
-                 "xdg-desktop-portal"
-                 "xdg-desktop-portal-gtk"
-                 "xdg-desktop-portal-gnome"
+                ;; XDG Desktop Portal packages for niri.
+                "xdg-desktop-portal-gnome"
+                "xdg-desktop-portal-gtk"
 
-                 ;; Fonts
-                 "font-adobe-source-serif"
-                 "font-awesome"
-                 "font-google-noto"
-                 "font-google-noto-emoji"
-                 "font-google-noto-sans-cjk"
-                 "font-google-noto-serif-cjk"
-                 "font-victor-mono"
+                ;; Fonts
+                "font-adobe-source-serif"
+                "font-awesome"
+                "font-google-noto"
+                "font-google-noto-emoji"
+                "font-google-noto-sans-cjk"
+                "font-google-noto-serif-cjk"
+                "font-victor-mono"
 
-                 ;; Text editors
-                 "emacs-pgtk"
-                 "neovim"
+                ;; Text editors
+                "emacs-pgtk"
+                "neovim"
 
-                 "emacs-corfu"
-                 "emacs-daemons"
-                 "emacs-doom-modeline"
-                 "emacs-envrc"
-                 "emacs-flycheck"
-                 "emacs-flycheck-guile"
-                 "emacs-forge"
-                 "emacs-gcmh"
-                 "emacs-geiser"
-                 "emacs-geiser-guile"
-                 "emacs-helpful"
-                 "emacs-hl-todo"
-                 "emacs-macrostep"
-                 "emacs-magit"
-                 "emacs-mwim"
-                 "emacs-no-littering"
-                 "emacs-orderless"
-                 "emacs-puni"
-                 "emacs-rainbow-delimiters"
-                 "emacs-vertico"
+                "emacs-corfu"
+                "emacs-daemons"
+                "emacs-doom-modeline"
+                "emacs-envrc"
+                "emacs-flycheck"
+                "emacs-flycheck-guile"
+                "emacs-forge"
+                "emacs-gcmh"
+                "emacs-geiser"
+                "emacs-geiser-guile"
+                "emacs-helpful"
+                "emacs-hl-todo"
+                "emacs-macrostep"
+                "emacs-magit"
+                "emacs-mwim"
+                "emacs-no-littering"
+                "emacs-orderless"
+                "emacs-puni"
+                "emacs-rainbow-delimiters"
+                "emacs-vertico"
 
-                 ;; Commonly-used utilities.
-                 "curl"
-                 "git"
-                 "rsync"))
-              %base-packages)))
+                ;; Commonly-used utilities.
+                "curl"
+                "git"
+                "rsync"))
+             %base-packages))
 
     (services
      (cons* (service guix-home-service-type
@@ -230,8 +225,8 @@
                             %rosenthal-desktop-home-services))))))
             %rosenthal-desktop-services))))
 
-((compose (nonguix-transformation-nvidia)
-          (nonguix-transformation-linux)
+((compose (nonguix-transformation-linux)
+          (nonguix-transformation-nvidia)
           (nonguix-transformation-guix)
           (rosenthal-transformation-guix))
  %my-os)

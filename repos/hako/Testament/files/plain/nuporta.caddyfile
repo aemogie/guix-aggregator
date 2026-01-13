@@ -114,6 +114,18 @@ logs.urspace.moe {
 	reverse_proxy localhost:50968
 }
 
+# Mail
+mta-sts.boiledscript.com {
+	handle /.well-known/mta-sts.txt {
+		respond <<EOF
+		version: STSv1
+		mode: testing
+		mx: mail.boiledscript.com
+		max_age: 604800
+		EOF 200
+	}
+}
+
 # Mimir
 metrics.urspace.moe {
 	import block_bots

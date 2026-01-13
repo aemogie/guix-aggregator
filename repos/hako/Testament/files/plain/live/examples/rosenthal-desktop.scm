@@ -70,6 +70,7 @@
                 "foot"               ;terminal emulator
                 "imv"                ;image viewer
                 "light"              ;brightness control
+                "playerctl"          ;media control
                 "pavucontrol"        ;sound settings
                 "rofi"               ;application launcher
                 "wireplumber"        ;PipeWire session manager
@@ -81,20 +82,17 @@
                 "thunar"
                 "thunar-archive-plugin"
                 "thunar-media-tags-plugin"
-                "thunar-vcs-plugin"
                 "thunar-volman"
+                "tumbler"
                 "unzip"
 
                 ;; Web browser.
                 "librewolf"
-                "adaptive-tab-bar-colour-icecat"
-                "ohmyech-icecat"
                 "ublock-origin-icecat"
 
                 ;; XDG Desktop Portal packages for niri.
-                "xdg-desktop-portal"
-                "xdg-desktop-portal-gtk"
                 "xdg-desktop-portal-gnome"
+                "xdg-desktop-portal-gtk"
 
                 ;; Fonts
                 "font-adobe-source-serif"
