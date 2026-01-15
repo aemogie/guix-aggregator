@@ -1,10 +1,10 @@
 ;; This is an operating system configuration template for a "desktop" setup
 ;; without full-blown desktop environments.
 
-(use-modules (nonguix transformations)
-             (rosenthal)
-
-             (gnu system nss))
+(use-modules (gnu)
+             (nonguix transformations)
+             (gnu system nss)
+             (gnu services desktop))
 
 (define %my-os
   (operating-system
@@ -56,6 +56,5 @@
     (name-service-switch %mdns-host-lookup-nss)))
 
 ((compose (nonguix-transformation-linux)
-          (nonguix-transformation-guix)
-          (rosenthal-transformation-guix))
+          (nonguix-transformation-guix))
  %my-os)

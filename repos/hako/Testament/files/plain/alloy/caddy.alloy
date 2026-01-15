@@ -24,7 +24,16 @@ local.file_match "logs_caddy" {
     }]
 }
 
+loki.process "logs_caddy_process" {
+    forward_to = [loki.write.logs.receiver]
+
+    stage.drop {
+        drop_counter_reason = "status.guix.moe"
+        expression          = ".*zma66hlgwmkjf2hdmi2ik8fx2y13c965.*"
+    }
+}
+
 loki.source.file "logs_caddy" {
     targets    = local.file_match.logs_caddy.targets
-    forward_to = [loki.write.logs.receiver]
+    forward_to = [loki.process.logs_caddy_process.receiver]
 }

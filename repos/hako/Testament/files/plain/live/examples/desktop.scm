@@ -2,11 +2,11 @@
 ;; with GNOME and Xfce where the root partition is encrypted with LUKS, and a
 ;; swap file.
 
-(use-modules (nonguix transformations)
-             (rosenthal)
-
+(use-modules (gnu)
+             (guix utils)
+             (nonguix transformations)
              (gnu system nss)
-
+             (gnu services desktop)
              (gnu services sddm)
              (gnu services xorg))
 
@@ -98,6 +98,5 @@
     (name-service-switch %mdns-host-lookup-nss)))
 
 ((compose (nonguix-transformation-linux)
-          (nonguix-transformation-guix)
-          (rosenthal-transformation-guix))
+          (nonguix-transformation-guix))
  %my-os)

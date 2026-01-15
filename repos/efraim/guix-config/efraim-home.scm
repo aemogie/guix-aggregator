@@ -141,6 +141,7 @@
         "aspell-dict-he"
         "bidiv"
         "bash-completion"
+        "codespell"
         "file"
         "git"
         "git:send-email"
@@ -161,7 +162,6 @@
         "nss-certs"
         "openssh"
         "parallel"
-        "python-codespell"
         "qrencode"
         "rsync"
         "sequoia"
@@ -486,7 +486,8 @@
     "mpv.conf"
     (string-join
       (list "no-audio-display"
-            ;; Upscaling from 720 causes fewer dropped frames.
+            ;; https://github.com/yt-dlp/yt-dlp?tab=readme-ov-file#format-selection
+            ;; Upscaling from 720 causes fewer dropped frames on many machines.
             "ytdl-format='bv*[height<=720]+ba/b[height<=720]/bv*[height<=1080]+ba/b[height<1080]/bv+ba/b'"
             "gpu-context=wayland"
             "[youtube]"
@@ -748,15 +749,18 @@
       ;; End with a newline.
       "\n" 'suffix)))
 
-(define %ytdl-config
+(define %ytdlp-config
   (plain-file
-    "youtube-dl-config"
+    "ytdlp-config"
     (string-join
       (list "--prefer-free-formats"
             "--sub-lang 'en,he'"
             "--sub-format \"srt/best\""
             "--convert-subtitles srt"
-            "--restrict-filenames")
+            "--restrict-filenames"
+            ;(string-append "--js-runtimes quickjs:" (S "quickjs") "/bin/qjs")
+            ;(string-append "--js-runtimes node:" (S "node") "/bin/node")
+            )
       ;; End with a newline.
       "\n" 'suffix)))
 
@@ -1409,8 +1413,7 @@ fi")))))
            ("streamlink/config" ,%streamlink-config)
            ;("tig/config" ,%tig-config)
            ("user-dirs.dirs" ,%xdg-user-dirs)
-           ("youtube-dl/config" ,%ytdl-config)
-           ("yt-dlp/config" ,%ytdl-config)
+           ("yt-dlp/config" ,%ytdlp-config)
            ("zathura/zathurarc" ,%zathurarc)))))))
 
 (define efraim-offload-home-environment
@@ -1527,8 +1530,7 @@ fi")))))
            ;("qutebrowser/config.py" ,%qutebrowser-config-py)
            ("streamlink/config" ,%streamlink-config)
            ("user-dirs.dirs" ,%xdg-user-dirs)
-           ("youtube-dl/config" ,%ytdl-config)
-           ("yt-dlp/config" ,%ytdl-config)))))))
+           ("yt-dlp/config" ,%ytdlp-config)))))))
 
 (if guix-system?
   guix-system-home-environment

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023, 2024, 2025 Hilton Chain <hako@ultrarare.space>
+# SPDX-FileCopyrightText: 2023-2026 Hilton Chain <hako@ultrarare.space>
 # SPDX-License-Identifier: CC0-1.0
 
 #+TITLE: Testament - Personal dot(?)files
@@ -10,6 +10,8 @@ This repository contains my dotfiles and Guix System literate configurations.
 + [[file:files/deploy][files/deploy]] :: Configurations for ~guix deploy~.
 + [[file:files/dotfiles][files/dotfiles]] :: Dotfiles for =home-dotfiles-service-type=.
 + [[file:files/plain][files/plain]] :: Files to be referenced in configurations.
++ [[file:modules][modules]] :: Guile libraries (e.g. Guix System installer) forked from other
+  projects.
 
 See [[file:Makefile][Makefile]] for usage.
 
@@ -36,13 +38,61 @@ Build workers for Guix Moe CI.
 ** [[file:config/mirror.org][mirror]] | [[file:files/deploy/mirror.scm][deploy]]
 Substitute mirrors for Guix Moe CI.
 
-* LiveCDs
-I provide two LiveCDs for the [[https://guix.gnu.org/manual/devel/en/html_node/Manual-Installation.html][manual installation]] of Guix System.  Pre-built
-images are available for x86_64-linux: https://files.boiledscript.com/livecd/
+* [[file:files/plain/live][LiveCDs]]
+I provide Guix System installation LiveCDs in this repository, pre-built images
+below.  The HiDPI variant uses a larger console font.
 
-These LiveCDs use [[https://fishshell.com/][fish]] as the login shell.  NetworkManager is available for
-network configuration.  A ~set-keymap~ script is provided for keyboard setup of
-both LiveCDs.
+| Variant | System       | Image       | Signature       | SHA256 Checksum                                                    |
+|---------+--------------+-------------+-----------------+--------------------------------------------------------------------|
+| Default | x86_64-linux | [[https://files.guix.moe/2026-01-14/x86_64-linux/rosenthal-default-20260114-x86_64-linux.iso][default.iso]] | [[https://files.guix.moe/2026-01-14/x86_64-linux/rosenthal-default-20260114-x86_64-linux.iso.asc][default.iso.asc]] | =ffb5dca3cd046ab32f4ffda244d7107eef9d91f0c0383259d305ec2b2fc739e8= |
+| HiDPI   | x86_64-linux | [[https://files.guix.moe/2026-01-14/x86_64-linux/rosenthal-hidpi-20260114-x86_64-linux.iso][hidpi.iso]]   | [[https://files.guix.moe/2026-01-14/x86_64-linux/rosenthal-hidpi-20260114-x86_64-linux.iso.asc][hidpi.iso.asc]]   | =a21d180e1ff8e3b03fb807edb2cfce2d211c645c42014633df601d829eb9e813= |
+
+Once downloaded, follow Guix System's [[https://guix.gnu.org/manual/devel/en/html_node/System-Installation.html][installation instructions]].
+
+Comparing with the official one, these LiveCDs integrate Linux kernel and
+nonfree firmwares from the [[https://gitlab.com/nonguix/nonguix][Nonguix channel]] to support more hardware.  The
+experience should be the same as installing on hardware that supports
+Linux-Libre.
+
+To provide similiar downloading experience around the world, they are configured
+to use [[https://guix.moe/][Guix Moe's infrastructure]].  It won't be available in the installed
+system, so you'll need to set it up in the new system if you want.
+
+For manual installation, I suggest using the installer first to configure
+locale, keyboard layout and networking, stopping at the step setting a password.
+In the LiveCDs, [[https://fishshell.com/][fish]] is chosen as the login shell and several examples
+configurations are available under =/etc/configuration= ([[file:files/plain/live/examples][in this repository as
+well]]).
+
+Most of the examples are based on the ones shipped in Guix, configured with
+Nonguix channel.  Examples created by me (those with =rosenthal= prefix) also
+includes my [[https://codeberg.org/hako/rosenthal.git][Rosenthal channel]].  Note that the Rosenthal channel is unstable.
+
+Here follows ttys in the LiveCDs:
+- tty1 (=Ctrl + Alt + F1=) :: Guix System installer.
+- tty2 (=Ctrl + Alt + F2=) :: [[https://guix.gnu.org/manual/devel/en/][GNU Guix reference manual]].
+- tty3~6 (=Ctrl + Alt + F3= ~ =Ctrl + Alt + F6=) :: =root= shell.
+- tty7 (=Ctrl + Alt + F7=) :: Login manager.
+- tty12 (=Ctrl + Alt + F12=) :: System log.
+
+For the login manager: it logs into a desktop environment built around the [[https://github.com/YaLTeR/niri][niri]]
+Wayland compositor
+
+Default keybindings:
++ =Super + Shift + /= :: Open an overlay for available hotkeys.
++ =Super + T= :: Open terminal emulator: [[https://codeberg.org/dnkl/foot][foot]].
++ =Super + D= :: Open application launcher: [[https://github.com/davatorium/rofi][rofi]].
+
+[[https://codeberg.org/hako/Rosenthal/src/branch/trunk/modules/rosenthal/examples][Configurations files for the environment]], including a pre-configured Emacs text
+editor are managed in the Rosenthal channel, exposed as =%rosenthal-skeletons=
+and available under =/etc/skel= when configured.
+
+#+html: <img src="https://s3.boiledscript.com/misskey/ffe3522a-991f-452e-addb-fa47b6acc6bc.webp">
+#+html: <img src="https://s3.boiledscript.com/misskey/10c08444-f3f6-4c45-a1e2-3fcdd3a3810e.webp">
+#+html: <img src="https://s3.boiledscript.com/misskey/46995f8b-41fb-4b53-af2f-8353d5c6bd2d.webp">
+
+A ~set-keymap~ script is provided for keyboard layout setup.  Since the
+installer already does part of its work, you generally don't need it.
 
 #+begin_example
   Usage: set-keymap LAYOUT [VARIANT] [-m MODEL] [-o OPTIONS]
@@ -50,7 +100,8 @@ both LiveCDs.
   OPTIONS are comma-separated e.g. "ctrl:nocaps,grp:alt_shift_toggle"
 #+end_example
 
-Example usage below:
+Example usage below
+
 #+begin_example
   $ set-keymap us dvorak -o ctrl:nocaps
 #+end_example
@@ -58,49 +109,11 @@ Example usage below:
 For a full list of available layouts, variants, models and options, refer to the
 [[https://man.archlinux.org/man/extra/xkeyboard-config/xkeyboard-config.7.en][xkeyboard-config.7]] manual page.
 
-This repository includes several [[file:files/plain/live/examples][Guix System configuration examples]], they are
-available in the LiveCDs as well, under the =/etc/configuration= directory.
-Most of the examples are based on the templates included in Guix source tree.
-
-Two external channels, [[https://gitlab.com/nonguix/nonguix][Nonguix]] and [[https://codeberg.org/hako/rosenthal.git][Rosenthal]], are configured via their
-transformation interfaces (TODO documentation), so you can add and remove these
-channels from the configurations easily.
-
-Examples created by me (with a =rosenthal-= prefix in file names) are replicated
-from the LiveCD(s) and they have hard dependency on the Rosenthal channel.
-Since Rosenthal is still unstable, they are considered experimental.
-
-** [[file:config/live-console.org][console]]
-Username: =live=, password: =rosenthal=.
-
-To facilitate remote installation, this LiveCD starts a SSH daemon.  Remember to
-change the password when logged in if the machine is exposed to the Internet ;)
-
-#+html: <img src="https://s3.boiledscript.com/misskey/a666efc8-71e7-4b82-8385-131bab46d234.webp">
-
-** [[file:config/live-desktop.org][desktop]]
-Username: =live=, no password.
-
-This LiveCD provides a pre-configured Emacs text editor and a desktop
-environment built around the [[https://github.com/YaLTeR/niri][niri]] Wayland compositor.  [[https://codeberg.org/hako/Rosenthal/src/branch/trunk/modules/rosenthal/examples][Configurations files for
-the environment]] are managed in the Rosenthal channel, exposed as the
-=%rosenthal-skeletons= variable and available under =/etc/skel= in LiveCD and
-the final system if configured.
-
-Default keybindings:
-+ =Super + Shift + /= :: Open an overlay for available hotkeys.
-+ =Super + T= :: Open terminal emulator, [[https://codeberg.org/dnkl/foot][foot]] is used.
-+ =Super + D= :: Open application launcher, [[https://github.com/davatorium/rofi][rofi]] is used.
-
-#+html: <img src="https://s3.boiledscript.com/misskey/ffe3522a-991f-452e-addb-fa47b6acc6bc.webp">
-#+html: <img src="https://s3.boiledscript.com/misskey/10c08444-f3f6-4c45-a1e2-3fcdd3a3810e.webp">
-#+html: <img src="https://s3.boiledscript.com/misskey/46995f8b-41fb-4b53-af2f-8353d5c6bd2d.webp">
-
 * Resources
 + [[https://files.spritely.institute/papers/scheme-primer.html][A Scheme Primer]] :: Nice short guide to get you started with Scheme.
-+ [[https://guix.gnu.org/manual/devel/en/guix.html][GNU Guix Reference Manual]] (~info guix~) :: See [[https://guix.gnu.org/manual/devel/en/html_node/Getting-Started.html][Getting Started]] if you want an
++ [[https://guix.gnu.org/manual/devel/en/][GNU Guix Reference Manual]] (~info "(guix)"~) :: See [[https://guix.gnu.org/manual/devel/en/html_node/Getting-Started.html][Getting Started]] if you want an
   entry point.
-+ [[https://guix.gnu.org/cookbook/en/guix-cookbook.html][GNU Guix Cookbook]] (~info guix-cookbook~) :: Tutorials and detailed examples.
++ [[https://guix.gnu.org/cookbook/en/guix-cookbook.html][GNU Guix Cookbook]] (~info "(guix-cookbook)"~) :: Tutorials and detailed examples.
   Some entries may be outdated, contribution is welcome ;)
 + [[https://guix.gnu.org/en/contact/][Contact — GNU Guix]] :: Official communication channels.
 + [[https://packages.guix.gnu.org/][Packages — GNU Guix]] :: Official package index, =guix= channel only (see

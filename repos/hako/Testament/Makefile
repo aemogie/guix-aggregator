@@ -61,11 +61,11 @@ run-%: config/%.scm
 	@$(GUIX) deploy files/deploy/$(notdir $<) $(OPTS) -x -- $(CMD)
 
 .PHONY: live
-live: live-console live-desktop
-live-%: config/live-%.scm
+live: live-default live-hidpi
+live-%: files/plain/live/%.scm
 	@mkdir --parents dist && \
-	cp "$(shell $(GUIX) system image --image-type=iso9660 $< $(OPTS))" \
-	"dist/guix-system-$(shell date +%Y%m%d)-$(notdir $(basename $<)).iso"
+	cp "$(shell guix system image --image-type=iso9660 -L modules/installer $< $(OPTS))" \
+	"dist/rosenthal-$(notdir $(basename $<))-$(shell date +%Y%m%d)-x86_64-linux.iso"
 
 .PHONY: authenticate
 # Authenticate commits.

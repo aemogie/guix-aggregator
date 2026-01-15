@@ -1,0 +1,220 @@
+From f0346064891e0650eb602e00fa0482a139f77b9f Mon Sep 17 00:00:00 2001
+From: Hilton Chain <hako@ultrarare.space>
+Date: Wed, 14 Jan 2026 18:45:22 +0800
+Subject: [PATCH] modules: installer: Set up Nonguix.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Don't use ‘check-hardware-support’.
+- Call %rosenthal-set-keymap script from the installer.
+- Add Nonguix kernel options.
+- Set up Nonguix channel in the final system.
+- WORKAROUND: Set Guile load paths to use modules from external channels.
+---
+ modules/installer/gnu/installer.scm           | 13 ++++-
+ modules/installer/gnu/installer/final.scm     |  2 +
+ modules/installer/gnu/installer/kernel.scm    | 29 ++++------
+ .../installer/gnu/installer/newt/kernel.scm   | 57 +++++--------------
+ .../installer/gnu/installer/newt/welcome.scm  |  4 +-
+ modules/installer/gnu/installer/steps.scm     | 20 +++++--
+ 6 files changed, 54 insertions(+), 71 deletions(-)
+
+diff --git a/modules/installer/gnu/installer.scm b/modules/installer/gnu/installer.scm
+index adc891e..2df5e52 100644
+--- a/modules/installer/gnu/installer.scm
++++ b/modules/installer/gnu/installer.scm
+@@ -195,8 +195,17 @@ been performed at build time."
+   ;; Apply the specified keymap. Use the default keyboard model.
+   #~(match-lambda
+       ((layout variant options)
+-       (kmscon-update-keymap (default-keyboard-model)
+-                             layout variant options))))
++       (begin
++         ;; %rosenthal-set-keymap
++         (system* "/bin/sh" "--login" "-c"
++                  (string-join
++                   (list "/run/current-system/profile/bin/set-keymap"
++                         layout
++                         (or variant "")
++                         (or options ""))))
++
++         (kmscon-update-keymap (default-keyboard-model)
++                               layout variant options)))))
+ 
+ (define (compute-keymap-step context dry-run?)
+   "Return a gexp that runs the keymap-page of INSTALLER and install the
+diff --git a/modules/installer/gnu/installer/final.scm b/modules/installer/gnu/installer/final.scm
+index 22c44a2..e88d612 100644
+--- a/modules/installer/gnu/installer/final.scm
++++ b/modules/installer/gnu/installer/final.scm
+@@ -221,6 +221,8 @@ or #f.  Return #t on success and #f on failure."
+              (setvbuf (current-error-port) 'none)
+ 
+              (setenv "PATH" "/run/current-system/profile/bin/")
++             (setenv "GUILE_LOAD_PATH" "/run/current-system/profile/share/guile/site/3.0")
++             (setenv "GUILE_LOAD_COMPILED_PATH" "/run/current-system/profile/lib/guile/3.0/site-ccache")
+ 
+              (for-each (lambda (line)
+                          (installer-log-line "~a" line))
+diff --git a/modules/installer/gnu/installer/kernel.scm b/modules/installer/gnu/installer/kernel.scm
+index a07d24d..2c4ac10 100644
+--- a/modules/installer/gnu/installer/kernel.scm
++++ b/modules/installer/gnu/installer/kernel.scm
+@@ -17,25 +17,20 @@
+ ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
+ 
+ (define-module (gnu installer kernel)
++  #:use-module (ice-9 match)
+   #:use-module (gnu system hurd)
+   #:use-module (guix read-print)
+   #:export (kernel->configuration))
+ 
+-(define-syntax-rule (G_ str)
+-  ;; In this file, translatable strings are annotated with 'G_' so xgettext
+-  ;; catches them, but translation happens later on at run time.
+-  str)
+-
+ (define (kernel->configuration kernel dry-run?)
+-  (if (string-prefix? "Hurd" kernel)
+-      `((kernel %hurd-default-operating-system-kernel)
+-        ,(comment (G_ ";; \"noide\" disables the gnumach IDE driver, enabling rumpdisk.\n"))
+-        (kernel-arguments '("noide"))
+-        (firmware '())
+-        (hurd hurd)
+-        (locale-libcs (list glibc/hurd))
+-        (name-service-switch #f)
+-        (essential-services (hurd-default-essential-services this-operating-system))
+-        (privileged-programs '())
+-        (setuid-programs %setuid-programs/hurd))
+-      '()))
++  (match kernel
++    ("Linux"
++     `((kernel linux)
++       (firmware (cons* linux-firmware %base-firmware))
++       (initrd microcode-initrd)))
++    ("Linux LTS"
++     `((kernel linux-lts)
++       (firmware (cons* linux-firmware %base-firmware))
++       (initrd microcode-initrd)))
++    (_
++     '())))
+diff --git a/modules/installer/gnu/installer/newt/kernel.scm b/modules/installer/gnu/installer/newt/kernel.scm
+index abf39c6..fa9dcd2 100644
+--- a/modules/installer/gnu/installer/newt/kernel.scm
++++ b/modules/installer/gnu/installer/newt/kernel.scm
+@@ -23,46 +23,17 @@
+   #:export (run-kernel-page))
+ 
+ (define (run-kernel-page)
+-  ;; TRANSLATORS: "Hurd" is a proper noun and must not be translated.
+-  (let* ((hurd-x86 (G_ "Hurd 32-bit (experimental)"))
+-         (hurd-x86_64 (G_ "Hurd 64-bit (highly experimental!)"))
+-         (linux-libre "Linux Libre")
+-         (kernels (parameterize ((%current-target-system #f))
+-                    `(,linux-libre
+-                      ,@(cond ((target-x86-64?)
+-                               (list hurd-x86 hurd-x86_64))
+-                              ((target-x86?)
+-                               (list hurd-x86))
+-                              (else
+-                               '())))))
+-         (default (cond ((equal? (%current-target-system) "i586-pc-gnu")
+-                         hurd-x86)
+-                        ((equal? (%current-target-system) "x86_64-pc-gnu")
+-                         hurd-x86_64)
+-                        (else
+-                         linux-libre)))
+-         (result
+-          (run-listbox-selection-page
+-           #:title (G_ "Kernel")
+-           #:info-text
+-           ;; TRANSLATORS: "Hurd" is a proper noun and must not be translated.
+-           ;; TRANSLATORS: "Linux Libre" is a literal and must not be translated.
+-           (G_ "Please select a kernel.  When in doubt, choose \"Linux Libre\".
+-The Hurd is offered as a technology preview and development aid; many packages \
+-are not yet available in Guix, such as a desktop environment or even a \
+-windowing system (X, Wayland).")
+-           #:listbox-items kernels
+-           #:listbox-item->text identity
+-           #:listbox-default-item default
+-           #:button-text (G_ "Back")
+-           #:button-callback-procedure
+-           (lambda _
+-             (abort-to-prompt 'installer-step 'abort)))))
+-    (let ((target (cond ((equal? result hurd-x86)
+-                         "i586-pc-gnu")
+-                        ((equal? result hurd-x86_64)
+-                         "x86_64-pc-gnu")
+-                        (else
+-                         #f))))
+-      (%current-target-system target))
+-    result))
++  (let ((kernels
++         '("Linux"
++           "Linux LTS")))
++    (run-listbox-selection-page
++     #:title (G_ "Kernel")
++     #:info-text
++     (G_ "Please select a kernel.  When in doubt, choose \"Linux\".")
++     #:listbox-items kernels
++     #:listbox-item->text identity
++     #:listbox-default-item "Linux"
++     #:button-text (G_ "Back")
++     #:button-callback-procedure
++     (lambda _
++       (abort-to-prompt 'installer-step 'abort)))))
+diff --git a/modules/installer/gnu/installer/newt/welcome.scm b/modules/installer/gnu/installer/newt/welcome.scm
+index f821374..fddcc93 100644
+--- a/modules/installer/gnu/installer/newt/welcome.scm
++++ b/modules/installer/gnu/installer/newt/welcome.scm
+@@ -184,12 +184,10 @@ Documentation is accessible at any time by pressing Ctrl-Alt-F2.")
+    #:listbox-items
+    `((,(G_ "Graphical install using a terminal based interface")
+       .
+-      ,(lambda ()
+-         (check-hardware-support pci-database)))
++      ,(const #t))
+      (,(G_ "Install using the shell based process")
+       .
+       ,(lambda ()
+-         (check-hardware-support pci-database)
+          ;; Switch to TTY3, where a root shell is available for shell based
+          ;; install. The other root TTY's would have been ok too.
+          (system* "chvt" "3")
+diff --git a/modules/installer/gnu/installer/steps.scm b/modules/installer/gnu/installer/steps.scm
+index b70e5eb..f9fa985 100644
+--- a/modules/installer/gnu/installer/steps.scm
++++ b/modules/installer/gnu/installer/steps.scm
+@@ -241,14 +241,22 @@ found in RESULTS."
+                    ,(comment (G_ "\
+ ;; Indicate which modules to import to access the variables
+ ;; used in this configuration.\n"))
+-                   ,@(if (target-hurd?)
+-                         '((use-modules (gnu) (gnu system hurd))
+-                           (use-package-modules hurd ssh))
+-                         '((use-modules (gnu))))
+-                   (use-service-modules cups desktop networking ssh xorg))))
++                   (use-modules (gnu)
++                                (nonguix transformations)
++                                (nongnu system linux-initrd)
++                                (gnu services cups)
++                                (gnu services desktop)
++                                (gnu services networking)
++                                (gnu services ssh)
++                                (gnu services xorg)
++                                (nongnu packages linux)))))
+     `(,@modules
+       ,(vertical-space 1)
+-      (operating-system ,@configuration))))
++      (define %my-os
++        (operating-system ,@configuration))
++      ,(vertical-space 1)
++      ((compose (nonguix-transformation-guix))
++       %my-os))))
+ 
+ (define* (configuration->file configuration
+                               #:key (file-name (%installer-configuration-file)))
+-- 
+2.52.0
+

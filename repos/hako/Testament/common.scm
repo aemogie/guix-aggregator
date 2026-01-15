@@ -7,6 +7,7 @@
              (ice-9 match)
              (ice-9 popen)
              (ice-9 textual-ports)
+
              (guix diagnostics)
              (guix i18n)
              (guix packages)
@@ -14,6 +15,9 @@
              (nonguix transformations)
              (rosenthal)
              (sops secrets)
+
+             (guix build-system copy)
+
              (gnu packages linux)
              (nongnu packages linux))
 
@@ -124,6 +128,76 @@ wifi.cloned-mac-address=stable\n")))
              (local-file (canonicalize-path (in-vicinity "../Workspace/Repository/linux/kernel-patches/6.12" patch))))
            '("arch-patches-sep/0002-arch-Kconfig-Default-to-maximum-amount-of-ASLR-bits.patch"
              "bbr3-patches/0001-tcp-bbr3-initial-import.patch"))))))
+
+(define manage-cuirass
+  (let ((script
+         (program-file "manage-cuirass.scm"
+           #~(begin
+               (use-modules (ice-9 format) (ice-9 match))
+               (define %services
+                 '("cuirass"
+                   "cuirass-remote-server"
+                   "cuirass-remote-worker"
+                   "cuirass-web"))
+               (define %actions
+                 '("status"
+                   "start"
+                   "stop"
+                   "restart"
+                   "enable"
+                   "disable"))
+               (define (service? service)
+                 (member service %services))
+               (define (action? action)
+                 (member action %actions))
+
+               (match (cdr (command-line))
+                 (((? service? service) (? action? action))
+                  (system* "herd" action service))
+                 (_
+                  (format (current-error-port) "~
+Usage: manage-cuirass SERVICE ACTION
+
+SERVICE:
+~{- ~a
+~}
+ACTION:
+~{- ~a
+~}" %services %actions)
+                  (exit 1)))))))
+    (package
+      (name "manage-cuirass")
+      (version "0.0.0")
+      (source #f)
+      (build-system copy-build-system)
+      (arguments
+       (list
+        #:phases
+        #~(modify-phases %standard-phases
+            (delete 'unpack)
+            (replace 'install
+              (lambda _
+                (call-with-output-file "manage-cuirass.c"
+                  (lambda (port)
+                    (format port "~
+#include <sys/types.h>
+#include <stdio.h>
+#include <unistd.h>
+
+int main(int argc, char **argv, char **envp) {
+  setuid(geteuid());
+  *argv = ~s;
+  execve(*argv, argv, envp);
+  perror(*argv);
+  return 127;
+}~%"
+                            #$script)))
+                (invoke "gcc" "manage-cuirass.c" "-o" "manage-cuirass")
+                (install-file "manage-cuirass" (in-vicinity #$output "bin")))))))
+      (home-page "")
+      (synopsis "")
+      (description "")
+      (license #f))))
 
 
 ;; Source: <https://wiki.archlinux.org/title/XDG_Base_Directory>

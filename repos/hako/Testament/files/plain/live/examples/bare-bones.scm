@@ -1,9 +1,8 @@
 ;; This is an operating system configuration template for a "bare bones"
 ;; setup, with no X11 display server.
 
-(use-modules (nonguix transformations)
-             (rosenthal)
-
+(use-modules (gnu)
+             (nonguix transformations)
              (gnu services networking)
              (gnu services ssh))
 
@@ -56,6 +55,5 @@
                       %base-services))))
 
 ((compose (nonguix-transformation-linux)
-          (nonguix-transformation-guix)
-          (rosenthal-transformation-guix))
+          (nonguix-transformation-guix))
  %my-os)

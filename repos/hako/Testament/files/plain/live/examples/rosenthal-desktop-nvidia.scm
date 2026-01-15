@@ -1,13 +1,13 @@
 ;; This is an operating system configuration template for a lightweight
 ;; "desktop" setup using niri window manager, with driver set up for NVIDIA
-;; graphics card and applications configured.
+;; graphics card.
 
 (use-modules (nonguix transformations)
              (rosenthal)
-             (gnu home services fontutils)
-             (gnu home services shells)
              (rosenthal services keyboard)
-             (rosenthal services shellutils))
+             (rosenthal services shellutils)
+             (gnu home services fontutils)
+             (gnu home services shells))
 
 ;; #f for QWERTY.
 (define %my-keyboard-layout #f)
@@ -65,17 +65,32 @@
 
     (packages
      (append (specifications->packages
-              '("niri"
-                "wl-clipboard"
+              '(;; CLI utilities.
+                "curl"
+                "fd"
+                "git"
+                "gnupg"
+                "mosh"
+                "ncurses"
+                "ripgrep"
+                "rsync"
+                "unzip"
 
+                ;; Desktop, see also `%rosenthal-skeletons'.
+                "niri"
+                "wl-clipboard"
+                "xdg-desktop-portal-gnome"
+                "xdg-desktop-portal-gtk"
+                "xdg-utils"
                 "foot"               ;terminal emulator
                 "imv"                ;image viewer
-                "light"              ;brightness control
+                "light"              ;backlight control
+                "nvda"               ;search paths for graphics driver
+                "pavucontrol"        ;sound control
                 "playerctl"          ;media control
-                "pavucontrol"        ;sound settings
                 "rofi"               ;application launcher
                 "wireplumber"        ;PipeWire session manager
-                "xwayland-satellite" ;rootless XWayland integration
+                "xwayland-satellite" ;rootless XWayland support
 
                 ;; File manager.
                 "exo"
@@ -85,26 +100,12 @@
                 "thunar-media-tags-plugin"
                 "thunar-volman"
                 "tumbler"
-                "unzip"
 
                 ;; Web browser.
                 "librewolf"
                 "ublock-origin-icecat"
 
-                ;; XDG Desktop Portal packages for niri.
-                "xdg-desktop-portal-gnome"
-                "xdg-desktop-portal-gtk"
-
-                ;; Fonts
-                "font-adobe-source-serif"
-                "font-awesome"
-                "font-google-noto"
-                "font-google-noto-emoji"
-                "font-google-noto-sans-cjk"
-                "font-google-noto-serif-cjk"
-                "font-victor-mono"
-
-                ;; Text editors
+                ;; Text editors, see also `%rosenthal-skeletons'.
                 "emacs-pgtk"
                 "neovim"
 
@@ -129,10 +130,15 @@
                 "emacs-rainbow-delimiters"
                 "emacs-vertico"
 
-                ;; Commonly-used utilities.
-                "curl"
-                "git"
-                "rsync"))
+                ;; Fonts, see also `home-fontconfig-service-type'.
+                "font-adobe-source-serif"
+                "font-awesome"
+                "font-google-noto"
+                "font-google-noto-emoji"
+                "font-google-noto-sans-cjk"
+                "font-google-noto-serif-cjk"
+                "font-victor-mono"
+                ))
              %base-packages))
 
     (services
@@ -146,12 +152,6 @@
                             (service home-fish-plugin-atuin-service-type)
                             (service home-fish-plugin-direnv-service-type)
                             (service home-fish-plugin-zoxide-service-type)
-
-                            ;; Disable fish greeting.
-                            (simple-service 'fish-greeting
-                                home-xdg-configuration-files-service-type
-                              `(("fish/functions/fish_greeting.fish"
-                                 ,(plain-file "fish_greeting.fish" ""))))
 
                             (service home-swaybg-service-type)
                             (service home-waybar-service-type)
@@ -174,7 +174,13 @@
                                       '("fcitx5-material-color-theme")))
                                 (input-method-editors
                                  (map specification->package
-                                      '("fcitx5-chinese-addons" "fcitx5-rime")))))
+                                      '("fcitx5-anthy"
+                                        "fcitx5-chewing"
+                                        "fcitx5-chinese-addons"
+                                        "fcitx5-hangul"
+                                        "fcitx5-rime"
+                                        "fcitx5-skk"
+                                        "fcitx5-unikey")))))
 
                             ;; Font config.
                             (simple-service 'extra-fontconfig

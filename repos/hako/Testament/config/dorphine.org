@@ -778,7 +778,8 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
 
 #+name: emacs-packages
 #+begin_src shell :results output
-  grep '^;;guix:' ../files/plain/emacs-init.el | sed -E 's/^;;guix:(.*)/"\1"/g'
+  grep --no-filename '^;;guix:' ../files/plain/emacs-*.el |
+      sed --regexp-extended 's/^;;guix:(.*)/"\1"/g'
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
