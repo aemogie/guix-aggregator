@@ -2,6 +2,8 @@
   #:use-module (guix channels)
   #:export (guix
             saayix
+            saayix-nonfree
+            guix-science-nonfree
             nonguix
             radix
             sops-guix
@@ -12,8 +14,8 @@
 (define guix
   (channel
     (name 'guix)
-    (url "https://codeberg.org/look/guix")
-    (branch "hyprland-updates-12-2")
+    (url "https://codeberg.org/guix/guix")
+    (branch "master")
     (introduction
       (make-channel-introduction
         "9edb3f66fd807b096b48283debdcddccfea34bad"
@@ -30,6 +32,17 @@
         "12540f593092e9a177eb8a974a57bb4892327752"
         (openpgp-fingerprint
           "3FFA 7335 973E 0A49 47FC  0A8C 38D5 96BE 07D3 34AB")))))
+
+(define saayix-nonfree
+  (channel
+    (name 'saayix-nonfree)
+    (branch "main")
+    (url "https://codeberg.org/look/saayix-nonfree")
+    (introduction
+      (make-channel-introduction
+        "8a0caf3d1dbcd0c9257a23f8b251b5d5ff153c97"
+        (openpgp-fingerprint
+          "8B37 296F CE5C 4910 4737  3BAA 3BF5 14F5 84DC 25AD")))))
 
 (define nonguix
   (channel
@@ -97,8 +110,19 @@
         (openpgp-fingerprint
           "3FFA 7335 973E 0A49 47FC  0A8C 38D5 96BE 07D3 34AB")))))
 
+(define guix-science-nonfree
+  (channel
+    (name 'guix-science-nonfree)
+    (url "https://codeberg.org/rgarbage/guix-science-nonfree.git")
+    (branch "cuda-13.0")
+    (introduction
+      (make-channel-introduction
+        "58661b110325fd5d9b40e6f0177cc486a615817e"
+        (openpgp-fingerprint
+          "CA4F 8CF4 37D7 478F DA05  5FD4 4213 7701 1A37 8446")))))
+
 (list guix
       nonguix
-      saayix
+      saayix-nonfree
       radix
       sops-guix)

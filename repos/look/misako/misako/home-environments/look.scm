@@ -232,7 +232,7 @@
             ("HISTFILE"            . "$XDG_CACHE_HOME/shell_history")
             ("HISTSIZE"            . "-1")
             ("HISTFILESIZE"        . "-1")
-            ("PATH"                . "$HOME/.local/bin:$HOME/.spicetify:$PATH")
+            ("PATH"                . "$HOME/.local/bin:$PATH")
             #|Language|#
             ("LANG"                . "en_US.UTF-8")
             ("LANGUAGE"            . "en_US.UTF-8")

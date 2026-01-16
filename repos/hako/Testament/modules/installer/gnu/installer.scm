@@ -199,10 +199,14 @@ been performed at build time."
          ;; %rosenthal-set-keymap
          (system* "/bin/sh" "--login" "-c"
                   (string-join
-                   (list "/run/current-system/profile/bin/set-keymap"
-                         layout
-                         (or variant "")
-                         (or options ""))))
+                   `("set-keymap"
+                     ,layout
+                     ,@(or (and=> variant list)
+                           '())
+                     ,@(or (and=> options
+                                  (lambda (x)
+                                    (list "-o" x)))
+                           '()))))
 
          (kmscon-update-keymap (default-keyboard-model)
                                layout variant options)))))

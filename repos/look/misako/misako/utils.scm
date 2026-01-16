@@ -77,10 +77,12 @@
 
 (define (secret key)
   (call-with-input-file
-    (format #f "/run/~?secrets~{/~a~}"
-            "~:[user/~a/~;~]"
-            (list (zero? (getuid)) (getuid))
-            key)
+    (let ((relative-key (string-join key "/")))
+      (if (zero? (getuid))
+          (string-append "/run/secrets/" relative-key)
+          (string-append "/run/user/"
+                         (number->string (getuid))
+                         "/secrets/" relative-key)))
     get-string-all))
 
 (define nvidia?

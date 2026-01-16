@@ -1,30 +1,30 @@
-From f0346064891e0650eb602e00fa0482a139f77b9f Mon Sep 17 00:00:00 2001
+From d1e691e0845921ad3be467cb93b4ddfad5f12e9e Mon Sep 17 00:00:00 2001
 From: Hilton Chain <hako@ultrarare.space>
-Date: Wed, 14 Jan 2026 18:45:22 +0800
+Date: Thu, 15 Jan 2026 12:01:21 +0800
 Subject: [PATCH] modules: installer: Set up Nonguix.
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-- Don't use ‘check-hardware-support’.
-- Call %rosenthal-set-keymap script from the installer.
-- Add Nonguix kernel options.
-- Set up Nonguix channel in the final system.
-- WORKAROUND: Set Guile load paths to use modules from external channels.
+Don't use ‘check-hardware-support’.
+Call %rosenthal-set-keymap script from the installer.
+Add Nonguix kernel options.
+Set up Nonguix channel in the final system.
+WORKAROUND: Set Guile load paths to use modules from external channels.
 ---
- modules/installer/gnu/installer.scm           | 13 ++++-
+ modules/installer/gnu/installer.scm           | 17 +++++-
  modules/installer/gnu/installer/final.scm     |  2 +
  modules/installer/gnu/installer/kernel.scm    | 29 ++++------
  .../installer/gnu/installer/newt/kernel.scm   | 57 +++++--------------
  .../installer/gnu/installer/newt/welcome.scm  |  4 +-
  modules/installer/gnu/installer/steps.scm     | 20 +++++--
- 6 files changed, 54 insertions(+), 71 deletions(-)
+ 6 files changed, 58 insertions(+), 71 deletions(-)
 
 diff --git a/modules/installer/gnu/installer.scm b/modules/installer/gnu/installer.scm
-index adc891e..2df5e52 100644
+index adc891e..0f0c766 100644
 --- a/modules/installer/gnu/installer.scm
 +++ b/modules/installer/gnu/installer.scm
-@@ -195,8 +195,17 @@ been performed at build time."
+@@ -195,8 +195,21 @@ been performed at build time."
    ;; Apply the specified keymap. Use the default keyboard model.
    #~(match-lambda
        ((layout variant options)
@@ -34,10 +34,14 @@ index adc891e..2df5e52 100644
 +         ;; %rosenthal-set-keymap
 +         (system* "/bin/sh" "--login" "-c"
 +                  (string-join
-+                   (list "/run/current-system/profile/bin/set-keymap"
-+                         layout
-+                         (or variant "")
-+                         (or options ""))))
++                   `("set-keymap"
++                     ,layout
++                     ,@(or (and=> variant list)
++                           '())
++                     ,@(or (and=> options
++                                  (lambda (x)
++                                    (list "-o" x)))
++                           '()))))
 +
 +         (kmscon-update-keymap (default-keyboard-model)
 +                               layout variant options)))))

@@ -13,7 +13,7 @@ This repository contains my dotfiles and Guix System literate configurations.
 + [[file:modules][modules]] :: Guile libraries (e.g. Guix System installer) forked from other
   projects.
 
-See [[file:Makefile][Makefile]] for usage.
+See [[file:maak.scm][maak.scm]] for usage.
 
 Guix channels in use:
 + [[https://codeberg.org/guix/guix.git][guix]] (additional patches are used locally for root on ZFS support)
@@ -60,7 +60,7 @@ system, so you'll need to set it up in the new system if you want.
 
 For manual installation, I suggest using the installer first to configure
 locale, keyboard layout and networking, stopping at the step setting a password.
-In the LiveCDs, [[https://fishshell.com/][fish]] is chosen as the login shell and several examples
+In the LiveCDs, [[https://fishshell.com/][fish]] is chosen as the login shell and several example
 configurations are available under =/etc/configuration= ([[file:files/plain/live/examples][in this repository as
 well]]).
 
@@ -69,22 +69,22 @@ Nonguix channel.  Examples created by me (those with =rosenthal= prefix) also
 includes my [[https://codeberg.org/hako/rosenthal.git][Rosenthal channel]].  Note that the Rosenthal channel is unstable.
 
 Here follows ttys in the LiveCDs:
-- tty1 (=Ctrl + Alt + F1=) :: Guix System installer.
-- tty2 (=Ctrl + Alt + F2=) :: [[https://guix.gnu.org/manual/devel/en/][GNU Guix reference manual]].
-- tty3~6 (=Ctrl + Alt + F3= ~ =Ctrl + Alt + F6=) :: =root= shell.
-- tty7 (=Ctrl + Alt + F7=) :: Login manager.
-- tty12 (=Ctrl + Alt + F12=) :: System log.
+- tty1 (=Ctrl+Alt+F1=) :: Guix System installer.
+- tty2 (=Ctrl+Alt+F2=) :: [[https://guix.gnu.org/manual/devel/en/][GNU Guix reference manual]].
+- tty3~6 (=Ctrl+Alt+F3= ~ =Ctrl+Alt+F6=) :: =root= shell.
+- tty7 (=Ctrl+Alt+F7=) :: Login manager.
+- tty12 (=Ctrl+Alt+F12=) :: System log.
 
 For the login manager: it logs into a desktop environment built around the [[https://github.com/YaLTeR/niri][niri]]
 Wayland compositor
 
 Default keybindings:
-+ =Super + Shift + /= :: Open an overlay for available hotkeys.
-+ =Super + T= :: Open terminal emulator: [[https://codeberg.org/dnkl/foot][foot]].
-+ =Super + D= :: Open application launcher: [[https://github.com/davatorium/rofi][rofi]].
++ =Super+Shift+/= :: Open an overlay for available hotkeys.
++ =Super+T= :: Open terminal emulator: [[https://codeberg.org/dnkl/foot][foot]].
++ =Super+D= :: Open application launcher: [[https://github.com/davatorium/rofi][rofi]].
 
-[[https://codeberg.org/hako/Rosenthal/src/branch/trunk/modules/rosenthal/examples][Configurations files for the environment]], including a pre-configured Emacs text
-editor are managed in the Rosenthal channel, exposed as =%rosenthal-skeletons=
+Configurations files for the environment, including a pre-configured Emacs text
+editor are [[https://codeberg.org/hako/Rosenthal/src/branch/trunk/modules/rosenthal/examples][managed in the Rosenthal channel]], exposed as =%rosenthal-skeletons=
 and available under =/etc/skel= when configured.
 
 #+html: <img src="https://s3.boiledscript.com/misskey/ffe3522a-991f-452e-addb-fa47b6acc6bc.webp">

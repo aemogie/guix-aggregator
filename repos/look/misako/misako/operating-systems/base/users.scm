@@ -27,7 +27,7 @@
 
 (define root
   (user-account
-    (name "look")
+    (name "root")
     (password "$6$abcdk$EUmJC3KLnuXaW3vOHZcec4ogcPG.NqpV/AXHz.h.5Ul5ruLCZ91E696Q0rRzQnBaT.srJXXyp2zH5fqR.IG0F.")
     (home-directory "/root")
     (shell (file-append bash "/bin/bash"))

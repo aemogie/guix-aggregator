@@ -70,6 +70,7 @@
   #:use-module (saayix packages productivity)
   #:use-module (saayix packages terminals)
   #:use-module (saayix packages wm)
+  #:use-module (saayix-nonfree packages binaries)
   #:use-module (sops packages sops)
   #:export (bar
             browser
@@ -274,7 +275,7 @@
         easyeffects))
 
 (define terminals
-  (list ghostty foot))
+  (list ghostty-latest foot))
 
 (define text-editor
   (list helix))
