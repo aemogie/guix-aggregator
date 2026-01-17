@@ -615,7 +615,8 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
   (org-habit-graph-column 60)
   (org-habit-preceding-days 28)
   (org-habit-following-days 0)
-  
+
+  (org-todo-keywords '((sequence "TODO" "IN PROGRESS" "DONE")))
   (org-todo-keyword-faces
         '(("IN PROGRESS" . (:foreground "#F1C40F" :distant-foreground "e6dfb8" :weight bold))
           ("UPCOMING" . (:foreground "#cddbf9" :weight bold))
@@ -695,9 +696,6 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
     (org-capture-finalize)
     (delete-frame)))
 
-(use-package org-protocol
-  :ensure nil)
-
 (use-package org-roam
   :load-path ("~/.emacs.d/org-roam-2.3.1/" "~/.emacs.d/org-roam-2.3.1/extensions/")
   :ensure nil
@@ -753,9 +751,6 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
   (org-roam-ui-follow t)
   (org-roam-ui-update-on-save t)
   (org-roam-ui-open-on-start t))
-
-(use-package org-roam-protocol
-  :ensure t)
 
 (use-package org-super-agenda ;; if there's a problem with loading the package, it could be because of dash conflicts - needs to be installed internally, not externally
   :ensure t
@@ -2128,9 +2123,10 @@ Otherwise, call eat."
 
 ;; zone-mode
 (use-package zone
+  :ensure nil
   :commands zone-when-idle
-  :config
-  (zone-when-idle 60))
+  :init
+  (zone-when-idle 90))
 
 ;; dashboard
 (use-package dashboard
@@ -2182,7 +2178,7 @@ Otherwise, call eat."
   :ensure t
   :commands gptel-end-of-response
   :custom
-  (gptel-model "gpt-5")
+  (gptel-model 'gpt-5.1)
   (gptel-default-mode 'org-mode)
   :config
   (require 'gptel-integrations))
@@ -2199,12 +2195,9 @@ Otherwise, call eat."
             (insert "\n\n")))
 
 (use-package gptel-agent
-  :vc ( :url "https://github.com/karthink/gptel-agent"
+  :vc (:url "https://github.com/karthink/gptel-agent"
         :rev :newest)
-  :config (gptel-agent-update))         ;Read files from agents directories
-
-
-
+  :config (gptel-agent-update))
 
 ;; install external dependencies enchant, pkgconf, and lang dict
 ;; pacman: enchant, pkgconf, hunspell-en_us
@@ -2341,6 +2334,7 @@ Add :notify: event on import."
   (ticktick-autosync nil))
 
 (load "~/projects/org-roam-obsidian-sync/org-roam-obsidian-sync.el")
+(setq org-roam-obsidian-sync-on-change 1)
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
