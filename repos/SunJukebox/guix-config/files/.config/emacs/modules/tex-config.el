@@ -18,34 +18,7 @@
 
 ;; Note that this file does not define any auto-expanding YaSnippets.
 
-;; AucTeX settings - almost no changes
-;; (use-package latex
-  ;; :ensure auctex
-  ;; :hook ((LaTeX-mode . prettify-symbols-mode))
-  ;; :bind (:map LaTeX-mode-map
-  ;;       ("C-S-e" . latex-math-from-calc))
-  ;; :config
-  ;; (setq tex-fontify-script nil))
-  ;; Format math as a Latex string with Calc
-  ;; (defun latex-math-from-calc ()
-  ;;   "Evaluate `calc' on the contents of line at point."
-  ;;   (interactive)
-  ;;   (cond ((region-active-p)
-  ;;          (let* ((beg (region-beginning))
-  ;;                 (end (region-end))
-  ;;                 (string (buffer-substring-no-properties beg end)))
-  ;;            (kill-region beg end)
-  ;;            (insert (calc-eval `(,string calc-language latex
-  ;;                                         calc-prefer-frac t
-  ;;                                         calc-angle-mode rad)))))
-  ;;         (t (let ((l (thing-at-point 'line)))
-  ;;              (end-of-line 1) (kill-line 0)
-  ;;              (insert (calc-eval `(,l
-  ;;                                   calc-language latex
-  ;;                                   calc-prefer-frac t
-;;                                   calc-angle-mode rad))))))))
-
-;; (require 'tex-mode)
+(require 'tex-mode)
 
 (use-package auctex
   :init
@@ -56,7 +29,7 @@
   (add-to-list 'major-mode-remap-alist '(latex-mode . LaTeX-mode))
   (add-to-list 'major-mode-remap-alist '(tex-mode . TeX-mode))
   :hook
-  ((LaTeX-mode . turn-on-auto-fill)
+  (;;(LaTeX-mode . turn-on-auto-fill)
    (LaTeX-mode . LaTeX-math-mode))
   :custom
   (TeX-parse-self t) ;; Parse multifile documents automagically
@@ -69,15 +42,6 @@
   (TeX-source-correlate-mode t) ;; Correlate output to input so we can easily navigate
   (TeX-source-correlate-method 'synctex)
   (TeX-source-correlate-start-server t))
-
-;; (use-package preview
-;;   :after latex
-;;   :hook ((LaTeX-mode . preview-larger-previews))
-;;   :config
-;;   (defun preview-larger-previews ()
-;;     (setq preview-scale-function
-;;           (lambda () (* 1.25
-;;                    (funcall (preview-scale-from-face)))))))
 
 ;; CDLatex settings
 (use-package cdlatex
@@ -93,30 +57,7 @@
   (cdlatex-math-symbol-prefix ?\;)
   (cdlatex-sub-super-scripts-outside-math-mode nil))
 
-;; Yasnippet settings
-;; (use-package yasnippet
-;;   ;; :ensure t
-;;   :hook ((LaTeX-mode . yas-minor-mode)
-;;          (post-self-insert . my/yas-try-expanding-auto-snippets))
-;;   :config
-;;   (use-package warnings
-;;     :config
-;;     (cl-pushnew '(yasnippet backquote-change)
-;;                 warning-suppress-types
-;;                 :test 'equal))
-;; 
-;;   (setq yas-triggers-in-field t)
-;;   
-;;   ;; Function that tries to autoexpand YaSnippets
-;;   ;; The double quoting is NOT a typo!
-;;   (defun my/yas-try-expanding-auto-snippets ()
-;;     (when (and (boundp 'yas-minor-mode) yas-minor-mode)
-;;       (let ((yas-buffer-local-condition ''(require-snippet-condition . auto)))
-;;         (yas-expand)))))
-
-;; (use-package yasnippet
-;;  :hook (LaTeX-mode . yas-minor-mode))
-
+;; Automatic snippet settings
 (use-package aas
   :hook ((LaTeX-mode . aas-activate-for-major-mode)
          (org-mode . aas-activate-for-major-mode))
@@ -140,9 +81,8 @@
         ;; "eqref" (lambda () (interactive)
         ;;   (yas-expand-snippet "~\\eqref{$0}"))
         ;; "latex"  "\\LaTeX"
-        ;; "TEMPLATE" (lambda () (interactive)
-        ;;              (yas-expand-snippet "\\documentclass[12pt,a4paper,oneside]{article}\n\\usepackage[utf8]{inputenc}\n\\usepackage[T1]{fontenc}\n\\usepackage{lmodern}\n\\usepackage[left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm,headsep=1.2cm]{geometry}\n\\usepackage{amsmath, amsfonts, amssymb, amsthm, graphicx, tikz, float, pdfpages, enumerate, mathrsfs, hyperref}\n%=========================================================\n\n\\begin{document}\n\n$0\n\n\\end{document}\n\n"))))
-        ))
+        "TEMPLATE" (lambda () (interactive)
+                      (yas-expand-snippet "\\documentclass[12pt,a4paper]{article}\n\n\\usepackage{~/.local/share/tex/onghaik}\n\n\begin{document}\n\n$0\n\n\\end{document}"))))
 
 (use-package laas
   :load-path "plugins/"
@@ -226,5 +166,5 @@
   :defer t
   :after auctex)
 
-(provide 'anon-latex-config)
+(provide 'tex-config)
 ;;; anon-latex-config.el ends here

@@ -80,7 +80,7 @@
                     btop
   		    cryptsetup
   		    curl
-  		    emacs
+  		    ;; emacs
   		    git
   		    neovim
   		    %base-packages))

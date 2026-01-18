@@ -63,7 +63,7 @@
    (locale "en_US.utf8")
    (timezone "America/New_York")
    (keyboard-layout (keyboard-layout "us" "dvp"))
-   (host-name "basic")
+   (host-name "oldcoal")
 
    (users (cons* (user-account
                   (name "kyle")
@@ -75,7 +75,7 @@
 
    (packages (cons* btop
                     curl
-                    emacs-no-x-toolkit
+                    ;; emacs-no-x-toolkit
                     git
                     neovim
                     nix

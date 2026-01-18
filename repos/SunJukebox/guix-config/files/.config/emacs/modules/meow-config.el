@@ -1,3 +1,15 @@
+;;; anon-keys-meow.el --- Configure meow             -*- lexical-binding: t; -*-
+
+;; Copyright (C) 2026  Kyle O.
+
+;; Author: Kyle O. <kyle@oldcoal>
+
+;;; Commentary:
+
+;; https://github.com/meow-edit/meow
+
+;;; Code:
+
 (use-package meow
   ;; :disabled t
   ;; :ensure t
@@ -98,4 +110,5 @@
   (with-eval-after-load 'hl-line
     (global-hl-line-mode -1)))
 
-(provide 'anon-keys-meow)
+(provide 'meow-config)
+;;; meow-config.el ends here

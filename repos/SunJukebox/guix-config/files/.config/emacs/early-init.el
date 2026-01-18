@@ -1,58 +1,40 @@
 ;;; early-init.el --- Early initialization  -*- lexical-binding: t; -*-
-
-;; Copyright (C) 2023
-;; SPDX-License-Identifier: MIT
-
-;; Author: System Crafters Community
-
 ;;; Commentary:
-
-;; Code to setup `package.el' during `early-init.el'
-
+;;
 ;;; Code:
-
-;;; System identification
-(defvar anon/current-distro (or (and (eq system-type 'gnu/linux)
-                                   (file-exists-p "/etc/os-release")
-                                   (with-temp-buffer
-                                     (insert-file-contents "/etc/os-release")
-                                     (search-forward-regexp "^ID=\"?\\(.*\\)\"?$")
-                                     (intern (or (match-string 1)
-                                                 "unknown"))))
-                              'unknown))
-
-(defvar anon/is-guix-system (eql anon/current-distro 'guix))
 
 ;;; Basic settings for quick startup and convenience
 
-;; Startup speed, annoyance suppression
-(setq bedrock--initial-gc-threshold gc-cons-threshold)
-(setq gc-cons-threshold 10000000)
-(setq byte-compile-warnings '(not obsolete))
-(setq warning-suppress-log-types '((comp) (bytecomp)))
-(setq native-comp-async-report-warnings-errors 'silent)
+;; Increase the amount of heap memory Emacs is allowed to use before GC.
+(defvar onghaik/gc-cons-threshold (* 32 1024 1024)
+  "Amount of memory used before GC is run.")
+(defvar onghaik/gc-cons-percentage 0.8
+  "Percent memory used before GC is run.")
+(defvar onghaik/message-log-max (* 16 1024)
+  "Maximum number of messages to keep in *Messages* buffer.")
+(setq-default gc-cons-threshold onghaik/gc-cons-threshold
+              gc-cons-percentage onghaik/gc-cons-percentage
+              message-log-max onghaik/message-log-max)
 
 ;; Silence stupid startup message
-(setq inhibit-startup-echo-area-message (user-login-name))
+;; (setq inhibit-startup-echo-area-message (user-login-name))
 
-;; Default frame configuration: full screen, good-looking title bar on macOS
-(setq frame-resize-pixelwise t)
-(tool-bar-mode -1)                      ; All these tools are in the menu-bar anyway
-(setq default-frame-alist '((fullscreen . maximized)
+;; Make sure Emacs loads up newer config files, even if they aren't compiled
+(customize-set-variable 'load-prefer-newer t)
 
-                            ;; You can turn off scroll bars by uncommenting these lines:
-                            ;; (vertical-scroll-bars . nil)
-                            ;; (horizontal-scroll-bars . nil)
+(scroll-bar-mode -1) ;; Remove scroll bar at side
+(menu-bar-mode 1) ;; Keep the top menu-bar, with the drop-down menus
+(tool-bar-mode -1) ;; Remove big icon tool-bar below the menu-bar.
+(tooltip-mode -1) ;; On clickable text, remove tooltip pop-up. Use minibuffer.
 
-                            ;; Setting the face in here prevents flashes of
-                            ;; color as the theme gets activated
-                            (background-color . "#000000")
-                            (foreground-color . "#ffffff")
-                            (ns-appearance . dark)
-                            (ns-transparent-titlebar . t)))
+;; Change the title of the frame when opened in GUI mode.
+(setq-default frame-title-format
+              '("%b@" (:eval (or (file-remote-p default-directory 'host)
+                                 system-name))
+                " - Emacs"))
 
 ;;; Packages
-(load-file (expand-file-name "modules/anon-packages.el" user-emacs-directory))
+;; (load-file (expand-file-name "modules/packages.el" user-emacs-directory))
 
 (provide 'early-init)
 ;;; early-init.el ends here
