@@ -1,11 +1,18 @@
+;;; -*- lexical-binding: t -*-
+
+(setq mac-command-modifier 'meta)
+(setq mac-option-modifier 'none)
+(add-to-list 'default-frame-alist '(undecorated-round . t))
 ;;;;;;;;;;;;;;;;;;;;
-;; emacs settings ;;
+;; emacs settings ;;¡™
 ;;;;;;;;;;;;;;;;;;;;
 (defvar is-guix nil
   "Variable indicating whether system is managed by guix.")
 
 (defvar is-mac nil
   "Variable indicating whether system is managed by guix.")
+
+(defvar mac-command-modifier) 
 
 (when is-mac
   (setq mac-command-modifier 'meta))
@@ -33,7 +40,8 @@
   (let ((file (expand-file-name (if (equal length "long")
                                     "sounds/bell_multiple.wav"
                                   "sounds/bell.wav")
-                                user-emacs-directory)))
+                                user-emacs-d
+                                irectory)))
     (start-process-shell-command "org" nil (concat "aplay " file))))
 
 ;;;;;;;;;;;;;;;;;;;;;;
@@ -49,10 +57,6 @@
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("elpa" . "https://elpa.gnu.org/packages/")
   			 ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
-
-;; enable packages from quelpa
-;; (use-package quelpa
-;;   :ensure t)
 
 ;; refresh package lists
  (unless package-archive-contents
@@ -157,19 +161,19 @@
     (set-face-attribute face nil :foreground fg :background 'unspecified)))
 
 
-;; (use-package autothemer
-;;   :ensure t)
-
 (with-eval-after-load 'marginalia
   (set-face-attribute 'marginalia-documentation nil :inherit 'doom-mode-line :slant 'italic))
 
 ;; misc ui settings
-(menu-bar-mode -1)
+(when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
+(when (fboundp 'tool-bar-mode)   (tool-bar-mode -1))
+(when (fboundp 'menu-bar-mode)   (menu-bar-mode -1))
+(when (fboundp 'fringe-mode)     (fringe-mode 0))
+
+(system-name)
+
 (global-hl-line-mode t)
-(scroll-bar-mode -1)
-(tool-bar-mode -1)
 (tooltip-mode -1)
-(set-fringe-mode 10)
 (global-visual-line-mode 1)
 (column-number-mode)
 (global-prettify-symbols-mode 1)
@@ -204,6 +208,18 @@
         (progn
           (set-frame-parameter nil 'alpha-background 100)
           (cherry-seoul256-create 'cherry-seoul256 235))))))
+
+(defun my/t\oggle-frametransparency ()
+    "Toggle frame transparency and adjust cherry-seoul256 background."
+    (interactive)
+    (let ((current-alpha (frame-parameter nil 'alpha-background)))
+      (if (or (not current-alpha) (= current-alpha 100))
+          (progn
+            (set-frame-parameter nil 'alpha-background 60)
+            (cherry-seoul256-create 'cherry-seoul256 233))
+        (progn
+          (set-frame-parameter nil 'alpha-background 100)
+          (cherry-seoul256-create 'cherry-seoul256 235)))))
 
 ;; fonts
 (defvar my/font-options
@@ -260,12 +276,6 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
 ;; fontify-face
 (use-package fontify-face
   :ensure t)
-
-;; define non-breaking space (not sure why i wrote this)
-;; (defface my/non-breaking-space
-;;   '((t :inherit default))
-;;   "My non-breaking space face.")
-;; (font-lock-add-keywords 'org-mode '(("\u00a0" . 'my/non-breaking-space)))
 
 ;; rainbow mode
 (use-package rainbow-mode
@@ -524,7 +534,7 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
   (defvar my/delete-frame-after-capture 0 "Whether to delete the last frame after the current capture")
 
   ;; delete pop-up capture frames after finalize/kill/refile. at popup, set `my/delete-frame-after-capture' to 1
-  (defun my/delete-frame-if-necessary (&rest r)
+  (defun my/delete-frame-if-necessary (&rest _r)
     (cond
      ((= my/delete-frame-after-capture 0) nil)
      ((> my/delete-frame-after-capture 1)
@@ -686,6 +696,8 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
     (modify-syntax-entry ?< "." org-mode-syntax-table)
     (modify-syntax-entry ?> "." org-mode-syntax-table))
 
+  (defvar org-electric-pairs '((?$ . ?$)))  ; custom electric pairs for org-mode
+
   (defun my/org-add-electric-pairs ()
     (setq-local electric-pair-pairs (append electric-pair-pairs org-electric-pairs))
     (setq-local electric-pair-text-pairs electric-pair-pairs))
@@ -791,7 +803,9 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
                   '(:time "30m" :duration 1200 :actions -notify)))
 
 ;; add snooze functionality to org-notify
-(load "~/projects/org-notify-snooze/org-notify-snooze.el")
+(use-package org-notify-snooze
+  :if (file-exists-p "~/projects/org-notify-snooze/org-notify-snooze.el")
+  :load-path "~/projects/org-notify-snooze")
 
 ;; org-pomodoro
 (defun my/pomodoro-finished-alert ()
@@ -844,11 +858,12 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
   (org-clock-reminder-interval (cons 10 30))
   (org-clock-reminder-inactive-notifications-p nil)
   :config
-  ;; replace function to configure urgency, timeout
+  ;; replace function to configure urgency, timeout, icon
   (defun org-clock-reminder-notify (title message)
     (let ((icon-path (org-clock-reminder--icon)))
       (notifications-notify :title title
                             :body message
+                            :app-icon icon-path
                             :timeout 54000)))
 
   ;; define duration based on time since latest clock-in, not total clocked time
@@ -861,6 +876,10 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
 
 (use-package hydra
   :ensure t)
+
+;; load hydra at compile time so byte-compiler understands defhydra macro
+(eval-when-compile
+  (require 'hydra nil t))
 
 ;; hydra-colossa
 (defhydra hydra-colossa (:color amaranth :hint nil)
@@ -1229,7 +1248,6 @@ T - tag prefix
 
 ;; electric pair
 (electric-pair-mode 1)
-(defvar org-electric-pairs '((?$ . ?$))) ; add custom pairs
 
 (use-package puni
   :defer t
@@ -1941,7 +1959,7 @@ Otherwise, call eat."
 ;; mu4e
 (use-package  mu4e
   :ensure nil
-  :load-path "~/.guix-home/profile/share/emacs/site-lisp/mu4e"
+  :load-path "/opt/homebrew/share/emacs/site-lisp/mu/mu4e/"
   :custom
   (mu4e-use-fancy-chars t)
   (mu4e-bookmarks
@@ -2250,17 +2268,18 @@ Otherwise, call eat."
   :custom
   (org-gcal-up-days 0)
   (org-gcal-down-days 30)
+  ;; prevent org-id from scanning archive files (org-gcal uses org-id to find entries)
+  (org-id-extra-files 'org-agenda-files)
   :init
   ;; format gcal property hook
   (add-hook 'org-gcal-after-update-entry-functions 'my/org-gcal-format)
   (load (expand-file-name "private/gcal-credentials.el" user-emacs-directory))
   
-  ;; set delay time in seconds (30 seconds in this case) before running (due to emacs-daemon startup time).
-  ;; run once an hour
+  ;; sync 30 seconds after startup, then repeat every hour
   (run-with-timer 30 3600
                   (lambda ()
                     (org-gcal-sync)
-                    (message "GCal synced at %s" (format-time-string "%Y-%m-%d %H:%M:%S"))))
+                    (message "gcal synced at %s" (format-time-string "%Y-%m-%d %H:%M:%S"))))
 
   ;; this function is used as a local variable in schedule.org to remove the
   ;; timestamps org-gcal puts into the org-gcal drawer after sync
@@ -2304,37 +2323,36 @@ Add :notify: event on import."
 
   )
 
-;; (use-package scratchpad
-;;   :vc (:url "https://github.com/polhuang/scratchpad.el" :rev :newest)
-;;   :config)
-
-(load "~/projects/scratchpad/scratchpad.el")
-(load "~/projects/org-linear/org-linear.el")
-;; (load "~/.emacs.d/private/org-linear-credentials.el")
-(scratchpad-enable)
-(global-set-key (kbd "C-M-z") 'scratchpad-toggle)
-(setq scratchpad-save-directory "~/org/scratchpad")
-
-(use-package org-jira
-  :ensure t
-  :custom
-  (jiralib-update-issue-fields-exclude-list '(priority components))
+(use-package scratchpad
+  :if (file-exists-p "~/projects/scratchpad/scratchpad.el")
+  :load-path "~/projects/scratchpad"
   :config
-  (setq jiralib-url "https://polhuang.atlassian.net")
-  (setq org-jira-working-dir "~/jira"))
+  (scratchpad-enable)
+  (global-set-key (kbd "C-M-z") 'scratchpad-toggle)
+  (setq scratchpad-save-directory "~/org/scratchpad"))
 
-(load "~/projects/ticktick.el/ticktick.el")
+(use-package org-linear
+  :if (file-exists-p "~/projects/org-linear/org-linear.el")
+  :load-path "~/projects/org-linear")
+;; (load "~/.emacs.d/private/org-linear-credentials.el")
 
 (use-package ticktick
-  :load-path "~/projects/ticktick.el/ticktick.el"
+  :if (file-exists-p "~/projects/ticktick.el/ticktick.el")
+  :load-path "~/projects/ticktick.el"
   :custom
-  (ticktick-client-id "uxXCDqEv3nV3C2M1hn")
-  ;; (ticktick-client-secret "6eh+gE#66+3lKHJv56d)EU8&eru_k$*8")
   (ticktick-sync-file "~/org/ticktick.org")
-  (ticktick-autosync nil))
+  (ticktick-autosync nil)
+  :config
+  (let ((auth-info (auth-source-user-and-password "ticktick.com")))
+    (when auth-info
+      (setq ticktick-client-id (car auth-info))
+      (setq ticktick-client-secret (cadr auth-info)))))
 
-(load "~/projects/org-roam-obsidian-sync/org-roam-obsidian-sync.el")
-(setq org-roam-obsidian-sync-on-change 1)
+(use-package org-roam-obsidian-sync
+  :if (file-exists-p "~/projects/org-roam-obsidian-sync/org-roam-obsidian-sync.el")
+  :load-path "~/projects/org-roam-obsidian-sync"
+  :config
+  (setq org-roam-obsidian-sync-on-change 1))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -2383,3 +2401,4 @@ Add :notify: event on import."
 
 ;; byte-compile-warnings: (not docstrings)
 ;; End:
+org-id-extra-files

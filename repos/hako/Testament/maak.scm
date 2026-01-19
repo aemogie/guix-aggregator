@@ -1,4 +1,3 @@
-;;; -*- mode: scheme -*-
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 ;;; Copyright © 2026 Hilton Chain <hako@ultrarare.space>
 
@@ -19,7 +18,8 @@
 
 (define %build-options
   (cons* "--keep-going" "--verbosity=2"
-         (or (getenv "ARGS")
+         (or (and=> (getenv "ARGS")
+                    (cut string-split <> #\space))
              '())))
 
 (define %deploy-command
@@ -142,8 +142,10 @@ Exit code: ~a~%"
   (deploy-mirror)
   (deploy-worker))
 
-(define (live-default) (live-% "default"))
-(define (live-hidpi)   (live-% "hidpi"))
+(define (live-minimal)       (live-% "minimal"))
+(define (live-minimal-hidpi) (live-% "minimal-hidpi"))
+(define (live-default)       (live-% "default"))
 (define (live)
-  (live-default)
-  (live-hidpi))
+  (live-minimal)
+  (live-minimal-hidpi)
+  (live-default))

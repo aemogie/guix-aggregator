@@ -97,7 +97,7 @@
                                  ('kak.desktop mime-types:editor)
                                  ('lf.desktop mime-types:file-manager)
                                  ('mpv.desktop mime-types:audio+video)
-                                 ('imv.desktop mime-types:image)
+                                 ('oculante.desktop mime-types:image)
                                  ('sioyek.desktop mime-types:document)))))
 
             #|Font services|#
@@ -159,9 +159,9 @@
                      `(#|Artwork|#
                        ("resources/artwork/guix-artwork"
                         ,(codeberg-url "guix" "artwork"))
-                       ("resources/artwork/radix-artwork"
-                        ,(codeberg-url "anemofilia" "radix-artwork"))
                        #|Code|#
+                       ("areas/code/scm/guix"
+                        ,(codeberg-url "guix"))
                        ("areas/code/scm/radix"
                         ,(codeberg-url "anemofilia" "radix"))
                        ("areas/code/scm/zero"
@@ -174,8 +174,6 @@
                         ,(codeberg-url "spritely" "goblins"))
                        ("resources/code/scm/guile"
                         ,(codeberg-url "guile"))
-                       ("resources/code/scm/guix"
-                        ,(codeberg-url "guix"))
                        ("resources/code/scm/shepherd"
                         ,(codeberg-url "shepherd"))))
             (service home-files-service-type

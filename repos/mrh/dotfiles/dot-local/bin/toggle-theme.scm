@@ -12,12 +12,12 @@
         (system
          "gsettings set org.gnome.desktop.interface color-scheme prefer-dark")
         (system
-         "emacsclient -e \"(ef-themes-load-theme 'ef-melissa-dark)\""))
+         "emacsclient -e \"(modus-themes-load-theme 'ef-melissa-dark)\""))
       (begin
         (system
          "gsettings set org.gnome.desktop.interface color-scheme prefer-light")
         (system
-         "emacsclient -e \"(ef-themes-load-theme 'ef-melissa-light)\""))))
+         "emacsclient -e \"(modus-themes-load-theme 'ef-melissa-light)\""))))
 
 (define current-theme
   (string-trim-both

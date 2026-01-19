@@ -1,0 +1,198 @@
+# core settings
+after-login-command = []
+after-startup-command = []
+
+# start aerospace at login
+start-at-login = true
+
+# normalizations - enable container flattening
+enable-normalization-flatten-containers = true
+enable-normalization-opposite-orientation-for-nested-containers = true
+
+# mouse follows focus
+on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
+exec-on-workspace-change = ['/bin/bash', '-c', '/Users/pol/.dotfiles/.config/sketchybar/plugins/aerospace_listener.sh']
+
+# gaps configuration (matching hyprland: 10px inner, 20px outer)
+[gaps]
+inner.horizontal = 10
+inner.vertical = 10
+outer.left = 20
+outer.bottom = 20
+outer.top = 20
+outer.right = 20
+
+# default layout mode
+[mode.main.binding]
+# using tiles layout with auto orientation (like hyprland's dwindle)
+
+# window management - core navigation
+# focus navigation with cmd+hjkl (replaces hyprland's super+hjkl)
+cmd-h = 'focus left'
+cmd-j = 'focus down'
+cmd-k = 'focus up'
+cmd-l = 'focus right'
+
+# move windows with cmd-ctrl+hjkl
+cmd-ctrl-h = 'move left'
+cmd-ctrl-j = 'move down'
+cmd-ctrl-k = 'move up'
+cmd-ctrl-l = 'move right'
+
+# resize with cmd+arrows
+cmd-left = 'resize smart -50'
+cmd-down = 'resize smart +50'
+cmd-up = 'resize smart -50'
+cmd-right = 'resize smart +50'
+
+# window actions
+cmd-shift-c = 'close'                                                           # close window (avoids cmd-w conflict)
+cmd-ctrl-f = 'layout floating tiling'                                           # toggle float
+cmd-ctrl-m = 'fullscreen'                                                       # toggle fullscreen
+cmd-shift-t = 'layout h_accordion v_accordion'                                  # toggle split orientation
+
+# window cycling
+cmd-shift-o = 'focus-monitor --wrap-around next'                                # cycle windows (avoids cmd-o conflict)
+cmd-backtick = 'workspace-back-and-forth'                                       # previous window with cmd-` (preserve cmd-tab for macos)
+
+# workspace switching (cmd+1-0)
+cmd-1 = 'workspace 1'
+cmd-2 = 'workspace 2'
+cmd-3 = 'workspace 3'
+cmd-4 = 'workspace 4'
+cmd-5 = 'workspace 5'
+cmd-6 = 'workspace 6'
+cmd-7 = 'workspace 7'
+cmd-8 = 'workspace 8'
+cmd-9 = 'workspace 9'
+cmd-0 = 'workspace 10'
+
+# move window to workspace (cmd-ctrl+1-0)
+cmd-ctrl-1 = 'move-node-to-workspace 1'
+cmd-ctrl-2 = 'move-node-to-workspace 2'
+cmd-ctrl-3 = 'move-node-to-workspace 3'
+cmd-ctrl-4 = 'move-node-to-workspace 4'
+cmd-ctrl-5 = 'move-node-to-workspace 5'
+cmd-ctrl-6 = 'move-node-to-workspace 6'
+cmd-ctrl-7 = 'move-node-to-workspace 7'
+cmd-ctrl-8 = 'move-node-to-workspace 8'
+cmd-ctrl-9 = 'move-node-to-workspace 9'
+cmd-ctrl-0 = 'move-node-to-workspace 10'
+
+# previous workspace
+cmd-esc = 'workspace-back-and-forth'
+
+# special workspaces - quick access (avoiding cmd-s/x/f conflicts)
+cmd-ctrl-s = 'workspace L'                                                      # lefty workspace
+cmd-ctrl-b = 'workspace B'                                                      # browsers workspace
+
+# application launching (avoiding macos conflicts)
+cmd-enter =  'exec-and-forget open -n -a Kitty'                                    # terminal
+cmd-e =       'exec-and-forget emacsclient -c -n'                               # editor (emacs client)
+alt-q = 'exec-and-forget open -a Firefox'                                       # browser (not cmd-q!)
+
+# cmd-shift-a = 'workspace U'  # agenda workspace (configure as needed)
+alt-p = 'exec-and-forget open -a LibreWolf'                                     # privacy browser
+alt-c = 'exec-and-forget open -a "Clipboard Manager"'                           # clipboard (not cmd-c!)
+
+# utility functions
+cmd-ctrl-shift-r = 'reload-config'                                              # reload config
+cmd-ctrl-r = 'mode resize'                                                      # enter resize mode
+cmd-shift-semicolon = 'mode service'                                            # enter service mode
+
+# resize mode
+[mode.resize.binding]
+h = 'resize smart -50'
+j = 'resize smart +50'
+k = 'resize smart -50'
+l = 'resize smart +50'
+left = 'resize smart -50'
+down = 'resize smart +50'
+up = 'resize smart -50'
+right = 'resize smart +50'
+minus = 'resize smart -50'
+equal = 'resize smart +50'
+esc = 'mode main'
+enter = 'mode main'
+
+# service mode - for layout changes and advanced window management
+[mode.service.binding]
+esc = ['reload-config', 'mode main']
+r = ['flatten-workspace-tree', 'mode main']
+f = ['layout floating tiling', 'mode main']
+backspace = ['close-all-windows-but-current', 'mode main']
+
+# layout management
+h = ['layout h_accordion', 'mode main']
+v = ['layout v_accordion', 'mode main']
+t = ['layout tiles horizontal vertical', 'mode main']
+
+# join windows (move into parent container)
+cmd-h = ['join-with left', 'mode main']
+cmd-j = ['join-with down', 'mode main']
+cmd-k = ['join-with up', 'mode main']
+cmd-l = ['join-with right', 'mode main']
+
+# workspace to monitor assignments
+[workspace-to-monitor-force-assignment]
+1 = 'main'
+2 = 'main'
+3 = 'main'
+4 = 'main'
+5 = 'main'
+6 = 'secondary'
+7 = 'secondary'
+8 = 'secondary'
+9 = 'secondary'
+10 = 'secondary'
+
+# application-specific rules
+# discord → workspace c
+[[on-window-detected]]
+if.app-id = 'com.hnc.Discord'
+run = 'move-node-to-workspace C'
+
+# slack → workspace c
+[[on-window-detected]]
+if.app-id = 'com.tinyspeck.slackmacgap'
+run = 'move-node-to-workspace C'
+
+# spotify → workspace m
+[[on-window-detected]]
+if.app-id = 'com.spotify.client'
+run = 'move-node-to-workspace M'
+
+# 1password → workspace k
+[[on-window-detected]]
+if.app-id = 'com.1password.1password'
+run = 'move-node-to-workspace K'
+
+# activity monitor → workspace a
+[[on-window-detected]]
+if.app-id = 'com.apple.ActivityMonitor'
+run = 'move-node-to-workspace A'
+
+# mail → workspace i
+[[on-window-detected]]
+if.app-id = 'com.apple.mail'
+run = 'move-node-to-workspace I'
+
+# calendar → workspace u
+[[on-window-detected]]
+if.app-id = 'com.apple.iCal'
+run = 'move-node-to-workspace U'
+
+# finder → float
+[[on-window-detected]]
+if.app-id = 'com.apple.finder'
+run = 'layout floating'
+
+# system preferences → float
+[[on-window-detected]]
+if.app-id = 'com.apple.systempreferences'
+run = 'layout floating'
+
+# system settings → float
+[[on-window-detected]]
+if.app-id = 'com.apple.Settings'
+run = 'layout floating'

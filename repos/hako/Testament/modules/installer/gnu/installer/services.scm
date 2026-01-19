@@ -195,8 +195,21 @@
 (define (system-services->configuration services)
   "Return the configuration field for SERVICES."
   (let* ((snippets (append-map system-service-snippet services))
-         (packages (append-map system-service-packages services))
          (desktop? (find desktop-system-service? services))
+         (packages
+          (append (append-map system-service-packages services)
+                  (if desktop?
+                      (cons (comment (G_ ";; Fonts to cover all languages.\n"))
+                            (map (lambda (package)
+                                   `(specification->package ,package))
+                                 '("font-google-noto"
+                                   "font-google-noto-emoji"
+                                   ;; FIXME: Selection of fonts depends on the
+                                   ;; locale.  Use a monospaced CJK font with
+                                   ;; latin letters before there's proper fix.
+                                   ;; See <https://codeberg.org/guix/guix/pulls/5654#issuecomment-9928509>
+                                   "font-sarasa-gothic")))
+                      '())))
          (base     (if desktop?
                        (if (target-hurd?)
                            '%desktop-services/hurd
@@ -230,44 +243,33 @@
 ;; under their own account: use 'guix search KEYWORD' to search
 ;; for packages and 'guix install PACKAGE' to install a package.\n")))))
 
-    (if (null? snippets)
-        `(,@(if (null? packages)
-                (if (target-hurd?)
-                    `(,@package-heading
-                      (packages %base-packages/hurd))
-                    '())
+    `(,@(if (null? packages)
+            (if (target-hurd?)
                 `(,@package-heading
-                  (packages (append (list ,@packages)
-                                    ,(if (target-hurd?)
-                                         '%base-packages/hurd
-                                         '%base-packages)))))
+                  (packages %base-packages/hurd))
+                '())
+            `(,@package-heading
+              (packages (append (list ,@packages)
+                                ,(if (target-hurd?)
+                                     '%base-packages/hurd
+                                     '%base-packages)))))
 
-          ,@service-heading
-          (services ,services))
-        `(,@(if (null? packages)
-                (if (target-hurd?)
-                    `(,@package-heading
-                      (packages %base-packages/hurd))
-                    '())
-                `(,@package-heading
-                  (packages (append (list ,@packages)
-                                    ,(if (target-hurd?)
-                                         '%base-packages/hurd
-                                         '%base-packages)))))
+      ,@service-heading
+      ,(if (and (null? snippets)
+                (not desktop?))
+           `(services ,services)
+           `(services
+             (append (list ,@snippets
 
-          ,@service-heading
-          (services (append (list ,@snippets
+                           ,@(if desktop?
+                                 ;; XXX: Assume 'keyboard-layout' is in scope.
+                                 `((set-xorg-configuration
+                                    (xorg-configuration
+                                      (keyboard-layout keyboard-layout))))
+                                 '()))
 
-                                  ,@(if desktop?
-                                        ;; XXX: Assume 'keyboard-layout' is in
-                                        ;; scope.
-                                        `((set-xorg-configuration
-                                           (xorg-configuration
-                                            (keyboard-layout keyboard-layout))))
-                                        '()))
-
-                            ,(vertical-space 1)
-                            ,(comment (G_ "\
+                     ,(vertical-space 1)
+                     ,(comment (G_ "\
 ;; This is the default list of services we
 ;; are appending to.\n"))
-                            ,services))))))
+                     ,services))))))

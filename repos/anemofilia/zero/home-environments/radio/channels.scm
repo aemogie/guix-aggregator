@@ -7,7 +7,7 @@
 (define guix
   (channel
     (name 'guix)
-    (url "https://git.guix.gnu.org/guix")
+    (url "https://git.guix.gnu.org/guix.git")
     (branch "master")
     (introduction
       (make-channel-introduction
@@ -18,7 +18,7 @@
 (define radix
   (channel
     (name 'radix)
-    (url "https://codeberg.org/anemofilia/radix")
+    (url "https://codeberg.org/anemofilia/radix.git")
     (branch "main")
     (introduction
       (make-channel-introduction
@@ -29,7 +29,7 @@
 (define saayix
   (channel
     (name 'saayix)
-    (url "https://codeberg.org/look/saayix")
+    (url "https://codeberg.org/look/saayix.git")
     (branch "entropy")
     (introduction
       (make-channel-introduction
@@ -51,7 +51,7 @@
 (define shepherd
    (channel
      (name 'shepherd)
-     (url "https://git.savannah.gnu.org/git/shepherd")
+     (url "https://git.savannah.gnu.org/git/shepherd.git")
      (branch "main")
      (introduction
       (make-channel-introduction

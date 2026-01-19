@@ -7,19 +7,15 @@
              (ice-9 match)
              (ice-9 popen)
              (ice-9 textual-ports)
-
              (guix diagnostics)
              (guix i18n)
              (guix packages)
              (guix store)
-             (nonguix transformations)
+             (nonguix)
              (rosenthal)
              (sops secrets)
-
              (guix build-system copy)
-
-             (gnu packages linux)
-             (nongnu packages linux))
+             (gnu packages linux))
 
 (define %xdg-data-home
   (or (getenv "XDG_DATA_HOME")

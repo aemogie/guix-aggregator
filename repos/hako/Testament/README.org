@@ -40,12 +40,17 @@ Substitute mirrors for Guix Moe CI.
 
 * [[file:files/plain/live][LiveCDs]]
 I provide Guix System installation LiveCDs in this repository, pre-built images
-below.  The HiDPI variant uses a larger console font.
+below.
 
-| Variant | System       | Image       | Signature       | SHA256 Checksum                                                    |
-|---------+--------------+-------------+-----------------+--------------------------------------------------------------------|
-| Default | x86_64-linux | [[https://files.guix.moe/2026-01-14/x86_64-linux/rosenthal-default-20260114-x86_64-linux.iso][default.iso]] | [[https://files.guix.moe/2026-01-14/x86_64-linux/rosenthal-default-20260114-x86_64-linux.iso.asc][default.iso.asc]] | =ffb5dca3cd046ab32f4ffda244d7107eef9d91f0c0383259d305ec2b2fc739e8= |
-| HiDPI   | x86_64-linux | [[https://files.guix.moe/2026-01-14/x86_64-linux/rosenthal-hidpi-20260114-x86_64-linux.iso][hidpi.iso]]   | [[https://files.guix.moe/2026-01-14/x86_64-linux/rosenthal-hidpi-20260114-x86_64-linux.iso.asc][hidpi.iso.asc]]   | =a21d180e1ff8e3b03fb807edb2cfce2d211c645c42014633df601d829eb9e813= |
+Variants:
+- Minimal: installer-only
+- HiDPI: larger console font
+
+| Variant       | System       | Image             | Signature             | SHA256 Checksum                                                    |
+|---------------+--------------+-------------------+-----------------------+--------------------------------------------------------------------|
+| Default       | x86_64-linux | [[https://files.guix.moe/2026-01-18/rosenthal-default-20260118.x86_64-linux.iso][default.iso]]       | [[https://files.guix.moe/2026-01-18/rosenthal-default-20260118.x86_64-linux.iso.asc][default.iso.asc]]       | =2df48709d35d938da2c1b96833a2f94c99c2eb7a674b99593c46d45753ae4317= |
+| Minimal       | x86_64-linux | [[https://files.guix.moe/2026-01-18/rosenthal-minimal-20260118.x86_64-linux.iso][minimal.iso]]       | [[https://files.guix.moe/2026-01-18/rosenthal-minimal-20260118.x86_64-linux.iso.asc][minimal.iso.asc]]       | =90ad22d767d5f5a3d7eec5d2d0b8d293053586b6320ab3b2c079235ecd3d109a= |
+| Minimal-HiDPI | x86_64-linux | [[https://files.guix.moe/2026-01-18/rosenthal-minimal-hidpi-20260118.x86_64-linux.iso][minimal-hidpi.iso]] | [[https://files.guix.moe/2026-01-18/rosenthal-minimal-hidpi-20260118.x86_64-linux.iso][minimal-hidpi.iso.asc]] | =27e29c33b277f201004b34b6b82202fda021a01af4e79de62490eaf60f4ff749= |
 
 Once downloaded, follow Guix System's [[https://guix.gnu.org/manual/devel/en/html_node/System-Installation.html][installation instructions]].
 
@@ -60,19 +65,16 @@ system, so you'll need to set it up in the new system if you want.
 
 For manual installation, I suggest using the installer first to configure
 locale, keyboard layout and networking, stopping at the step setting a password.
-In the LiveCDs, [[https://fishshell.com/][fish]] is chosen as the login shell and several example
-configurations are available under =/etc/configuration= ([[file:files/plain/live/examples][in this repository as
-well]]).
 
-Most of the examples are based on the ones shipped in Guix, configured with
-Nonguix channel.  Examples created by me (those with =rosenthal= prefix) also
-includes my [[https://codeberg.org/hako/rosenthal.git][Rosenthal channel]].  Note that the Rosenthal channel is unstable.
+In the LiveCDs, [[https://fishshell.com/][fish]] is chosen as the login shell and several example
+configurations are available under =/etc/configuration=.  These examples are
+based on the ones shipped in Guix, with Nonguix channel configured.
 
 Here follows ttys in the LiveCDs:
 - tty1 (=Ctrl+Alt+F1=) :: Guix System installer.
 - tty2 (=Ctrl+Alt+F2=) :: [[https://guix.gnu.org/manual/devel/en/][GNU Guix reference manual]].
 - tty3~6 (=Ctrl+Alt+F3= ~ =Ctrl+Alt+F6=) :: =root= shell.
-- tty7 (=Ctrl+Alt+F7=) :: Login manager.
+- tty7 (=Ctrl+Alt+F7=) :: Login manager (not included in the Minimal variant).
 - tty12 (=Ctrl+Alt+F12=) :: System log.
 
 For the login manager: it logs into a desktop environment built around the [[https://github.com/YaLTeR/niri][niri]]

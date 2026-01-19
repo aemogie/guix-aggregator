@@ -105,7 +105,8 @@
                                 "https://ci.guix.gnu.org"
                                 "https://bordeaux.guix.gnu.org"))
                              (discover? #t)
-                             (extra-options '("--cores=16"))))
+                             (extra-options '("--cores=16"))
+                             (tmpdir "/var/tmp")))
                 (network-manager-service-type
                  config => (network-manager-configuration
                              (inherit config)
@@ -184,44 +185,63 @@
 #+end_src
 
 ** File Systems
-
-| ZFS Dataset                | Mount Point             | Options        | com.sun:auto-snapshot |
-|----------------------------+-------------------------+----------------+-----------------------|
-| Mentha                     | /mnt/Mentha             | acltype=posix  |                       |
-| Mentha/Root                | legacy (/)              |                |                       |
-| Mentha/Config              | legacy (/etc)           |                | true                  |
-| Mentha/Home                | legacy (/home)          |                | true                  |
-| Mentha/Store               | legacy (/gnu)           | atime=off      |                       |
-| Mentha/Data                | /var/lib                |                |                       |
-| Mentha/Data/Bluetooth      | /var/lib/bluetooth      |                | true                  |
-| Mentha/Data/SOPS           | /var/lib/sops           |                | true                  |
-| Mentha/Data/Tailscale      | /var/lib/tailscale      |                | true                  |
-| Mentha/Data/qBittorrent    | /var/lib/qbittorrent    | recordsize=16K |                       |
-|----------------------------+-------------------------+----------------+-----------------------|
-
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
-          (device "zfs:Mentha/Root")
-          (mount-point "/")
-          (type "zfs"))
-        (file-system
           (device (uuid "2574-B3EC" 'fat))
           (mount-point "/efi")
-          (type "vfat"))
+          (type "vfat")
+          (create-mount-point? #t))
         (file-system
-          (device "zfs:Mentha/Config")
-          (mount-point "/etc")
-          (type "zfs")
-          (needed-for-boot? #t))
+          (device "tmpfs")
+          (mount-point "/")
+          (type "tmpfs")
+          (options "mode=0755,nr_inodes=1m,size=25%")
+          (check? #f))
         (file-system
-          (device "zfs:Mentha/Store")
-          (mount-point "/gnu")
-          (type "zfs")
-          (needed-for-boot? #t))
-        (file-system
-          (device "zfs:Mentha/Home")
-          (mount-point "/home")
-          (type "zfs")))
+          (device "tmpfs")
+          (mount-point "/var/lock")
+          (type "tmpfs")
+          (flags '(no-suid no-dev strict-atime))
+          (options "mode=1777,nr_inodes=800k,size=20%")
+          (create-mount-point? #t)
+          (check? #f)))
+#+end_src
+
+| ZFS Dataset             | Mount Point          | Options        | com.sun:auto-snapshot |
+|-------------------------+----------------------+----------------+-----------------------|
+| Mentha                  | /mnt/Mentha          | acltype=posix  |                       |
+|                         |                      |                |                       |
+| Mentha/Store            | legacy (/gnu)        | atime=off      |                       |
+| Mentha/Guix             | legacy (/var/guix)   |                |                       |
+| Mentha/Config           | legacy (/etc)        |                | true                  |
+| Mentha/Home             | legacy (/home)       |                | true                  |
+|                         |                      |                |                       |
+| Mentha/Boot             | /boot                |                |                       |
+| Mentha/Log              | /var/log             |                |                       |
+| Mentha/Tmp              | /var/tmp             |                |                       |
+|                         |                      |                |                       |
+| Mentha/Data             | /var/lib             |                |                       |
+| Mentha/Data/Bluetooth   | /var/lib/bluetooth   |                | true                  |
+| Mentha/Data/SOPS        | /var/lib/sops        |                | true                  |
+| Mentha/Data/Tailscale   | /var/lib/tailscale   |                | true                  |
+| Mentha/Data/qBittorrent | /var/lib/qbittorrent | recordsize=16K |                       |
+|-------------------------+----------------------+----------------+-----------------------|
+
+#+begin_src scheme :noweb-ref file-systems
+  (map (match-lambda
+         ((dataset . mount-point)
+          (file-system
+            (device (string-append "zfs:" dataset))
+            (mount-point mount-point)
+            (type "zfs")
+            (create-mount-point? #t)
+            (check? (string=? mount-point "/gnu"))
+            (needed-for-boot?
+             (member mount-point '("/gnu" "/var/guix" "/etc"))))))
+       '(("Mentha/Store"  . "/gnu")
+         ("Mentha/Guix"   . "/var/guix")
+         ("Mentha/Config" . "/etc")
+         ("Mentha/Home"   . "/home")))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -287,12 +307,6 @@ Personal account.
 
 #+begin_src scheme :noweb-ref home-service
   (service home-fish-service-type)
-
-  ;; Disable fish greeting.
-  (simple-service 'fish-greeting
-      home-xdg-configuration-files-service-type
-    `(("fish/functions/fish_greeting.fish"
-       ,(plain-file "fish_greeting.fish" ""))))
 #+end_src
 
 Administration accounts.
@@ -647,6 +661,7 @@ Open TCP port 5558 and connect to server IPv4 address.
   "font-chiron-sung-hk"
   "font-google-noto"
   "font-google-noto-emoji"
+  "font-sarasa-gothic"
   "font-victor-mono"
 #+end_src
 

@@ -9,7 +9,7 @@
 
 (add-hook 'emacs-startup-hook #'restore-gc-cons-threshold 105)
 
-(add-to-list 'default-frame-alist '(alpha-background . 75))
+(add-to-list 'default-frame-alist '(alpha-background . 70))
 
 (setopt initial-scratch-message nil
         inhibit-startup-screen t)
@@ -119,23 +119,30 @@
   (dired-mode . nerd-icons-dired-mode)
   :after dired)
 
-(use-package ef-themes
+(use-package modus-themes
   :custom
-  (ef-themes-mixed-fonts t)
-  (ef-themes-common-palette-overrides '((fg-main fg-intense)))
-  (ef-themes-to-toggle '(ef-melissa-dark ef-melissa-light))
+  (modus-themes-mixed-fonts t)
   :config
-
-  (with-eval-after-load 'server
-    (add-hook 'server-after-make-frame-hook
-              (lambda ()
-                (ef-themes-load-theme (ef-themes--current-theme)))))
+  (modus-themes-include-derivatives-mode 1)
 
   (with-eval-after-load 'markdown-mode
     (add-hook 'markdown-mode-hook #'variable-pitch-mode))
 
   (with-eval-after-load 'org
-    (advice-add 'ef-themes-load-theme :after #'my/fontify-org-buffers)
-    (add-hook 'org-mode-hook #'variable-pitch-mode))
+    (advice-add 'modus-themes-load-theme :after #'my/fontify-org-buffers)
+    (add-hook 'org-mode-hook #'variable-pitch-mode)))
+
+(use-package ef-themes
+  :after
+  modus-themes
+  :custom
+  (modus-themes-to-toggle '(ef-melissa-dark ef-melissa-light))
+  :config
+  (with-eval-after-load 'server
+    (add-hook 'server-after-make-frame-hook
+              (lambda ()
+                (modus-themes-load-theme
+                 (car modus-themes-to-toggle)))))
   
-  (ef-themes-select-dark 'ef-melissa-dark))
+  ;; (modus-themes-select 'ef-melissa-dark)
+  )

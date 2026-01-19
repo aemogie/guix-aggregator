@@ -17,10 +17,16 @@
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gnu installer kernel)
+  #:use-module (srfi srfi-26)
   #:use-module (ice-9 match)
   #:use-module (gnu system hurd)
   #:use-module (guix read-print)
   #:export (kernel->configuration))
+
+(define-syntax-rule (G_ str)
+  ;; In this file, translatable strings are annotated with 'G_' so xgettext
+  ;; catches them, but translation happens later on at run time.
+  str)
 
 (define (kernel->configuration kernel dry-run?)
   (match kernel
@@ -28,9 +34,20 @@
      `((kernel linux)
        (firmware (cons* linux-firmware %base-firmware))
        (initrd microcode-initrd)))
-    ("Linux LTS"
+    ("Linux long-term support (LTS)"
      `((kernel linux-lts)
        (firmware (cons* linux-firmware %base-firmware))
        (initrd microcode-initrd)))
+    ((? (cut string-prefix? "Hurd" <>))
+     `((kernel %hurd-default-operating-system-kernel)
+       ,(comment (G_ ";; \"noide\" disables the gnumach IDE driver, enabling rumpdisk.\n"))
+       (kernel-arguments '("noide"))
+       (firmware '())
+       (hurd hurd)
+       (locale-libcs (list glibc/hurd))
+       (name-service-switch #f)
+       (essential-services (hurd-default-essential-services this-operating-system))
+       (privileged-programs '())
+       (setuid-programs %setuid-programs/hurd)))
     (_
      '())))

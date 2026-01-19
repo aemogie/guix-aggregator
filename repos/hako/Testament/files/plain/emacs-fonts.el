@@ -6,10 +6,13 @@
 ;; https://github.com/DogLooksGood/meomacs/blob/master/laf.org
 ;; https://github.com/nykma/nema/blob/develop/my-sample/font.el
 
+;;guix:font-adobe-source-serif
+;;guix:font-chiron-sung-hk
+;;guix:font-google-noto-emoji
 (defvar nema--font-size 12 "Font size")
-(defvar nema-fonts '((mono     . "monospace")
-                     (sans     . "sans")
+(defvar nema-fonts '((sans     . "sans")
                      (serif    . "serif")
+                     (mono     . "monospace")
                      (cjk      . "Chiron Sung HK VF")
                      (symbol   . "Noto Color Emoji")
                      (modeline . "Source Serif 4"))

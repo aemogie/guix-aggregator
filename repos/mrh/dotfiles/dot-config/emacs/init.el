@@ -97,7 +97,7 @@
                         ("C-c y" . consult-yank-from-kill-ring)
                         ("C-c r s" . consult-register-store)
                         ("C-c r l" . consult-register-load)
-                        ("C-c t" . ef-themes-toggle)
+                        ("C-c t" . modus-themes-toggle)
                         ("C-c b k" . kill-buffer-and-window)
                         ("C-c b h" . my/hide-buffer)
                         ("C-c b u" . my/unhide-buffer)
@@ -453,7 +453,7 @@ Helpful advice for face changing functions."
   (eshell-prompt-function
    (lambda ()
      (if (featurep 'ef-themes)
-         (let* ((palette (ef-themes--current-theme-palette))
+         (let* ((palette (modus-themes-get-theme-palette))
                 (orange (cadr (assoc 'yellow-warmer palette)))
                 (green (cadr (assoc 'green-warmer palette))))
            (format "\n %s\n %s "

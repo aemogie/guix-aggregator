@@ -4,11 +4,12 @@
 
 (use-modules (gnu)
              (guix utils)
-             (nonguix transformations)
+             (nonguix)
              (gnu system nss)
              (gnu services desktop)
              (gnu services sddm)
-             (gnu services xorg))
+             (gnu services xorg)
+             (gnu packages gnome))
 
 (define %my-os
   (operating-system
@@ -67,7 +68,9 @@
                    %base-groups))
 
     ;; This is where we specify system-wide packages.
-    (packages (append (specifications->packages '("gvfs")) ;for user mounts
+    (packages (append (list
+                       ;; force user mounts
+                       gvfs)
                       %base-packages))
 
     ;; Add GNOME and Xfce---we can choose at the log-in screen
@@ -98,5 +101,7 @@
     (name-service-switch %mdns-host-lookup-nss)))
 
 ((compose (nonguix-transformation-linux)
+          ;; Uncomment the following line for NVIDIA proprietary driver support.
+          ;; (nonguix-transformation-nvidia #:configure-xorg? #t)
           (nonguix-transformation-guix))
  %my-os)

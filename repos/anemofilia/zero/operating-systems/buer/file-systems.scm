@@ -144,7 +144,8 @@
            (check? #f)
            (flags '(no-atime bind-mount))))
        `("/etc/guix"
-         "/etc/ssh")))
+         "/etc/ssh"
+         "/etc/wireguard")))
 
 (define persistent-files
   `("/etc/machine-id"))

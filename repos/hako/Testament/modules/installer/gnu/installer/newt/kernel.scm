@@ -23,17 +23,50 @@
   #:export (run-kernel-page))
 
 (define (run-kernel-page)
-  (let ((kernels
-         '("Linux"
-           "Linux LTS")))
-    (run-listbox-selection-page
-     #:title (G_ "Kernel")
-     #:info-text
-     (G_ "Please select a kernel.  When in doubt, choose \"Linux\".")
-     #:listbox-items kernels
-     #:listbox-item->text identity
-     #:listbox-default-item "Linux"
-     #:button-text (G_ "Back")
-     #:button-callback-procedure
-     (lambda _
-       (abort-to-prompt 'installer-step 'abort)))))
+  ;; TRANSLATORS: "Hurd" is a proper noun and must not be translated.
+  (let* ((hurd-x86 (G_ "Hurd 32-bit (experimental)"))
+         (hurd-x86_64 (G_ "Hurd 64-bit (highly experimental!)"))
+         (linux "Linux")
+         (linux-lts "Linux long-term support (LTS)")
+         (linux-libre "Linux Libre")
+         (kernels (parameterize ((%current-target-system #f))
+                    `(,linux
+                      ,linux-lts
+                      ,linux-libre
+                      ,@(cond ((target-x86-64?)
+                               (list hurd-x86 hurd-x86_64))
+                              ((target-x86?)
+                               (list hurd-x86))
+                              (else
+                               '())))))
+         (default (cond ((equal? (%current-target-system) "i586-pc-gnu")
+                         hurd-x86)
+                        ((equal? (%current-target-system) "x86_64-pc-gnu")
+                         hurd-x86_64)
+                        (else
+                         linux)))
+         (result
+          (run-listbox-selection-page
+           #:title (G_ "Kernel")
+           #:info-text
+           ;; TRANSLATORS: "Hurd" is a proper noun and must not be translated.
+           ;; TRANSLATORS: "Linux Libre" is a literal and must not be translated.
+           (G_ "Please select a kernel.  When in doubt, choose \"Linux\".
+The Hurd is offered as a technology preview and development aid; many packages \
+are not yet available in Guix, such as a desktop environment or even a \
+windowing system (X, Wayland).")
+           #:listbox-items kernels
+           #:listbox-item->text identity
+           #:listbox-default-item default
+           #:button-text (G_ "Back")
+           #:button-callback-procedure
+           (lambda _
+             (abort-to-prompt 'installer-step 'abort)))))
+    (let ((target (cond ((equal? result hurd-x86)
+                         "i586-pc-gnu")
+                        ((equal? result hurd-x86_64)
+                         "x86_64-pc-gnu")
+                        (else
+                         #f))))
+      (%current-target-system target))
+    result))

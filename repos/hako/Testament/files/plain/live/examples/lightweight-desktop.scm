@@ -2,9 +2,16 @@
 ;; without full-blown desktop environments.
 
 (use-modules (gnu)
-             (nonguix transformations)
+             (nonguix)
              (gnu system nss)
-             (gnu services desktop))
+             (gnu services desktop)
+             (gnu packages bootloaders)
+             (gnu packages emacs)
+             (gnu packages emacs-xyz)
+             (gnu packages ratpoison)
+             (gnu packages suckless)
+             (gnu packages wm)
+             (gnu packages xorg))
 
 (define %my-os
   (operating-system
@@ -40,12 +47,12 @@
 
     ;; Add a bunch of window managers; we can choose one at
     ;; the log-in screen with F1.
-    (packages (append (specifications->packages
-                       '(;; window managers
-                         "ratpoison" "i3-wm" "i3status" "dmenu"
-                         "emacs" "emacs-exwm" "emacs-desktop-environment"
-                         ;; terminal emulator
-                         "xterm"))
+    (packages (append (list
+                       ;; window managers
+                       ratpoison i3-wm i3status dmenu
+                       emacs emacs-exwm emacs-desktop-environment
+                       ;; terminal emulator
+                       xterm)
                       %base-packages))
 
     ;; Use the "desktop" services, which include the X11
@@ -56,5 +63,7 @@
     (name-service-switch %mdns-host-lookup-nss)))
 
 ((compose (nonguix-transformation-linux)
+          ;; Uncomment the following line for NVIDIA proprietary driver support.
+          ;; (nonguix-transformation-nvidia #:configure-xorg? #t)
           (nonguix-transformation-guix))
  %my-os)

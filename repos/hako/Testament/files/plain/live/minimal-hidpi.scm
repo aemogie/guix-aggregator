@@ -3,13 +3,13 @@
 
 (use-modules (rosenthal))
 
-(define %os
-  (load "default.scm"))
+(define %minimal-os
+  (load "minimal.scm"))
 
 (operating-system
-  (inherit %os)
+  (inherit %minimal-os)
   (services
-   (modify-services (operating-system-user-services %os)
+   (modify-services (operating-system-user-services %minimal-os)
      (console-font-service-type
       _ => (map (lambda (num)
                   (let* ((path "/share/consolefonts/ter-132n")

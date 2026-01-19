@@ -2,9 +2,11 @@
 ;; setup, with no X11 display server.
 
 (use-modules (gnu)
-             (nonguix transformations)
+             (nonguix)
              (gnu services networking)
-             (gnu services ssh))
+             (gnu services ssh)
+             (gnu packages screen)
+             (gnu packages ssh))
 
 (define %my-os
   (operating-system
@@ -43,17 +45,19 @@
                  %base-user-accounts))
 
     ;; Globally-installed packages.
-    (packages (cons (specification->package "screen") %base-packages))
+    (packages (cons screen %base-packages))
 
     ;; Add services to the baseline: a DHCP client and an SSH
     ;; server.  You may wish to add an NTP service here.
     (services (append (list (service dhcpcd-service-type)
                             (service openssh-service-type
                               (openssh-configuration
-                                (openssh (specification->package "openssh-sans-x"))
+                                (openssh openssh-sans-x)
                                 (port-number 2222))))
                       %base-services))))
 
 ((compose (nonguix-transformation-linux)
+          ;; Uncomment the following line for NVIDIA proprietary driver support.
+          ;; (nonguix-transformation-nvidia)
           (nonguix-transformation-guix))
  %my-os)

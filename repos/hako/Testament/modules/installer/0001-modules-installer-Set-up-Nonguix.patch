@@ -1,4 +1,4 @@
-From d1e691e0845921ad3be467cb93b4ddfad5f12e9e Mon Sep 17 00:00:00 2001
+From 5ac040079568c8cc5d258d5684879df92a8fd8d5 Mon Sep 17 00:00:00 2001
 From: Hilton Chain <hako@ultrarare.space>
 Date: Thu, 15 Jan 2026 12:01:21 +0800
 Subject: [PATCH] modules: installer: Set up Nonguix.
@@ -10,15 +10,16 @@ Don't use ‘check-hardware-support’.
 Call %rosenthal-set-keymap script from the installer.
 Add Nonguix kernel options.
 Set up Nonguix channel in the final system.
+Add comment for NVIDIA proprietary driver setup.
 WORKAROUND: Set Guile load paths to use modules from external channels.
 ---
- modules/installer/gnu/installer.scm           | 17 +++++-
- modules/installer/gnu/installer/final.scm     |  2 +
- modules/installer/gnu/installer/kernel.scm    | 29 ++++------
- .../installer/gnu/installer/newt/kernel.scm   | 57 +++++--------------
- .../installer/gnu/installer/newt/welcome.scm  |  4 +-
- modules/installer/gnu/installer/steps.scm     | 20 +++++--
- 6 files changed, 58 insertions(+), 71 deletions(-)
+ modules/installer/gnu/installer.scm           | 17 +++++++--
+ modules/installer/gnu/installer/final.scm     |  2 ++
+ modules/installer/gnu/installer/kernel.scm    | 36 ++++++++++++-------
+ .../installer/gnu/installer/newt/kernel.scm   | 10 ++++--
+ .../installer/gnu/installer/newt/welcome.scm  |  4 +--
+ modules/installer/gnu/installer/steps.scm     | 22 ++++++++----
+ 6 files changed, 65 insertions(+), 26 deletions(-)
 
 diff --git a/modules/installer/gnu/installer.scm b/modules/installer/gnu/installer.scm
 index adc891e..0f0c766 100644
@@ -62,23 +63,21 @@ index 22c44a2..e88d612 100644
               (for-each (lambda (line)
                           (installer-log-line "~a" line))
 diff --git a/modules/installer/gnu/installer/kernel.scm b/modules/installer/gnu/installer/kernel.scm
-index a07d24d..2c4ac10 100644
+index a07d24d..afe2717 100644
 --- a/modules/installer/gnu/installer/kernel.scm
 +++ b/modules/installer/gnu/installer/kernel.scm
-@@ -17,25 +17,20 @@
+@@ -17,6 +17,8 @@
  ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
  
  (define-module (gnu installer kernel)
++  #:use-module (srfi srfi-26)
 +  #:use-module (ice-9 match)
    #:use-module (gnu system hurd)
    #:use-module (guix read-print)
    #:export (kernel->configuration))
+@@ -27,15 +29,25 @@
+   str)
  
--(define-syntax-rule (G_ str)
--  ;; In this file, translatable strings are annotated with 'G_' so xgettext
--  ;; catches them, but translation happens later on at run time.
--  str)
--
  (define (kernel->configuration kernel dry-run?)
 -  (if (string-prefix? "Hurd" kernel)
 -      `((kernel %hurd-default-operating-system-kernel)
@@ -97,77 +96,59 @@ index a07d24d..2c4ac10 100644
 +     `((kernel linux)
 +       (firmware (cons* linux-firmware %base-firmware))
 +       (initrd microcode-initrd)))
-+    ("Linux LTS"
++    ("Linux long-term support (LTS)"
 +     `((kernel linux-lts)
 +       (firmware (cons* linux-firmware %base-firmware))
 +       (initrd microcode-initrd)))
++    ((? (cut string-prefix? "Hurd" <>))
++     `((kernel %hurd-default-operating-system-kernel)
++       ,(comment (G_ ";; \"noide\" disables the gnumach IDE driver, enabling rumpdisk.\n"))
++       (kernel-arguments '("noide"))
++       (firmware '())
++       (hurd hurd)
++       (locale-libcs (list glibc/hurd))
++       (name-service-switch #f)
++       (essential-services (hurd-default-essential-services this-operating-system))
++       (privileged-programs '())
++       (setuid-programs %setuid-programs/hurd)))
 +    (_
 +     '())))
 diff --git a/modules/installer/gnu/installer/newt/kernel.scm b/modules/installer/gnu/installer/newt/kernel.scm
-index abf39c6..fa9dcd2 100644
+index abf39c6..ca31dca 100644
 --- a/modules/installer/gnu/installer/newt/kernel.scm
 +++ b/modules/installer/gnu/installer/newt/kernel.scm
-@@ -23,46 +23,17 @@
-   #:export (run-kernel-page))
- 
- (define (run-kernel-page)
--  ;; TRANSLATORS: "Hurd" is a proper noun and must not be translated.
--  (let* ((hurd-x86 (G_ "Hurd 32-bit (experimental)"))
--         (hurd-x86_64 (G_ "Hurd 64-bit (highly experimental!)"))
--         (linux-libre "Linux Libre")
--         (kernels (parameterize ((%current-target-system #f))
+@@ -26,9 +26,13 @@
+   ;; TRANSLATORS: "Hurd" is a proper noun and must not be translated.
+   (let* ((hurd-x86 (G_ "Hurd 32-bit (experimental)"))
+          (hurd-x86_64 (G_ "Hurd 64-bit (highly experimental!)"))
++         (linux "Linux")
++         (linux-lts "Linux long-term support (LTS)")
+          (linux-libre "Linux Libre")
+          (kernels (parameterize ((%current-target-system #f))
 -                    `(,linux-libre
--                      ,@(cond ((target-x86-64?)
--                               (list hurd-x86 hurd-x86_64))
--                              ((target-x86?)
--                               (list hurd-x86))
--                              (else
--                               '())))))
--         (default (cond ((equal? (%current-target-system) "i586-pc-gnu")
--                         hurd-x86)
--                        ((equal? (%current-target-system) "x86_64-pc-gnu")
--                         hurd-x86_64)
--                        (else
++                    `(,linux
++                      ,linux-lts
++                      ,linux-libre
+                       ,@(cond ((target-x86-64?)
+                                (list hurd-x86 hurd-x86_64))
+                               ((target-x86?)
+@@ -40,14 +44,14 @@
+                         ((equal? (%current-target-system) "x86_64-pc-gnu")
+                          hurd-x86_64)
+                         (else
 -                         linux-libre)))
--         (result
--          (run-listbox-selection-page
--           #:title (G_ "Kernel")
--           #:info-text
--           ;; TRANSLATORS: "Hurd" is a proper noun and must not be translated.
--           ;; TRANSLATORS: "Linux Libre" is a literal and must not be translated.
++                         linux)))
+          (result
+           (run-listbox-selection-page
+            #:title (G_ "Kernel")
+            #:info-text
+            ;; TRANSLATORS: "Hurd" is a proper noun and must not be translated.
+            ;; TRANSLATORS: "Linux Libre" is a literal and must not be translated.
 -           (G_ "Please select a kernel.  When in doubt, choose \"Linux Libre\".
--The Hurd is offered as a technology preview and development aid; many packages \
--are not yet available in Guix, such as a desktop environment or even a \
--windowing system (X, Wayland).")
--           #:listbox-items kernels
--           #:listbox-item->text identity
--           #:listbox-default-item default
--           #:button-text (G_ "Back")
--           #:button-callback-procedure
--           (lambda _
--             (abort-to-prompt 'installer-step 'abort)))))
--    (let ((target (cond ((equal? result hurd-x86)
--                         "i586-pc-gnu")
--                        ((equal? result hurd-x86_64)
--                         "x86_64-pc-gnu")
--                        (else
--                         #f))))
--      (%current-target-system target))
--    result))
-+  (let ((kernels
-+         '("Linux"
-+           "Linux LTS")))
-+    (run-listbox-selection-page
-+     #:title (G_ "Kernel")
-+     #:info-text
-+     (G_ "Please select a kernel.  When in doubt, choose \"Linux\".")
-+     #:listbox-items kernels
-+     #:listbox-item->text identity
-+     #:listbox-default-item "Linux"
-+     #:button-text (G_ "Back")
-+     #:button-callback-procedure
-+     (lambda _
-+       (abort-to-prompt 'installer-step 'abort)))))
++           (G_ "Please select a kernel.  When in doubt, choose \"Linux\".
+ The Hurd is offered as a technology preview and development aid; many packages \
+ are not yet available in Guix, such as a desktop environment or even a \
+ windowing system (X, Wayland).")
 diff --git a/modules/installer/gnu/installer/newt/welcome.scm b/modules/installer/gnu/installer/newt/welcome.scm
 index f821374..fddcc93 100644
 --- a/modules/installer/gnu/installer/newt/welcome.scm
@@ -187,10 +168,10 @@ index f821374..fddcc93 100644
           ;; install. The other root TTY's would have been ok too.
           (system* "chvt" "3")
 diff --git a/modules/installer/gnu/installer/steps.scm b/modules/installer/gnu/installer/steps.scm
-index b70e5eb..f9fa985 100644
+index b70e5eb..86e885e 100644
 --- a/modules/installer/gnu/installer/steps.scm
 +++ b/modules/installer/gnu/installer/steps.scm
-@@ -241,14 +241,22 @@ found in RESULTS."
+@@ -241,14 +241,24 @@ found in RESULTS."
                     ,(comment (G_ "\
  ;; Indicate which modules to import to access the variables
  ;; used in this configuration.\n"))
@@ -200,21 +181,23 @@ index b70e5eb..f9fa985 100644
 -                         '((use-modules (gnu))))
 -                   (use-service-modules cups desktop networking ssh xorg))))
 +                   (use-modules (gnu)
-+                                (nonguix transformations)
-+                                (nongnu system linux-initrd)
++                                (nonguix)
 +                                (gnu services cups)
 +                                (gnu services desktop)
 +                                (gnu services networking)
 +                                (gnu services ssh)
-+                                (gnu services xorg)
-+                                (nongnu packages linux)))))
++                                (gnu services xorg)))))
      `(,@modules
        ,(vertical-space 1)
 -      (operating-system ,@configuration))))
 +      (define %my-os
 +        (operating-system ,@configuration))
 +      ,(vertical-space 1)
-+      ((compose (nonguix-transformation-guix))
++      ((compose
++        ,(comment "\
++;; Uncomment the following line for NVIDIA proprietary driver support.
++;; (nonguix-transformation-nvidia #:configure-xorg? #t)\n")
++        (nonguix-transformation-guix))
 +       %my-os))))
  
  (define* (configuration->file configuration

@@ -242,20 +242,22 @@ found in RESULTS."
 ;; Indicate which modules to import to access the variables
 ;; used in this configuration.\n"))
                    (use-modules (gnu)
-                                (nonguix transformations)
-                                (nongnu system linux-initrd)
+                                (nonguix)
                                 (gnu services cups)
                                 (gnu services desktop)
                                 (gnu services networking)
                                 (gnu services ssh)
-                                (gnu services xorg)
-                                (nongnu packages linux)))))
+                                (gnu services xorg)))))
     `(,@modules
       ,(vertical-space 1)
       (define %my-os
         (operating-system ,@configuration))
       ,(vertical-space 1)
-      ((compose (nonguix-transformation-guix))
+      ((compose
+        ,(comment "\
+;; Uncomment the following line for NVIDIA proprietary driver support.
+;; (nonguix-transformation-nvidia #:configure-xorg? #t)\n")
+        (nonguix-transformation-guix))
        %my-os))))
 
 (define* (configuration->file configuration

@@ -36,7 +36,7 @@ Most here is agnostic of that but some is not.
 NOTE: On wayland emacs must be pure GTK (=emacs-pgtk= on guix)
 
 #+begin_src emacs-lisp
-(add-to-list 'default-frame-alist '(alpha-background . 75))
+(add-to-list 'default-frame-alist '(alpha-background . 70))
 #+end_src
 
 *** General Cleanup
@@ -184,26 +184,33 @@ You may need to call =(nerd-icons-install-fonts)=
 *** Themes
 
 #+begin_src emacs-lisp
-(use-package ef-themes
+(use-package modus-themes
   :custom
-  (ef-themes-mixed-fonts t)
-  (ef-themes-common-palette-overrides '((fg-main fg-intense)))
-  (ef-themes-to-toggle '(ef-melissa-dark ef-melissa-light))
+  (modus-themes-mixed-fonts t)
   :config
-
-  (with-eval-after-load 'server
-    (add-hook 'server-after-make-frame-hook
-              (lambda ()
-                (ef-themes-load-theme (ef-themes--current-theme)))))
+  (modus-themes-include-derivatives-mode 1)
 
   (with-eval-after-load 'markdown-mode
     (add-hook 'markdown-mode-hook #'variable-pitch-mode))
 
   (with-eval-after-load 'org
-    (advice-add 'ef-themes-load-theme :after #'my/fontify-org-buffers)
-    (add-hook 'org-mode-hook #'variable-pitch-mode))
+    (advice-add 'modus-themes-load-theme :after #'my/fontify-org-buffers)
+    (add-hook 'org-mode-hook #'variable-pitch-mode)))
+
+(use-package ef-themes
+  :after
+  modus-themes
+  :custom
+  (modus-themes-to-toggle '(ef-melissa-dark ef-melissa-light))
+  :config
+  (with-eval-after-load 'server
+    (add-hook 'server-after-make-frame-hook
+              (lambda ()
+                (modus-themes-load-theme
+                 (car modus-themes-to-toggle)))))
   
-  (ef-themes-select-dark 'ef-melissa-dark))
+  ;; (modus-themes-select 'ef-melissa-dark)
+  )
 #+end_src
 
 * Files / Directories
@@ -356,7 +363,7 @@ Fix bug causing hangups upon re-encryption of files
                         ("C-c y" . consult-yank-from-kill-ring)
                         ("C-c r s" . consult-register-store)
                         ("C-c r l" . consult-register-load)
-                        ("C-c t" . ef-themes-toggle)
+                        ("C-c t" . modus-themes-toggle)
                         ("C-c b k" . kill-buffer-and-window)
                         ("C-c b h" . my/hide-buffer)
                         ("C-c b u" . my/unhide-buffer)
@@ -870,7 +877,7 @@ Export to pdf presentations via LaTeX beamer
   (eshell-prompt-function
    (lambda ()
      (if (featurep 'ef-themes)
-         (let* ((palette (ef-themes--current-theme-palette))
+         (let* ((palette (modus-themes-get-theme-palette))
                 (orange (cadr (assoc 'yellow-warmer palette)))
                 (green (cadr (assoc 'green-warmer palette))))
            (format "\n %s\n %s "

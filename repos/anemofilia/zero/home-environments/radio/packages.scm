@@ -73,6 +73,7 @@
   #|F|# #:use-module (radix packages fish-xyz)
         #:use-module (radix packages freedesktop)
   #|G|# #:use-module (radix packages games)
+  #|I|# #:use-module (radix packages image-viewers)
   #|K|# #:use-module (radix packages kak-xyz)
   #|M|# #:use-module (radix packages music)
   #|P|# #:use-module (radix packages password-utils)
@@ -175,7 +176,7 @@
         #|haskell-apps|# hoogle))
 
 (define image
-  (list #|image-viewers|# imv
+  (list #|image-viewers|# oculante
         #|ocr          |# tesseract-ocr))
 
 (define messaging
