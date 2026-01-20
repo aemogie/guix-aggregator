@@ -33,10 +33,10 @@ Guix channels in use:
 ** [[file:config/ignamma.org][ignamma]] (x86_64-linux, UEFI, XFS) | [[file:files/deploy/ignamma.scm][deploy]]
 
 ** [[file:config/worker.org][worker]] | [[file:files/deploy/worker.scm][deploy]]
-Build workers for Guix Moe CI.
+Build workers for Guix Moe build farm.
 
 ** [[file:config/mirror.org][mirror]] | [[file:files/deploy/mirror.scm][deploy]]
-Substitute mirrors for Guix Moe CI.
+Substitute mirrors for Guix Moe build farm.
 
 * [[file:files/plain/live][LiveCDs]]
 I provide Guix System installation LiveCDs in this repository, pre-built images
@@ -45,6 +45,8 @@ below.
 Variants:
 - Minimal: installer-only
 - HiDPI: larger console font
+
+Build date: 2026-01-18
 
 | Variant       | System       | Image             | Signature             | SHA256 Checksum                                                    |
 |---------------+--------------+-------------------+-----------------------+--------------------------------------------------------------------|
@@ -60,8 +62,8 @@ experience should be the same as installing on hardware that supports
 Linux-Libre.
 
 To provide similiar downloading experience around the world, they are configured
-to use [[https://guix.moe/][Guix Moe's infrastructure]].  It won't be available in the installed
-system, so you'll need to set it up in the new system if you want.
+to use [[https://guix.moe/][Guix Moe]]'s infrastructure.  It won't be available in the installed
+system, so you'll need to set it up later if you want.
 
 For manual installation, I suggest using the installer first to configure
 locale, keyboard layout and networking, stopping at the step setting a password.

@@ -151,12 +151,6 @@ vault.urspace.moe {
 	reverse_proxy localhost:23263
 }
 
-files.boiledscript.com {
-	import block_bots
-	root * /var/lib/webpublic/files
-	file_server browse
-}
-
 
 # Guix Moe
 
@@ -169,7 +163,7 @@ guix.moe {
 	}
 
 	handle {
-		redir https://ultrarare.space/en/posts/guix-build-farm/
+		redir https://codeberg.org/hako/guix.moe
 	}
 }
 

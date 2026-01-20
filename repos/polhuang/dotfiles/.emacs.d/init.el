@@ -1,31 +1,29 @@
 ;;; -*- lexical-binding: t -*-
 
+(defvar mac-command-modifier nil
+  "Modifier key to use for the Mac command key.")
+
+(defvar mac-option-modifier nil
+  "Modifier key to use for the Mac option key.")
+
 (setq mac-command-modifier 'meta)
 (setq mac-option-modifier 'none)
 (add-to-list 'default-frame-alist '(undecorated-round . t))
-;;;;;;;;;;;;;;;;;;;;
-;; emacs settings ;;¡™
-;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;
+;; emacs settings ;;¡
+;;;;;;;;;;;;;;;;;;;;;
+
 (defvar is-guix nil
   "Variable indicating whether system is managed by guix.")
 
 (defvar is-mac nil
   "Variable indicating whether system is managed by guix.")
 
-(defvar mac-command-modifier) 
-
 (when is-mac
   (setq mac-command-modifier 'meta))
 
 (setq is-mac (not (string-equal (system-name) "persepolis.local")))
-
-;; set high gc at startup, then restore to sane defaults after init
-(setq gc-cons-threshold (* 50 1000 1000)
-      gc-cons-percentage 0.6)
-(add-hook 'emacs-startup-hook
-          (lambda ()
-            (setq gc-cons-threshold (* 8 1024 1024)
-                  gc-cons-percentage 0.1)))
 
 ;; define personal keybinding prefix (an unpragmatic keybinding repurposed for reprogrammed keyboard)
 (defvar my-map (make-sparse-keymap))
@@ -40,8 +38,7 @@
   (let ((file (expand-file-name (if (equal length "long")
                                     "sounds/bell_multiple.wav"
                                   "sounds/bell.wav")
-                                user-emacs-d
-                                irectory)))
+                                user-emacs-directory)))
     (start-process-shell-command "org" nil (concat "aplay " file))))
 
 ;;;;;;;;;;;;;;;;;;;;;;
@@ -120,23 +117,31 @@
   (load-theme 'everforest-hard-oldlight t t))
 
 (use-package cherry-seoul256-theme
-  :commands (cherry-seoul256-create)
   :straight (cherry-seoul256 :type git :host github :repo "polhuang/cherry-seoul256")
+  :demand t
   :custom
   (cherry-seoul256-background 233)
   :config
-  )
+  (load-theme 'cherry-seoul256 t))
 
-(load-theme 'cherry-seoul256 t)
 
-;; ;; Initially load the first theme
-;; (load-theme current-theme t)
+(defvar my/themes '(cherry-seoul256 modus-vivendi modus-operandi tango-dark)
+    "List of themes to cycle through.")
 
-;; (global-set-key (kbd "C-M-] r t") 'my/cycle-theme)
-;; (global-set-key (kbd "C-M-] r T") 'my/toggle-frametransparency)
-;; (global-set-key (kbd "C-M-] r +") 'cherry-seoul256-brighten-background)
-;; (global-set-key (kbd "C-M-] r -") 'cherry-seoul256-darken-background)
+(defvar my/current-theme-index 0
+  "Index of the current theme in my/themes list.")
 
+(defun my/cycle-theme ()
+  "Cycle through themes in my/themes list."
+  (interactive)
+  ;; Disable all custom themes
+  (mapc #'disable-theme custom-enabled-themes)
+  ;; Load next theme
+  (setq my/current-theme-index
+        (mod (1+ my/current-theme-index) (length my/themes)))
+  (let ((theme (nth my/current-theme-index my/themes)))
+    (load-theme theme t)
+    (message "Loaded theme: %s" theme)))
 
 ;; ansi colors
 (require 'ansi-color)
@@ -166,11 +171,9 @@
 
 ;; misc ui settings
 (when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
-(when (fboundp 'tool-bar-mode)   (tool-bar-mode -1))
-(when (fboundp 'menu-bar-mode)   (menu-bar-mode -1))
-(when (fboundp 'fringe-mode)     (fringe-mode 0))
-
-(system-name)
+(when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
+(when (fboundp 'menu-bar-mode) (menu-bar-mode -1))
+(when (fboundp 'fringe-mode) (fringe-mode 0))
 
 (global-hl-line-mode t)
 (tooltip-mode -1)
@@ -189,37 +192,27 @@
 
 ;; frame + window management
 (use-package activities
-  :init
+  :config
   (activities-mode))
 
 ;; transparency
 (add-to-list 'default-frame-alist '(alpha-background . 65))
 
-(declare-function cherry-seoul256-create "cherry-seoul256")
-(with-eval-after-load 'cherry-seoul256
-  (defun my/toggle-frametransparency ()
-    "Toggle frame transparency and adjust cherry-seoul256 background."
+(defun my/increase-transparency ()
+    "Increase frame transparency by 10 (make more transparent)."
     (interactive)
-    (let ((current-alpha (frame-parameter nil 'alpha-background)))
-      (if (or (not current-alpha) (= current-alpha 100))
-          (progn
-            (set-frame-parameter nil 'alpha-background 60)
-            (cherry-seoul256-create 'cherry-seoul256 233))
-        (progn
-          (set-frame-parameter nil 'alpha-background 100)
-          (cherry-seoul256-create 'cherry-seoul256 235))))))
+    (let* ((current-alpha (or (frame-parameter nil 'alpha-background) 100))
+           (new-alpha (max 0 (- current-alpha 10))))
+      (set-frame-parameter nil 'alpha-background new-alpha)
+      (message "Transparency: %d%%" new-alpha)))
 
-(defun my/t\oggle-frametransparency ()
-    "Toggle frame transparency and adjust cherry-seoul256 background."
-    (interactive)
-    (let ((current-alpha (frame-parameter nil 'alpha-background)))
-      (if (or (not current-alpha) (= current-alpha 100))
-          (progn
-            (set-frame-parameter nil 'alpha-background 60)
-            (cherry-seoul256-create 'cherry-seoul256 233))
-        (progn
-          (set-frame-parameter nil 'alpha-background 100)
-          (cherry-seoul256-create 'cherry-seoul256 235)))))
+(defun my/decrease-transparency ()
+  "Decrease frame transparency by 10 (make more opaque)."
+  (interactive)
+  (let* ((current-alpha (or (frame-parameter nil 'alpha-background) 100))
+         (new-alpha (min 100 (+ current-alpha 10))))
+    (set-frame-parameter nil 'alpha-background new-alpha)
+    (message "Transparency: %d%%" new-alpha)))
 
 ;; fonts
 (defvar my/font-options
@@ -258,7 +251,7 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
          (selected-font (completing-read "Select font: " font-names nil t)))
     (my/set-font selected-font)))
 
-(defun my/cycle-fonts ()
+(defun my/cycle-font ()
   "Cycle through the fonts in `my/font-options` and set the next one."
   (interactive)
   (let* ((num-fonts (length my/font-options))
@@ -269,9 +262,6 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
     (my/set-font font-name)))
 
 (my/set-font "Fira Code") ;; default
-
-(global-set-key (kbd "C-M-] r F") 'my/select-font)
-(global-set-key (kbd "C-M-] r f") 'my/cycle-fonts)
 
 ;; fontify-face
 (use-package fontify-face
@@ -504,7 +494,7 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
 
 (use-package org
   :ensure t
-  :commands org-capture-finalize
+  :functions org-capture-finalize
   :bind
   (("C-c n C-i" . org-id-get-create)
    ("C-c a" . org-agenda)
@@ -553,9 +543,7 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
   (org-startup-with-inline-images t)
   (org-startup-with-latex-preview t)
   (org-preview-latex-default-process 'dvipng)
-
-  (org-agenda-start-with-archives-mode t)
-  (org-agenda-files '("~/org/tasks.org" "~/org/projects.org" "~/org/schedule.org" "~/org/habits.org" "~/org/ticktick.org"))
+  (org-agenda-files '("~/org/agenda/tasks.org" "~/org/agenda/projects.org" "~/org/agenda/schedule.org" "~/org/agenda/habits.org" "~/org/agenda/ticktick.org" "~/org/agenda/activities.org"))
   (org-agenda-format-date (lambda (date)
                             (require 'cal-iso)
                             (let* ((dayname (calendar-day-name date))
@@ -626,7 +614,7 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
   (org-habit-preceding-days 28)
   (org-habit-following-days 0)
 
-  (org-todo-keywords '((sequence "TODO" "IN PROGRESS" "DONE")))
+  (org-todo-keywords '((sequence "TODO" "IN PROGRESS" "DONE" "HABIT" "ACTIVITY")))
   (org-todo-keyword-faces
         '(("IN PROGRESS" . (:foreground "#F1C40F" :distant-foreground "e6dfb8" :weight bold))
           ("UPCOMING" . (:foreground "#cddbf9" :weight bold))
@@ -709,8 +697,7 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
     (delete-frame)))
 
 (use-package org-roam
-  :load-path ("~/.emacs.d/org-roam-2.3.1/" "~/.emacs.d/org-roam-2.3.1/extensions/")
-  :ensure nil
+  :ensure t
   :after org
   :bind (("C-c n l" . org-roam-buffer-toggle)
 	 ("C-c n f" . org-roam-node-find)
@@ -764,6 +751,12 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
   (org-roam-ui-update-on-save t)
   (org-roam-ui-open-on-start t))
 
+(use-package org-roam-dailies-tasklog
+  :straight (:host github :repo "polhuang/org-roam-dailies-tasklog")
+  :after org-roam
+  :config
+  (org-roam-dailies-tasklog-mode 1))
+
 (use-package org-super-agenda ;; if there's a problem with loading the package, it could be because of dash conflicts - needs to be installed internally, not externally
   :ensure t
   :after org-agenda
@@ -775,32 +768,31 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
   (interactive)
   (consult-ripgrep "~/org"))
 
-
 ;; org-notify
 (use-package org-notify
-  :ensure t
-  :commands (org-notify-start org-notify-add)
-  :custom
-  (org-notify-timestamp-types '(:deadline :scheduled))
-  :config
-  (defun my/alarm-long (&rest _)
-    "Wrapper function for alarm to fit :actions list below"
-    (my/alarm "long"))
-  
-  (org-notify-start)
-  (org-notify-add 'default
-                  '(:time "0s" :duration 1200
-                          :actions (-notify)))
-  (org-notify-add 'event
-                  '(:time "5s" :duration 50 :urgency critical
-                          :actions (my/alarm-long -notify))
-        	  '(:time "1m" :duration 55
-                          :actions (my/alarm -notify))
-                  '(:time "5m" :duration 60
-                          :actions (-notify))
-                  '(:time "15m" :duration 60
-                          :actions -notify)
-                  '(:time "30m" :duration 1200 :actions -notify)))
+    :ensure t
+    :functions (org-notify-start org-notify-add)
+    :custom
+    (org-notify-timestamp-types '(:deadline :scheduled))
+    :config
+    (defun my/alarm-long (&rest _)
+      "Wrapper function for alarm to fit :actions list below"
+      (my/alarm "long"))
+
+    (org-notify-add 'default
+                    '(:time "0s" :duration 300
+                            :actions (-notify)))
+    (org-notify-add 'event
+                    '(:time "5s" :duration 50 :urgency critical
+                            :actions (my/alarm-long -notify))
+                    '(:time "1m" :duration 55
+                            :actions (my/alarm -notify))
+                    '(:time "5m" :duration 60
+                            :actions (-notify))
+                    '(:time "15m" :duration 60
+                            :actions -notify)
+                    '(:time "30m" :duration 1200 :actions -notify))
+    (org-notify-start))
 
 ;; add snooze functionality to org-notify
 (use-package org-notify-snooze
@@ -841,9 +833,10 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
 ;; remind me to clock in/out
 (use-package org-clock-reminder
   :ensure t
-  :commands org-clock-reminder-mode
-  :init (org-clock-reminder-mode)
+  :demand t
+  :functions (org-clock-reminder-mode org-clock-reminder--icon notifications-notify)
   :custom
+  (org-clock-reminder-mode 1)
   (org-clock-reminder-formatters
    '((?c . (org-duration-from-minutes (floor (org-time-convert-to-integer
 		                              (time-since org-clock-start-time))
@@ -875,11 +868,12 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (use-package hydra
+  :demand t
   :ensure t)
 
-;; load hydra at compile time so byte-compiler understands defhydra macro
-(eval-when-compile
-  (require 'hydra nil t))
+(use-package pretty-hydra
+  :demand t
+  :ensure t)
 
 ;; hydra-colossa
 (defhydra hydra-colossa (:color amaranth :hint nil)
@@ -917,11 +911,33 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
   "
   _t_: transpose
   _s_: toggle vertical/horizontal split
+  _q_: go away
 "
   ("c" clone-frame :color blue)
   ("t" crux-transpose-windows :color blue)
+  ("q" nil  :color blue)
   ("s" my/toggle-window-split :color blue)
   ("." nil :color blue))
+
+(declare-function cherry-seoul256-brighten-background "cherry-seoul256")
+(declare-function cherry-seoul256-darken-background "cherry-seoul256")
+
+(pretty-hydra-define hydra-emacs-ui
+  (:title "emacs ui" :quit-key "q")
+  ("Visibility"
+   (("+" cherry-seoul256-brighten-background "brighten background")
+    ("-" cherry-seoul256-darken-background "darken background")
+    ("<up>" my/increase-transparency "more transparency")
+    ("<down>" my/decrease-transparency "less transparency"))
+
+   "Font"
+   (("f" my/cycle-font "cycle font")
+    ("sf" my/select-font "select font"))
+
+   "Theme"
+   (("t" my/cycle-theme "cycle theme"))))
+
+(global-set-key (kbd "C-M-] r") 'hydra-emacs-ui/body)
 
 ;; hydra for ibuffer
 (require 'ibuffer)
@@ -1512,10 +1528,7 @@ T - tag prefix
 ;; prescient
 (use-package prescient
   :ensure t
-  :commands (prescient-persist-mode)
-  :custom
-  (prescient-enable-filtering nil)
-  (prescient-sort-full-matches-first t)
+  :functions (prescient-persist-mode)
   :config
   (prescient-persist-mode 1))
 
@@ -1656,20 +1669,6 @@ T - tag prefix
  (lambda (_ cmd)
    (put cmd 'repeat-map 'org-navigation-map)) org-navigation-map)
 
-(defvar emacs-styling-map
-  (let ((map (make-sparse-keymap)))
-    (pcase-dolist (`(,k . ,f)
-                   '(("f" . my/cycle-fonts)
-                     ("t" . my/cycle-theme)
-                     ("+" . cherry-seoul256-brighten-background)
-                     ("-" . cherry-seoul256-darken-background)))
-      (define-key map (kbd k) f))
-    map))
-
-(map-keymap
- (lambda (_ cmd)
-   (put cmd 'repeat-map 'emacs-styling-map)) emacs-styling-map)
-
 ;; persistent scratch
 ;; (use-package persistent-scratch
 ;;   :ensure t
@@ -1788,7 +1787,6 @@ Otherwise, call eat."
 ;; lsp
 (use-package lsp-mode
   :ensure t
-  :commands (lsp lsp-deferred)
   :custom
   (lsp-keymap-prefix "C-c l")
   (lsp-completion-provider :none)
@@ -1813,12 +1811,7 @@ Otherwise, call eat."
 (use-package lsp-ui
   :ensure t
   :hook
-  (lsp-mode . lsp-ui-mode)
-  :bind (("C-c l d" . lsp-ui-doc-show))
-  :custom
-  (lsp-ui-sidebar-enable nil)
-  (lsp-ui-doc-position 'at-point)
-  :commands lsp-ui-mode)
+  (lsp-mode . lsp-ui-mode))
 
 (use-package lsp-tailwindcss
   :ensure t
@@ -1851,7 +1844,7 @@ Otherwise, call eat."
 
 ;; treesit-auto
 (use-package treesit-auto
-  :commands (treesit-auto-add-to-auto-mode-alist global-treesit-auto-mode)
+  :functions global-treesit-auto-mode
   :ensure t
   :custom
   (treesit-auto-add-to-auto-mode-alist 'all)
@@ -2142,8 +2135,8 @@ Otherwise, call eat."
 ;; zone-mode
 (use-package zone
   :ensure nil
-  :commands zone-when-idle
-  :init
+  :functions zone-when-idle
+  :config
   (zone-when-idle 90))
 
 ;; dashboard
@@ -2194,7 +2187,7 @@ Otherwise, call eat."
 ;; gptel
 (use-package gptel
   :ensure t
-  :commands gptel-end-of-response
+  :functions gptel-end-of-response
   :custom
   (gptel-model 'gpt-5.1)
   (gptel-default-mode 'org-mode)
@@ -2230,7 +2223,7 @@ Otherwise, call eat."
 ;; parrot
 (use-package parrot
   :ensure t
-  :commands parrot-set-parrot-type
+  :functions parrot-set-parrot-type
   :hook (emacs-startup . parrot-mode)
   :custom
   (parrot-num-rotations nil)
@@ -2261,67 +2254,106 @@ Otherwise, call eat."
 (my/connect-to-erc)
 
 ;; org-gcal
-(use-package org-gcal
+ (use-package org-gcal
   :ensure t
   :after org
-  :commands (org-entry-get org-entry-put org-todo org-sort-entries org-gcal-sync org-gcal--sync-unlock)
+  :functions (org-entry-get org-entry-put org-todo org-sort-entries org-gcal-sync)
   :custom
   (org-gcal-up-days 0)
   (org-gcal-down-days 30)
   ;; prevent org-id from scanning archive files (org-gcal uses org-id to find entries)
   (org-id-extra-files 'org-agenda-files)
-  :init
-  ;; format gcal property hook
-  (add-hook 'org-gcal-after-update-entry-functions 'my/org-gcal-format)
-  (load (expand-file-name "private/gcal-credentials.el" user-emacs-directory))
-  
-  ;; sync 30 seconds after startup, then repeat every hour
-  (run-with-timer 30 3600
-                  (lambda ()
-                    (org-gcal-sync)
-                    (message "gcal synced at %s" (format-time-string "%Y-%m-%d %H:%M:%S"))))
 
-  ;; this function is used as a local variable in schedule.org to remove the
-  ;; timestamps org-gcal puts into the org-gcal drawer after sync
+  :init
+  ;; load credentials
+  (load (expand-file-name "private/gcal-credentials.el" user-emacs-directory))
+
+  :config
   (defun my/clear-extra-gcal-timestamps ()
-    "Remove all lines in the current buffer that start with the character '<'."
+    "Remove all lines in the current buffer that start with '<'.
+This clears timestamps org-gcal puts into the org-gcal drawer after sync."
     (interactive)
     (goto-char (point-min))
     (while (re-search-forward "^<.*$" nil t)
       (replace-match "")))
 
-  :config
-  (defun my/org-gcal-format (_calendar-id event _update-mode)
+  (defun my/delete-unwanted-gcal-entries ()
+    "Delete calendar entries with specific titles after org-gcal sync."
+    (interactive)
+    (let ((unwanted-titles '("Body Doubling: Working Session"
+                            "▵ Global Startups Sales All Hands ▵"
+                            "▲ Team Meditation with Jeremy"
+                            "Demo Doys"
+                            "Crossbeam Office Hours [Sales Team]: Accelerate Partner Pipeline & Deals"
+                            "DD: Weekly Office Hours (Optional)"))
+          (schedule-file (expand-file-name "~/org/agenda/schedule.org")))
+      (when (file-exists-p schedule-file)
+        (with-current-buffer (find-file-noselect schedule-file)
+          (save-excursion
+            (goto-char (point-min))
+            (dolist (title unwanted-titles)
+              (goto-char (point-min))
+              (while (re-search-forward (concat "^\\* \\(UPCOMING\\|TODO\\|DONE\\) " (regexp-quote title) "$") nil t)
+                (org-back-to-heading t)
+                (delete-region (point) (progn (org-end-of-subtree t t) (point))))))
+          (save-buffer))))
+    (message "Deleted unwanted calendar entries"))
+
+  (defun my/cleanup-schedule-after-sync ()
+    "Clean up schedule.org: clear extra timestamps, sort entries, delete unwanted entries."
+    (interactive)
+    (let ((schedule-file (expand-file-name "~/org/agenda/schedule.org")))
+      (when (file-exists-p schedule-file)
+        (with-current-buffer (find-file-noselect schedule-file)
+          (save-excursion
+            (my/clear-extra-gcal-timestamps)
+            (goto-char (point-min))
+            (org-sort-entries t ?s))
+          (save-buffer))))
+    (my/delete-unwanted-gcal-entries))
+
+  (defun my/org-gcal-format (calendar-id event update-mode)
     "Format org-gcal events in the schedule.org buffer.
 Add :notify: event on import."
-  (if (eq _update-mode 'newly-fetched)
-      (progn
-        ;; Timed events
-        (when-let* ((stime (plist-get (plist-get event :start) :dateTime))
-                    (etime (plist-get (plist-get event :end) :dateTime))
-                    (start-time (date-to-time stime))
-                    (end-time (date-to-time etime))
-                    (formatted-stime (format-time-string "%Y-%m-%d %a %H:%M" start-time))
-                    (formatted-etime (format-time-string "%H:%M" end-time)))
-          (org-todo "UPCOMING")
-          (org-schedule nil (format "<%s-%s>" formatted-stime formatted-etime)))
+    (if (eq update-mode 'newly-fetched)
+        (progn
+          ;; Timed events
+          (when-let* ((stime (plist-get (plist-get event :start) :dateTime))
+                      (etime (plist-get (plist-get event :end) :dateTime))
+                      (start-time (date-to-time stime))
+                      (end-time (date-to-time etime))
+                      (formatted-stime (format-time-string "%Y-%m-%d %a %H:%M" start-time))
+                      (formatted-etime (format-time-string "%H:%M" end-time)))
+            (org-todo "UPCOMING")
+            (org-schedule nil (format "<%s-%s>" formatted-stime formatted-etime)))
 
-        ;; All-day events
-        (when-let* ((stime (plist-get (plist-get event :start) :date)))
-          (if (string= _calendar-id "997d9ee06bb6de8790f30e0fe0e8a52e60a15bf1301173490f0e92247a2eb4ad@group.calendar.google.com") ;; this is for TickTick tasks - import as tasks instead of as events
-              (org-todo "TODO")
-            (org-todo "UPCOMING"))
-          (org-schedule nil (format "<%s>" stime)))
+          ;; All-day events
+          (when-let* ((stime (plist-get (plist-get event :start) :date)))
+            (if (string= calendar-id "997d9ee06bb6de8790f30e0fe0e8a52e60a15bf1301173490f0e92247a2eb4ad@group.calendar.google.com") ;; TickTick tasks - import as tasks
+                (org-todo "TODO")
+              (org-todo "UPCOMING"))
+            (org-schedule nil (format "<%s>" stime)))
 
-        ;; Add :notify: event once on import
-        (let ((cur (or (org-entry-get (point) "notify") "")))
-          (unless (string= cur "event")
-            (org-entry-put (point) "notify" "event"))))
-    ;; On updates: just keep your sort behavior
-    (org-sort-entries nil ?o)))
+          ;; Add :notify: event once on import
+          (let ((cur (or (org-entry-get (point) "notify") "")))
+            (unless (string= cur "event")
+              (org-entry-put (point) "notify" "event"))))
+      ;; On updates: keep sort behavior
+      (org-sort-entries nil ?o)))
 
+  ;; Hook to format entries as they're imported
+  (add-hook 'org-gcal-after-update-entry-functions 'my/org-gcal-format)
 
-  )
+  ;; Advice to run cleanup after any org-gcal-sync call (waits 5 seconds for sync to complete)
+  (advice-add 'org-gcal-sync :after
+              (lambda (&rest _)
+                (run-with-timer 5 nil 'my/cleanup-schedule-after-sync)))
+
+  ;; Auto-sync: 30 seconds after startup, then repeat every hour
+  (run-with-timer 30 3600
+                  (lambda ()
+                    (org-gcal-sync)
+                    (message "gcal synced at %s" (format-time-string "%Y-%m-%d %H:%M:%S")))))
 
 (use-package scratchpad
   :if (file-exists-p "~/projects/scratchpad/scratchpad.el")
@@ -2381,15 +2413,6 @@ Add :notify: event on import."
      (scratchpad :url "https://github.com/polhuang/scratchpad.el")
      (claude-code-ide :url
                       "https://github.com/manzaltu/claude-code-ide.el")))
- '(safe-local-variable-values
-   '((eval progn (my/clear-extra-gcal-timestamps) (goto-char (point-min))
-           (org-sort-entries t 115))
-     (eval save-excursion (goto-char (point-min))
-           (while (re-search-forward "^\\(<\\([^>]+\\)>\\)" nil t)
-             (replace-match "SCHEDULED: \\1")))
-     (eval org-columns) (eval outline-next-heading)
-
-     (eval goto-char (point-min))))
  '(warning-suppress-types '((comp))))
 
 (custom-set-faces
@@ -2401,4 +2424,3 @@ Add :notify: event on import."
 
 ;; byte-compile-warnings: (not docstrings)
 ;; End:
-org-id-extra-files

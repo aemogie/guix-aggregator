@@ -21,3 +21,4 @@
 (setq frame-inhibit-implied-resize t)
 
 ;;; early-init.el ends here
+

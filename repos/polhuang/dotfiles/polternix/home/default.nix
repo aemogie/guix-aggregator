@@ -6,7 +6,7 @@
   home.stateVersion = "23.11";
 
   home.packages = [
-    # pkgs._1password-gui-beta # now broken
+    pkgs._1password-gui-beta
     pkgs.activitywatch
     pkgs.google-chrome
     pkgs.morewaita-icon-theme
