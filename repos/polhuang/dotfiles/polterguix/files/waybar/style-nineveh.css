@@ -351,3 +351,26 @@ tooltip label {
 .modules-right {
     margin-right: 0px;
 }
+
+/* org-clock state - imported last to override waybar background */
+@import "org-clock-state.css";
+
+/* Org-clock module - display the active task */
+#custom-org-clock {
+    padding: 0 10px;
+    color: #e0def4;
+}
+
+#custom-org-clock.org-clock-active {
+    margin: 5px;
+    background-color: #d97706;
+    border-radius: 8px;
+}
+
+#custom-org-clock.org-clock-inactive {
+    opacity: 0;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    margin: 0;
+}

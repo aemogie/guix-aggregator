@@ -19,12 +19,13 @@
 
     "modules-center": [
         "mpd",
-        "custom/spotify"
+        "custom/spotify",
+        "custom/org-clock",
+        "clock"
     ],
 
     "modules-right": [
         "idle_inhibitor",
-        "clock",
         "custom/weather",
         "disk",
         "cpu",
@@ -221,5 +222,13 @@
             "activated": "",
             "deactivated": ""
         }
+    },
+
+    "custom/org-clock": {
+        "exec": "/home/pol/projects/org-clock-waybar-widget/org-clock-waybar.py",
+        "return-type": "json",
+        "interval": 5,
+        "format": "{}",
+        "tooltip": true
     }
 }

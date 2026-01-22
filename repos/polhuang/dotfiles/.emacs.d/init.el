@@ -614,11 +614,16 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
   (org-habit-preceding-days 28)
   (org-habit-following-days 0)
 
-  (org-todo-keywords '((sequence "TODO" "IN PROGRESS" "DONE" "HABIT" "ACTIVITY")))
+  (org-todo-keywords '((sequence "TODO" "IN PROGRESS")
+                       (sequence "TABLED" "TODO" "IN PROGRESS" "|" "DONE")
+                       (sequence "ACTIVITY")
+                       (sequence "ENTRY")
+                       ))
   (org-todo-keyword-faces
         '(("IN PROGRESS" . (:foreground "#F1C40F" :distant-foreground "e6dfb8" :weight bold))
           ("UPCOMING" . (:foreground "#cddbf9" :weight bold))
-          ("HABIT" . (:foreground "#f6bbe7" :weight bold))
+          ("ENTRY" . (:foreground "#f6bbe7" :weight bold))
+          ("ACTIVITY" . (:foreground "#F1C40F" :weight bold))
           ("TABLED" . (:foreground "#ffd700" :distant-foreground "#171717" :weight bold))))
   (org-log-done 'time)
   (electric-indent-mode 1)
@@ -722,8 +727,8 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
    (list #'org-roam-backlinks-section
 	 #'org-roam-reflinks-section))
   (org-roam-dailies-capture-templates
-   '(("d" "default" entry "* %<%I:%M %p> \n:PROPERTIES:\n:MOOD: %?\n:END:"
-      :if-new (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>"))))
+   '(("d" "default" entry "* ENTRY %<%I:%M %p> \n:PROPERTIES:\n:MOOD: %?\n:END:"
+      :if-new (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n#+TODO: TODO IN PROGRESS DONE ACTIVITY ENTRY"))))
   :init
   (require 'org-roam-dailies)
   :config
@@ -751,8 +756,10 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
   (org-roam-ui-update-on-save t)
   (org-roam-ui-open-on-start t))
 
+(load "~/projects/org-roam-dailies-tasklog/org-roam-dailies-tasklog")
+
 (use-package org-roam-dailies-tasklog
-  :straight (:host github :repo "polhuang/org-roam-dailies-tasklog")
+  :vc (:url "https://github.com/polhuang/org-roam-dailies-tasklog" :rev :newest)
   :after org-roam
   :config
   (org-roam-dailies-tasklog-mode 1))
@@ -833,7 +840,6 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
 ;; remind me to clock in/out
 (use-package org-clock-reminder
   :ensure t
-  :demand t
   :functions (org-clock-reminder-mode org-clock-reminder--icon notifications-notify)
   :custom
   (org-clock-reminder-mode 1)
@@ -848,20 +854,17 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
   (org-clock-reminder-active-title "Big Brother says:")
   (org-clock-reminder-inactive-text "%t: You're not clocked in, bro")
   (org-clock-reminder-active-text "%t: You've been working for %c on %h.")
-  (org-clock-reminder-interval (cons 10 30))
-  (org-clock-reminder-inactive-notifications-p nil)
+  (org-clock-reminder-interval (cons 10 5))
+  (org-clock-reminder-inactive-notifications-p t)
   :config
   ;; replace function to configure urgency, timeout, icon
   (defun org-clock-reminder-notify (title message)
     (let ((icon-path (org-clock-reminder--icon)))
       (notifications-notify :title title
                             :body message
+                            :transient
                             :app-icon icon-path
-                            :timeout 54000)))
-
-  ;; define duration based on time since latest clock-in, not total clocked time
-  ;; add current
-  (org-clock-reminder-mode))
+                            :timeout 30000))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; hydra ----------------------------------------------------------------------- ;;
@@ -1366,7 +1369,7 @@ T - tag prefix
          ("C-M-Y" . consult-org-agenda)
 	 ;; M-g bindings in `goto-map'
 	 ("M-g e" . consult-compile-error)
-	 ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+	 ("M-g f" . consult-flycheck)               ;; Alternative: consult-flycheck
 	 ("M-g g" . consult-goto-line)             ;; orig. goto-line
 	 ;; ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
 	 ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
@@ -2137,7 +2140,7 @@ Otherwise, call eat."
   :ensure nil
   :functions zone-when-idle
   :config
-  (zone-when-idle 90))
+  (zone-when-idle 300))
 
 ;; dashboard
 (use-package dashboard
@@ -2236,6 +2239,12 @@ Otherwise, call eat."
   :hook (emacs-startup . elcord-mode)
   :custom (elcord-idle-message "call me maybe?"))
 
+;; slack
+(use-package slack
+  :ensure t
+  :vc (:url "https://github.com/emacs-slack/emacs-slack" :rev :newest)
+  )
+
 ;; erc (irc)
 (use-package erc
   :custom
@@ -2254,10 +2263,10 @@ Otherwise, call eat."
 (my/connect-to-erc)
 
 ;; org-gcal
- (use-package org-gcal
+(use-package org-gcal
   :ensure t
   :after org
-  :functions (org-entry-get org-entry-put org-todo org-sort-entries org-gcal-sync)
+  :functions (org-entry-get org-entry-put org-todo org-sort-entries org-gcal-sync org-back-to-heading org-end-of-)
   :custom
   (org-gcal-up-days 0)
   (org-gcal-down-days 30)
@@ -2308,7 +2317,9 @@ This clears timestamps org-gcal puts into the org-gcal drawer after sync."
           (save-excursion
             (my/clear-extra-gcal-timestamps)
             (goto-char (point-min))
-            (org-sort-entries t ?s))
+            (condition-case nil
+                (org-sort-entries t ?s)
+              (user-error nil)))
           (save-buffer))))
     (my/delete-unwanted-gcal-entries))
 
@@ -2391,29 +2402,8 @@ Add :notify: event on import."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   '("18f669003544bfcfb544fb94572c18354447b3d9d14a2b96d0b4ca787f7fe2dd"
-     "9f1c593abc996917c24f563e68f44bb4175d4419925577014757f6ba2dfe2850"
-     "ed70dedb2c45f8b698c1f7ab04b6a0d8678f6d49cd977e01b35f8546dcbb4aa8"
-     "d585421c2f1917400daaac0b628ee74e0c2d2960b99680cc75b393601adef535"
-     "a53c7ff4570e23d7c5833cd342c461684aa55ddba09b7788d6ae70e7645c12b4"
-     "67f6b0de6f60890db4c799b50c0670545c4234f179f03e757db5d95e99bac332"
-     "7142a20d65513972790584a98dcfa2925126383817399438dcf133cb4eea96e3"
-     "477715cf84159782e44bcea3c90697e4c64896b5af42d0466b2dd44ece279505"
-     "b4c6b60bf5cf727ca62651c0a0147e0e6ba63564215bd3fd9bab771e7914bea8"
-     "c9dba7f4b46497b5bddfab834603fc1748d50f6ea027c347561bb3d81a9c6a32"
-     "57763ac4917fe06157c891fd73fd9a9db340bfe3a04392bb68b2df9032ce14a5"
-     "e9aa348abd3713a75f2c5ba279aa581b1c6ec187ebefbfa33373083ff8004c7c"
-     "7b8f5bbdc7c316ee62f271acf6bcd0e0b8a272fdffe908f8c920b0ba34871d98"
-     default))
- '(epg-pinentry-mode 'loopback nil nil "Customized with use-package epa")
  '(package-vc-selected-packages
-   '((org-notify-snooze :url
-                        "https://github.com/polhuang/org-notify-snooze")
-     (scratchpad :url "https://github.com/polhuang/scratchpad.el")
-     (claude-code-ide :url
-                      "https://github.com/manzaltu/claude-code-ide.el")))
- '(warning-suppress-types '((comp))))
+   '((emacsslack :url "https://github.com/emacs-slack/emacs-slack"))))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
