@@ -2,6 +2,7 @@
   #:use-module (gnu packages admin)
   #:use-module (gnu packages audio)
   #:use-module (gnu packages bittorrent)
+  #:use-module (gnu packages base)
   #:use-module (gnu packages browser-extensions)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages cpp)
@@ -57,6 +58,7 @@
   #:use-module (nongnu packages nvidia)
   #:use-module (nongnu packages video)
   #:use-module (radix packages freedesktop)
+  #:use-module (radix packages image-viewers)
   #:use-module (radix packages music)
   #:use-module (radix packages pulseaudio)
   #:use-module (radix packages video)
@@ -108,26 +110,8 @@
             ghostty-tip
             hyprland-latest))
 
-(define mpvpaper-minimal
-  (let* ((commit "01b2b92a989e57001947945fa21c31dce3e51c9b")
-         (revision "1"))
-    (package/inherit mpvpaper
-      (name "mpvpaper-minimal")
-      (version (git-version (package-version mpvpaper) revision commit))
-      (source (origin
-                (method git-fetch)
-                (uri (git-reference
-                      (url "https://github.com/GhostNaN/mpvpaper")
-                      (commit commit)))
-                (sha256
-                 (base32 "1d6sc89v6z798rbmf54j2rv3jcmkfbrhym5lj3xy5ybyww72gw73"))
-                (file-name (git-file-name name version))))
-      (inputs
-        (modify-inputs (package-inputs mpvpaper)
-          (replace "mpv" mpv-minimal/wayland))))))
-
 (define bar
-  (list eww/wayland waybar))
+  (list eww/wayland waybar quickshell/latest))
 
 (define browser
   (list zen-browser-bin))
@@ -152,6 +136,8 @@
         pciutils
         qtwayland
         sops
+        sed
+        grep
         xdg-utils))
 
 (define downloads
@@ -196,8 +182,8 @@
         font-nerd-symbols))
 
 (define games
-  (yumiko?* (steam-for nvdb)
-            (heroic-for nvdb)
+  (yumiko?* (steam-for nvda)
+            (heroic-for nvda)
             mangohud
             mcpelauncher-client
             osu-lazer-bin
@@ -218,7 +204,8 @@
         hyprsunset))
 
 (define image
-  (list imv))
+  (list imv
+        oculante))
 
 (define mail
   (list aerc))
@@ -230,8 +217,7 @@
         telegram-desktop))
 
 (define music
-  (list kew
-        spotify))
+  (list kew))
 
 (define news
   (list newsraft))
@@ -281,7 +267,7 @@
   (list helix))
 
 (define video
-  (list mpv-minimal/wayland
+  (list (@@ (saayix packages video) mpv-minimal/wayland)
         yt-dlp
         obs-pipewire-audio-capture
         (yumiko?* ffmpeg/nvidia obs-nvidia nvidia-vaapi-driver)

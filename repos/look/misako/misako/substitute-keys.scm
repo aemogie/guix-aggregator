@@ -9,6 +9,7 @@
             yuria.pub
             genenetwork.pub
             guix.moe.pub
+            keyz.pub
             boiledscript.pub))
 
 (define guix.pub
@@ -80,3 +81,10 @@
        (ecc
          (curve Ed25519)
          (q #552F670D5005D7EB6ACF05284A1066E52156B51D75DE3EBD3030CD046675D543#)))"))
+
+(define keyz.pub
+  (plain-file "keyz.pub"
+    "(public-key
+       (ecc
+         (curve Ed25519)
+         (q #6EC5FB835F107F78A19D8E96317FE1F10CD7BD1C0A4301415B46518D9B361E8B#)))"))

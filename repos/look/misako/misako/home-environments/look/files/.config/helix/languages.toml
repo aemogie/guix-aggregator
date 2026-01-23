@@ -6,6 +6,7 @@ use-grammars = { except = [ "hare", "wren", "gemini" ] }
 [language-server]
 guile-lsp-server = { command = "guile-lsp-server", args = ["--stdio"] }
 jdtls = { command = "jdtls" }
+qmlls = { command = "qmlls", args = ["-E"] }
 
 [[language]]
 name = "scheme"

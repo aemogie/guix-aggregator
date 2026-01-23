@@ -148,6 +148,9 @@
 
         #|Guix services|#
         (service shepherd-transient-service-type)
+        (service qemu-binfmt-service-type
+          (qemu-binfmt-configuration
+            (platforms (lookup-qemu-platforms "arm" "aarch64"))))
         (service guix-service-type
           (guix-configuration
             (substitute-urls
@@ -168,6 +171,7 @@
                     substitute-key:inria.pub
                     substitute-key:guix.moe.pub
                     substitute-key:boiledscript.pub
+                    substitute-key:keyz.pub
                     substitute-key:genenetwork.pub))
             (build-accounts 300)
             (discover? #t)

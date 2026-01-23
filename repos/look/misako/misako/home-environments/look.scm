@@ -44,6 +44,7 @@
   #:use-module (radix home services shells)
   #|Saayix Home Services|#
   #:use-module (saayix services home dotfiles)
+  #:use-module (saayix-nonfree services home spotify)
   #|SOPS-Guix Secrets|#
   #:use-module (sops secrets)
   #|SOPS-Guix Home Services|#
@@ -89,12 +90,17 @@
       (list
         (service home-channels-service-type
           (list channel:guix
-                channel:saayix
+                channel:saayix-nonfree
                 channel:nonguix
                 channel:radix
                 channel:sops-guix))
 
         (service home-dbus-service-type)
+
+        (service home-spotify-service-type
+          (spotify-configuration
+            (update? #t)
+            (spicetify? #t)))
 
         (service home-openssh-service-type
           (home-openssh-configuration
