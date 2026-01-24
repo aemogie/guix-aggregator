@@ -13,14 +13,11 @@
 
 
 ;;;
-;;; Environment variables.
+;;; Variables.
 ;;;
 
 (define %build-options
-  (cons* "--keep-going" "--verbosity=2"
-         (or (and=> (getenv "ARGS")
-                    (cut string-split <> #\space))
-             '())))
+  '("--keep-going" "--verbosity=2"))
 
 (define %deploy-command
   (getenv "CMD"))

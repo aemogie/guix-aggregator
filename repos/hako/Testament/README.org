@@ -46,13 +46,13 @@ Variants:
 - Minimal: installer-only
 - HiDPI: larger console font
 
-Build date: 2026-01-18
+Build date: 2026-01-23
 
 | Variant       | System       | Image             | Signature             | SHA256 Checksum                                                    |
 |---------------+--------------+-------------------+-----------------------+--------------------------------------------------------------------|
-| Default       | x86_64-linux | [[https://files.guix.moe/2026-01-18/rosenthal-default-20260118.x86_64-linux.iso][default.iso]]       | [[https://files.guix.moe/2026-01-18/rosenthal-default-20260118.x86_64-linux.iso.asc][default.iso.asc]]       | =2df48709d35d938da2c1b96833a2f94c99c2eb7a674b99593c46d45753ae4317= |
-| Minimal       | x86_64-linux | [[https://files.guix.moe/2026-01-18/rosenthal-minimal-20260118.x86_64-linux.iso][minimal.iso]]       | [[https://files.guix.moe/2026-01-18/rosenthal-minimal-20260118.x86_64-linux.iso.asc][minimal.iso.asc]]       | =90ad22d767d5f5a3d7eec5d2d0b8d293053586b6320ab3b2c079235ecd3d109a= |
-| Minimal-HiDPI | x86_64-linux | [[https://files.guix.moe/2026-01-18/rosenthal-minimal-hidpi-20260118.x86_64-linux.iso][minimal-hidpi.iso]] | [[https://files.guix.moe/2026-01-18/rosenthal-minimal-hidpi-20260118.x86_64-linux.iso][minimal-hidpi.iso.asc]] | =27e29c33b277f201004b34b6b82202fda021a01af4e79de62490eaf60f4ff749= |
+| Default       | x86_64-linux | [[https://files.guix.moe/2026-01-23/rosenthal-default-20260123.x86_64-linux.iso][default.iso]]       | [[https://files.guix.moe/2026-01-23/rosenthal-default-20260123.x86_64-linux.iso.asc][default.iso.asc]]       | =8db020d766f6994107ef04186ff8bd671470f7f8469d66d4d72265e5909f678f= |
+| Minimal       | x86_64-linux | [[https://files.guix.moe/2026-01-23/rosenthal-minimal-20260123.x86_64-linux.iso][minimal.iso]]       | [[https://files.guix.moe/2026-01-23/rosenthal-minimal-20260123.x86_64-linux.iso.asc][minimal.iso.asc]]       | =4e867c9bab5d62623075bdabe140e9bbe95f6c975faa0bb7adad9242376b080b= |
+| Minimal-HiDPI | x86_64-linux | [[https://files.guix.moe/2026-01-23/rosenthal-minimal-hidpi-20260123.x86_64-linux.iso][minimal-hidpi.iso]] | [[https://files.guix.moe/2026-01-23/rosenthal-minimal-hidpi-20260123.x86_64-linux.iso.asc][minimal-hidpi.iso.asc]] | =837a76c717666643722978c864538f594376344b36406d5c6930ed293e4a7608= |
 
 Once downloaded, follow Guix System's [[https://guix.gnu.org/manual/devel/en/html_node/System-Installation.html][installation instructions]].
 

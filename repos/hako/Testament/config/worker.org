@@ -56,7 +56,12 @@
                              (authorized-keys %guix-keys)
                              (substitute-urls '("https://cache-cdn.guix.moe"))
                              (extra-options
-                              (list "--cores" (number->string threads-per-worker))))))))))
+                              (list "--cores" (number->string threads-per-worker))))))))
+      (sudoers-file
+       (plain-file "sudoers"
+         (string-append
+          (plain-file-content %sudoers-specification)
+          "%wheel ALL = NOPASSWD: ALL\n")))))
 
   %os
 #+end_src
@@ -96,10 +101,29 @@
 #+end_src
 
 ** Users
+#+begin_src scheme :noweb-ref user
+  (user-account
+    (name "hako")
+    (group "users")
+    (supplementary-groups '("wheel"))
+    (shell (file-append (spec->pkg "fish") "/bin/fish")))
+  (user-account
+    (name "jonathan")
+    (group "users")
+    (supplementary-groups '("wheel")))
+  (user-account
+    (name "podiki")
+    (group "users")
+    (supplementary-groups '("wheel")))
+#+end_src
+
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-openssh
       openssh-service-type
-    `(("root" ,%ssh-key-deploy)))
+    `(("root" ,%ssh-key-deploy)
+      ("hako" ,%ssh-key-hako)
+      ("jonathan" ,%ssh-key-jonathan)
+      ("podiki" ,%ssh-key-podiki)))
 #+end_src
 
 * Networking & SSH

@@ -61,7 +61,12 @@
                              (inherit config)
                              (authorized-keys %guix-keys)
                              (substitute-urls '("https://cache-fi.guix.moe"))
-                             (extra-options '("--cores=4")))))))))
+                             (extra-options '("--cores=4")))))))
+      (privileged-programs
+       (cons* (privileged-program
+                (program (file-append manage-cuirass "/bin/manage-cuirass"))
+                (setuid? #t))
+              %default-privileged-programs))))
 
   ((compose (rosenthal-transformation-zfs #:boot? #t))
    %os)
@@ -190,6 +195,12 @@ Personal account.
     (group "users")
     (supplementary-groups '("wheel"))
     (shell (file-append (spec->pkg "fish") "/bin/fish")))
+  (user-account
+    (name "jonathan")
+    (group "users"))
+  (user-account
+    (name "podiki")
+    (group "users"))
 #+end_src
 
 Administration accounts.
@@ -204,7 +215,9 @@ Administration accounts.
   (simple-service 'extend-openssh
       openssh-service-type
     `(("root" ,%ssh-key-deploy)
-      ("hako" ,%ssh-key-hako)))
+      ("hako" ,%ssh-key-hako)
+      ("jonathan" ,%ssh-key-jonathan)
+      ("podiki" ,%ssh-key-podiki)))
 #+end_src
 
 ** SOPS Secrets

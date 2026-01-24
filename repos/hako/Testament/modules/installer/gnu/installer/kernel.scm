@@ -17,7 +17,6 @@
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gnu installer kernel)
-  #:use-module (srfi srfi-26)
   #:use-module (ice-9 match)
   #:use-module (gnu system hurd)
   #:use-module (guix read-print)
@@ -38,7 +37,9 @@
      `((kernel linux-lts)
        (firmware (cons* linux-firmware %base-firmware))
        (initrd microcode-initrd)))
-    ((? (cut string-prefix? "Hurd" <>))
+    ((? (lambda (str)
+          (and (string? str)
+               (string-prefix? "Hurd" str))))
      `((kernel %hurd-default-operating-system-kernel)
        ,(comment (G_ ";; \"noide\" disables the gnumach IDE driver, enabling rumpdisk.\n"))
        (kernel-arguments '("noide"))

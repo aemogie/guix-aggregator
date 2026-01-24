@@ -1,4 +1,4 @@
-From 5ac040079568c8cc5d258d5684879df92a8fd8d5 Mon Sep 17 00:00:00 2001
+From 732db5c89d03fd6c95bfd725247210cbea03739a Mon Sep 17 00:00:00 2001
 From: Hilton Chain <hako@ultrarare.space>
 Date: Thu, 15 Jan 2026 12:01:21 +0800
 Subject: [PATCH] modules: installer: Set up Nonguix.
@@ -13,13 +13,13 @@ Set up Nonguix channel in the final system.
 Add comment for NVIDIA proprietary driver setup.
 WORKAROUND: Set Guile load paths to use modules from external channels.
 ---
- modules/installer/gnu/installer.scm           | 17 +++++++--
- modules/installer/gnu/installer/final.scm     |  2 ++
- modules/installer/gnu/installer/kernel.scm    | 36 ++++++++++++-------
- .../installer/gnu/installer/newt/kernel.scm   | 10 ++++--
- .../installer/gnu/installer/newt/welcome.scm  |  4 +--
- modules/installer/gnu/installer/steps.scm     | 22 ++++++++----
- 6 files changed, 65 insertions(+), 26 deletions(-)
+ modules/installer/gnu/installer.scm           | 17 ++++++++-
+ modules/installer/gnu/installer/final.scm     |  2 +
+ modules/installer/gnu/installer/kernel.scm    | 38 ++++++++++++-------
+ .../installer/gnu/installer/newt/kernel.scm   | 10 +++--
+ .../installer/gnu/installer/newt/welcome.scm  |  4 +-
+ modules/installer/gnu/installer/steps.scm     | 31 ++++++++++++---
+ 6 files changed, 76 insertions(+), 26 deletions(-)
 
 diff --git a/modules/installer/gnu/installer.scm b/modules/installer/gnu/installer.scm
 index adc891e..0f0c766 100644
@@ -63,23 +63,23 @@ index 22c44a2..e88d612 100644
               (for-each (lambda (line)
                           (installer-log-line "~a" line))
 diff --git a/modules/installer/gnu/installer/kernel.scm b/modules/installer/gnu/installer/kernel.scm
-index a07d24d..afe2717 100644
+index 2700931..4e07c32 100644
 --- a/modules/installer/gnu/installer/kernel.scm
 +++ b/modules/installer/gnu/installer/kernel.scm
-@@ -17,6 +17,8 @@
+@@ -17,6 +17,7 @@
  ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
  
  (define-module (gnu installer kernel)
-+  #:use-module (srfi srfi-26)
 +  #:use-module (ice-9 match)
    #:use-module (gnu system hurd)
    #:use-module (guix read-print)
    #:export (kernel->configuration))
-@@ -27,15 +29,25 @@
+@@ -27,16 +28,27 @@
    str)
  
  (define (kernel->configuration kernel dry-run?)
--  (if (string-prefix? "Hurd" kernel)
+-  (if (and (string? kernel)
+-           (string-prefix? "Hurd" kernel))
 -      `((kernel %hurd-default-operating-system-kernel)
 -        ,(comment (G_ ";; \"noide\" disables the gnumach IDE driver, enabling rumpdisk.\n"))
 -        (kernel-arguments '("noide"))
@@ -100,7 +100,9 @@ index a07d24d..afe2717 100644
 +     `((kernel linux-lts)
 +       (firmware (cons* linux-firmware %base-firmware))
 +       (initrd microcode-initrd)))
-+    ((? (cut string-prefix? "Hurd" <>))
++    ((? (lambda (str)
++          (and (string? str)
++               (string-prefix? "Hurd" str))))
 +     `((kernel %hurd-default-operating-system-kernel)
 +       ,(comment (G_ ";; \"noide\" disables the gnumach IDE driver, enabling rumpdisk.\n"))
 +       (kernel-arguments '("noide"))
@@ -114,7 +116,7 @@ index a07d24d..afe2717 100644
 +    (_
 +     '())))
 diff --git a/modules/installer/gnu/installer/newt/kernel.scm b/modules/installer/gnu/installer/newt/kernel.scm
-index abf39c6..ca31dca 100644
+index 4570544..6e64bc4 100644
 --- a/modules/installer/gnu/installer/newt/kernel.scm
 +++ b/modules/installer/gnu/installer/newt/kernel.scm
 @@ -26,9 +26,13 @@
@@ -146,9 +148,9 @@ index abf39c6..ca31dca 100644
             ;; TRANSLATORS: "Linux Libre" is a literal and must not be translated.
 -           (G_ "Please select a kernel.  When in doubt, choose \"Linux Libre\".
 +           (G_ "Please select a kernel.  When in doubt, choose \"Linux\".
+ 
  The Hurd is offered as a technology preview and development aid; many packages \
  are not yet available in Guix, such as a desktop environment or even a \
- windowing system (X, Wayland).")
 diff --git a/modules/installer/gnu/installer/newt/welcome.scm b/modules/installer/gnu/installer/newt/welcome.scm
 index f821374..fddcc93 100644
 --- a/modules/installer/gnu/installer/newt/welcome.scm
@@ -168,25 +170,34 @@ index f821374..fddcc93 100644
           ;; install. The other root TTY's would have been ok too.
           (system* "chvt" "3")
 diff --git a/modules/installer/gnu/installer/steps.scm b/modules/installer/gnu/installer/steps.scm
-index b70e5eb..86e885e 100644
+index b70e5eb..70e8010 100644
 --- a/modules/installer/gnu/installer/steps.scm
 +++ b/modules/installer/gnu/installer/steps.scm
-@@ -241,14 +241,24 @@ found in RESULTS."
-                    ,(comment (G_ "\
+@@ -242,13 +242,34 @@ found in RESULTS."
  ;; Indicate which modules to import to access the variables
  ;; used in this configuration.\n"))
--                   ,@(if (target-hurd?)
+                    ,@(if (target-hurd?)
 -                         '((use-modules (gnu) (gnu system hurd))
 -                           (use-package-modules hurd ssh))
 -                         '((use-modules (gnu))))
 -                   (use-service-modules cups desktop networking ssh xorg))))
-+                   (use-modules (gnu)
-+                                (nonguix)
-+                                (gnu services cups)
-+                                (gnu services desktop)
-+                                (gnu services networking)
-+                                (gnu services ssh)
-+                                (gnu services xorg)))))
++                         '((use-modules (gnu)
++                                        (nonguix)
++                                        (gnu system hurd)
++                                        (gnu services cups)
++                                        (gnu services desktop)
++                                        (gnu services networking)
++                                        (gnu services ssh)
++                                        (gnu services xorg)
++                                        (gnu packages hurd)
++                                        (gnu packages ssh)))
++                         '((use-modules (gnu)
++                                        (nonguix)
++                                        (gnu services cups)
++                                        (gnu services desktop)
++                                        (gnu services networking)
++                                        (gnu services ssh)
++                                        (gnu services xorg)))))))
      `(,@modules
        ,(vertical-space 1)
 -      (operating-system ,@configuration))))

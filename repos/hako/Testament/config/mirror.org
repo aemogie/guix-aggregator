@@ -48,7 +48,12 @@
                  config => (guix-configuration
                              (inherit config)
                              (authorized-keys %guix-keys)
-                             (substitute-urls '("https://cache-cdn.guix.moe")))))))))
+                             (substitute-urls '("https://cache-cdn.guix.moe")))))))
+      (sudoers-file
+       (plain-file "sudoers"
+         (string-append
+          (plain-file-content %sudoers-specification)
+          "%wheel ALL = NOPASSWD: ALL\n")))))
 
   %os
 #+end_src
@@ -91,6 +96,22 @@
 #+end_src
 
 ** Users
+#+begin_src scheme :noweb-ref user
+  (user-account
+    (name "hako")
+    (group "users")
+    (supplementary-groups '("wheel"))
+    (shell (file-append (spec->pkg "fish") "/bin/fish")))
+  (user-account
+    (name "jonathan")
+    (group "users")
+    (supplementary-groups '("wheel")))
+  (user-account
+    (name "podiki")
+    (group "users")
+    (supplementary-groups '("wheel")))
+#+end_src
+
 Administration accounts.
 #+begin_src scheme :noweb-ref user
   (user-account
@@ -102,7 +123,10 @@ Administration accounts.
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-openssh
       openssh-service-type
-    `(("root" ,%ssh-key-deploy)))
+    `(("root" ,%ssh-key-deploy)
+      ("hako" ,%ssh-key-hako)
+      ("jonathan" ,%ssh-key-jonathan)
+      ("podiki" ,%ssh-key-podiki)))
 #+end_src
 
 * Networking & SSH
@@ -168,7 +192,7 @@ Administration accounts.
                          (use-modules (guix build utils))
                          (mkdir-p "/var/cache/guix-moe/narinfo")
                          (invoke #$(file-append (spec->pkg "rsync") "/bin/rsync")
-                                 "-az" ;"--delete" TODO: Upgrade mirrors with more RAM.
+                                 "-az" "--delete"
                                  "rsync://cache.guix.moe/narinfo/"
                                  "/var/cache/guix-moe/narinfo/")))))
             #:requirement '(user-processes))))

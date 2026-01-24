@@ -3,7 +3,7 @@
         (url "https://gitlab.com/nonguix/nonguix")
         (branch "master")
         (commit
-          "26cccf3dfdfa3788c417dbcf4c65690c1cc4f65a")
+          "f5338f63fce69622ce06f93fe02524967e1f30d4")
         (introduction
           (make-channel-introduction
             "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
@@ -14,7 +14,7 @@
         (url "https://codeberg.org/hako/rosenthal.git")
         (branch "trunk")
         (commit
-          "aeabb0d64c1fffdd4fbc17f0e7a9ed31220c7825")
+          "0784504c64157cc0941795619cc6262ef3d18022")
         (introduction
           (make-channel-introduction
             "7677db76330121a901604dfbad19077893865f35"
@@ -25,7 +25,7 @@
         (url "https://github.com/fishinthecalculator/sops-guix")
         (branch "main")
         (commit
-          "2fbe43b15986aabcb528dd87107c47149ce436a0")
+          "cc67863ae3f3629a8f46597111d5b18c6b1e6731")
         (introduction
           (make-channel-introduction
             "0bbaf1fdd25266c7df790f65640aaa01e6d2dbc9"
@@ -36,7 +36,7 @@
         (url "https://git.guix.gnu.org/guix.git")
         (branch "master")
         (commit
-          "01b97dff35a1841152c1e2999de06c6fdf51e7c1")
+          "5dbab32115de3276f582bcb801fd9f88abe0d397")
         (introduction
           (make-channel-introduction
             "9edb3f66fd807b096b48283debdcddccfea34bad"
