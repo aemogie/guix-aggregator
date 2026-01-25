@@ -9,7 +9,8 @@
             sops-guix
             rosenthal
             sakura
-            guixpkgs))
+            guixpkgs
+            %misako-channels))
 
 (define guix
   (channel
@@ -121,8 +122,11 @@
         (openpgp-fingerprint
           "CA4F 8CF4 37D7 478F DA05  5FD4 4213 7701 1A37 8446")))))
 
-(list guix
-      nonguix
-      saayix-nonfree
-      radix
-      sops-guix)
+(define %misako-channels
+  (list guix
+        nonguix
+        saayix-nonfree
+        radix
+        sops-guix))
+
+%misako-channels

@@ -232,5 +232,4 @@
                 downloads
                 images
                 music
-                projects
                 videos))))

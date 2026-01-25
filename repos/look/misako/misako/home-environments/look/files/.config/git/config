@@ -18,8 +18,8 @@ defaultBranch = main
 see = log --graph --all --oneline
 last = log -1 HEAD
 
-[remote "upstream"]
-fetch = +refs/pull/*/head:refs/remotes/upstream/pr/*
+[remote "pr"]
+fetch = +refs/pull/*/head:refs/remotes/pr/*
 
 [sendemail]
 smtpserver = {{{ aerc.primary.url }}}

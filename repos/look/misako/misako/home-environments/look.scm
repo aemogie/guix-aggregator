@@ -88,12 +88,7 @@
              packages:virtual-keyboard))
     (services
       (list
-        (service home-channels-service-type
-          (list channel:guix
-                channel:saayix-nonfree
-                channel:nonguix
-                channel:radix
-                channel:sops-guix))
+        (service home-channels-service-type channel:%misako-channels)
 
         (service home-dbus-service-type)
 

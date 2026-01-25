@@ -148,9 +148,9 @@
 
         #|Guix services|#
         (service shepherd-transient-service-type)
-        (service qemu-binfmt-service-type
-          (qemu-binfmt-configuration
-            (platforms (lookup-qemu-platforms "arm" "aarch64"))))
+        ;; (service qemu-binfmt-service-type
+        ;;   (qemu-binfmt-configuration
+        ;;     (platforms (lookup-qemu-platforms "arm" "aarch64"))))
         (service guix-service-type
           (guix-configuration
             (substitute-urls
