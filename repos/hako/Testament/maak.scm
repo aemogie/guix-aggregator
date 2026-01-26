@@ -16,8 +16,14 @@
 ;;; Variables.
 ;;;
 
+(define %substitute-urls
+  (string-append
+   "--substitute-urls="
+   (string-join
+    '("https://cache-cdn.guix.moe"))))
+
 (define %build-options
-  '("--keep-going" "--verbosity=2"))
+  `("--keep-going" "--verbosity=2" ,%substitute-urls))
 
 (define %deploy-command
   (getenv "CMD"))
@@ -47,7 +53,9 @@ Exit code: ~a~%"
 (define* ($guix args #:key local? (channels "channels.lock"))
   (if local?
       ($ `("./pre-inst-env" "guix" ,@args))
-      ($ `("guix" "time-machine" ,(string-append "--channels=" channels)
+      ($ `("guix" "time-machine"
+           ,(string-append "--channels=" channels)
+           ,%substitute-urls
            "--" ,@args))))
 
 (define ($emacs args)

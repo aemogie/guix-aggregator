@@ -28,7 +28,7 @@
         display-line-numbers-width-start t)
 
   ;; guix stuff
-  (load-file "~/resources/code/scm/guix/etc/copyright.el")
+  (load-file "~/areas/code/scm/guix/master/etc/copyright.el")
 
   ;; keep ~/.config/emacs/ clean
   (setq user-emacs-directory (expand-file-name "~/.cache/emacs/")

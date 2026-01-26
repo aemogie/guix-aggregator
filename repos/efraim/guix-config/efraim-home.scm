@@ -487,8 +487,13 @@
     (string-join
       (list "no-audio-display"
             ;; https://github.com/yt-dlp/yt-dlp?tab=readme-ov-file#format-selection
-            ;; Upscaling from 720 causes fewer dropped frames on many machines.
-            "ytdl-format='bv*[height<=720]+ba/b[height<=720]/bv*[height<=1080]+ba/b[height<1080]/bv+ba/b'"
+            ;; Upscaling from 720 causes fewer dropped frames on most machines.
+            (string-append "ytdl-format='"
+                           (if (not (string=? (gethostname) "X1"))
+                               "bv*[height<=720]+ba/b[height<=720]/"
+                               "")
+                           "bv*[height<=1080]+ba/b[height<1080]/"
+                           "bv+ba/b'")
             "gpu-context=wayland"
             "[youtube]"
             "ytdl-raw-options='ignore-config=,sub-langs=\"^en.*\",write-subs=,write-auto-subs='"

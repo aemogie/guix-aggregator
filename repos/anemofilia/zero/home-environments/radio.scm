@@ -292,9 +292,7 @@
                                       #|K|# "^kak"
                                       #|L|# "^lf"
                                       #|M|# "^mpv"
-                                      #|N|# "^newsraft"))
-                                  ("__done_notification_command"
-                                   . "notify-send '$title' '$message'")))))
+                                      #|N|# "^newsraft"))))))
 
             (simple-service 'home-fish-fzf home-fish-service-type
                             (home-fish-extension

@@ -107,7 +107,7 @@
 ;; (battery) __________________________________________________________________
 (defpoll bat
   :interval "${365*24*60*60}s"
-  `fd BAT /sys/class/power_supply/ | xargs basename`)
+  `basename $(find /sys/class/power_supply/ -name 'BAT*')`)
 
 (defwidget battery []
   (box :class "battery"

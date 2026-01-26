@@ -1,0 +1,102 @@
+From ecb3881722bae5e325644048921560c6cc6a27b4 Mon Sep 17 00:00:00 2001
+From: Hilton Chain <hako@ultrarare.space>
+Date: Sat, 24 Jan 2026 23:32:45 +0800
+Subject: [PATCH 3/6] modules/installer: Add Nonguix kernel options.
+
+---
+ modules/installer/gnu/installer/kernel.scm    | 38 ++++++++++++-------
+ .../installer/gnu/installer/newt/kernel.scm   | 10 +++--
+ 2 files changed, 32 insertions(+), 16 deletions(-)
+
+diff --git a/modules/installer/gnu/installer/kernel.scm b/modules/installer/gnu/installer/kernel.scm
+index 2700931..4e07c32 100644
+--- a/modules/installer/gnu/installer/kernel.scm
++++ b/modules/installer/gnu/installer/kernel.scm
+@@ -17,6 +17,7 @@
+ ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
+ 
+ (define-module (gnu installer kernel)
++  #:use-module (ice-9 match)
+   #:use-module (gnu system hurd)
+   #:use-module (guix read-print)
+   #:export (kernel->configuration))
+@@ -27,16 +28,27 @@
+   str)
+ 
+ (define (kernel->configuration kernel dry-run?)
+-  (if (and (string? kernel)
+-           (string-prefix? "Hurd" kernel))
+-      `((kernel %hurd-default-operating-system-kernel)
+-        ,(comment (G_ ";; \"noide\" disables the gnumach IDE driver, enabling rumpdisk.\n"))
+-        (kernel-arguments '("noide"))
+-        (firmware '())
+-        (hurd hurd)
+-        (locale-libcs (list glibc/hurd))
+-        (name-service-switch #f)
+-        (essential-services (hurd-default-essential-services this-operating-system))
+-        (privileged-programs '())
+-        (setuid-programs %setuid-programs/hurd))
+-      '()))
++  (match kernel
++    ("Linux"
++     `((kernel linux)
++       (firmware (cons* linux-firmware %base-firmware))
++       (initrd microcode-initrd)))
++    ("Linux long-term support (LTS)"
++     `((kernel linux-lts)
++       (firmware (cons* linux-firmware %base-firmware))
++       (initrd microcode-initrd)))
++    ((? (lambda (str)
++          (and (string? str)
++               (string-prefix? "Hurd" str))))
++     `((kernel %hurd-default-operating-system-kernel)
++       ,(comment (G_ ";; \"noide\" disables the gnumach IDE driver, enabling rumpdisk.\n"))
++       (kernel-arguments '("noide"))
++       (firmware '())
++       (hurd hurd)
++       (locale-libcs (list glibc/hurd))
++       (name-service-switch #f)
++       (essential-services (hurd-default-essential-services this-operating-system))
++       (privileged-programs '())
++       (setuid-programs %setuid-programs/hurd)))
++    (_
++     '())))
+diff --git a/modules/installer/gnu/installer/newt/kernel.scm b/modules/installer/gnu/installer/newt/kernel.scm
+index 4570544..6e64bc4 100644
+--- a/modules/installer/gnu/installer/newt/kernel.scm
++++ b/modules/installer/gnu/installer/newt/kernel.scm
+@@ -26,9 +26,13 @@
+   ;; TRANSLATORS: "Hurd" is a proper noun and must not be translated.
+   (let* ((hurd-x86 (G_ "Hurd 32-bit (experimental)"))
+          (hurd-x86_64 (G_ "Hurd 64-bit (highly experimental!)"))
++         (linux "Linux")
++         (linux-lts "Linux long-term support (LTS)")
+          (linux-libre "Linux Libre")
+          (kernels (parameterize ((%current-target-system #f))
+-                    `(,linux-libre
++                    `(,linux
++                      ,linux-lts
++                      ,linux-libre
+                       ,@(cond ((target-x86-64?)
+                                (list hurd-x86 hurd-x86_64))
+                               ((target-x86?)
+@@ -40,14 +44,14 @@
+                         ((equal? (%current-target-system) "x86_64-pc-gnu")
+                          hurd-x86_64)
+                         (else
+-                         linux-libre)))
++                         linux)))
+          (result
+           (run-listbox-selection-page
+            #:title (G_ "Kernel")
+            #:info-text
+            ;; TRANSLATORS: "Hurd" is a proper noun and must not be translated.
+            ;; TRANSLATORS: "Linux Libre" is a literal and must not be translated.
+-           (G_ "Please select a kernel.  When in doubt, choose \"Linux Libre\".
++           (G_ "Please select a kernel.  When in doubt, choose \"Linux\".
+ 
+ The Hurd is offered as a technology preview and development aid; many packages \
+ are not yet available in Guix, such as a desktop environment or even a \
+-- 
+2.52.0
+

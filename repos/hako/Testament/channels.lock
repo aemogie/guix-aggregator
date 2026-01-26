@@ -14,7 +14,7 @@
         (url "https://codeberg.org/hako/rosenthal.git")
         (branch "trunk")
         (commit
-          "0784504c64157cc0941795619cc6262ef3d18022")
+          "ab429bcc1f784f433ca7da588440434f10ae2dce")
         (introduction
           (make-channel-introduction
             "7677db76330121a901604dfbad19077893865f35"
@@ -36,7 +36,7 @@
         (url "https://git.guix.gnu.org/guix.git")
         (branch "master")
         (commit
-          "5dbab32115de3276f582bcb801fd9f88abe0d397")
+          "b01968f6542a99c1de66f7202bd402098e75a603")
         (introduction
           (make-channel-introduction
             "9edb3f66fd807b096b48283debdcddccfea34bad"

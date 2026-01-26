@@ -1,0 +1,58 @@
+From cd95c785c9aef2c26130161571a92341159e7abf Mon Sep 17 00:00:00 2001
+From: Hilton Chain <hako@ultrarare.space>
+Date: Sat, 24 Jan 2026 23:33:04 +0800
+Subject: [PATCH 4/6] modules/installer: Set up Nonguix channel in the final
+ system.
+
+Also add comment for NVIDIA proprietary driver setup.
+---
+ modules/installer/gnu/installer/steps.scm | 31 +++++++++++++++++++----
+ 1 file changed, 26 insertions(+), 5 deletions(-)
+
+diff --git a/modules/installer/gnu/installer/steps.scm b/modules/installer/gnu/installer/steps.scm
+index b70e5eb..70e8010 100644
+--- a/modules/installer/gnu/installer/steps.scm
++++ b/modules/installer/gnu/installer/steps.scm
+@@ -242,13 +242,34 @@ found in RESULTS."
+ ;; Indicate which modules to import to access the variables
+ ;; used in this configuration.\n"))
+                    ,@(if (target-hurd?)
+-                         '((use-modules (gnu) (gnu system hurd))
+-                           (use-package-modules hurd ssh))
+-                         '((use-modules (gnu))))
+-                   (use-service-modules cups desktop networking ssh xorg))))
++                         '((use-modules (gnu)
++                                        (nonguix)
++                                        (gnu system hurd)
++                                        (gnu services cups)
++                                        (gnu services desktop)
++                                        (gnu services networking)
++                                        (gnu services ssh)
++                                        (gnu services xorg)
++                                        (gnu packages hurd)
++                                        (gnu packages ssh)))
++                         '((use-modules (gnu)
++                                        (nonguix)
++                                        (gnu services cups)
++                                        (gnu services desktop)
++                                        (gnu services networking)
++                                        (gnu services ssh)
++                                        (gnu services xorg)))))))
+     `(,@modules
+       ,(vertical-space 1)
+-      (operating-system ,@configuration))))
++      (define %my-os
++        (operating-system ,@configuration))
++      ,(vertical-space 1)
++      ((compose
++        ,(comment "\
++;; Uncomment the following line for NVIDIA proprietary driver support.
++;; (nonguix-transformation-nvidia #:configure-xorg? #t)\n")
++        (nonguix-transformation-guix))
++       %my-os))))
+ 
+ (define* (configuration->file configuration
+                               #:key (file-name (%installer-configuration-file)))
+-- 
+2.52.0
+

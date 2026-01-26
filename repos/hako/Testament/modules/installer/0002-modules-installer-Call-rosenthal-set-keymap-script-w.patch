@@ -1,0 +1,41 @@
+From 14e5733dbbc4cb681338febe25fd5252a216f204 Mon Sep 17 00:00:00 2001
+From: Hilton Chain <hako@ultrarare.space>
+Date: Sat, 24 Jan 2026 23:32:13 +0800
+Subject: [PATCH 2/6] modules/installer: Call %rosenthal-set-keymap script when
+ setting keyboard layout.
+
+---
+ modules/installer/gnu/installer.scm | 17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/modules/installer/gnu/installer.scm b/modules/installer/gnu/installer.scm
+index adc891e..0f0c766 100644
+--- a/modules/installer/gnu/installer.scm
++++ b/modules/installer/gnu/installer.scm
+@@ -195,8 +195,21 @@ been performed at build time."
+   ;; Apply the specified keymap. Use the default keyboard model.
+   #~(match-lambda
+       ((layout variant options)
+-       (kmscon-update-keymap (default-keyboard-model)
+-                             layout variant options))))
++       (begin
++         ;; %rosenthal-set-keymap
++         (system* "/bin/sh" "--login" "-c"
++                  (string-join
++                   `("set-keymap"
++                     ,layout
++                     ,@(or (and=> variant list)
++                           '())
++                     ,@(or (and=> options
++                                  (lambda (x)
++                                    (list "-o" x)))
++                           '()))))
++
++         (kmscon-update-keymap (default-keyboard-model)
++                               layout variant options)))))
+ 
+ (define (compute-keymap-step context dry-run?)
+   "Return a gexp that runs the keymap-page of INSTALLER and install the
+-- 
+2.52.0
+
