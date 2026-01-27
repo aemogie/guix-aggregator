@@ -12,3 +12,5 @@ application/x-extension-xhtml=librewolf.desktop
 application/x-extension-xht=librewolf.desktop
 # pdf
 application/pdf=org.pwmt.zathura.desktop
+# djvu
+image/vnd.djvu=org.pwmt.zathura.desktop

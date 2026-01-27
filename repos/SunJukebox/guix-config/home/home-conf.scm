@@ -7,7 +7,7 @@
   #:use-module (gnu home)
   #:use-module (gnu home services)
   #:use-module (gnu home services desktop)
-  ;; #:use-module (gnu home services dotfiles)
+  #:use-module (gnu home services dotfiles)
   #:use-module (gnu home services gnupg)
   #:use-module (gnu home services guix)
   #:use-module (gnu home services shells)
@@ -19,7 +19,7 @@
   #:use-module (nongnu packages productivity)
 
   ;; #:use-module (anon home services)
-  #:use-module (anon home services dotfiles)
+  ;; #:use-module (anon home services dotfiles)
   #:use-module (anon home services texlive)
   ;; #:use-module (anon home services emacs)
 
@@ -56,8 +56,8 @@
                      password-utils
                      pdf
                      pulseaudio
-					 python
-					 python-xyz
+		     python
+		     python-xyz
                      qt
                      shells
                      shellutils
@@ -202,8 +202,18 @@
                     (home-dotfiles-configuration (directories (list (format #f
                                                                             "~a/src/my-channel/anon/files"
                                                                             (getenv
-                                                                             "HOME"))))))
-           ;; (excluded '(".*~" ".*\\.swp" "\\.git/.*" ".*/\\.git/.*" "\\.gitignore"))))
+                                                                             "HOME"))))
+						 (excluded '(".*~" ".*\\.swp" "\\.git/.*" ".*/\\.git/.*" "\\.gitignore"))))
+           
+          (service home-zsh-service-type
+                   (home-zsh-configuration
+                    (zprofile
+                     `(,(plain-file "zprofile-extras"
+                                    (string-append
+                                     ;; Load the Nix profile
+                                     "if [ -f /run/current-system/profile/etc/profile.d/nix.sh ]; then\n"
+                                     "  . /run/current-system/profile/etc/profile.d/nix.sh\n"
+                                     "fi\n"))))))
 
            (service home-dbus-service-type)
 
