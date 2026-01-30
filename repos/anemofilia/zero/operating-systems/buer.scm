@@ -1,4 +1,7 @@
 (define-module (operating-systems buer)
+  #|GNU|#
+  #|A|# #:use-module (gnu artwork)
+
   #|GNU bootloader|#
   #|•|# #:use-module (gnu bootloader)
   #|G|# #:use-module (gnu bootloader grub)
@@ -47,9 +50,6 @@
   #|Home environments|#
   #|R|# #:use-module ((home-environments radio)
                       #:prefix home-environment:)
-
-  #|Radix|#
-  #|A|# #:use-module (radix artwork)
 
   #|Radix packages|#
   #|A|# #:use-module (radix packages admin)

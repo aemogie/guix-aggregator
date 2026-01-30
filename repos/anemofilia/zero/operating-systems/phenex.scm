@@ -6,9 +6,6 @@
   #|GNU packages|#
   #|L|# #:use-module (gnu packages linux)
 
-  #|GNU services|#
-  #|•|# #:use-module (gnu services)
-
   #|GNU system|#
   #|•|# #:use-module (gnu system)
   #|L|# #:use-module (gnu system linux-initrd)
@@ -24,45 +21,40 @@
   #|s|# #:use-module (nongnu system linux-initrd)
 
   #|Operating-systems|#
-  #|B|# #:use-module (operating-systems buer)
-
-  #|Radix|#
-  #|A|# #:use-module (radix artwork))
+  #|B|# #:use-module (operating-systems buer))
 
 (define phenex
-  (operating-system
-   (inherit buer)
-   (host-name "phenex")
-   (bootloader
-    (bootloader-configuration
-     (inherit (operating-system-bootloader buer))
-     (targets `("/dev/disk/by-id/ata-LITEON_CV1-8B256_0018462003TG"))
-     (theme (grub-theme
-              (resolution `(1920 . 1080))
-              (color-normal
-                '((fg . light-gray) (bg . black)))
-              (color-highlight
-                '((fg . black) (bg . light-gray)))
-              (image (file-append %artwork-repository
-                                  "/backgrounds/guix-silver-16-9.svg"))
-              (gfxmode `("1920x1080x32"))))))
+  (let* ((buer:bootloader (operating-system-bootloader buer))
+         (buer:bootloader-theme (bootloader-configuration-theme buer:bootloader))
+         (buer:privileged-programs (operating-system-privileged-programs buer)))
+    (operating-system
+     (inherit buer)
+     (host-name "phenex")
+     (bootloader
+      (bootloader-configuration
+       (inherit buer:bootloader)
+       (targets `("/dev/disk/by-id/ata-LITEON_CV1-8B256_0018462003TG"))
+       (theme (grub-theme
+               (inherit buer:bootloader-theme)
+                (resolution `(1920 . 1080))
+                (gfxmode `("1920x1080x32"))))))
 
-   (kernel linux-6.17)
-   (initrd
-    (lambda (file-systems . rest)
-      (apply microcode-initrd
-             file-systems
-             #:initrd base-initrd
-             #:microcode-packages (list intel-microcode)
-             rest)))
-   (firmware
-    (cons* linux-firmware
-           realtek-firmware
-           %base-firmware))
-   (privileged-programs
-    (cons (privileged-program
-           (program (file-append brightnessctl "/bin/brightnessctl"))
-           (setuid? #t))
-          (operating-system-privileged-programs buer)))))
+     (kernel linux-6.17)
+     (initrd
+      (lambda (file-systems . rest)
+        (apply microcode-initrd
+               file-systems
+               #:initrd base-initrd
+               #:microcode-packages (list intel-microcode)
+               rest)))
+     (firmware
+      (cons* linux-firmware
+             realtek-firmware
+             %base-firmware))
+     (privileged-programs
+      (cons (privileged-program
+             (program (file-append brightnessctl "/bin/brightnessctl"))
+             (setuid? #t))
+            buer:privileged-programs)))))
 
 phenex

@@ -40,7 +40,7 @@
 (define sops-guix
   (channel
     (name 'sops-guix)
-    (url "https://github.com/fishinthecalculator/sops-guix")
+    (url "https://github.com/fishinthecalculator/sops-guix.git")
     (branch "main")
     (introduction
       (make-channel-introduction

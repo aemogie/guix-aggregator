@@ -1,33 +1,5 @@
 #|General|#
-define-command -override source_hidden_kakrcs \
-  -params 1 \
-  -docstring 'source all .kakrcs in parent directories of the argument dir.' %{
-  evaluate-commands %sh{
-    source_hidden_kakrcs() {
-      local dir="$1"
-      local hidden_kakrc="${dir}/.kakrc"
-      if [ "${dir}" != "/" ]; then
-        source_hidden_kakrcs "$(dirname "${dir}")"
-      fi
-      if [ -f "${hidden_kakrc}" ]; then
-       echo "
-         echo -debug \"sourcing ${hidden_kakrc}...\"
-         source \"${hidden_kakrc}\"
-         echo -debug \"done\"
-       "
-      fi
-    }
-    source_hidden_kakrcs "$1"
-  }
-}
-
-hook -group projects global BufOpenFile '.*' %{
-    source_hidden_kakrcs %sh{ dirname "$kak_buffile" }
-}
-
-hook -group projects global BufWritePost '.*' %{
-    source_hidden_kakrcs %sh{ dirname "$kak_buffile" }
-}
+set-option global source_local_kakrc true
 
 #|Radix|#
 declare-option str radix '~/areas/code/scm/radix'

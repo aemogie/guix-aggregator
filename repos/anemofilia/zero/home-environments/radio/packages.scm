@@ -140,7 +140,7 @@
         #|math          |# libqalculate
         #|ssh           |# openssh
         #|text-editors  |# kakoune kak-lsp
-        #|kak-xyz       |# kak-auto-pairs kak-board kak-buffers
+        #|kak-xyz       |# kak-auto-pairs kak-board kak-buffers kak-local-kakrc
                            kak-phantom-selection kak-popup kak-rainbower
                            kak-state-save kak-snippets kak-surround kak-tree-sitter
         #|tmux          |# tmux
@@ -184,8 +184,8 @@
           (list (channel
                  (name 'guix)
                  (url "https://git.guix.gnu.org/guix.git")
-                 (branch "next-master")
-                 (commit "eef4543a44878f3196a3a4c29edd69266dda9e0d")
+                 (branch "master")
+                 (commit "5f02ecf097d0266b0f3ce40b49718cf3d5f73e3b")
                  (introduction
                    (make-channel-introduction
                      "9edb3f66fd807b096b48283debdcddccfea34bad"
