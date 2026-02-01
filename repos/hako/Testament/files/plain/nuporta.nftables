@@ -1,8 +1,3 @@
-# -*- mode: nftables -*-
-# SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space>
-#
-# SPDX-License-Identifier: CC0-1.0
-
 flush ruleset
 
 table inet filter {
@@ -25,21 +20,25 @@ table inet filter {
         ip protocol icmp accept
         ip6 nexthdr icmpv6 accept
 
+        # allow caddy
         tcp dport https accept
         udp dport https accept
-
-        tcp dport imap accept
-        tcp dport imaps accept
-        tcp dport rsync accept
-        tcp dport smtp accept
-        tcp dport smtps accept
-        tcp dport ssh accept
 
         # allow cuirass
         tcp dport {5555, 5556} accept
 
+        # allow docker-mailserver
+        tcp dport imap accept
+        tcp dport imaps accept
+        tcp dport smtp accept
+        tcp dport smtps accept
+
         # allow mosh
+        tcp dport ssh accept
         udp dport 60000-61000 accept
+
+        # allow rsync
+        tcp dport rsync accept
 
         # allow tailscale
         tcp dport 41641 accept

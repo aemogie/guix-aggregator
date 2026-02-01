@@ -19,6 +19,10 @@
     (timezone "Europe/Paris")
     (locale "en_US.utf8")
 
+    (kernel linux)
+    (initrd microcode-initrd)
+    (firmware (cons* linux-firmware %base-firmware))
+
     ;; Use the UEFI variant of GRUB with the EFI System
     ;; Partition mounted on /boot/efi.
     (bootloader (bootloader-configuration
@@ -62,8 +66,8 @@
     ;; Allow resolution of '.local' host names with mDNS.
     (name-service-switch %mdns-host-lookup-nss)))
 
-((compose (nonguix-transformation-linux)
-          ;; Uncomment the following line for NVIDIA proprietary driver support.
-          ;; (nonguix-transformation-nvidia #:configure-xorg? #t)
-          (nonguix-transformation-guix))
+((compose
+  ;; Uncomment the following line for NVIDIA proprietary driver support.
+  ;; (nonguix-transformation-nvidia #:configure-xorg? #t)
+  (nonguix-transformation-guix))
  %my-os)

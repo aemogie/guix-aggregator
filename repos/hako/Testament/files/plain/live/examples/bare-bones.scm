@@ -14,6 +14,10 @@
     (timezone "Europe/Berlin")
     (locale "en_US.utf8")
 
+    (kernel linux)
+    (initrd microcode-initrd)
+    (firmware (cons* linux-firmware %base-firmware))
+
     ;; Boot in "legacy" BIOS mode, assuming /dev/sdX is the
     ;; target hard disk, and "my-root" is the label of the target
     ;; root file system.
@@ -56,8 +60,8 @@
                                 (port-number 2222))))
                       %base-services))))
 
-((compose (nonguix-transformation-linux)
-          ;; Uncomment the following line for NVIDIA proprietary driver support.
-          ;; (nonguix-transformation-nvidia)
-          (nonguix-transformation-guix))
+((compose
+  ;; Uncomment the following line for NVIDIA proprietary driver support.
+  ;; (nonguix-transformation-nvidia)
+  (nonguix-transformation-guix))
  %my-os)

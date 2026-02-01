@@ -1,7 +1,5 @@
-# SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space>
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-License-Identifier: CC-BY-SA-4.0
-
+# Copyright © 2025-2026 Hilton Chain <hako@ultrarare.space>
 #+TITLE: chapra
 #+PROPERTY: header-args :noweb-prefix no
 
@@ -25,6 +23,7 @@
       (kernel linux-lts/dolly)
       (kernel-arguments
        (cons* "kernel.sysrq=0"
+              "memtest=3"
               "zswap.enabled=1"
               "zswap.max_pool_percent=90"
               %default-kernel-arguments))
@@ -47,12 +46,16 @@
                %base-packages))
       (services
        (cons* <<service>>
+
+              (simple-service 'extend-guix guix-service-type
+                (guix-extension
+                  (authorized-keys %testament-guix-keys)
+                  (substitute-urls '("https://cache-cdn.guix.moe"))))
+
               (modify-services %base-services
                 (guix-service-type
                  config => (guix-configuration
                              (inherit config)
-                             (authorized-keys %guix-keys)
-                             (substitute-urls '("https://cache-cdn.guix.moe"))
                              (discover? #t))))))
       (name-service-switch %mdns-host-lookup-nss)))
 

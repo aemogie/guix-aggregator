@@ -19,11 +19,18 @@
 (define %substitute-urls
   (string-append
    "--substitute-urls="
+   ;; NOTE: Sort by download speed and substitutes availablity.
    (string-join
-    '("https://cache-cdn.guix.moe"))))
+    '(;; Guix Moe substitutes mirror.
+      "https://cache-cdn.guix.moe"
+      ;; Official Guix substitute servers.
+      "https://ci.guix.gnu.org"
+      "https://bordeaux.guix.gnu.org"
+      ;; Official Nonguix substitute server.
+      "https://substitutes.nonguix.org"))))
 
 (define %build-options
-  `("--keep-going" "--verbosity=2" ,%substitute-urls))
+  `("--keep-going" "--verbosity=1" ,%substitute-urls))
 
 (define %deploy-command
   (getenv "CMD"))

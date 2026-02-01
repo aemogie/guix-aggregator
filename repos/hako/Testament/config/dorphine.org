@@ -1,7 +1,5 @@
-# SPDX-FileCopyrightText: 2022, 2023, 2024, 2025 Hilton Chain <hako@ultrarare.space>
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-License-Identifier: CC-BY-SA-4.0
-
+# Copyright © 2022-2026 Hilton Chain <hako@ultrarare.space>
 #+TITLE: dorphine
 #+PROPERTY: header-args :noweb-prefix no
 
@@ -21,11 +19,15 @@
          (bootloader uefi-uki-removable-bootloader)
          (targets '("/efi"))
          (keyboard-layout keyboard-layout)))
+      (kernel linux-lts/dolly)
+      (initrd microcode-initrd)
+      (firmware (cons* linux-firmware %base-firmware))
       (kernel-arguments
        (cons* "kernel.sysrq=1"
+              "memtest=3"
+              "modprobe.blacklist=amdgpu,pcspkr,hid_nintendo"
               "zswap.enabled=1"
               "zswap.max_pool_percent=90"
-              "modprobe.blacklist=amdgpu,pcspkr,hid_nintendo"
               %default-kernel-arguments))
       (file-systems (append <<file-systems>> %base-file-systems))
       (swap-devices
@@ -95,15 +97,15 @@
                   (host "0.0.0.0")
                   (advertise? #t)))
 
+              (simple-service 'extend-guix guix-service-type
+                (guix-extension
+                  (authorized-keys %testament-guix-keys)
+                  (substitute-urls '("https://cache-cdn.guix.moe"))))
+
               (modify-services %rosenthal-desktop-services
                 (guix-service-type
                  config => (guix-configuration
                              (inherit config)
-                             (authorized-keys %guix-keys)
-                             (substitute-urls
-                              '("https://cache-cdn.guix.moe"
-                                "https://ci.guix.gnu.org"
-                                "https://bordeaux.guix.gnu.org"))
                              (discover? #t)
                              (extra-options '("--cores=16"))
                              (tmpdir "/var/tmp")))
@@ -115,9 +117,8 @@
                                     %network-manager-random-mac-address)))))))
       (name-service-switch %mdns-host-lookup-nss)))
 
-  ((compose (nonguix-transformation-nvidia)
-            (rosenthal-transformation-zfs #:boot? #t)
-            (nonguix-transformation-linux #:linux linux-lts/dolly))
+  ((compose (nonguix-transformation-nvidia #:open-source-kernel-module? #t)
+            (rosenthal-transformation-zfs #:boot? #t))
    %os)
 #+end_src
 
@@ -546,7 +547,8 @@ Open TCP port 5558 and connect to server IPv4 address.
       (substitute-urls
        '("https://ci.guix.moe"
          "https://ci.guix.gnu.org"
-         "https://bordeaux.guix.gnu.org"))))
+         "https://bordeaux.guix.gnu.org"
+         "https://substitutes.nonguix.org"))))
 #+end_src
 
 * Monitoring
@@ -573,8 +575,7 @@ Open TCP port 5558 and connect to server IPv4 address.
   (gnu home services fontutils)
 #+end_src
 
-** Wayland
-*** niri
+** niri
 #+begin_src scheme :noweb-ref home-service
   (service home-niri-service-type
     (home-niri-configuration
@@ -588,58 +589,6 @@ Open TCP port 5558 and connect to server IPv4 address.
                       "swaylock-effects"
                       "wireplumber"
                       "xwayland-satellite")))))
-
-  (service home-rofi-service-type
-    (home-rofi-configuration
-      (config
-       (mixed-text-file "rofi.rasi" "\
-  configuration {
-      icon-theme: \"Qogir\";
-  }
-  @theme \"" (spec->pkg "rofi") "/share/rofi/themes/fullscreen-preview.rasi\"\n"))))
-#+end_src
-
-*** waybar
-#+begin_src scheme :noweb-ref home-service
-  (service home-waybar-service-type
-    (home-waybar-configuration
-      (config
-       (computed-substitution-with-inputs "config.jsonc"
-         (local-file (testament-plain "waybar.jsonc"))
-         (specs->pkgs "light" "pavucontrol" "wireplumber")))
-      (style
-       (computed-substitution-with-inputs "style.css"
-         (local-file (testament-plain "waybar.css"))
-         (list (testament-plain))))))
-#+end_src
-
-*** swaybg
-#+begin_src scheme :noweb-ref home-service
-  (service home-swaybg-service-type
-    (home-swaybg-configuration
-      (background (local-file "../../Pictures/Pixez/101361103_p0.jpg"))))
-#+end_src
-
-*** mako
-#+begin_src scheme :noweb-ref home-service
-  (service home-mako-service-type
-    (home-mako-configuration
-      (config (local-file (testament-plain "mako.conf")))))
-#+end_src
-
-*** gammastep
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'gammastep
-      home-shepherd-service-type
-    (list (shepherd-service
-            (provision '(gammastep))
-            (requirement '(home-sops-secrets))
-            (start
-             #~(make-forkexec-constructor
-                (list #$(file-append (spec->pkg "bash-minimal") "/bin/sh") "-c"
-                      #$(file-append (spec->pkg "gammastep") "/bin/gammastep "
-                                     "$(cat $XDG_RUNTIME_DIR/secrets/gammastep)"))))
-            (stop #~(make-kill-destructor)))))
 #+end_src
 
 ** qogir-icon-theme
@@ -713,55 +662,10 @@ Open TCP port 5558 and connect to server IPv4 address.
           (family "monospace"))))))
 #+end_src
 
-** fcitx5
-#+begin_src scheme :noweb-ref home-service
-  (service home-fcitx5-service-type
-    (home-fcitx5-configuration
-      (themes (specs->pkgs "fcitx5-material-color-theme"))
-      (input-method-editors (specs->pkgs "fcitx5-rime"))))
-#+end_src
-
-* Multimedia & Miscellaneous
+* Miscellaneous
 #+begin_src scheme :noweb-ref module
   (gnu services syncthing)
   (rosenthal services bittorrent)
-#+end_src
-
-** jellyfin-mpv-shim
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'jellyfin-mpv-shim
-      home-shepherd-service-type
-    (list (shepherd-service
-            (provision '(jellyfin-mpv-shim))
-            (start
-             #~(make-forkexec-constructor
-                '(#$(file-append (spec->pkg "jellyfin-mpv-shim") "/bin/jellyfin-mpv-shim"))))
-            (stop #~(make-kill-destructor)))))
-#+end_src
-
-** steam
-#+begin_src scheme :noweb-ref home-environment-variable
-  ("GUIX_SANDBOX_HOME" . "$XDG_DATA_HOME/steam")
-#+end_src
-
-#+begin_src scheme :noweb yes :noweb-ref service
-  (udev-rules-service 'steam-devices (spec->pkg "steam-devices-udev-rules"))
-  (udev-rules-service 'controller <<controller-permission-udev-rule>>)
-#+end_src
-
-See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
-#+name: controller-permission-udev-rule
-#+begin_src scheme
-  (udev-rule "60-controller-permission.rules" "\
-  KERNEL==\"event*\", ATTRS{idVendor}==\"045e\", ATTRS{idProduct}==\"028e\", \
-  MODE=\"0660\", GROUP=\"users\"")
-#+end_src
-
-** syncthing
-#+begin_src scheme :noweb-ref service
-  (service syncthing-service-type
-    (syncthing-configuration
-      (user "hako")))
 #+end_src
 
 ** adb
@@ -812,7 +716,7 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
-  (simple-service 'home-emacs
+  (simple-service 'emacs
       home-shepherd-service-type
     (list (shepherd-service
             (provision '(emacs-daemon))
@@ -874,4 +778,104 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
                               . (+inbox -new)))))
                     ;; Send queued mail.
                     (invoke "emacsclient" "--eval" "(smtpmail-send-queued-mail)"))))))))
+#+end_src
+
+** fcitx5
+#+begin_src scheme :noweb-ref home-service
+  (service home-fcitx5-service-type
+    (home-fcitx5-configuration
+      (themes (specs->pkgs "fcitx5-material-color-theme"))
+      (input-method-editors (specs->pkgs "fcitx5-rime"))))
+#+end_src
+
+** foot
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'foot
+      home-shepherd-service-type
+    (list (shepherd-service
+            (provision '(foot))
+            (start
+             #~(make-forkexec-constructor
+                (list #$(file-append (spec->pkg "foot") "/bin/foot") "--server")))
+            (stop #~(make-kill-destructor)))))
+#+end_src
+
+** gammastep
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'gammastep
+      home-shepherd-service-type
+    (list (shepherd-service
+            (provision '(gammastep))
+            (requirement '(home-sops-secrets))
+            (start
+             #~(make-forkexec-constructor
+                (list #$(file-append (spec->pkg "bash-minimal") "/bin/sh") "-c"
+                      #$(file-append (spec->pkg "gammastep") "/bin/gammastep "
+                                     "$(cat $XDG_RUNTIME_DIR/secrets/gammastep)"))))
+            (stop #~(make-kill-destructor)))))
+#+end_src
+
+** jellyfin-mpv-shim
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'jellyfin-mpv-shim
+      home-shepherd-service-type
+    (list (shepherd-service
+            (provision '(jellyfin-mpv-shim))
+            (start
+             #~(make-forkexec-constructor
+                '(#$(file-append (spec->pkg "jellyfin-mpv-shim") "/bin/jellyfin-mpv-shim"))))
+            (stop #~(make-kill-destructor)))))
+#+end_src
+
+** mako
+#+begin_src scheme :noweb-ref home-service
+  (service home-mako-service-type
+    (home-mako-configuration
+      (config (local-file (testament-plain "mako.conf")))))
+#+end_src
+
+** steam
+#+begin_src scheme :noweb-ref home-environment-variable
+  ("GUIX_SANDBOX_HOME" . "$XDG_DATA_HOME/steam")
+#+end_src
+
+#+begin_src scheme :noweb yes :noweb-ref service
+  (udev-rules-service 'steam-devices (spec->pkg "steam-devices-udev-rules"))
+  (udev-rules-service 'controller <<controller-permission-udev-rule>>)
+#+end_src
+
+See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
+#+name: controller-permission-udev-rule
+#+begin_src scheme
+  (udev-rule "60-controller-permission.rules" "\
+  KERNEL==\"event*\", ATTRS{idVendor}==\"045e\", ATTRS{idProduct}==\"028e\", \
+  MODE=\"0660\", GROUP=\"users\"")
+#+end_src
+
+** swaybg
+#+begin_src scheme :noweb-ref home-service
+  (service home-swaybg-service-type
+    (home-swaybg-configuration
+      (background (local-file "../../Pictures/Pixez/101361103_p0.jpg"))))
+#+end_src
+
+** syncthing
+#+begin_src scheme :noweb-ref service
+  (service syncthing-service-type
+    (syncthing-configuration
+      (user "hako")))
+#+end_src
+
+** waybar
+#+begin_src scheme :noweb-ref home-service
+  (service home-waybar-service-type
+    (home-waybar-configuration
+      (config
+       (computed-substitution-with-inputs "config.jsonc"
+         (local-file (testament-plain "waybar.jsonc"))
+         (specs->pkgs "light" "pavucontrol" "wireplumber")))
+      (style
+       (computed-substitution-with-inputs "style.css"
+         (local-file (testament-plain "waybar.css"))
+         (list (testament-plain))))))
 #+end_src

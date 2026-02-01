@@ -1,7 +1,7 @@
-;;; SPDX-FileCopyrightText: DogLooksGood <doglooksgood@hotmail.com>
-;;; SPDX-FileCopyrightText: 2022 Nyk Ma <i@nyk.ma>
-;;;
+;;; -*- lexical-binding: t -*-
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
+;;; Copyright © 2022 Nyk Ma <i@nyk.ma>
+;;; Copyright © 2024-2026 Hilton Chain <hako@ultrarare.space>
 
 ;; https://github.com/DogLooksGood/meomacs/blob/master/laf.org
 ;; https://github.com/nykma/nema/blob/develop/my-sample/font.el

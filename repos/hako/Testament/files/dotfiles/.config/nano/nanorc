@@ -1,0 +1,2 @@
+# Include all the syntax highlighting modules.
+include /run/current-system/profile/share/nano/*.nanorc

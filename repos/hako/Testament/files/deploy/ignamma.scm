@@ -1,7 +1,3 @@
-;;; SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space>
-;;;
-;;; SPDX-License-Identifier: CC0-1.0
-
 (use-modules (gnu machine)
              (gnu machine ssh))
 
@@ -13,4 +9,4 @@
     (machine-ssh-configuration
       (host-name "ignamma")
       (system "x86_64-linux")
-      (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF4J18s0e6sbR7IaJblTkpLt0gflXjt1ZRHyI9vMmDE6")))))
+      (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAPBlsRI/35fyLNgRHcOUdwQkagHf6mV75cFycHSyJ2B")))))

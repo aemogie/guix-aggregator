@@ -1,7 +1,6 @@
 ;;; -*- lexical-binding: t -*-
-;;; SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space>
-;;;
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
+;;; Copyright © 2025-2026 Hilton Chain <hako@ultrarare.space>
 
 (setopt custom-file (locate-user-emacs-file "custom.el"))
 (if (not (file-exists-p custom-file))

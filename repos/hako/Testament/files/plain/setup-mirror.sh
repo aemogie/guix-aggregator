@@ -1,7 +1,4 @@
 #!/bin/sh
-# SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space>
-#
-# SPDX-License-Identifier: CC0-1.0
 
 if [ "x$BASH_VERSION" = "x" ]; then
     exec bash "$0" "$@"

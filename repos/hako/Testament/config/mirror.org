@@ -1,7 +1,5 @@
-# SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space>
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-License-Identifier: CC-BY-SA-4.0
-
+# Copyright © 2025-2026 Hilton Chain <hako@ultrarare.space>
 #+TITLE: mirror
 #+PROPERTY: header-args :noweb-prefix no
 
@@ -43,12 +41,13 @@
       (packages (append (specs->pkgs+out "mosh" "rsync") %base-packages))
       (services
        (cons* <<service>>
-              (modify-services %base-services
-                (guix-service-type
-                 config => (guix-configuration
-                             (inherit config)
-                             (authorized-keys %guix-keys)
-                             (substitute-urls '("https://cache-cdn.guix.moe")))))))
+
+              (simple-service 'extend-guix guix-service-type
+                (guix-extension
+                  (authorized-keys %testament-guix-keys)
+                  (substitute-urls '("https://cache-cdn.guix.moe"))))
+
+              %base-services))
       (sudoers-file
        (plain-file "sudoers"
          (string-append
@@ -185,7 +184,7 @@ Administration accounts.
   (simple-service 'guix-moe-mirror
       shepherd-root-service-type
     (list (shepherd-timer '(guix-moe-mirror)
-            #~(calendar-event #:hours '(3 9 15 21) #:minutes '(0))
+            #~(calendar-event #:minutes '(30))
             #~(#$(program-file "guix-moe-mirror"
                    (with-imported-modules '((guix build utils))
                      #~(begin

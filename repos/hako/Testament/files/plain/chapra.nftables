@@ -1,8 +1,3 @@
-# -*- mode: nftables -*-
-# SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space>
-#
-# SPDX-License-Identifier: CC0-1.0
-
 flush ruleset
 
 table inet filter {
@@ -25,12 +20,15 @@ table inet filter {
         ip protocol icmp accept
         ip6 nexthdr icmpv6 accept
 
-        tcp dport https accept
-        tcp dport ssh accept
-        udp dport https accept
+        # allow avahi
         udp dport mdns accept
 
+        # allow caddy
+        tcp dport https accept
+        udp dport https accept
+
         # allow mosh
+        tcp dport ssh accept
         udp dport 60000-61000 accept
 
         # allow tailscale

@@ -17,6 +17,10 @@
     (timezone "Europe/Paris")
     (locale "en_US.utf8")
 
+    (kernel linux)
+    (initrd microcode-initrd)
+    (firmware (cons* linux-firmware %base-firmware))
+
     ;; Choose US English keyboard layout.  The "altgr-intl"
     ;; variant provides dead keys for accented characters.
     (keyboard-layout (keyboard-layout "us" "altgr-intl"))
@@ -100,8 +104,8 @@
     ;; Allow resolution of '.local' host names with mDNS.
     (name-service-switch %mdns-host-lookup-nss)))
 
-((compose (nonguix-transformation-linux)
-          ;; Uncomment the following line for NVIDIA proprietary driver support.
-          ;; (nonguix-transformation-nvidia #:configure-xorg? #t)
-          (nonguix-transformation-guix))
+((compose
+  ;; Uncomment the following line for NVIDIA proprietary driver support.
+  ;; (nonguix-transformation-nvidia #:configure-xorg? #t)
+  (nonguix-transformation-guix))
  %my-os)

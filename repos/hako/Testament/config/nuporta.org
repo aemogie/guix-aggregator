@@ -1,7 +1,5 @@
-# SPDX-FileCopyrightText: 2024, 2025 Hilton Chain <hako@ultrarare.space>
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-License-Identifier: CC-BY-SA-4.0
-
+# Copyright © 2024-2026 Hilton Chain <hako@ultrarare.space>
 #+TITLE: nuporta
 #+PROPERTY: header-args :noweb-prefix no
 
@@ -55,12 +53,17 @@
                   ;; 2 minutes
                   (negative-ttl (* 2 60))))
 
+              (simple-service 'extend-guix guix-service-type
+                (guix-extension
+                  (authorized-keys %testament-guix-keys)
+                  (substitute-urls
+                   '("https://cache-fi.guix.moe"
+                     "https://substitutes.nonguix.org"))))
+
               (modify-services %base-services
                 (guix-service-type
                  config => (guix-configuration
                              (inherit config)
-                             (authorized-keys %guix-keys)
-                             (substitute-urls '("https://cache-fi.guix.moe"))
                              (extra-options '("--cores=4")))))))
       (privileged-programs
        (cons* (privileged-program
@@ -421,12 +424,12 @@ Remember to open TCP port 5555 and 5556.
       (substitute-urls
        '("https://ci.guix.moe"
          "https://ci.guix.gnu.org"
-         "https://bordeaux.guix.gnu.org"))))
+         "https://bordeaux.guix.gnu.org"
+         "https://substitutes.nonguix.org"))))
 #+end_src
 
 ** cuirass specifications
-*** channels
-**** cast
+*** cast
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification
     (name "cast")
@@ -449,7 +452,7 @@ Remember to open TCP port 5555 and 5556.
     (properties '((forge-type . forgejo))))
 #+end_src
 
-**** emacs-master
+*** emacs-master
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification
     (name "emacs-master")
@@ -471,7 +474,7 @@ Remember to open TCP port 5555 and 5556.
     (systems '("x86_64-linux")))
 #+end_src
 
-**** guix-pinned
+*** guix-pinned
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification
     (name "guix-pinned")
@@ -484,7 +487,7 @@ Remember to open TCP port 5555 and 5556.
     (systems '("x86_64-linux" "aarch64-linux")))
 #+end_src
 
-**** guixcn
+*** guixcn
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification
     (name "guixcn")
@@ -506,7 +509,7 @@ Remember to open TCP port 5555 and 5556.
     (properties '((forge-type . forgejo))))
 #+end_src
 
-**** nonguix
+*** nonguix
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification
     (name "nonguix")
@@ -527,7 +530,25 @@ Remember to open TCP port 5555 and 5556.
     (systems '("x86_64-linux" "aarch64-linux")))
 #+end_src
 
-**** rde
+*** rain-and-roses
+#+begin_src scheme :noweb-ref cuirass-spec
+  (specification
+    (name "rain-and-roses")
+    (build '(channels rain-and-roses))
+    (channels
+     (list (channel
+             (inherit %default-guix-channel)
+             (url "https://git.urspace.moe/mirror/guix.git"))
+           (channel
+             (name 'rain-and-roses)
+             (url "https://codeberg.org/untrusem/rain-and-roses.git")
+             (branch "trunk"))))
+    (priority 5)
+    (systems '("x86_64-linux"))
+    (properties '((forge-type . forgejo))))
+#+end_src
+
+*** rde
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification
     (name "rde")
@@ -548,7 +569,7 @@ Remember to open TCP port 5555 and 5556.
     (systems '("x86_64-linux")))
 #+end_src
 
-**** rosenthal
+*** rosenthal
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification
     (name "rosenthal")
@@ -571,20 +592,6 @@ Remember to open TCP port 5555 and 5556.
     (properties '((forge-type . forgejo))))
 #+end_src
 
-*** source
-**** guix
-#+begin_src scheme :noweb-ref cuirass-spec
-  (specification
-    (name "source")
-    (build '(manifests "etc/manifests/source.scm"))
-    (channels
-     (list (channel
-             (inherit %default-guix-channel)
-             (url "https://git.urspace.moe/mirror/guix.git"))))
-    (priority 9)
-    (systems '("x86_64-linux")))
-#+end_src
-
 ** Mirroring
 rsync://cache.guix.moe
 #+begin_src scheme :noweb-ref service
@@ -603,7 +610,7 @@ rsync://cache.guix.moe
   (simple-service 'setup-mirror
       shepherd-root-service-type
     (list (shepherd-timer '(setup-mirror)
-            #~(calendar-event #:hours '(0 6 12 18) #:minutes '(0))
+            #~(calendar-event #:minutes '(0))
             #~("/bin/sh" #$(local-file (testament-plain "setup-mirror.sh")))
             #:requirement '(user-processes))))
 #+end_src

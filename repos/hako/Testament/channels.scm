@@ -1,7 +1,3 @@
-;;; SPDX-FileCopyrightText: 2025 Hilton Chain <hako@ultrarare.space>
-;;;
-;;; SPDX-License-Identifier: CC0-1.0
-
 (cons* (channel
          (name 'nonguix)
          (url "https://gitlab.com/nonguix/nonguix")
@@ -21,7 +17,7 @@
             "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7"))))
        (channel
          (name 'sops-guix)
-         (url "https://github.com/fishinthecalculator/sops-guix")
+         (url "https://github.com/fishinthecalculator/sops-guix.git")
          (branch "main")
          (introduction
           (make-channel-introduction

@@ -1,6 +1,5 @@
-# SPDX-FileCopyrightText: 2023-2026 Hilton Chain <hako@ultrarare.space>
 # SPDX-License-Identifier: CC0-1.0
-
+# Copyright © 2023-2026 Hilton Chain <hako@ultrarare.space>
 #+TITLE: Testament - Personal dot(?)files
 
 This repository contains my dotfiles and Guix System literate configurations.
