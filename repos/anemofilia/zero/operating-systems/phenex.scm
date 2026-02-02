@@ -18,7 +18,7 @@
   #|L|# #:use-module (nongnu packages linux)
 
   #|nonGNU system|#
-  #|s|# #:use-module (nongnu system linux-initrd)
+  #|L|# #:use-module (nongnu system linux-initrd)
 
   #|Operating-systems|#
   #|B|# #:use-module (operating-systems buer))

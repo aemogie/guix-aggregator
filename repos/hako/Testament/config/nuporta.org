@@ -12,10 +12,14 @@
     (operating-system
       (host-name "nuporta")
       (timezone "Etc/GMT-8")
+      ;; GRUB has issue booting from the ZFS dataset with /gnu/store.
+      ;; See https://savannah.gnu.org/bugs/?47742 and issues with same error.
+      ;; NOTE: This bootloader currently doesn't support choosing system
+      ;; generation on boot and switching system generations / rolling back.
       (bootloader
-        (bootloader-configuration
-          (bootloader uefi-uki-removable-bootloader)
-          (targets '("/efi"))))
+       (bootloader-configuration
+         (bootloader uefi-uki-removable-bootloader)
+         (targets '("/efi"))))
       (kernel linux-lts/dolly)
       (kernel-arguments
        (cons* "kernel.sysrq=0"
@@ -611,7 +615,8 @@ rsync://cache.guix.moe
       shepherd-root-service-type
     (list (shepherd-timer '(setup-mirror)
             #~(calendar-event #:minutes '(0))
-            #~("/bin/sh" #$(local-file (testament-plain "setup-mirror.sh")))
+            #~("/run/current-system/profile/bin/guix" "repl" "--"
+               #$(local-file (testament-plain "setup-mirror.scm")))
             #:requirement '(user-processes))))
 #+end_src
 

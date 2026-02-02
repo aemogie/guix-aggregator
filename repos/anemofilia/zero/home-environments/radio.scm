@@ -403,7 +403,7 @@
                      (home-gpg-agent-configuration
                        (gnupg-home "~/.local/share/gnupg")
                        (pinentry-program
-                         (file-append (@ (radix packages gnupg) pinentry-fuzzel)
+                         (file-append (@ (gnu packages gnupg) pinentry-fuzzel)
                                       "/bin/pinentry-fuzzel"))))
 
             #|Session services|#

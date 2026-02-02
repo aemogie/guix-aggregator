@@ -18,11 +18,7 @@
            (if bios-boot
                grub-bootloader
                grub-efi-removable-bootloader))
-         (targets (list (or bios-boot "/efi")))
-         (theme
-          (grub-theme
-            (inherit (grub-theme))
-            (resolution #f)))))
+         (targets (list (or bios-boot "/efi")))))
       (kernel linux-lts/dolly)
       (kernel-arguments
        (cons* "kernel.sysrq=0"

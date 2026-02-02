@@ -18,11 +18,7 @@
            (if bios-boot
                grub-bootloader
                grub-efi-removable-bootloader))
-         (targets (list (or bios-boot "/efi")))
-         (theme
-          (grub-theme
-           (inherit (grub-theme))
-           (resolution #f)))))
+         (targets (list (or bios-boot "/efi")))))
       (kernel linux-lts/dolly)
       (kernel-arguments
        (cons* "kernel.sysrq=0"
@@ -186,14 +182,22 @@ Administration accounts.
     (list (shepherd-timer '(guix-moe-mirror)
             #~(calendar-event #:minutes '(30))
             #~(#$(program-file "guix-moe-mirror"
-                   (with-imported-modules '((guix build utils))
+                   (with-imported-modules
+                       (source-module-closure
+                        '((guix build syscalls)
+                          (guix build utils)))
                      #~(begin
-                         (use-modules (guix build utils))
-                         (mkdir-p "/var/cache/guix-moe/narinfo")
-                         (invoke #$(file-append (spec->pkg "rsync") "/bin/rsync")
-                                 "-az" "--delete"
-                                 "rsync://cache.guix.moe/narinfo/"
-                                 "/var/cache/guix-moe/narinfo/")))))
+                         (use-modules (guix build syscalls)
+                                      (guix build utils))
+                         (with-file-lock/no-wait "/var/lock/guix-moe-mirror.lock"
+                           (lambda _
+                             (error "found ongoing syncing process, exiting"))
+                           (begin
+                             (mkdir-p "/var/cache/guix-moe/narinfo")
+                             (invoke #$(file-append (spec->pkg "rsync") "/bin/rsync")
+                                     "-az" "--delete"
+                                     "rsync://cache.guix.moe/narinfo/"
+                                     "/var/cache/guix-moe/narinfo/")))))))
             #:requirement '(user-processes))))
 #+end_src
 

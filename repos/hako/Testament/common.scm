@@ -8,6 +8,7 @@
              (ice-9 textual-ports)
              (guix diagnostics)
              (guix i18n)
+             (guix modules)
              (guix packages)
              (guix store)
              (nonguix)

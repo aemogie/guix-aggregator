@@ -14,6 +14,10 @@
       (timezone "Etc/GMT-8")
       (keyboard-layout
        (keyboard-layout "us" "dvorak" #:options '("ctrl:nocaps")))
+      ;; GRUB has issue booting from the ZFS dataset with /gnu/store.
+      ;; See https://savannah.gnu.org/bugs/?47742 and issues with same error.
+      ;; NOTE: This bootloader currently doesn't support choosing system
+      ;; generation on boot and switching system generations / rolling back.
       (bootloader
        (bootloader-configuration
          (bootloader uefi-uki-removable-bootloader)
@@ -37,26 +41,28 @@
       (users (cons* <<user>> %base-user-accounts))
       (packages
        (append (specs->pkgs+out
+                ;; CLI Utilities.
                 "curl"
-                "dino"
                 "fd"
-                "foot"
                 "git"
                 "gnupg"
                 "mosh"
                 "ncurses"
-                "niri"
                 "openjdk:jdk"
                 "ripgrep"
                 "rsync"
                 "sops"
                 "unzip"
-                "wl-clipboard"
 
+                ;; Graphical session.
+                "foot"
+                "niri"
+                "wl-clipboard"
                 "xdg-desktop-portal-gnome"
                 "xdg-desktop-portal-gtk"
                 "xdg-utils"
 
+                ;; File manager.
                 "exo"
                 "file-roller"
                 "thunar"
@@ -65,6 +71,7 @@
                 "thunar-volman"
                 "tumbler"
 
+                ;; Web browser.
                 "librewolf"
                 "adaptive-tab-bar-colour-icecat"
                 "bitwarden-icecat"
@@ -72,6 +79,7 @@
                 "ohmyech-icecat"
                 "ublock-origin-icecat"
 
+                ;; Multimedia.
                 "digikam"
                 "gimp"
                 "imv"
@@ -82,6 +90,7 @@
                 "zathura"
                 "zathura-pdf-poppler"
 
+                ;; Gaming.
                 "mangohud"
                 "prismlauncher-dolly"
                 "steam-nvidia"

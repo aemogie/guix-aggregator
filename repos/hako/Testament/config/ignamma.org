@@ -15,11 +15,7 @@
       (bootloader
        (bootloader-configuration
          (bootloader grub-efi-removable-bootloader)
-         (targets '("/efi"))
-         (theme
-           (grub-theme
-             (inherit (grub-theme))
-             (resolution #f)))))
+         (targets '("/efi"))))
       (kernel linux-lts/dolly)
       (kernel-arguments
        (cons* "consoleblank=60"
