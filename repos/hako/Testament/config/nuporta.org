@@ -478,7 +478,20 @@ Remember to open TCP port 5555 and 5556.
     (systems '("x86_64-linux")))
 #+end_src
 
-*** guix-pinned
+*** guix
+#+begin_src scheme :noweb-ref cuirass-spec
+  (specification
+    (name "guix")
+    (build '(channels guix))
+    (channels
+     (list (channel
+             (inherit %default-guix-channel)
+             (url "https://git.urspace.moe/mirror/guix.git"))))
+    (priority 9)
+    (systems '("x86_64-linux")))
+#+end_src
+
+Pin commit for aarch64-linux as the build resource is limited
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification
     (name "guix-pinned")
@@ -486,9 +499,10 @@ Remember to open TCP port 5555 and 5556.
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.urspace.moe/mirror/guix.git"))))
+             (url "https://git.urspace.moe/hako/guix.git")
+             (branch "pinned"))))
     (priority 9)
-    (systems '("x86_64-linux" "aarch64-linux")))
+    (systems '("aarch64-linux")))
 #+end_src
 
 *** guixcn
@@ -592,7 +606,7 @@ Remember to open TCP port 5555 and 5556.
                (openpgp-fingerprint
                 "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7"))))))
     (priority 5)
-    (systems '("x86_64-linux" "aarch64-linux"))
+    (systems '("x86_64-linux"))
     (properties '((forge-type . forgejo))))
 #+end_src
 

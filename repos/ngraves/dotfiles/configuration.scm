@@ -933,9 +933,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
             (efi "/dev/nvme0n1p1")
             (encrypted-uuid-mapped "92f9af3d-d860-4497-91ea-9e46a1dacf7a")
             (btrfs-layout (append '(;;(data . "/data")
-                                    (btrbk_snapshots . "/btrbk_snapshots")
-                                    (mozilla . "/home/graves/.mozilla")
-                                    (zoom . "/home/graves/.zoom"))
+                                    (btrbk_snapshots . "/btrbk_snapshots"))
                                   root-impermanence-btrfs-layout
                                   home-impermanence-para-btrfs-layout))
             (firmware (list linux-firmware))
@@ -1123,8 +1121,8 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl
                                  %immutable-store))
       (feature-kernel
        #:kernel (if (null? (machine-firmware %current-machine))
-                    linux-libre-6.16
-                    linux-6.16)
+                    linux-libre
+                    linux)
        #:initrd microcode-initrd
        #:initrd-modules
        (append (list "vmd") (@(gnu system linux-initrd) %base-initrd-modules))
@@ -1306,7 +1304,7 @@ rde, home and system subcommands only!"))))
 ;; done
 ;; MAYBE btrfs subvolume create /mnt/root
 ;; btrfs subvolume create /mnt/home OR
-;; for subvol in {spheres,projects,resources,archives,zoom,local,cache,mozilla}; do\
+;; for subvol in {spheres,projects,resources,archives,local,cache}; do\
 ;;   btrfs subvolume create /mnt/${subvol};\
 ;; done
 ;; umount /mnt
