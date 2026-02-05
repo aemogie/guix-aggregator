@@ -91,12 +91,10 @@
 
 ** Kernel
 #+begin_src scheme :noweb-ref service
-  (simple-service 'extend-kernel-module-loader
-      kernel-module-loader-service-type
+  (simple-service 'extend-kernel-module-loader kernel-module-loader-service-type
     '("sch_fq_pie" "tcp_bbr"))
 
-  (simple-service 'extend-sysctl
-      sysctl-service-type
+  (simple-service 'extend-sysctl sysctl-service-type
     '(("net.core.default_qdisc" . "fq_pie")
       ("net.ipv4.tcp_congestion_control" . "bbr")
       ;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
@@ -154,8 +152,7 @@
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (simple-service 'zfs-scrub
-      shepherd-root-service-type
+  (simple-service 'zfs-scrub shepherd-root-service-type
     (list (shepherd-timer '(zfs-scrub)
             #~(calendar-event #:days-of-week '(sunday) #:hours '(0) #:minutes '(0))
             #~(#$(file-append (spec->pkg "zfs") "/sbin/zpool") "scrub" "-w" "Lycoris")
@@ -163,8 +160,7 @@
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (simple-service 'zfs-snapshot-hourly
-      shepherd-root-service-type
+  (simple-service 'zfs-snapshot-hourly shepherd-root-service-type
     (list (shepherd-timer '(zfs-snapshot-hourly)
             #~(calendar-event #:minutes '(0))
             #~(#$(program-file "zfs-snapshot-hourly"
@@ -179,8 +175,7 @@
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (simple-service 'zfs-snapshot-daily
-      shepherd-root-service-type
+  (simple-service 'zfs-snapshot-daily shepherd-root-service-type
     (list (shepherd-timer '(zfs-snapshot-daily)
             #~(calendar-event #:hours '(0) #:minutes '(0))
             #~(#$(program-file "zfs-snapshot-daily"
@@ -219,8 +214,7 @@ Administration accounts.
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (simple-service 'extend-openssh
-      openssh-service-type
+  (simple-service 'extend-openssh openssh-service-type
     `(("root" ,%ssh-key-deploy)
       ("hako" ,%ssh-key-hako)
       ("jonathan" ,%ssh-key-jonathan)
@@ -625,8 +619,7 @@ rsync://cache.guix.moe
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (simple-service 'setup-mirror
-      shepherd-root-service-type
+  (simple-service 'setup-mirror shepherd-root-service-type
     (list (shepherd-timer '(setup-mirror)
             #~(calendar-event #:minutes '(0))
             #~("/run/current-system/profile/bin/guix" "repl" "--"

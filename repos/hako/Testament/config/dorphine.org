@@ -48,36 +48,14 @@
                 "gnupg"
                 "mosh"
                 "ncurses"
-                "openjdk:jdk"
                 "ripgrep"
                 "rsync"
                 "sops"
                 "unzip"
 
-                ;; Graphical session.
+                ;; Desktop applications.
                 "foot"
-                "niri"
-                "wl-clipboard"
-                "xdg-desktop-portal-gnome"
-                "xdg-desktop-portal-gtk"
-                "xdg-utils"
-
-                ;; File manager.
-                "exo"
-                "file-roller"
-                "thunar"
-                "thunar-archive-plugin"
-                "thunar-media-tags-plugin"
-                "thunar-volman"
-                "tumbler"
-
-                ;; Web browser.
-                "librewolf"
-                "adaptive-tab-bar-colour-icecat"
-                "bitwarden-icecat"
-                "livemarks-icecat"
-                "ohmyech-icecat"
-                "ublock-origin-icecat"
+                "telegram-desktop"
 
                 ;; Multimedia.
                 "digikam"
@@ -95,6 +73,30 @@
                 "prismlauncher-dolly"
                 "steam-nvidia"
 
+                ;; Web browser.
+                "librewolf"
+                "adaptive-tab-bar-colour-icecat"
+                "bitwarden-icecat"
+                "livemarks-icecat"
+                "ohmyech-icecat"
+                "ublock-origin-icecat"
+
+                ;; File manager.
+                "exo"
+                "file-roller"
+                "thunar"
+                "thunar-archive-plugin"
+                "thunar-media-tags-plugin"
+                "thunar-volman"
+                "tumbler"
+
+                ;; Graphical session.
+                "niri"
+                "wl-clipboard"
+                "xdg-desktop-portal-gnome"
+                "xdg-desktop-portal-gtk"
+                "xdg-utils"
+
                 <<package>>)
                %base-packages))
       (services
@@ -111,7 +113,7 @@
                   (authorized-keys %testament-guix-keys)
                   (substitute-urls '("https://cache-cdn.guix.moe"))))
 
-              (modify-services %rosenthal-desktop-services
+              (modify-services %rosenthal-desktop-services-gdm
                 (guix-service-type
                  config => (guix-configuration
                              (inherit config)
@@ -126,7 +128,8 @@
                                     %network-manager-random-mac-address)))))))
       (name-service-switch %mdns-host-lookup-nss)))
 
-  ((compose (nonguix-transformation-nvidia #:open-source-kernel-module? #t)
+  ((compose (nonguix-transformation-nvidia #:open-source-kernel-module? #t
+                                           #:configure-xorg? #t)
             (rosenthal-transformation-zfs #:boot? #t))
    %os)
 #+end_src
@@ -173,12 +176,10 @@
 
 ** Kernel
 #+begin_src scheme :noweb-ref service
-  (simple-service 'extend-kernel-module-loader
-      kernel-module-loader-service-type
+  (simple-service 'extend-kernel-module-loader kernel-module-loader-service-type
     '("sch_fq_pie" "tcp_bbr"))
 
-  (simple-service 'extend-sysctl
-      sysctl-service-type
+  (simple-service 'extend-sysctl sysctl-service-type
     '(("net.core.default_qdisc" . "fq_pie")
       ("net.ipv4.tcp_congestion_control" . "bbr")
       ;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
@@ -187,8 +188,7 @@
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
-  (simple-service 'modprobed-db
-      home-shepherd-service-type
+  (simple-service 'modprobed-db home-shepherd-service-type
     (list (shepherd-timer '(update-modprobed-db)
             #~(calendar-event #:minutes '(0))
             #~(#$(file-append (spec->pkg "modprobed-db") "/bin/modprobed-db") "storesilent"))))
@@ -255,8 +255,7 @@
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (simple-service 'zfs-scrub
-      shepherd-root-service-type
+  (simple-service 'zfs-scrub shepherd-root-service-type
     (list (shepherd-timer '(zfs-scrub)
             #~(calendar-event #:days-of-week '(sunday) #:hours '(0) #:minutes '(0))
             #~(#$(file-append (spec->pkg "zfs") "/sbin/zpool") "scrub" "-w" "Mentha")
@@ -264,8 +263,7 @@
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (simple-service 'zfs-snapshot-hourly
-      shepherd-root-service-type
+  (simple-service 'zfs-snapshot-hourly shepherd-root-service-type
     (list (shepherd-timer '(zfs-snapshot-hourly)
             #~(calendar-event #:minutes '(0))
             #~(#$(program-file "zfs-snapshot-hourly"
@@ -279,8 +277,7 @@
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (simple-service 'zfs-snapshot-daily
-      shepherd-root-service-type
+  (simple-service 'zfs-snapshot-daily shepherd-root-service-type
     (list (shepherd-timer '(zfs-snapshot-daily)
             #~(calendar-event #:hours '(0) #:minutes '(0))
             #~(#$(program-file "zfs-snapshot-daily"
@@ -328,8 +325,7 @@ Administration accounts.
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (simple-service 'extend-openssh
-      openssh-service-type
+  (simple-service 'extend-openssh openssh-service-type
     `(("root" ,%ssh-key-deploy)))
 #+end_src
 
@@ -341,8 +337,7 @@ Administration accounts.
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
-  (simple-service 'fish-emacs-eat
-      home-fish-service-type
+  (simple-service 'fish-emacs-eat home-fish-service-type
     (home-fish-extension
       (config
        (list (plain-file "emacs-eat.fish" "\
@@ -422,8 +417,7 @@ Generate passwordless ECC key:
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (simple-service 'auto-power-off
-      shepherd-root-service-type
+  (simple-service 'auto-power-off shepherd-root-service-type
     (list (shepherd-timer '(auto-power-off)
             #~(calendar-event #:minutes '(0 10 20 30 40 50))
             #~(#$(program-file "auto-power-off"
@@ -584,6 +578,13 @@ Open TCP port 5558 and connect to server IPv4 address.
   (gnu home services fontutils)
 #+end_src
 
+** gdm
+#+begin_src scheme :noweb-ref service
+  (set-xorg-configuration
+   (xorg-configuration
+     (keyboard-layout keyboard-layout)))
+#+end_src
+
 ** niri
 #+begin_src scheme :noweb-ref home-service
   (service home-niri-service-type
@@ -591,13 +592,12 @@ Open TCP port 5558 and connect to server IPv4 address.
       (config
        (computed-substitution-with-inputs "niri.kdl"
          (local-file (testament-plain "niri.kdl"))
-         (specs->pkgs "foot"
-                      "light"
-                      "playerctl"
-                      "rofi"
-                      "swaylock-effects"
-                      "wireplumber"
-                      "xwayland-satellite")))))
+         (specs->pkgs "xwayland-satellite")))))
+#+end_src
+
+** noctalia-shell
+#+begin_src scheme :noweb-ref home-service
+  (service home-noctalia-shell-service-type)
 #+end_src
 
 ** qogir-icon-theme
@@ -624,8 +624,7 @@ Open TCP port 5558 and connect to server IPv4 address.
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
-  (simple-service 'extend-fontconfig
-      home-fontconfig-service-type
+  (simple-service 'extend-fontconfig home-fontconfig-service-type
     (let ((sans  "SF Pro Text")
           (serif "New York Medium")
           (mono  "Victor Mono")
@@ -711,8 +710,7 @@ Open TCP port 5558 and connect to server IPv4 address.
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
-  (simple-service 'emacs-configuration
-      home-xdg-configuration-files-service-type
+  (simple-service 'emacs-configuration home-xdg-configuration-files-service-type
     `(("emacs/init.el"
        ,(computed-substitution-with-inputs "init.el"
           (local-file (testament-plain "emacs-init.el"))
@@ -725,22 +723,18 @@ Open TCP port 5558 and connect to server IPv4 address.
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
-  (simple-service 'emacs
-      home-shepherd-service-type
+  (simple-service 'emacs home-shepherd-service-type
     (list (shepherd-service
             (provision '(emacs-daemon))
-            (start
-             #~(make-forkexec-constructor
-                '("emacs" "--fg-daemon")))
+            (start #~(make-forkexec-constructor '("emacs" "--fg-daemon")))
             (stop
-             #~(make-forkexec-constructor
-                '("emacsclient" "--eval" "(kill-emacs)"))))))
+             #~(make-system-destructor
+                (string-join '("emacsclient" "--eval" "(kill-emacs)")))))))
 #+end_src
 
 ** email
 #+begin_src scheme :noweb-ref home-service
-  (simple-service 'update-mailbox
-      home-shepherd-service-type
+  (simple-service 'update-mailbox home-shepherd-service-type
     (list
      (shepherd-timer '(update-mailbox)
        #~(calendar-event #:minutes '(0 15 30 45))
@@ -789,45 +783,9 @@ Open TCP port 5558 and connect to server IPv4 address.
                     (invoke "emacsclient" "--eval" "(smtpmail-send-queued-mail)"))))))))
 #+end_src
 
-** fcitx5
-#+begin_src scheme :noweb-ref home-service
-  (service home-fcitx5-service-type
-    (home-fcitx5-configuration
-      (themes (specs->pkgs "fcitx5-material-color-theme"))
-      (input-method-editors (specs->pkgs "fcitx5-rime"))))
-#+end_src
-
-** foot
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'foot
-      home-shepherd-service-type
-    (list (shepherd-service
-            (provision '(foot))
-            (start
-             #~(make-forkexec-constructor
-                (list #$(file-append (spec->pkg "foot") "/bin/foot") "--server")))
-            (stop #~(make-kill-destructor)))))
-#+end_src
-
-** gammastep
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'gammastep
-      home-shepherd-service-type
-    (list (shepherd-service
-            (provision '(gammastep))
-            (requirement '(home-sops-secrets))
-            (start
-             #~(make-forkexec-constructor
-                (list #$(file-append (spec->pkg "bash-minimal") "/bin/sh") "-c"
-                      #$(file-append (spec->pkg "gammastep") "/bin/gammastep "
-                                     "$(cat $XDG_RUNTIME_DIR/secrets/gammastep)"))))
-            (stop #~(make-kill-destructor)))))
-#+end_src
-
 ** jellyfin-mpv-shim
 #+begin_src scheme :noweb-ref home-service
-  (simple-service 'jellyfin-mpv-shim
-      home-shepherd-service-type
+  (simple-service 'jellyfin-mpv-shim home-shepherd-service-type
     (list (shepherd-service
             (provision '(jellyfin-mpv-shim))
             (start
@@ -836,11 +794,20 @@ Open TCP port 5558 and connect to server IPv4 address.
             (stop #~(make-kill-destructor)))))
 #+end_src
 
-** mako
+** mpv-mpris
 #+begin_src scheme :noweb-ref home-service
-  (service home-mako-service-type
-    (home-mako-configuration
-      (config (local-file (testament-plain "mako.conf")))))
+  (simple-service 'mpv-mpris home-xdg-configuration-files-service-type
+    `(("mpv/scripts/mpris.so"
+       ,(file-append (spec->pkg "mpv-mpris") "/lib/mpris.so"))))
+#+end_src
+
+** openjdk
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'symlink-openjdk home-files-service-type
+    (map (lambda (jdk)
+           (list (in-vicinity ".sdkman/candidates/java" (package-version jdk))
+                 jdk))
+         (specs->pkgs "openjdk@25")))
 #+end_src
 
 ** steam
@@ -861,30 +828,9 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
   MODE=\"0660\", GROUP=\"users\"")
 #+end_src
 
-** swaybg
-#+begin_src scheme :noweb-ref home-service
-  (service home-swaybg-service-type
-    (home-swaybg-configuration
-      (background (local-file "../../Pictures/Pixez/101361103_p0.jpg"))))
-#+end_src
-
 ** syncthing
 #+begin_src scheme :noweb-ref service
   (service syncthing-service-type
     (syncthing-configuration
       (user "hako")))
-#+end_src
-
-** waybar
-#+begin_src scheme :noweb-ref home-service
-  (service home-waybar-service-type
-    (home-waybar-configuration
-      (config
-       (computed-substitution-with-inputs "config.jsonc"
-         (local-file (testament-plain "waybar.jsonc"))
-         (specs->pkgs "light" "pavucontrol" "wireplumber")))
-      (style
-       (computed-substitution-with-inputs "style.css"
-         (local-file (testament-plain "waybar.css"))
-         (list (testament-plain))))))
 #+end_src

@@ -79,6 +79,22 @@
   :bind
   ("C-c M-m" . message-mark-inserted-region))
 
+;;guix:emacs-rime
+(use-package rime
+  :custom
+  (default-input-method "rime")
+  (rime-show-candidate 'posframe)
+  (rime-show-preedit t)
+  (rime-title "Rime")
+  (rime-posframe-properties '(:internal-border-width 1))
+  (rime-posframe-style 'simple))
+
+;; Required for using `emacs-rime' in minibuffer.
+;;guix:emacs-isearch-mb
+(use-package isearch-mb
+  :hook
+  (after-init . isearch-mb-mode))
+
 (use-package smtpmail
   :custom
   (smtpmail-default-smtp-server "mail.boiledscript.com")

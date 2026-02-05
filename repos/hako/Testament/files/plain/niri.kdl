@@ -1,7 +1,19 @@
 prefer-no-csd
 screenshot-path "~/Pictures/Screenshots/%Y%m%d-%H%M%S.png"
 
+// Guix Home (home-shepherd-service-type)
 spawn-sh-at-startup "pgrep --uid $USER shepherd > /dev/null || shepherd"
+
+// Noctalia
+window-rule {
+    geometry-corner-radius 20
+    clip-to-geometry true
+}
+
+debug {
+  honor-xdg-activation-with-invalid-serial
+}
+
 
 window-rule {
     match app-id="librewolf" title="^Picture-in-Picture$"
@@ -16,11 +28,6 @@ window-rule {
 window-rule {
     match app-id="thunar" title="^File Operation Progress$"
     open-floating true
-}
-
-window-rule {
-    geometry-corner-radius 12
-    clip-to-geometry true
 }
 
 overview {
@@ -53,7 +60,7 @@ input {
 }
 
 output "eDP-1" {
-    mode "2560x1440@239.999"
+    mode "2560x1440@240.002"
 }
 
 output "DP-1" {
@@ -61,23 +68,21 @@ output "DP-1" {
 }
 
 binds {
-    Mod+Shift+Slash { show-hotkey-overlay; }
+    XF86AudioRaiseVolume  allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "volume" "increase"; }
+    XF86AudioLowerVolume  allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "volume" "decrease"; }
+    XF86AudioMute         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "volume" "muteOutput"; }
+    XF86AudioMicMute      allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "volume" "muteInput"; }
+    XF86AudioPlay         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "media" "play"; }
+    XF86AudioStop         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "media" "pause"; }
+    XF86AudioPrev         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "media" "previous"; }
+    XF86AudioNext         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "media" "next"; }
+    XF86MonBrightnessUp   allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "brightness" "increase"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "brightness" "decrease"; }
 
-    XF86AudioRaiseVolume  allow-when-locked=true { spawn "$$bin/wpctl$$" "set-volume" "@DEFAULT_AUDIO_SINK@"   "0.1+" "--limit" "1.0"; }
-    XF86AudioLowerVolume  allow-when-locked=true { spawn "$$bin/wpctl$$" "set-volume" "@DEFAULT_AUDIO_SINK@"   "0.1-"; }
-    XF86AudioMute         allow-when-locked=true { spawn "$$bin/wpctl$$" "set-mute"   "@DEFAULT_AUDIO_SINK@"   "toggle"; }
-    XF86AudioMicMute      allow-when-locked=true { spawn "$$bin/wpctl$$" "set-mute"   "@DEFAULT_AUDIO_SOURCE@" "toggle"; }
-    XF86AudioPlay         allow-when-locked=true { spawn "$$bin/playerctl$$" "play-pause"; }
-    XF86AudioStop         allow-when-locked=true { spawn "$$bin/playerctl$$" "stop"; }
-    XF86AudioPrev         allow-when-locked=true { spawn "$$bin/playerctl$$" "previous"; }
-    XF86AudioNext         allow-when-locked=true { spawn "$$bin/playerctl$$" "next"; }
-    XF86MonBrightnessDown allow-when-locked=true { spawn "$$bin/light$$" "-U" "5"; }
-    XF86MonBrightnessUp   allow-when-locked=true { spawn "$$bin/light$$" "-A" "5"; }
-
-    Mod+Return hotkey-overlay-title="Open Editor: emacsclient"  { spawn "emacsclient" "--create-frame" "--no-wait"; }
-    Mod+D      hotkey-overlay-title="Run an Application: rofi"  { spawn "$$bin/rofi$$" "-show" "drun"; }
-    Mod+L      hotkey-overlay-title="Lock the Screen: swaylock" { spawn "$$bin/swaylock$$" "--clock" "--daemonize" "--ignore-empty-password" "--image" "~/Pictures/Pixez/115008128_p0.jpg"; }
-    Mod+T      hotkey-overlay-title="Open Terminal: foot"       { spawn "$$bin/footclient$$"; }
+    Mod+A      { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }
+    Mod+L      { spawn "noctalia-shell" "ipc" "call" "sessionMenu" "toggle"; }
+    Mod+Space  { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
+    Mod+Return { spawn "emacsclient" "--create-frame" "--no-wait"; }
 
     Mod+Left                       { focus-column-left; }
     Mod+Down                       { focus-window-down; }

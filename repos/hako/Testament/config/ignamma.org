@@ -69,12 +69,10 @@
 
 ** Kernel
 #+begin_src scheme :noweb-ref service
-  (simple-service 'extend-kernel-module-loader
-      kernel-module-loader-service-type
+  (simple-service 'extend-kernel-module-loader kernel-module-loader-service-type
     '("sch_fq_pie" "tcp_bbr"))
 
-  (simple-service 'extend-sysctl
-      sysctl-service-type
+  (simple-service 'extend-sysctl sysctl-service-type
     '(("net.core.default_qdisc" . "fq_pie")
       ("net.ipv4.tcp_congestion_control" . "bbr")))
 #+end_src
@@ -111,16 +109,14 @@ Administration accounts.
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (simple-service 'extend-openssh
-      openssh-service-type
+  (simple-service 'extend-openssh openssh-service-type
     `(("root" ,%ssh-key-deploy)
       ("hako" ,%ssh-key-hako)))
 #+end_src
 
 * Power Management
 #+begin_src scheme :noweb-ref service
-  (simple-service 'auto-power-off
-      shepherd-root-service-type
+  (simple-service 'auto-power-off shepherd-root-service-type
     (list (shepherd-timer '(auto-power-off)
             #~(calendar-event #:minutes '(0 10 20 30 40 50))
             #~(#$(program-file "auto-power-off"

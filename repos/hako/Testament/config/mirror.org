@@ -62,12 +62,10 @@
 
 ** Kernel
 #+begin_src scheme :noweb-ref service
-  (simple-service 'extend-kernel-module-loader
-      kernel-module-loader-service-type
+  (simple-service 'extend-kernel-module-loader kernel-module-loader-service-type
     '("sch_fq_pie" "tcp_bbr"))
 
-  (simple-service 'extend-sysctl
-      sysctl-service-type
+  (simple-service 'extend-sysctl sysctl-service-type
     '(("net.core.default_qdisc" . "fq_pie")
       ("net.ipv4.tcp_congestion_control" . "bbr")
       ;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
@@ -116,8 +114,7 @@ Administration accounts.
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (simple-service 'extend-openssh
-      openssh-service-type
+  (simple-service 'extend-openssh openssh-service-type
     `(("root" ,%ssh-key-deploy)
       ("hako" ,%ssh-key-hako)
       ("jonathan" ,%ssh-key-jonathan)
@@ -177,8 +174,7 @@ Administration accounts.
 
 ** mirroring
 #+begin_src scheme :noweb-ref service
-  (simple-service 'guix-moe-mirror
-      shepherd-root-service-type
+  (simple-service 'guix-moe-mirror shepherd-root-service-type
     (list (shepherd-timer '(guix-moe-mirror)
             #~(calendar-event #:minutes '(30))
             #~(#$(program-file "guix-moe-mirror"
