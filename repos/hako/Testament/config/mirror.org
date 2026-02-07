@@ -3,10 +3,9 @@
 #+TITLE: mirror
 #+PROPERTY: header-args :noweb-prefix no
 
-* Guix System
+** Guix System
 #+begin_src scheme :tangle mirror.scm :noweb yes
-  (load "../common.scm")
-  (use-modules (rosenthal) <<module>>)
+  (use-modules <<module>>)
 
   (define (%os mirror-name bios-boot)
     (operating-system
@@ -40,8 +39,14 @@
 
               (simple-service 'extend-guix guix-service-type
                 (guix-extension
-                  (authorized-keys %testament-guix-keys)
+                  (authorized-keys %guix-keys)
                   (substitute-urls '("https://cache-cdn.guix.moe"))))
+
+              (simple-service 'guix-gc shepherd-root-service-type
+                (list (shepherd-timer '(guix-gc)
+                        #~(calendar-event #:days-of-week '(sunday) #:hours '(12) #:minutes '(0))
+                        #~("/run/current-system/profile/bin/guix" "gc" "--delete-generations=1m")
+                        #:requirement '(user-processes guix-daemon))))
 
               %base-services))
       (sudoers-file
@@ -53,14 +58,8 @@
   %os
 #+end_src
 
-* Base
-#+begin_src scheme :noweb-ref module
-  (gnu services linux)
-  (gnu services ssh)
-  (gnu services sysctl)
-#+end_src
-
-** Kernel
+** Base
+*** Kernel
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-kernel-module-loader kernel-module-loader-service-type
     '("sch_fq_pie" "tcp_bbr"))
@@ -73,7 +72,7 @@
       ("net.core.wmem_max" . "7500000")))
 #+end_src
 
-** File Systems
+*** File Systems
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
           (device (file-system-label "root"))
@@ -88,7 +87,7 @@
               (type "vfat"))))
 #+end_src
 
-** Users
+*** Users
 #+begin_src scheme :noweb-ref user
   (user-account
     (name "hako")
@@ -121,26 +120,20 @@ Administration accounts.
       ("podiki" ,%ssh-key-podiki)))
 #+end_src
 
-* Networking & SSH
-#+begin_src scheme :noweb-ref module
-  (gnu services networking)
-  (gnu services security)
-  (gnu services ssh)
-#+end_src
-
-** networking
+** Networking & SSH
+*** networking
 #+begin_src scheme :noweb-ref service
   (service network-manager-service-type
     (network-manager-configuration
       (shepherd-requirement '())))
 #+end_src
 
-** ntp
+*** ntp
 #+begin_src scheme :noweb-ref service
   (service ntp-service-type)
 #+end_src
 
-** openssh
+*** openssh
 #+begin_src scheme :noweb-ref service
   (service openssh-service-type
     (openssh-configuration
@@ -149,7 +142,7 @@ Administration accounts.
       (password-authentication? #f)))
 #+end_src
 
-** fail2ban
+*** fail2ban
 #+begin_src scheme :noweb-ref service
   (service fail2ban-service-type
     (fail2ban-configuration
@@ -159,12 +152,12 @@ Administration accounts.
                (enabled? #t))))))
 #+end_src
 
-* Web Servers & Services
+** Web Servers & Services
 #+begin_src scheme :noweb-ref module
   (rosenthal services web)
 #+end_src
 
-** caddy
+*** caddy
 #+begin_src scheme :noweb yes :noweb-ref service
   (service caddy-service-type
     (caddy-configuration
@@ -172,11 +165,11 @@ Administration accounts.
       (caddyfile (local-file (testament-plain (string-append mirror-name ".caddyfile"))))))
 #+end_src
 
-** mirroring
+*** mirroring
 #+begin_src scheme :noweb-ref service
   (simple-service 'guix-moe-mirror shepherd-root-service-type
     (list (shepherd-timer '(guix-moe-mirror)
-            #~(calendar-event #:minutes '(30))
+            #~(calendar-event #:minutes '(45))
             #~(#$(program-file "guix-moe-mirror"
                    (with-imported-modules
                        (source-module-closure
@@ -197,20 +190,42 @@ Administration accounts.
             #:requirement '(user-processes))))
 #+end_src
 
-* Monitoring
+** Monitoring
 #+begin_src scheme :noweb-ref module
   (rosenthal services monitoring)
 #+end_src
 
-** alloy
+*** alloy
 #+begin_src scheme :noweb-ref service
   (service alloy-service-type
     (alloy-configuration
       (config
        (plain-file (string-append mirror-name ".alloy")
          (string-join
-          (list (sops-str dorphine.yaml '("alloy"))
+          (list (sops-str %sops-dorphine '("alloy"))
                 (file-content (testament-plain "alloy/node-exporter.alloy"))
                 (file-content (testament-plain "alloy/caddy.alloy")))
           "\n")))))
+#+end_src
+
+** Modules
+Within this repository
+#+begin_src scheme :noweb-ref module
+  (common)
+#+end_src
+
+Utilities
+#+begin_src scheme :noweb-ref module
+  (gnu)
+  (guix modules)
+  (rosenthal)
+#+end_src
+
+Guix System - services
+#+begin_src scheme :noweb-ref module
+  (gnu services linux)
+  (gnu services networking)
+  (gnu services security)
+  (gnu services ssh)
+  (gnu services sysctl)
 #+end_src

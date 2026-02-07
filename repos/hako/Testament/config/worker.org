@@ -3,10 +3,9 @@
 #+TITLE: worker
 #+PROPERTY: header-args :noweb-prefix no
 
-* Guix System
+** Guix System
 #+begin_src scheme :tangle worker.scm :noweb yes
-  (load "../common.scm")
-  (use-modules (rosenthal) <<module>>)
+  (use-modules <<module>>)
 
   (define (%os host-name system 32bit-support? workers threads-per-worker bios-boot)
     (operating-system
@@ -45,8 +44,14 @@
 
               (simple-service 'extend-guix guix-service-type
                 (guix-extension
-                  (authorized-keys %testament-guix-keys)
+                  (authorized-keys %guix-keys)
                   (substitute-urls '("https://cache-cdn.guix.moe"))))
+
+              (simple-service 'guix-gc shepherd-root-service-type
+                (list (shepherd-timer '(guix-gc)
+                        #~(calendar-event #:days-of-week '(sunday) #:hours '(12) #:minutes '(0))
+                        #~("/run/current-system/profile/bin/guix" "gc" "--delete-generations=1m")
+                        #:requirement '(user-processes guix-daemon))))
 
               (modify-services %base-services
                 (guix-service-type
@@ -64,14 +69,8 @@
   %os
 #+end_src
 
-* Base
-#+begin_src scheme :noweb-ref module
-  (gnu services linux)
-  (gnu services ssh)
-  (gnu services sysctl)
-#+end_src
-
-** Kernel
+** Base
+*** Kernel
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-kernel-module-loader kernel-module-loader-service-type
     '("sch_fq_pie" "tcp_bbr"))
@@ -81,7 +80,7 @@
       ("net.ipv4.tcp_congestion_control" . "bbr")))
 #+end_src
 
-** File Systems
+*** File Systems
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
           (device (file-system-label "root"))
@@ -96,7 +95,7 @@
               (type "vfat"))))
 #+end_src
 
-** Users
+*** Users
 #+begin_src scheme :noweb-ref user
   (user-account
     (name "hako")
@@ -121,30 +120,23 @@
       ("podiki" ,%ssh-key-podiki)))
 #+end_src
 
-* Networking & SSH
-#+begin_src scheme :noweb-ref module
-  (gnu services avahi)
-  (gnu services networking)
-  (gnu services ssh)
-  (rosenthal services networking)
-#+end_src
-
-** avahi
+** Networking & SSH
+*** avahi
 #+begin_src scheme :noweb-ref service
   (service avahi-service-type)
 #+end_src
 
-** dhcpcd
+*** dhcpcd
 #+begin_src scheme :noweb-ref service
   (service dhcpcd-service-type)
 #+end_src
 
-** tailscale
+*** tailscale
 #+begin_src scheme :noweb-ref service
   (service tailscale-service-type)
 #+end_src
 
-** openssh
+*** openssh
 #+begin_src scheme :noweb-ref service
   (service openssh-service-type
     (openssh-configuration
@@ -153,12 +145,8 @@
       (password-authentication? #f)))
 #+end_src
 
-* Continuous Integration
-#+begin_src scheme :noweb-ref module
-  (gnu services cuirass)
-#+end_src
-
-** cuirass-remote-worker
+** Continuous Integration
+*** cuirass-remote-worker
 Open TCP port 5558 and connect to server IPv4 address.
 #+begin_src scheme :noweb-ref service
   (service cuirass-remote-worker-service-type
@@ -179,4 +167,27 @@ Open TCP port 5558 and connect to server IPv4 address.
          "https://ci.guix.gnu.org"
          "https://bordeaux.guix.gnu.org"
          "https://substitutes.nonguix.org"))))
+#+end_src
+
+** Module
+Within this repository
+#+begin_src scheme :noweb-ref module
+  (common)
+#+end_src
+
+Utilities
+#+begin_src scheme :noweb-ref module
+  (gnu)
+  (rosenthal)
+#+end_src
+
+Guix System - services
+#+begin_src scheme :noweb-ref module
+  (gnu services avahi)
+  (gnu services cuirass)
+  (gnu services linux)
+  (gnu services networking)
+  (gnu services ssh)
+  (gnu services sysctl)
+  (rosenthal services networking)
 #+end_src

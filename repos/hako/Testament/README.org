@@ -4,13 +4,12 @@
 
 This repository contains my dotfiles and Guix System literate configurations.
 
-* Structure
+** Structure
 + [[file:config][config]] :: Guix System configurations.
 + [[file:files/deploy][files/deploy]] :: Configurations for ~guix deploy~.
 + [[file:files/dotfiles][files/dotfiles]] :: Dotfiles for =home-dotfiles-service-type=.
 + [[file:files/plain][files/plain]] :: Files to be referenced in configurations.
-+ [[file:modules][modules]] :: Guile libraries (e.g. Guix System installer) forked from other
-  projects.
++ [[file:modules][modules]] :: Guile modules.
 
 See [[file:maak.scm][maak.scm]] for usage.
 
@@ -20,24 +19,24 @@ Guix channels in use:
 + [[https://codeberg.org/hako/rosenthal.git][rosenthal]]
 + [[https://github.com/fishinthecalculator/sops-guix][sops-guix]]
 
-* Systems
-** [[file:config/dorphine.org][dorphine]] (x86_64-linux, UEFI, ZFS, NVIDIA) | [[file:files/deploy/dorphine.scm][deploy]]
-#+html: <img src="https://s3.boiledscript.com/misskey/12d0cd0c-b92f-4f2a-9ad7-86e31bee7f09.webp">
-#+html: <img src="https://s3.boiledscript.com/misskey/d6c7ee0f-2f39-4d8d-b7cd-46b7abe5e0bf.webp">
+** Systems
+*** [[file:config/dorphine.org][dorphine]] (x86_64-linux, UEFI, ZFS, NVIDIA) | [[file:files/deploy/dorphine.scm][deploy]]
+#+html: <img src="https://s3.boiledscript.com/misskey/a052b129-6554-4239-8203-a2697112b172.webp">
+#+html: <img src="https://s3.boiledscript.com/misskey/a7776bb9-4543-4adc-9d81-3e7d58e28492.webp">
 
-** [[file:config/chapra.org][chapra]] (x86_64-linux, UEFI, ZFS) | [[file:files/deploy/chapra.scm][deploy]]
+*** [[file:config/chapra.org][chapra]] (x86_64-linux, UEFI, ZFS) | [[file:files/deploy/chapra.scm][deploy]]
 
-** [[file:config/nuporta.org][nuporta]] (x86_64-linux, UEFI, ZFS) | [[file:files/deploy/nuporta.scm][deploy]]
+*** [[file:config/nuporta.org][nuporta]] (x86_64-linux, UEFI, ZFS) | [[file:files/deploy/nuporta.scm][deploy]]
 
-** [[file:config/ignamma.org][ignamma]] (x86_64-linux, UEFI, XFS) | [[file:files/deploy/ignamma.scm][deploy]]
+*** [[file:config/ignamma.org][ignamma]] (x86_64-linux, UEFI, XFS) | [[file:files/deploy/ignamma.scm][deploy]]
 
-** [[file:config/worker.org][worker]] | [[file:files/deploy/worker.scm][deploy]]
+*** [[file:config/worker.org][worker]] | [[file:files/deploy/worker.scm][deploy]]
 Build workers for Guix Moe build farm.
 
-** [[file:config/mirror.org][mirror]] | [[file:files/deploy/mirror.scm][deploy]]
+*** [[file:config/mirror.org][mirror]] | [[file:files/deploy/mirror.scm][deploy]]
 Substitute mirrors for Guix Moe build farm.
 
-* [[file:files/plain/live][LiveCDs]]
+** [[file:files/plain/live][LiveCDs]]
 I provide Guix System installation LiveCDs in this repository, pre-built images
 below.
 
@@ -112,7 +111,7 @@ Example usage below
 For a full list of available layouts, variants, models and options, refer to the
 [[https://man.archlinux.org/man/extra/xkeyboard-config/xkeyboard-config.7.en][xkeyboard-config.7]] manual page.
 
-* Resources
+** Resources
 + [[https://files.spritely.institute/papers/scheme-primer.html][A Scheme Primer]] :: Nice short guide to get you started with Scheme.
 + [[https://guix.gnu.org/manual/devel/en/][GNU Guix Reference Manual]] (~info "(guix)"~) :: See [[https://guix.gnu.org/manual/devel/en/html_node/Getting-Started.html][Getting Started]] if you want an
   entry point.

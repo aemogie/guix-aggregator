@@ -126,6 +126,17 @@
   :bind
   ("C-c e" . macrostep-expand))
 
+;;guix:emacs-macrostep-geiser
+(use-package macrostep-geiser
+  :after (geiser-mode)
+  :hook
+  (geiser-mode . macrostep-geiser-setup))
+
+(use-package macrostep-geiser
+  :after (geiser-repl)
+  :hook
+  (geiser-repl-mode . macrostep-geiser-setup))
+
 (use-package org
   :custom
   (org-babel-load-languages
@@ -151,3 +162,9 @@
   :hook
   ((eval-expression-minibuffer-setup nxml-mode prog-mode sgml-mode tex-mode)
    . puni-mode))
+
+;;guix:emacs-yasnippet
+;;guix:emacs-yasnippet-snippets
+(use-package yasnippet
+  :hook
+  (after-init . yas-global-mode))

@@ -570,7 +570,7 @@ and save an appropriate entry for `elfeed-feeds' to the kill ring."
   :commands elfeed
   :custom
   (elfeed-db-directory (expand-file-name "elfeed-db" user-emacs-directory))
-  (elfeed-search-filter "@6-months-ago +unread")
+  (elfeed-search-filter "@1-month-ago")
   :config
   (defun my/kill-elfeed-search-buffer ()
     (kill-buffer "*elfeed-search*"))

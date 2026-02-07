@@ -3,10 +3,9 @@
 #+TITLE: ignamma
 #+PROPERTY: header-args :noweb-prefix no
 
-* Guix System
+** Guix System
 #+begin_src scheme :tangle ignamma.scm :noweb yes
-  (load "../common.scm")
-  (use-modules (rosenthal) <<module>>)
+  (use-modules <<module>>)
 
   (define %os
     (operating-system
@@ -46,8 +45,14 @@
 
               (simple-service 'extend-guix guix-service-type
                 (guix-extension
-                  (authorized-keys %testament-guix-keys)
+                  (authorized-keys %guix-keys)
                   (substitute-urls '("https://cache-cdn.guix.moe"))))
+
+              (simple-service 'guix-gc shepherd-root-service-type
+                (list (shepherd-timer '(guix-gc)
+                        #~(calendar-event #:days-of-week '(sunday) #:hours '(12) #:minutes '(0))
+                        #~("/run/current-system/profile/bin/guix" "gc" "--delete-generations=1m")
+                        #:requirement '(user-processes guix-daemon))))
 
               (modify-services %base-services
                 (guix-service-type
@@ -60,14 +65,8 @@
   %os
 #+end_src
 
-* Base
-#+begin_src scheme :noweb-ref module
-  (gnu services linux)
-  (gnu services ssh)
-  (gnu services sysctl)
-#+end_src
-
-** Kernel
+** Base
+*** Kernel
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-kernel-module-loader kernel-module-loader-service-type
     '("sch_fq_pie" "tcp_bbr"))
@@ -77,7 +76,7 @@
       ("net.ipv4.tcp_congestion_control" . "bbr")))
 #+end_src
 
-** File Systems
+*** File Systems
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
           (device (file-system-label "boot"))
@@ -90,7 +89,7 @@
           (type "xfs")))
 #+end_src
 
-** Users
+*** Users
 Personal account.
 #+begin_src scheme :noweb-ref user
   (user-account
@@ -114,7 +113,7 @@ Administration accounts.
       ("hako" ,%ssh-key-hako)))
 #+end_src
 
-* Power Management
+** Power Management
 #+begin_src scheme :noweb-ref service
   (simple-service 'auto-power-off shepherd-root-service-type
     (list (shepherd-timer '(auto-power-off)
@@ -131,16 +130,8 @@ Administration accounts.
                          (system* "halt"))))))))
 #+end_src
 
-* Networking & SSH
-#+begin_src scheme :noweb-ref module
-  (gnu services avahi)
-  (gnu services networking)
-  (gnu services security)
-  (gnu services ssh)
-  (rosenthal services networking)
-#+end_src
-
-** network-manager
+** Networking & SSH
+*** network-manager
 #+begin_src scheme :noweb-ref service
   (service network-manager-service-type
     (network-manager-configuration
@@ -150,29 +141,29 @@ Administration accounts.
              %network-manager-random-mac-address))))
 #+end_src
 
-** ntp
+*** ntp
 #+begin_src scheme :noweb-ref service
   (service ntp-service-type)
 #+end_src
 
-** avahi
+*** avahi
 #+begin_src scheme :noweb-ref service
   (service avahi-service-type)
 #+end_src
 
-** nftables
+*** nftables
 #+begin_src scheme :noweb-ref service
   (service nftables-service-type
     (nftables-configuration
       (ruleset (local-file (testament-plain "ignamma.nftables")))))
 #+end_src
 
-** tailscale
+*** tailscale
 #+begin_src scheme :noweb-ref service
   (service tailscale-service-type)
 #+end_src
 
-** openssh
+*** openssh
 #+begin_src scheme :noweb-ref service
   (service openssh-service-type
     (openssh-configuration
@@ -181,7 +172,7 @@ Administration accounts.
       (password-authentication? #f)))
 #+end_src
 
-** fail2ban
+*** fail2ban
 #+begin_src scheme :noweb-ref service
   (service fail2ban-service-type
     (fail2ban-configuration
@@ -191,24 +182,16 @@ Administration accounts.
                (enabled? #t))))))
 #+end_src
 
-* Virtualization
-#+begin_src scheme :noweb-ref module
-  (gnu services virtualization)
-#+end_src
-
-** binfmt_misc
+** Virtualization
+*** binfmt_misc
 #+begin_src scheme :noweb-ref service
   (service qemu-binfmt-service-type
     (qemu-binfmt-configuration
       (platforms (lookup-qemu-platforms "aarch64"))))
 #+end_src
 
-* Continuous Integration
-#+begin_src scheme :noweb-ref module
-  (gnu services cuirass)
-#+end_src
-
-** cuirass-remote-worker
+** Continuous Integration
+*** cuirass-remote-worker
 Open TCP port 5558 and connect to server IPv4 address.
 #+begin_src scheme :noweb-ref service
   (service cuirass-remote-worker-service-type
@@ -224,19 +207,41 @@ Open TCP port 5558 and connect to server IPv4 address.
          "https://substitutes.nonguix.org"))))
 #+end_src
 
-* Monitoring
-#+begin_src scheme :noweb-ref module
-  (rosenthal services monitoring)
-#+end_src
-
-** alloy
+** Monitoring
+*** alloy
 #+begin_src scheme :noweb-ref service
   (service alloy-service-type
     (alloy-configuration
       (config
        (plain-file "ignamma.alloy"
          (string-join
-          (list (sops-str dorphine.yaml '("alloy"))
+          (list (sops-str %sops-dorphine '("alloy"))
                 (file-content (testament-plain "alloy/node-exporter.alloy")))
           "\n")))))
+#+end_src
+
+** Modules
+Within this repository
+#+begin_src scheme :noweb-ref module
+  (common)
+#+end_src
+
+Utilities
+#+begin_src scheme :noweb-ref module
+  (gnu)
+  (rosenthal)
+#+end_src
+
+Guix System - services
+#+begin_src scheme :noweb-ref module
+  (gnu services avahi)
+  (gnu services cuirass)
+  (gnu services linux)
+  (gnu services networking)
+  (gnu services security)
+  (gnu services ssh)
+  (gnu services sysctl)
+  (gnu services virtualization)
+  (rosenthal services monitoring)
+  (rosenthal services networking)
 #+end_src

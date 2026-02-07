@@ -1,25 +1,54 @@
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 ;;; Copyright © 2023-2026 Hilton Chain <hako@ultrarare.space>
 
-(use-modules (srfi srfi-1)
-             (srfi srfi-26)
-             (ice-9 match)
-             (ice-9 popen)
-             (ice-9 textual-ports)
-             (guix diagnostics)
-             (guix i18n)
-             (guix modules)
-             (guix packages)
-             (guix store)
-             (nonguix)
-             (rosenthal)
-             (sops secrets)
-             (guix build-system copy)
-             (gnu packages linux))
+(define-module (common)
+  ;; Guile builtins
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 popen)
+  #:use-module (ice-9 textual-ports)
+  #:use-module (srfi srfi-1)
+  ;; Utilities
+  #:use-module ((guix diagnostics) #:select (leave))
+  #:use-module (guix gexp)
+  #:use-module ((guix i18n) #:select (G_))
+  #:use-module (guix modules)
+  #:use-module (guix packages)
+  #:use-module (guix store)
+  #:use-module (sops secrets)
+  ;; Guix build systems
+  #:use-module (guix build-system copy)
+  ;; Guix packages
+  #:use-module (gnu packages linux)
+  #:use-module (nongnu packages linux)
+  #:export (testament-plain
 
-(define %xdg-data-home
-  (or (getenv "XDG_DATA_HOME")
-      (in-vicinity (getenv "HOME") ".local/share")))
+            sops-str
+            sops-num
+
+            %sops-chapra
+            %sops-dorphine
+            %sops-nuporta
+
+            %guix-keys
+            %ssh-key-deploy
+            %ssh-key-hako
+            %ssh-key-jonathan
+            %ssh-key-podiki
+            %ssh-key-podiki
+
+            %network-manager-ipv6-privacy
+            %network-manager-random-mac-address
+
+            %xdg-data-home
+            %xdg-base-directory-env-vars
+
+            linux-lts/dolly
+            manage-cuirass))
+
+
+;;;
+;;; Find files within the repository.
+;;;
 
 (define testament-path
   (getcwd))
@@ -34,6 +63,10 @@
            (leave (G_ "file '~a' not found.~%") file))))))
 
 
+;;;
+;;; SOPS secrets.
+;;;
+
 (define* (get-sops-secret key #:key file (number? #f))
   "Return a string (or number if NUMBER? is set to #t) of SOPS secret for KEY
 stored in FILE.  The result will be publicly available in '/gnu/store', YOU ARE
@@ -59,16 +92,19 @@ WARNED."
 (define (sops-num file key)
   (get-sops-secret key #:file file #:number? #t))
 
-
-(define chapra.yaml
-  (local-file "../Workspace/SOPS/chapra.yaml"))
-(define dorphine.yaml
-  (local-file "../Workspace/SOPS/dorphine.yaml"))
-(define nuporta.yaml
-  (local-file "../Workspace/SOPS/nuporta.yaml"))
+(define %sops-chapra
+  (local-file "../../../Workspace/SOPS/chapra.yaml"))
+(define %sops-dorphine
+  (local-file "../../../Workspace/SOPS/dorphine.yaml"))
+(define %sops-nuporta
+  (local-file "../../../Workspace/SOPS/nuporta.yaml"))
 
 
-(define %testament-guix-keys
+;;;
+;;; Keys
+;;;
+
+(define %guix-keys
   (list (plain-file "dorphine.pub"
           "(public-key (ecc (curve Ed25519)
 (q #A279175682D0DAE3E11268E67E1F3FA47C38D7E509F7725567CF891E248E719F#)))")
@@ -96,24 +132,24 @@ WARNED."
           "(public-key (ecc (curve Ed25519)
 (q #C1FD53E5D4CE971933EC50C9F307AE2171A2D3B52C804642A7A35F84F3A4EA98#)))")))
 
-
 (define %ssh-key-deploy
   (plain-file "deploy.pub"
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMLWIp8y5/JGBaw+yFA5MFB5nlFpEx/tjc0q0Ij9KjTu\n"))
-
 (define %ssh-key-hako
   (plain-file "hako.pub"
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2\n"))
-
 (define %ssh-key-jonathan
   (plain-file "jonathan.pub"
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHgzHvP3BRTIZ960LVglrK8w/C0+6Z5VM8/Q5Uwa0o+Z"))
-
 (define %ssh-key-podiki
   (plain-file "podiki.pub"
     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDaSmW/3uq5L6ZP6gWmRw5RiTTg0es1PrbAo/x4vkPzwIKTrMFOCBCmcuH3vOCkEZJtNy3OpXbt/a3tDW+cc6dkeq2H4WpogQvyMTXreFS2phMgDTEXW2gGZIP6fA33CHERmhd9A/m0A+NH5KGAmLDQNK8QgPgIjZuseJYtYHNCnN2TCsWQYnbZtVQF5CS6iBUILpVp6p7QlSUokiCGaPjZfrjSFCm1hUPjJYSkv0NTq8TzyDfU2quqP7TBCj4WBi9HoW9+a8tN2TQ/+GYbGqlFljeNdz3vzItcHjidHOQL/42mpvzgZx7o7dtrqX9stp+mI3oBREYSD0bMyvND/dEBRWIbpFvbyYx/leMKq9yUcFNyI2lztk17ObaQkDLxlq4ClytgEtdbP6X0gua29FYK/YlAi13NptK6uy2xB2gsEIt5P4N3u+gZCNA0U3IVd7iMRSpg6PWiL1JguvhYSD5vGOnOjiXVlBCKn+ErTO9Ey/BZqwVBZMeDwynFnU1mYnkxtA+G54VI77gj24FrHw/ClOdJOdBUGAso9P3sFjdykkAJyKd4jiFzpDTOOJNs8qKhmFFzJBnJjn7nzwjElwOCZXdDKTrKqF/51WEqpNr8Za2QjRirV4m7n6FnyyD38b24InAVa+yze3qDI9yk2vjPdtFGCeLODSEjfV3U1z1hiw=="))
 
 
+;;;
+;;; NetworkManager
+;;;
+
 (define %network-manager-ipv6-privacy
   `("ip6-privacy.conf"
     ,(plain-file "ip6-privacy.conf" "\
@@ -133,6 +169,54 @@ ethernet.cloned-mac-address=stable
 wifi.cloned-mac-address=stable\n")))
 
 
+;;;
+;;; XDG
+;;;
+
+(define %xdg-data-home
+  (or (getenv "XDG_DATA_HOME")
+      (in-vicinity (getenv "HOME") ".local/share")))
+
+;; Source: <https://wiki.archlinux.org/title/XDG_Base_Directory>
+(define %xdg-base-directory-env-vars
+  '(;; bash
+    ("HISTFILE" . "$XDG_STATE_HOME/bash/history")
+    ;; docker
+    ("DOCKER_CONFIG" . "$XDG_CONFIG_HOME/docker")
+    ;; gdb
+    ("GDBHISTFILE" . "$XDG_STATE_HOME/gdb/history")
+    ;; go
+    ("GOMODCACHE" . "$XDG_CACHE_HOME/go/mod")
+    ("GOPATH" . "$XDG_DATA_HOME/go")
+    ;; gradle
+    ("GRADLE_USER_HOME" . "$XDG_DATA_HOME/gradle")
+    ;; guile
+    ("GUILE_HISTORY" . "$XDG_STATE_HOME/guile/history")
+    ;; java
+    ("_JAVA_OPTIONS" . "-Djava.util.prefs.userRoot=$XDG_CONFIG_HOME/java")
+    ;; luanti
+    ("MINETEST_USER_PATH" . "$XDG_DATA_HOME/luanti")
+    ;; node
+    ("NPM_CONFIG_USERCONFIG" . "$XDG_CONFIG_HOME/npm/npmrc")
+    ;; nvidia-driver
+    ("CUDA_CACHE_PATH" . "$XDG_CACHE_HOME/nv")
+    ;; password-store
+    ("PASSWORD_STORE_DIR" . "$XDG_DATA_HOME/pass")
+    ;; python
+    ;; TODO: Python 3.13.
+    ("PYTHON_HISTORY" . "$XDG_STATE_HOME/python/history")
+    ;; rust
+    ("CARGO_HOME" . "$XDG_DATA_HOME/cargo")
+    ;; sqlite
+    ("SQLITE_HISTORY" . "$XDG_STATE_HOME/sqlite_history")
+    ;; wget
+    ("WGETRC" . "$XDG_CONFIG_HOME/wgetrc")))
+
+
+;;;
+;;; Packages
+;;;
+
 (define linux-lts/dolly
   (customize-linux
    #:name "linux-dolly"
@@ -215,39 +299,3 @@ int main(int argc, char **argv, char **envp) {
       (synopsis "")
       (description "")
       (license #f))))
-
-
-;; Source: <https://wiki.archlinux.org/title/XDG_Base_Directory>
-(define %testament-xdg-base-directory-env-vars
-  '(;; bash
-    ("HISTFILE" . "$XDG_STATE_HOME/bash/history")
-    ;; docker
-    ("DOCKER_CONFIG" . "$XDG_CONFIG_HOME/docker")
-    ;; gdb
-    ("GDBHISTFILE" . "$XDG_STATE_HOME/gdb/history")
-    ;; go
-    ("GOMODCACHE" . "$XDG_CACHE_HOME/go/mod")
-    ("GOPATH" . "$XDG_DATA_HOME/go")
-    ;; gradle
-    ("GRADLE_USER_HOME" . "$XDG_DATA_HOME/gradle")
-    ;; guile
-    ("GUILE_HISTORY" . "$XDG_STATE_HOME/guile/history")
-    ;; java
-    ("_JAVA_OPTIONS" . "-Djava.util.prefs.userRoot=$XDG_CONFIG_HOME/java")
-    ;; luanti
-    ("MINETEST_USER_PATH" . "$XDG_DATA_HOME/luanti")
-    ;; node
-    ("NPM_CONFIG_USERCONFIG" . "$XDG_CONFIG_HOME/npm/npmrc")
-    ;; nvidia-driver
-    ("CUDA_CACHE_PATH" . "$XDG_CACHE_HOME/nv")
-    ;; password-store
-    ("PASSWORD_STORE_DIR" . "$XDG_DATA_HOME/pass")
-    ;; python
-    ;; TODO: Python 3.13.
-    ("PYTHON_HISTORY" . "$XDG_STATE_HOME/python/history")
-    ;; rust
-    ("CARGO_HOME" . "$XDG_DATA_HOME/cargo")
-    ;; sqlite
-    ("SQLITE_HISTORY" . "$XDG_STATE_HOME/sqlite_history")
-    ;; wget
-    ("WGETRC" . "$XDG_CONFIG_HOME/wgetrc")))

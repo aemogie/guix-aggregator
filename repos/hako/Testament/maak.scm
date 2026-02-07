@@ -30,7 +30,10 @@
       "https://substitutes.nonguix.org"))))
 
 (define %build-options
-  `("--keep-going" "--verbosity=1" ,%substitute-urls))
+  `("--keep-going"
+    "--verbosity=1"
+    "--load-path=modules/config"
+    ,%substitute-urls))
 
 (define %deploy-command
   (getenv "CMD"))

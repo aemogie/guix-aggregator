@@ -1,19 +1,20 @@
 prefer-no-csd
 screenshot-path "~/Pictures/Screenshots/%Y%m%d-%H%M%S.png"
 
+xwayland-satellite {
+    path "$$bin/xwayland-satellite$$"
+}
+
 // Guix Home (home-shepherd-service-type)
-spawn-sh-at-startup "pgrep --uid $USER shepherd > /dev/null || shepherd"
+spawn-at-startup "shepherd"
 
-// Noctalia
-window-rule {
-    geometry-corner-radius 20
-    clip-to-geometry true
+overview {
+    backdrop-color "#E8E3E9"
 }
 
-debug {
-  honor-xdg-activation-with-invalid-serial
+hotkey-overlay {
+    skip-at-startup
 }
-
 
 window-rule {
     match app-id="librewolf" title="^Picture-in-Picture$"
@@ -30,12 +31,14 @@ window-rule {
     open-floating true
 }
 
-overview {
-    backdrop-color "#E8E3E9"
+// Noctalia
+window-rule {
+    geometry-corner-radius 20
+    clip-to-geometry true
 }
 
-xwayland-satellite {
-    path "$$bin/xwayland-satellite$$"
+debug {
+  honor-xdg-activation-with-invalid-serial
 }
 
 layout {
@@ -79,10 +82,15 @@ binds {
     XF86MonBrightnessUp   allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "brightness" "increase"; }
     XF86MonBrightnessDown allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "brightness" "decrease"; }
 
-    Mod+A      { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }
-    Mod+L      { spawn "noctalia-shell" "ipc" "call" "sessionMenu" "toggle"; }
-    Mod+Space  { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
-    Mod+Return { spawn "emacsclient" "--create-frame" "--no-wait"; }
+    Mod+A           { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }
+    Mod+O           { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
+    Mod+D           { spawn "noctalia-shell" "ipc" "call" "plugin:clipper" "togglePanel"; }
+    Mod+S           { spawn "noctalia-shell" "ipc" "call" "settings" "toggle"; }
+    Ctrl+Alt+Delete { spawn "noctalia-shell" "ipc" "call" "sessionMenu" "toggle"; }
+    Mod+Shift+E     { spawn "herd" "restart" "noctalia-shell"; }
+
+    Mod+E       { spawn "emacsclient" "--create-frame" "--no-wait"; }
+    Mod+Return  { spawn "foot"; }
 
     Mod+Left                       { focus-column-left; }
     Mod+Down                       { focus-window-down; }
@@ -127,7 +135,4 @@ binds {
     Print                          { screenshot; }
     Ctrl+Print                     { screenshot-screen; }
     Alt+Print                      { screenshot-window; }
-
-    Mod+Shift+E                    { quit; }
-    Ctrl+Alt+Delete                { quit; }
 }

@@ -3,10 +3,9 @@
 #+TITLE: dorphine
 #+PROPERTY: header-args :noweb-prefix no
 
-* Guix System
+** Guix System
 #+begin_src scheme :tangle dorphine.scm :noweb yes
-  (load "../common.scm")
-  (use-modules (rosenthal) <<module>>)
+  (use-modules <<module>>)
 
   (define %os
     (operating-system
@@ -110,8 +109,14 @@
 
               (simple-service 'extend-guix guix-service-type
                 (guix-extension
-                  (authorized-keys %testament-guix-keys)
+                  (authorized-keys %guix-keys)
                   (substitute-urls '("https://cache-cdn.guix.moe"))))
+
+              (simple-service 'guix-gc shepherd-root-service-type
+                (list (shepherd-timer '(guix-gc)
+                        #~(calendar-event #:days-of-week '(sunday) #:hours '(12) #:minutes '(0))
+                        #~("/run/current-system/profile/bin/guix" "gc" "--delete-generations=1m")
+                        #:requirement '(user-processes guix-daemon))))
 
               (modify-services %rosenthal-desktop-services-gdm
                 (guix-service-type
@@ -134,11 +139,7 @@
    %os)
 #+end_src
 
-* Guix Home
-#+begin_src scheme :noweb-ref module
-  (rosenthal services keyboard)
-#+end_src
-
+** Guix Home
 #+begin_src scheme :noweb yes :noweb-ref service
   (service guix-home-service-type
     `(("hako" ,(home-environment
@@ -157,24 +158,12 @@
 #+begin_src scheme :noweb yes :noweb-ref home-service
   (simple-service 'extend-environment-variables
       home-environment-variables-service-type
-    `(,@%testament-xdg-base-directory-env-vars
+    `(,@%xdg-base-directory-env-vars
       <<home-environment-variable>>))
 #+end_src
 
-* Base
-#+begin_src scheme :noweb-ref module
-  (sops secrets)
-  (gnu home services dotfiles)
-  (gnu home services shells)
-  (sops home services sops)
-  (gnu services linux)
-  (gnu services ssh)
-  (gnu services sysctl)
-  (rosenthal services shellutils)
-  (sops services sops)
-#+end_src
-
-** Kernel
+** Base
+*** Kernel
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-kernel-module-loader kernel-module-loader-service-type
     '("sch_fq_pie" "tcp_bbr"))
@@ -194,7 +183,7 @@
             #~(#$(file-append (spec->pkg "modprobed-db") "/bin/modprobed-db") "storesilent"))))
 #+end_src
 
-** File Systems
+*** File Systems
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
           (device (uuid "2574-B3EC" 'fat))
@@ -290,7 +279,7 @@
             #:requirement '(user-processes))))
 #+end_src
 
-** Users
+*** Users
 Generate password hash:
 #+begin_src shell
   guix shell openssl
@@ -329,7 +318,7 @@ Administration accounts.
     `(("root" ,%ssh-key-deploy)))
 #+end_src
 
-** Shell Utilities
+*** Shell Utilities
 #+begin_src scheme :noweb-ref home-service
   (service home-fish-plugin-atuin-service-type)
   (service home-fish-plugin-direnv-service-type)
@@ -346,7 +335,7 @@ Administration accounts.
   end")))))
 #+end_src
 
-** SOPS Secrets
+*** SOPS Secrets
 Create GPG home directory specifically for use with SOPS.
 #+begin_src shell
   MY_GPGHOME="<GPG homedir>"
@@ -388,7 +377,7 @@ Generate passwordless ECC key:
       (secrets
        (list (sops-secret
                (key '("cloudflare"))
-               (file dorphine.yaml)
+               (file %sops-dorphine)
                (user "caddy"))))))
 #+end_src
 
@@ -401,17 +390,10 @@ Generate passwordless ECC key:
       (secrets
        (list (sops-secret
                (key '("mail"))
-               (file dorphine.yaml))
-             (sops-secret
-               (key '("gammastep"))
-               (file dorphine.yaml))))))
+               (file %sops-dorphine))))))
 #+end_src
 
-* Power Management
-#+begin_src scheme :noweb-ref module
-  (gnu services pm)
-#+end_src
-
+** Power Management
 #+begin_src scheme :noweb-ref service
   (service tlp-service-type)
 #+end_src
@@ -432,28 +414,20 @@ Generate passwordless ECC key:
                          (system* "loginctl" "poweroff"))))))))
 #+end_src
 
-* Networking & SSH
-#+begin_src scheme :noweb-ref module
-  (gnu services networking)
-  (gnu services security)
-  (gnu services ssh)
-  (rosenthal services networking)
-  (rosenthal services dns)
-#+end_src
-
-** nftables
+** Networking & SSH
+*** nftables
 #+begin_src scheme :noweb-ref service
   (service nftables-service-type
     (nftables-configuration
       (ruleset (local-file (testament-plain "dorphine.nftables")))))
 #+end_src
 
-** tailscale
+*** tailscale
 #+begin_src scheme :noweb-ref service
   (service tailscale-service-type)
 #+end_src
 
-** openssh
+*** openssh
 #+begin_src scheme :noweb-ref service
   (service openssh-service-type
     (openssh-configuration
@@ -462,7 +436,7 @@ Generate passwordless ECC key:
       (password-authentication? #f)))
 #+end_src
 
-** fail2ban
+*** fail2ban
 #+begin_src scheme :noweb-ref service
   (service fail2ban-service-type
     (fail2ban-configuration
@@ -472,18 +446,13 @@ Generate passwordless ECC key:
                (enabled? #t))))))
 #+end_src
 
-* OpenPGP & Security Token
-#+begin_src scheme :noweb-ref module
-  (gnu services security-token)
-  (gnu home services gnupg)
-#+end_src
-
-** pcscd
+** OpenPGP & Security Token
+*** pcscd
 #+begin_src scheme :noweb-ref service
   (service pcscd-service-type)
 #+end_src
 
-** gpg-agent
+*** gpg-agent
 #+begin_src scheme :noweb-ref home-service
   (service home-gpg-agent-service-type
     (home-gpg-agent-configuration
@@ -491,33 +460,24 @@ Generate passwordless ECC key:
       (ssh-support? #t)))
 #+end_src
 
-** libfido2
+*** libfido2
 #+begin_src scheme :noweb-ref service
   (udev-rules-service 'u2f (spec->pkg "libfido2") #:groups '("plugdev"))
 #+end_src
 
-* Containers & Virtualization
-#+begin_src scheme :noweb-ref module
-  (gnu services docker)
-#+end_src
-
-** containerd
+** Containers & Virtualization
+*** containerd
 #+begin_src scheme :noweb-ref service
   (service containerd-service-type)
 #+end_src
 
-** docker
+*** docker
 #+begin_src scheme :noweb-ref service
   (service docker-service-type)
 #+end_src
 
-* Web Servers & Services
-#+begin_src scheme :noweb-ref module
-  (rosenthal services bittorrent)
-  (rosenthal services web)
-#+end_src
-
-** caddy
+** Web Servers & Services
+*** caddy
 #+begin_src scheme :noweb-ref service
   (service caddy-service-type
     (caddy-configuration
@@ -525,7 +485,7 @@ Generate passwordless ECC key:
       (caddyfile (local-file (testament-plain "dorphine.caddyfile")))))
 #+end_src
 
-** qbittorrent
+*** qbittorrent
 #+begin_src scheme :noweb-ref service
   (service qbittorrent-service-type
     (qbittorrent-configuration
@@ -533,12 +493,8 @@ Generate passwordless ECC key:
       (webui-port 35951)))
 #+end_src
 
-* Continuous Integration
-#+begin_src scheme :noweb-ref module
-  (gnu services cuirass)
-#+end_src
-
-** cuirass-remote-worker
+** Continuous Integration
+*** cuirass-remote-worker
 Open TCP port 5558 and connect to server IPv4 address.
 #+begin_src scheme :noweb-ref service
   (service cuirass-remote-worker-service-type
@@ -554,38 +510,29 @@ Open TCP port 5558 and connect to server IPv4 address.
          "https://substitutes.nonguix.org"))))
 #+end_src
 
-* Monitoring
-#+begin_src scheme :noweb-ref module
-  (rosenthal services monitoring)
-#+end_src
-
-** alloy
+** Monitoring
+*** alloy
 #+begin_src scheme :noweb-ref service
   (service alloy-service-type
     (alloy-configuration
       (config
        (plain-file "dorphine.alloy"
          (string-join
-          (list (sops-str dorphine.yaml '("alloy"))
+          (list (sops-str %sops-dorphine '("alloy"))
                 (file-content (testament-plain "alloy/node-exporter.alloy"))
                 (file-content (testament-plain "alloy/caddy.alloy")))
           "\n")))))
 #+end_src
 
-* Graphical Session
-#+begin_src scheme :noweb-ref module
-  (gnu services xorg)
-  (gnu home services fontutils)
-#+end_src
-
-** gdm
+** Graphical Session
+*** gdm
 #+begin_src scheme :noweb-ref service
   (set-xorg-configuration
    (xorg-configuration
      (keyboard-layout keyboard-layout)))
 #+end_src
 
-** niri
+*** niri
 #+begin_src scheme :noweb-ref home-service
   (service home-niri-service-type
     (home-niri-configuration
@@ -595,12 +542,12 @@ Open TCP port 5558 and connect to server IPv4 address.
          (specs->pkgs "xwayland-satellite")))))
 #+end_src
 
-** noctalia-shell
+*** noctalia-shell
 #+begin_src scheme :noweb-ref home-service
   (service home-noctalia-shell-service-type)
 #+end_src
 
-** qogir-icon-theme
+*** qogir-icon-theme
 #+begin_src scheme :noweb-ref home-service
   (service home-theme-service-type
     (home-theme-configuration
@@ -609,7 +556,7 @@ Open TCP port 5558 and connect to server IPv4 address.
       (cursor-theme "Qogir")))
 #+end_src
 
-** fontconfig
+*** fontconfig
 #+begin_src scheme :noweb-ref package
   "font-awesome"
   "font-adobe-source-serif"
@@ -670,18 +617,13 @@ Open TCP port 5558 and connect to server IPv4 address.
           (family "monospace"))))))
 #+end_src
 
-* Miscellaneous
-#+begin_src scheme :noweb-ref module
-  (gnu services syncthing)
-  (rosenthal services bittorrent)
-#+end_src
-
-** adb
+** Miscellaneous
+*** adb
 #+begin_src scheme :noweb-ref service
   (udev-rules-service 'android (spec->pkg "android-udev-rules") #:groups '("adbusers"))
 #+end_src
 
-** emacs
+*** emacs
 #+begin_src scheme :noweb-ref home-environment-variable
   ("EDITOR" . "emacsclient")
   ("VISUAL" . "$EDITOR")
@@ -727,12 +669,10 @@ Open TCP port 5558 and connect to server IPv4 address.
     (list (shepherd-service
             (provision '(emacs-daemon))
             (start #~(make-forkexec-constructor '("emacs" "--fg-daemon")))
-            (stop
-             #~(make-system-destructor
-                (string-join '("emacsclient" "--eval" "(kill-emacs)")))))))
+            (stop #~(make-kill-destructor)))))
 #+end_src
 
-** email
+*** email
 #+begin_src scheme :noweb-ref home-service
   (simple-service 'update-mailbox home-shepherd-service-type
     (list
@@ -783,7 +723,17 @@ Open TCP port 5558 and connect to server IPv4 address.
                     (invoke "emacsclient" "--eval" "(smtpmail-send-queued-mail)"))))))))
 #+end_src
 
-** jellyfin-mpv-shim
+*** fcitx5
+#+begin_src scheme :noweb-ref home-service
+  (service home-fcitx5-service-type
+    (home-fcitx5-configuration
+      (themes (specs->pkgs "fcitx5-material-color-theme"))
+      (input-method-editors (specs->pkgs "fcitx5-rime"))
+      (gtk-im-module? #t)
+      (qt-im-module? #t)))
+#+end_src
+
+*** jellyfin-mpv-shim
 #+begin_src scheme :noweb-ref home-service
   (simple-service 'jellyfin-mpv-shim home-shepherd-service-type
     (list (shepherd-service
@@ -794,23 +744,23 @@ Open TCP port 5558 and connect to server IPv4 address.
             (stop #~(make-kill-destructor)))))
 #+end_src
 
-** mpv-mpris
+*** mpv-mpris
 #+begin_src scheme :noweb-ref home-service
   (simple-service 'mpv-mpris home-xdg-configuration-files-service-type
     `(("mpv/scripts/mpris.so"
        ,(file-append (spec->pkg "mpv-mpris") "/lib/mpris.so"))))
 #+end_src
 
-** openjdk
+*** prismlauncher
 #+begin_src scheme :noweb-ref home-service
-  (simple-service 'symlink-openjdk home-files-service-type
+  (simple-service 'openjdk-for-prismlauncher home-files-service-type
     (map (lambda (jdk)
-           (list (in-vicinity ".sdkman/candidates/java" (package-version jdk))
+           (list (in-vicinity ".local/share/PrismLauncher/java" (package-version jdk))
                  jdk))
          (specs->pkgs "openjdk@25")))
 #+end_src
 
-** steam
+*** steam
 #+begin_src scheme :noweb-ref home-environment-variable
   ("GUIX_SANDBOX_HOME" . "$XDG_DATA_HOME/steam")
 #+end_src
@@ -828,9 +778,60 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
   MODE=\"0660\", GROUP=\"users\"")
 #+end_src
 
-** syncthing
+*** syncthing
 #+begin_src scheme :noweb-ref service
   (service syncthing-service-type
     (syncthing-configuration
       (user "hako")))
+#+end_src
+
+** Modules
+Within this repository
+#+begin_src scheme :noweb-ref module
+  (common)
+#+end_src
+
+Guile builtins
+#+begin_src scheme :noweb-ref module
+  (ice-9 match)
+#+end_src
+
+Utilities
+#+begin_src scheme :noweb-ref module
+  (gnu)
+  (guix packages)
+  (nonguix)
+  (rosenthal)
+  (sops secrets)
+#+end_src
+
+Guix System - services
+#+begin_src scheme :noweb-ref module
+  (gnu services cuirass)
+  (gnu services docker)
+  (gnu services linux)
+  (gnu services networking)
+  (gnu services pm)
+  (gnu services security)
+  (gnu services security-token)
+  (gnu services ssh)
+  (gnu services sysctl)
+  (gnu services xorg)
+  (gnu services syncthing)
+  (rosenthal services bittorrent)
+  (rosenthal services keyboard)
+  (rosenthal services monitoring)
+  (rosenthal services networking)
+  (rosenthal services shellutils)
+  (rosenthal services web)
+  (sops services sops)
+#+end_src
+
+Guix Home - services
+#+begin_src scheme :noweb-ref module
+  (gnu home services dotfiles)
+  (gnu home services fontutils)
+  (gnu home services gnupg)
+  (gnu home services shells)
+  (sops home services sops)
 #+end_src

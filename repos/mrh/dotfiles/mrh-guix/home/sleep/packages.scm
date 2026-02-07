@@ -144,7 +144,6 @@
 
    ;; sysadmin
    (list isc-bind "utils")
-   fastfetch
    rsync
    socat
    stow

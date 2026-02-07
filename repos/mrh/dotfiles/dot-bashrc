@@ -1,6 +1,5 @@
 alias grep="grep --color=auto"
 alias ls="ls -Ahlp --color=auto"
-alias mw="monero-wallet-cli --daemon-address=10.0.0.1:18081 --trusted-daemon"
 alias md="monerod --prune-blockchain --detach --non-interactive --hide-my-port --no-igd --no-zmq --rpc-bind-ip 10.0.0.1 --confirm-external-bind"
 alias hr="guix home reconfigure -L $HOME/src/dotfiles $HOME/src/dotfiles/mrh-guix/home/$HOSTNAME/config.scm"
 alias sr="sudo guix system reconfigure -L $HOME/src/dotfiles $HOME/src/dotfiles/mrh-guix/system/$HOSTNAME/config.scm"

@@ -2,11 +2,12 @@
   #:use-module (gnu)
   #:use-module (gnu home)
   #:use-module (gnu packages package-management)
+  #:use-module (gnu packages video)
   #:use-module (gnu home services))
 
 (define-public %om-home-config
   (home-environment
-    (packages (list stow))
+    (packages (list stow yt-dlp))
     (services
      (list
       (simple-service
