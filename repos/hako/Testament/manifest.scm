@@ -12,11 +12,10 @@
  (list (specifications->manifest
         '("gnupg"
           "maak"
-          "sops"))
-       (specifications->development-manifest
-        '("guix"))
-       ;; For Guix System installer.
-       (specifications->manifest
-        '("guile-newt"
+          "sops"
+          ;; For Guix System installer.
+          "guile-newt"
           "guile-parted"
-          "guile-webutils"))))
+          "guile-webutils"))
+       (specifications->development-manifest
+        '("guix"))))

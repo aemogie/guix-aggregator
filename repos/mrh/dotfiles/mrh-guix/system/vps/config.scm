@@ -351,24 +351,6 @@ local-data: \"i2p.pub.~a 86400 IN AAAA ~a\"
          ;;          (program (file-append go-obfs4proxy "/bin/obfs4proxy")))))
          ))
 
-      (service
-       fail2ban-service-type
-       (fail2ban-configuration
-         (extra-jails
-          (list (fail2ban-jail-configuration
-                  (name "nginx-botsearch")
-                  (enabled? #t)
-                  (log-path '("/var/log/nginx/error.log\n"
-                              "/var/log/nginx/access.log"))
-                  (ban-time-increment? #t)
-                  (ban-time-factor "2")
-                  (ignore-self? #t)
-                  (ignore-ip
-                   (list (format #f "~a::/64" %ipv6-wireguard-prefix)
-                         (format #f "~a.0/24" %ipv4-wireguard-prefix)
-                         %ipv6-gua-om
-                         %ipv4-home)))))))
-
       (simple-service
        'my-timers
        shepherd-root-service-type

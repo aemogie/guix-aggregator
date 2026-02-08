@@ -53,8 +53,8 @@
                 "unzip"
 
                 ;; Desktop applications.
-                "foot"
                 "telegram-desktop"
+                "wezterm"
 
                 ;; Multimedia.
                 "digikam"
@@ -118,7 +118,7 @@
                         #~("/run/current-system/profile/bin/guix" "gc" "--delete-generations=1m")
                         #:requirement '(user-processes guix-daemon))))
 
-              (modify-services %rosenthal-desktop-services-gdm
+              (modify-services %rosenthal-desktop-services/gdm
                 (guix-service-type
                  config => (guix-configuration
                              (inherit config)
@@ -133,7 +133,8 @@
                                     %network-manager-random-mac-address)))))))
       (name-service-switch %mdns-host-lookup-nss)))
 
-  ((compose (nonguix-transformation-nvidia #:open-source-kernel-module? #t
+  ((compose (nonguix-transformation-nvidia #:s0ix-power-management? #t
+                                           #:open-source-kernel-module? #t
                                            #:configure-xorg? #t)
             (rosenthal-transformation-zfs #:boot? #t))
    %os)
@@ -224,6 +225,9 @@
 | Mentha/Data/SOPS        | /var/lib/sops        |                | true                  |
 | Mentha/Data/Tailscale   | /var/lib/tailscale   |                | true                  |
 | Mentha/Data/qBittorrent | /var/lib/qbittorrent | recordsize=16K |                       |
+|                         |                      |                |                       |
+| Mentha/Data/Captures    | /var/lib/Captures    |                |                       |
+| Mentha/Data/Sandbox     | /var/lib/Sandbox     |                |                       |
 |-------------------------+----------------------+----------------+-----------------------|
 
 #+begin_src scheme :noweb-ref file-systems
@@ -372,7 +376,6 @@ Generate passwordless ECC key:
   (service sops-secrets-service-type
     (sops-service-configuration
       (sops (spec->pkg "sops"))
-      (config (local-file (testament-plain "sops.yaml")))
       (gnupg-home "/var/lib/sops")
       (secrets
        (list (sops-secret
@@ -385,7 +388,6 @@ Generate passwordless ECC key:
   (service home-sops-secrets-service-type
     (home-sops-service-configuration
       (sops (spec->pkg "sops"))
-      (config (local-file (testament-plain "sops.yaml")))
       (gnupg-home (in-vicinity %xdg-data-home "sops"))
       (secrets
        (list (sops-secret
@@ -539,7 +541,15 @@ Open TCP port 5558 and connect to server IPv4 address.
       (config
        (computed-substitution-with-inputs "niri.kdl"
          (local-file (testament-plain "niri.kdl"))
-         (specs->pkgs "xwayland-satellite")))))
+         (specs->pkgs "wezterm" "xwayland-satellite")))))
+#+end_src
+
+https://yalter.github.io/niri/Nvidia.html
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'niri-nvidia-profile etc-service-type
+    `(("nvidia/nvidia-application-profiles-rc.d/50-limit-free-buffer-pool-in-wayland-compositors.json"
+       ,(local-file (testament-plain "50-limit-free-buffer-pool-in-wayland-compositors.json")))))
 #+end_src
 
 *** noctalia-shell
@@ -558,7 +568,6 @@ Open TCP port 5558 and connect to server IPv4 address.
 
 *** fontconfig
 #+begin_src scheme :noweb-ref package
-  "font-awesome"
   "font-adobe-source-serif"
   "font-apple-new-york"
   "font-apple-sf-pro"
@@ -566,6 +575,7 @@ Open TCP port 5558 and connect to server IPv4 address.
   "font-chiron-sung-hk"
   "font-google-noto"
   "font-google-noto-emoji"
+  "font-nerd-symbols"
   "font-sarasa-gothic"
   "font-victor-mono"
 #+end_src
@@ -762,7 +772,7 @@ Open TCP port 5558 and connect to server IPv4 address.
 
 *** steam
 #+begin_src scheme :noweb-ref home-environment-variable
-  ("GUIX_SANDBOX_HOME" . "$XDG_DATA_HOME/steam")
+  ("GUIX_SANDBOX_HOME" . "/var/lib/Sandbox")
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref service

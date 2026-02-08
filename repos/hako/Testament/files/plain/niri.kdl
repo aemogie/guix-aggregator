@@ -90,7 +90,7 @@ binds {
     Mod+Shift+E     { spawn "herd" "restart" "noctalia-shell"; }
 
     Mod+E       { spawn "emacsclient" "--create-frame" "--no-wait"; }
-    Mod+Return  { spawn "foot"; }
+    Mod+Return  { spawn "$$bin/wezterm$$"; }
 
     Mod+Left                       { focus-column-left; }
     Mod+Down                       { focus-window-down; }

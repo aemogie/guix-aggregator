@@ -14,7 +14,6 @@
   #:use-module (guix modules)
   #:use-module (guix packages)
   #:use-module (guix store)
-  #:use-module (sops secrets)
   ;; Guix build systems
   #:use-module (guix build-system copy)
   ;; Guix packages
@@ -77,7 +76,7 @@ WARNED."
               (lower-object file))))
          (cmd
           (format #f "sops --decrypt --extract '~a' '~a'"
-                  (sanitize-sops-key key)
+                  ((@@ (sops secrets) list-key->string-key) key)
                   file-path))
          (port (open-input-pipe cmd))
          (secret (get-string-all port)))

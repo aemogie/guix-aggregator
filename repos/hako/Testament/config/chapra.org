@@ -185,7 +185,6 @@ Administration accounts.
   (service sops-secrets-service-type
     (sops-service-configuration
       (sops (spec->pkg "sops"))
-      (config (local-file (testament-plain "sops.yaml")))
       (gnupg-home "/var/lib/sops")
       (secrets
        (list (sops-secret

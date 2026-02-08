@@ -116,6 +116,7 @@
 ;;guix:tree-sitter-dockerfile
 ;;guix:tree-sitter-go
 ;;guix:tree-sitter-gomod
+;;guix:tree-sitter-lua
 ;;guix:tree-sitter-rust
 ;;guix:tree-sitter-typescript
 ;;guix:tree-sitter-yaml
@@ -125,6 +126,7 @@
   (require 'cmake-ts-mode)
   (require 'dockerfile-ts-mode)
   (require 'go-ts-mode)
+  (require 'lua-ts-mode)
   (require 'rust-ts-mode)
   (require 'typescript-ts-mode)
   (require 'yaml-ts-mode)
