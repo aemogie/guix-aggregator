@@ -43,13 +43,15 @@
 ;;; Procedures.
 ;;;
 
-;; XXX: The built-in one doesn't work when using `guix time-machine'.
-(define (with-output-to-string thunk)
-  (let* ((port (mkstemp "/tmp/rosenthal-XXXXXX"))
+;; XXX: The built-in ‘with-output-to-string’ doesn't work with ‘system*’.
+(define (with-output-to-string* thunk)
+  (let* ((port (mkstemp "/tmp/testament-XXXXXX"))
          (file (port-filename port))
-         (_ (close port)))
-    (and (with-output-to-file file thunk)
-         (call-with-input-file file get-line))))
+         (_ (close port))
+         (_ (with-output-to-file file thunk))
+         (output (call-with-input-file file get-string-all))
+         (_ (delete-file file)))
+    output))
 
 (define ($ cmd)
   (let ((exit-code (status:exit-val (apply system* cmd))))
@@ -99,12 +101,13 @@ Exit code: ~a~%"
 
 (define (live-% variant)
   (let ((src
-         (with-output-to-string
+         (string-trim-right
+          (with-output-to-string*
            (lambda ()
              ($guix `("system" "image" "--image-type=iso9660"
                       "-L" "modules/installer"
                       ,(format #f "files/plain/live/~a.scm" variant)
-                      ,@%build-options)))))
+                      ,@%build-options))))))
         (dst
          (in-vicinity "dist"
                       (format #f "rosenthal-~a-~a.x86_64-linux.iso"
@@ -153,9 +156,7 @@ Exit code: ~a~%"
   (deploy-dorphine)
   (deploy-chapra)
   (deploy-ignamma)
-  (deploy-nuporta)
-  (deploy-mirror)
-  (deploy-worker))
+  (deploy-nuporta))
 
 (define (live-minimal)       (live-% "minimal"))
 (define (live-minimal-hidpi) (live-% "minimal-hidpi"))

@@ -252,7 +252,6 @@
            (list (oci-container-configuration
                    (image "linuxserver/sabnzbd")
                    (provision "sabnzbd")
-                   (network "host")
                    (ports '("[::1]:8081:8081"))
                    (environment `(("PUID" . ,oci-uid)
                                   ("PGID" . ,oci-gid)
@@ -264,9 +263,9 @@
                  (oci-container-configuration
                    (image "jellyfin/jellyfin")
                    (provision "jellyfin")
-                   (network "host")
-                   (ports '("[::1]:8096:8096"
-                            "[::]:7359:7359"))
+                   (ports (list "[::1]:8096:8096"
+                                (format #f "~a:8096:8096" %ipv4-lan-om)
+                                "[::]:7359:7359"))
                    (environment `(("PUID" . ,oci-uid)
                                   ("PGID" . ,oci-gid)))
                    (volumes '(("jellyfin-config" . "/config")

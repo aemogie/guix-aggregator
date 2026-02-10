@@ -300,6 +300,14 @@ Administration accounts.
         (sops-str %sops-chapra '("navidrome"))))))
 #+end_src
 
+*** qbittorrent
+#+begin_src scheme :noweb-ref service
+  (service qbittorrent-service-type
+    (qbittorrent-configuration
+      (qbittorrent (spec->pkg "qbittorrent-enhanced-no-x"))
+      (webui-port 35951)))
+#+end_src
+
 ** Monitoring
 *** alloy
 #+begin_src scheme :noweb-ref service
@@ -337,6 +345,7 @@ Guix System - services
   (gnu services security)
   (gnu services ssh)
   (gnu services sysctl)
+  (rosenthal services bittorrent)
   (rosenthal services child-error)
   (rosenthal services monitoring)
   (rosenthal services networking)

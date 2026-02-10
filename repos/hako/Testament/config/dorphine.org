@@ -118,7 +118,7 @@
                         #~("/run/current-system/profile/bin/guix" "gc" "--delete-generations=1m")
                         #:requirement '(user-processes guix-daemon))))
 
-              (modify-services %rosenthal-desktop-services/gdm
+              (modify-services %rosenthal-desktop-services/tuigreet
                 (guix-service-type
                  config => (guix-configuration
                              (inherit config)
@@ -133,9 +133,7 @@
                                     %network-manager-random-mac-address)))))))
       (name-service-switch %mdns-host-lookup-nss)))
 
-  ((compose (nonguix-transformation-nvidia #:s0ix-power-management? #t
-                                           #:open-source-kernel-module? #t
-                                           #:configure-xorg? #t)
+  ((compose (nonguix-transformation-nvidia)
             (rosenthal-transformation-zfs #:boot? #t))
    %os)
 #+end_src
@@ -224,7 +222,6 @@
 | Mentha/Data/Bluetooth   | /var/lib/bluetooth   |                | true                  |
 | Mentha/Data/SOPS        | /var/lib/sops        |                | true                  |
 | Mentha/Data/Tailscale   | /var/lib/tailscale   |                | true                  |
-| Mentha/Data/qBittorrent | /var/lib/qbittorrent | recordsize=16K |                       |
 |                         |                      |                |                       |
 | Mentha/Data/Captures    | /var/lib/Captures    |                |                       |
 | Mentha/Data/Sandbox     | /var/lib/Sandbox     |                |                       |
@@ -372,18 +369,6 @@ Generate passwordless ECC key:
   unset MY_GPGHOME MY_NAME
 #+end_src
 
-#+begin_src scheme :noweb-ref service
-  (service sops-secrets-service-type
-    (sops-service-configuration
-      (sops (spec->pkg "sops"))
-      (gnupg-home "/var/lib/sops")
-      (secrets
-       (list (sops-secret
-               (key '("cloudflare"))
-               (file %sops-dorphine)
-               (user "caddy"))))))
-#+end_src
-
 #+begin_src scheme :noweb-ref home-service
   (service home-sops-secrets-service-type
     (home-sops-service-configuration
@@ -478,23 +463,6 @@ Generate passwordless ECC key:
   (service docker-service-type)
 #+end_src
 
-** Web Servers & Services
-*** caddy
-#+begin_src scheme :noweb-ref service
-  (service caddy-service-type
-    (caddy-configuration
-      (caddy (spec->pkg "caddy-dolly"))
-      (caddyfile (local-file (testament-plain "dorphine.caddyfile")))))
-#+end_src
-
-*** qbittorrent
-#+begin_src scheme :noweb-ref service
-  (service qbittorrent-service-type
-    (qbittorrent-configuration
-      (qbittorrent (spec->pkg "qbittorrent-enhanced-no-x"))
-      (webui-port 35951)))
-#+end_src
-
 ** Continuous Integration
 *** cuirass-remote-worker
 Open TCP port 5558 and connect to server IPv4 address.
@@ -521,19 +489,11 @@ Open TCP port 5558 and connect to server IPv4 address.
        (plain-file "dorphine.alloy"
          (string-join
           (list (sops-str %sops-dorphine '("alloy"))
-                (file-content (testament-plain "alloy/node-exporter.alloy"))
-                (file-content (testament-plain "alloy/caddy.alloy")))
+                (file-content (testament-plain "alloy/node-exporter.alloy")))
           "\n")))))
 #+end_src
 
 ** Graphical Session
-*** gdm
-#+begin_src scheme :noweb-ref service
-  (set-xorg-configuration
-   (xorg-configuration
-     (keyboard-layout keyboard-layout)))
-#+end_src
-
 *** niri
 #+begin_src scheme :noweb-ref home-service
   (service home-niri-service-type
@@ -828,7 +788,6 @@ Guix System - services
   (gnu services sysctl)
   (gnu services xorg)
   (gnu services syncthing)
-  (rosenthal services bittorrent)
   (rosenthal services keyboard)
   (rosenthal services monitoring)
   (rosenthal services networking)

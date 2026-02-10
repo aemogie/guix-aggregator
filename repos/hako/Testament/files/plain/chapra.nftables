@@ -31,6 +31,9 @@ table inet filter {
         tcp dport ssh accept
         udp dport 60000-61000 accept
 
+        # allow qbittorrent
+        meta l4proto { tcp, udp } th dport 15308 accept
+
         # allow tailscale
         tcp dport 41641 accept
 

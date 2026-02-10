@@ -25,6 +25,11 @@
 }
 
 
+# qBittorrent
+dl.urspace.moe {
+	reverse_proxy localhost:35951
+}
+
 # Komga
 manga.urspace.moe {
 	reverse_proxy localhost:44293

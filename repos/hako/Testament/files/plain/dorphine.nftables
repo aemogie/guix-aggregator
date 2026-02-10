@@ -36,9 +36,6 @@ table inet filter {
         # allow minecraft
         tcp dport 25565 accept
 
-        # allow qbittorrent
-        meta l4proto { tcp, udp } th dport 15308 accept
-
         # allow syncthing
         udp dport 21027 accept
         meta l4proto { tcp, udp } th dport 22000 accept

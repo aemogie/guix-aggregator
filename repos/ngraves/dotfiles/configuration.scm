@@ -187,7 +187,8 @@
                    (gnu system install)
                    (nongnu packages linux)
                    (rde packages)
-                   (gnu services))
+                   (gnu services)
+                   (guix-stack channel-submodules))
       (rde-config-operating-system
        (rde-config
         (initial-os installation-os)
@@ -208,13 +209,21 @@
            #:feature-name-prefix 'live
            #:system-services
            (list
-            ;; (simple-service
-            ;;  'channels-and-sources
-            ;;  etc-service-type
-            ;;  `(("channels.scm" ,(local-file "/home/graves/.config/guix/channels.scm"))
-            ;;    ("guix-sources" ,(local-file "/home/graves/spheres/info/guix" #:recursive? #t))
-            ;;    ("nonguix-sources" ,(local-file "/home/graves/spheres/info/nonguix" #:recursive? #t))
-            ;;    ("rde-sources" ,(local-file "/home/graves/spheres/info/rde" #:recursive? #t))))
+            (simple-service
+             'channels-and-sources
+             etc-service-type
+             `(("guix/channels.scm"
+                ,(scheme-file
+                  "channels.scm"
+                  `(list
+                    ,@(map channel-instance->sexp*
+                           (submodules-dir->channel-instances
+                            "channels"
+                            #:type '(branch . (or "origin/master" "origin/main")))))))
+               ;; ("guix-sources" ,(local-file "/home/graves/spheres/info/guix" #:recursive? #t))
+               ;; ("nonguix-sources" ,(local-file "/home/graves/spheres/info/nonguix" #:recursive? #t))
+               ;; ("rde-sources" ,(local-file "/home/graves/spheres/info/rde" #:recursive? #t))
+               ))
             (service wpa-supplicant-service-type)
             (service network-manager-service-type)
             (service (@@ (gnu system install) cow-store-service-type) 'mooh!)))
@@ -801,9 +810,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
      #:extra-font-packages
      (cons* font-gnu-unifont font-liberation
             (or (and=> (false-if-exception
-                        (module-ref
-                         (resolve-interface '(odf-dsfr packages fonts))
-                         'font-marianne))
+                        (@ (odf-dsfr packages fonts) font-marianne))
                        list)
                 '())))
 
@@ -952,7 +959,12 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJENtxo6OSdamVVqPlvwBrI5QLe4Wj4244cf51ubp/Uh
 B7D7B8FE083E69FFDD54E19C62B1F906049CF1CF8DC637C170B43BFFA8871050"))
    (machine (name "20xwcto1ww")
             (efi "/dev/nvme0n1p1")
-            (encrypted-uuid-mapped "9dbcac0f-e5bd-45fc-a7f2-5841c5ea71b9"))
+            (encrypted-uuid-mapped "9dbcac0f-e5bd-45fc-a7f2-5841c5ea71b9")
+            (btrfs-layout (append '(;;(data . "/data")
+                                    (btrbk_snapshots . "/btrbk_snapshots"))
+                                  root-impermanence-btrfs-layout
+                                  home-impermanence-para-btrfs-layout))
+            (firmware (list iwlwifi-firmware)))
    (machine (name "2325k55")
             (efi "/dev/sda1")
             (encrypted-uuid-mapped "824f71bd-8709-4b8e-8fd6-deee7ad1e4f0")
@@ -1142,6 +1154,29 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl
        #:feature-name-prefix 'more-substitutes
        #:system-services (list (force nonguix-service)
                                (force guix-science-service))))
+     ;; Layout-specific features
+     (if (machine-home-impermanence? %current-machine)
+         (list
+          (feature-user-pam-hooks
+           #:on-login
+           (program-file
+            "guix-home-activate-on-login"
+            #~(let* ((user (getenv "USER"))
+                     (pw (getpw user))
+                     (home (passwd:dir pw))
+                     (profile
+                       (string-append "/var/guix/profiles/per-user/" user)))
+                (chdir home)
+                (unless (file-exists? ".guix-home")
+                  (symlink (string-append profile "/guix-home")
+                           ".guix-home"))
+                (unless (file-exists? ".config/guix/current")
+                  (mkdir ".config")
+                  (mkdir ".config/guix")
+                  (symlink (string-append profile "/current-guix")
+                           ".config/guix/current"))
+                (system ".guix-home/activate")))))
+         (list))
      ;; Machine-specific features
      (match (machine-name %current-machine)
        ("precision"
@@ -1169,37 +1204,21 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl
                 #:remote-password-store-url "git@git.sr.ht:~ngraves/pass")
                (force %ssh-feature))
          (force %mail-features)
-         (list
-          (feature-user-pam-hooks
-           #:on-login
-           (program-file
-            "guix-home-activate-on-login"
-            #~(let* ((user (getenv "USER"))
-                     (pw (getpw user))
-                     (home (passwd:dir pw))
-                     (profile
-                      (string-append "/var/guix/profiles/per-user/" user)))
-                (chdir home)
-                (unless (file-exists? ".guix-home")
-                  (symlink (string-append profile "/guix-home")
-                           ".guix-home"))
-                (unless (file-exists? ".config/guix/current")
-                  (mkdir ".config")
-                  (mkdir ".config/guix")
-                  (symlink (string-append profile "/current-guix")
-                           ".config/guix/current"))
-                (system ".guix-home/activate"))))
-          (feature-custom-services
-           #:feature-name-prefix 'build-machines
-           #:system-services
-           (let ((other-machines (remove (cut eq? %current-machine <>) %machines)))
-             (list
-              (simple-service
-               'build-machines
-               guix-service-type
-               (guix-extension
-                (build-machines
-                 (map machine->build-machine other-machines))))))))))
+         ;; (list
+          ;; (feature-custom-services
+          ;;  #:feature-name-prefix 'build-machines
+          ;;  #:system-services
+          ;;  (list
+          ;;   (simple-service
+          ;;    'build-machines
+          ;;    guix-service-type
+          ;;    (guix-extension
+          ;;     (build-machines
+          ;;      (map machine->build-machine
+          ;;           ;; %machines
+          ;;           (remove (cut eq? %current-machine <>) %machines)
+          ;;           )))))))
+         ))
        ("2325k55"
         (list (feature-host-info
                #:host-name "2325k55"
@@ -1209,6 +1228,12 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl
        ("optiplex"
         (list (feature-host-info
                #:host-name "optiplex"
+               #:timezone  "Europe/Paris"
+               #:locale "fr_FR.utf8")
+              (feature-ssh)))
+       ("20xwcto1ww"
+        (list (feature-host-info
+               #:host-name "20xwcto1ww"
                #:timezone  "Europe/Paris"
                #:locale "fr_FR.utf8")
               (feature-ssh)))
@@ -1258,14 +1283,18 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl
 ;;; operating-system records.
 
 (define %config
-  (let ((config (rde-config
-                 (features (append %user-features
-                                   %main-features
-                                   %machine-features)))))
-    (override-rde-config-with-values
-     config
-     ((@ (guix-stack submodules) submodules-dir->packages) "packages"
-      #:git-fetch? #t))))
+  (let* ((config (rde-config
+                  (features (append %user-features
+                                    %main-features
+                                    %machine-features))))
+         (maybe->packages (false-if-exception
+                           (@ (guix-stack submodules)
+                              submodules-dir->packages)))
+         (dev-packages (and=> maybe->packages
+                              (cut <> "packages" #:git-fetch? #t))))
+    (if dev-packages
+        (override-rde-config-with-values config dev-packages)
+        config)))
 
 ;; Dispatcher, self explanatory.
 (match-let ((((? (cut string-suffix? "guix" <>)) str rest ...) (command-line)))
@@ -1282,8 +1311,11 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl
                             #:driver (@ (nongnu packages nvidia) nvdb))
                            (rde-config-operating-system %config))
                           (rde-config-operating-system %config))))))
+    ("pull" ((@ (guix-stack channel-submodules) submodules-dir->channels)
+             "channels"
+             #:type '(branch . (or "origin/master" "origin/main"))))
     (_        (error "This configuration is configured for \
-rde, home and system subcommands only!"))))
+rde, home, pull, and system subcommands only!"))))
 
 
 

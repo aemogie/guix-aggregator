@@ -402,6 +402,29 @@ Remember to open TCP port 5555 and 5556.
 #+end_src
 
 *** cuirass specifications
+**** atomized
+#+begin_src scheme :noweb-ref cuirass-spec
+  (specification
+    (name "atomized")
+    (build '(channels atomized))
+    (channels
+     (list (channel
+             (inherit %default-guix-channel)
+             (url "https://git.urspace.moe/mirror/guix.git"))
+           (channel
+             (name 'atomized)
+             (url "https://codeberg.org/ieure/atomized-guix.git")
+             (branch "main")
+             (introduction
+              (make-channel-introduction
+               "bdbcd3c5815f64799e2c0d139896da83d9972bd1"
+               (openpgp-fingerprint
+                "6980 A9B9 5202 AA11 EB1D  8922 8499 AC88 F1A7 1CF2"))))))
+    (priority 5)
+    (systems '("x86_64-linux"))
+    (properties '((forge-type . forgejo))))
+#+end_src
+
 **** cast
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification

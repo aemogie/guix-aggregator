@@ -14,6 +14,7 @@
   #:use-module (guix modules)
   #:use-module (guix packages)
   #:use-module (guix store)
+  #:use-module (sops secrets)
   ;; Guix build systems
   #:use-module (guix build-system copy)
   ;; Guix packages
@@ -70,17 +71,22 @@
   "Return a string (or number if NUMBER? is set to #t) of SOPS secret for KEY
 stored in FILE.  The result will be publicly available in '/gnu/store', YOU ARE
 WARNED."
-  (let* ((file-path
-          (with-store store
-            (run-with-store store
-              (lower-object file))))
-         (cmd
-          (format #f "sops --decrypt --extract '~a' '~a'"
-                  ((@@ (sops secrets) list-key->string-key) key)
-                  file-path))
-         (port (open-input-pipe cmd))
-         (secret (get-string-all port)))
-    (close-pipe port)
+  (define %file
+    (if (string? file)
+        file
+        (with-store store
+          (run-with-store store
+            (lower-object file)))))
+
+  (define %key
+    (if (string? key)
+        key
+        (sops-list-key->sops-string-key key)))
+
+  (let* ((port (open-input-pipe
+                (format #f "sops --decrypt --extract ~s ~s" %key %file)))
+         (secret (get-string-all port))
+         (_ (close-pipe port)))
     (if number?
         (string->number secret)
         secret)))

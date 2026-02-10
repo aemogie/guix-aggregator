@@ -5,4 +5,5 @@ window-decoration = false
 gtk-single-instance = true
 confirm-close-surface = false
 working-directory = home
+window-inherit-working-directory = false
 
