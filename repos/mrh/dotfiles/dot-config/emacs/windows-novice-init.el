@@ -55,8 +55,8 @@
   (dired-mode . hl-line-mode) ; visually highlight selected line
   :custom
   (dired-listing-switches "-Ahl --group-directories-first") ; list folders first
-  (dired-kill-when-opening-new-dired-buffer t) ; kill the buffer with the previous directory when switching
-  (dired-dwim-target t))
+  (dired-kill-when-opening-new-dired-buffer t) ; kill the buffer when switching
+  )
 
 ;; when "deleting" files, just move them to the trash
 (setopt delete-by-moving-to-trash t)
@@ -117,8 +117,18 @@
                       :underline nil))
 
 ;; set default theme
-(mapc #'disable-theme custom-enabled-themes)
-(load-theme 'modus-operandi :no-confirm)
+(use-package modus-themes
+  :ensure t
+  :config
+  (modus-themes-include-derivatives-mode 1))
+
+(use-package ef-themes
+  :ensure t
+  :after modus-themes
+  :custom
+  (modus-themes-to-toggle '(ef-duo-dark ef-duo-light))
+  :config
+  (modus-themes-select 'ef-duo-dark))
 
 ;; don't show irrelevant command completions
 (setopt read-extended-command-predicate #'command-completion-default-include-p)

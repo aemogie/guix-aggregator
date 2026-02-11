@@ -248,7 +248,10 @@
        (oci-extension
         (containers
          (let ((oci-uid (get-line (open-input-pipe "id oci-container -u")))
-               (oci-gid (get-line (open-input-pipe "id oci-container -g"))))
+               (oci-gid (get-line (open-input-pipe "id oci-container -g")))
+               (video-group-id (get-line
+                                (open-input-pipe
+                                 "awk -F ':' '/^video/ {print $3}' /etc/group"))))
            (list (oci-container-configuration
                    (image "linuxserver/sabnzbd")
                    (provision "sabnzbd")
@@ -270,29 +273,31 @@
                                   ("PGID" . ,oci-gid)))
                    (volumes '(("jellyfin-config" . "/config")
                               ("jellyfin-cache" . "/cache")
-                              ("/mnt/wd/media" . "/media")))))))))
+                              ("/mnt/wd/media" . "/media")))
+                   (extra-arguments
+                    (list "--device=/dev/dri/renderD128:/dev/dri/renderD128"
+                          (format #f "--group-add=~a" video-group-id)))))))))
 
-      (let ((listen-address (format #f "~a::1" %ipv6-wireguard-prefix)))
-        (service
-         nginx-service-type
-         (nginx-configuration
-           (shepherd-requirement '(wireguard-wg0))
-           (server-blocks
-            (list (root-server-block "pub" listen-address)
-                  (root-server-block "home" listen-address)
-                  (app-server-block
-                   "syncthing.home" listen-address 8384)
-                  (app-server-block
-                   "sab.home" listen-address 8081)
-                  (app-server-block
-                   "jelly.home" listen-address 8096
-                   "proxy_set_header Host $host;"
-                   "proxy_set_header X-Real-IP $remote_addr;"
-                   "proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;"
-                   "proxy_set_header X-Forwarded-Proto $scheme;"
-                   "proxy_set_header X-Forwarded-Protocol $scheme;"
-                   "proxy_set_header X-Forwarded-Host $http_host;"
-                   "proxy_buffering off;"))))))
+      (service
+       nginx-service-type
+       (nginx-configuration
+         (shepherd-requirement '(wireguard-wg0))
+         (server-blocks
+          (list (root-server-block "pub" %ipv6-wireguard-om)
+                (root-server-block "home" %ipv6-wireguard-om)
+                (app-server-block
+                 "syncthing.home" %ipv6-wireguard-om 8384)
+                (app-server-block
+                 "sab.home" %ipv6-wireguard-om 8081)
+                (app-server-block
+                 "jelly.home" %ipv6-wireguard-om 8096
+                 "proxy_set_header Host $host;"
+                 "proxy_set_header X-Real-IP $remote_addr;"
+                 "proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;"
+                 "proxy_set_header X-Forwarded-Proto $scheme;"
+                 "proxy_set_header X-Forwarded-Protocol $scheme;"
+                 "proxy_set_header X-Forwarded-Host $http_host;"
+                 "proxy_buffering off;")))))
 
       (modify-services %base-services
         (guix-service-type

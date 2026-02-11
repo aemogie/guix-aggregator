@@ -47,9 +47,9 @@
 (define-public %sleep-home-packages
   (list
    ;; graphical-env
-   alacritty
    brightnessctl
    fnott
+   foot
    fuzzel
    gnome-themes-extra
    gsettings-desktop-schemas

@@ -6,7 +6,9 @@
   #:use-module (gnu)
   #:use-module (gnu services security)
   #:use-module (gnu services certbot)
-  #:use-module (gnu services dns)
+  #:use-module (gnu services containers)
+  #:use-module (gnu services desktop)
+  #:use-module (gnu services docker)
   #:use-module (gnu services networking)
   #:use-module (gnu services shepherd)
   #:use-module (gnu services ssh)
@@ -77,10 +79,6 @@
              (type "ext4"))
            %base-file-systems))
 
-    (groups
-     (cons (user-group (name "docker"))
-           %base-groups))
-
     (users
      (cons (user-account
              (name %username)
@@ -106,19 +104,19 @@
                (addresses
                 (list (network-address
                         (device "eth0")
-                        (value "2607:5300:205:200::1138/64"))
+                        (value (format #f "~a/64" %ipv6-gua-vps)))
                       (network-address
                         (device "eth0")
-                        (value "51.222.9.49/24"))))
+                        (value (format #f "~a/24" %ipv4-public-vps)))))
                (routes
                 (list (network-route
                         (device "eth0")
                         (destination "default")
-                        (gateway "2607:5300:205:200::1"))
+                        (gateway %ipv6-gua-vps))
                       (network-route
                         (device "eth0")
                         (destination "default")
-                        (gateway "51.222.9.1")))))))
+                        (gateway %ipv4-public-vps)))))))
 
       (service
        nftables-service-type
@@ -168,79 +166,37 @@
           (list %ipv6-wireguard-vps
                 %ipv4-wireguard-vps))))
 
+      ;; needed for oci-service
       (service
-       unbound-after-wg-service-type
-       (unbound-configuration
-         (server
-          (unbound-server
-            (interface
-             (list "::1"
-                   %ipv6-wireguard-vps
-                   "127.0.0.1"
-                   %ipv4-wireguard-vps))
-            (hide-version #t)
-            (hide-identity #t)
-            (tls-cert-bundle "/etc/ssl/certs/ca-certificates.crt")))
-         ;; can't be in config because of a formatting bug in the service definition
-         (extra-content (format #f "
-server:
-aggressive-nsec: yes
-do-ip4: yes
-do-ip6: yes
-do-tcp: yes
-harden-glue: yes
-harden-dnssec-stripped: yes
-cache-min-ttl: 3600
-cache-max-ttl: 86400
-num-threads: 1
-so-rcvbuf: 1m
-prefetch: yes
-rrset-roundrobin: yes
-so-reuseport: yes
-use-caps-for-id: yes
+       elogind-service-type)
+      (service
+       containerd-service-type)
+      (service
+       docker-service-type)
 
-access-control: ::1/128 allow
-access-control: 127.0.0.1/32 allow
-access-control: ~a::/64 allow
-access-control: ~a.0/24 allow
+      (simple-service
+       'oci-provisioning
+       oci-service-type
+       (oci-extension
+        (containers
+         (list (oci-container-configuration
+                 (image "technitium/dns-server")
+                 (provision "dns")
+                 (ports (list (format #f "[~a]:5380:5380/tcp" %ipv6-wireguard-vps)
+                              (format #f "[~a]:53:53/tcp" %ipv6-wireguard-vps)
+                              (format #f "[~a]:53:53/udp" %ipv6-wireguard-vps)
 
-private-address: ~a::/64
-private-address: ~a.0/24
-
-local-zone: \"~a\" static
-local-data: \"~a IN AAAA ~a::1\"
-
-local-zone: \"om\" static
-local-data: \"om IN AAAA ~a\"
-
-local-zone: \"sleep\" static
-local-data: \"sleep IN AAAA ~a\"
-
-local-zone: \"home.~a\" redirect
-local-data: \"home.~a 86400 IN AAAA ~a\"
-
-local-zone: \"i2p.pub.~a\" redirect
-local-data: \"i2p.pub.~a 86400 IN AAAA ~a\"
-"
-                                %ipv6-wireguard-prefix
-                                %ipv4-wireguard-prefix
-
-                                %ipv6-wireguard-prefix
-                                %ipv4-wireguard-prefix
-
-                                %router-domain-name
-                                %router-domain-name %ipv6-gua-prefix
-
-                                %ipv6-wireguard-om
-
-                                %ipv6-wireguard-sleep
-
-                                %domain-name
-                                %domain-name %ipv6-wireguard-om
-
-                                %domain-name
-                                %domain-name %ipv6-wireguard-vps
-                                ))))
+                              (format #f "[~a]:5380:5380/tcp" %ipv4-wireguard-vps)
+                              (format #f "[~a]:53:53/tcp" %ipv4-wireguard-vps)
+                              (format #f "[~a]:53:53/udp" %ipv4-wireguard-vps)
+                              ;; "853:853/udp"
+                              ))
+                 (environment
+                  `(("DNS_SERVER_ADMIN_PASSWORD" . ,%technitium-password)
+                    ("DNS_SERVER_PREFER_IPV6" . "true")
+                    ("DNS_SERVER_LOG_USING_LOCAL_TIME" . "false")))
+                 (volumes
+                  '(("technitium-dns-config" . "/etc/dns"))))))))
 
       (service
        certbot-service-type

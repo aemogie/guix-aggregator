@@ -3,7 +3,7 @@
 set $mod Mod4
 set $browser librewolf
 set $emacs emacs
-set $term alacritty
+set $term foot
 set $fuzzel fuzzel
 set $grimshot grimshot
 set $brightnessctl brightnessctl
@@ -127,7 +127,7 @@ bindsym $mod+Shift+t exec toggle-theme.scm
 ###############
 
 floating_modifier $mod normal
-font pango:DejaVu Sans Mono 0.5
+font pango:DejaVu Sans Mono 0.1
 titlebar_border_thickness 0
 titlebar_padding 0
 client.focused "ebdbb2" "ffa21f" "282828"

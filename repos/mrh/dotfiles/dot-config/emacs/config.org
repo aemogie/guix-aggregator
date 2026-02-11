@@ -288,7 +288,6 @@ Have emacs remember both what files you recently visited and your position in th
   :custom
   (dired-listing-switches "-Ahl --group-directories-first")
   (dired-kill-when-opening-new-dired-buffer t)
-  (dired-dwim-target t)
   :config
   (defun my/dired-run-command (command)
     "Run COMMAND on files marked in `dired'."
@@ -727,7 +726,7 @@ Compile without showing compile buffer
   (:map org-mode-map
         ("C-c l" . org-cycle-list-bullet))
   :custom
-  (org-startup-folded t)
+  (org-startup-folded 'fold)
   (org-M-RET-may-split-line '((default . nil)))
   (org-clock-sound t)
   (org-insert-heading-respect-content t)

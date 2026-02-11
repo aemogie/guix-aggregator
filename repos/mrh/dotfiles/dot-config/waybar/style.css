@@ -31,7 +31,7 @@ tooltip label {
 }
 
 #workspaces button.focused {
-	border-top: 5px solid #ffa21f;
+    color: #6fd560;
 }
 
 #workspaces button:hover {
