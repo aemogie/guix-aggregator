@@ -29,15 +29,23 @@
 ;;; Operating system
 ;;;
 
+(define %installation-os
+  (make-installation-os
+   #:efi-only?
+   (string=? (or (getenv "SYSTEM")
+                 (%current-system))
+             "aarch64-linux")))
+
 (define %os
   (operating-system
-    (inherit installation-os)
+    (inherit %installation-os)
     (host-name "live-system")
     (label "Rosenthal Live System")
     (kernel linux)
     (firmware
      (cons* linux-firmware
-            (operating-system-firmware installation-os)))
+            (operating-system-firmware %installation-os)))
+    (kernel-arguments %default-kernel-arguments)
     (users
      (cons* (user-account
               (inherit %root-account)
@@ -58,7 +66,7 @@
                 "unzip"
                 ))
              (list %rosenthal-set-keymap)
-             (operating-system-packages installation-os)))
+             (operating-system-packages %installation-os)))
 
     (services
      ;; Modified from `installation-os', with our own examples.
@@ -73,7 +81,7 @@
                 etc-service-type
               `(("configuration" ,(local-file "examples" #:recursive? #t))))
 
-            (modify-services (operating-system-user-services installation-os)
+            (modify-services (operating-system-user-services %installation-os)
               (delete (@@ (gnu system install) configuration-template-service-type))
               (delete gc-root-service-type))))
 

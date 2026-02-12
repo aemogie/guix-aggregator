@@ -1,8 +1,9 @@
 (define-module (misako home-environments look packages)
+  #:use-module ((gnu packages rust-apps) #:select (helvum typst))
   #:use-module (gnu packages admin)
   #:use-module (gnu packages audio)
-  #:use-module (gnu packages bittorrent)
   #:use-module (gnu packages base)
+  #:use-module (gnu packages bittorrent)
   #:use-module (gnu packages browser-extensions)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages cpp)
@@ -33,9 +34,6 @@
   #:use-module (gnu packages pdf)
   #:use-module (gnu packages python)
   #:use-module (gnu packages qt)
-  #:use-module ((gnu packages rust-apps)
-                #:select (helvum
-                          typst))
   #:use-module (gnu packages ssh)
   #:use-module (gnu packages syndication)
   #:use-module (gnu packages telegram)
@@ -45,6 +43,7 @@
   #:use-module (gnu packages video)
   #:use-module (gnu packages wm)
   #:use-module (gnu packages xdisorg)
+  #:use-module (guix download)
   #:use-module (guix gexp)
   #:use-module (guix git-download)
   #:use-module (guix packages)
@@ -52,8 +51,8 @@
   #:use-module (guix utils)
   #:use-module (misako packages binaries)
   #:use-module (misako utils)
-  #:use-module (nongnu packages fonts)
   #:use-module (nongnu packages compression)
+  #:use-module (nongnu packages fonts)
   #:use-module (nongnu packages game-client)
   #:use-module (nongnu packages nvidia)
   #:use-module (nongnu packages video)
@@ -73,59 +72,59 @@
   #:use-module (saayix packages terminals)
   #:use-module (saayix packages wm)
   #:use-module (saayix-nonfree packages binaries)
-  #:use-module (sops packages sops)
-  #:export (bar
-            browser
-            clipboard
-            compression
-            cursor
-            desktop
-            downloads
-            emacs
-            file-management
-            fonts
-            games
-            guile
-            hypr*
-            image
-            mail
-            messaging
-            music
-            news
-            notifications
-            password
-            pdf
-            portals
-            presentation
-            python
-            screenshot
-            selectors
-            sound
-            terminals
-            text-editor
-            typst
-            video
-            virtual-keyboard
+  #:use-module (sops packages sops))
 
-            ghostty-tip
-            hyprland-latest))
+(define-public ghostty-tip
+  ((options->transformation
+     '((with-commit . "ghostty=9d9d781a0b7142ddc176167ef5e889618d295ef5")))
+   ghostty))
 
-(define bar
+(define-public hyprland-latest
+  (let* ((commit "8e9add2afda58d233a75e4c5ce8503b24fa59ceb")
+         (revision "1"))
+    (package/inherit hyprland
+      (name (package-name hyprland))
+      (version (git-version "0.51.1" revision commit))
+      (source
+        (origin
+          (method git-fetch)
+          (uri
+            (git-reference
+              (url "https://github.com/hyprwm/Hyprland")
+              (commit commit)))
+          (file-name (git-file-name name version))
+          (sha256
+           (base32 "0hnq8vwr31scpf20qnv17zc0fn7llf0wlhym0a8p39n6ag1g1dwc")))))))
+
+(define-public zen-browser-bin/twilight
+  (package/inherit zen-browser-bin
+    (name "zen-browser-bin-twilight")
+    (version "1.19t")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (string-append
+                "https://github.com/zen-browser/desktop/releases/download/"
+                "twilight/zen.linux-x86_64.tar.xz"))
+        (sha256
+          (base32 "0pmi5mzb0fs1a92fxdhnpbhaf063vyxrl1ns5nlnsirq2rrnspvq"))))))
+
+(define-public bar
   (list eww/wayland waybar quickshell/latest))
 
-(define browser
-  (list zen-browser-bin))
+(define-public browser
+  (list zen-browser-bin/twilight))
 
-(define clipboard
+(define-public clipboard
   (list wl-clipboard))
 
-(define compression
+(define-public compression
   (list 7zip))
 
-(define cursor
+(define-public cursor
   (list cursor-mcmojave hyprcursor-mcmojave))
 
-(define desktop
+(define-public desktop
   (list git
         gnupg
         gsettings-desktop-schemas
@@ -140,11 +139,11 @@
         grep
         xdg-utils))
 
-(define downloads
+(define-public downloads
   (list aria2
         qbittorrent))
 
-(define emacs
+(define-public emacs
   (list emacs-activities
         emacs-arei
         emacs-catppuccin-theme
@@ -167,10 +166,10 @@
         emacs-yasnippet
         guile-ares-rs))
 
-(define file-management
+(define-public file-management
   (list yazi))
 
-(define fonts
+(define-public fonts
   (list font-adobe-source-han-sans
         font-adobe-source-sans
         font-adobe-source-serif
@@ -181,7 +180,7 @@
         font-microsoft-times-new-roman
         font-nerd-symbols))
 
-(define games
+(define-public games
   (yumiko?* (steam-for nvda)
             (heroic-for nvda)
             mangohud
@@ -189,12 +188,12 @@
             osu-lazer-bin
             prismlauncher))
 
-(define guile
+(define-public guile
   (list guile-next guile-colorized guile-gcrypt guile-readline
         guile-lsp-server
         parinfer-rust))
 
-(define hypr*
+(define-public hypr*
   (list hyprcursor
         hypridle
         hyprland dbus
@@ -203,101 +202,79 @@
         hyprpaper
         hyprsunset))
 
-(define image
+(define-public image
   (list imv
         oculante))
 
-(define mail
+(define-public mail
   (list aerc))
 
-(define messaging
+(define-public messaging
   (list senpai
         catgirl
-        vesktop
-        telegram-desktop))
+        vesktop))
+        ;; telegram-desktop))
 
-(define music
+(define-public music
   (list kew))
 
-(define news
+(define-public news
   (list newsraft))
         ; helix-pdf))
 
-(define notifications
-  (list ;libnotify
+(define-public notifications
+  (list libnotify
         mako
         sound-theme-freedesktop))
 
-(define password
+(define-public password
   (list password-store passff-host))
 
-(define pdf
+(define-public pdf
   (list sioyek
         zaread zathura zathura-pdf-poppler))
 
-(define portals
+(define-public portals
   (list xdg-desktop-portal
         xdg-desktop-portal-gtk
         xdg-desktop-portal-hyprland
         xdg-desktop-portal-termfilechooser))
 
-(define presentation
+(define-public presentation
   (list wl-mirror pipectl))
 
-(define python
+(define-public python
   (list python-wrapper))
 
-(define screenshot
+(define-public screenshot
   (list grim slurp))
 
-(define selectors
+(define-public selectors
   (list bemenu fuzzel))
 
-(define sound
+(define-public sound
   (list wireplumber-minimal
         ncpamixer
         helvum
         playerctl
         easyeffects))
 
-(define terminals
+(define-public terminals
   (list ghostty-latest foot))
 
-(define text-editor
+(define-public text-editor
   (list helix))
 
-(define video
+(define-public video
   (list (@@ (saayix packages video) mpv-minimal/wayland)
         yt-dlp
         obs-pipewire-audio-capture
         (yumiko?* ffmpeg/nvidia obs-nvidia nvidia-vaapi-driver)
         (yuria?* ffmpeg obs)))
 
-(define virtual-keyboard
+(define-public virtual-keyboard
   (list xdotool ydotool))
 
-(define typst
+(define-public typst
   (list (@ (gnu packages rust-apps) typst)
         tinymist))
-
-(define ghostty-tip
-  ((options->transformation
-     '((with-commit . "ghostty=9d9d781a0b7142ddc176167ef5e889618d295ef5")))
-   ghostty))
-
-(define hyprland-latest
-  (let* ((commit "8e9add2afda58d233a75e4c5ce8503b24fa59ceb")
-         (revision "1"))
-    (package/inherit hyprland
-      (name (package-name hyprland))
-      (version (git-version "0.51.1" revision commit))
-      (source
-        (origin
-          (method git-fetch)
-          (uri
-            (git-reference
-              (url "https://github.com/hyprwm/Hyprland")
-              (commit commit)))
-          (file-name (git-file-name name version))
-          (sha256
-           (base32 "0hnq8vwr31scpf20qnv17zc0fn7llf0wlhym0a8p39n6ag1g1dwc")))))))

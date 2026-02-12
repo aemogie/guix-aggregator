@@ -36,8 +36,8 @@
        (targets `("/dev/disk/by-id/ata-LITEON_CV1-8B256_0018462003TG"))
        (theme (grub-theme
                (inherit buer:bootloader-theme)
-                (resolution `(1920 . 1080))
-                (gfxmode `("1920x1080x32"))))))
+               (resolution `(1920 . 1080))
+               (gfxmode `("1920x1080x32"))))))
 
      (kernel linux-6.17)
      (initrd

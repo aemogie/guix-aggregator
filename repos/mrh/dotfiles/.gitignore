@@ -1,3 +1,4 @@
+gitignore
 personal.*
 nftables.conf
 home/.config/guix/shell-authorized-directories

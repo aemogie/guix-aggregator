@@ -517,6 +517,11 @@ https://yalter.github.io/niri/Nvidia.html
   (service home-noctalia-shell-service-type)
 #+end_src
 
+*** polkit-gnome
+#+begin_src scheme :noweb-ref home-service
+  (service home-polkit-gnome-service-type)
+#+end_src
+
 *** qogir-icon-theme
 #+begin_src scheme :noweb-ref home-service
   (service home-theme-service-type

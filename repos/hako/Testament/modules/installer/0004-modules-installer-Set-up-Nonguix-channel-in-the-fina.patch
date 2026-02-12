@@ -1,7 +1,7 @@
-From cd95c785c9aef2c26130161571a92341159e7abf Mon Sep 17 00:00:00 2001
+From ea372e9f3aa5f8e710ebe93a7071e8719fc97979 Mon Sep 17 00:00:00 2001
 From: Hilton Chain <hako@ultrarare.space>
 Date: Sat, 24 Jan 2026 23:33:04 +0800
-Subject: [PATCH 4/6] modules/installer: Set up Nonguix channel in the final
+Subject: [PATCH 4/5] modules/installer: Set up Nonguix channel in the final
  system.
 
 Also add comment for NVIDIA proprietary driver setup.

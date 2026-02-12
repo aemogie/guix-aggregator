@@ -1,6 +1,7 @@
 (define-module (home-environments radio packages)
   #|GNU packages|#
   #|A|# #:use-module (gnu packages admin)
+        #:use-module (gnu packages audio)
   #|B|# #:use-module (gnu packages base)
         #:use-module (gnu packages bittorrent)
         #:use-module (gnu packages books)
@@ -58,6 +59,7 @@
 
   #|Guix|#
   #|C|# #:use-module (guix channels)
+  #|D|# #:use-module (guix download)
   #|I|# #:use-module (guix inferior)
   #|P|# #:use-module (guix packages)
 
@@ -67,7 +69,6 @@
 
   #|Radix packages|#
   #|A|# #:use-module (radix packages admin)
-        #:use-module (radix packages audio)
   #|D|# #:use-module (radix packages disk)
   #|E|# #:use-module (radix packages emacs-xyz)
   #|F|# #:use-module (radix packages fish-xyz)
@@ -77,6 +78,7 @@
   #|K|# #:use-module (radix packages kak-xyz)
   #|M|# #:use-module (radix packages music)
   #|P|# #:use-module (radix packages password-utils)
+        #:use-module (radix packages pulseaudio)
   #|S|# #:use-module (radix packages seninha)
   #|T|# #:use-module (radix packages text-editors)
         #:use-module (radix packages toys)
@@ -219,7 +221,7 @@
 
 (define sound
   (list #|linux    |# wireplumber-minimal
-        #|audio    |# pipemixer))
+        #|audio    |# ncpamixer))
 
 (define tex
   (list #|tex|# rubber
@@ -240,7 +242,18 @@
   (list #|video|# ani-cli/wayland ffmpeg mpv-minimal/wayland))
 
 (define web
-  (list #|binaries|# zen-browser-bin
+  (list #|binaries|#
+        (package/inherit zen-browser-bin
+         (name "zen-browser-bin-twilight")
+         (version "1.19t")
+         (source
+           (origin
+             (method url-fetch)
+             (uri (string-append
+                     "https://github.com/zen-browser/desktop/releases/download/"
+                     "twilight/zen.linux-x86_64.tar.xz"))
+             (sha256
+               (base32 "0pmi5mzb0fs1a92fxdhnpbhaf063vyxrl1ns5nlnsirq2rrnspvq")))))
         #|gtk     |# gtk+)) ;needed for zen not crash when using termfilechooser
 
 (define emacs:base

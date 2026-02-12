@@ -38,6 +38,10 @@
 (define %deploy-command
   (getenv "CMD"))
 
+(define %livecd-system
+  (or (getenv "SYSTEM")
+      (%current-system)))
+
 
 ;;;
 ;;; Procedures.
@@ -104,15 +108,18 @@ Exit code: ~a~%"
          (string-trim-right
           (with-output-to-string*
            (lambda ()
-             ($guix `("system" "image" "--image-type=iso9660"
-                      "-L" "modules/installer"
+             ($guix `("system" "image"
                       ,(format #f "files/plain/live/~a.scm" variant)
+                      "--image-type=iso9660"
+                      "--load-path=modules/installer"
+                      "-s" ,%livecd-system
                       ,@%build-options))))))
         (dst
          (in-vicinity "dist"
-                      (format #f "rosenthal-~a-~a.x86_64-linux.iso"
+                      (format #f "rosenthal-~a-~a.~a.iso"
                               variant
-                              (date->string (current-date) "~Y~m~d")))))
+                              (date->string (current-date) "~Y~m~d")
+                              %livecd-system))))
     (and (copy-file src dst)
          (make-file-writable dst))))
 

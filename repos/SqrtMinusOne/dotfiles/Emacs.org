@@ -8216,7 +8216,33 @@ A "profile" (metapac calls them "groups") is a way to group package installation
    "mpd"))
 #+end_src
 
-Metapac stores the same info in TOML. I could generate this file with =org-babel= as any other, but that is often not so convenient. For example, I have a [[https://github.com/polybar/polybar][polybar]] module that uses [[https://github.com/risacher/sunwait][sunwait]] to show sunset and sunrise times, and ideally, I want to declare =sunwait= to be in the "desktop-polybar" profile in the same section that has the polybar module definition and the bash script.
+Metapac stores the same info in TOML like this:
+
+#+begin_src toml :exports none
+flatpak = {
+  repos = [
+    {
+      name = "user:flathub",
+      options = { url = "https://dl.flathub.org/repo/" }
+    },
+  ],
+  packages = [
+    "user:chat.rocket.RocketChat",
+  ]
+}
+arch = {
+  packages = [
+    ...,
+    "libreoffice-fresh",
+    "zathura-djvu",
+    "zathura-pdf-mupdf",
+    "zathura-ps",
+    "zathura",
+  ]
+}
+#+end_src
+
+I could generate this file with =org-babel= as any other, but that is often not so convenient. For example, I have a [[https://github.com/polybar/polybar][polybar]] module that uses [[https://github.com/risacher/sunwait][sunwait]] to show sunset and sunrise times, and ideally, I want to declare =sunwait= to be in the "desktop-polybar" profile in the same section that has the polybar module definition and the bash script.
 
 So here's an approach I came up with. The relevant section of the config looks like this:
 #+begin_example
@@ -8312,17 +8338,30 @@ And here is the implementation:
 #+end_src
 
 To make it work in the configuration, it is necessary to format the list in the TOML format. Unfortunately, there doesn't seems to be a TOML generator for Elisp.
+
+Also, some package repositories require additional parameters in the group file, e.g. =flatpak= requires to specify repositories.
+
+#+begin_src emacs-lisp
+(defvar my/arch-dependencies-params
+  '(("flatpak" . "repos = [{name = \"user:flathub\", options = { url = \"https://dl.flathub.org/repo/\" }}],")))
+#+end_src
+
 #+begin_src emacs-lisp :noweb-ref guix-tables
 (defun my/format-arch-dependencies (&optional category)
   (let ((data (my/extract-arch-dependencies category)))
     (with-temp-buffer
       (cl-loop for (backend . packages) in data
+               for backend-params =
+               (alist-get backend my/arch-dependencies-params nil nil #'equal)
                do (insert (format "%s = {\n  packages = [\n" backend)
                           (mapconcat (lambda (package)
                                        (format "    \"%s\"," package))
                                      packages
                                      "\n")
-                          "\n  ]\n}\n"))
+                          "\n  ],\n"
+                          (if backend-params
+                              (concat "  " backend-params "\n") "")
+                          "}\n"))
       (buffer-string))))
 #+end_src
 
@@ -8410,7 +8449,7 @@ Somewhat similar to the previous one... Occasinally I want to re-tangle all desk
   (call-process "xrdb" nil nil nil "-load" "/home/pavel/.Xresources")
   (call-process "~/bin/polybar.sh")
   (call-process "pkill" nil nil nil "dunst")
-  (call-process "herd" nil nil nil "restart" "xsettingsd")
+  (call-process "systemctl" nil nil nil "--user" "restart" "xsettingsd")
   (when (fboundp #'my/exwm-set-alpha)
     (if (my/light-p)
         (my/exwm-set-alpha 100)
@@ -11544,8 +11583,52 @@ Or you can load up Element for a moment to see what the mention was, if that's e
 #+end_src
 
 Setting up the modeline. The default mode string doesn't look great with my other modeline modules, so I override that.
+
+Also, I want to display unread messages from chats and groups separately, so here are some custom functions:
+#+begin_src emacs-lisp
+(defun my/telega-mode-line-unread-private ()
+  "Format unread unmuted private chat count."
+  (let* ((chats (telega-filter-chats (telega-chats-list)
+                  '(and unread unmuted (type private secret bot))))
+         (count (length chats)))
+    (unless (zerop count)
+      (concat
+       " P:"
+       (propertize (number-to-string count)
+                   'face 'telega-unread-unmuted-modeline
+                   'local-map
+                   (make-mode-line-mouse-map
+                    'mouse-1 (telega-mode-line-filter-gen
+                              '(and unread unmuted (type private secret bot))))
+                   'mouse-face 'mode-line-highlight
+                   'help-echo "Unread unmuted private chats")))))
+
+(defun my/telega-mode-line-unread-groups ()
+  "Format unread unmuted group/channel chat count."
+  (let* ((chats (telega-filter-chats (telega-chats-list)
+                  '(and unread unmuted (type basicgroup supergroup channel))))
+         (count (length chats)))
+    (unless (zerop count)
+      (concat
+       " G:"
+       (propertize (number-to-string count)
+                   'face 'telega-unread-unmuted-modeline
+                   'local-map
+                   (make-mode-line-mouse-map
+                    'mouse-1 (telega-mode-line-filter-gen
+                              '(and unread unmuted (type basicgroup supergroup channel))))
+                   'mouse-face 'mode-line-highlight
+                   'help-echo "Unread unmuted group/channel chats")))))
+#+end_src
+
+And modeline settings:
 #+begin_src emacs-lisp
 (add-hook 'telega-load-hook #'telega-mode-line-mode)
+
+(with-eval-after-load 'telega
+  (advice-add 'telega-server--idle-timer-function
+              :after #'telega-mode-line-update))
+
 (setq telega-mode-line-string-format
       '("["
         (:eval
@@ -11554,7 +11637,11 @@ Setting up the modeline. The default mode string doesn't look great with my othe
          (when telega-use-tracking-for
            (telega-mode-line-tracking)))
         (:eval
-         (telega-mode-line-unread-unmuted))
+         (my/telega-mode-line-unread-groups))
+        (:eval
+         (my/telega-mode-line-unread-private))
+        ;; (:eval
+        ;;  (telega-mode-line-unread-unmuted))
         (:eval
          (telega-mode-line-mentions 'messages))
         "]"))

@@ -96,9 +96,16 @@
 (use-package geiser
   :custom
   (geiser-autodoc-identifier-format "%s → %s")
+  (geiser-repl-query-on-kill-p nil))
+
+(use-package geiser-mode
+  :custom
   (geiser-mode-smart-tab-p t)
   (geiser-mode-start-repl-p t)
-  (geiser-repl-query-on-kill-p nil))
+  :bind
+  (:map geiser-mode-map
+        ("M-." . nil)
+        ("M-," . nil)))
 
 ;;guix:emacs-geiser-guile
 (use-package geiser-guile

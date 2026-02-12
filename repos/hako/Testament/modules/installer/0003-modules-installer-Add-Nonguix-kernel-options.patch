@@ -1,15 +1,15 @@
-From ecb3881722bae5e325644048921560c6cc6a27b4 Mon Sep 17 00:00:00 2001
+From 44b275047590a10f076358ab0a05924845ad6014 Mon Sep 17 00:00:00 2001
 From: Hilton Chain <hako@ultrarare.space>
 Date: Sat, 24 Jan 2026 23:32:45 +0800
-Subject: [PATCH 3/6] modules/installer: Add Nonguix kernel options.
+Subject: [PATCH 3/5] modules/installer: Add Nonguix kernel options.
 
 ---
- modules/installer/gnu/installer/kernel.scm    | 38 ++++++++++++-------
- .../installer/gnu/installer/newt/kernel.scm   | 10 +++--
- 2 files changed, 32 insertions(+), 16 deletions(-)
+ modules/installer/gnu/installer/kernel.scm    | 36 ++++++++++++-------
+ .../installer/gnu/installer/newt/kernel.scm   | 10 ++++--
+ 2 files changed, 30 insertions(+), 16 deletions(-)
 
 diff --git a/modules/installer/gnu/installer/kernel.scm b/modules/installer/gnu/installer/kernel.scm
-index 2700931..4e07c32 100644
+index 2700931..968cb49 100644
 --- a/modules/installer/gnu/installer/kernel.scm
 +++ b/modules/installer/gnu/installer/kernel.scm
 @@ -17,6 +17,7 @@
@@ -20,7 +20,7 @@ index 2700931..4e07c32 100644
    #:use-module (gnu system hurd)
    #:use-module (guix read-print)
    #:export (kernel->configuration))
-@@ -27,16 +28,27 @@
+@@ -27,16 +28,25 @@
    str)
  
  (define (kernel->configuration kernel dry-run?)
@@ -40,12 +40,10 @@ index 2700931..4e07c32 100644
 +  (match kernel
 +    ("Linux"
 +     `((kernel linux)
-+       (firmware (cons* linux-firmware %base-firmware))
-+       (initrd microcode-initrd)))
++       (firmware (cons* linux-firmware %base-firmware))))
 +    ("Linux long-term support (LTS)"
 +     `((kernel linux-lts)
-+       (firmware (cons* linux-firmware %base-firmware))
-+       (initrd microcode-initrd)))
++       (firmware (cons* linux-firmware %base-firmware))))
 +    ((? (lambda (str)
 +          (and (string? str)
 +               (string-prefix? "Hurd" str))))

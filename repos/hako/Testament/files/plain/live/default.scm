@@ -5,12 +5,20 @@
              (gnu system install)
              (gnu services dbus)
              (gnu services networking)
+             (gnu services pm)
              (rosenthal services shellutils)
              (gnu home services fontutils)
              (gnu home services shells)
              (gnu packages libusb)
              (gnu packages linux)
              (gnu packages nfs))
+
+(define %installation-os
+  (make-installation-os
+   #:efi-only?
+   (string=? (or (getenv "SYSTEM")
+                 (%current-system))
+             "aarch64-linux")))
 
 (define %minimal-os
   (load "minimal.scm"))
@@ -28,20 +36,38 @@
             (service home-fish-plugin-direnv-service-type)
             (service home-fish-plugin-zoxide-service-type)
 
-            ;; Make skeletons writable.
-            (simple-service 'writable-skeletons
-                home-fish-service-type
-              (home-fish-extension
-                (config
-                 (list (plain-file "writable-skeletons.fish" "\
-if status --is-login
-    # Make skeletons writable.
-    chown -R +w ~
-end\n")))))
+            ;; XXX: Wait for proper WezTerm window size.
+            ;; Load fish so that other terminals will start faster.
+            (simple-service 'installation home-shepherd-service-type
+              (list (shepherd-service
+                      (provision '(installation))
+                      (one-shot? #t)
+                      (start
+                       #~(make-forkexec-constructor
+                          '("wezterm" "start" "--"
+                            "fish" "--login" "-c"
+                            "sleep 1 && sudo guix-system-installer"))))))
 
+            (simple-service 'installation-docs-local home-shepherd-service-type
+              (list (shepherd-service
+                      (provision '(installation-docs-local))
+                      (one-shot? #t)
+                      (start
+                       #~(make-forkexec-constructor
+                          '("emacs" "--load" "info"
+                            "--eval" "(info \"(guix) System Installation\")"))))))
+
+            (simple-service 'installation-docs-online home-shepherd-service-type
+              (list (shepherd-service
+                      (provision '(installation-docs-online))
+                      (one-shot? #t)
+                      (start
+                       #~(make-forkexec-constructor
+                          '("librewolf" "https://guix.gnu.org/manual/devel/"))))))
+
+            (service home-noctalia-shell-service-type)
+            (service home-polkit-gnome-service-type)
             (service home-swaybg-service-type)
-            (service home-waybar-service-type)
-            (service home-mako-service-type)
 
             ;; Default cursor theme.
             (service home-theme-service-type
@@ -55,6 +81,8 @@ end\n")))))
             ;; Input method.
             (service home-fcitx5-service-type
               (home-fcitx5-configuration
+                (gtk-im-module? #t)
+                (qt-im-module? #t)
                 (themes
                  (map specification->package
                       '("fcitx5-material-color-theme")))
@@ -124,7 +152,7 @@ end\n")))))
   (users
    (cons* (user-account
             (name "live")
-            (password "")
+            (password (crypt "live" "$6$abc"))
             (group "users")
             (supplementary-groups '("audio" "video" "wheel"))
             (shell (file-append (specification->package "fish") "/bin/fish")))
@@ -151,13 +179,12 @@ end\n")))))
               "xdg-desktop-portal-gnome"
               "xdg-desktop-portal-gtk"
               "xdg-utils"
-              "foot"               ;terminal emulator
               "imv"                ;image viewer
               "light"              ;backlight control
               "mesa"               ;search paths for graphics driver
               "pavucontrol"        ;sound control
               "playerctl"          ;media control
-              "rofi"               ;application launcher
+              "wezterm"            ;terminal emulator
               "wireplumber"        ;PipeWire session manager
               "xwayland-satellite" ;rootless XWayland support
 
@@ -191,6 +218,7 @@ end\n")))))
               "emacs-helpful"
               "emacs-hl-todo"
               "emacs-macrostep"
+              "emacs-macrostep-geiser"
               "emacs-magit"
               "emacs-mwim"
               "emacs-no-littering"
@@ -201,14 +229,14 @@ end\n")))))
 
               ;; Fonts, see also `home-fontconfig-service-type'.
               "font-adobe-source-serif"
-              "font-awesome"
               "font-google-noto"
               "font-google-noto-emoji"
+              "font-nerd-symbols"
               "font-sarasa-gothic"
               "font-victor-mono"
               ))
            (list %rosenthal-set-keymap)
-           (operating-system-packages installation-os)))
+           (operating-system-packages %installation-os)))
 
   (services
    (cons* (service guix-home-service-type
@@ -223,13 +251,16 @@ end\n")))))
                (list (greetd-terminal-configuration
                        (terminal-vt "7")
                        (terminal-switch #f)
+                       (initial-session-user "live")
+                       (initial-session-command "dbus-run-session niri --session")
                        (default-session-command (greetd-tuigreet-session)))))))
 
-          ;; From `%rosenthal-desktop-services'.
+          ;; From `%rosenthal-desktop-services/base'.
           (service bluetooth-service-type
             (bluetooth-configuration
               (auto-enable? #t)))
           (service gvfs-service-type)
+          (service power-profiles-daemon-service-type)
           (simple-service 'backlight udev-service-type (specs->pkgs "light"))
 
           ;; From `%desktop-services'.
@@ -250,5 +281,5 @@ end\n")))))
   (sudoers-file
    (plain-file "sudoers"
      (string-append
-      (plain-file-content (operating-system-sudoers-file installation-os))
+      (plain-file-content (operating-system-sudoers-file %installation-os))
       "live ALL = NOPASSWD: ALL\n"))))

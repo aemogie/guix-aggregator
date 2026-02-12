@@ -51,7 +51,6 @@
 
   #|Radix packages|#
   #|F|# #:use-module (radix packages fish-xyz)
-        #:use-module (radix packages fonts)
 
   #|SOPS home services|#
   #|S|# #:use-module (sops home services sops)
@@ -112,7 +111,7 @@
                                   font-adobe-source-serif
                                   font-openmoji
                                   font-juliamono
-                                  font-meslo-lg-dz
+                                  font-meslo-lg
                                   font-wqy-zenhei))
             (simple-service 'default-fonts
                             home-fontconfig-service-type
@@ -189,7 +188,6 @@
             (service home-sops-secrets-service-type
                      (home-sops-service-configuration
                        (gnupg-home "~/.local/share/gnupg")
-                       (config file:sops.yaml)
                        (secrets (append sops-secrets:aerc
                                         sops-secrets:senpai))))
 

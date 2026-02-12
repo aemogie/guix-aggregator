@@ -1,3 +1,9 @@
+flatpak = {
+  packages = [
+    "user:chat.rocket.RocketChat",
+  ],
+  repos = [{name = "user:flathub", options = { url = "https://dl.flathub.org/repo/" }}],
+}
 arch = {
   packages = [
     "playonlinux",
@@ -5,7 +11,6 @@ arch = {
     "drawio-desktop",
     "zotero-bin",
     "digikam",
-    "rocketchat-desktop",
     "obs-studio",
     "okular",
     "inkscape",
@@ -18,5 +23,5 @@ arch = {
     "zathura-pdf-mupdf",
     "zathura-ps",
     "zathura",
-  ]
+  ],
 }

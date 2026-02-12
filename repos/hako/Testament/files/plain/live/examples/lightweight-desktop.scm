@@ -20,7 +20,6 @@
     (locale "en_US.utf8")
 
     (kernel linux)
-    (initrd microcode-initrd)
     (firmware (cons* linux-firmware %base-firmware))
 
     ;; Use the UEFI variant of GRUB with the EFI System

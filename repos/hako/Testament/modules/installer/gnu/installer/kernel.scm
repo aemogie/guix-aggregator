@@ -31,12 +31,10 @@
   (match kernel
     ("Linux"
      `((kernel linux)
-       (firmware (cons* linux-firmware %base-firmware))
-       (initrd microcode-initrd)))
+       (firmware (cons* linux-firmware %base-firmware))))
     ("Linux long-term support (LTS)"
      `((kernel linux-lts)
-       (firmware (cons* linux-firmware %base-firmware))
-       (initrd microcode-initrd)))
+       (firmware (cons* linux-firmware %base-firmware))))
     ((? (lambda (str)
           (and (string? str)
                (string-prefix? "Hurd" str))))

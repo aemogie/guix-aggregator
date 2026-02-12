@@ -1,7 +1,7 @@
-From 9b90aca46180a989887f2d743c89835b1b3481a3 Mon Sep 17 00:00:00 2001
+From f25ae388c0cba6771bc673d16b91277bb41d9fbf Mon Sep 17 00:00:00 2001
 From: Hilton Chain <hako@ultrarare.space>
 Date: Sat, 24 Jan 2026 23:31:51 +0800
-Subject: [PATCH 1/6] =?UTF-8?q?modules/installer:=20Don't=20use=20?=
+Subject: [PATCH 1/5] =?UTF-8?q?modules/installer:=20Don't=20use=20?=
  =?UTF-8?q?=E2=80=98check-hardware-support=E2=80=99.?=
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8

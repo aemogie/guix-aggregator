@@ -1,7 +1,7 @@
-From 14e5733dbbc4cb681338febe25fd5252a216f204 Mon Sep 17 00:00:00 2001
+From 40776b631feac66220a5e97698c27bbf36a18816 Mon Sep 17 00:00:00 2001
 From: Hilton Chain <hako@ultrarare.space>
 Date: Sat, 24 Jan 2026 23:32:13 +0800
-Subject: [PATCH 2/6] modules/installer: Call %rosenthal-set-keymap script when
+Subject: [PATCH 2/5] modules/installer: Call %rosenthal-set-keymap script when
  setting keyboard layout.
 
 ---

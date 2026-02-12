@@ -8,7 +8,7 @@
 (define (common-sops-secrets . keys)
   (map (lambda (key)
          (sops-secret
-           (key key)
+           (key (map symbol->string key))
            (file file:common.yaml)
            (permissions #o400)))
        keys))

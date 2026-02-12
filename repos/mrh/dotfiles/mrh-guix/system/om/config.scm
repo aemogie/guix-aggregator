@@ -2,11 +2,10 @@
   #:use-module (mrh-guix personal)
   #:use-module (mrh services)
   #:use-module (mrh-guix web)
+  #:use-module (mrh-guix system om oci-containers)
   #:use-module (nongnu packages linux)
   #:use-module (nongnu system linux-initrd)
-  #:use-module (gnu)
-  #:use-module (ice-9 popen)
-  #:use-module (ice-9 textual-ports))
+  #:use-module (gnu))
 
 (use-package-modules admin
                      cryptsetup
@@ -226,8 +225,13 @@
                            (id %lamb-syncthing-id))))
                (list (syncthing-folder
                        (id "default")
-                       (label "default folder")
+                       (label "default")
                        (path "~/sync")
+                       (devices (list sleep lamb)))
+                     (syncthing-folder
+                       (id "paperless-share")
+                       (label "paperless-share")
+                       (path (format #f "~a/consume" %paperless-share))
                        (devices (list sleep lamb))))))))))
 
       (service
@@ -246,37 +250,14 @@
        'oci-provisioning
        oci-service-type
        (oci-extension
+        (networks
+         (list (oci-network-configuration
+                (name "paperless")
+                (ipv6? #f))))
         (containers
-         (let ((oci-uid (get-line (open-input-pipe "id oci-container -u")))
-               (oci-gid (get-line (open-input-pipe "id oci-container -g")))
-               (video-group-id (get-line
-                                (open-input-pipe
-                                 "awk -F ':' '/^video/ {print $3}' /etc/group"))))
-           (list (oci-container-configuration
-                   (image "linuxserver/sabnzbd")
-                   (provision "sabnzbd")
-                   (ports '("[::1]:8081:8081"))
-                   (environment `(("PUID" . ,oci-uid)
-                                  ("PGID" . ,oci-gid)
-                                  ("TZ" . "Etc/UTC")))
-                   (volumes
-                    `((,(format #f "~a/.config/sabnzbd" %user-home) . "/config")
-                      ("/mnt/wd/media" . "/media"))))
-
-                 (oci-container-configuration
-                   (image "jellyfin/jellyfin")
-                   (provision "jellyfin")
-                   (ports (list "[::1]:8096:8096"
-                                (format #f "~a:8096:8096" %ipv4-lan-om)
-                                "[::]:7359:7359"))
-                   (environment `(("PUID" . ,oci-uid)
-                                  ("PGID" . ,oci-gid)))
-                   (volumes '(("jellyfin-config" . "/config")
-                              ("jellyfin-cache" . "/cache")
-                              ("/mnt/wd/media" . "/media")))
-                   (extra-arguments
-                    (list "--device=/dev/dri/renderD128:/dev/dri/renderD128"
-                          (format #f "--group-add=~a" video-group-id)))))))))
+         (append %sabnzbd-oci
+                 %jellyfin-oci
+                 %paperless-ngx-oci))))
 
       (service
        nginx-service-type
@@ -289,6 +270,8 @@
                  "syncthing.home" %ipv6-wireguard-om 8384)
                 (app-server-block
                  "sab.home" %ipv6-wireguard-om 8081)
+                (app-server-block
+                 "paper.home" %ipv6-wireguard-om 8000)
                 (app-server-block
                  "jelly.home" %ipv6-wireguard-om 8096
                  "proxy_set_header Host $host;"

@@ -8,10 +8,6 @@ xwayland-satellite {
 // Guix Home (home-shepherd-service-type)
 spawn-at-startup "shepherd"
 
-overview {
-    backdrop-color "#E8E3E9"
-}
-
 hotkey-overlay {
     skip-at-startup
 }
@@ -41,7 +37,23 @@ debug {
   honor-xdg-activation-with-invalid-serial
 }
 
+// Set the regular wallpaper on the backdrop.
+layer-rule {
+  match namespace="^noctalia-wallpaper*"
+  place-within-backdrop true
+}
+
+// Optionally, disable the workspace shadows in the overview.
+overview {
+  workspace-shadow {
+    off
+  }
+}
+
 layout {
+    // Set transparent workspace background color so you see the backdrop at all times.
+    background-color "transparent"
+
     focus-ring {
         off
     }

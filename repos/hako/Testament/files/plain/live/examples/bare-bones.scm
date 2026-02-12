@@ -15,7 +15,6 @@
     (locale "en_US.utf8")
 
     (kernel linux)
-    (initrd microcode-initrd)
     (firmware (cons* linux-firmware %base-firmware))
 
     ;; Boot in "legacy" BIOS mode, assuming /dev/sdX is the

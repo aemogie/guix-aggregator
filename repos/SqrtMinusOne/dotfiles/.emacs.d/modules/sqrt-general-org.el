@@ -503,16 +503,23 @@ If not at a heading, delegates to the normal `org-cycle' function."
                   (alist-get source dependencies nil nil #'equal)))))))))
     dependencies))
 
+(defvar my/arch-dependencies-params
+  '(("flatpak" . "repos = [{name = \"user:flathub\", options = { url = \"https://dl.flathub.org/repo/\" }}],")))
+
 (defun my/format-arch-dependencies (&optional category)
   (let ((data (my/extract-arch-dependencies category)))
     (with-temp-buffer
       (cl-loop for (backend . packages) in data
+               for backend-params =
+               (alist-get backend my/arch-dependencies-params nil nil #'equal)
                do (insert (format "%s = {\n  packages = [\n" backend)
                           (mapconcat (lambda (package)
                                        (format "    \"%s\"," package))
                                      packages
                                      "\n")
-                          "\n  ]\n}\n"))
+                          "\n  ]\n"
+                          (if backend-params (insert backend-params) "")
+                          "}\n"))
       (buffer-string))))
 
 (setq my/org-config-files
@@ -537,7 +544,7 @@ If not at a heading, delegates to the normal `org-cycle' function."
   (call-process "xrdb" nil nil nil "-load" "/home/pavel/.Xresources")
   (call-process "~/bin/polybar.sh")
   (call-process "pkill" nil nil nil "dunst")
-  (call-process "herd" nil nil nil "restart" "xsettingsd")
+  (call-process "systemctl" nil nil nil "--user" "restart" "xsettingsd")
   (when (fboundp #'my/exwm-set-alpha)
     (if (my/light-p)
         (my/exwm-set-alpha 100)

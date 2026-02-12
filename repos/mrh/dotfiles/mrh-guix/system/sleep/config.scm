@@ -114,8 +114,13 @@
                            (id %lamb-syncthing-id))))
                (list (syncthing-folder
                        (id "default")
-                       (label "default folder")
+                       (label "default")
                        (path "~/sync")
+                       (devices (list om lamb)))
+                     (syncthing-folder
+                       (id "paperless-share")
+                       (label "paperless-share")
+                       (path (format #f "~a/data/paperless-ngx" %user-home))
                        (devices (list om lamb))))))))))
 
       (service

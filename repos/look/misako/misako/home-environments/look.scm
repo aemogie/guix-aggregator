@@ -172,10 +172,6 @@
           (home-sops-service-configuration
             (gnupg-home
               (string-append (getenv "HOME") "/.gnupg"))
-            (config
-              (local-file
-                (string-append look-sops-dir "/.sops.yaml")
-                "sops.yaml"))
             (secrets sops-secrets:all)))
 
         (service home-xdg-user-directories-service-type

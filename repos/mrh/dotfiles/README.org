@@ -20,15 +20,16 @@ Those that do would surely have the business of myself and many others.
 I run Guix System, but it can also be installed as a standalone package manager atop any GNU/Linux distribution.
 
 There are separate directories containing the system configurations for each of my guix machines.
+Each machine configuration defines the entire operating system, from system packages to users to file systems, and everything else!
 They can be found at =mrh-guix/system/<machine-name>=.
 
 My home configurations are similarly machine specific and can be found at =mrh-guix/home/<machine-name>=.
 Here is where I setup [[https://guix.gnu.org/manual/en/html_node/Home-Configuration.html][guix home]] to manage all of my user level packages, as well as environment variables and other miscellaneous aspects of my home environment.
 
-Finally my custom packages, which are either not available or more up to date than those in the standard guix repo, are available as a [[https://guix.gnu.org/manual/devel/en/html_node/Channels.html][guix channel]] at [[https://codeberg.org/mrh/guix-channel][codeberg.org/mrh/guix-channel]].
+Finally my custom guix packages, which are either not available or more up to date than those in the standard guix repo, are available as a [[https://guix.gnu.org/manual/devel/en/html_node/Channels.html][guix channel]] at [[https://codeberg.org/mrh/guix-channel][codeberg.org/mrh/guix-channel]].
 
 * Emacs
-[[https://www.gnu.org/software/emacs][GNU Emacs]] is a text editor and lisp interpreter designed to maximize hackability and software freedom, in addition to serving as the primary text editor for the GNU system.
+[[https://www.gnu.org/software/emacs][GNU Emacs]] is a text editor and lisp interpreter designed to maximize hackability and software freedom. It also serves as the primary text editor for the GNU system.
 
 I use emacs for just about everything on my computer other than browsing the web and consuming audio/visual media. This includes editing source code, but also:
 

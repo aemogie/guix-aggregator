@@ -11,7 +11,7 @@ This repository contains my dotfiles and Guix System literate configurations.
 + [[file:files/plain][files/plain]] :: Files to be referenced in configurations.
 + [[file:modules][modules]] :: Guile modules.
 
-See [[file:maak.scm][maak.scm]] for usage.
+See [[file:.envrc][.envrc]] for environment setup and [[file:maak.scm][maak.scm]] for usage.
 
 Guix channels in use:
 + [[https://codeberg.org/guix/guix.git][guix]] (additional patches are used locally for root on ZFS support)
@@ -44,72 +44,63 @@ Variants:
 - Minimal: installer-only
 - HiDPI: larger console font
 
-Build date: 2026-01-25
+Build date: 2026-02-11 ([[https://codeberg.org/hako/Testament/commits/branch/trunk/channels.lock][channels]], [[https://codeberg.org/hako/Testament/commits/branch/trunk/files/plain/live][changes]], aarch64-linux ones are not tested)
 
-| Variant       | System       | Image             | Signature             | SHA256 Checksum                                                    |
-|---------------+--------------+-------------------+-----------------------+--------------------------------------------------------------------|
-| Default       | x86_64-linux | [[https://files.guix.moe/2026-01-25/rosenthal-default-20260125.x86_64-linux.iso][default.iso]]       | [[https://files.guix.moe/2026-01-25/rosenthal-default-20260125.x86_64-linux.iso.asc][default.iso.asc]]       | =58ad4670f7b8d2663e8f5c58b1d4fe9caf0de453e2cef4d9228f7a231d135f83= |
-| Minimal       | x86_64-linux | [[https://files.guix.moe/2026-01-25/rosenthal-minimal-20260125.x86_64-linux.iso][minimal.iso]]       | [[https://files.guix.moe/2026-01-25/rosenthal-minimal-20260125.x86_64-linux.iso.asc][minimal.iso.asc]]       | =8ef84a5a3204c487ca575829e40b7627f26ad1edc6aa6afc3aaea941f54763c3= |
-| Minimal-HiDPI | x86_64-linux | [[https://files.guix.moe/2026-01-25/rosenthal-minimal-hidpi-20260125.x86_64-linux.iso][minimal-hidpi.iso]] | [[https://files.guix.moe/2026-01-25/rosenthal-minimal-hidpi-20260125.x86_64-linux.iso.asc][minimal-hidpi.iso.asc]] | =fed72973945bd60311eabf85a8716c6d573621323bed00c2b13fe41cf1083c99= |
+| Variant       | System        | Image             | Signature             | SHA256 Checksum                                                    |
+|---------------+---------------+-------------------+-----------------------+--------------------------------------------------------------------|
+| Default       | x86_64-linux  | [[https://files.guix.moe/2026-02-11/rosenthal-default-20260211.x86_64-linux.iso][default.iso]]       | [[https://files.guix.moe/2026-02-11/rosenthal-default-20260211.x86_64-linux.iso.asc][default.iso.asc]]       | =a9d3db9fc60cf3adc148c752a4b046b0eab222fa4f74a81544ca7392e8f1f050= |
+| Minimal       | x86_64-linux  | [[https://files.guix.moe/2026-02-11/rosenthal-minimal-20260211.x86_64-linux.iso][minimal.iso]]       | [[https://files.guix.moe/2026-02-11/rosenthal-minimal-20260211.x86_64-linux.iso.asc][minimal.iso.asc]]       | =37b4e29de40121d137cec1028cdda2298a1bfc5875b6489cd2c6c586cbaf4b47= |
+| Minimal-HiDPI | x86_64-linux  | [[https://files.guix.moe/2026-02-11/rosenthal-minimal-hidpi-20260211.x86_64-linux.iso][minimal-hidpi.iso]] | [[https://files.guix.moe/2026-02-11/rosenthal-minimal-hidpi-20260211.x86_64-linux.iso.asc][minimal-hidpi.iso.asc]] | =46fc60e42eccc795517155fbd9faf8f4dbb62527a67072732efaf66672a75c68= |
+|               |               |                   |                       |                                                                    |
+| Minimal       | aarch64-linux | [[https://files.guix.moe/2026-02-11/rosenthal-minimal-20260211.aarch64-linux.iso][minimal.iso]]       | [[https://files.guix.moe/2026-02-11/rosenthal-minimal-20260211.aarch64-linux.iso.asc][minimal.iso.asc]]       | =918bd9f12ec778217212a4027b80a59b3c4298678ad04324a556a1788ff566ba= |
+| Minimal-HiDPI | aarch64-linux | [[https://files.guix.moe/2026-02-11/rosenthal-minimal-hidpi-20260211.aarch64-linux.iso][minimal-hidpi.iso]] | [[https://files.guix.moe/2026-02-11/rosenthal-minimal-hidpi-20260211.aarch64-linux.iso.asc][minimal-hidpi.iso.asc]] | =7f20eeaa02ae0be48ff062364bf985531e20885aff8918edf0819ea249b6d84b= |
 
 Once downloaded, follow Guix System's [[https://guix.gnu.org/manual/devel/en/html_node/System-Installation.html][installation instructions]].
 
 Comparing with the official one, these LiveCDs integrate Linux kernel and
-nonfree firmwares from the [[https://gitlab.com/nonguix/nonguix][Nonguix channel]] to support more hardware.  The
-experience should be the same as installing on hardware that supports
-Linux-Libre.
+non-free firmware from [[https://gitlab.com/nonguix/nonguix][Nonguix channel]] to support more hardware.  The process
+should be the same as installing on hardware that supports Linux-Libre.
 
 To provide similiar downloading experience around the world, they are configured
 to use [[https://guix.moe/][Guix Moe]]'s infrastructure.  It won't be available in the installed
 system, so you'll need to set it up later if you want.
 
-For manual installation, I suggest using the installer first to configure
-locale, keyboard layout and networking, stopping at the step setting a password.
+After entering these LiveCDs, I suggest using the guided installer on tty1 first
+to configure keyboard layout and networking.
 
-In the LiveCDs, [[https://fishshell.com/][fish]] is chosen as the login shell and several example
-configurations are available under =/etc/configuration=.  These examples are
-based on the ones shipped in Guix, with Nonguix channel configured.
+For manual installation, [[https://fishshell.com/][fish]] is chosen as the login shell and several Guix
+System configuration examples are available under =/etc/configuration=.  These
+examples are based on the ones shipped in Guix, with Nonguix channel configured.
 
 Here follows ttys in the LiveCDs:
 - tty1 (=Ctrl+Alt+F1=) :: Guix System installer.
 - tty2 (=Ctrl+Alt+F2=) :: [[https://guix.gnu.org/manual/devel/en/][GNU Guix reference manual]].
 - tty3~6 (=Ctrl+Alt+F3= ~ =Ctrl+Alt+F6=) :: =root= shell.
-- tty7 (=Ctrl+Alt+F7=) :: Login manager (not included in the Minimal variant).
+- tty7 (=Ctrl+Alt+F7=) :: Login manager (not included in Minimal variants).
 - tty12 (=Ctrl+Alt+F12=) :: System log.
 
-For the login manager: it logs into a desktop environment built around the [[https://github.com/YaLTeR/niri][niri]]
-Wayland compositor
+The login manager on tty7 logs into a desktop environment built around [[https://github.com/YaLTeR/niri][niri]]
+Wayland compositor and [[https://noctalia.dev/][Noctalia]] desktop shell.  It also starts Guix System
+installer automatically and you can continue guided installation there.
+
+Loading of the desktop environment may take quite a while, depending on read
+performance of your installation media.  It will be much better when the system
+is installed in the disk.
+
+User name: =live=, password: =live=, in case you'll need them.
 
 Default keybindings:
 + =Super+Shift+/= :: Open an overlay for available hotkeys.
-+ =Super+T= :: Open terminal emulator: [[https://codeberg.org/dnkl/foot][foot]].
-+ =Super+D= :: Open application launcher: [[https://github.com/davatorium/rofi][rofi]].
++ =Super+D= :: Open application launcher.
++ =Super+Return= :: Open terminal emulator: [[https://wezterm.org/][WezTerm]].
 
-Configurations files for the environment, including a pre-configured Emacs text
-editor are [[https://codeberg.org/hako/Rosenthal/src/branch/trunk/modules/rosenthal/examples][managed in the Rosenthal channel]], exposed as =%rosenthal-skeletons=
-and available under =/etc/skel= when configured.
+Dotfiles for this environment, including a pre-configured Emacs text editor are
+[[https://codeberg.org/hako/Rosenthal/src/branch/trunk/modules/rosenthal/examples][managed in the Rosenthal channel]], exposed as =%rosenthal-skeletons= and
+available under =/etc/skel= when configured.
 
-#+html: <img src="https://s3.boiledscript.com/misskey/ffe3522a-991f-452e-addb-fa47b6acc6bc.webp">
-#+html: <img src="https://s3.boiledscript.com/misskey/10c08444-f3f6-4c45-a1e2-3fcdd3a3810e.webp">
-#+html: <img src="https://s3.boiledscript.com/misskey/46995f8b-41fb-4b53-af2f-8353d5c6bd2d.webp">
-
-A ~set-keymap~ script is provided for keyboard layout setup.  Since the
-installer already does part of its work, you generally don't need it.
-
-#+begin_example
-  Usage: set-keymap LAYOUT [VARIANT] [-m MODEL] [-o OPTIONS]
-
-  OPTIONS are comma-separated e.g. "ctrl:nocaps,grp:alt_shift_toggle"
-#+end_example
-
-Example usage below
-
-#+begin_example
-  $ set-keymap us dvorak -o ctrl:nocaps
-#+end_example
-
-For a full list of available layouts, variants, models and options, refer to the
-[[https://man.archlinux.org/man/extra/xkeyboard-config/xkeyboard-config.7.en][xkeyboard-config.7]] manual page.
+#+html: <img src="https://s3.boiledscript.com/misskey/7371f3db-92a7-4c51-9eb1-991743fdaebb.webp">
+#+html: <img src="https://s3.boiledscript.com/misskey/9e9928ab-36ba-46bd-8ac4-35cda328606d.webp">
+#+html: <img src="https://s3.boiledscript.com/misskey/0bcd4fe2-8bf2-484b-9b3a-4d127846a46c.webp">
 
 ** Resources
 + [[https://files.spritely.institute/papers/scheme-primer.html][A Scheme Primer]] :: Nice short guide to get you started with Scheme.
