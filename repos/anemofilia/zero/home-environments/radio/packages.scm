@@ -11,6 +11,7 @@
         #:use-module (gnu packages curl)
   #|D|# #:use-module (gnu packages databases)
         #:use-module (gnu packages dictionaries)
+        #:use-module (gnu packages disk)
   #|E|# #:use-module (gnu packages emacs)
         #:use-module (gnu packages emacs-xyz)
   #|F|# #:use-module (gnu packages file)
@@ -67,9 +68,8 @@
   #|C|# #:use-module ((home-environments radio channels)
                       #:prefix channel:)
 
-  #|Radix packages|#
+  #|radix packages|#
   #|A|# #:use-module (radix packages admin)
-  #|D|# #:use-module (radix packages disk)
   #|E|# #:use-module (radix packages emacs-xyz)
   #|F|# #:use-module (radix packages fish-xyz)
         #:use-module (radix packages freedesktop)
@@ -86,7 +86,7 @@
   #|W|# #:use-module (radix packages wm)
   #|X|# #:use-module (radix packages xdisorg)
 
-  #|Saayix packages|#
+  #|saayix packages|#
   #|B|# #:use-module (saayix packages binaries)
   #|W|# #:use-module (saayix packages wm)
 

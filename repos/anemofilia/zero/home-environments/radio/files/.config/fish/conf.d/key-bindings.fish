@@ -79,7 +79,7 @@ bind -s --user w -m visual forward-word forward-single-char
 bind -s --user W -m visual forward-bigword forward-single-char
 
 # Backspace deletes a char in insert mode
-bind -s --user -M insert -k backspace backward-delete-char
+bind -s --user -M insert backspace backward-delete-char
 bind -s --user -M insert \ch backward-delete-char
 bind -s --user -M insert \x7f backward-delete-char
 

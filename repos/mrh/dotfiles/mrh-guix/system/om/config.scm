@@ -153,10 +153,9 @@
          (query-servers-in-order? #t)
          (addresses
           (list (format #f "/~a/~a::1" %router-domain-name %ipv6-gua-prefix)
-                (format #f "/om/~a" %ipv6-ula-om)
-                (format #f "/sleep/~a" %ipv6-ula-sleep)
-                (format #f "/home.~a/~a" %domain-name %ipv6-wireguard-om)
-                (format #f "/i2p.pub.~a/~a" %domain-name %ipv6-wireguard-vps)))
+                (format #f "/om.lan/~a" %ipv6-ula-om)
+                (format #f "/sleep.lan/~a" %ipv6-ula-sleep)
+                (format #f "/home.~a/~a" %domain-name %ipv6-wireguard-om)))
          (extra-options '("--filterwin2k"))))
 
       (service
@@ -172,7 +171,8 @@
        openssh-service-type
        (openssh-configuration
          (port-number %ssh-port)
-         (password-authentication? #f)))
+         (password-authentication? #f)
+         (permit-root-login 'prohibit-password)))
 
       (service
        wireguard-service-type
@@ -233,12 +233,6 @@
                        (label "paperless-share")
                        (path (format #f "~a/consume" %paperless-share))
                        (devices (list sleep lamb))))))))))
-
-      (service
-       nfs-service-type
-       (nfs-configuration
-         (exports '(("/mnt/wd"
-                     "sleep(rw,sync,insecure,no_root_squash,no_subtree_check)")))))
 
       ;; required for oci-service-type
       (service

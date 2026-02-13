@@ -755,19 +755,15 @@
       "\n" 'suffix)))
 
 (define %ytdlp-config
-  (plain-file
+  (mixed-text-file
     "ytdlp-config"
-    (string-join
-      (list "--prefer-free-formats"
-            "--sub-lang 'en,he'"
-            "--sub-format \"srt/best\""
-            "--convert-subtitles srt"
-            "--restrict-filenames"
-            ;(string-append "--js-runtimes quickjs:" (S "quickjs") "/bin/qjs")
-            ;(string-append "--js-runtimes node:" (S "node") "/bin/node")
-            )
-      ;; End with a newline.
-      "\n" 'suffix)))
+    "--prefer-free-formats\n"
+    "--sub-lang 'en,he'\n"
+    "--sub-format \"srt/best\"\n"
+    "--convert-subtitles srt\n"
+    "--restrict-filenames\n"
+    ;#~(string-append "--js-runtimes node:" #$(S "node") "/bin/node\n")
+    #~(string-append "--js-runtimes quickjs:" #$(S "quickjs") "/bin/qjs\n")))
 
 (define %zathurarc
   (plain-file
@@ -1398,7 +1394,7 @@ fi")))))
            ; ("lesskey" ,%lesskey)
            ("mpv/scripts/mpris.so"
             ,(file-append (S "mpv-mpris")
-                          "/lib/mpris.so"))
+                          "/lib/mpv-mpris/mpris.so"))
            ("mpv/scripts/sponsorblock_minimal/main.lua"
             ,(file-append (S "mpv-sponsorblock-minimal")
                           "/lib/sponsorblock_minimal.lua"))

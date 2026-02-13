@@ -127,11 +127,13 @@
        openssh-service-type
        (openssh-configuration
          (port-number %ssh-port)
-         (permit-root-login 'prohibit-password)
          (password-authentication? #f)
+         (permit-root-login 'prohibit-password)
          (authorized-keys
           `((,%username ,(plain-file (format #f "ssh-~a.pub" %username)
-                                     %ssh-pub))))))
+                                     %ssh-pub))
+            ("root" ,(plain-file "ssh-root.pub"
+                                 %ssh-pub))))))
 
       (service
        wireguard-service-type
@@ -199,22 +201,8 @@
                   '(("technitium-dns-config" . "/etc/dns"))))))))
 
       (service
-       certbot-service-type
-       (certbot-configuration
-         (email %email)
-         (certificates
-          (list (certificate-configuration
-                 (domains (map (lambda (fstring)
-                                 (format #f fstring %domain-name))
-                               '("~a"
-                                 "home.~a"
-                                 "*.home.~a"
-                                 "pub.~a"
-                                 "*.pub.~a"))))))))
-
-      (service
        nginx-service-type
-       (let ((certs-path (format #f "/etc/certs/~a" %domain-name)))
+       (let ((certs-path (format #f "/etc/letsencrypt/live/~a" %domain-name)))
          (nginx-configuration
            (shepherd-requirement '(wireguard-wg0))
            (server-blocks

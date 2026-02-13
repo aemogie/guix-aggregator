@@ -119,6 +119,13 @@
                         #:requirement '(user-processes guix-daemon))))
 
               (modify-services %rosenthal-desktop-services/tuigreet
+                (elogind-service-type
+                 config => (elogind-configuration
+                             (inherit config)
+                             (handle-suspend-key 'ignore)
+                             (handle-hibernate-key 'ignore)
+                             (handle-lid-switch 'ignore)
+                             (handle-lid-switch-external-power 'ignore)))
                 (guix-service-type
                  config => (guix-configuration
                              (inherit config)

@@ -4,6 +4,9 @@
   #:use-module (ice-9 textual-ports)
   #:use-module (gnu services containers))
 
+(define oci-uid (get-line (open-input-pipe "id oci-container -u")))
+(define oci-gid (get-line (open-input-pipe "id oci-container -g")))
+
 (define-public %paperless-ngx-oci
   (let ((redis-name "paperless-ngx-redis")
         (postgresql-name "paperless-ngx-postgresql"))
@@ -49,38 +52,32 @@
 
 (define-public %jellyfin-oci
   (list
-   (let ((oci-uid (get-line (open-input-pipe "id oci-container -u")))
-         (oci-gid (get-line (open-input-pipe "id oci-container -g")))
-         (video-group-id (get-line
-                          (open-input-pipe
-                           "awk -F ':' '/^video/ {print $3}' /etc/group"))))
-     (oci-container-configuration
-       (provision "jellyfin")
-       (image "jellyfin/jellyfin")
-       (ports (list "[::1]:8096:8096"
-                    (format #f "[~a]:8096:8096" %ipv6-ula-om)
-                    (format #f "~a:8096:8096" %ipv4-lan-om)
-                    "[::]:7359:7359"))
-       (environment `(("PUID" . ,oci-uid)
-                      ("PGID" . ,oci-gid)))
-       (volumes '(("jellyfin-config" . "/config")
-                  ("jellyfin-cache" . "/cache")
-                  ("/mnt/wd/media" . "/media")))
-       (extra-arguments
+   (oci-container-configuration
+     (provision "jellyfin")
+     (image "jellyfin/jellyfin")
+     (ports (list "[::1]:8096:8096"
+                  (format #f "[~a]:8096:8096" %ipv6-ula-om)
+                  (format #f "~a:8096:8096" %ipv4-lan-om)
+                  "[::]:7359:7359"))
+     (container-user (format #f "~a:~a" oci-uid oci-gid))
+     (volumes '(("jellyfin-config" . "/config")
+                ("jellyfin-cache" . "/cache")
+                ("/mnt/wd/media" . "/media")))
+     (extra-arguments
+      (let ((video-group-id (get-line
+                             (open-input-pipe
+                              "awk -F ':' '/^video/ {print $3}' /etc/group"))))
         (list "--device=/dev/dri/renderD128:/dev/dri/renderD128"
               (format #f "--group-add=~a" video-group-id)))))))
 
 (define-public %sabnzbd-oci
   (list
-   (let ((oci-uid (get-line (open-input-pipe "id oci-container -u")))
-         (oci-gid (get-line (open-input-pipe "id oci-container -g"))))
-     (oci-container-configuration
-       (provision "sabnzbd")
-       (image "linuxserver/sabnzbd")
-       (ports '("[::1]:8081:8081"))
-       (environment `(("PUID" . ,oci-uid)
-                      ("PGID" . ,oci-gid)
-                      ("TZ" . "Etc/UTC")))
-       (volumes
-        `((,(format #f "~a/.config/sabnzbd" %user-home) . "/config")
-          ("/mnt/wd/media" . "/media")))))))
+   (oci-container-configuration
+     (provision "sabnzbd")
+     (image "linuxserver/sabnzbd")
+     (ports '("[::1]:8081:8081"))
+     (environment '(("TZ" . "Etc/UTC")))
+     (container-user (format #f "~a:~a" oci-uid oci-gid))
+     (volumes
+      '(("sabnzbd-config" . "/config")
+        ("/mnt/wd/media" . "/media"))))))

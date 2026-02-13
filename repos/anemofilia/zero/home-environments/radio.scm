@@ -181,7 +181,6 @@
             #|Dotfiles service|#
             (service home-dotfiles-service-type
                      (home-dotfiles-configuration
-                       (layout 'plain)
                        (directories `("radio/files"))))
 
             #|SOPS service|#
