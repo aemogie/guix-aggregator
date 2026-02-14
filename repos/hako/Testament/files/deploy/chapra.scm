@@ -3,7 +3,7 @@
 
 (list
  (machine
-   (operating-system (load "../../config/chapra.scm"))
+   (operating-system (load "../tangled/chapra.scm"))
    (environment managed-host-environment-type)
    (configuration
     (machine-ssh-configuration

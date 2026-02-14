@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright © 2022-2026 Hilton Chain <hako@ultrarare.space>
 #+TITLE: dorphine
-#+PROPERTY: header-args :noweb-prefix no
+#+PROPERTY: header-args :mkdirp yes :noweb-prefix no
 
 ** Guix System
-#+begin_src scheme :tangle dorphine.scm :noweb yes
+#+begin_src scheme :tangle ../files/tangled/dorphine.scm :noweb yes
   (use-modules <<module>>)
 
   (define %os
@@ -39,64 +39,32 @@
                 (uuid "7de33202-1010-4297-ba9c-8e7fa419f891")))))
       (users (cons* <<user>> %base-user-accounts))
       (packages
-       (append (specs->pkgs+out
-                ;; CLI Utilities.
-                "curl"
-                "fd"
-                "git"
-                "gnupg"
-                "mosh"
-                "ncurses"
-                "ripgrep"
-                "rsync"
-                "sops"
-                "unzip"
+       (append (specifications->packages
+                '(;; CLI Utilities.
+                  "curl"
+                  "dconf"
+                  "fd"
+                  "git"
+                  "gnupg"
+                  "mosh"
+                  "ncurses"
+                  "ripgrep"
+                  "rsync"
+                  "sops"
+                  "unzip"
 
-                ;; Desktop applications.
-                "telegram-desktop"
-                "wezterm"
+                  ;; Desktop applications.
+                  "digikam"
+                  "gimp"
+                  "imv"
+                  "kdenlive"
+                  "libreoffice"
+                  "obs-nvidia"
+                  "telegram-desktop"
+                  "zathura"
+                  "zathura-pdf-poppler"
 
-                ;; Multimedia.
-                "digikam"
-                "gimp"
-                "imv"
-                "kdenlive"
-                "libreoffice"
-                "mpv-nvidia"
-                "obs-nvidia"
-                "zathura"
-                "zathura-pdf-poppler"
-
-                ;; Gaming.
-                "mangohud"
-                "prismlauncher-dolly"
-                "steam-nvidia"
-
-                ;; Web browser.
-                "librewolf"
-                "adaptive-tab-bar-colour-icecat"
-                "bitwarden-icecat"
-                "livemarks-icecat"
-                "ohmyech-icecat"
-                "ublock-origin-icecat"
-
-                ;; File manager.
-                "exo"
-                "file-roller"
-                "thunar"
-                "thunar-archive-plugin"
-                "thunar-media-tags-plugin"
-                "thunar-volman"
-                "tumbler"
-
-                ;; Graphical session.
-                "niri"
-                "wl-clipboard"
-                "xdg-desktop-portal-gnome"
-                "xdg-desktop-portal-gtk"
-                "xdg-utils"
-
-                <<package>>)
+                  <<package>>))
                %base-packages))
       (services
        (cons* <<service>>
@@ -155,17 +123,17 @@
                          %rosenthal-desktop-home-services))))))
 #+end_src
 
+=dorphine/dotfiles= directory is created when tangling this file.
+
 #+begin_src scheme :noweb yes :noweb-ref home-service
   (service home-dotfiles-service-type
     (home-dotfiles-configuration
-      (directories '("../files/dotfiles"))))
+      (directories '("dorphine/dotfiles"))))
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref home-service
-  (simple-service 'extend-environment-variables
-      home-environment-variables-service-type
-    `(,@%xdg-base-directory-env-vars
-      <<home-environment-variable>>))
+  (simple-service 'xdg-base-directory home-environment-variables-service-type
+    %xdg-base-directory-env-vars)
 #+end_src
 
 ** Base
@@ -186,7 +154,13 @@
   (simple-service 'modprobed-db home-shepherd-service-type
     (list (shepherd-timer '(update-modprobed-db)
             #~(calendar-event #:minutes '(0))
-            #~(#$(file-append (spec->pkg "modprobed-db") "/bin/modprobed-db") "storesilent"))))
+            #~(#$(file-append modprobed-db "/bin/modprobed-db") "storesilent"))))
+#+end_src
+
+#+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/modprobed-db.conf
+  DBPATH="/home/hako/.config"
+  COLORS=light
+  IGNORE=(nvidia nvidia_drm nvidia_modeset nvidia_uvm)
 #+end_src
 
 *** File Systems
@@ -255,7 +229,7 @@
   (simple-service 'zfs-scrub shepherd-root-service-type
     (list (shepherd-timer '(zfs-scrub)
             #~(calendar-event #:days-of-week '(sunday) #:hours '(0) #:minutes '(0))
-            #~(#$(file-append (spec->pkg "zfs") "/sbin/zpool") "scrub" "-w" "Mentha")
+            #~(#$(file-append zfs "/sbin/zpool") "scrub" "-w" "Mentha")
             #:requirement '(user-processes))))
 #+end_src
 
@@ -268,7 +242,7 @@
                      #~(begin
                          (use-modules (guix build utils))
                          (setenv "PATH" "/run/current-system/profile/bin:/run/current-system/profile/sbin")
-                         (invoke #$(file-append (spec->pkg "zfs-auto-snapshot") "/sbin/zfs-auto-snapshot")
+                         (invoke #$(file-append zfs-auto-snapshot "/sbin/zfs-auto-snapshot")
                                  "--default-exclude" "--skip-scrub" "--keep=72" "--label=hourly" "//")))))
             #:requirement '(user-processes))))
 #+end_src
@@ -282,7 +256,7 @@
                      #~(begin
                          (use-modules (guix build utils))
                          (setenv "PATH" "/run/current-system/profile/bin:/run/current-system/profile/sbin")
-                         (invoke #$(file-append (spec->pkg "zfs-auto-snapshot") "/sbin/zfs-auto-snapshot")
+                         (invoke #$(file-append zfs-auto-snapshot "/sbin/zfs-auto-snapshot")
                                  "--default-exclude" "--skip-scrub" "--keep=31" "--label=daily" "//")))))
             #:requirement '(user-processes))))
 #+end_src
@@ -306,7 +280,7 @@ Personal account.
     (name "hako")
     (group "users")
     (supplementary-groups '("adbusers" "audio" "docker" "kvm" "plugdev" "video" "wheel"))
-    (shell (file-append (spec->pkg "fish") "/bin/fish")))
+    (shell (file-append fish "/bin/fish")))
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
@@ -318,7 +292,7 @@ Administration accounts.
   (user-account
     (inherit %root-account)
     (password #f)
-    (shell (file-append (spec->pkg "fish") "/bin/fish")))
+    (shell (file-append fish "/bin/fish")))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -379,7 +353,7 @@ Generate passwordless ECC key:
 #+begin_src scheme :noweb-ref home-service
   (service home-sops-secrets-service-type
     (home-sops-service-configuration
-      (sops (spec->pkg "sops"))
+      (sops sops)
       (gnupg-home (in-vicinity %xdg-data-home "sops"))
       (secrets
        (list (sops-secret
@@ -413,7 +387,7 @@ Generate passwordless ECC key:
 #+begin_src scheme :noweb-ref service
   (service nftables-service-type
     (nftables-configuration
-      (ruleset (local-file (testament-plain "dorphine.nftables")))))
+      (ruleset (local-file (testament-plain "nftables/dorphine.nftables")))))
 #+end_src
 
 *** tailscale
@@ -425,7 +399,7 @@ Generate passwordless ECC key:
 #+begin_src scheme :noweb-ref service
   (service openssh-service-type
     (openssh-configuration
-      (openssh (spec->pkg "openssh-sans-x"))
+      (openssh openssh-sans-x)
       (permit-root-login 'prohibit-password)
       (password-authentication? #f)))
 #+end_src
@@ -450,13 +424,13 @@ Generate passwordless ECC key:
 #+begin_src scheme :noweb-ref home-service
   (service home-gpg-agent-service-type
     (home-gpg-agent-configuration
-      (pinentry-program (file-append (spec->pkg "pinentry-qt") "/bin/pinentry-qt"))
+      (pinentry-program (file-append pinentry-qt "/bin/pinentry-qt"))
       (ssh-support? #t)))
 #+end_src
 
 *** libfido2
 #+begin_src scheme :noweb-ref service
-  (udev-rules-service 'u2f (spec->pkg "libfido2") #:groups '("plugdev"))
+  (udev-rules-service 'u2f libfido2 #:groups '("plugdev"))
 #+end_src
 
 ** Containers & Virtualization
@@ -502,24 +476,214 @@ Open TCP port 5558 and connect to server IPv4 address.
 
 ** Graphical Session
 *** niri
+#+begin_src scheme :noweb-ref package
+  "niri"
+  "wl-clipboard"
+  "xdg-desktop-portal-gnome"
+  "xdg-desktop-portal-gtk"
+  "xdg-utils"
+#+end_src
+
 #+begin_src scheme :noweb-ref home-service
   (service home-niri-service-type
     (home-niri-configuration
       (config
        (computed-substitution-with-inputs "niri.kdl"
-         (local-file (testament-plain "niri.kdl"))
-         (specs->pkgs "wezterm" "xwayland-satellite")))))
+         (local-file (testament-plain "dorphine/niri.kdl"))
+         (list wezterm xwayland-satellite)))))
 #+end_src
 
-https://yalter.github.io/niri/Nvidia.html
+#+begin_src kdl :tangle ../files/tangled/dorphine/niri.kdl
+  prefer-no-csd
+  screenshot-path "~/Pictures/Screenshots/%Y%m%d-%H%M%S.png"
+
+  xwayland-satellite {
+      path "$$bin/xwayland-satellite$$"
+  }
+
+  // Guix Home (home-shepherd-service-type)
+  spawn-at-startup "shepherd"
+
+  hotkey-overlay {
+      skip-at-startup
+  }
+
+  window-rule {
+      match app-id="librewolf" title="^Picture-in-Picture$"
+      open-floating true
+  }
+
+  window-rule {
+      match app-id="steam" title=r#"^notificationtoasts_\d+_desktop$"#
+      default-floating-position x=10 y=10 relative-to="bottom-right"
+  }
+
+  window-rule {
+      match app-id="thunar" title="^File Operation Progress$"
+      open-floating true
+  }
+
+  // Noctalia
+  window-rule {
+      geometry-corner-radius 20
+      clip-to-geometry true
+  }
+
+  debug {
+    honor-xdg-activation-with-invalid-serial
+  }
+
+  // Set the regular wallpaper on the backdrop.
+  layer-rule {
+    match namespace="^noctalia-wallpaper*"
+    place-within-backdrop true
+  }
+
+  // Optionally, disable the workspace shadows in the overview.
+  overview {
+    workspace-shadow {
+      off
+    }
+  }
+
+  layout {
+      // Set transparent workspace background color so you see the backdrop at all times.
+      background-color "transparent"
+
+      focus-ring {
+          off
+      }
+      border {
+          off
+      }
+  }
+
+  input {
+      keyboard {
+          repeat-delay 300
+          repeat-rate 30
+      }
+      touchpad {
+          tap
+          natural-scroll
+      }
+      warp-mouse-to-focus
+  }
+
+  output "eDP-1" {
+      mode "2560x1440@240.002"
+  }
+
+  output "DP-1" {
+      focus-at-startup
+  }
+
+  binds {
+      XF86AudioRaiseVolume  allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "volume" "increase"; }
+      XF86AudioLowerVolume  allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "volume" "decrease"; }
+      XF86AudioMute         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "volume" "muteOutput"; }
+      XF86AudioMicMute      allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "volume" "muteInput"; }
+      XF86AudioPlay         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "media" "play"; }
+      XF86AudioStop         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "media" "pause"; }
+      XF86AudioPrev         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "media" "previous"; }
+      XF86AudioNext         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "media" "next"; }
+      XF86MonBrightnessUp   allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "brightness" "increase"; }
+      XF86MonBrightnessDown allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "brightness" "decrease"; }
+
+      Mod+A           { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }
+      Mod+O           { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
+      Mod+D           { spawn "noctalia-shell" "ipc" "call" "plugin:clipper" "togglePanel"; }
+      Mod+S           { spawn "noctalia-shell" "ipc" "call" "settings" "toggle"; }
+      Ctrl+Alt+Delete { spawn "noctalia-shell" "ipc" "call" "sessionMenu" "toggle"; }
+      Mod+Shift+E     { spawn "herd" "restart" "noctalia-shell"; }
+
+      Mod+E       { spawn "emacsclient" "--create-frame" "--no-wait"; }
+      Mod+Return  { spawn "$$bin/wezterm$$"; }
+
+      Mod+Left                       { focus-column-left; }
+      Mod+Down                       { focus-window-down; }
+      Mod+Up                         { focus-window-up; }
+      Mod+Right                      { focus-column-right; }
+
+      Mod+Shift+Left                 { move-column-left; }
+      Mod+Shift+Down                 { move-window-down; }
+      Mod+Shift+Up                   { move-window-up; }
+      Mod+Shift+Right                { move-column-right; }
+
+      Mod+WheelScrollDown            { focus-column-right; }
+      Mod+WheelScrollUp              { focus-column-left; }
+
+      Mod+Shift+WheelScrollDown      { move-column-right; }
+      Mod+Shift+WheelScrollUp        { move-column-left; }
+
+      Mod+Ctrl+Left                  { focus-monitor-left; }
+      Mod+Ctrl+Right                 { focus-monitor-right; }
+
+      Mod+Ctrl+Shift+Left            { move-column-to-monitor-left; }
+      Mod+Ctrl+Shift+Right           { move-column-to-monitor-right; }
+
+      Mod+Ctrl+WheelScrollDown       { focus-monitor-right; }
+      Mod+Ctrl+WheelScrollUp         { focus-monitor-left; }
+
+      Mod+Ctrl+Shift+WheelScrollDown { move-column-to-monitor-right; }
+      Mod+Ctrl+Shift+WheelScrollUp   { move-column-to-monitor-left; }
+
+      Mod+Comma                      { consume-or-expel-window-left; }
+      Mod+Period                     { consume-or-expel-window-right; }
+      Mod+F                          { maximize-column; }
+      Mod+Shift+F                    { fullscreen-window; }
+      Mod+C                          { center-column; }
+      Mod+V                          { toggle-window-floating; }
+      Mod+Shift+V                    { switch-focus-between-floating-and-tiling; }
+
+      Mod+Shift+Q                    { close-window; }
+
+      Mod+Tab repeat=false           { toggle-overview; }
+
+      Print                          { screenshot; }
+      Ctrl+Print                     { screenshot-screen; }
+      Alt+Print                      { screenshot-window; }
+  }
+#+end_src
+
+[[https://niri-wm.github.io/niri/Nvidia.html][High VRAM usage fix]]:
 
 #+begin_src scheme :noweb-ref service
   (simple-service 'niri-nvidia-profile etc-service-type
     `(("nvidia/nvidia-application-profiles-rc.d/50-limit-free-buffer-pool-in-wayland-compositors.json"
-       ,(local-file (testament-plain "50-limit-free-buffer-pool-in-wayland-compositors.json")))))
+       ,(computed-file "50-limit-free-buffer-pool-in-wayland-compositors.json"
+          (with-extensions (list guile-json-4)
+            #~(begin
+                (use-modules (json))
+                (call-with-output-file #$output
+                  (lambda (port)
+                    (scm->json
+                     '(("profiles"
+                        . #((("settings"
+                              . #((("value" . 0)
+                                   ("key" . "GLVidHeapReuseRatio"))))
+                             ("name" . "Limit Free Buffer Pool On Wayland Compositors"))))
+                       ("rules"
+                        . #((("profile" . "Limit Free Buffer Pool On Wayland Compositors")
+                             ("pattern"
+                              ("matches" . "niri")
+                              ("feature" . "procname"))))))
+                     port
+                     #:pretty #t)))))))))
+#+end_src
+*** shepherd
+Autostart Shepherd in environments that support XDG Autostart (e.g. GNOME).
+#+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/autostart/shepherd.desktop
+  [Desktop Entry]
+  Type=Application
+  Name=Shepherd
+  Exec=shepherd
 #+end_src
 
 *** noctalia-shell
+Run ~herd restart noctalia-shell~ on initial setup / after home environment
+reconfiguration.
+
 #+begin_src scheme :noweb-ref home-service
   (service home-noctalia-shell-service-type)
 #+end_src
@@ -533,7 +697,7 @@ https://yalter.github.io/niri/Nvidia.html
 #+begin_src scheme :noweb-ref home-service
   (service home-theme-service-type
     (home-theme-configuration
-      (packages (specs->pkgs "qogir-icon-theme"))
+      (packages (list qogir-icon-theme))
       (icon-theme "Qogir")
       (cursor-theme "Qogir")))
 #+end_src
@@ -551,6 +715,9 @@ https://yalter.github.io/niri/Nvidia.html
   "font-sarasa-gothic"
   "font-victor-mono"
 #+end_src
+
+fontconfig on Guix is [[https://codeberg.org/guix/guix/pulls/5654#issuecomment-9928509][known]] not working with some locales (e.g. =zh_CN.utf8=),
+use =en_US.utf8= (the default) if you have encountered issues.
 
 #+begin_src scheme :noweb-ref home-service
   (simple-service 'extend-fontconfig home-fontconfig-service-type
@@ -602,34 +769,27 @@ https://yalter.github.io/niri/Nvidia.html
 ** Miscellaneous
 *** adb
 #+begin_src scheme :noweb-ref service
-  (udev-rules-service 'android (spec->pkg "android-udev-rules") #:groups '("adbusers"))
+  (udev-rules-service 'android android-udev-rules #:groups '("adbusers"))
 #+end_src
 
 *** emacs
-#+begin_src scheme :noweb-ref home-environment-variable
-  ("EDITOR" . "emacsclient")
-  ("VISUAL" . "$EDITOR")
-  ("ESHELL" . ,(file-append (spec->pkg "fish") "/bin/fish"))
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'emacs-environment home-environment-variables-service-type
+    `(("EDITOR" . "emacsclient")
+      ("VISUAL" . "$EDITOR")
+      ("ESHELL" . ,(file-append fish "/bin/fish"))))
 #+end_src
+
+Extract packages from comments in [[file:../files/plain/emacs][plain/emacs]].
 
 #+begin_src scheme :noweb yes :noweb-ref package
   "emacs-pgtk"
-
-  "emacs-beancount"
-  "emacs-caddyfile-mode"
-  "emacs-edit-indirect"
-  "emacs-fish-mode"
-  "emacs-json-mode"
-  "emacs-markdown-mode"
-  "emacs-nftables-mode"
-  "emacs-zig-mode"
-
   <<emacs-packages()>>
 #+end_src
 
 #+name: emacs-packages
 #+begin_src shell :results output
-  grep --no-filename '^;;guix:' ../files/plain/emacs-*.el |
+  grep --no-filename '^;;guix:' ../files/plain/emacs/*.el |
       sed --regexp-extended 's/^;;guix:(.*)/"\1"/g'
 #+end_src
 
@@ -637,13 +797,13 @@ https://yalter.github.io/niri/Nvidia.html
   (simple-service 'emacs-configuration home-xdg-configuration-files-service-type
     `(("emacs/init.el"
        ,(computed-substitution-with-inputs "init.el"
-          (local-file (testament-plain "emacs-init.el"))
-          (cons (testament-plain)
-                (specs->pkgs "ccls"
-                             "fish"
-                             "python-lsp-server"
-                             "rust-analyzer"
-                             "zig-zls"))))))
+          (local-file (testament-plain "emacs/init.el"))
+          (list (testament-plain)
+                ccls
+                fish
+                python-lsp-server
+                rust-analyzer
+                zig-zls-0.15)))))
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
@@ -652,6 +812,20 @@ https://yalter.github.io/niri/Nvidia.html
             (provision '(emacs-daemon))
             (start #~(make-forkexec-constructor '("emacs" "--fg-daemon")))
             (stop #~(make-kill-destructor)))))
+#+end_src
+
+Disable a few yasnippet snippets.
+#+begin_src text :tangle ../files/tangled/dorphine/dotfiles/.config/emacs/etc/yasnippet/snippets/prog-mode/comment
+#+end_src
+#+begin_src text :tangle ../files/tangled/dorphine/dotfiles/.config/emacs/etc/yasnippet/snippets/prog-mode/commentblock
+#+end_src
+#+begin_src text :tangle ../files/tangled/dorphine/dotfiles/.config/emacs/etc/yasnippet/snippets/prog-mode/commentline
+#+end_src
+#+begin_src text :tangle ../files/tangled/dorphine/dotfiles/.config/emacs/etc/yasnippet/snippets/prog-mode/fixme
+#+end_src
+#+begin_src text :tangle ../files/tangled/dorphine/dotfiles/.config/emacs/etc/yasnippet/snippets/prog-mode/todo
+#+end_src
+#+begin_src text :tangle ../files/tangled/dorphine/dotfiles/.config/emacs/etc/yasnippet/snippets/prog-mode/xxx
 #+end_src
 
 *** email
@@ -666,10 +840,10 @@ https://yalter.github.io/niri/Nvidia.html
                     (use-modules (ice-9 match)
                                  (guix build utils))
                     ;; Sync with mail server.
-                    (invoke #$(file-append (spec->pkg "isync") "/bin/mbsync") "-a"
-                            "--config" #$(local-file (testament-plain "mbsync.conf")))
+                    (invoke #$(file-append isync "/bin/mbsync") "-a"
+                            "--config" #$(local-file (testament-plain "dorphine/mbsync.conf")))
                     ;; Index.
-                    (let ((notmuch #$(file-append (spec->pkg "notmuch") "/bin/notmuch")))
+                    (let ((notmuch #$(file-append notmuch "/bin/notmuch")))
                       (invoke notmuch "new")
                       (map (match-lambda
                              ((query . tags)
@@ -705,14 +879,181 @@ https://yalter.github.io/niri/Nvidia.html
                     (invoke "emacsclient" "--eval" "(smtpmail-send-queued-mail)"))))))))
 #+end_src
 
+mbsync:
+#+begin_src conf :tangle ../files/tangled/dorphine/mbsync.conf
+  Create Both
+  Expunge Both
+  CopyArrivalDate yes
+
+  MaildirStore local
+  Path ~/.local/share/mail/imap/
+  Inbox ~/.local/share/mail/imap/INBOX
+  Subfolders Verbatim
+
+  IMAPAccount hako
+  Host mail.boiledscript.com
+  User "hako@ultrarare.space"
+  PassCmd "cat $XDG_RUNTIME_DIR/secrets/mail"
+  TLSType IMAPS
+
+  IMAPStore remote
+  Account hako
+
+  Channel hako
+  Far :remote:
+  Near :local:
+  Pattern *
+  SyncState *
+#+end_src
+
+l2md:
+#+begin_src conf ../files/tangled/dorphine/dotfiles/.config/l2md/config
+  [general]
+          base = ~/.local/share/l2md/
+          oneshot = 1
+
+  # emacs-devel@gnu.org
+  [repo emacs-devel]
+          url = https://yhetil.org/emacs-devel/0
+          maildir = ~/.local/share/mail/lists/emacs-devel
+
+  # guile-devel@gnu.org
+  [repo guile-devel]
+          url = https://yhetil.org/guile-devel/0
+          maildir = ~/.local/share/mail/lists/guile-devel
+
+  # guix-devel@gnu.org
+  [repo guix-devel]
+          url = https://yhetil.org/guix-devel/0
+          maildir = ~/.local/share/mail/lists/guix-devel
+
+  # help-guix@gnu.org
+  [repo guix-user]
+          url = https://yhetil.org/guix-user/0
+          maildir = ~/.local/share/mail/lists/guix-user
+#+end_src
+
+notmuch:
+#+begin_src conf ../files/tangled/dorphine/dotfiles/.config/notmuch/default/config
+  [database]
+  path=/home/hako/.local/share/mail
+
+  [user]
+  name=Hilton Chain
+  primary_email=hako@ultrarare.space
+
+  [show]
+  extra_headers=Message-ID;In-Reply-To;References
+
+  [new]
+  tags=new
+
+  [search]
+  exclude_tags=draft;spam
+#+end_src
+
 *** fcitx5
 #+begin_src scheme :noweb-ref home-service
   (service home-fcitx5-service-type
     (home-fcitx5-configuration
-      (themes (specs->pkgs "fcitx5-material-color-theme"))
-      (input-method-editors (specs->pkgs "fcitx5-rime"))
+      (themes (list fcitx5-material-color-theme))
+      (input-method-editors (list fcitx5-rime))
       (gtk-im-module? #t)
       (qt-im-module? #t)))
+#+end_src
+
+*** gdb
+Copied from =%default-gdbinit=.
+#+begin_src scheme :tangle ../files/tangled/dorphine/dotfiles/.config/gdb/gdbinit
+  # Tell GDB where to look for separate debugging files.
+  guile
+  (use-modules (gdb))
+  (execute (string-append "set debug-file-directory "
+                          (string-join
+                            (filter file-exists?
+                                    (append
+                                      (if (getenv "GDB_DEBUG_FILE_DIRECTORY")
+                                        (list (getenv "GDB_DEBUG_FILE_DIRECTORY"))
+                                        '())
+                                      (list "~/.guix-profile/lib/debug"
+                                            "~/.guix-home/profile/lib/debug"
+                                            "/run/current-system/profile/lib/debug")))
+                            ":")))
+  end
+
+  # Authorize extensions found in the store, such as the
+  # pretty-printers of libstdc++.
+  set auto-load safe-path /gnu/store/*/lib
+#+end_src
+
+*** git
+#+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/git/config
+  [core]
+          quotePath = false
+  [init]
+          defaultBranch = trunk
+  [commit]
+          gpgsign = true
+  [user]
+          name = Hilton Chain
+          email = hako@ultrarare.space
+          signingkey = ACC66D09CA528292!
+  [pull]
+          rebase = true
+  [rerere]
+          enabled = true
+
+  [diff "scheme"]
+          xfuncname = "^(\\(define.*)$"
+  [diff "texinfo"]
+          xfuncname = "^@node[[:space:]]+([^,]+).*$"
+
+  [url "git@codeberg.org:"]
+  	pushInsteadOf = "https://codeberg.org/"
+  [url "git@github.com:"]
+  	pushInsteadOf = "https://github.com/"
+  [url "git@gitlab.com:"]
+  	pushInsteadOf = "https://gitlab.com/"
+  [url "forgejo@git.urspace.moe:"]
+  	pushInsteadOf = "https://git.urspace.moe/"
+#+end_src
+
+For emacs-forge.
+#+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/git/config
+  [github]
+          user = rakino
+  [gitlab]
+          user = hakourspace
+#+end_src
+
+[[https://forgejo.org/docs/latest/user/agit-support/][AGit Workflow]] helpers.
+#+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/git/config
+  [alias]
+  	pr-push  = "!f() { branch=$1; topic=$(git branch --show-current); shift; git push origin $topic:refs/for/$branch/$topic -o force-push \"$@\"; }; f"
+  	pr-apply = "!f() { for id in $(git cherry HEAD pullreqs/$1 | cut -c2-); do git cherry-pick --signoff $id; done; }; f"
+#+end_src
+
+*** guile
+Copied from =%default-dotguile=.
+#+begin_src scheme :tangle ../files/tangled/dorphine/dotfiles/.guile
+  (cond ((false-if-exception (resolve-interface '(ice-9 readline)))
+         =>
+         (lambda (module)
+           ;; Enable completion and input history at the REPL.
+           ((module-ref module 'activate-readline))))
+        (else
+         (display "Consider installing the 'guile-readline' package for
+  convenient interactive line editing and input history.\n\n")))
+
+        (unless (getenv "INSIDE_EMACS")
+          (cond ((false-if-exception (resolve-interface '(ice-9 colorized)))
+                 =>
+                 (lambda (module)
+                   ;; Enable completion and input history at the REPL.
+                   ((module-ref module 'activate-colorized))))
+                (else
+                 (display "Consider installing the 'guile-colorized' package
+  for a colorful Guile experience.\n\n"))))
 #+end_src
 
 *** jellyfin-mpv-shim
@@ -722,33 +1063,88 @@ https://yalter.github.io/niri/Nvidia.html
             (provision '(jellyfin-mpv-shim))
             (start
              #~(make-forkexec-constructor
-                '(#$(file-append (spec->pkg "jellyfin-mpv-shim") "/bin/jellyfin-mpv-shim"))))
+                '(#$(file-append jellyfin-mpv-shim "/bin/jellyfin-mpv-shim"))))
             (stop #~(make-kill-destructor)))))
 #+end_src
 
-*** mpv-mpris
+*** librewolf
+#+begin_src scheme :noweb-ref package
+  "librewolf"
+  "adaptive-tab-bar-colour-icecat"
+  "bitwarden-icecat"
+  "livemarks-icecat"
+  "ohmyech-icecat"
+  "ublock-origin-icecat"
+#+end_src
+
+*** mpv
+#+begin_src scheme :noweb-ref package
+  "mpv-nvidia"
+#+end_src
+
+#+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/mpv/mpv.conf
+  # https://vcb-s.com/archives/7594
+  profile=high-quality
+  cscale=catmull_rom
+  deband=yes
+  blend-subtitles=video
+  video-sync=display-resample
+  interpolation=yes
+  tscale=oversample
+  sub-auto=fuzzy
+  hwdec=auto-safe
+
+  # uosc
+  osd-bar=no
+  border=no
+
+  fullscreen=yes
+  force-window=yes
+  idle=yes
+  screenshot-directory=/home/hako/Pictures/MPV/
+  screenshot-template="%F %P"
+#+end_src
+
 #+begin_src scheme :noweb-ref home-service
   (simple-service 'mpv-mpris home-xdg-configuration-files-service-type
     `(("mpv/scripts/mpris.so"
-       ,(file-append (spec->pkg "mpv-mpris") "/lib/mpris.so"))))
+       ,(file-append mpv-mpris "/lib/mpris.so"))))
+#+end_src
+
+*** nano
+Copied from =%default-nanorc=.
+
+#+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/nano/naonrc
+  # Include all the syntax highlighting modules.
+  include /run/current-system/profile/share/nano/*.nanorc
 #+end_src
 
 *** prismlauncher
+#+begin_src scheme :noweb-ref
+  "prismlauncher-dolly"
+#+end_src
+
 #+begin_src scheme :noweb-ref home-service
   (simple-service 'openjdk-for-prismlauncher home-files-service-type
     (map (lambda (jdk)
            (list (in-vicinity ".local/share/PrismLauncher/java" (package-version jdk))
                  jdk))
-         (specs->pkgs "openjdk@25")))
+         (list openjdk25)))
 #+end_src
 
 *** steam
+#+begin_src scheme :noweb-ref package
+  "mangohud"
+  "steam-nvidia"
+#+end_src
+
 #+begin_src scheme :noweb-ref home-environment-variable
-  ("GUIX_SANDBOX_HOME" . "/var/lib/Sandbox")
+  (simple-service 'nonguix-sandbox-home home-environment-variables-service-type
+    `(("GUIX_SANDBOX_HOME" . "/var/lib/Sandbox")))
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref service
-  (udev-rules-service 'steam-devices (spec->pkg "steam-devices-udev-rules"))
+  (udev-rules-service 'steam-devices steam-devices-udev-rules)
   (udev-rules-service 'controller <<controller-permission-udev-rule>>)
 #+end_src
 
@@ -765,6 +1161,44 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
   (service syncthing-service-type
     (syncthing-configuration
       (user "hako")))
+#+end_src
+
+*** thunar
+#+begin_src scheme :noweb-ref package
+  "exo"
+  "file-roller"
+  "thunar"
+  "thunar-archive-plugin"
+  "thunar-media-tags-plugin"
+  "thunar-volman"
+  "tumbler"
+#+end_src
+
+#+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/xfce4/helpers.rc
+  TerminalEmulator=open-wezterm-here
+#+end_src
+
+*** wezterm
+#+begin_src scheme :noweb-ref package
+  "wezterm"
+#+end_src
+
+#+begin_src lua :tangle ../files/tangled/dorphine/dotfiles/.config/wezterm/wezterm.lua
+  local wezterm = require 'wezterm'
+  local config = wezterm.config_builder()
+
+  -- This improves input latency in my environment.
+  config.enable_wayland = false
+
+  config.window_background_opacity = 0.97
+  config.color_scheme = 'Catppuccin Mocha'
+
+  return config
+#+end_src
+
+*** wget
+#+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/wgetrc
+  hsts-file = ~/.cache/wget-hsts
 #+end_src
 
 ** Modules
@@ -815,4 +1249,29 @@ Guix Home - services
   (gnu home services gnupg)
   (gnu home services shells)
   (sops home services sops)
+#+end_src
+
+Guix packages
+#+begin_src scheme :noweb-ref module
+  (gnu packages android)
+  (gnu packages cpp)
+  (gnu packages fcitx5)
+  (gnu packages file-systems)
+  (gnu packages games)
+  (gnu packages gnome-xyz)
+  (gnu packages gnupg)
+  (gnu packages guile)
+  (gnu packages java)
+  (gnu packages linux)
+  (gnu packages mail)
+  (gnu packages python-xyz)
+  (gnu packages rust)
+  (gnu packages security-token)
+  (gnu packages shells)
+  (gnu packages ssh)
+  (gnu packages terminals)
+  (gnu packages video)
+  (gnu packages xorg)
+  (gnu packages zig-xyz)
+  (rosenthal packages password-utils)
 #+end_src

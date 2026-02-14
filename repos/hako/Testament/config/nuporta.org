@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright © 2024-2026 Hilton Chain <hako@ultrarare.space>
 #+TITLE: nuporta
-#+PROPERTY: header-args :noweb-prefix no
+#+PROPERTY: header-args :mkdirp yes :noweb-prefix no
 
 ** Guix System
-#+begin_src scheme :tangle nuporta.scm :noweb yes
+#+begin_src scheme :tangle ../files/tangled/nuporta.scm :noweb yes
   (use-modules <<module>>)
 
   (define %os
@@ -31,23 +31,23 @@
                (target (file-system-label "swap")))))
       (users (cons* <<user>> %base-user-accounts))
       (packages
-       (append (specs->pkgs+out
-                "curl"
-                "fd"
-                "gnupg"
-                "mosh"
-                "rclone"
-                "ripgrep"
-                "rsync"
-                "sops"
-                <<package>>)
+       (append (specifications->packages
+                '("curl"
+                  "fd"
+                  "gnupg"
+                  "mosh"
+                  "rclone"
+                  "ripgrep"
+                  "rsync"
+                  "sops"
+                  <<package>>))
                %base-packages))
       (services
        (cons* <<service>>
 
               (service guix-publish-service-type
                 (guix-publish-configuration
-                  (guix (spec->pkg "guix-dolly"))
+                  (guix guix/dolly)
                   (port 49637)
                   (compression '(("zstd" 19)))
                   (cache "/var/cache/guix/publish")
@@ -151,7 +151,7 @@
   (simple-service 'zfs-scrub shepherd-root-service-type
     (list (shepherd-timer '(zfs-scrub)
             #~(calendar-event #:days-of-week '(sunday) #:hours '(0) #:minutes '(0))
-            #~(#$(file-append (spec->pkg "zfs") "/sbin/zpool") "scrub" "-w" "Lycoris")
+            #~(#$(file-append zfs "/sbin/zpool") "scrub" "-w" "Lycoris")
             #:requirement '(user-processes))))
 #+end_src
 
@@ -165,7 +165,7 @@
                          (use-modules (guix build utils))
                          (setenv "PATH" "/run/current-system/profile/bin:/run/current-system/profile/sbin")
                          (invoke "sh" "-c" "echo 'CHECKPOINT;' | sudo -u postgres psql -X")
-                         (invoke #$(file-append (spec->pkg "zfs-auto-snapshot") "/sbin/zfs-auto-snapshot")
+                         (invoke #$(file-append zfs-auto-snapshot "/sbin/zfs-auto-snapshot")
                                  "--default-exclude" "--skip-scrub" "--keep=72" "--label=hourly" "//")))))
             #:requirement '(user-processes))))
 #+end_src
@@ -180,7 +180,7 @@
                          (use-modules (guix build utils))
                          (setenv "PATH" "/run/current-system/profile/bin:/run/current-system/profile/sbin")
                          (invoke "sh" "-c" "echo 'CHECKPOINT;' | sudo -u postgres psql -X")
-                         (invoke #$(file-append (spec->pkg "zfs-auto-snapshot") "/sbin/zfs-auto-snapshot")
+                         (invoke #$(file-append zfs-auto-snapshot "/sbin/zfs-auto-snapshot")
                                  "--default-exclude" "--skip-scrub" "--keep=31" "--label=daily" "//")))))
             #:requirement '(user-processes))))
 #+end_src
@@ -192,7 +192,7 @@ Personal account.
     (name "hako")
     (group "users")
     (supplementary-groups '("wheel"))
-    (shell (file-append (spec->pkg "fish") "/bin/fish")))
+    (shell (file-append fish "/bin/fish")))
   (user-account
     (name "jonathan")
     (group "users"))
@@ -206,7 +206,7 @@ Administration accounts.
   (user-account
     (inherit %root-account)
     (password #f)
-    (shell (file-append (spec->pkg "fish") "/bin/fish")))
+    (shell (file-append fish "/bin/fish")))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -221,7 +221,7 @@ Administration accounts.
 #+begin_src scheme :noweb-ref service
   (service sops-secrets-service-type
     (sops-service-configuration
-      (sops (spec->pkg "sops"))
+      (sops sops)
       (gnupg-home "/var/lib/sops")
       (secrets
        (list (sops-secret
@@ -278,7 +278,7 @@ Administration accounts.
 #+begin_src scheme :noweb-ref service
   (service nftables-service-type
     (nftables-configuration
-      (ruleset (local-file (testament-plain "nuporta.nftables")))))
+      (ruleset (local-file (testament-plain "nftables/nuporta.nftables")))))
 #+end_src
 
 *** tailscale
@@ -290,7 +290,7 @@ Administration accounts.
 #+begin_src scheme :noweb-ref service
   (service openssh-service-type
     (openssh-configuration
-      (openssh (spec->pkg "openssh-sans-x"))
+      (openssh openssh-sans-x)
       (permit-root-login 'prohibit-password)
       (password-authentication? #f)))
 #+end_src
@@ -327,7 +327,7 @@ Administration accounts.
 #+begin_src scheme :noweb-ref service
   (service postgresql-service-type
     (postgresql-configuration
-      (postgresql (spec->pkg "postgresql@16"))
+      (postgresql postgresql-16)
       (config-file
        (postgresql-config-file
          (log-destination "stderr")
@@ -367,7 +367,7 @@ Remember to open TCP port 5555 and 5556.
 #+begin_src scheme :noweb yes :noweb-ref service
   (service cuirass-service-type
     (cuirass-configuration
-      (cuirass (spec->pkg "cuirass-dolly"))
+      (cuirass cuirass/dolly)
       ;; 6 hours
       (interval (* 6 3600))
       (parameters
@@ -621,8 +621,85 @@ rsync://cache.guix.moe
     (list (shepherd-timer '(setup-mirror)
             #~(calendar-event #:minutes '(30))
             #~("/run/current-system/profile/bin/guix" "repl" "--"
-               #$(local-file (testament-plain "setup-mirror.scm")))
+               #$(local-file (testament-plain "nuporta/setup-mirror.scm")))
             #:requirement '(user-processes))))
+#+end_src
+
+#+begin_src scheme :tangle ../files/tangled/nuporta/setup-mirror.scm
+  (use-modules (guix cache)
+               (guix build syscalls)
+               (guix build utils))
+
+  (define %publish-cache "/var/cache/guix/publish")
+  (define %mirror-cache  "/var/cache/guix-moe")
+  (define %rclone-arguments
+    '("--config" "/run/secrets/rclone"
+      "--verbose"
+      "--size-only"
+      "--no-traverse"
+      "--s3-no-check-bucket"
+      "--s3-upload-concurrency=8"
+      "--s3-chunk-size=16M"))
+
+  (define (invoke* . args)
+    (invoke "/bin/sh" "-c" (string-join args)))
+
+  (define (sync-narinfo mirror-cache publish-cache)
+    (invoke "rsync" "-a" "--delete"
+            "--include" "*.narinfo"
+            "--exclude" "*"
+            (string-append publish-cache "/")
+            (in-vicinity mirror-cache "narinfo/")))
+
+  ;; Reduce S3 operations.
+  (define %nars-list      "nars.txt")
+  (define %nars-list-new  (string-append %nars-list ".new"))
+  (define %nars-diff      (string-append %nars-list ".diff"))
+  (define %nars-to-copy   (string-append %nars-list ".to_copy"))
+  (define %nars-to-delete (string-append %nars-list ".to_delete"))
+
+  (define (list-changed-nars mirror-cache publish-cache)
+    (with-directory-excursion (in-vicinity publish-cache "nar")
+      (invoke* "fd" "--exclude" "'*.tmp'" "--type" "f" "|" "sort" ">" (in-vicinity mirror-cache %nars-list-new)))
+    (with-directory-excursion mirror-cache
+      (unless (file-exists? %nars-list)
+        (call-with-output-file %nars-list (const #t)))
+      (invoke* "diff" "--unified" %nars-list %nars-list-new "|" "tail" "+4" ">" %nars-diff)
+      (false-if-exception
+       (invoke* "rg" "'^\\+'" %nars-diff "--no-line-number" "--replace" "''" ">" %nars-to-copy))
+      (false-if-exception
+       (invoke* "rg" "'^-'"   %nars-diff "--no-line-number" "--replace" "''" ">" %nars-to-delete))
+      (delete-file* %nars-diff)))
+
+  (define (upload-new-nars mirror-cache publish-cache rclone-s3-bucket)
+    (with-directory-excursion mirror-cache
+      (apply invoke "rclone" "copy" "--files-from" %nars-to-copy
+             (in-vicinity publish-cache "nar")
+             (in-vicinity rclone-s3-bucket "nar")
+             %rclone-arguments)
+      (delete-file* %nars-to-copy)))
+
+  (define (delete-expired-nars mirror-cache rclone-s3-bucket)
+    (with-directory-excursion mirror-cache
+      (apply invoke "rclone" "delete" "--files-from" %nars-to-delete
+             (in-vicinity rclone-s3-bucket "nar")
+             %rclone-arguments)
+      (delete-file* %nars-to-delete)))
+
+  (with-file-lock/no-wait "/var/lock/guix-moe-mirror.lock"
+    (lambda _
+      (error "found ongoing syncing process, exiting"))
+    (begin
+      (setenv "PATH" "/run/current-system/profile/bin")
+      (mkdir-p %mirror-cache)
+
+      (list-changed-nars   %mirror-cache %publish-cache)
+      (upload-new-nars     %mirror-cache %publish-cache "r2:substitutes-apac")
+      (sync-narinfo        %mirror-cache %publish-cache)
+      (delete-expired-nars %mirror-cache "r2:substitutes-apac")
+
+      (with-directory-excursion %mirror-cache
+        (rename-file %nars-list-new %nars-list))))
 #+end_src
 
 ** Web Servers & Services
@@ -630,7 +707,7 @@ rsync://cache.guix.moe
 #+begin_src scheme :noweb yes :noweb-ref service
   (service caddy-service-type
     (caddy-configuration
-      (caddy (spec->pkg "caddy-dolly"))
+      (caddy caddy/dolly)
       (caddyfile <<caddy-config>>)
       (group-id 967)
       (user-id 972)))
@@ -639,9 +716,9 @@ rsync://cache.guix.moe
 #+name: caddy-config
 #+begin_src scheme
   (computed-substitution-with-inputs "nuporta.caddyfile"
-    (local-file (testament-plain "nuporta.caddyfile"))
-    (cons (testament-plain)
-          (specs->pkgs "ai-robots-txt")))
+    (local-file (testament-plain "caddy/nuporta.caddyfile"))
+    (list (testament-plain)
+          ai-robots-txt))
 #+end_src
 
 *** docker-mailserver
@@ -685,14 +762,49 @@ rsync://cache.guix.moe
            ":/etc/rspamd/local.d/redis.conf:ro")
          "--volume"
          ,(file-append
-           (local-file (testament-plain "rspamd-dkim-signing.conf"))
+           (local-file (testament-plain "nuporta/rspamd-dkim-signing.conf"))
            ":/etc/rspamd/override.d/dkim_signing.conf:ro")
 
          "--volume"
          ,(file-append
-           (local-file (testament-plain "mail-crypt.conf"))
+           (local-file (testament-plain "nuporta/mail-crypt.conf"))
            ":/etc/dovecot/conf.d/10-custom.conf:ro")
          "--volume" "/run/secrets/docker-mailserver:/certs:ro"))))
+#+end_src
+
+#+begin_src conf :tangle ../files/tangled/nuporta/rspamd-dkim-signing.conf
+  enabled = true;
+  sign_authenticated = true;
+  sign_local = true;
+
+  use_domain = "header";
+  use_redis = false;
+  use_esld = true;
+  check_pubkey = true;
+
+  domain {
+      boiledscript.com {
+          path = "/tmp/docker-mailserver/rspamd/dkim/rsa-2048-mail-boiledscript.com.private.txt";
+          selector = "mail";
+      }
+      ultrarare.space {
+          path = "/tmp/docker-mailserver/rspamd/dkim/rsa-2048-mail-ultrarare.space.private.txt";
+          selector = "mail";
+      }
+      urspace.moe {
+          path = "/tmp/docker-mailserver/rspamd/dkim/rsa-2048-mail-urspace.moe.private.txt";
+          selector = "mail";
+      }
+  }
+#+end_src
+
+#+begin_src conf :tangle ../files/tangled/nuporta/mail-crypt.conf
+  mail_plugins = $mail_plugins mail_crypt
+  plugin {
+    mail_crypt_global_private_key = </certs/ecprivkey.pem
+    mail_crypt_global_public_key = </certs/ecpubkey.pem
+    mail_crypt_save_version = 2
+  }
 #+end_src
 
 *** forgejo
@@ -823,11 +935,27 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
 #+begin_src scheme :noweb-ref service
   (service conduit-service-type
     (conduit-configuration
-      (conduit (file-append (spec->pkg "tuwunel-bin") "/bin/tuwunel"))
+      (conduit (file-append tuwunel-bin "/bin/tuwunel"))
       (database-path "/var/lib/tuwunel")
-      (config (local-file (testament-plain "tuwunel.toml")))
+      (config (local-file (testament-plain "nuporta/tuwunel.toml")))
       (group-id 968)
       (user-id 973)))
+#+end_src
+
+#+begin_src toml :tangle ../files/tangled/nuporta/tuwunel.toml
+  [global]
+  address = ["127.0.0.1", "::1"]
+  port = 26372
+  server_name = "guix.moe"
+  database_path = "/var/lib/tuwunel"
+  new_user_displayname_suffix = ""
+  require_auth_for_profile_requests = true
+  allow_public_room_directory_over_federation = true
+  trusted_servers = ["matrix.org"]
+
+  [global.well_known]
+  client = "https://matrix.guix.moe"
+  server = "matrix.guix.moe:443"
 #+end_src
 
 *** vaultwarden
@@ -972,4 +1100,17 @@ Guix System - services
   (rosenthal services networking)
   (rosenthal services web)
   (sops services sops)
+#+end_src
+
+Guix packages
+#+begin_src scheme :noweb-ref module
+  (gnu packages databases)
+  (gnu packages file-systems)
+  (gnu packages shells)
+  (gnu packages ssh)
+  (rosenthal packages binaries)
+  (rosenthal packages ci)
+  (rosenthal packages package-management)
+  (rosenthal packages password-utils)
+  (rosenthal packages web)
 #+end_src

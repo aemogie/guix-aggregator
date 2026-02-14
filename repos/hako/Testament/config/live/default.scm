@@ -1,17 +1,33 @@
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 ;;; Copyright © 2026 Hilton Chain <hako@ultrarare.space>
 
-(use-modules (rosenthal)
+(use-modules (guix gexp)
+             (guix utils)
+             (gnu system)
              (gnu system install)
+             (gnu system privilege)
+             (gnu system shadow)
+             (gnu services)
+             (gnu services base)
              (gnu services dbus)
+             (gnu services desktop)
+             (gnu services guix)
              (gnu services networking)
              (gnu services pm)
+             (rosenthal services base)
+             (rosenthal services desktop)
              (rosenthal services shellutils)
+             (gnu home)
              (gnu home services fontutils)
              (gnu home services shells)
+             (gnu home services shepherd)
+             (gnu packages)
+             (gnu packages fcitx5)
+             (gnu packages gnome-xyz)
              (gnu packages libusb)
              (gnu packages linux)
-             (gnu packages nfs))
+             (gnu packages nfs)
+             (gnu packages shells))
 
 (define %installation-os
   (make-installation-os
@@ -72,9 +88,7 @@
             ;; Default cursor theme.
             (service home-theme-service-type
               (home-theme-configuration
-                (packages
-                 (map specification->package
-                      '("qogir-icon-theme")))
+                (packages (list qogir-icon-theme))
                 (icon-theme "Qogir")
                 (cursor-theme "Qogir")))
 
@@ -83,18 +97,15 @@
               (home-fcitx5-configuration
                 (gtk-im-module? #t)
                 (qt-im-module? #t)
-                (themes
-                 (map specification->package
-                      '("fcitx5-material-color-theme")))
+                (themes (list fcitx5-material-color-theme))
                 (input-method-editors
-                 (map specification->package
-                      '("fcitx5-anthy"
-                        "fcitx5-chewing"
-                        "fcitx5-chinese-addons"
-                        "fcitx5-hangul"
-                        "fcitx5-rime"
-                        "fcitx5-skk"
-                        "fcitx5-unikey")))))
+                 (list fcitx5-anthy
+                       fcitx5-chewing
+                       fcitx5-chinese-addons
+                       fcitx5-hangul
+                       fcitx5-rime
+                       fcitx5-skk
+                       fcitx5-unikey))))
 
             ;; Font config.
             (simple-service 'extra-fontconfig
@@ -155,7 +166,7 @@
             (password (crypt "live" "$6$abc"))
             (group "users")
             (supplementary-groups '("audio" "video" "wheel"))
-            (shell (file-append (specification->package "fish") "/bin/fish")))
+            (shell (file-append fish "/bin/fish")))
           (operating-system-users %minimal-os)))
 
   (skeletons %rosenthal-skeletons)
@@ -235,7 +246,7 @@
               "font-sarasa-gothic"
               "font-victor-mono"
               ))
-           (list %rosenthal-set-keymap)
+           (load "scripts.scm")
            (operating-system-packages %installation-os)))
 
   (services
@@ -261,7 +272,7 @@
               (auto-enable? #t)))
           (service gvfs-service-type)
           (service power-profiles-daemon-service-type)
-          (simple-service 'backlight udev-service-type (specs->pkgs "light"))
+          (simple-service 'backlight udev-service-type (list light))
 
           ;; From `%desktop-services'.
           (simple-service 'mtp udev-service-type (list libmtp))

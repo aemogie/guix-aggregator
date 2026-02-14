@@ -119,8 +119,7 @@
   (list #|admin      |# fastfetch-minimal
         #|calendar   |# remind
         #|freedesktop|# xdg-desktop-portal-minimal xdg-desktop-portal-wlr-minimal
-                        xdg-desktop-portal-termfilechooser xdg-terminal-exec
-                        xdg-utils/wayland
+                        xdg-desktop-portal-termfilechooser xdg-utils/wayland
         #|glib       |# dbus
         #|image      |# grim slurp
         #|libcanberra|# sound-theme-freedesktop

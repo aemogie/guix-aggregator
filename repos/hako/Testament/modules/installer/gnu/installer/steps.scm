@@ -264,11 +264,7 @@ found in RESULTS."
       (define %my-os
         (operating-system ,@configuration))
       ,(vertical-space 1)
-      ((compose
-        ,(comment "\
-;; Uncomment the following line for NVIDIA proprietary driver support.
-;; (nonguix-transformation-nvidia #:configure-xorg? #t)\n")
-        (nonguix-transformation-guix))
+      ((compose (nonguix-transformation-guix))
        %my-os))))
 
 (define* (configuration->file configuration

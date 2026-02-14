@@ -96,24 +96,11 @@
           (sha256
            (base32 "0hnq8vwr31scpf20qnv17zc0fn7llf0wlhym0a8p39n6ag1g1dwc")))))))
 
-(define-public zen-browser-bin/twilight
-  (package/inherit zen-browser-bin
-    (name "zen-browser-bin-twilight")
-    (version "1.19t")
-    (source
-      (origin
-        (method url-fetch)
-        (uri (string-append
-                "https://github.com/zen-browser/desktop/releases/download/"
-                "twilight/zen.linux-x86_64.tar.xz"))
-        (sha256
-          (base32 "0pmi5mzb0fs1a92fxdhnpbhaf063vyxrl1ns5nlnsirq2rrnspvq"))))))
-
 (define-public bar
   (list eww/wayland waybar quickshell/latest))
 
 (define-public browser
-  (list zen-browser-bin/twilight))
+  (list zen-browser-bin))
 
 (define-public clipboard
   (list wl-clipboard))

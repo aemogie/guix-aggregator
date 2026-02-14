@@ -39,10 +39,9 @@
 
 ;; Modules depending on more than guix.
 (use-modules (rde features)
-             ((rde packages) #:select (strings->packages))
-             (rde home services emacs)
-             (nonguix licenses)
-             (nongnu packages linux))
+             (rde packages)
+             (rde containers)
+             (rde home services emacs))
 
 (eval-when (eval load compile)
   (begin
@@ -56,6 +55,10 @@
                     (cut string-suffix? ".scm" <>))))
 
     ((@@ (gnu) %try-use-modules) %feature-modules #f (const #t))))
+
+(define-syntax-rule (or@ module name)
+  "Like (@ MODULE NAME), but returns #f instead of error if it fails."
+  (false-if-exception (module-ref (resolve-module 'module) 'name)))
 
 (define cwd (dirname (current-filename)))
 
@@ -125,12 +128,7 @@
  ((rde packages) #:select (strings->packages))
  (rde home services emacs)
  (contrib features emacs-xyz)
- (contrib features age)
- (nongnu packages linux)
- (nongnu system linux-initrd)
- (nongnu packages linux)
- (nonguix licenses)
- (nonguix transformations))
+ (contrib features age))
 
 (define config-file
   (string-append (dirname (current-filename)) "/configuration.scm"))
@@ -174,6 +172,91 @@
             "056cv0vlqyacyhbmwr5651fzg1icyxbw61nkap7sd4j2x8qj7ila")))))))))
 
 
+;; Machine record and %current-machine
+(define-record-type* <machine> machine make-machine
+  machine?
+  this-machine
+  (name machine-name)                                    ; string
+  (efi machine-efi)                                      ; file-system
+  (encrypted-uuid-mapped machine-encrypted-uuid-mapped   ; maybe-uuid
+                         (default #f))
+  (btrfs-layout machine-btrfs-layout                     ; alist
+                (default (root-impermanence-btrfs-layout)) (delayed))
+  (architecture machine-architecture                     ; string
+                (default "x86_64-linux"))
+  (firmware machine-firmware                             ; list of packages
+            (delayed)
+            (default '()))
+  (nvidia? machine-nvidia?                               ; boolean
+           (default #f))
+  (kernel-build-options machine-kernel-build-options     ; list of options
+                        (default '()))
+  ;; SSH key identifying the ssh daemon, found in /etc/ssh/ssh_host_ed25519_key.pub
+  (ssh-host-key machine-ssh-host-key                     ; string
+                (default #f))
+  ;; SSH key used to connect between machines (as in ssh -i).
+  (ssh-privkey-location machine-ssh-privkey-location     ; string
+                        (default #f))
+  (ssh-pubkey machine-ssh-pubkey                         ; string
+              (default #f))
+  ;; key to authentify archives, found in /etc/guix/signing-key.pub
+  (guix-pubkey machine-guix-pubkey                         ; string
+               (default #f)))
+
+(define %machines
+  (list
+   (machine (name "20xwcto1ww")
+            (efi "/dev/nvme0n1p1")
+            (encrypted-uuid-mapped "9dbcac0f-e5bd-45fc-a7f2-5841c5ea71b9")
+            (btrfs-layout (append '(;;(data . "/data")
+                                    (btrbk_snapshots . "/btrbk_snapshots"))
+                                  root-impermanence-btrfs-layout
+                                  home-impermanence-para-btrfs-layout))
+            (ssh-host-key "\
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID3dDHB5z2hr6ngtjj7TvXzbovUdhGzAODifATQdSJN5")
+            (ssh-privkey-location "/home/graves/.local/share/ssh/id_ed25519")
+            (ssh-pubkey "\
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJENtxo6OSdamVVqPlvwBrI5QLe4Wj4244cf51ubp/Uh")
+            (guix-pubkey "\
+892E3653363EEF353DDC583A434D3614502D450A4655D1B14D5242AAE6D90B46")
+            (firmware (or (and=> (or@ (nongnu packages linux) iwlwifi-firmware)
+                                 list)
+                          '())))
+   (machine (name "2325k55")
+            (efi "/dev/sda1")
+            (encrypted-uuid-mapped "824f71bd-8709-4b8e-8fd6-deee7ad1e4f0")
+            (btrfs-layout (cons* '(home . "/home") root-impermanence-btrfs-layout))
+            (firmware (or (and=> (or@ (nongnu packages linux) iwlwifi-firmware)
+                                 list)
+                          '()))
+            (ssh-host-key "\
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM+hUmwvYmS8BC2HupASOnn88gLkeeZli7b+ji6Wz/M4")
+            (ssh-privkey-location "/home/graves/.ssh/id_ed25519")
+            (ssh-pubkey "\
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPpGldYnfml+ffHz8EuYMUoHXivuhTKzkdUYcIP/f1Bk"))
+   ;; Might use r8169 module but it works fine without, use linux-libre then.
+;;    (machine (name "optiplex")
+;;             (efi "/dev/sda1")
+;;             (encrypted-uuid-mapped "ad1b7435-9957-424d-b9ac-9a9eac040e72")
+;;             (btrfs-layout (cons* '(home . "/home") root-impermanence-btrfs-layout))
+;;             (ssh-host-key "\
+;; ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICc0KTnwphWQ7jm/C9C48o8HAU2Ee4fViAoUvj6w80x1")
+;;             (ssh-privkey-location "/home/graves/.ssh/id_ed25519")
+;;             (ssh-pubkey "\
+;; ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl")
+;;             (guix-pubkey "\
+;; 1BEC0CE366F2325E65FEE419BC43DAACDDF0F334FF8E7B018687557C0B60BB16"))
+   ))
+
+(define %current-machine
+  (let* ((raw-name (call-with-input-file
+                       "/sys/devices/virtual/dmi/id/product_name"
+                     read-line))
+         (name (string-downcase (car (string-split raw-name #\ )))))
+    (find (lambda (in) (equal? name (machine-name in)))
+          %machines)))
+
+
 ;;; Live systems.
 (define my-installation-os
   (delay
@@ -200,7 +283,9 @@
           (feature-hidpi)
           (feature-kernel
            #:kernel linux
-           #:firmware (list linux-firmware))
+           #:firmware (or (and=> (or@ (nongnu packages linux) linux-firmware)
+                                 list)
+                          '()))
           (feature-base-packages
            #:system-packages
            (strings->packages "git" "zip" "unzip" "curl"
@@ -234,10 +319,7 @@
            #:system-services (list (force nonguix-service)
                                    (force guix-science-service))))))))))
 
-(when (string=? (call-with-input-file
-                       "/sys/devices/virtual/dmi/id/product_name"
-                  read-line)
-                 "Precision 3571")
+(when (string= (machine-name %current-machine) "20xwcto1ww")
   (use-modules (gnu packages emacs-xyz)
                (rde packages emacs-xyz)
                (contrib features age)
@@ -245,7 +327,6 @@
                (contrib features machine-learning)
                (contrib features task-runners)
                (contrib packages machine-learning)))
-(use-modules (srfi srfi-2))
 
 
 ;; Privacy without GNUPG: currently using age with ssh and git commit signing. ;; TODO more details later.
@@ -326,11 +407,6 @@
              ;; TODO: Move it to feature-sway or feature-mouse?
              ( ;; (natural_scroll enabled)
               (tap enabled)))))
-   (feature-sway-run-on-tty
-    #:sway-tty-number 1
-    ;; Currently not working properly on locking
-    ;; see https://github.com/NVIDIA/open-gpu-kernel-modules/issues/472
-    #:launch-arguments "--unsupported-gpu")
    (feature-sway-screenshot
     #:screenshot-key 'F10)
    (feature-waybar
@@ -517,10 +593,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
        '("/home/graves/.local/share/ssh/known_hosts"))
       (default-host "*")
       (default-options
-        '((address-family . "inet")))
-      (extra-config
-       `(,(ssh-config "inari")
-         ,(ssh-config "pre_site"))))
+        '((address-family . "inet"))))
      #:ssh-add-keys '("/home/graves/.local/share/ssh/id_sign"))))
 
 
@@ -672,115 +745,137 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
     "emacs-org-pomodoro")))
 
 (define %emacs-features
-  (list
-   (feature-emacs
-    #:default-application-launcher? #t)
-   (feature
-    (name 'emacs-custom)
-    (home-services-getter
-     (const
-      (list
-       (simple-service
-        'emacs-extensions
-        home-emacs-service-type
-        (home-emacs-extension
-         (init-el %extra-init-el)
-         (elisp-packages %additional-elisp-packages)))))))
-   (feature-emacs-message)
-   (feature-emacs-appearance)
-   (feature-emacs-modus-themes
-    #:deuteranopia? #f)
-   (feature-emacs-completion)
-   (feature-emacs-corfu)
-   (feature-emacs-vertico)
-   (feature-emacs-pdf-tools)
-   (feature-emacs-devdocs)
-   (feature-emacs-dape)
-   (feature-emacs-nov-el)
-   (feature-emacs-comint)
-   (feature-emacs-webpaste)
-   (feature-emacs-help)
-   (feature-emacs-all-the-icons)
-   (feature-emacs-debbugs)
-   (feature-emacs-flymake)
-   (feature-emacs-xref)
-   (feature-emacs-info)
-   (feature-emacs-spelling
-    #:spelling-program (@ (gnu packages hunspell) hunspell)
-    #:spelling-dictionaries (strings->packages
-                             "hunspell-dict-en"
-                             "hunspell-dict-fr"))
+  (append
+   (list
+    (feature-emacs
+     #:default-application-launcher? #t)
+    (feature
+     (name 'emacs-custom)
+     (home-services-getter
+      (const
+       (list
+        (simple-service
+         'emacs-extensions
+         home-emacs-service-type
+         (home-emacs-extension
+          (init-el %extra-init-el)
+          (elisp-packages %additional-elisp-packages)))))))
+    (feature-emacs-message)
+    (feature-emacs-appearance)
+    (feature-emacs-modus-themes
+     #:deuteranopia? #f)
+    (feature-emacs-completion)
+    (feature-emacs-corfu)
+    (feature-emacs-vertico)
+    (feature-emacs-pdf-tools)
+    (feature-emacs-devdocs)
+    (feature-emacs-dape)
+    (feature-emacs-nov-el)
+    (feature-emacs-comint)
+    (feature-emacs-webpaste)
+    (feature-emacs-help)
+    (feature-emacs-all-the-icons)
+    (feature-emacs-debbugs)
+    (feature-emacs-flymake)
+    (feature-emacs-xref)
+    (feature-emacs-info)
+    (feature-emacs-spelling
+     #:spelling-program (@ (gnu packages hunspell) hunspell)
+     #:spelling-dictionaries (strings->packages
+                              "hunspell-dict-en"
+                              "hunspell-dict-fr"))
 
-   (feature-emacs-tramp)
-   ;; I lost the work on emacs-dirvish...
-   ;;(feature-emacs-dirvish
-   ;; #:attributes '(file-size))
-   (feature-emacs-eshell)
-   (feature-emacs-monocle
-    #:olivetti-body-width 120)
+    (feature-emacs-tramp)
+    ;; I lost the work on emacs-dirvish...
+    ;;(feature-emacs-dirvish
+    ;; #:attributes '(file-size))
+    (feature-emacs-eshell)
+    (feature-emacs-eat)
+    (feature-emacs-monocle
+     #:olivetti-body-width 120)
 
-   ;; (feature-emacs-telega)
-   (feature-emacs-git)
-   (feature-emacs-org
-    #:org-directory (find-home "~")
-    #:org-todo-keywords
-    '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-      (sequence "|" "HOLD(h)")) ; waiting for someone to be ationable again
-    #:org-tag-alist
-    '((:startgroup)
-      ;; Put mutually exclusive tags here
-      (:endgroup)
-      ("@home" . ?H)
-      ("@work" . ?W)
-      ("batch" . ?b) ; batchable task
-      ("manage" . ?m) ; I'm responsible for the rythm of others
-      ("organize" . ?o) ; better organization
-      ("followup" . ?f))) ; someone is waiting on me to follow up
+    ;; (feature-emacs-telega)
+    (feature-emacs-git)
+    (feature-emacs-org
+     #:org-directory (find-home "~")
+     #:org-todo-keywords
+     '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+       (sequence "DROP(D)" "|" "HOLD(h)")) ; waiting for someone to be ationable again
+     #:org-tag-alist
+     '((:startgroup)
+       ;; Put mutually exclusive tags here
+       (:endgroup)
+       ("@home" . ?H)
+       ("@freesoftware" . ?F)
+       ("@work" . ?W)
+       ("batch" . ?b) ; batchable task
+       ("manage" . ?m) ; I'm responsible for the rythm of others
+       ("organize" . ?o) ; better organization
+       ("followup" . ?f))) ; someone is waiting on me to follow up
 
-   (feature-emacs-org-agenda
-    #:org-agenda-appt? #t
-    #:org-agenda-custom-commands %org-agenda-custom-commands
-    #:org-agenda-files "/home/graves/.cache/emacs/org-agenda-files")
-   (feature-emacs-smartparens #:show-smartparens? #t)
-   (feature-emacs-eglot)
-   (feature-emacs-geiser)
-   (feature-emacs-graphviz)
-   (feature-emacs-guix
-    #:guix-directory "/home/graves/spheres/info/guix")
-   (feature-emacs-tempel #:default-templates? #t)
+    (feature-emacs-org-agenda
+     #:org-agenda-appt? #t
+     #:org-agenda-custom-commands %org-agenda-custom-commands
+     #:org-agenda-files "/home/graves/.cache/emacs/org-agenda-files")
+    (feature-emacs-smartparens #:show-smartparens? #t)
+    (feature-emacs-eglot)
+    ;; (feature-emacs-geiser)
+    (feature-emacs-graphviz)
+    (feature-emacs-guix)
+    (feature-emacs-tempel #:default-templates? #t)
 
-   (feature-emacs-meow)
-   (feature-emacs-undo-fu-session)
-   (feature-emacs-elfeed #:elfeed-org-files '("~/resources/feeds.org"))
-   (feature-emacs-org-ql)
-   (feature-emacs-org-agenda-files-track)
-   (feature-emacs-org-dailies
-    #:org-dailies-directory "~/spheres/life/journal/"
-    #:org-roam-dailies? #f)
-   (feature-emacs-org-roam
-    #:org-roam-directory "~/resources/roam/"
-    #:org-roam-capture-templates  ;resource template is provided by citar
-    '(("m" "main" plain "%?"
-       :if-new (file+head "main/${slug}.org" "#+title: ${title}\n")
-       :immediate-finish t
-       :unnarrowed t)))
+    (feature-emacs-meow)
+    (feature-emacs-undo-fu-session)
+    (feature-emacs-elfeed #:elfeed-org-files '("~/resources/feeds.org"))
+    (feature-emacs-org-ql)
+    (feature-emacs-org-agenda-files-track)
+    (feature-emacs-org-dailies
+     #:org-dailies-directory "~/spheres/life/journal/"
+     #:org-roam-dailies? #f)
+    (feature-emacs-org-roam
+     #:org-roam-directory "~/resources/roam/"
+     #:org-roam-capture-templates  ;resource template is provided by citar
+     '(("m" "main" plain "%?"
+        :if-new (file+head "main/${slug}.org" "#+title: ${title}\n")
+        :immediate-finish t
+        :unnarrowed t)))
 
-   (feature-emacs-citation
-    #:citar-library-paths (list "~/resources/files/library")
-    #:citar-notes-paths (list "~/resources/roam/references")
-    #:global-bibliography (list "~/resources/biblio.bib" "~/resources/gen.bib"))
+    (feature-emacs-citation
+     #:citar-library-paths (list "~/resources/files/library")
+     #:citar-notes-paths (list "~/resources/roam/references")
+     #:global-bibliography (list "~/resources/biblio.bib" "~/resources/gen.bib"))
 
-   (feature-emacs-treebundel
-    #:treebundel-workspace-root "~/spheres/info/")
+    (feature-go)
 
-   (feature-go)
-   (feature-guile)
-   (feature-python)
-
-   (feature-emacs-elisp)
-   (feature-emacs-power-menu)
-   (feature-emacs-shell)
-   (feature-emacs-project)))
+    (feature-emacs-elisp)
+    (feature-emacs-power-menu)
+    (feature-emacs-shell)
+    (feature-vterm))
+   (let* ((commit "1270f2581e47b97aa3c3b7eecfe3dc65bd24c412")
+          (revision "4")
+          (emacs-arei
+           (package
+             (inherit (@ (rde packages emacs-xyz) emacs-arei-latest))
+             (name "emacs-arei")
+             (version (git-version "0.9.6" revision commit))
+             (source
+              (origin
+                (inherit (package-source emacs-arei))
+                (uri (git-reference
+                       (url "https://git.sr.ht/~abcdw/emacs-arei")
+                       (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "1xqhqibvf6d8ql3hl5l486wgy76m8z0a2ix28phbkn2jj4c79kkl")))))))
+     (list (feature-guile #:emacs-arei emacs-arei
+                          #:guile-ares-rs (@ (gnu packages guile-xyz) guile-ares-rs))
+           (feature-python
+            #:emacs-arei-python
+            ((package-input-rewriting/spec
+              `(("emacs-arei" . ,(const emacs-arei))))
+             emacs-arei-python))))
+   (list (feature-emacs-project))))
 
 
 ;;; Main features
@@ -794,9 +889,6 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
      #:system-services
      (list (service (@ (gnu services cups) cups-service-type))))
 
-    ;; (feature-postgresql
-    ;;  #:postgresql-roles
-    ;;  (list (postgresql-role (name "manifesto") (create-database? #t))))
     ;; (feature-docker)
 
     (feature-desktop-services)
@@ -809,15 +901,13 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
      #:default-font-size 14
      #:extra-font-packages
      (cons* font-gnu-unifont font-liberation
-            (or (and=> (false-if-exception
-                        (@ (odf-dsfr packages fonts) font-marianne))
+            (or (and=> (or@ (odf-dsfr packages fonts) font-marianne)
                        list)
                 '())))
 
     (feature-foot
      #:default-terminal? #f
      #:backup-terminal? #t)
-    (feature-vterm)
     (feature-zsh #:enable-zsh-autosuggestions? #t)
     (feature-bash)
     ;; (feature-transmission)
@@ -870,7 +960,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
        "alsa-utils"  ; sound
        "rsync" "zip"  ; "thunar"  ; documents
        "wev" "wlsunset" "cage"  ; wayland
-       "recutils" "curl" "jq" "htop" "git-filter-repo" ; utils
+       "recutils" "curl" "jq" "htop" ; utils
        "btrbk" ; snapshot btrfs subvolumes
        "atool" "unzip" ; provides generic extract tool aunpack
        "ccls"
@@ -902,178 +992,89 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
             (string-append "/home/graves/" subvol))))
    '("projects" "spheres" "resources" "archives" ".local" ".cache")))
 
-(define-record-type* <machine> machine make-machine
-  machine?
-  this-machine
-  (name machine-name)                                    ; string
-  (efi machine-efi)                                      ; file-system
-  (encrypted-uuid-mapped machine-encrypted-uuid-mapped   ; maybe-uuid
-                         (default #f))
-  (btrfs-layout machine-btrfs-layout                     ; alist
-                (default root-impermanence-btrfs-layout))
-  (architecture machine-architecture                     ; string
-                (default "x86_64-linux"))
-  (firmware machine-firmware                             ; list of packages
-            (delayed)
-            (default '()))
-  (nvidia? machine-nvidia?                               ; boolean
-           (default #f))
-  (kernel-build-options machine-kernel-build-options     ; list of options
-                        (default '()))
-  ;; SSH key identifying the ssh daemon, found in /etc/ssh/ssh_host_ed25519.pub
-  (ssh-host-key machine-ssh-host-key                     ; string
-                (default #f))
-  ;; SSH key used to connect between machines (as in ssh -i).
-  (ssh-privkey-location machine-ssh-privkey-location     ; string
-                        (default #f))
-  (ssh-pubkey machine-ssh-pubkey                         ; string
-              (default #f))
-  ;; key to authentify archives, found in /etc/guix/signing-key.pub
-  (guix-pubkey machine-guix-pubkey                         ; string
-               (default #f)))
-
 (define (machine-root-impermanence? machine)
   (not (assoc 'root (machine-btrfs-layout machine))))
 
 (define (machine-home-impermanence? machine)
   (not (assoc 'home (machine-btrfs-layout machine))))
 
-(define %machines
-  (list
-   (machine (name "precision")
-            (efi "/dev/nvme0n1p1")
-            (encrypted-uuid-mapped "92f9af3d-d860-4497-91ea-9e46a1dacf7a")
-            (btrfs-layout (append '(;;(data . "/data")
-                                    (btrbk_snapshots . "/btrbk_snapshots"))
-                                  root-impermanence-btrfs-layout
-                                  home-impermanence-para-btrfs-layout))
-            (firmware (list linux-firmware))
-            (nvidia? #t)
-            (ssh-host-key "\
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKFEHSLyMo2hdIMmeRhaT1uObwahRqaQqHnAe0/bqLXn")
-            (ssh-privkey-location "/home/graves/.local/share/ssh/id_ed25519")
-            (ssh-pubkey "\
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJENtxo6OSdamVVqPlvwBrI5QLe4Wj4244cf51ubp/Uh")
-            (guix-pubkey "\
-B7D7B8FE083E69FFDD54E19C62B1F906049CF1CF8DC637C170B43BFFA8871050"))
-   (machine (name "20xwcto1ww")
-            (efi "/dev/nvme0n1p1")
-            (encrypted-uuid-mapped "9dbcac0f-e5bd-45fc-a7f2-5841c5ea71b9")
-            (btrfs-layout (append '(;;(data . "/data")
-                                    (btrbk_snapshots . "/btrbk_snapshots"))
-                                  root-impermanence-btrfs-layout
-                                  home-impermanence-para-btrfs-layout))
-            (firmware (list iwlwifi-firmware)))
-   (machine (name "2325k55")
-            (efi "/dev/sda1")
-            (encrypted-uuid-mapped "824f71bd-8709-4b8e-8fd6-deee7ad1e4f0")
-            (btrfs-layout (cons* '(home . "/home") root-impermanence-btrfs-layout))
-            (firmware (list iwlwifi-firmware))
-            (ssh-host-key "\
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM+hUmwvYmS8BC2HupASOnn88gLkeeZli7b+ji6Wz/M4")
-            (ssh-privkey-location "/home/graves/.ssh/id_ed25519")
-            (ssh-pubkey "\
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPpGldYnfml+ffHz8EuYMUoHXivuhTKzkdUYcIP/f1Bk")
-            (guix-pubkey "\
-DF2804169A9219BD236B4C04106002FACAE5766525A2A668709C36F2741BDB3B"))
-   ;; Might use r8169 module but it works fine without, use linux-libre then.
-   (machine (name "optiplex")
-            (efi "/dev/sda1")
-            (encrypted-uuid-mapped "ad1b7435-9957-424d-b9ac-9a9eac040e72")
-            (btrfs-layout (cons* '(home . "/home") root-impermanence-btrfs-layout))
-            (ssh-host-key "\
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICc0KTnwphWQ7jm/C9C48o8HAU2Ee4fViAoUvj6w80x1")
-            (ssh-privkey-location "/home/graves/.ssh/id_ed25519")
-            (ssh-pubkey "\
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl")
-            (guix-pubkey "\
-1BEC0CE366F2325E65FEE419BC43DAACDDF0F334FF8E7B018687557C0B60BB16"))))
+(define %mapped-device
+  (let ((uuid (bytevector->uuid
+               (string->uuid (machine-encrypted-uuid-mapped %current-machine)))))
+    (and (uuid? uuid)
+         (mapped-device
+           (source uuid)
+           (targets (list "enc"))
+           (type luks-device-mapping)))))
 
-(define %current-machine
-  (let* ((raw-name (call-with-input-file
-                       "/sys/devices/virtual/dmi/id/product_name"
-                     read-line))
-         (name (string-downcase (car (string-split raw-name #\ )))))
-    (find (lambda (in) (equal? name (machine-name in)))
-          %machines)))
+(define root-fs
+  (file-system
+    (mount-point "/")
+    (type (if (machine-root-impermanence? %current-machine)
+              "tmpfs"
+              "btrfs"))
+    (device (if (machine-root-impermanence? %current-machine)
+                "none"
+                "/dev/mapper/enc"))
+    (needed-for-boot? #t)
+    (check? #f)))
 
-  (define %mapped-device
-    (let ((uuid (bytevector->uuid
-                  (string->uuid (machine-encrypted-uuid-mapped %current-machine)))))
-      (and (uuid? uuid)
-          (mapped-device
-            (source uuid)
-            (targets (list "enc"))
-            (type luks-device-mapping)))))
+(define home-fs
+  (if (machine-home-impermanence? %current-machine)
+      (file-system
+        (mount-point "/home/graves")
+        (type "tmpfs")
+        (device "none")
+        ;; User should have dir ownership.
+        (options "uid=1000,gid=998")
+        (dependencies (or (and=> %mapped-device list) '())))
+      (file-system
+        (mount-point "/home")
+        (type "btrfs")
+        (device "/dev/mapper/enc")
+        (options "autodefrag,compress=zstd,subvol=home")
+        (dependencies (or (and=> %mapped-device list) '())))))
 
-  (define root-fs
-    (file-system
-      (mount-point "/")
-      (type (if (machine-root-impermanence? %current-machine)
-                "tmpfs"
-                "btrfs"))
-      (device (if (machine-root-impermanence? %current-machine)
-                  "none"
-                  "/dev/mapper/enc"))
-      (needed-for-boot? #t)
-      (check? #f)))
+(define get-btrfs-file-system
+  (match-lambda
+    ((subvol . mount-point)
+     (file-system
+       (type "btrfs")
+       (device "/dev/mapper/enc")
+       (mount-point mount-point)
+       (options
+        (format #f "~asubvol=~a"
+                (if (string=? "/swap" mount-point)
+                    "nodatacow,nodatasum,compress=no,"
+                    "autodefrag,compress=zstd,")
+                subvol))
+       (needed-for-boot? (member mount-point
+                                 '("/gnu/store" "/boot" "/var/guix")))
+       (dependencies (append (or (and=> %mapped-device list) '())
+                             (if (not (machine-root-impermanence? %current-machine))
+                                 (list root-fs)
+                                 '())
+                             (if (and (not (machine-home-impermanence? %current-machine))
+                                      (string-prefix? "/home/" mount-point))
+                                 (list home-fs)
+                                 '())))))))
 
-  (define home-fs
-    (if (machine-home-impermanence? %current-machine)
-        (file-system
-          (mount-point "/home/graves")
-          (type "tmpfs")
-          (device "none")
-          ;; User should have dir ownership.
-          (options "uid=1000,gid=998")
-          (dependencies (or (and=> %mapped-device list) '())))
-        (file-system
-          (mount-point "/home")
-          (type "btrfs")
-          (device "/dev/mapper/enc")
-          (options "autodefrag,compress=zstd,subvol=home")
-          (dependencies (or (and=> %mapped-device list) '())))))
+(define swap-fs (get-btrfs-file-system '(swap . "/swap")))
 
-  (define get-btrfs-file-system
-    (match-lambda
-      ((subvol . mount-point)
-        (file-system
-         (type "btrfs")
-         (device "/dev/mapper/enc")
-         (mount-point mount-point)
-          (options
-          (format #f "~asubvol=~a"
-                  (if (string=? "/swap" mount-point)
-                      "nodatacow,nodatasum,compress=no,"
-                      "autodefrag,compress=zstd,")
-                  subvol))
-         (needed-for-boot? (member mount-point
-                                   '("/gnu/store" "/boot" "/var/guix")))
-         (dependencies (append (or (and=> %mapped-device list) '())
-                               (if (not (machine-root-impermanence? %current-machine))
-                                   (list root-fs)
-                                   '())
-                               (if (and (not (machine-home-impermanence? %current-machine))
-                                        (string-prefix? "/home/" mount-point))
-                                   (list home-fs)
-                                   '())))))))
-
-  (define swap-fs (get-btrfs-file-system '(swap . "/swap")))
-
-  (define btrfs-file-systems
-    (append
-     (list root-fs)
-     (if (machine-home-impermanence? %current-machine)
-         (list home-fs)
-         '())
-     (map get-btrfs-file-system
-          (machine-btrfs-layout %current-machine))
-     (list (file-system
-             (mount-point "/boot/efi")
-             (type "vfat")
-             (device (machine-efi %current-machine))
-             (needed-for-boot? #t))
-           swap-fs)))
+(define btrfs-file-systems
+  (append
+   (list root-fs)
+   (if (machine-home-impermanence? %current-machine)
+       (list home-fs)
+       '())
+   (map get-btrfs-file-system
+        (machine-btrfs-layout %current-machine))
+   (list (file-system
+           (mount-point "/boot/efi")
+           (type "vfat")
+           (device (machine-efi %current-machine))
+           (needed-for-boot? #t))
+         swap-fs)))
 
 (use-modules (gnu home-services ssh)
              (gnu services security)
@@ -1083,7 +1084,7 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl
 (define machine->build-machine
   (lambda (target-machine)
     #~(build-machine
-       (name #$(string-append (machine-name target-machine) ".local"))
+       (name #$(machine-name target-machine))
        (systems (list #$(machine-architecture target-machine)))
        (user "graves")
        (host-key #$(machine-ssh-host-key target-machine))
@@ -1141,8 +1142,9 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl
       (feature-kernel
        #:kernel (if (null? (machine-firmware %current-machine))
                     linux-libre
-                    linux)
-       #:initrd microcode-initrd
+                    (@ (nongnu packages linux) linux))
+       #:initrd (or (or@ (nongnu system linux-initrd) microcode-initrd)
+                    (@ (gnu system linux-initrd) base-initrd))
        #:initrd-modules
        (append (list "vmd") (@(gnu system linux-initrd) %base-initrd-modules))
        #:kernel-arguments  ; not clear, but these are additional to defaults
@@ -1176,47 +1178,23 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl
                            ".config/guix/current"))
                 (system ".guix-home/activate")))))
          (list))
+     ;; Device specific features
+     (or (and-let* ((nvidia? (machine-nvidia? %current-machine))
+                    (mesa-utils (or@ (gnu packages gl) mesa-utils)))
+           (list (feature-sway-run-on-tty
+                  #:sway-tty-number 1
+                  ;; Currently not working properly on locking
+                  ;; see https://github.com/NVIDIA/open-gpu-kernel-modules/issues/472
+                  #:launch-arguments '("--unsupported-gpu"))
+                 (feature-custom-services
+                  #:feature-name-prefix 'machine
+                  #:system-services
+                  (list (simple-service 'nvidia-mesa-utils-package
+                                        profile-service-type
+                                        mesa-utils)))))
+         (list (feature-sway-run-on-tty #:sway-tty-number 1)))
      ;; Machine-specific features
      (match (machine-name %current-machine)
-       ("precision"
-        (append
-         (list (feature-host-info
-                #:host-name "precision"
-                #:timezone  "Europe/Paris"
-                #:locale "fr_FR.utf8")
-               (feature-custom-services
-                #:feature-name-prefix 'machine
-                #:system-services
-                (list (simple-service 'nvidia-mesa-utils-package
-                                      profile-service-type
-                                      (list (@ (gnu packages gl) mesa-utils)))))
-               (feature-dictation)
-               (feature-age
-                #:age (hidden-package (@ (gnu packages golang-crypto) age))
-                #:age-ssh-key (find-home "~/.local/share/ssh/id_encrypt"))
-               (feature-security-token)
-               (feature-password-store
-                #:default-pass-prompt? #t
-                #:password-store (@ (gnu packages password-utils) pass-age)
-                #:password-store-directory (string-append cwd "/files/pass")
-                #:remote-password-store-url "git@git.sr.ht:~ngraves/pass")
-               (force %ssh-feature))
-         (force %mail-features)
-         ;; (list
-          ;; (feature-custom-services
-          ;;  #:feature-name-prefix 'build-machines
-          ;;  #:system-services
-          ;;  (list
-          ;;   (simple-service
-          ;;    'build-machines
-          ;;    guix-service-type
-          ;;    (guix-extension
-          ;;     (build-machines
-          ;;      (map machine->build-machine
-          ;;           ;; %machines
-          ;;           (remove (cut eq? %current-machine <>) %machines)
-          ;;           )))))))
-         ))
        ("2325k55"
         (list (feature-host-info
                #:host-name "2325k55"
@@ -1230,51 +1208,76 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl
                #:locale "fr_FR.utf8")
               (feature-ssh)))
        ("20xwcto1ww"
-        (list (feature-host-info
-               #:host-name "20xwcto1ww"
-               #:timezone  "Europe/Paris"
-               #:locale "fr_FR.utf8")
-              (feature-ssh)))
+        (append
+         (list (feature-host-info
+                #:host-name "20xwcto1ww"
+                #:timezone  "Europe/Paris"
+                #:locale "en_US.utf8")
+               (feature-age
+                #:age (hidden-package (@ (gnu packages golang-crypto) age))
+                #:age-ssh-key (find-home "~/.local/share/ssh/id_encrypt"))
+               (feature-security-token)
+               (feature-password-store
+                #:default-pass-prompt? #t
+                #:password-store (@ (gnu packages password-utils) pass-age)
+                #:password-store-directory (string-append cwd "/files/pass")
+                #:remote-password-store-url "git@git.sr.ht:~ngraves/pass")
+               (force %ssh-feature))
+         ;; (list
+         ;; (feature-custom-services
+         ;;  #:feature-name-prefix 'build-machines
+         ;;  #:system-services
+         ;;  (list
+         ;;   (simple-service
+         ;;    'build-machines
+         ;;    guix-service-type
+         ;;    (guix-extension
+         ;;     (build-machines
+         ;;      (map machine->build-machine
+         ;;           ;; %machines
+         ;;           (filter machine-guix-pubkey
+         ;;                   (delete %current-machine %machines)))))))))
+         (force %mail-features)))
        (_ '()))
      ;; Cross-machine features (ssh daemon + guix daemon offload)
-     (let ((other-machines (remove (cut eq? %current-machine <>) %machines)))
-       (list (feature-custom-services
-              #:feature-name-prefix 'ssh-daemon
-              #:home-services
-              (list (simple-service
-                     'ssh-server-authorized-key
-                     home-files-service-type
-                     `((".ssh/authorized_keys"
-                        ,(plain-file "authorized-keys"
-                                     (string-join
-                                      (map machine-ssh-pubkey other-machines)
-                                      "\n"))))))
-              #:system-services
-              (list (service openssh-service-type
-                             (openssh-configuration
-                              (openssh
-                               (@ (gnu packages ssh) openssh-sans-x))
-                              (allow-empty-passwords? #t)
-                              (password-authentication? #f)))))
-             (feature-custom-services
-              #:feature-name-prefix 'ssh-build-machines
-              #:home-services
-              (list
-               (simple-service
-                'local-ssh-machines
-                home-ssh-service-type
-                (home-ssh-extension
-                 (extra-config (map machine->ssh-host other-machines))))))
-             (feature-custom-services
-              #:feature-name-prefix 'build-machines-keys
-              #:system-services
-              (list
-               (simple-service
-                'build-machines
-                guix-service-type
-                (guix-extension
-                 (authorized-keys
-                  (map machine->guix-pubkey other-machines)))))))))))
+     (list (feature-custom-services
+            #:feature-name-prefix 'ssh-daemon
+            #:home-services
+            (list (simple-service
+                   'ssh-server-authorized-key
+                   home-files-service-type
+                   `((".ssh/authorized_keys"
+                      ,(plain-file "authorized-keys"
+                                   (string-join
+                                    (filter-map machine-ssh-pubkey %machines)
+                                    "\n"))))))
+            #:system-services
+            (list (service openssh-service-type
+                           (openssh-configuration
+                            (openssh
+                             (@ (gnu packages ssh) openssh-sans-x))
+                            (allow-empty-passwords? #t)
+                            (password-authentication? #f)))))
+           (feature-custom-services
+            #:feature-name-prefix 'ssh-build-machines
+            #:home-services
+            (list
+             (simple-service
+              'local-ssh-machines
+              home-ssh-service-type
+              (home-ssh-extension
+               (extra-config (map machine->ssh-host %machines))))))
+           (feature-custom-services
+            #:feature-name-prefix 'build-machines-keys
+            #:system-services
+            (list
+             (simple-service
+              'build-machines
+              guix-service-type
+              (guix-extension
+               (authorized-keys
+                (map machine->guix-pubkey
+                     (filter machine-guix-pubkey %machines)))))))))))
 
 
 ;;; rde-config and helpers for generating home-environment and
@@ -1285,9 +1288,8 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl
                   (features (append %user-features
                                     %main-features
                                     %machine-features))))
-         (maybe->packages (false-if-exception
-                           (@ (guix-stack submodules)
-                              submodules-dir->packages)))
+         (maybe->packages (or@ (guix-stack submodules)
+                               submodules-dir->packages))
          (dev-packages (and=> maybe->packages
                               (cut <> "packages" #:git-fetch? #t))))
     (if dev-packages
@@ -1295,20 +1297,30 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl
         config)))
 
 ;; Dispatcher, self explanatory.
-(match-let ((((? (cut string-suffix? "guix" <>)) str rest ...) (command-line)))
-  (match str
+(match-let* ((((? (lambda (cmd)
+                    (any (cut string-suffix? <> cmd)
+                         (list "guile" "guix")))) . rest)
+              (command-line))
+             ((subcommand . rest) (if (null? rest) (cons '() '()) rest)))
+  (match subcommand
+    ('() %config)  ; (command-line) is guile, probably in ares.
     ("rde" %config)  ; See guix-rde channel.
     ("home" (rde-config-home-environment %config))
-    ("system" (match-let (((action opts ...) rest))
-                (match action
-                  ("vm" (force my-installation-os))
-                  ("image" (force my-installation-os))
-                  ;; sudo -E guix system CMD configuration.scm
-                  (_  (if (machine-nvidia? %current-machine)
-                          ((nonguix-transformation-nvidia
-                            #:driver (@ (nongnu packages nvidia) nvdb))
-                           (rde-config-operating-system %config))
-                          (rde-config-operating-system %config))))))
+    ("system"
+     (match-let (((action opts ...) rest))
+       (match action
+         ("vm" (force my-installation-os))
+         ("image" (force my-installation-os))
+         ;; sudo -E guix system CMD configuration.scm
+         (_
+          (or (and-let* ((nvidia (machine-nvidia? %current-machine))
+                         (nonguix-transformation-nvidia
+                          (or@ (nonguix transformations)
+                               nonguix-transformation-nvidia))
+                         (nvdb (or@ (nongnu packages nvidia) nvdb)))
+                ((nonguix-transformation-nvidia #:driver nvdb)
+                 (rde-config-operating-system %config)))
+              (rde-config-operating-system %config))))))
     ("pull" ((@ (guix-stack channel-submodules) submodules-dir->channels)
              "channels"
              #:type '(branch . (or "origin/master" "origin/main"))))
@@ -1385,7 +1397,6 @@ rde, home, pull, and system subcommands only!"))))
 ;; - age integration or sequoia.
 ;; - OVH email aliases.
 ;; - maybe switch to programmer-beop: `https://github.com/luxcem/programmer-beop'
-;; - vterm evil-mode integration. see in commit 0981704751f201eaf4e852421ae8fd7d1ffa7dd9
 
 ;;; Currently abandonned:
 ;; - system-connection services. see commit log.

@@ -7,6 +7,7 @@ path = [
         ".guix-authorizations",
         "channels.lock",
         "channels.scm",
+        "config/live/**",
         "dist/**",
         "files/**",
         "manifest.scm",

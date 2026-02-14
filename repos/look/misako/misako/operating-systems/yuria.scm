@@ -47,7 +47,6 @@
              realtek-firmware
              %base-firmware))
 
-    (kernel linux)
     (kernel-arguments
       (cons* "amdgpu.backlight=0"
              (operating-system-user-kernel-arguments base)))

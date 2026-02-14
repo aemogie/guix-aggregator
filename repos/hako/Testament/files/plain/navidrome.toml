@@ -1,6 +1,0 @@
-BaseUrl = 'https://music.urspace.moe'
-Address = '127.0.0.1'
-Port = 43502
-MusicFolder = '/mnt/Ocimeae/Library/Music'
-EnableSharing = true
-Scanner.Extractor = 'ffmpeg'

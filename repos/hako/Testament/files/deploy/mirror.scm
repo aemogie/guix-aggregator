@@ -1,7 +1,7 @@
 (use-modules (gnu machine)
              (gnu machine ssh))
 
-(define %os (load "../../config/mirror.scm"))
+(define %os (load "../tangled/mirror.scm"))
 
 (define* (mirror #:key mirror-name host-name system ssh-host-key (bios-boot #f))
   (machine

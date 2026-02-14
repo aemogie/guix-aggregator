@@ -115,12 +115,12 @@
                (list (syncthing-folder
                        (id "default")
                        (label "default")
-                       (path "~/sync")
+                       (path (format #f "~a/sync" %user-home))
                        (devices (list om lamb)))
                      (syncthing-folder
-                       (id "paperless-share")
-                       (label "paperless-share")
-                       (path (format #f "~a/data/paperless-ngx" %user-home))
+                       (id "paperless-upload")
+                       (label "paperless-upload")
+                       (path (format #f "~a/data/paperless" %user-home))
                        (devices (list om lamb))))))))))
 
       (service

@@ -54,12 +54,13 @@
   (getcwd))
 
 (define (testament-plain . name)
-  (let ((plain (in-vicinity testament-path "files/plain")))
+  (let ((plain (in-vicinity testament-path "files/plain"))
+        (tangled (in-vicinity testament-path "files/tangled")))
     (match name
       (()
        (local-file plain #:recursive? #t))
       ((file)
-       (or (search-path (list plain) file)
+       (or (search-path (list plain tangled) file)
            (leave (G_ "file '~a' not found.~%") file))))))
 
 

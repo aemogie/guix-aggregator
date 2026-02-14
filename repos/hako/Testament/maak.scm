@@ -51,11 +51,12 @@
 (define (with-output-to-string* thunk)
   (let* ((port (mkstemp "/tmp/testament-XXXXXX"))
          (file (port-filename port))
-         (_ (close port))
-         (_ (with-output-to-file file thunk))
-         (output (call-with-input-file file get-string-all))
-         (_ (delete-file file)))
-    output))
+         (output
+          (and (with-output-to-file file thunk)
+               (call-with-input-file file get-string-all))))
+    (close port)
+    (delete-file file)
+    (string-trim-both output)))
 
 (define ($ cmd)
   (let ((exit-code (status:exit-val (apply system* cmd))))
@@ -69,33 +70,30 @@ Exit code: ~a~%"
 (define* ($guix args #:key local? (channels "channels.lock"))
   (if local?
       ($ `("./pre-inst-env" "guix" ,@args))
-      ($ `("guix" "time-machine"
-           ,(string-append "--channels=" channels)
-           ,%substitute-urls
-           "--" ,@args))))
+      ($ `("guix" "time-machine" "-C" ,channels ,%substitute-urls "--" ,@args))))
 
 (define ($emacs args)
   ($guix `("shell" "emacs-minimal" "--" "emacs" ,@args)))
 
 
 (define (%.org->%.scm file)
+  (when (file-exists? "files/tangled")
+    (delete-file-recursively "files/tangled"))
   ($emacs `("-quick" "-batch"
             "--load" "ob-tangle"
             "--eval" "(setopt org-babel-load-languages '((shell . t)))"
             "--eval" "(setopt org-confirm-babel-evaluate nil)"
             "--eval" ,(format #f "(org-babel-tangle-file ~s)"
-                              (string-append file ".org"))))
-  (string-append file ".scm"))
+                              (string-append "config/" file ".org"))))
+  (string-append "files/tangled/" file ".scm"))
 
 
 (define* (build-% system #:key local?)
-  ($guix `("system" "build"
-           ,(%.org->%.scm (in-vicinity "config" system))
-           ,@%build-options)
+  ($guix `("system" "build" ,(%.org->%.scm system) ,@%build-options)
          #:local? local?))
 
 (define* (deploy-% system #:key local?)
-  (let* ((config (%.org->%.scm (in-vicinity "config" system)))
+  (let* ((config (%.org->%.scm system))
          (deploy (in-vicinity "files/deploy" (basename config))))
     ($guix `("deploy" ,deploy
              ,@(if %deploy-command
@@ -105,15 +103,14 @@ Exit code: ~a~%"
 
 (define (live-% variant)
   (let ((src
-         (string-trim-right
-          (with-output-to-string*
-           (lambda ()
-             ($guix `("system" "image"
-                      ,(format #f "files/plain/live/~a.scm" variant)
-                      "--image-type=iso9660"
-                      "--load-path=modules/installer"
-                      "-s" ,%livecd-system
-                      ,@%build-options))))))
+         (with-output-to-string*
+          (lambda ()
+            ($guix `("system" "image"
+                     ,(format #f "config/live/~a.scm" variant)
+                     "--image-type=iso9660"
+                     "--load-path=modules/installer"
+                     "-s" ,%livecd-system
+                     ,@%build-options)))))
         (dst
          (in-vicinity "dist"
                       (format #f "rosenthal-~a-~a.~a.iso"
@@ -166,9 +163,7 @@ Exit code: ~a~%"
   (deploy-nuporta))
 
 (define (live-minimal)       (live-% "minimal"))
-(define (live-minimal-hidpi) (live-% "minimal-hidpi"))
 (define (live-default)       (live-% "default"))
 (define (live)
   (live-minimal)
-  (live-minimal-hidpi)
   (live-default))

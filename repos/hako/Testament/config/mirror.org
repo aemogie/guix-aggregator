@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright © 2025-2026 Hilton Chain <hako@ultrarare.space>
 #+TITLE: mirror
-#+PROPERTY: header-args :noweb-prefix no
+#+PROPERTY: header-args :mkdirp yes :noweb-prefix no
 
 ** Guix System
-#+begin_src scheme :tangle mirror.scm :noweb yes
+#+begin_src scheme :tangle ../files/tangled/mirror.scm :noweb yes
   (use-modules <<module>>)
 
   (define (%os mirror-name bios-boot)
@@ -33,7 +33,7 @@
        (list (swap-space
                (target (file-system-label "swap")))))
       (users (cons* <<user>> %base-user-accounts))
-      (packages (append (specs->pkgs+out "mosh" "rsync") %base-packages))
+      (packages (append (specifications->packages '("mosh" "rsync")) %base-packages))
       (services
        (cons* <<service>>
 
@@ -93,7 +93,7 @@
     (name "hako")
     (group "users")
     (supplementary-groups '("wheel"))
-    (shell (file-append (spec->pkg "fish") "/bin/fish")))
+    (shell (file-append fish "/bin/fish")))
   (user-account
     (name "jonathan")
     (group "users")
@@ -109,7 +109,7 @@ Administration accounts.
   (user-account
     (inherit %root-account)
     (password #f)
-    (shell (file-append (spec->pkg "fish") "/bin/fish")))
+    (shell (file-append fish "/bin/fish")))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -137,7 +137,7 @@ Administration accounts.
 #+begin_src scheme :noweb-ref service
   (service openssh-service-type
     (openssh-configuration
-      (openssh (spec->pkg "openssh-sans-x"))
+      (openssh openssh-sans-x)
       (permit-root-login 'prohibit-password)
       (password-authentication? #f)))
 #+end_src
@@ -161,8 +161,8 @@ Administration accounts.
 #+begin_src scheme :noweb yes :noweb-ref service
   (service caddy-service-type
     (caddy-configuration
-      (caddy (spec->pkg "caddy-dolly"))
-      (caddyfile (local-file (testament-plain (string-append mirror-name ".caddyfile"))))))
+      (caddy caddy/dolly)
+      (caddyfile (local-file (testament-plain (string-append "caddy/" mirror-name ".caddyfile"))))))
 #+end_src
 
 *** mirroring
@@ -183,7 +183,7 @@ Administration accounts.
                              (error "found ongoing syncing process, exiting"))
                            (begin
                              (mkdir-p "/var/cache/guix-moe/narinfo")
-                             (invoke #$(file-append (spec->pkg "rsync") "/bin/rsync")
+                             (invoke #$(file-append rsync "/bin/rsync")
                                      "-az" "--delete"
                                      "rsync://cache.guix.moe/narinfo/"
                                      "/var/cache/guix-moe/narinfo/")))))))
@@ -228,4 +228,12 @@ Guix System - services
   (gnu services security)
   (gnu services ssh)
   (gnu services sysctl)
+#+end_src
+
+Guix packages
+#+begin_src scheme :noweb-ref module
+  (gnu packages rsync)
+  (gnu packages shells)
+  (gnu packages ssh)
+  (rosenthal packages web)
 #+end_src

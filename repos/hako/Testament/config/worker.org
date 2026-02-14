@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright © 2025-2026 Hilton Chain <hako@ultrarare.space>
 #+TITLE: worker
-#+PROPERTY: header-args :noweb-prefix no
+#+PROPERTY: header-args :mkdirp yes :noweb-prefix no
 
 ** Guix System
-#+begin_src scheme :tangle worker.scm :noweb yes
+#+begin_src scheme :tangle ../files/tangled/worker.scm :noweb yes
   (use-modules <<module>>)
 
   (define (%os host-name system 32bit-support? workers threads-per-worker bios-boot)
@@ -34,10 +34,10 @@
                (target (file-system-label "swap")))))
       (users (cons* <<user>> %base-user-accounts))
       (packages
-       (append (specs->pkgs+out
-                "mosh"
-                "rsync"
-                <<package>>)
+       (append (specifications->packages
+                '("mosh"
+                  "rsync"
+                  <<package>>))
                %base-packages))
       (services
        (cons* <<service>>
@@ -101,7 +101,7 @@
     (name "hako")
     (group "users")
     (supplementary-groups '("wheel"))
-    (shell (file-append (spec->pkg "fish") "/bin/fish")))
+    (shell (file-append fish "/bin/fish")))
   (user-account
     (name "jonathan")
     (group "users")
@@ -140,7 +140,7 @@
 #+begin_src scheme :noweb-ref service
   (service openssh-service-type
     (openssh-configuration
-      (openssh (spec->pkg "openssh-sans-x"))
+      (openssh openssh-sans-x)
       (permit-root-login 'prohibit-password)
       (password-authentication? #f)))
 #+end_src
@@ -190,4 +190,10 @@ Guix System - services
   (gnu services ssh)
   (gnu services sysctl)
   (rosenthal services networking)
+#+end_src
+
+Guix packages
+#+begin_src scheme :noweb-ref module
+  (gnu packages shells)
+  (gnu packages ssh)
 #+end_src

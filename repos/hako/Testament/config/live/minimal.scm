@@ -1,17 +1,24 @@
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 ;;; Copyright © 2026 Hilton Chain <hako@ultrarare.space>
 
-(use-modules (guix packages)
+(use-modules (srfi srfi-19)
+             (guix gexp)
+             (guix packages)
              (guix scripts pull)
-             (nonguix)
-             (rosenthal)
+             (nonguix transformations)
+             (rosenthal utils transformations)
+             (gnu system)
              (gnu system install)
              (gnu system locale)
              (gnu system privilege)
+             (gnu packages)
+             (gnu packages base)
              (gnu packages guile)
              (gnu packages linux)
              (gnu packages package-management)
-             (gnu packages texinfo))
+             (gnu packages shells)
+             (gnu packages texinfo)
+             (nongnu packages linux))
 
 
 ;;;
@@ -40,7 +47,8 @@
   (operating-system
     (inherit %installation-os)
     (host-name "live-system")
-    (label "Rosenthal Live System")
+    (label (format #f "Guix System installation (~a build)"
+                   (date->string (current-date) "~Y-~m-~d")))
     (kernel linux)
     (firmware
      (cons* linux-firmware
@@ -49,7 +57,7 @@
     (users
      (cons* (user-account
               (inherit %root-account)
-              (shell (file-append (specification->package "fish") "/bin/fish")))
+              (shell (file-append fish "/bin/fish")))
             %base-user-accounts))
 
     (packages
@@ -65,7 +73,7 @@
                 "rsync"
                 "unzip"
                 ))
-             (list %rosenthal-set-keymap)
+             (load "scripts.scm")
              (operating-system-packages %installation-os)))
 
     (services
@@ -77,8 +85,7 @@
                      guile-3.0
                      %default-locale-libcs))
 
-            (simple-service 'configuration-template
-                etc-service-type
+            (simple-service 'configuration-template etc-service-type
               `(("configuration" ,(local-file "examples" #:recursive? #t))))
 
             (modify-services (operating-system-user-services %installation-os)

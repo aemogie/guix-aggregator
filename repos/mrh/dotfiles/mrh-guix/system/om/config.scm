@@ -131,34 +131,6 @@
                       "9.9.9.9")))))
 
       (service
-       dnsmasq-service-type
-       (dnsmasq-configuration
-         (listen-addresses
-          (list "::1"
-                %ipv6-ula-om
-                %ipv6-wireguard-om
-
-                "127.0.0.1"
-                %ipv4-lan-om
-                %ipv4-wireguard-om))
-         (servers
-          (list %ipv6-wireguard-vps
-                %ipv4-wireguard-vps
-
-                "2620:fe::9"
-                "9.9.9.9"))
-         (cache-size 5000)
-         (no-hosts? #t)
-         (no-resolv? #t)
-         (query-servers-in-order? #t)
-         (addresses
-          (list (format #f "/~a/~a::1" %router-domain-name %ipv6-gua-prefix)
-                (format #f "/om.lan/~a" %ipv6-ula-om)
-                (format #f "/sleep.lan/~a" %ipv6-ula-sleep)
-                (format #f "/home.~a/~a" %domain-name %ipv6-wireguard-om)))
-         (extra-options '("--filterwin2k"))))
-
-      (service
        wpa-supplicant-service-type
        (wpa-supplicant-configuration
          (interface %om-wlan-interface)
@@ -229,9 +201,9 @@
                        (path "~/sync")
                        (devices (list sleep lamb)))
                      (syncthing-folder
-                       (id "paperless-share")
-                       (label "paperless-share")
-                       (path (format #f "~a/consume" %paperless-share))
+                       (id "paperless-upload")
+                       (label "paperless-upload")
+                       (path (format #f "~a/data/paperless" %user-home))
                        (devices (list sleep lamb))))))))))
 
       ;; required for oci-service-type
@@ -246,35 +218,43 @@
        (oci-extension
         (networks
          (list (oci-network-configuration
-                (name "paperless")
+                (name "paperless-network")
                 (ipv6? #f))))
         (containers
          (append %sabnzbd-oci
                  %jellyfin-oci
-                 %paperless-ngx-oci))))
+                 %paperless-oci))))
 
       (service
        nginx-service-type
        (nginx-configuration
          (shepherd-requirement '(wireguard-wg0))
          (server-blocks
-          (list (root-server-block "pub" %ipv6-wireguard-om)
-                (root-server-block "home" %ipv6-wireguard-om)
-                (app-server-block
-                 "syncthing.home" %ipv6-wireguard-om 8384)
-                (app-server-block
-                 "sab.home" %ipv6-wireguard-om 8081)
-                (app-server-block
-                 "paper.home" %ipv6-wireguard-om 8000)
-                (app-server-block
-                 "jelly.home" %ipv6-wireguard-om 8096
-                 "proxy_set_header Host $host;"
-                 "proxy_set_header X-Real-IP $remote_addr;"
-                 "proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;"
-                 "proxy_set_header X-Forwarded-Proto $scheme;"
-                 "proxy_set_header X-Forwarded-Protocol $scheme;"
-                 "proxy_set_header X-Forwarded-Host $http_host;"
-                 "proxy_buffering off;")))))
+          (let ((local-app-server-block
+                 (lambda* (name port #:key (additional-names '()) (extra '()))
+                   (app-server-block name %ipv6-wireguard-om "::1"
+                                     #:port port
+                                     #:additional-names additional-names
+                                     #:extra extra))))
+            (list (root-server-block "lan" %ipv6-wireguard-om)
+                  (root-server-block "sec" %ipv6-wireguard-om)
+                  (local-app-server-block
+                   "sync.sec" 8384)
+                  (local-app-server-block
+                   "sab.sec" 8081)
+                  (local-app-server-block
+                   "paper.sec" 8000)
+                  (local-app-server-block
+                   "jelly.sec" 8096
+                   #:additional-names '("jelly")
+                   #:extra
+                   '("proxy_set_header Host $host;"
+                     "proxy_set_header X-Real-IP $remote_addr;"
+                     "proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;"
+                     "proxy_set_header X-Forwarded-Proto $scheme;"
+                     "proxy_set_header X-Forwarded-Protocol $scheme;"
+                     "proxy_set_header X-Forwarded-Host $http_host;"
+                     "proxy_buffering off;")))))))
 
       (modify-services %base-services
         (guix-service-type

@@ -18,6 +18,7 @@
   #:use-module (gnu packages admin)
   #:use-module (gnu packages golang-crypto)
   #:use-module (gnu packages i2p)
+  #:use-module (gnu packages tls)
   #:use-module (gnu packages package-management)
   #:use-module (gnu packages rsync))
 
@@ -92,6 +93,7 @@
 
     (packages
      (cons* btop
+            certbot
             rsync
             stow
             %base-packages))
@@ -210,9 +212,7 @@
              (nginx-server-configuration
                (listen '("[::]:80" "80"
                          "[::]:443 ssl" "443 ssl"))
-               (server-name
-                (list  %domain-name
-                       (format #f "pub.~a" %domain-name)))
+               (server-name (list  %domain-name))
                (root (format #f "/srv/http/~a" %domain-name))
                (ssl-certificate (format #f "~a/fullchain.pem" certs-path))
                (ssl-certificate-key (format #f "~a/privkey.pem" certs-path)))
@@ -237,30 +237,8 @@
                                   %domain-name)))))))
 
              (app-server-block
-              "i2p.pub" %ipv6-wireguard-vps 7070)
-
-             (nginx-server-configuration
-               (listen '("[::]:443 ssl" "443 ssl"))
-               (server-name
-                (list (format #f "*.pub.~a" %domain-name)))
-               (locations
-                (list
-                 (nginx-location-configuration
-                   (uri "/")
-                   (body
-                    (list
-                     (format #f "proxy_pass http://[~a]/;" %ipv6-wireguard-om)
-                     "proxy_set_header Host $host;"
-                     "proxy_set_header X-Real-IP $remote_addr;"
-                     "proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;"
-                     "proxy_set_header X-Forwarded-Proto $scheme;"
-                     "proxy_set_header X-Forwarded-Protocol $scheme;"
-                     "proxy_set_header X-Forwarded-Host $http_host;"
-                     "proxy_buffering off;")))))
-               (ssl-certificate
-                (format #f "~a/fullchain.pem" certs-path))
-               (ssl-certificate-key
-                (format #f "~a/privkey.pem" certs-path))))))))
+              "i2p.sec" %ipv6-wireguard-vps "::1"
+              #:port 7070))))))
 
       (service
        yggdrasil-service-type

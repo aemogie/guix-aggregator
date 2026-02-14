@@ -3,7 +3,7 @@
 LOCAL_PATH="$HOME/src/dotfiles/"
 
 REMOTE_NAME=$1
-REMOTE_PATH="~/src/dotfiles"
+REMOTE_PATH="~/src/dotfiles/"
 
 rsync \
     --partial \

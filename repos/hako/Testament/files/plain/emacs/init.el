@@ -29,7 +29,17 @@
   ;; Workaround to use fish as login shell.
   (shell-file-name "/bin/sh"))
 
-(load-file "$$emacs-fonts.el$$")
-(load-file "$$emacs-interface.el$$")
-(load-file "$$emacs-editing.el$$")
-(load-file "$$emacs-miscellaneous.el$$")
+(load-file "$$emacs/fonts.el$$")
+(load-file "$$emacs/interface.el$$")
+(load-file "$$emacs/editing.el$$")
+(load-file "$$emacs/miscellaneous.el$$")
+
+;;guix:emacs-beancount
+;;guix:emacs-caddyfile-mode
+;;guix:emacs-edit-indirect
+;;guix:emacs-fish-mode
+;;guix:emacs-json-mode
+;;guix:emacs-kdl-mode
+;;guix:emacs-markdown-mode
+;;guix:emacs-nftables-mode
+;;guix:emacs-zig-mode

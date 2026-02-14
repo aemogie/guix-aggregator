@@ -59,8 +59,5 @@
                                 (port-number 2222))))
                       %base-services))))
 
-((compose
-  ;; Uncomment the following line for NVIDIA proprietary driver support.
-  ;; (nonguix-transformation-nvidia)
-  (nonguix-transformation-guix))
+((compose (nonguix-transformation-guix))
  %my-os)

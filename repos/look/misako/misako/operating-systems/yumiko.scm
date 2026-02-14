@@ -49,7 +49,6 @@
     (inherit base)
     (host-name "yumiko")
 
-    (kernel linux)
     (initrd microcode-initrd)
     (firmware (list linux-firmware))
 

@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright © 2025-2026 Hilton Chain <hako@ultrarare.space>
 #+TITLE: chapra
-#+PROPERTY: header-args :noweb-prefix no
+#+PROPERTY: header-args :mkdirp yes :noweb-prefix no
 
 ** Guix System
-#+begin_src scheme :tangle chapra.scm :noweb yes
+#+begin_src scheme :tangle ../files/tangled/chapra.scm :noweb yes
   (use-modules <<module>>)
 
   (define %os
@@ -33,15 +33,15 @@
                 (uuid "b955a6b1-9dd9-4e91-b9d9-b4e15473396c")))))
       (users (cons* <<user>> %base-user-accounts))
       (packages
-       (append (specs->pkgs+out
-                "curl"
-                "fd"
-                "gnupg"
-                "mosh"
-                "ripgrep"
-                "rsync"
-                "sops"
-                <<package>>)
+       (append (specifications->packages
+                '("curl"
+                  "fd"
+                  "gnupg"
+                  "mosh"
+                  "ripgrep"
+                  "rsync"
+                  "sops"
+                  <<package>>))
                %base-packages))
       (services
        (cons* <<service>>
@@ -124,7 +124,7 @@
   (simple-service 'zfs-scrub shepherd-root-service-type
     (list (shepherd-timer '(zfs-scrub)
             #~(calendar-event #:days-of-week '(sunday) #:hours '(0) #:minutes '(0))
-            #~(#$(file-append (spec->pkg "zfs") "/sbin/zpool") "scrub" "-w" "Ocimeae")
+            #~(#$(file-append zfs "/sbin/zpool") "scrub" "-w" "Ocimeae")
             #:requirement '(user-processes))))
 #+end_src
 
@@ -137,7 +137,7 @@
                      #~(begin
                          (use-modules (guix build utils))
                          (setenv "PATH" "/run/current-system/profile/bin:/run/current-system/profile/sbin")
-                         (invoke #$(file-append (spec->pkg "zfs-auto-snapshot") "/sbin/zfs-auto-snapshot")
+                         (invoke #$(file-append zfs-auto-snapshot "/sbin/zfs-auto-snapshot")
                                  "--default-exclude" "--skip-scrub" "--keep=72" "--label=hourly" "//")))))
             #:requirement '(user-processes))))
 #+end_src
@@ -151,7 +151,7 @@
                      #~(begin
                          (use-modules (guix build utils))
                          (setenv "PATH" "/run/current-system/profile/bin:/run/current-system/profile/sbin")
-                         (invoke #$(file-append (spec->pkg "zfs-auto-snapshot") "/sbin/zfs-auto-snapshot")
+                         (invoke #$(file-append zfs-auto-snapshot "/sbin/zfs-auto-snapshot")
                                  "--default-exclude" "--skip-scrub" "--keep=31" "--label=daily" "//")))))
             #:requirement '(user-processes))))
 #+end_src
@@ -163,7 +163,7 @@ Personal account.
     (name "hako")
     (group "users")
     (supplementary-groups '("wheel"))
-    (shell (file-append (spec->pkg "fish") "/bin/fish")))
+    (shell (file-append fish "/bin/fish")))
 #+end_src
 
 Administration accounts.
@@ -171,7 +171,7 @@ Administration accounts.
   (user-account
     (inherit %root-account)
     (password #f)
-    (shell (file-append (spec->pkg "fish") "/bin/fish")))
+    (shell (file-append fish "/bin/fish")))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -184,7 +184,7 @@ Administration accounts.
 #+begin_src scheme :noweb-ref service
   (service sops-secrets-service-type
     (sops-service-configuration
-      (sops (spec->pkg "sops"))
+      (sops sops)
       (gnupg-home "/var/lib/sops")
       (secrets
        (list (sops-secret
@@ -218,7 +218,7 @@ Administration accounts.
 #+begin_src scheme :noweb-ref service
   (service nftables-service-type
     (nftables-configuration
-      (ruleset (local-file (testament-plain "chapra.nftables")))))
+      (ruleset (local-file (testament-plain "nftables/chapra.nftables")))))
 #+end_src
 
 *** tailscale
@@ -230,7 +230,7 @@ Administration accounts.
 #+begin_src scheme :noweb-ref service
   (service openssh-service-type
     (openssh-configuration
-      (openssh (spec->pkg "openssh-sans-x"))
+      (openssh openssh-sans-x)
       (permit-root-login 'prohibit-password)
       (password-authentication? #f)))
 #+end_src
@@ -267,8 +267,8 @@ Administration accounts.
 #+begin_src scheme :noweb-ref service
   (service caddy-service-type
     (caddy-configuration
-      (caddy (spec->pkg "caddy-dolly"))
-      (caddyfile (local-file (testament-plain "chapra.caddyfile")))))
+      (caddy caddy/dolly)
+      (caddyfile (local-file (testament-plain "caddy/chapra.caddyfile")))))
 #+end_src
 
 *** jellyfin
@@ -280,7 +280,7 @@ Administration accounts.
          "--volume" "/mnt/Ocimeae/Library/Shows:/media/Shows"
          "--volume"
          ,(let ((path "/share/fonts/truetype/NotoSansCJK-VF.otf.ttc"))
-            (file-append (spec->pkg "font-google-noto-sans-cjk") path ":/usr" path))))))
+            (file-append font-google-noto-sans-cjk path ":/usr" path))))))
 #+end_src
 
 *** komga
@@ -296,15 +296,24 @@ Administration accounts.
     (navidrome-configuration
       (extra-config
        (string-append
-        (file-content (testament-plain "navidrome.toml"))
+        (file-content (testament-plain "chapra/navidrome.toml"))
         (sops-str %sops-chapra '("navidrome"))))))
+#+end_src
+
+#+begin_src toml :tangle ../files/tangled/chapra/navidrome.toml
+  BaseUrl = 'https://music.urspace.moe'
+  Address = '127.0.0.1'
+  Port = 43502
+  MusicFolder = '/mnt/Ocimeae/Library/Music'
+  EnableSharing = true
+  Scanner.Extractor = 'ffmpeg'
 #+end_src
 
 *** qbittorrent
 #+begin_src scheme :noweb-ref service
   (service qbittorrent-service-type
     (qbittorrent-configuration
-      (qbittorrent (spec->pkg "qbittorrent-enhanced-no-x"))
+      (qbittorrent qbittorrent-enhanced-no-x)
       (webui-port 35951)))
 #+end_src
 
@@ -351,4 +360,15 @@ Guix System - services
   (rosenthal services networking)
   (rosenthal services web)
   (sops services sops)
+#+end_src
+
+Guix packages
+#+begin_src scheme :noweb-ref module
+  (gnu packages bittorrent)
+  (gnu packages file-systems)
+  (gnu packages fonts)
+  (gnu packages shells)
+  (gnu packages ssh)
+  (rosenthal packages password-utils)
+  (rosenthal packages web)
 #+end_src

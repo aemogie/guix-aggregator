@@ -7,24 +7,26 @@
 (define oci-uid (get-line (open-input-pipe "id oci-container -u")))
 (define oci-gid (get-line (open-input-pipe "id oci-container -g")))
 
-(define-public %paperless-ngx-oci
-  (let ((redis-name "paperless-ngx-redis")
-        (postgresql-name "paperless-ngx-postgresql"))
+(define-public %paperless-oci
+  (let ((redis-name "paperless-redis")
+        (postgres-name "paperless-postgres"))
     (list
      (oci-container-configuration
        (provision redis-name)
+       (respawn? #t)
        (image "docker.io/library/redis")
-       (network "paperless")
+       (network "paperless-network")
        (volumes
         (list (cons (format #f "~a/redis" %paperless-share)
                     "/data"))))
 
      (oci-container-configuration
-       (provision postgresql-name)
+       (provision postgres-name)
+       (respawn? #t)
        (image "docker.io/library/postgres:18")
-       (network "paperless")
+       (network "paperless-network")
        (volumes
-        (list (cons (format #f "~a/postgresql" %paperless-share)
+        (list (cons (format #f "~a/postgres" %paperless-share)
                     "/var/lib/postgresql")))
        (environment
         '(("POSTGRES_DB" . "paperless")
@@ -32,23 +34,25 @@
           ("POSTGRES_PASSWORD" . "paperless"))))
 
      (oci-container-configuration
-       (provision "paperless-ngx")
+       (provision "paperless")
        (image "ghcr.io/paperless-ngx/paperless-ngx:latest")
-       (network "paperless")
-       (requirement (map string->symbol (list redis-name postgresql-name)))
+       (network "paperless-network")
+       (requirement (map string->symbol (list redis-name postgres-name)))
        (ports '("[::1]:8000:8000"))
        (volumes
-        (map (lambda (volume)
-               (cons (format #f "~a/~a" %paperless-share volume)
-                     (format #f "/usr/src/paperless/~a" volume)))
-             '("data" "media" "export" "consume")))
+        (cons* (cons (format #f "~a/data/paperless" %user-home)
+                     "/usr/src/paperless/consume")
+               (map (lambda (volume)
+                      (cons (format #f "~a/~a" %paperless-share volume)
+                            (format #f "/usr/src/paperless/~a" volume)))
+                    '("data" "media" "export"))))
        (environment
         (list (cons "PAPERLESS_REDIS"
                     (format #f "redis://~a:6379" redis-name))
               (cons "PAPERLESS_DBHOST"
-                    postgresql-name)
+                    postgres-name)
               (cons "PAPERLESS_URL"
-                    (format #f "http://paper.home.~a" %domain-name))))))))
+                    (format #f "http://paper.sec.~a" %domain-name))))))))
 
 (define-public %jellyfin-oci
   (list

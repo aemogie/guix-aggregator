@@ -170,6 +170,35 @@
   ((eval-expression-minibuffer-setup nxml-mode prog-mode sgml-mode tex-mode)
    . puni-mode))
 
+;;guix:emacs-treesit-auto
+;;guix:tree-sitter-cmake
+;;guix:tree-sitter-dockerfile
+;;guix:tree-sitter-go
+;;guix:tree-sitter-gomod
+;;guix:tree-sitter-kdl
+;;guix:tree-sitter-lua
+;;guix:tree-sitter-rust
+;;guix:tree-sitter-typescript
+;;guix:tree-sitter-yaml
+(use-package treesit-auto
+  :config
+  ;; FIXME: These modes aren't loaded automatically.
+  (require 'cmake-ts-mode)
+  (require 'dockerfile-ts-mode)
+  (require 'go-ts-mode)
+  (require 'lua-ts-mode)
+  (require 'rust-ts-mode)
+  (require 'typescript-ts-mode)
+  (require 'yaml-ts-mode)
+  ;; https://github.com/renzmann/treesit-auto/issues/32#issuecomment-1826270447
+  (defun hako/get-tree-sitter-mode (mode)
+    (treesit-auto--set-major-remap)
+    (alist-get mode major-mode-remap-alist mode))
+  (define-advice org-src-get-lang-mode (:filter-return (mode) tree-sitter)
+    (hako/get-tree-sitter-mode mode))
+  :hook
+  (after-init . global-treesit-auto-mode))
+
 ;;guix:emacs-yasnippet
 ;;guix:emacs-yasnippet-snippets
 (use-package yasnippet

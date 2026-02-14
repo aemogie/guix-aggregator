@@ -1,3 +1,3 @@
 # -*- mode: conf -*-
-/config/*.scm
 /pre-inst-env
+/files/tangled/

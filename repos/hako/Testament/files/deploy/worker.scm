@@ -1,7 +1,7 @@
 (use-modules (gnu machine)
              (gnu machine ssh))
 
-(define %os (load "../../config/worker.scm"))
+(define %os (load "../tangled/worker.scm"))
 
 (define* (build-worker #:key host-name address system (32bit-support? #t) ssh-host-key workers threads-per-worker (bios-boot #f))
   (machine

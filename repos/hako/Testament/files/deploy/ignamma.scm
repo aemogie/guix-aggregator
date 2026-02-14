@@ -3,7 +3,7 @@
 
 (list
  (machine
-   (operating-system (load "../../config/ignamma.scm"))
+   (operating-system (load "../tangled/ignamma.scm"))
    (environment managed-host-environment-type)
    (configuration
     (machine-ssh-configuration

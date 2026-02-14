@@ -103,8 +103,5 @@
     ;; Allow resolution of '.local' host names with mDNS.
     (name-service-switch %mdns-host-lookup-nss)))
 
-((compose
-  ;; Uncomment the following line for NVIDIA proprietary driver support.
-  ;; (nonguix-transformation-nvidia #:configure-xorg? #t)
-  (nonguix-transformation-guix))
+((compose (nonguix-transformation-guix))
  %my-os)
