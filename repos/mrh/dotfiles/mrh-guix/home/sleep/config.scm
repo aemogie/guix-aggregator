@@ -1,4 +1,5 @@
 (define-module (mrh-guix home sleep config)
+  #:use-module (mrh-guix personal)
   #:use-module (mrh-guix home sleep packages)
   #:use-module (gnu)
   #:use-module (gnu packages gnupg)
@@ -6,6 +7,7 @@
   #:use-module (gnu home services)
   #:use-module (gnu home services desktop)
   #:use-module (gnu home services gnupg)
+  #:use-module (gnu home services shells)
   #:use-module (gnu home services sound)
   #:use-module (gnu home services ssh))
 
@@ -34,6 +36,14 @@
               ("GUILE_EXTENSIONS_PATH" . "$HOME/.guix-home/profile/lib:/run/current-system/profile/lib:$GUILE_EXTENSIONS_PATH")
               ("PATH" . "$HOME/.local/bin:$PATH")
               ("TERM" . "xterm-color")
-              ("SDL_VIDEODRIVER" . "wayland")))))))
+              ("SDL_VIDEODRIVER" . "wayland")))
+           (simple-service
+            'bashrc-service
+            home-bash-service-type
+            (home-bash-extension
+              (bashrc
+               (list
+                (local-file (format #f "~a/.bashrc" %guix-dots-dir)
+                            "bashrc")))))))))
 
 %sleep-home-config

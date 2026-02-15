@@ -77,8 +77,12 @@ Exit code: ~a~%"
 
 
 (define (%.org->%.scm file)
-  (when (file-exists? "files/tangled")
-    (delete-file-recursively "files/tangled"))
+  (for-each
+   (lambda (f)
+     (when (file-exists? f)
+       (delete-file-recursively f)))
+   (list (string-append "files/tangled/" file)
+         (string-append "files/tangled/" file ".scm")))
   ($emacs `("-quick" "-batch"
             "--load" "ob-tangle"
             "--eval" "(setopt org-babel-load-languages '((shell . t)))"

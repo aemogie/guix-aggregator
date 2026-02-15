@@ -3,16 +3,17 @@
                                         fold-right))
   #:use-module ((ice-9 match) #:select (match))
   #:use-module ((guix gexp) #:select (gexp
-                                      program-file))
+                                      gexp->derivation
+                                      with-imported-modules))
   #:use-module ((guix packages) #:select (package))
   #:use-module ((guix licenses) #:select (gpl3) #:prefix license:)
 
-  #:use-module ((aetheria build-system file-like) #:select (program-file-build-system))
-  #:export (serena-nivea-emacs-script
+  #:use-module ((aetheria build-system file-like) #:select (raw-build-system))
+  #:export (serena-nivea-emacs
             serena-keyboard))
 
 ;; TODO: configure guix's own emacs
-(define serena-nivea-emacs-script
+(define serena-nivea-emacs
   (let* ;; nivea root mount-point in the future hopefully would be tmpfs
       ((nivea "/mnt/nivea")
        ;; would be a nivea-meta partition in the future
@@ -24,17 +25,22 @@
        ;; and just do `/mnt/nivea/etc/static/...` as it's not ephemeral
        (user-profile "/etc/profiles/per-user/aemogie")
        ;; finally, emacs
-       (path (string-append nivea system-profile user-profile "/bin/emacs"))
-       (script (program-file
-                "nivea-emacs"
-                #~(begin
-                    (unsetenv "EMACSLOADPATH") ;; conflicts and gives errors
-                    (apply execl (cons #$path (program-arguments)))))))
+       (nivea-fs (string-append nivea system-profile user-profile)))
     (package
       (name "nivea-emacs")
       (version "0")
-      (source script)
-      (build-system program-file-build-system)
+      (source
+       (gexp->derivation
+        name
+        (with-imported-modules '((guix build utils))
+          #~(begin
+              (use-modules (guix build utils))
+              (mkdir-p (string-append #$output "/bin/"))
+              (symlink (string-append #$nivea-fs "/bin/emacs")
+                       (string-append #$output "/bin/emacs"))
+              (symlink (string-append #$nivea-fs "/bin/emacsclient")
+                       (string-append #$output "/bin/emacsclient"))))))
+      (build-system raw-build-system)
       (synopsis "launch emacs from nivea")
       (description "a script to launch emacs from serena's nivea partition")
       ;; this repo is gpl3 so, those two lines of gexp up there are the same as well

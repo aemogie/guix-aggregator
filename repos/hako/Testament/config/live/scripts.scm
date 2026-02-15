@@ -41,7 +41,17 @@
               (port-filename
                (mkstemp "/tmp/console-keymap.XXXXXX")))
             (build-keyboard-layout file-name layout variant #:model model #:options options)
-            (invoke "sudo" #$(file-append kbd "/bin/loadkeys") file-name)
+            ;; TTY
+            (false-if-exception
+             (invoke/quiet "sudo" #$(file-append kbd "/bin/loadkeys") file-name))
+            ;; Xwayland
+            (false-if-exception
+             (invoke/quiet #$(file-append setxkbmap "/bin/setxkbmap")
+                           "-model" (or model "")
+                           "-layout" layout
+                           "-variant" (or variant "")
+                           "-option" (string-join options ",")))
+            ;; Niri
             (false-if-exception
              (substitute*
                  (in-vicinity
@@ -53,10 +63,10 @@
                (("^        xkb \\{.*" line)
                 (string-append
                  line
-                 (format             #f "            layout ~s~%"  layout)
-                 (if variant (format #f "            variant ~s~%" variant) "")
-                 (if model   (format #f "            model ~s~%"   model)   "")
-                 (format             #f "            options ~s~%" (string-join options ",")))))))
+                 (format #f "            model ~s~%"   (or model ""))
+                 (format #f "            layout ~s~%"  layout)
+                 (format #f "            variant ~s~%" (or variant ""))
+                 (format #f "            options ~s~%" (string-join options ",")))))))
 
           (define (show-help-and-exit)
             (display "\

@@ -16,7 +16,6 @@
              (gnu services pm)
              (rosenthal services base)
              (rosenthal services desktop)
-             (rosenthal services shellutils)
              (gnu home)
              (gnu home services fontutils)
              (gnu home services shells)
@@ -48,34 +47,43 @@
   (home-environment
     (services
      (cons* (service home-fish-service-type)
-            (service home-fish-plugin-atuin-service-type)
-            (service home-fish-plugin-direnv-service-type)
-            (service home-fish-plugin-zoxide-service-type)
 
             ;; XXX: Wait for proper WezTerm window size.
             ;; Load fish so that other terminals will start faster.
-            (simple-service 'installation home-shepherd-service-type
+            (simple-service 'workaround home-shepherd-service-type
               (list (shepherd-service
-                      (provision '(installation))
+                      (provision '(workaround))
                       (one-shot? #t)
                       (start
                        #~(make-forkexec-constructor
-                          '("wezterm" "start" "--"
+                          '("wezterm" "start" "--always-new-process" "--"
                             "fish" "--login" "-c"
-                            "sleep 1 && sudo guix-system-installer"))))))
+                            "sleep 1 && herd start installer"))))))
 
-            (simple-service 'installation-docs-local home-shepherd-service-type
+            (simple-service 'installer home-shepherd-service-type
               (list (shepherd-service
-                      (provision '(installation-docs-local))
+                      (provision '(installer))
+                      (auto-start? #f)
+                      (one-shot? #t)
+                      (start
+                       #~(make-forkexec-constructor
+                          '("wezterm" "start" "--always-new-process" "--"
+                            "sudo" "guix-system-installer"))))))
+
+            (simple-service 'docs-local home-shepherd-service-type
+              (list (shepherd-service
+                      (provision '(docs-local))
+                      (auto-start? #f)
                       (one-shot? #t)
                       (start
                        #~(make-forkexec-constructor
                           '("emacs" "--load" "info"
                             "--eval" "(info \"(guix) System Installation\")"))))))
 
-            (simple-service 'installation-docs-online home-shepherd-service-type
+            (simple-service 'docs-online home-shepherd-service-type
               (list (shepherd-service
-                      (provision '(installation-docs-online))
+                      (provision '(docs-online))
+                      (auto-start? #f)
                       (one-shot? #t)
                       (start
                        #~(make-forkexec-constructor
@@ -192,11 +200,9 @@
               "xdg-utils"
               "imv"                ;image viewer
               "light"              ;backlight control
-              "mesa"               ;search paths for graphics driver
               "pavucontrol"        ;sound control
               "playerctl"          ;media control
               "wezterm"            ;terminal emulator
-              "wireplumber"        ;PipeWire session manager
               "xwayland-satellite" ;rootless XWayland support
 
               ;; File manager.
@@ -253,15 +259,13 @@
    (cons* (service guix-home-service-type
             `(("live" ,%home)))
 
-          ;; tty1: installer, tty2: documentation, tty3~6: shell
-          ;; tty7: tuigreet -> niri
           (service greetd-service-type
             (greetd-configuration
               (greeter-supplementary-groups '("video" "input"))
               (terminals
                (list (greetd-terminal-configuration
-                       (terminal-vt "7")
-                       (terminal-switch #f)
+                       (terminal-vt "1")
+                       (terminal-switch #t)
                        (initial-session-user "live")
                        (initial-session-command "dbus-run-session niri --session")
                        (default-session-command (greetd-tuigreet-session)))))))
@@ -287,7 +291,8 @@
           (service ntp-service-type)
           (service x11-socket-directory-service-type)
 
-          (operating-system-user-services %minimal-os)))
+          (modify-services (operating-system-user-services %minimal-os)
+            (delete kmscon-service-type))))
 
   (sudoers-file
    (plain-file "sudoers"

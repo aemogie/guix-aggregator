@@ -27,12 +27,23 @@
   #:use-module (gnu services cups)
   #:use-module (gnu services dbus)
   #:use-module (gnu services desktop)
+<<<<<<< Updated upstream
   #:use-module (gnu services nix)
   #:use-module (gnu services networking)
   #:use-module (gnu services pm)
   #:use-module (gnu services sound)
   #:use-module (gnu services ssh)
   #:use-module (gnu services xorg)
+=======
+  #:use-module (gnu services networking)
+  #:use-module (gnu services nix)
+  #:use-module (gnu services pm)
+  #:use-module (gnu services sound) 
+  #:use-module (gnu services ssh)
+  #:use-module (gnu services xorg)
+  #:use-module (gnu system)
+  #:use-module (gnu system privilege)  
+>>>>>>> Stashed changes
   #:use-module (nongnu packages linux)
   #:use-module (nongnu system linux-initrd))
 
@@ -100,7 +111,8 @@
                     ntfs-3g
                     stow
                     vim
-                    xdg-desktop-portal-wlr
+                    xdg-desktop-portal
+                    xdg-desktop-portal-gtk
                     xdg-desktop-portal-hyprland
                     zsh
                     %base-packages))
@@ -115,6 +127,7 @@
        (service elogind-service-type)
        (service udev-service-type)
 
+<<<<<<< Updated upstream
        ;; firmware updates
        (service fwupd-service-type)
 
@@ -185,3 +198,24 @@
                                  %default-authorized-guix-keys)))))
       
       %base-services))))
+=======
+                           (service tlp-service-type)
+                           (service gvfs-service-type)
+                           (udev-rules-service 'pipewire-add-udev-rules pipewire)
+			   (simple-service 'add-nonguix-substitutes
+                                           guix-service-type
+                                           (guix-extension
+                                            (substitute-urls
+                                             (append (list "https://substitutes.nonguix.org" "https://nonguix-proxy.ditigal.xyz")
+                                                     %default-substitute-urls))
+                                            (authorized-keys
+                                             (append (list (plain-file "nonguix.pub"
+                                                                       "(public-key (ecc (curve Ed25519) (q #C1FD53E5D4CE971933EC50C9F307AE2171A2D3B52C804642A7A35F84F3A4EA98#)))"))
+                                         %default-authorized-guix-keys))))
+                           )
+                     (modify-services %desktop-services
+				      (network-manager-service-type config => (network-manager-configuration
+                                                                               (inherit config)
+									       (vpn-plugins
+										(list network-manager-openvpn)))))))))
+>>>>>>> Stashed changes

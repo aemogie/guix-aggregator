@@ -18,6 +18,7 @@
   #:use-module (gnu packages hunspell)
   #:use-module (gnu packages libreoffice)
   #:use-module (gnu packages librewolf)
+  #:use-module (gnu packages linux)
   #:use-module (gnu packages mail)
   #:use-module (gnu packages networking)
   #:use-module (gnu packages package-management)
@@ -31,6 +32,8 @@
   #:use-module (gnu packages wm)
   #:use-module (gnu packages web-browsers)
   #:use-module (gnu packages xdisorg)
+  #:use-module (gnu services pm)
+  #:use-module (gnu services xorg)
   #:use-module (gnu system)
   #:use-module (nongnu packages linux)
   #:use-module (nongnu packages mozilla)
@@ -74,19 +77,28 @@
                                        'fat32))
                          (type "vfat")) %base-file-systems))
    
-
+   (services (append (list (service tlp-service-type
+                                    (tlp-configuration
+                                     (cpu-scaling-governor-on-ac (list "performance"))
+                                     (cpu-scaling-governor-on-bat (list "powersave")))))
+                     (operating-system-services core-operating-system)))
+   
    ))
    
 (define home
   (home-environment
-   (packages (list asciiquarium
+   (packages (list
+	      ;; asciiquarium
+	           bat
                    binutils
                    blueman
+                   brightnessctl
                    btop
                    cliphist
                    emacs-next-pgtk
                    emacs-guix
                    emacs-jinx
+		   eza
                    firefox
                    font-awesome
                    font-fira-code
@@ -126,6 +138,7 @@
                    swaynotificationcenter
                    waybar
                    wl-clipboard
+		   zoxide
                    zsh-autosuggestions
                    zsh-completions
                    zsh-syntax-highlighting
@@ -146,6 +159,14 @@
                     (zprofile (list (local-file
                                      "../files/.zprofile"
                                      "zprofile")))))
+          (simple-service 'dotfiles
+                          home-xdg-configuration-files-service-type
+                          `(("hypr/hyprland.conf"  ,(local-file "../files/hypr/hyprland-akhetaten.conf"))
+                            ("hypr/hyprland-base.conf"  ,(local-file "../files/hypr/hyprland-base.conf"))
+                            ("waybar/style.css"  ,(local-file "../files/waybar/style-akhetaten.css"))
+                            ("waybar/theme.css"  ,(local-file "../files/waybar/theme.css"))
+                            ("waybar/config"  ,(local-file "../files/waybar/config"))))
+          
           (service home-gpg-agent-service-type
                    (home-gpg-agent-configuration
                     (pinentry-program
@@ -167,6 +188,7 @@
                                          (identity-file "/home/pol/.ssh/github_ed25519"))))
                     (add-keys-to-agent "confirm")))
           
+<<<<<<< Updated upstream
           (simple-service 'dotfiles
                           home-xdg-configuration-files-service-type
                           `(("hypr/hyprland.conf"  ,(local-file "../files/hypr/hyprland-akhetaten.conf"))
@@ -191,10 +213,17 @@
                     (start-charge-thresh-bat0 40)
                     (stop-charge-thresh-bat0 80)))
           (service alsa-service-type)
+=======
+
+          (service home-dbus-service-type)
+          (service home-pipewire-service-type)
+          (service home-network-manager-applet-service-type)
+>>>>>>> Stashed changes
           (service home-fcitx5-service-type
                    (home-fcitx5-configuration
                     (themes (map specification->package '("fcitx5-material-color-theme")))
                     (input-method-editors (map specification->package '("fcitx5-chinese-addons" "fcitx5-rime")))))
+<<<<<<< Updated upstream
                            
                     ;; trackpoint tuning
           (set-xorg-configuration
@@ -213,6 +242,13 @@
           ))))
 
 
+=======
+
+          
+
+          
+          ))))
+>>>>>>> Stashed changes
 
 (if (equal? (getenv "GUIX_TARGET") "home")
     home

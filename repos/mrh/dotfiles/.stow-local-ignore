@@ -7,4 +7,3 @@ mrh-guix
 .*\.git.*
 .stfolder
 guix/channels.scm
-sabnzbd

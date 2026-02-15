@@ -23,9 +23,9 @@
   #:use-module ((gnu packages linux) #:select (bluez))
   #:use-module ((gnu packages librewolf) #:select (librewolf))
   #:use-module ((gnu packages terminals) #:select (foot))
-  #:use-module ((gnu packages emacs) #:select (emacs-pgtk-xwidgets))
-  #:use-module ((gnu packages aspell) #:select (aspell aspell-dict-en))
   #:use-module ((aetheria home services base) #:select (home-base-service-type))
+  #:use-module ((aetheria home services emacs) #:select (home-emacs-service-type
+                                                         home-emacs-configuration))
   #:export (home-desktop-service-type
             %aetheria-desktop-home-services))
 
@@ -51,7 +51,7 @@
 
 (define %desktop-home-packages
   (list hyprland waybar wl-clipboard cage bluez
-        librewolf foot emacs-pgtk-xwidgets aspell aspell-dict-en))
+        librewolf foot))
 
 (define home-desktop-service-type
   (service-type
@@ -63,7 +63,9 @@
                                         (const %desktop-home-packages))
                      (service-extension home-font-service-type (const #f))
                      (service-extension home-dbus-service-type (const #f))
-                     (service-extension home-pipewire-service-type (const #f))))))
+                     (service-extension home-pipewire-service-type (const #f))
+                     (service-extension home-emacs-service-type
+                                        (const (home-emacs-configuration)))))))
 
 (define %aetheria-desktop-home-services
   (list

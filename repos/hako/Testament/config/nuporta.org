@@ -278,7 +278,68 @@ Administration accounts.
 #+begin_src scheme :noweb-ref service
   (service nftables-service-type
     (nftables-configuration
-      (ruleset (local-file (testament-plain "nftables/nuporta.nftables")))))
+      (ruleset (local-file (testament-plain "nuporta/nuporta.nftables")))))
+#+end_src
+
+#+begin_src nftables :tangle ../files/tangled/nuporta/nuporta.nftables
+  flush ruleset
+
+  table inet filter {
+      chain input {
+          type filter hook input priority 0; policy drop;
+
+          # early drop of invalid connections
+          ct state invalid drop
+
+          # allow established/related connections
+          ct state { established, related } accept
+
+          # allow from loopback
+          iif lo accept
+          # drop connections to lo not coming from lo
+          iif != lo ip daddr 127.0.0.1/8 drop
+          iif != lo ip6 daddr ::1/128 drop
+
+          # allow icmp
+          ip protocol icmp accept
+          ip6 nexthdr icmpv6 accept
+
+          # allow caddy
+          tcp dport https accept
+          udp dport https accept
+
+          # allow cuirass
+          tcp dport {5555, 5556} accept
+
+          # allow docker-mailserver
+          tcp dport imap accept
+          tcp dport imaps accept
+          tcp dport smtp accept
+          tcp dport smtps accept
+
+          # allow mosh
+          tcp dport ssh accept
+          udp dport 60000-61000 accept
+
+          # allow rsync
+          tcp dport rsync accept
+
+          # allow tailscale
+          tcp dport 41641 accept
+
+          # allow tuwunel
+          tcp dport 8448 accept
+
+          # reject everything else
+          reject with icmpx type port-unreachable
+      }
+      chain forward {
+          type filter hook forward priority 0; policy drop;
+      }
+      chain output {
+          type filter hook output priority 0; policy accept;
+      }
+  }
 #+end_src
 
 *** tailscale
@@ -716,9 +777,271 @@ rsync://cache.guix.moe
 #+name: caddy-config
 #+begin_src scheme
   (computed-substitution-with-inputs "nuporta.caddyfile"
-    (local-file (testament-plain "caddy/nuporta.caddyfile"))
+    (local-file (testament-plain "nuporta/nuporta.caddyfile"))
     (list (testament-plain)
           ai-robots-txt))
+#+end_src
+
+#+begin_src caddyfile :tangle ../files/tangled/nuporta/nuporta.caddyfile
+  {
+  	dns cloudflare {file./run/secrets/cloudflare}
+  	acme_dns cloudflare {file./run/secrets/cloudflare}
+  	ech hello.boiledscript.com
+  	metrics
+  	log {
+  		output file /var/log/caddy/caddy.log
+  		format filter {
+  			request>remote_ip ip_mask {
+  				ipv4 20
+  				ipv6 44
+  			}
+  			request>client_ip ip_mask {
+  				ipv4 20
+  				ipv6 44
+  			}
+  			wrap json
+  		}
+  	}
+  	servers {
+  		trusted_proxies static private_ranges
+  		client_ip_headers X-Forwarded-For X-Real-IP
+  		trusted_proxies_strict
+  	}
+  }
+
+  
+  ###
+  ### Snippets
+  ###
+
+  (logging) {
+  	log {
+  		output file /var/log/caddy/{args[0]}.log
+  		format filter {
+  			wrap json
+  			request>remote_ip ip_mask {
+  				ipv4 20
+  				ipv6 44
+  			}
+  			request>client_ip ip_mask {
+  				ipv4 20
+  				ipv6 44
+  			}
+  			fields {
+  				request>uri query {
+  					delete access_token
+  				}
+  			}
+  		}
+  	}
+  }
+
+  (block_bots) {
+  	import $$share/ai-robots-txt/Caddyfile$$
+  	handle @aibots {
+  		log_skip
+  		respond /* "Access denied" 403 {
+  			close
+  		}
+  	}
+
+  	@fake {
+  		header User-Agent *Chrome/*
+  		header User-Agent *Firefox*
+  		header !Sec-Fetch-Mode
+  	}
+  	handle @fake {
+  		log_skip
+  		respond /* "Access denied" 403 {
+  			close
+  		}
+  	}
+  }
+
+  (tailscale) {
+  	@tailscale client_ip 100.64.0.0/10 fd7a:115c:a1e0::/48
+  	handle @tailscale {
+  		{block}
+  	}
+  }
+
+  
+  ###
+  ### Guix Moe
+  ###
+
+  # Homepage
+  guix.moe {
+  	handle /.well-known/matrix/* {
+  		reverse_proxy 127.0.0.1:26372
+  	}
+
+  	handle {
+  		redir https://codeberg.org/hako/guix.moe
+  	}
+  }
+
+  # Tuwunel
+  matrix.guix.moe, matrix.guix.moe:8448 {
+  	import block_bots
+
+  	@tuwunel {
+  		path /_matrix/* || /_tuwunel/*
+  	}
+  	handle @tuwunel {
+  		reverse_proxy 127.0.0.1:26372
+  	}
+
+  	handle {
+  		root * /var/lib/webpublic/cinny
+  		try_files {path} / index.html
+  		file_server
+  	}
+  }
+
+  # Cuirass
+  ci.guix.moe {
+  	import block_bots
+
+  	@guix_publish {
+  		path /*.narinfo || /file/* || /nar/* || /nix-cache-info || /signing-key.pub
+  	}
+  	handle @guix_publish {
+  		reverse_proxy localhost:49637
+  	}
+
+  	@forgejo_hooks {
+  		path /admin/forgejo/event || /jobset/*/hook/evaluate
+  	}
+  	handle @forgejo_hooks {
+  		import /run/secrets/caddy/cuirass/forgejo
+  	}
+
+  	handle /admin/* {
+  		import /run/secrets/caddy/cuirass/admin
+  	}
+
+  	reverse_proxy localhost:17732
+  }
+
+  # Mirrors
+  cache-cdn.guix.moe {
+  	import block_bots
+  	import logging cache-cdn.guix.moe
+
+  	handle /*.narinfo {
+  		root * /var/cache/guix-moe/narinfo
+  		file_server
+  	}
+
+  	handle /nar/* {
+  		redir https://nars.guix.moe{uri}
+  	}
+
+  	respond "Visit guix [dot] moe for more information." 404 {
+  		close
+  	}
+  }
+
+  cache-fi.guix.moe, cache-de.guix.moe, cache-it.guix.moe {
+  	import block_bots
+  	import logging cache-fi.guix.moe
+
+  	handle /*.narinfo {
+  		root * /var/cache/guix-moe/narinfo
+  		file_server
+  	}
+
+  	handle /nar/* {
+  		reverse_proxy https://nars.guix.moe {
+  			header_up Host {upstream_hostport}
+  		}
+  	}
+
+  	respond "Visit guix [dot] moe for more information." 404 {
+  		close
+  	}
+  }
+
+  
+  ###
+  ### URSpace
+  ###
+
+  # Blog
+  ultrarare.space {
+  	root * /var/lib/webpublic/ultrarare.space
+  	handle_errors {
+  		rewrite * /{err.status_code}.html
+  		file_server
+  	}
+  	file_server
+  }
+
+  # Forgejo
+  git.urspace.moe {
+  	import tailscale {
+  		reverse_proxy localhost:48071
+  	}
+  }
+
+  # Grafana
+  dash.urspace.moe {
+  	import tailscale {
+  		reverse_proxy localhost:13064
+  	}
+  }
+
+  # Loki
+  logs.urspace.moe {
+  	import block_bots
+  	import /run/secrets/caddy/loki
+  	reverse_proxy localhost:50968
+  }
+
+  # Mimir
+  metrics.urspace.moe {
+  	import block_bots
+  	import /run/secrets/caddy/mimir
+  	reverse_proxy localhost:49951
+  }
+
+  # Miniflux
+  reader.urspace.moe {
+  	import block_bots
+  	reverse_proxy localhost:51787
+  }
+
+  # Misskey
+  boiledscript.com {
+  	import block_bots
+  	reverse_proxy localhost:54493
+  }
+
+  # Vaultwarden
+  vault.urspace.moe {
+  	import block_bots
+  	reverse_proxy localhost:23263
+  }
+
+  # Mail
+  mta-sts.boiledscript.com {
+  	import block_bots
+  	handle /.well-known/mta-sts.txt {
+  		respond <<EOF
+  		version: STSv1
+  		mode: testing
+  		mx: mail.boiledscript.com
+  		max_age: 604800
+  		EOF 200
+  	}
+  }
+
+  mail.boiledscript.com, :80, :443 {
+  	respond /* "Access denied" 403 {
+  		close
+  	}
+  }
 #+end_src
 
 *** docker-mailserver
