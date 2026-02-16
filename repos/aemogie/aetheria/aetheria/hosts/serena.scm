@@ -12,7 +12,8 @@
   #:use-module ((aetheria system base) #:select (%aetheria-base-system
                                                  %aetheria-base-services
                                                  %aetheria-user-template))
-  #:use-module ((aetheria hosts serena file-systems) #:select (serena-file-systems))
+  #:use-module ((aetheria hosts serena file-systems) #:select (serena-file-systems
+                                                               serena-persist))
   #:use-module ((aetheria users aemogie) #:select (make-aemogie-home))
   #:export (serena
             serena-with-nonfree))
@@ -36,6 +37,7 @@
     (services
      (cons*
       (simple-service 'serena-home-environments guix-home-service-type (cdr serena-users))
+      serena-persist
       %aetheria-base-services))))
 
 (define serena-with-nonfree

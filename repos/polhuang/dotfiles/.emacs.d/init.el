@@ -443,11 +443,13 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
 (set-register ?c (cons 'file "~/org/captures.org"))
 (set-register ?d (cons 'file "~/org/dictionary"))
 (set-register ?e (cons 'file "~/.dotfiles/.emacs.d/init.el"))
-(set-register ?h (cons 'file "~/polterguix/files/hypr/hyprland-base.conf"))
-(set-register ?s (cons 'file "~/org/schedule.org"))
+(set-register ?h (cons 'file "~/org/agenda/habits.org"))
+(set-register ?H (cons 'file "~/polterguix/files/hypr/hyprland-base.conf"))
+(set-register ?p (cons 'file "~/org/agenda/projects.org"))
+(set-register ?s (cons 'file "~/org/agenda/schedule.org"))
 (set-register ?S (cons 'file "~/projects/cherry-seoul256/cherry-seoul256-theme.el"))
-(set-register ?t (cons 'file "~/org/tasks.org"))
-(set-register ?z (cons 'file "~/.dotfiles/.zshrc"))
+(set-register ?t (cons 'file "~/org/agenda/tasks.org"))
+(set-register ?z (cons 'file "~/polterguix/files/.zshrc"))
 (set-register ?g (cons 'file (concat "~/.dotfiles/polterguix/systems/"
                                      (system-name)
                                      ".scm")))
@@ -614,8 +616,9 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
   (org-habit-preceding-days 28)
   (org-habit-following-days 0)
 
-  (org-todo-keywords '((sequence "TODO" "IN PROGRESS")
+  (org-todo-keywords '((sequence "TODO" "IN PROGRESS" "|" "DONE")
                        (sequence "TABLED" "TODO" "IN PROGRESS" "|" "DONE")
+                       (sequence "UPCOMING" "|" "DONE")
                        (sequence "ACTIVITY")
                        (sequence "ENTRY")
                        ))
@@ -728,7 +731,7 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
 	 #'org-roam-reflinks-section))
   (org-roam-dailies-capture-templates
    '(("d" "default" entry "* ENTRY %<%I:%M %p> \n:PROPERTIES:\n:MOOD: %?\n:END:"
-      :if-new (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n#+TODO: TODO IN PROGRESS DONE ACTIVITY ENTRY"))))
+      :if-new (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n"))))
   :init
   (require 'org-roam-dailies)
   :config
@@ -842,7 +845,6 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
   :ensure t
   :functions (org-clock-reminder-mode org-clock-reminder--icon notifications-notify)
   :custom
-  (org-clock-reminder-mode 1)
   (org-clock-reminder-formatters
    '((?c . (org-duration-from-minutes (floor (org-time-convert-to-integer
 		                              (time-since org-clock-start-time))
@@ -857,13 +859,13 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
   (org-clock-reminder-interval (cons 10 5))
   (org-clock-reminder-inactive-notifications-p t)
   :config
+  (org-clock-reminder-mode 1)
   ;; replace function to configure urgency, timeout, icon
   (defun org-clock-reminder-notify (title message)
     (let ((icon-path (org-clock-reminder--icon)))
       (notifications-notify :title title
                             :body message
-                            :transient
-                            :app-icon icon-path
+                            :transient t
                             :timeout 30000))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2359,6 +2361,14 @@ Add :notify: event on import."
   (advice-add 'org-gcal-sync :after
               (lambda (&rest _)
                 (run-with-timer 5 nil 'my/cleanup-schedule-after-sync)))
+
+  (defun my/strip-entry-id-on-archive ()
+    "Remove :entry-id: from entries when archived so org-gcal ignores them."
+    (save-excursion
+      (org-back-to-heading t)
+      (org-entry-delete (point) "entry-id")))
+
+  (add-hook 'org-archive-hook #'my/strip-entry-id-on-archive)
 
   ;; Auto-sync: 30 seconds after startup, then repeat every hour
   (run-with-timer 30 3600

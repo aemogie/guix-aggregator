@@ -47,7 +47,7 @@
 ;;; Procedures.
 ;;;
 
-;; XXX: The built-in ‘with-output-to-string’ doesn't work with ‘system*’.
+;; XXX: The built-in ‘with-output-to-string’ doesn't work with ‘spawn’.
 (define (with-output-to-string* thunk)
   (let* ((port (mkstemp "/tmp/testament-XXXXXX"))
          (file (port-filename port))
@@ -59,13 +59,11 @@
     (string-trim-both output)))
 
 (define ($ cmd)
-  (let ((exit-code (status:exit-val (apply system* cmd))))
-    (or (zero? exit-code)
-        (error (format #f "
-Non-zero exit code when running!
-Command: ~a
-Exit code: ~a~%"
-                       cmd exit-code)))))
+  (let* ((pid (spawn (car cmd) cmd))
+         (exit-val (cdr (waitpid pid))))
+    (or (zero? exit-val)
+        (error (format #f "Command ~s exited with non-zero exit status: ~s"
+                       (string-join cmd) exit-val)))))
 
 (define* ($guix args #:key local? (channels "channels.lock"))
   (if local?

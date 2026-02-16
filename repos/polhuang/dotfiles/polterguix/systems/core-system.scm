@@ -27,14 +27,12 @@
   #:use-module (gnu services cups)
   #:use-module (gnu services dbus)
   #:use-module (gnu services desktop)
-<<<<<<< Updated upstream
   #:use-module (gnu services nix)
   #:use-module (gnu services networking)
   #:use-module (gnu services pm)
   #:use-module (gnu services sound)
   #:use-module (gnu services ssh)
   #:use-module (gnu services xorg)
-=======
   #:use-module (gnu services networking)
   #:use-module (gnu services nix)
   #:use-module (gnu services pm)
@@ -43,7 +41,6 @@
   #:use-module (gnu services xorg)
   #:use-module (gnu system)
   #:use-module (gnu system privilege)  
->>>>>>> Stashed changes
   #:use-module (nongnu packages linux)
   #:use-module (nongnu system linux-initrd))
 
@@ -52,7 +49,6 @@
    (kernel linux)
    (initrd microcode-initrd)
    (firmware (list linux-firmware))
-
    (host-name "helios")
    (timezone "America/Chicago")
    (locale "en_US.utf8")
@@ -127,7 +123,6 @@
        (service elogind-service-type)
        (service udev-service-type)
 
-<<<<<<< Updated upstream
        ;; firmware updates
        (service fwupd-service-type)
 
@@ -198,7 +193,6 @@
                                  %default-authorized-guix-keys)))))
       
       %base-services))))
-=======
                            (service tlp-service-type)
                            (service gvfs-service-type)
                            (udev-rules-service 'pipewire-add-udev-rules pipewire)
@@ -218,4 +212,3 @@
                                                                                (inherit config)
 									       (vpn-plugins
 										(list network-manager-openvpn)))))))))
->>>>>>> Stashed changes

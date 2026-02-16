@@ -60,14 +60,15 @@
 
 ;; not exported
 (define upstream:<home-openssh-configuration>
-  (module-ref (resolve-module '(gnu home services ssh))
-              '<home-openssh-configuration>))
+  (@@ (gnu home services ssh) <home-openssh-configuration>))
 
+;; TODO: more robust errors on unwrap if the fields don't match. debugging an added field is a nightmare
 (define-record-type2 home-openssh-configuration #:fold
   #:unwrap (upstream:<home-openssh-configuration>
             (upstream:home-openssh-configuration))
   (authorized-keys   (merge append-strategy))    ;list of file-like
   (known-hosts       (merge append-strategy))    ;list of file-like
+  (known-hosts2      (merge append-strategy))    ;list of file-like
   (hosts             (merge append-strategy))    ;list of <openssh-host>
   (add-keys-to-agent (merge conflict-strategy))) ;string with limited values
 
@@ -81,10 +82,7 @@
    (default-value (home-openssh-configuration))))
 
 (define upstream:<home-gpg-agent-configuration>
-  (module-ref (resolve-module '(gnu home services gnupg))
-              ;; <home-openssh-configuration> works but not this?  both are
-              ;; <syntax-transformers> but it only complains about this??
-              '#{% <home-gpg-agent-configuration> rtd}#))
+  (@@ (gnu home services gnupg) <home-gpg-agent-configuration>))
 
 (define-record-type2 home-gpg-agent-configuration #:fold
   #:unwrap (upstream:<home-gpg-agent-configuration>

@@ -40,7 +40,7 @@ alias dl="cd ~/Downloads/"
 alias docs="cd ~/Documents/"
 alias vim="nvim"
 
-#zoxide
+# zoxide
 eval "$(zoxide init zsh)"
 
 # starship
@@ -51,3 +51,7 @@ if [[ "$TERM" == "xterm-kitty" ]]; then
 else
     PROMPT="🦂 [eat] > %~ > "
 fi
+
+# bun
+export BUN_INSTALL="$HOME/.bun" 
+export PATH="$BUN_INSTALL/bin:$PATH" 

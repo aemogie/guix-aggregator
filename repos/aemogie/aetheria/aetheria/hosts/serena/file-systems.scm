@@ -1,10 +1,14 @@
 (define-module (aetheria hosts serena file-systems)
   #:use-module ((gnu system file-systems) #:select (file-system-label
                                                     file-system
+                                                    file-system-mount-point
                                                     %base-file-systems))
+  #:use-module ((gnu services linux) #:select (vfs-mapping-service-type vfs-mapping))
+  #:use-module ((gnu services) #:select (simple-service))
   #:use-module ((aetheria system file-systems) #:select (btrfs-file-system
                                                          persist-bind))
-  #:export (serena-file-systems))
+  #:export (serena-file-systems
+            serena-persist))
 
 ;; TOOD: figure out how to change grub.cfg path, then migrate to serena-boot
 (define boot
@@ -76,34 +80,45 @@
    persist-part   ;; /@persist
    nivea-home))   ;; /mnt/nivea/home
 
+(define (make-persist-service path user)
+  (vfs-mapping
+   (source (string-append (file-system-mount-point persist-part) path))
+   (destination path)
+   (user user)
+   (name (string-append "persist-" path))))
+
 ;; TODO: move to (aetheria system persist) or (aetheria services persist)
 ;; when repopulating comes depending on how i implement it
 (define serena-persist
-  (map (lambda (p) (persist-bind persist-part p))
-       ;; TODO: these arent unique to serena
-       '("/etc/NetworkManager/system-connections" ;; TODO: figure out sops-guix
-         "/var/lib/bluetooth" ;; dont think this is dangerous info tho, maybe generate?
-         ;; should be migrated to guix home's mounts when i get to it
-         "/root/.cache/guix" ;; guix caches channel checkouts here
-         "/home/aemogie/.cache/guix"
-         "/home/aemogie/.config/guix"
-         "/home/aemogie/.librewolf"
-         ;; temporary configs i copied from nivea
-         "/home/aemogie/.gnupg"
-         "/home/aemogie/.config/hypr/hyprland.conf"
-         "/home/aemogie/.config/waybar/config"
-         "/home/aemogie/.config/waybar/style.css"
-         "/home/aemogie/.config/foot/foot.ini"
-         "/home/aemogie/.config/YouTube Music"
-         "/home/aemogie/.config/WebCord"
-         "/home/aemogie/.local/share/direnv/allow"
-         "/home/aemogie/.emacs"
-         "/home/aemogie/dev")))
+  (simple-service
+   'serena-persist
+   vfs-mapping-service-type
+   (list
+    ;; TODO: these arent unique to serena
+    ;; TODO: figure out sops-guix
+    (make-persist-service "/etc/NetworkManager/system-connections/" "root")
+    ;; dont think this is dangerous info tho, maybe generate?
+    (make-persist-service "/var/lib/bluetooth/" "root")
+    ;; should be migrated to guix home's mounts when i get to it
+    ;; guix caches channel checkouts here
+    (make-persist-service "/root/.cache/guix/" "root")
+    (make-persist-service "/home/aemogie/.cache/guix/" "aemogie")
+    (make-persist-service "/home/aemogie/.config/guix/" "aemogie")
+    (make-persist-service "/home/aemogie/.librewolf/" "aemogie")
+    ;; temporary configs i copied from nivea
+    (make-persist-service "/home/aemogie/.gnupg/" "aemogie")
+    (make-persist-service "/home/aemogie/.config/hypr/" "aemogie")
+    (make-persist-service "/home/aemogie/.config/waybar/" "aemogie")
+    (make-persist-service "/home/aemogie/.config/foot/" "aemogie")
+    (make-persist-service "/home/aemogie/.config/YouTube Music/" "aemogie")
+    (make-persist-service "/home/aemogie/.config/WebCord/" "aemogie")
+    (make-persist-service "/home/aemogie/.local/share/direnv/" "aemogie")
+    #;(make-persist-service "/home/aemogie/.emacs" "aemogie")
+    (make-persist-service "/home/aemogie/dev/" "aemogie"))))
 
 (define serena-file-systems
   (append
    serena-partitions
-   serena-persist
    (list
     (persist-bind nivea "/nix/store")  ;; TODO: move to btrfs pool
     ;; TODO: think of how to make /@persist read-only while making the mounted

@@ -18,9 +18,9 @@
   #:use-module (gnu packages hunspell)
   #:use-module (gnu packages libreoffice)
   #:use-module (gnu packages librewolf)
-  #:use-module (gnu packages linux)
   #:use-module (gnu packages mail)
   #:use-module (gnu packages networking)
+  #:use-module (gnu packages node)
   #:use-module (gnu packages package-management)
   #:use-module (gnu packages password-utils)
   #:use-module (gnu packages rust)
@@ -32,8 +32,6 @@
   #:use-module (gnu packages wm)
   #:use-module (gnu packages web-browsers)
   #:use-module (gnu packages xdisorg)
-  #:use-module (gnu services pm)
-  #:use-module (gnu services xorg)
   #:use-module (gnu system)
   #:use-module (nongnu packages linux)
   #:use-module (nongnu packages mozilla)
@@ -51,9 +49,9 @@
    (host-name "akhetaten")
 
    (kernel-arguments
-    '("amd_pstate=active"              ; modern amd cpu scaling
-      "nvme.noacpi=1"                  ; sometimes helps resume on some nvme's
-      "mem_sleep_default=deep"         ; try deeper suspend; revert if issues
+    '("amd_pstate=active"
+      "nvme.noacpi=1"
+      "mem_sleep_default=deep"
       "modprobe.blacklist=pcspkr"))
    (firmware (list linux-firmware amdgpu-firmware))
    (mapped-devices (list (mapped-device
@@ -117,28 +115,25 @@
                    fzf
                    hunspell
                    hyprpaper
-                   kanshi
                    kitty
                    libreoffice
 		   librewolf
                    mu
                    neofetch
                    neovim
+		   node
                    obs
                    qutebrowser
 		   password-store
-                   powertop
                    ripgrep
                    rofi-wayland
                    rust
                    rust-analyzer
-                   seatd
                    sh-z
                    starship-bin
                    swaynotificationcenter
                    waybar
                    wl-clipboard
-		   zoxide
                    zsh-autosuggestions
                    zsh-completions
                    zsh-syntax-highlighting
@@ -159,14 +154,6 @@
                     (zprofile (list (local-file
                                      "../files/.zprofile"
                                      "zprofile")))))
-          (simple-service 'dotfiles
-                          home-xdg-configuration-files-service-type
-                          `(("hypr/hyprland.conf"  ,(local-file "../files/hypr/hyprland-akhetaten.conf"))
-                            ("hypr/hyprland-base.conf"  ,(local-file "../files/hypr/hyprland-base.conf"))
-                            ("waybar/style.css"  ,(local-file "../files/waybar/style-akhetaten.css"))
-                            ("waybar/theme.css"  ,(local-file "../files/waybar/theme.css"))
-                            ("waybar/config"  ,(local-file "../files/waybar/config"))))
-          
           (service home-gpg-agent-service-type
                    (home-gpg-agent-configuration
                     (pinentry-program
@@ -174,7 +161,7 @@
                     (ssh-support? #f)
                     (extra-content "allow-loopback-pinentry")))
           
-          (service home-openssh-service-type   ;; move identity-files to polterguix/
+          (service home-openssh-service-type
                    (home-openssh-configuration
                     (hosts
                      (list (openssh-host (name "babylon")
@@ -187,74 +174,22 @@
                                          (user "git")
                                          (identity-file "/home/pol/.ssh/github_ed25519"))))
                     (add-keys-to-agent "confirm")))
-          
-<<<<<<< Updated upstream
           (simple-service 'dotfiles
                           home-xdg-configuration-files-service-type
                           `(("hypr/hyprland.conf"  ,(local-file "../files/hypr/hyprland-akhetaten.conf"))
-                            ("hypr/hyprland-base.conf"  ,(local-file "../files/hypr/hyprland-base.conf"))))
-
-          (simple-service 'dotfiles
-                          home-xdg-configuration-files-service-type
-                          `(("waybar/style.css"  ,(local-file "../files/waybar/style-akhetaten.css"))
+                            ("hypr/hyprland-base.conf"  ,(local-file "../files/hypr/hyprland-base.conf"))
+                            ("waybar/style.css"  ,(local-file "../files/waybar/style-akhetaten.css"))
                             ("waybar/theme.css"  ,(local-file "../files/waybar/theme.css"))
                             ("waybar/config"  ,(local-file "../files/waybar/config"))))
 
           (service home-dbus-service-type)
           (service home-pipewire-service-type)
           (service home-network-manager-applet-service-type)
-          (service power-profiles-daemon-service-type)
-          (service tlp-service-type
-                   (tlp-configuration
-                    (cpu-scaling-governor-on-ac "schedutil")
-                    (cpu-scaling-governor-on-bat "powersave")
-                    (pcie-aspm-on-bat "powersupersave")
-                    (radeon-dpm-state "battery")
-                    (start-charge-thresh-bat0 40)
-                    (stop-charge-thresh-bat0 80)))
-          (service alsa-service-type)
-=======
-
-          (service home-dbus-service-type)
-          (service home-pipewire-service-type)
-          (service home-network-manager-applet-service-type)
->>>>>>> Stashed changes
           (service home-fcitx5-service-type
                    (home-fcitx5-configuration
                     (themes (map specification->package '("fcitx5-material-color-theme")))
-                    (input-method-editors (map specification->package '("fcitx5-chinese-addons" "fcitx5-rime")))))
-<<<<<<< Updated upstream
-                           
-                    ;; trackpoint tuning
-          (set-xorg-configuration
-           (xorg-configuration
-            (keyboard-layout keyboard-layout)
-            (extra-config
-             '((Section "InputClass"
-                        Identifier "Trackpoint"
-                        MatchProduct "TPPS/2 IBM TrackPoint"
-                        Option "AccelProfile" "flat"
-                        Option "Sensitivity" "200"
-                        Option "Speed" "1.0"
-                        EndSection)))))
-
-
-          ))))
-
-
-=======
-
-          
-
-          
-          ))))
->>>>>>> Stashed changes
+                    (input-method-editors (map specification->package '("fcitx5-chinese-addons" "fcitx5-rime")))))))))
 
 (if (equal? (getenv "GUIX_TARGET") "home")
     home
     system)
-
-
-
-
-

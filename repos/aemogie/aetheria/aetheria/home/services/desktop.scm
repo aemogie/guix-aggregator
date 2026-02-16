@@ -10,7 +10,7 @@
   #:use-module ((gnu packages fonts) #:select (font-iosevka
                                                font-iosevka-aile
                                                font-iosevka-etoile
-                                               font-iosevka-comfy
+                                               font-aporetic
                                                font-sarasa-gothic
                                                font-google-noto
                                                font-google-noto-emoji
@@ -33,7 +33,7 @@
   (list font-iosevka
         font-iosevka-aile
         font-iosevka-etoile
-        font-iosevka-comfy
+        font-aporetic
         font-sarasa-gothic
         ;; no tofu or something, i dont really know
         font-google-noto

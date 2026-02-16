@@ -70,7 +70,7 @@
                (uuid "20048579-a0bd-4180-8ea3-4b546309fb3b"
                      'btrfs))
              (type "btrfs")
-             (options "compress=zstd,discard,space_cache=v2"))
+             (options "compress=zstd,space_cache=v2"))
            (file-system
              (mount-point "/boot/efi")
              (device (uuid "9146-2C77" 'fat32))
