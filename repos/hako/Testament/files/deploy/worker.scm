@@ -3,9 +3,9 @@
 
 (define %os (load "../tangled/worker.scm"))
 
-(define* (build-worker #:key host-name address system (32bit-support? #t) ssh-host-key workers threads-per-worker (bios-boot #f))
+(define* (build-worker #:key host-name address system (32bit-support? #t) ssh-host-key workers (bios-boot #f))
   (machine
-    (operating-system (%os host-name system 32bit-support? workers threads-per-worker bios-boot))
+    (operating-system (%os host-name system 32bit-support? workers bios-boot))
     (environment managed-host-environment-type)
     (configuration
      (machine-ssh-configuration
@@ -19,8 +19,7 @@
          #:system "aarch64-linux"
          #:32bit-support? #t
          #:ssh-host-key "ssh-ed25519 ..."
-         #:workers 4
-         #:threads-per-worker 2)
+         #:workers 4)
       #;(build-worker
          #:host-name "..."
          #:address "0.0.0.0"
@@ -28,5 +27,4 @@
          #:32bit-support? #t
          #:ssh-host-key "ssh-ed25519 ..."
          #:workers 4
-         #:threads-per-worker 2
          #:bios-boot "/dev/sda"))

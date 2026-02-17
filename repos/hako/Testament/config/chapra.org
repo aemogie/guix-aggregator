@@ -36,6 +36,7 @@
        (append (specifications->packages
                 '("curl"
                   "fd"
+                  "fish"
                   "gnupg"
                   "mosh"
                   "ripgrep"
@@ -157,21 +158,11 @@
 #+end_src
 
 *** Users
-Personal account.
 #+begin_src scheme :noweb-ref user
   (user-account
     (name "hako")
     (group "users")
-    (supplementary-groups '("wheel"))
-    (shell (file-append fish "/bin/fish")))
-#+end_src
-
-Administration accounts.
-#+begin_src scheme :noweb-ref user
-  (user-account
-    (inherit %root-account)
-    (password #f)
-    (shell (file-append fish "/bin/fish")))
+    (supplementary-groups '("wheel")))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -202,6 +193,29 @@ Administration accounts.
       (extra-configuration-files
        (list %network-manager-ipv6-privacy
              %network-manager-random-mac-address))))
+#+end_src
+
+https://codeberg.org/guix/guix/issues/838#issue-1886438
+#+begin_src scheme :noweb-ref service
+  (simple-service 'network-online shepherd-root-service-type
+    (list (shepherd-service
+            (requirement '(networking))
+            (provision '(network-online))
+            (documentation "Wait for the network to come up.")
+            (one-shot? #t)
+            (start
+             #~(lambda _
+                 (let ((timeout #$(file-append coreutils-minimal "/bin/timeout"))
+                       (sh #$(file-append bash-minimal "/bin/sh"))
+                       (ping #$(file-append inetutils "/bin/ping")))
+                   (zero?
+                    (system* timeout "60" sh "-c"
+                             (format #f "\
+  until ~a -qc1 -W1 example.org
+  do
+      sleep 1
+  done"
+                                     ping)))))))))
 #+end_src
 
 *** ntp
@@ -320,7 +334,8 @@ Administration accounts.
   (service caddy-service-type
     (caddy-configuration
       (caddy caddy/dolly)
-      (caddyfile (local-file (testament-plain "chapra/chapra.caddyfile")))))
+      (caddyfile (local-file (testament-plain "chapra/chapra.caddyfile")))
+      (shepherd-requirement '(network-online))))
 #+end_src
 
 #+begin_src caddyfile :tangle ../files/tangled/chapra/chapra.caddyfile
@@ -472,6 +487,8 @@ Guix System - services
 
 Guix packages
 #+begin_src scheme :noweb-ref module
+  (gnu packages admin)
+  (gnu packages bash)
   (gnu packages bittorrent)
   (gnu packages file-systems)
   (gnu packages fonts)

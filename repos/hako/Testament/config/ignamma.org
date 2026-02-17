@@ -30,7 +30,8 @@
       (users (cons* <<user>> %base-user-accounts))
       (packages
        (append (specifications->packages
-                '("mosh"
+                '("fish"
+                  "mosh"
                   "rsync"
                   <<package>>))
                %base-packages))
@@ -58,8 +59,7 @@
                 (guix-service-type
                  config => (guix-configuration
                              (inherit config)
-                             (discover? #t)
-                             (extra-options '("--cores=4")))))))
+                             (discover? #t))))))
       (name-service-switch %mdns-host-lookup-nss)))
 
   %os
@@ -90,21 +90,11 @@
 #+end_src
 
 *** Users
-Personal account.
 #+begin_src scheme :noweb-ref user
   (user-account
     (name "hako")
     (group "users")
-    (supplementary-groups '("wheel"))
-    (shell (file-append fish "/bin/fish")))
-#+end_src
-
-Administration accounts.
-#+begin_src scheme :noweb-ref user
-  (user-account
-    (inherit %root-account)
-    (password #f)
-    (shell (file-append fish "/bin/fish")))
+    (supplementary-groups '("wheel")))
 #+end_src
 
 #+begin_src scheme :noweb-ref service

@@ -164,8 +164,8 @@
   (deploy-ignamma)
   (deploy-nuporta))
 
-(define (live-minimal)       (live-% "minimal"))
-(define (live-default)       (live-% "default"))
+(define (live-minimal) (live-% "minimal"))
+(define (live-niri)    (live-% "niri"))
 (define (live)
   (live-minimal)
-  (live-default))
+  (live-niri))

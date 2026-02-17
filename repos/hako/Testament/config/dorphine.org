@@ -43,6 +43,7 @@
                 '(;; CLI Utilities.
                   "curl"
                   "fd"
+                  "fish"
                   "git"
                   "gnupg"
                   "mosh"
@@ -97,7 +98,6 @@
                  config => (guix-configuration
                              (inherit config)
                              (discover? #t)
-                             (extra-options '("--cores=16"))
                              (tmpdir "/var/tmp")))
                 (network-manager-service-type
                  config => (network-manager-configuration
@@ -274,7 +274,6 @@ Generate random password hash:
   pwgen -sync 16 1 | openssl passwd -6 -stdin
 #+end_src
 
-Personal account.
 #+begin_src scheme :noweb yes :noweb-ref user
   (user-account
     (name "hako")
@@ -285,14 +284,6 @@ Personal account.
 
 #+begin_src scheme :noweb-ref home-service
   (service home-fish-service-type)
-#+end_src
-
-Administration accounts.
-#+begin_src scheme :noweb-ref user
-  (user-account
-    (inherit %root-account)
-    (password #f)
-    (shell (file-append fish "/bin/fish")))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -362,10 +353,6 @@ Generate passwordless ECC key:
 #+end_src
 
 ** Power Management
-#+begin_src scheme :noweb-ref service
-  (service tlp-service-type)
-#+end_src
-
 #+begin_src scheme :noweb-ref service
   (simple-service 'auto-power-off shepherd-root-service-type
     (list (shepherd-timer '(auto-power-off)
@@ -1362,6 +1349,10 @@ Theming
 #+end_src
 
 **** emacs-helpful
+#+begin_src scheme :noweb-ref package
+  "emacs-helpful"
+#+end_src
+
 #+begin_src elisp :noweb-ref emacs-interface
   (use-package helpful
     :bind
@@ -1576,7 +1567,7 @@ Theming
     (add-hook 'xref-backend-functions #'dumb-jump-xref-activate))
 #+end_src
 
-**** emacs-eglot
+**** emacs eglot
 #+begin_src scheme :noweb-ref package
   "python"
   "rust"
@@ -2032,7 +2023,6 @@ Guix System - services
   (gnu services docker)
   (gnu services linux)
   (gnu services networking)
-  (gnu services pm)
   (gnu services security)
   (gnu services security-token)
   (gnu services ssh)

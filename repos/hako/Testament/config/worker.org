@@ -7,7 +7,7 @@
 #+begin_src scheme :tangle ../files/tangled/worker.scm :noweb yes
   (use-modules <<module>>)
 
-  (define (%os host-name system 32bit-support? workers threads-per-worker bios-boot)
+  (define (%os host-name system 32bit-support? workers bios-boot)
     (operating-system
       (host-name host-name)
       (timezone "Etc/GMT-8")
@@ -35,7 +35,8 @@
       (users (cons* <<user>> %base-user-accounts))
       (packages
        (append (specifications->packages
-                '("mosh"
+                '("fish"
+                  "mosh"
                   "rsync"
                   <<package>>))
                %base-packages))
@@ -57,9 +58,7 @@
                 (guix-service-type
                  config => (guix-configuration
                              (inherit config)
-                             (build-accounts (* 2 workers))
-                             (extra-options
-                              (list "--cores" (number->string threads-per-worker))))))))
+                             (build-accounts (* 2 workers)))))))
       (sudoers-file
        (plain-file "sudoers"
          (string-append
@@ -100,8 +99,7 @@
   (user-account
     (name "hako")
     (group "users")
-    (supplementary-groups '("wheel"))
-    (shell (file-append fish "/bin/fish")))
+    (supplementary-groups '("wheel")))
   (user-account
     (name "jonathan")
     (group "users")
