@@ -7,36 +7,90 @@
 (define oci-uid (get-line (open-input-pipe "id oci-container -u")))
 (define oci-gid (get-line (open-input-pipe "id oci-container -g")))
 
-(define-public %paperless-oci
-  (let ((redis-name "paperless-redis")
-        (postgres-name "paperless-postgres"))
+(define-public %sabnzbd-oci
+  (let ((sabnzbd-name "sabnzbd"))
     (list
      (oci-container-configuration
-       (provision redis-name)
-       (respawn? #t)
-       (image "docker.io/library/redis")
-       (network "paperless-network")
+       (environment '(("TZ" . "Etc/UTC")))
+       (image "linuxserver/sabnzbd")
+       (provision sabnzbd-name)
+       (network "media")
+       (ports '("[::1]:8081:8081"))
        (volumes
-        (list (cons (format #f "~a/redis" %paperless-share)
-                    "/data"))))
+        `((,(format #f "~a/dot-config/~a" %dots-dir sabnzbd-name) . "/config")
+          ("/mnt/wd/media/downloads" . "/media/downloads")))
+       (container-user (format #f "~a:~a" oci-uid oci-gid))))))
+
+(define-public %jellyfin-oci
+  (let ((jellyfin-name "jellyfin"))
+    (list
+     (oci-container-configuration
+       (image "jellyfin/jellyfin")
+       (provision jellyfin-name)
+       (network "media")
+       (ports (list "[::1]:8096:8096"
+                    (format #f "[~a]:8096:8096" %ipv6-ula-om)
+                    (format #f "~a:8096:8096" %ipv4-lan-om)
+                    "[::]:7359:7359"))
+       (volumes
+        `((,(format #f "~a/dot-config/~a" %dots-dir jellyfin-name) . "/config")
+          ("jellyfin-cache" . "/cache")
+          ("/mnt/wd/media" . "/media")))
+       (container-user (format #f "~a:~a" oci-uid oci-gid))
+       (extra-arguments
+        (let ((video-group-id (get-line
+                               (open-input-pipe
+                                "awk -F ':' '/^video/ {print $3}' /etc/group"))))
+          (list "--device=/dev/dri/renderD128:/dev/dri/renderD128"
+                (format #f "--group-add=~a" video-group-id))))))))
+
+(define-public %sonarr-oci
+  (let ((sonarr-name "sonarr"))
+    (list
+     (oci-container-configuration
+       (environment '(("TZ" . "Etc/UTC")))
+       (image "ghcr.io/linuxserver/sonarr")
+       (provision sonarr-name)
+       (network "media")
+       (ports '("[::1]:8989:8989"))
+       (volumes
+        `((,(format #f "~a/dot-config/~a" %dots-dir sonarr-name) . "/config")
+          ("/mnt/wd/media" . "/media")))
+       (container-user (format #f "~a:~a" oci-uid oci-gid))))))
+
+(define-public %paperless-oci
+  (let ((redis-name "paperless-redis")
+        (postgres-name "paperless-postgres")
+        (paperless-name "paperless"))
+    (list
+     (oci-container-configuration
+       (image "docker.io/library/redis")
+       (provision redis-name)
+       (network "paperless")
+       (respawn? #t)
+       (volumes
+        `((,(format #f "~a/redis" %paperless-share) . "/data"))))
 
      (oci-container-configuration
-       (provision postgres-name)
-       (respawn? #t)
-       (image "docker.io/library/postgres:18")
-       (network "paperless-network")
-       (volumes
-        (list (cons (format #f "~a/postgres" %paperless-share)
-                    "/var/lib/postgresql")))
        (environment
         '(("POSTGRES_DB" . "paperless")
           ("POSTGRES_USER" . "paperless")
-          ("POSTGRES_PASSWORD" . "paperless"))))
+          ("POSTGRES_PASSWORD" . "paperless")))
+       (image "docker.io/library/postgres:18")
+       (provision postgres-name)
+       (network "paperless")
+       (respawn? #t)
+       (volumes
+        `((,(format #f "~a/postgres" %paperless-share) . "/var/lib/postgresql"))))
 
      (oci-container-configuration
-       (provision "paperless")
+       (environment
+        `(("PAPERLESS_REDIS" . ,(format #f "redis://~a:6379" redis-name))
+          ("PAPERLESS_DBHOST" . ,postgres-name)
+          ("PAPERLESS_URL" . ,(format #f "http://paper.sec.~a" %domain-name))))
        (image "ghcr.io/paperless-ngx/paperless-ngx:latest")
-       (network "paperless-network")
+       (provision "paperless")
+       (network "paperless")
        (requirement (map string->symbol (list redis-name postgres-name)))
        (ports '("[::1]:8000:8000"))
        (volumes
@@ -45,43 +99,17 @@
                (map (lambda (volume)
                       (cons (format #f "~a/~a" %paperless-share volume)
                             (format #f "/usr/src/paperless/~a" volume)))
-                    '("data" "media" "export"))))
-       (environment
-        (list (cons "PAPERLESS_REDIS"
-                    (format #f "redis://~a:6379" redis-name))
-              (cons "PAPERLESS_DBHOST"
-                    postgres-name)
-              (cons "PAPERLESS_URL"
-                    (format #f "http://paper.sec.~a" %domain-name))))))))
+                    '("data" "media" "export"))))))))
 
-(define-public %jellyfin-oci
-  (list
-   (oci-container-configuration
-     (provision "jellyfin")
-     (image "jellyfin/jellyfin")
-     (ports (list "[::1]:8096:8096"
-                  (format #f "[~a]:8096:8096" %ipv6-ula-om)
-                  (format #f "~a:8096:8096" %ipv4-lan-om)
-                  "[::]:7359:7359"))
-     (container-user (format #f "~a:~a" oci-uid oci-gid))
-     (volumes '(("jellyfin-config" . "/config")
-                ("jellyfin-cache" . "/cache")
-                ("/mnt/wd/media" . "/media")))
-     (extra-arguments
-      (let ((video-group-id (get-line
-                             (open-input-pipe
-                              "awk -F ':' '/^video/ {print $3}' /etc/group"))))
-        (list "--device=/dev/dri/renderD128:/dev/dri/renderD128"
-              (format #f "--group-add=~a" video-group-id)))))))
-
-(define-public %sabnzbd-oci
-  (list
-   (oci-container-configuration
-     (provision "sabnzbd")
-     (image "linuxserver/sabnzbd")
-     (ports '("[::1]:8081:8081"))
-     (environment '(("TZ" . "Etc/UTC")))
-     (container-user (format #f "~a:~a" oci-uid oci-gid))
-     (volumes
-      '(("sabnzbd-config" . "/config")
-        ("/mnt/wd/media" . "/media"))))))
+(define-public %homepage-oci
+  (let ((homepage-name "homepage"))
+    (list
+     (oci-container-configuration
+       (environment '(("HOMEPAGE_ALLOWED_HOSTS" . "gethomepage.dev")))
+       (image "ghcr.io/gethomepage/homepage")
+       (provision homepage-name)
+       (network "host")
+       (ports '("[::1]:3000:3000"))
+       (volumes
+        `((,(format #f "~a/dot-config/~a" %dots-dir homepage-name) . "/app/config")))
+       (container-user (format #f "~a:~a" oci-uid oci-gid))))))

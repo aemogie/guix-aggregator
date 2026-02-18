@@ -459,15 +459,15 @@ Otherwise set locally with `keymap-local-set'."
 #+begin_src emacs-lisp
 (use-package consult
   :custom
-  (consult-buffer-sources '(consult--source-hidden-buffer
-                            consult--source-modified-buffer
-                            consult--source-buffer
-                            consult--source-bookmark
-                            consult--source-recent-file
-                            consult--source-file-register
-                            consult--source-project-buffer-hidden
-                            consult--source-project-recent-file-hidden
-                            consult--source-project-root-hidden)))
+  (consult-buffer-sources '(consult-source-hidden-buffer
+                            consult-source-modified-buffer
+                            consult-source-buffer
+                            consult-source-bookmark
+                            consult-source-recent-file
+                            consult-source-file-register
+                            consult-source-project-buffer-hidden
+                            consult-source-project-recent-file-hidden
+                            consult-source-project-root-hidden)))
 #+end_src
 
 ** Search

@@ -210,7 +210,9 @@
       (service
        containerd-service-type)
       (service
-       docker-service-type)
+       docker-service-type
+       (docker-configuration
+         (config-file (local-file "dockerd.json" "dockerd-json"))))
 
       (simple-service
        'oci-provisioning
@@ -218,12 +220,15 @@
        (oci-extension
         (networks
          (list (oci-network-configuration
-                (name "paperless-network")
-                (ipv6? #f))))
+                (name "media"))
+               (oci-network-configuration
+                (name "paperless"))))
         (containers
          (append %sabnzbd-oci
+                 %sonarr-oci
                  %jellyfin-oci
-                 %paperless-oci))))
+                 %paperless-oci
+                 %homepage-oci))))
 
       (service
        nginx-service-type
@@ -239,11 +244,15 @@
             (list (root-server-block "lan" %ipv6-wireguard-om)
                   (root-server-block "sec" %ipv6-wireguard-om)
                   (local-app-server-block
+                   "homepage.sec" 3000)
+                  (local-app-server-block
                    "sync.sec" 8384)
+                  (local-app-server-block
+                   "paper.sec" 8000)
                   (local-app-server-block
                    "sab.sec" 8081)
                   (local-app-server-block
-                   "paper.sec" 8000)
+                   "sonarr.sec" 8989)
                   (local-app-server-block
                    "jelly.sec" 8096
                    #:additional-names '("jelly")

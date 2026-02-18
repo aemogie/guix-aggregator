@@ -1,7 +1,7 @@
 (define-module (mrh-guix home sleep packages)
   #:use-module (gnu)
-  #:use-module (nongnu packages messaging)
-  #:use-module (mrh packages))
+  #:use-module (mrh packages)
+  #:use-module (nongnu packages messaging))
 
 (use-package-modules admin
                      aspell
@@ -37,7 +37,7 @@
                      readline
                      rsync
                      terminals
-                     texlive
+                     tex
                      tree-sitter
                      version-control
                      video
@@ -117,6 +117,7 @@
    emacs-vertico
    emacs-wgrep
    emacs-writeroom
+   emacs-yaml-mode
    mrh-emacs-nerd-icons-dired
    mrh-emacs-nm
    mrh-emacs-org-publish-rss
@@ -156,7 +157,7 @@
    monero
    pandoc
    rlwrap
-   texlive
+   texlive-scheme-full
    unzip
    xdg-desktop-portal
    xdg-utils
