@@ -190,8 +190,8 @@
         hyprsunset))
 
 (define-public image
-  (list imv
-        oculante))
+  (list imv))
+        ;; oculante))
 
 (define-public mail
   (list aerc))
@@ -199,6 +199,7 @@
 (define-public messaging
   (list senpai
         catgirl
+        cinny-desktop-bin
         vesktop))
         ;; telegram-desktop))
 

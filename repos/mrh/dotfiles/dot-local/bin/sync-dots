@@ -12,4 +12,5 @@ rsync \
     --recursive \
     --update \
     --verbose \
+    --exclude=jellyfin --exclude=sonarr --exclude=radarr \
     "$LOCAL_PATH" "$REMOTE_NAME:$REMOTE_PATH"

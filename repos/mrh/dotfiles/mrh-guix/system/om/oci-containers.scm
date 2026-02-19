@@ -44,9 +44,21 @@
           (list "--device=/dev/dri/renderD128:/dev/dri/renderD128"
                 (format #f "--group-add=~a" video-group-id))))))))
 
-(define-public %sonarr-oci
-  (let ((sonarr-name "sonarr"))
+(define-public %arrs-oci
+  (let ((radarr-name "radarr")
+        (sonarr-name "sonarr"))
     (list
+     (oci-container-configuration
+       (environment '(("TZ" . "Etc/UTC")))
+       (image "lscr.io/linuxserver/radarr")
+       (provision radarr-name)
+       (network "media")
+       (ports '("[::1]:7878:7878"))
+       (volumes
+        `((,(format #f "~a/dot-config/~a" %dots-dir radarr-name) . "/config")
+          ("/mnt/wd/media" . "/media")))
+       (container-user (format #f "~a:~a" oci-uid oci-gid)))
+
      (oci-container-configuration
        (environment '(("TZ" . "Etc/UTC")))
        (image "ghcr.io/linuxserver/sonarr")

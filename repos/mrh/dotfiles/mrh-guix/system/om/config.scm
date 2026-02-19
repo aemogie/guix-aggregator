@@ -225,7 +225,7 @@
                 (name "paperless"))))
         (containers
          (append %sabnzbd-oci
-                 %sonarr-oci
+                 %arrs-oci
                  %jellyfin-oci
                  %paperless-oci
                  %homepage-oci))))
@@ -251,6 +251,8 @@
                    "paper.sec" 8000)
                   (local-app-server-block
                    "sab.sec" 8081)
+                  (local-app-server-block
+                   "radarr.sec" 7878)
                   (local-app-server-block
                    "sonarr.sec" 8989)
                   (local-app-server-block

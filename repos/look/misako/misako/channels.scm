@@ -70,7 +70,7 @@
 (define sops-guix
   (channel
     (name 'sops-guix)
-    (url "https://github.com/fishinthecalculator/sops-guix")
+    (url "https://codeberg.org/look/sops-guix")
     (branch "main")
     (introduction
       (make-channel-introduction

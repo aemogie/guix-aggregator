@@ -6,7 +6,11 @@ editor = hx
 hookspath = ~/.config/git/hooks
 
 [commit]
+verbose = true
 gpgsign = true
+
+[diff]
+algorithm = histogram
 
 [user]
 signingkey = 8B37296FCE5C491047373BAA3BF514F584DC25AD
