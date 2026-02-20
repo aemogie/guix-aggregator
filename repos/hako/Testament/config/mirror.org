@@ -33,7 +33,7 @@
        (list (swap-space
                (target (file-system-label "swap")))))
       (users (cons* <<user>> %base-user-accounts))
-      (packages (append (specifications->packages '("fish" "mosh" "rsync")) %base-packages))
+      (packages (append %testament-cli-packages %base-packages))
       (services
        (cons* <<service>>
 
@@ -90,9 +90,15 @@
 *** Users
 #+begin_src scheme :noweb-ref user
   (user-account
+    (inherit %root-account)
+    (password #f)
+    (shell (file-append fish "/bin/fish")))
+
+  (user-account
     (name "hako")
     (group "users")
-    (supplementary-groups '("wheel")))
+    (supplementary-groups '("wheel"))
+    (shell (file-append fish "/bin/fish")))
   (user-account
     (name "jonathan")
     (group "users")

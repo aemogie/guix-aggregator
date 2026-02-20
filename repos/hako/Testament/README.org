@@ -41,20 +41,21 @@ I provide Guix System installation images in this repository, pre-built images
 below.
 
 Variants:
-- Default: desktop environment built around [[https://github.com/YaLTeR/niri][niri]] Wayland compositor and
-  [[https://noctalia.dev/][Noctalia]] desktop shell. (3D acceleration required)
 - Minimal: console-based installation, the installer runs on [[https://www.freedesktop.org/wiki/Software/kmscon/][kmscon]].
+- Niri: start installation in a desktop environment built around [[https://github.com/YaLTeR/niri][niri]] Wayland
+  compositor and [[https://noctalia.dev/][Noctalia]] desktop shell. (3D acceleration required)
 
-Build date: 2026-02-14 (built with [[https://codeberg.org/hako/Testament/src/commit/5fc4aa73cf7a38f9d5fee8ce6aca157ae6274ada/channels.lock][channels]], image [[https://codeberg.org/hako/Testament/commits/branch/trunk/config/live][changes]])
+Build date: 2026-02-19 ([[https://codeberg.org/hako/Testament/src/commit/1c94304683e603ac649bafc1b58c747102bae52b/channels.lock][channels]], [[https://codeberg.org/hako/Testament/commits/branch/trunk/config/live][changes to the images]])
 
-Currently =aarch64-linux= images are not tested.
+Installation process with GNOME desktop environment is tested for x86_64-linux
+images.
 
 | System        | Variant | Image       | Signature       | SHA256 Checksum                                                    |
 |---------------+---------+-------------+-----------------+--------------------------------------------------------------------|
-| x86_64-linux  | Default | [[https://files.guix.moe/2026-02-14/rosenthal-default-20260214.x86_64-linux.iso][default.iso]] | [[https://files.guix.moe/2026-02-14/rosenthal-default-20260214.x86_64-linux.iso.asc][default.iso.asc]] | =fc912678d1d0251fbc1e2ba176fbd0d04eaac056c261fa1927cc8b89b81baa7b= |
-| x86_64-linux  | Minimal | [[https://files.guix.moe/2026-02-14/rosenthal-minimal-20260214.x86_64-linux.iso][minimal.iso]] | [[https://files.guix.moe/2026-02-14/rosenthal-minimal-20260214.x86_64-linux.iso.asc][minimal.iso.asc]] | =30d88067525aa54738874f40df542e141182b013fe8e39f4782736941b65a52f= |
-|               |         |             |                 |                                                                    |
-| aarch64-linux | Minimal | [[https://files.guix.moe/2026-02-14/rosenthal-minimal-20260214.aarch64-linux.iso][minimal.iso]] | [[https://files.guix.moe/2026-02-14/rosenthal-minimal-20260214.aarch64-linux.iso.asc][minimal.iso.asc]] | =6cf5fa2e13dceacff7acaa621b404712a09784873d5bf8f05616cac63ba495b6= |
+| x86_64-linux  | Minimal | [[https://files.guix.moe/2026-02-19/rosenthal-minimal-20260219.x86_64-linux.iso][minimal.iso]] | [[https://files.guix.moe/2026-02-19/rosenthal-minimal-20260219.x86_64-linux.iso.asc][minimal.iso.asc]] | =ffcfaa60e5e416f1038984984c8714256e532b9e7c8ab989b4a457a7de04092f= |
+| x86_64-linux  | Niri    | [[https://files.guix.moe/2026-02-19/rosenthal-niri-20260219.x86_64-linux.iso][niri.iso]]    | [[https://files.guix.moe/2026-02-19/rosenthal-niri-20260219.x86_64-linux.iso.asc][niri.iso.asc]]    | =8ae89958be8e8ca63ee6cf6875ba754f31658a9b36f9b839e01a63b09109e547= |
+| aarch64-linux | Minimal | [[https://files.guix.moe/2026-02-19/rosenthal-minimal-20260219.aarch64-linux.iso][minimal.iso]] | [[https://files.guix.moe/2026-02-19/rosenthal-minimal-20260219.aarch64-linux.iso.asc][minimal.iso.asc]] | =80317c2d05a44276c7c0dfa4e9827ca11b833ed5048ad5a3df52029e50324de8= |
+| aarch64-linux | Niri    | [[https://files.guix.moe/2026-02-19/rosenthal-niri-20260219.aarch64-linux.iso][niri.iso]]    | [[https://files.guix.moe/2026-02-19/rosenthal-niri-20260219.aarch64-linux.iso.asc][niri.iso.asc]]    | =5cf3888bafc966b396076030515d66cb6fac1c8b60d9cb5fdd0853b8d3b699b7= |
 
 Once downloaded, follow Guix System's [[https://guix.gnu.org/manual/devel/en/html_node/System-Installation.html][installation instructions]].  Loading of the
 desktop environment may take quite a while, depending on the read performance of
@@ -77,14 +78,15 @@ For the desktop environment:
 
 User name: =live=, password: =live=, in case you'll need them.
 
+Dotfiles, including a pre-configured Emacs text editor, are [[https://codeberg.org/hako/Rosenthal/src/branch/trunk/modules/rosenthal/examples][managed in the
+Rosenthal channel]], exposed as =%rosenthal-skeletons= and available under
+=/etc/skel= when configured.
+
+*** niri
 Default keybindings:
 + =Super+Shift+/= :: Open an overlay for available hotkeys.
 + =Super+D= :: Open application launcher.
 + =Super+Return= :: Open terminal emulator: [[https://wezterm.org/][WezTerm]].
-
-Dotfiles including a pre-configured Emacs text editor are [[https://codeberg.org/hako/Rosenthal/src/branch/trunk/modules/rosenthal/examples][managed in the
-Rosenthal channel]], exposed as =%rosenthal-skeletons= and available under
-=/etc/skel= when configured.
 
 #+html: <img src="https://s3.boiledscript.com/misskey/7371f3db-92a7-4c51-9eb1-991743fdaebb.webp">
 #+html: <img src="https://s3.boiledscript.com/misskey/9e9928ab-36ba-46bd-8ac4-35cda328606d.webp">

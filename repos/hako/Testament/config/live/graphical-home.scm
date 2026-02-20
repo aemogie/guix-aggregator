@@ -8,8 +8,10 @@
              (gnu home services fontutils)
              (gnu home services shells)
              (gnu home services shepherd)
+             (gnu packages)
              (gnu packages fcitx5)
-             (gnu packages gnome-xyz))
+             (gnu packages gnome-xyz)
+             (gnu packages shells))
 
 
 ;;;
@@ -17,6 +19,48 @@
 ;;;
 
 (home-environment
+  (packages (specifications->packages
+             '(;; Web browser.
+               "librewolf"
+               "ublock-origin-icecat"
+
+               ;; Text editors, see also `%rosenthal-skeletons'.
+               "emacs-pgtk"
+               "neovim"
+
+               "emacs-corfu"
+               "emacs-doom-modeline"
+               "emacs-edit-indirect"    ;for emacs-markdown-mode
+               "emacs-envrc"
+               "emacs-evil"
+               "emacs-fish-mode"
+               "emacs-flycheck"
+               "emacs-flycheck-guile"
+               "emacs-forge"
+               "emacs-gcmh"
+               "emacs-geiser"
+               "emacs-geiser-guile"
+               "emacs-helpful"
+               "emacs-hl-todo"
+               "emacs-json-mode"
+               "emacs-macrostep"
+               "emacs-macrostep-geiser"
+               "emacs-magit"
+               "emacs-markdown-mode"
+               "emacs-mwim"
+               "emacs-no-littering"
+               "emacs-orderless"
+               "emacs-puni"
+               "emacs-rainbow-delimiters"
+               "emacs-vertico"
+
+               ;; Fonts.
+               "font-adobe-source-serif"
+               "font-google-noto"
+               "font-google-noto-emoji"
+               "font-nerd-symbols"
+               "font-sarasa-gothic"
+               "font-victor-mono")))
   (services
    (cons* (service home-fish-service-type)
 
@@ -63,48 +107,5 @@
                      fcitx5-rime
                      fcitx5-skk
                      fcitx5-unikey))))
-
-          ;; Font config.
-          (simple-service 'extend-fontconfig home-fontconfig-service-type
-            (let ((sans  "Noto Sans")
-                  (serif "Noto Serif")
-                  (mono  "Victor Mono")
-                  (emoji "Noto Color Emoji"))
-              `((alias
-                 (family "sans-serif")
-                 (prefer
-                  (family ,sans)
-                  (family ,emoji)))
-                (alias
-                 (family "serif")
-                 (prefer
-                  (family ,serif)
-                  (family ,emoji)))
-                (alias
-                 (family "monospace")
-                 (prefer
-                  (family ,mono)
-                  (family ,emoji)))
-
-                ,@(map (lambda (name)
-                         `(alias
-                           (family ,name)
-                           (prefer
-                            (family ,sans)
-                            (family "sans-serif"))))
-                       '("BlinkMacSystemFont"
-                         "-apple-system"
-                         "system-ui"
-                         "ui-sans-serif"))
-                (alias
-                 (family "ui-serif")
-                 (prefer
-                  (family ,serif)
-                  (family "serif")))
-                (alias
-                 (family "ui-monospace")
-                 (prefer
-                  (family ,mono)
-                  (family "monospace"))))))
 
           %rosenthal-desktop-home-services)))

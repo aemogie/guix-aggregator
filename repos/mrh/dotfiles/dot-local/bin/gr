@@ -1,0 +1,19 @@
+#!/usr/bin/env guile
+!#
+
+(use-modules (ice-9 match)
+             (ice-9 format))
+
+(define* (guix-reconfigure-command home-or-system #:optional (args '()))
+  (let ((home (getenv "HOME")))
+    (format #f "guix ~a reconfigure~{ --~a~} -L ~a/src/dotfiles ~a/src/dotfiles/mrh-guix/~a/~a/config.scm"
+            home-or-system
+            args
+            home
+            home home-or-system (gethostname))))
+
+(match (command-line)
+  ((_ home-or-system . args)
+   (let ((command (guix-reconfigure-command home-or-system args)))
+     (format #t "running: ~A~%" command)
+     (system command))))

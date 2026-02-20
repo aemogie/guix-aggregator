@@ -23,8 +23,10 @@
          (targets '("/efi"))
          (keyboard-layout keyboard-layout)))
       (kernel linux-lts/dolly)
-      (initrd microcode-initrd)
       (firmware (cons* linux-firmware %base-firmware))
+      ;; Required for the current implementation of the "copy out-of-tree modules
+      ;; to Linux initrd" patch.
+      (kernel-loadable-modules (list `(,zfs "module")))
       (kernel-arguments
        (cons* "kernel.sysrq=1"
               "memtest=3"
@@ -32,6 +34,7 @@
               "zswap.enabled=1"
               "zswap.max_pool_percent=90"
               %default-kernel-arguments))
+      (initrd microcode-initrd)
       (file-systems (append <<file-systems>> %base-file-systems))
       (swap-devices
        (list (swap-space
@@ -40,20 +43,7 @@
       (users (cons* <<user>> %base-user-accounts))
       (packages
        (append (specifications->packages
-                '(;; CLI Utilities.
-                  "curl"
-                  "fd"
-                  "fish"
-                  "git"
-                  "gnupg"
-                  "mosh"
-                  "ncurses"
-                  "ripgrep"
-                  "rsync"
-                  "sops"
-                  "unzip"
-
-                  ;; Desktop applications.
+                '(;; Desktop applications.
                   "digikam"
                   "gimp"
                   "imv"
@@ -65,6 +55,7 @@
                   "zathura-pdf-poppler"
 
                   <<package>>))
+               %testament-cli-packages
                %base-packages))
       (services
        (cons* <<service>>
@@ -108,8 +99,7 @@
       (name-service-switch %mdns-host-lookup-nss)))
 
   ((compose (nonguix-transformation-nvidia #:open-source-kernel-module? #t
-                                           #:s0ix-power-management? #t)
-            (rosenthal-transformation-zfs #:boot? #t))
+                                           #:s0ix-power-management? #t))
    %os)
 #+end_src
 
@@ -208,6 +198,10 @@
 | Mentha/Data/Sandbox     | /var/lib/Sandbox     |                |                       |
 |-------------------------+----------------------+----------------+-----------------------|
 
+#+begin_src scheme :noweb-ref service
+  (service zfs-service-type)
+#+end_src
+
 #+begin_src scheme :noweb-ref file-systems
   (map (match-lambda
          ((dataset . mount-point)
@@ -276,19 +270,39 @@ Generate random password hash:
 
 #+begin_src scheme :noweb yes :noweb-ref user
   (user-account
+    (inherit %root-account)
+    (password #f)
+    (shell (file-append fish "/bin/fish")))
+
+  (user-account
     (name "hako")
     (group "users")
     (supplementary-groups '("adbusers" "audio" "docker" "kvm" "plugdev" "video" "wheel"))
     (shell (file-append fish "/bin/fish")))
 #+end_src
 
-#+begin_src scheme :noweb-ref home-service
-  (service home-fish-service-type)
-#+end_src
-
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-openssh openssh-service-type
     `(("root" ,%ssh-key-deploy)))
+#+end_src
+
+#+begin_src scheme :noweb-ref home-service
+  (service home-fish-service-type
+    (home-fish-configuration
+      (config
+       ;; Merge search paths on Guix System.
+       (list (mixed-text-file "merge-search-paths.fish" "\
+  status is-login
+  and begin
+      set --prepend fish_function_path " fish-foreign-env "/share/fish/functions
+      fenv eval \"$(guix package --search-paths \\
+          --profile=$HOME/.config/guix/current \\
+          --profile=$HOME/.guix-profile \\
+          --profile=$HOME/.guix-home/profile \\
+          --profile=/run/current-system/profile)\"
+      set --prepend PATH /run/privileged/bin
+      set --erase fish_function_path[1]
+  end\n")))))
 #+end_src
 
 *** Shell Utilities
@@ -305,7 +319,7 @@ Generate random password hash:
        (list (plain-file "emacs-eat.fish" "\
   if test -n \"$EAT_SHELL_INTEGRATION_DIR\"
       source $EAT_SHELL_INTEGRATION_DIR/fish
-  end")))))
+  end\n")))))
 #+end_src
 
 *** SOPS Secrets
@@ -370,6 +384,26 @@ Generate passwordless ECC key:
 #+end_src
 
 ** Networking & SSH
+*** network-online
+https://codeberg.org/guix/guix/issues/838#issue-1886438
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'home-network-online home-shepherd-service-type
+    (list (shepherd-service
+            (provision '(network-online))
+            (documentation "Wait for the network to come up.")
+            (one-shot? #t)
+            (start
+             #~(lambda _
+                 (let ((timeout #$(file-append coreutils-minimal "/bin/timeout"))
+                       (sh #$(file-append bash-minimal "/bin/sh")))
+                   (zero?
+                    (system* timeout "60" sh "-c" "\
+  until /run/privileged/bin/ping -qc1 -W1 example.org
+  do
+      sleep 1
+  done"))))))))
+#+end_src
+
 *** nftables
 #+begin_src scheme :noweb-ref service
   (service nftables-service-type
@@ -1054,6 +1088,7 @@ Copied from =%default-dotguile=.
   (simple-service 'jellyfin-mpv-shim home-shepherd-service-type
     (list (shepherd-service
             (provision '(jellyfin-mpv-shim))
+            (requirement '(network-online))
             (start
              #~(make-forkexec-constructor
                 '(#$(file-append jellyfin-mpv-shim "/bin/jellyfin-mpv-shim"))))
@@ -1131,7 +1166,7 @@ Copied from =%default-nanorc=.
   "steam-nvidia"
 #+end_src
 
-#+begin_src scheme :noweb-ref home-environment-variable
+#+begin_src scheme :noweb-ref home-service
   (simple-service 'nonguix-sandbox-home home-environment-variables-service-type
     `(("GUIX_SANDBOX_HOME" . "/var/lib/Sandbox")))
 #+end_src
@@ -2029,6 +2064,7 @@ Guix System - services
   (gnu services sysctl)
   (gnu services xorg)
   (gnu services syncthing)
+  (rosenthal services file-systems)
   (rosenthal services keyboard)
   (rosenthal services monitoring)
   (rosenthal services networking)
@@ -2049,6 +2085,7 @@ Guix Home - services
 Guix packages
 #+begin_src scheme :noweb-ref module
   (gnu packages android)
+  (gnu packages bash)
   (gnu packages cpp)
   (gnu packages fcitx5)
   (gnu packages file-systems)

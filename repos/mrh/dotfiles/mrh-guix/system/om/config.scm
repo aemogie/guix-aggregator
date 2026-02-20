@@ -125,10 +125,10 @@
                         (destination "default")
                         (gateway %ipv4-lan-gateway))))
                (name-servers
-                (list %ipv6-wireguard-vps
-                      %ipv4-wireguard-vps
-                      "2620:fe::9"
-                      "9.9.9.9")))))
+                (list %ipv4-wireguard-vps
+                      "9.9.9.9"
+                      %ipv6-wireguard-vps
+                      "2620:fe::9")))))
 
       (service
        wpa-supplicant-service-type
@@ -210,9 +210,7 @@
       (service
        containerd-service-type)
       (service
-       docker-service-type
-       (docker-configuration
-         (config-file (local-file "dockerd.json" "dockerd-json"))))
+       docker-service-type)
 
       (simple-service
        'oci-provisioning
@@ -222,13 +220,15 @@
          (list (oci-network-configuration
                 (name "media"))
                (oci-network-configuration
-                (name "paperless"))))
+                (name "paperless"))
+               (oci-network-configuration
+                (name "immich"))))
         (containers
-         (append %sabnzbd-oci
-                 %arrs-oci
-                 %jellyfin-oci
+         (append %homepage-oci
                  %paperless-oci
-                 %homepage-oci))))
+                 %sabnzbd-oci
+                 %arrs-oci
+                 %jellyfin-oci))))
 
       (service
        nginx-service-type
@@ -244,11 +244,13 @@
             (list (root-server-block "lan" %ipv6-wireguard-om)
                   (root-server-block "sec" %ipv6-wireguard-om)
                   (local-app-server-block
-                   "homepage.sec" 3000)
-                  (local-app-server-block
                    "sync.sec" 8384)
                   (local-app-server-block
+                   "homepage.sec" 3000)
+                  (local-app-server-block
                    "paper.sec" 8000)
+                  (local-app-server-block
+                   "immich.sec" 2283)
                   (local-app-server-block
                    "sab.sec" 8081)
                   (local-app-server-block

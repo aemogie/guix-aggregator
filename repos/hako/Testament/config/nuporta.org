@@ -20,6 +20,9 @@
          (bootloader uefi-uki-removable-bootloader)
          (targets '("/efi"))))
       (kernel linux-lts/dolly)
+      ;; Required for the current implementation of the "copy out-of-tree modules
+      ;; to Linux initrd" patch.
+      (kernel-loadable-modules (list `(,zfs "module")))
       (kernel-arguments
        (cons* "kernel.sysrq=0"
               "zswap.enabled=1"
@@ -30,19 +33,7 @@
        (list (swap-space
                (target (file-system-label "swap")))))
       (users (cons* <<user>> %base-user-accounts))
-      (packages
-       (append (specifications->packages
-                '("curl"
-                  "fd"
-                  "fish"
-                  "gnupg"
-                  "mosh"
-                  "rclone"
-                  "ripgrep"
-                  "rsync"
-                  "sops"
-                  <<package>>))
-               %base-packages))
+      (packages (append %testament-cli-packages %base-packages))
       (services
        (cons* <<service>>
 
@@ -77,8 +68,7 @@
                 (setuid? #t))
               %default-privileged-programs))))
 
-  ((compose (rosenthal-transformation-zfs #:boot? #t))
-   %os)
+  %os
 #+end_src
 
 ** Base
@@ -122,6 +112,10 @@
 | Lycoris/Data/WebPublic        | /var/lib/webpublic          |                            | true                  |
 | Lycoris/Data/Vaultwarden      | /var/lib/vaultwarden        |                            | true                  |
 |-------------------------------+-----------------------------+----------------------------+-----------------------|
+
+#+begin_src scheme :noweb-ref service
+  (service zfs-service-type)
+#+end_src
 
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
@@ -185,9 +179,15 @@
 *** Users
 #+begin_src scheme :noweb-ref user
   (user-account
+    (inherit %root-account)
+    (password #f)
+    (shell (file-append fish "/bin/fish")))
+
+  (user-account
     (name "hako")
     (group "users")
-    (supplementary-groups '("wheel")))
+    (supplementary-groups '("wheel"))
+    (shell (file-append fish "/bin/fish")))
   (user-account
     (name "jonathan")
     (group "users"))
@@ -1404,6 +1404,7 @@ Guix System - services
   (gnu services ssh)
   (gnu services sysctl)
   (gnu services web)
+  (rosenthal services file-systems)
   (rosenthal services mail)
   (rosenthal services messaging)
   (rosenthal services monitoring)

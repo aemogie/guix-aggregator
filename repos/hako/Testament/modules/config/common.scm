@@ -18,8 +18,19 @@
   ;; Guix build systems
   #:use-module (guix build-system copy)
   ;; Guix packages
+  #:use-module (gnu packages compression)
+  #:use-module (gnu packages curl)
+  #:use-module (gnu packages file)
+  #:use-module (gnu packages gnupg)
   #:use-module (gnu packages linux)
+  #:use-module (gnu packages ncurses)
+  #:use-module (gnu packages rsync)
+  #:use-module (gnu packages rust-apps)
+  #:use-module (gnu packages ssh)
+  #:use-module (gnu packages sync)
+  #:use-module (gnu packages version-control)
   #:use-module (nongnu packages linux)
+  #:use-module (rosenthal packages password-utils)
   #:export (testament-plain
 
             sops-str
@@ -42,6 +53,7 @@
             %xdg-data-home
             %xdg-base-directory-env-vars
 
+            %testament-cli-packages
             linux-lts/dolly
             manage-cuirass))
 
@@ -222,6 +234,20 @@ wifi.cloned-mac-address=stable\n")))
 ;;;
 ;;; Packages
 ;;;
+
+(define %testament-cli-packages
+  (list curl
+        fd
+        file
+        git
+        gnupg
+        mosh
+        ncurses
+        rclone
+        ripgrep
+        rsync
+        sops
+        unzip))
 
 (define linux-lts/dolly
   (customize-linux

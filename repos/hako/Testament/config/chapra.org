@@ -20,6 +20,9 @@
          (bootloader uefi-uki-removable-bootloader)
          (targets '("/efi"))))
       (kernel linux-lts/dolly)
+      ;; Required for the current implementation of the "copy out-of-tree modules
+      ;; to Linux initrd" patch.
+      (kernel-loadable-modules (list `(,zfs "module")))
       (kernel-arguments
        (cons* "kernel.sysrq=0"
               "memtest=3"
@@ -32,18 +35,7 @@
                (target
                 (uuid "b955a6b1-9dd9-4e91-b9d9-b4e15473396c")))))
       (users (cons* <<user>> %base-user-accounts))
-      (packages
-       (append (specifications->packages
-                '("curl"
-                  "fd"
-                  "fish"
-                  "gnupg"
-                  "mosh"
-                  "ripgrep"
-                  "rsync"
-                  "sops"
-                  <<package>>))
-               %base-packages))
+      (packages (append %testament-cli-packages %base-packages))
       (services
        (cons* <<service>>
 
@@ -65,8 +57,7 @@
                              (discover? #t))))))
       (name-service-switch %mdns-host-lookup-nss)))
 
-  ((compose (rosenthal-transformation-zfs #:boot? #t))
-   %os)
+  %os
 #+end_src
 
 ** Base
@@ -99,6 +90,10 @@
 | Ocimeae/Data/SOPS      | /var/lib/sops        |                                       | true                  |
 | Ocimeae/Data/Tailscale | /var/lib/tailscale   |                                       | true                  |
 |------------------------+----------------------+---------------------------------------+-----------------------|
+
+#+begin_src scheme :noweb-ref service
+  (service zfs-service-type)
+#+end_src
 
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
@@ -160,9 +155,15 @@
 *** Users
 #+begin_src scheme :noweb-ref user
   (user-account
+    (inherit %root-account)
+    (password #f)
+    (shell (file-append fish "/bin/fish")))
+
+  (user-account
     (name "hako")
     (group "users")
-    (supplementary-groups '("wheel")))
+    (supplementary-groups '("wheel"))
+    (shell (file-append fish "/bin/fish")))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -429,7 +430,6 @@ https://codeberg.org/guix/guix/issues/838#issue-1886438
   Port = 43502
   MusicFolder = '/mnt/Ocimeae/Library/Music'
   EnableSharing = true
-  Scanner.Extractor = 'ffmpeg'
 #+end_src
 
 *** qbittorrent
@@ -479,6 +479,7 @@ Guix System - services
   (gnu services sysctl)
   (rosenthal services bittorrent)
   (rosenthal services child-error)
+  (rosenthal services file-systems)
   (rosenthal services monitoring)
   (rosenthal services networking)
   (rosenthal services web)

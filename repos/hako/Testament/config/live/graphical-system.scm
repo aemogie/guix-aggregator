@@ -4,7 +4,6 @@
 (use-modules (guix gexp)
              (guix utils)
              (gnu system)
-             (gnu system install)
              (gnu system privilege)
              (gnu system shadow)
              (gnu services)
@@ -14,18 +13,11 @@
              (gnu services networking)
              (gnu services pm)
              (rosenthal services desktop)
-             (gnu packages)
+             (gnu packages hardware)
              (gnu packages libusb)
              (gnu packages linux)
              (gnu packages nfs)
              (gnu packages shells))
-
-(define %installation-os
-  (make-installation-os
-   #:efi-only?
-   (string=? (or (getenv "SYSTEM")
-                 (%current-system))
-             "aarch64-linux")))
 
 (define %minimal-os
   (load "minimal.scm"))
@@ -43,89 +35,9 @@
             (password (crypt "live" "$6$abc"))
             (group "users")
             (supplementary-groups '("audio" "video" "wheel"))
-            ;; See also `home-fish-service-type'.
             (shell (file-append fish "/bin/fish")))
           (operating-system-users %minimal-os)))
-
-  (skeletons %rosenthal-skeletons)
-
-  (packages
-   (append (specifications->packages
-            '(;; CLI utilities.
-              "curl"
-              "fd"
-              "fish"
-              "git"
-              "gnupg"
-              "mosh"
-              "ncurses"
-              "ripgrep"
-              "rsync"
-              "unzip"
-
-              ;; Desktop, see also `%rosenthal-skeletons'.
-              "niri"
-              "wl-clipboard"
-              "xdg-desktop-portal-gnome"
-              "xdg-desktop-portal-gtk"
-              "xdg-utils"
-              "imv"                ;image viewer
-              "light"              ;backlight control
-              "pavucontrol"        ;sound control
-              "playerctl"          ;media control
-              "wezterm"            ;terminal emulator
-              "xwayland-satellite" ;rootless XWayland support
-
-              ;; File manager.
-              "exo"
-              "file-roller"
-              "thunar"
-              "thunar-archive-plugin"
-              "thunar-media-tags-plugin"
-              "thunar-volman"
-              "tumbler"
-
-              ;; Web browser.
-              "librewolf"
-              "ublock-origin-icecat"
-
-              ;; Text editors, see also `%rosenthal-skeletons'.
-              "emacs-pgtk"
-              "neovim"
-
-              "emacs-corfu"
-              "emacs-daemons"
-              "emacs-doom-modeline"
-              "emacs-envrc"
-              "emacs-flycheck"
-              "emacs-flycheck-guile"
-              "emacs-forge"
-              "emacs-gcmh"
-              "emacs-geiser"
-              "emacs-geiser-guile"
-              "emacs-helpful"
-              "emacs-hl-todo"
-              "emacs-macrostep"
-              "emacs-macrostep-geiser"
-              "emacs-magit"
-              "emacs-mwim"
-              "emacs-no-littering"
-              "emacs-orderless"
-              "emacs-puni"
-              "emacs-rainbow-delimiters"
-              "emacs-vertico"
-
-              ;; Fonts, see also `home-fontconfig-service-type'.
-              "font-adobe-source-serif"
-              "font-google-noto"
-              "font-google-noto-emoji"
-              "font-nerd-symbols"
-              "font-sarasa-gothic"
-              "font-victor-mono"
-              ))
-           (load "scripts.scm")
-           (operating-system-packages %installation-os)))
-
+  (skeletons %rosenthal-skeletons-installer)
   (services
    (cons* ;; From `%rosenthal-desktop-services/base'.
           (service bluetooth-service-type
@@ -133,7 +45,7 @@
               (auto-enable? #t)))
           (service gvfs-service-type)
           (service power-profiles-daemon-service-type)
-          (simple-service 'backlight udev-service-type (list light))
+          (simple-service 'backlight udev-service-type (list ddcutil light))
 
           ;; From `%desktop-services'.
           (simple-service 'mtp udev-service-type (list libmtp))
@@ -150,9 +62,8 @@
 
           (modify-services (operating-system-user-services %minimal-os)
             (delete kmscon-service-type))))
-
   (sudoers-file
    (plain-file "sudoers"
      (string-append
-      (plain-file-content (operating-system-sudoers-file %installation-os))
+      (plain-file-content (operating-system-sudoers-file %minimal-os))
       "live ALL = NOPASSWD: ALL\n"))))

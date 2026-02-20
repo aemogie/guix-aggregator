@@ -7,7 +7,9 @@
              (rosenthal services desktop)
              (gnu home)
              (gnu services base)
-             (rosenthal services base))
+             (rosenthal services base)
+             (gnu packages)
+             (gnu packages wm))
 
 (define %graphical-home
   (load "graphical-home.scm"))
@@ -22,6 +24,28 @@
 
 (define %home
   (home-environment
+    (packages
+     (append (specifications->packages
+              '(;; Desktop, see also `%rosenthal-skeletons'.
+                "niri"
+                "dconf"
+                "wl-clipboard"
+                "xdg-desktop-portal-gnome"
+                "xdg-desktop-portal-gtk"
+                "xdg-utils"
+                "imv"                ;image viewer
+                "wezterm"            ;terminal emulator
+                "xwayland-satellite" ;rootless XWayland support
+
+                ;; File manager.
+                "exo"
+                "file-roller"
+                "thunar"
+                "thunar-archive-plugin"
+                "thunar-media-tags-plugin"
+                "thunar-volman"
+                "tumbler"))
+             (home-environment-packages %graphical-home)))
     (services
      (cons* (service home-noctalia-shell-service-type)
             (service home-polkit-gnome-service-type)
@@ -35,6 +59,9 @@
 
 (operating-system
   (inherit %graphical-os)
+  (packages
+   (cons* niri                  ;provide Wayland session for the login manager
+          (operating-system-packages %graphical-os)))
   (services
    (cons* (service guix-home-service-type
             `(("live" ,%home)))

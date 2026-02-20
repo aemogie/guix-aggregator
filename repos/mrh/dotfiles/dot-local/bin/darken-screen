@@ -1,0 +1,3 @@
+#!/bin/sh
+
+setterm --powersave on --powerdown 1 --blank 1

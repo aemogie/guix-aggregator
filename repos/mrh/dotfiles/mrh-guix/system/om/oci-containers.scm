@@ -28,6 +28,7 @@
        (image "jellyfin/jellyfin")
        (provision jellyfin-name)
        (network "media")
+       (requirement '(networking))
        (ports (list "[::1]:8096:8096"
                     (format #f "[~a]:8096:8096" %ipv6-ula-om)
                     (format #f "~a:8096:8096" %ipv4-lan-om)
@@ -125,3 +126,62 @@
        (volumes
         `((,(format #f "~a/dot-config/~a" %dots-dir homepage-name) . "/app/config")))
        (container-user (format #f "~a:~a" oci-uid oci-gid))))))
+
+(define-public %immich-oci
+  (let ((redis-name "immich_redis")
+        (postgres-name "immich_postgres")
+        (immich-name "immich_server"))
+    (list
+     (oci-container-configuration
+       (image "docker.io/valkey/valkey:9@sha256:546304417feac0874c3dd576e0952c6bb8f06bb4093ea0c9ca303c73cf458f63")
+       (provision redis-name)
+       (network "immich")
+       (respawn? #t)
+       (container-user (format #f "~a:~a" oci-uid oci-gid)))
+
+     (oci-container-configuration
+       (environment
+        '(("POSTGRES_PASSWORD" . "postgres")
+          ("POSTGRES_USER" . "postgres")
+          ("POSTGRES_DB" . "immich")
+          ("POSTGRES_INITDB_ARGS" . "--data-checksums")
+          ("DB_STORAGE_TYPE" . "HDD")))
+       (image "ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23")
+       (provision postgres-name)
+       (network "immich")
+       (respawn? #t)
+       (volumes
+        `((,(format #f "~a/postgres" %immich-share) . "/var/lib/postgresql/data")))
+       (container-user (format #f "~a:~a" oci-uid oci-gid)))
+
+     (oci-container-configuration
+       (image "ghcr.io/immich-app/immich-server:v2.1.0")
+       (provision immich-name)
+       (network "immich")
+       (requirement (map string->symbol (list redis-name postgres-name)))
+       (ports '("[::1]:2283:2283"))
+       (volumes
+        `((,(format #f "~a/data" %immich-share) . "/data")
+          ("/etc/localtime" . "/etc/localtime:ro")))
+       (container-user (format #f "~a:~a" oci-uid oci-gid))))))
+
+(define-public %technitium-oci
+  (let ((technitium-name "dns"))
+    (list
+     (oci-container-configuration
+       (environment
+        `(("DNS_SERVER_ADMIN_PASSWORD" . ,%technitium-password)
+          ("DNS_SERVER_PREFER_IPV6" . "true")
+          ("DNS_SERVER_LOG_USING_LOCAL_TIME" . "false")))
+       (image "technitium/dns-server")
+       (provision technitium-name)
+       (network "host")
+       (ports (list "[::]:5380:5380/tcp"
+                    "[::]:53:53/tcp"
+                    "[::]:53:53/udp"
+
+                    "[0.0.0.0]:5380:5380/tcp"
+                    "[0.0.0.0]:53:53/tcp"
+                    "[0.0.0.0]:53:53/udp"))
+       (volumes
+        '(("technitium-dns-config" . "/etc/dns")))))))
