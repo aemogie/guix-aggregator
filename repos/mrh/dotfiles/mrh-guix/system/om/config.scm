@@ -174,10 +174,12 @@
        yggdrasil-service-type
        (yggdrasil-configuration
          (config-file
-          (format #f "~a/.config/yggdrasil/yggdrasil-private.conf" %user-home))
+          (format #f "~a/data/om-ygg.conf" %user-home))
          (json-config
           '((peers . #("tcp://ygg-us-ny.nadeko.net:44441"
-                       "tls://ygg.jjolly.dev:3443"))))))
+                       "tls://ygg.jjolly.dev:3443"))
+            (listen . #("tcp://[::1]:31341"))
+            (multicastinterfaces . #(((regex . "wlp.*"))))))))
 
       (service
        syncthing-service-type
@@ -220,9 +222,7 @@
          (list (oci-network-configuration
                 (name "media"))
                (oci-network-configuration
-                (name "paperless"))
-               (oci-network-configuration
-                (name "immich"))))
+                (name "paperless"))))
         (containers
          (append %homepage-oci
                  %paperless-oci
