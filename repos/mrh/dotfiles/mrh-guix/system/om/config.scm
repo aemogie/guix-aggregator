@@ -160,7 +160,8 @@
                   (public-key %vps-wireguard-key)
                   (allowed-ips
                    (list (format #f "~a::/64" %ipv6-wireguard-prefix)
-                         (format #f "~a.0/24" %ipv4-wireguard-prefix))))
+                         (format #f "~a.0/24" %ipv4-wireguard-prefix)))
+                  (keep-alive 60))
 
                 ;; (wireguard-peer
                 ;;   (name "sleep")
@@ -231,43 +232,44 @@
                  %jellyfin-oci))))
 
       (service
+       copyparty-service-type
+       (copyparty-configuration
+        (user "oci-container")
+        (group "users")
+        (conf (local-file "copyparty.conf"))))
+
+      (service
        nginx-service-type
        (nginx-configuration
          (shepherd-requirement '(wireguard-wg0))
          (server-blocks
           (let ((local-app-server-block
                  (lambda* (name port #:key (additional-names '()) (extra '()))
-                   (app-server-block name %ipv6-wireguard-om "::1"
-                                     #:port port
-                                     #:additional-names additional-names
-                                     #:extra extra))))
+                   (app-server-block
+                    name %ipv6-wireguard-om "::1"
+                    #:port port
+                    #:additional-names additional-names
+                    #:extra
+                    (append extra
+                            '("proxy_set_header Host $host;"
+                              "proxy_set_header X-Real-IP $remote_addr;"
+                              "proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;"
+                              "proxy_set_header X-Forwarded-Proto $scheme;"
+                              "proxy_set_header X-Forwarded-Protocol $scheme;"
+                              "proxy_set_header X-Forwarded-Host $http_host;"
+                              "proxy_buffering off;"))))))
             (list (root-server-block "lan" %ipv6-wireguard-om)
                   (root-server-block "sec" %ipv6-wireguard-om)
-                  (local-app-server-block
-                   "sync.sec" 8384)
-                  (local-app-server-block
-                   "homepage.sec" 3000)
-                  (local-app-server-block
-                   "paper.sec" 8000)
-                  (local-app-server-block
-                   "immich.sec" 2283)
-                  (local-app-server-block
-                   "sab.sec" 8081)
-                  (local-app-server-block
-                   "radarr.sec" 7878)
-                  (local-app-server-block
-                   "sonarr.sec" 8989)
-                  (local-app-server-block
-                   "jelly.sec" 8096
-                   #:additional-names '("jelly")
-                   #:extra
-                   '("proxy_set_header Host $host;"
-                     "proxy_set_header X-Real-IP $remote_addr;"
-                     "proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;"
-                     "proxy_set_header X-Forwarded-Proto $scheme;"
-                     "proxy_set_header X-Forwarded-Protocol $scheme;"
-                     "proxy_set_header X-Forwarded-Host $http_host;"
-                     "proxy_buffering off;")))))))
+                  (local-app-server-block "files.sec" 3939)
+                  (local-app-server-block "sync.sec" 8384)
+                  (local-app-server-block "homepage.sec" 3000)
+                  (local-app-server-block "paper.sec" 8000)
+                  (local-app-server-block "immich.sec" 2283)
+                  (local-app-server-block "sab.sec" 8081)
+                  (local-app-server-block "radarr.sec" 7878)
+                  (local-app-server-block "sonarr.sec" 8989)
+                  (local-app-server-block "jelly.sec" 8096
+                                          #:additional-names '("jelly")))))))
 
       (modify-services %base-services
         (guix-service-type

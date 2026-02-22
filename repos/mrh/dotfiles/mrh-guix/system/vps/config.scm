@@ -233,7 +233,7 @@
                  (nginx-location-configuration
                    (uri "/blog")
                    (body
-                    (list (format #f "return 301 $scheme://~a/posts$request_uri;"
+                    (list (format #f "return 301 $scheme://~a/posts;"
                                   %domain-name)))))))
 
              (app-server-block
