@@ -100,7 +100,7 @@
        (environment
         `(("PAPERLESS_REDIS" . ,(format #f "redis://~a:6379" redis-name))
           ("PAPERLESS_DBHOST" . ,postgres-name)
-          ("PAPERLESS_URL" . ,(format #f "http://paper.sec.~a" %domain-name))))
+          ("PAPERLESS_URL" . ,(format #f "http://paper.home.~a" %domain-name))))
        (image "ghcr.io/paperless-ngx/paperless-ngx:latest")
        (provision "paperless")
        (network "paperless")
@@ -118,7 +118,8 @@
   (let ((homepage-name "homepage"))
     (list
      (oci-container-configuration
-       (environment '(("HOMEPAGE_ALLOWED_HOSTS" . "gethomepage.dev")))
+       (environment
+        `(("HOMEPAGE_ALLOWED_HOSTS" . ,(format #f "homepage.home.~a" %domain-name))))
        (image "ghcr.io/gethomepage/homepage")
        (provision homepage-name)
        (network "host")

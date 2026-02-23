@@ -1072,6 +1072,23 @@ and save an appropriate entry for `elfeed-feeds' to the kill ring."
   (advice-add 'elfeed-search-quit-window :after #'my/kill-elfeed-search-buffer))
 #+end_src
 
+** IRC
+
+#+begin_src emacs-lisp
+(defun my/erc-pounce ()
+  "Connect to irc via tls using pounce server"
+  (interactive)
+  (erc-tls :server (format "irc.remote.%s" my/website-domain)
+           :nick erc-nick))
+
+(defun my/erc-libera ()
+  "Connect to libera.chat irc via tls using certificate authorization"
+  (interactive)
+  (erc-tls :server "irc.libera.chat"
+           :nick erc-nick
+           :client-certificate t))
+#+end_src
+
 ** Gnus
 
 #+begin_src emacs-lisp

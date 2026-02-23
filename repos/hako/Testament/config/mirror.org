@@ -18,7 +18,7 @@
                grub-bootloader
                grub-efi-removable-bootloader))
          (targets (list (or bios-boot "/efi")))))
-      (kernel linux-lts/dolly)
+      (kernel linux/dolly)
       (kernel-arguments
        (cons* "kernel.sysrq=0"
               "zswap.enabled=1"
@@ -178,12 +178,17 @@
                          (with-file-lock/no-wait "/var/lock/guix-moe-mirror.lock"
                            (lambda _
                              (error "found ongoing syncing process, exiting"))
-                           (begin
+                           (let (($ (lambda (cmd)
+                                      (let* ((pid (spawn (car cmd) cmd))
+                                             (exit-val (cdr (waitpid pid))))
+                                        (or (zero? exit-val)
+                                            (error (format #f "Command ~s exited with non-zero exit status: ~s"
+                                                           (string-join cmd) exit-val)))))))
+                             (setenv "PATH" "/run/current-system/profile/bin")
                              (mkdir-p "/var/cache/guix-moe/narinfo")
-                             (invoke #$(file-append rsync "/bin/rsync")
-                                     "-az" "--delete"
-                                     "rsync://cache.guix.moe/narinfo/"
-                                     "/var/cache/guix-moe/narinfo/")))))))
+                             ($ `("rsync" "-rltpHS" "--delete-excluded"
+                                  "rsync://cache.guix.moe/narinfo/"
+                                  "/var/cache/guix-moe/narinfo/"))))))))
             #:requirement '(user-processes))))
 #+end_src
 

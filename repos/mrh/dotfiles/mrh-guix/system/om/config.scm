@@ -249,27 +249,40 @@
                     name %ipv6-wireguard-om "::1"
                     #:port port
                     #:additional-names additional-names
-                    #:extra
-                    (append extra
-                            '("proxy_set_header Host $host;"
-                              "proxy_set_header X-Real-IP $remote_addr;"
-                              "proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;"
-                              "proxy_set_header X-Forwarded-Proto $scheme;"
-                              "proxy_set_header X-Forwarded-Protocol $scheme;"
-                              "proxy_set_header X-Forwarded-Host $http_host;"
-                              "proxy_buffering off;"))))))
-            (list (root-server-block "lan" %ipv6-wireguard-om)
-                  (root-server-block "sec" %ipv6-wireguard-om)
-                  (local-app-server-block "files.sec" 3939)
-                  (local-app-server-block "sync.sec" 8384)
-                  (local-app-server-block "homepage.sec" 3000)
-                  (local-app-server-block "paper.sec" 8000)
-                  (local-app-server-block "immich.sec" 2283)
-                  (local-app-server-block "sab.sec" 8081)
-                  (local-app-server-block "radarr.sec" 7878)
-                  (local-app-server-block "sonarr.sec" 8989)
-                  (local-app-server-block "jelly.sec" 8096
-                                          #:additional-names '("jelly")))))))
+                    #:extra extra)))
+                (proxy-headers '("proxy_set_header Host $host;"
+                                 "proxy_set_header X-Real-IP $remote_addr;"
+                                 "proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;"
+                                 "proxy_set_header X-Forwarded-Proto $scheme;"
+                                 "proxy_set_header X-Forwarded-Protocol $scheme;"
+                                 "proxy_set_header X-Forwarded-Host $http_host;"
+                                 "proxy_buffering off;")))
+            (list (root-server-block
+                   "lan" %ipv6-wireguard-om)
+                  (root-server-block
+                   "home" %ipv6-wireguard-om)
+                  (local-app-server-block
+                   "files.home" 3939
+                   #:extra proxy-headers)
+                  (local-app-server-block
+                   "sync.home" 8384)
+                  (local-app-server-block
+                   "homepage.home" 3000
+                   #:extra proxy-headers)
+                  (local-app-server-block
+                   "paper.home" 8000)
+                  ;; (local-app-server-block
+                  ;;  "immich.home" 2283)
+                  (local-app-server-block
+                   "sab.home" 8081)
+                  (local-app-server-block
+                   "radarr.home" 7878)
+                  (local-app-server-block
+                   "sonarr.home" 8989)
+                  (local-app-server-block
+                   "jelly.home" 8096
+                   #:additional-names '("jelly")
+                   #:extra proxy-headers))))))
 
       (modify-services %base-services
         (guix-service-type

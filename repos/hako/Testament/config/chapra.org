@@ -19,7 +19,7 @@
        (bootloader-configuration
          (bootloader uefi-uki-removable-bootloader)
          (targets '("/efi"))))
-      (kernel linux-lts/dolly)
+      (kernel linux/dolly)
       ;; Required for the current implementation of the "copy out-of-tree modules
       ;; to Linux initrd" patch.
       (kernel-loadable-modules (list `(,zfs "module")))
@@ -194,29 +194,8 @@
       (extra-configuration-files
        (list %network-manager-ipv6-privacy
              %network-manager-random-mac-address))))
-#+end_src
 
-https://codeberg.org/guix/guix/issues/838#issue-1886438
-#+begin_src scheme :noweb-ref service
-  (simple-service 'network-online shepherd-root-service-type
-    (list (shepherd-service
-            (requirement '(networking))
-            (provision '(network-online))
-            (documentation "Wait for the network to come up.")
-            (one-shot? #t)
-            (start
-             #~(lambda _
-                 (let ((timeout #$(file-append coreutils-minimal "/bin/timeout"))
-                       (sh #$(file-append bash-minimal "/bin/sh"))
-                       (ping #$(file-append inetutils "/bin/ping")))
-                   (zero?
-                    (system* timeout "60" sh "-c"
-                             (format #f "\
-  until ~a -qc1 -W1 example.org
-  do
-      sleep 1
-  done"
-                                     ping)))))))))
+  (service network-online-service-type)
 #+end_src
 
 *** ntp

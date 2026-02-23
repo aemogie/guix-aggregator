@@ -18,7 +18,7 @@
                grub-bootloader
                grub-efi-removable-bootloader))
          (targets (list (or bios-boot "/efi")))))
-      (kernel linux-lts/dolly)
+      (kernel linux/dolly)
       (kernel-arguments
        (cons* "kernel.sysrq=0"
               "zswap.enabled=1"

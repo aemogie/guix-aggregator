@@ -15,7 +15,7 @@
        (bootloader-configuration
          (bootloader grub-efi-removable-bootloader)
          (targets '("/efi"))))
-      (kernel linux-lts/dolly)
+      (kernel linux/dolly)
       (kernel-arguments
        (cons* "consoleblank=60"
               "kernel.sysrq=0"

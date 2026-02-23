@@ -22,7 +22,7 @@
          (bootloader uefi-uki-removable-bootloader)
          (targets '("/efi"))
          (keyboard-layout keyboard-layout)))
-      (kernel linux-lts/dolly)
+      (kernel linux/dolly)
       (firmware (cons* linux-firmware %base-firmware))
       ;; Required for the current implementation of the "copy out-of-tree modules
       ;; to Linux initrd" patch.
@@ -384,26 +384,6 @@ Generate passwordless ECC key:
 #+end_src
 
 ** Networking & SSH
-*** network-online
-https://codeberg.org/guix/guix/issues/838#issue-1886438
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'home-network-online home-shepherd-service-type
-    (list (shepherd-service
-            (provision '(network-online))
-            (documentation "Wait for the network to come up.")
-            (one-shot? #t)
-            (start
-             #~(lambda _
-                 (let ((timeout #$(file-append coreutils-minimal "/bin/timeout"))
-                       (sh #$(file-append bash-minimal "/bin/sh")))
-                   (zero?
-                    (system* timeout "60" sh "-c" "\
-  until /run/privileged/bin/ping -qc1 -W1 example.org
-  do
-      sleep 1
-  done"))))))))
-#+end_src
-
 *** nftables
 #+begin_src scheme :noweb-ref service
   (service nftables-service-type

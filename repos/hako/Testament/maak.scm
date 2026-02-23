@@ -140,7 +140,7 @@
                   #:channels "channels.scm")))))
 
 (define (pull)
-  ($guix `("pull" "--channels=channels.lock")))
+  ($guix `("pull" "--channels=channels.lock" ,%substitute-urls)))
 
 (define (build-dorphine) (build-% "dorphine" #:local? #t))
 (define (build-chapra)   (build-% "chapra"   #:local? #t))

@@ -9,6 +9,7 @@
   #:use-module (gnu services containers)
   #:use-module (gnu services desktop)
   #:use-module (gnu services docker)
+  #:use-module (gnu services messaging)
   #:use-module (gnu services networking)
   #:use-module (gnu services shepherd)
   #:use-module (gnu services ssh)
@@ -237,8 +238,12 @@
                                   %domain-name)))))))
 
              (app-server-block
-              "i2p.sec" %ipv6-wireguard-vps "::1"
-              #:port 7070))))))
+              "i2p.remote" %ipv6-wireguard-vps "::1"
+              #:port 7070)
+
+             (app-server-block
+              "xmpp.remote" %ipv6-wireguard-vps "::1"
+              #:port 5280))))))
 
       (service
        yggdrasil-service-type
@@ -272,6 +277,39 @@
          ;;          (role 'server)
          ;;          (program (file-append go-obfs4proxy "/bin/obfs4proxy")))))
          ))
+
+      (service
+       pounce-service-type
+       (pounce-configuration
+         (local-host %ipv6-wireguard-vps)
+         (host "irc.libera.chat")
+         (client-cert "/etc/pounce/libera.pem")
+         (nick %irc-nick)
+         (join (list "#guix" "#yggdrasil"))))
+
+      (service prosody-service-type
+               (prosody-configuration
+                 (modules-enabled
+                  (cons* "groups"
+                         "mam"
+                         "muc_mam"
+                         "smacks"
+                         "csi"
+                         "http_file_share"
+                         %default-modules-enabled))
+                 (int-components
+                  (list
+                   (int-component-configuration
+                     (hostname (format #f "group.~a" %domain-name))
+                     (plugin "muc")
+                     (mod-muc (mod-muc-configuration
+                                (restrict-room-creation #t))))))
+                 (virtualhosts
+                  (list
+                   (virtualhost-configuration
+                     (domain %domain-name))))
+                 (admins
+                  (list (format #f "~a@~a" %username %domain-name)))))
 
       (simple-service
        'my-timers

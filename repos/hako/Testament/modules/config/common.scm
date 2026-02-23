@@ -7,6 +7,7 @@
   #:use-module (ice-9 popen)
   #:use-module (ice-9 textual-ports)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
   ;; Utilities
   #:use-module ((guix diagnostics) #:select (leave))
   #:use-module (guix gexp)
@@ -15,6 +16,8 @@
   #:use-module (guix packages)
   #:use-module (guix store)
   #:use-module (sops secrets)
+  ;; Guix origin methods
+  #:use-module (guix git-download)
   ;; Guix build systems
   #:use-module (guix build-system copy)
   ;; Guix packages
@@ -54,7 +57,7 @@
             %xdg-base-directory-env-vars
 
             %testament-cli-packages
-            linux-lts/dolly
+            linux/dolly
             manage-cuirass))
 
 
@@ -249,18 +252,32 @@ wifi.cloned-mac-address=stable\n")))
         sops
         unzip))
 
-(define linux-lts/dolly
-  (customize-linux
-   #:name "linux-dolly"
-   #:linux linux-lts
-   #:source
-   (origin
-     (inherit (package-source linux-lts))
-     (patches
-      (map (lambda (patch)
-             (local-file (canonicalize-path (in-vicinity "../Workspace/Repository/linux/kernel-patches/6.12" patch))))
-           '("arch-patches-sep/0002-arch-Kconfig-Default-to-maximum-amount-of-ASLR-bits.patch"
-             "bbr3-patches/0001-tcp-bbr3-initial-import.patch"))))))
+(define %kernel-patches
+  (let ((name "kernel-patches")
+        (revision "0")
+        (commit "3f13d1fb09ab2803a3c5ad1040380c00c75dbd5a"))
+    (origin
+      (method git-fetch)
+      (uri (git-reference
+             (url "https://github.com/sirlucjan/kernel-patches")
+             (commit commit)))
+      (file-name (git-file-name name (git-version "0.0.0" revision commit)))
+      (sha256
+       (base32
+        "19yc7x8cfdf61i2f14rf85p6rmz27s7py60gj06z3sj8qmyf3f3x")))))
+
+(define linux/dolly
+  (let ((base linux-6.12))
+    (customize-linux
+     #:name "linux-dolly"
+     #:linux base
+     #:source
+     (origin
+       (inherit (package-source base))
+       (patches
+        (map (cut file-append %kernel-patches <>)
+             '("/6.12/arch-patches-sep/0002-arch-Kconfig-Default-to-maximum-amount-of-ASLR-bits.patch"
+               "/6.12/bbr3-patches/0001-tcp-bbr3-initial-import.patch")))))))
 
 (define manage-cuirass
   (let ((script

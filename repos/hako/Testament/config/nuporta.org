@@ -19,7 +19,7 @@
        (bootloader-configuration
          (bootloader uefi-uki-removable-bootloader)
          (targets '("/efi"))))
-      (kernel linux-lts/dolly)
+      (kernel linux/dolly)
       ;; Required for the current implementation of the "copy out-of-tree modules
       ;; to Linux initrd" patch.
       (kernel-loadable-modules (list `(,zfs "module")))
@@ -52,7 +52,7 @@
                 (guix-extension
                   (authorized-keys %guix-keys)
                   (substitute-urls
-                   '("https://cache-fi.guix.moe"
+                   '("https://cache-cdn.guix.moe"
                      "https://substitutes.nonguix.org"))))
 
               (simple-service 'guix-gc shepherd-root-service-type
@@ -661,7 +661,10 @@ rsync://cache.guix.moe
                (file-name "/var/cache/guix/publish"))
              (rsync-module
                (name "narinfo")
-               (file-name "/var/cache/guix-moe/narinfo"))))))
+               (file-name "/var/cache/guix-moe/narinfo"))
+             (rsync-module
+               (name "narinfo-cdn")
+               (file-name "/var/cache/guix-moe/narinfo-cdn"))))))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -674,80 +677,220 @@ rsync://cache.guix.moe
 #+end_src
 
 #+begin_src scheme :tangle ../files/tangled/nuporta/setup-mirror.scm
-  (use-modules (guix cache)
+  (use-modules (ice-9 match)
+               (ice-9 textual-ports)
+               (srfi srfi-71)
                (guix build syscalls)
-               (guix build utils))
+               (guix build utils)
+               (guix records)
+               (guix utils))
+
+  ;;;
+  ;;; Variables.
+  ;;;
 
   (define %publish-cache "/var/cache/guix/publish")
   (define %mirror-cache  "/var/cache/guix-moe")
+
+  (define %narinfo-list      (in-vicinity %mirror-cache "narinfo.txt"))
+  (define %narinfo-list-new  (string-append %narinfo-list ".new"))
+
+  (define %nars-list         (in-vicinity %mirror-cache "nars.txt"))
+  (define %nars-list-new     (string-append %nars-list ".new"))
+
   (define %rclone-arguments
     '("--config" "/run/secrets/rclone"
-      "--verbose"
       "--size-only"
       "--no-traverse"
       "--s3-no-check-bucket"
       "--s3-upload-concurrency=8"
       "--s3-chunk-size=16M"))
 
-  (define (invoke* . args)
-    (invoke "/bin/sh" "-c" (string-join args)))
+  ;;;
+  ;;; Helper procedures.
+  ;;;
 
-  (define (sync-narinfo mirror-cache publish-cache)
-    (invoke "rsync" "-a" "--delete"
-            "--include" "*.narinfo"
-            "--exclude" "*"
-            (string-append publish-cache "/")
-            (in-vicinity mirror-cache "narinfo/")))
+  (define ($ cmd)
+    (let* ((pid (spawn (car cmd) cmd))
+           (exit-val (cdr (waitpid pid))))
+      (or (zero? exit-val)
+          (error (format #f "Command ~s exited with non-zero exit status: ~s"
+                         (string-join cmd) exit-val)))))
 
-  ;; Reduce S3 operations.
-  (define %nars-list      "nars.txt")
-  (define %nars-list-new  (string-append %nars-list ".new"))
-  (define %nars-diff      (string-append %nars-list ".diff"))
-  (define %nars-to-copy   (string-append %nars-list ".to_copy"))
-  (define %nars-to-delete (string-append %nars-list ".to_delete"))
+  (define (copy-file* old new)
+    "Like 'copy-file', but does not raise an error when FILE does not exist."
+    (catch 'system-error
+      (lambda ()
+        (copy-file old new))
+      (lambda args
+        (unless (= ENOENT (system-error-errno args))
+          (apply throw args)))))
 
-  (define (list-changed-nars mirror-cache publish-cache)
-    (with-directory-excursion (in-vicinity publish-cache "nar")
-      (invoke* "fd" "--exclude" "'*.tmp'" "--type" "f" "|" "sort" ">" (in-vicinity mirror-cache %nars-list-new)))
+  (define (delete-file* file)
+    "Like 'delete-file', but does not raise an error when FILE does not exist."
+    (catch 'system-error
+      (lambda ()
+        (delete-file file))
+      (lambda args
+        (unless (= ENOENT (system-error-errno args))
+          (apply throw args)))))
+
+  (define (list-read file)
+    (if (file-exists? file)
+        (call-with-input-file file
+          (lambda (port)
+            (let loop ((line (get-line port))
+                       (result '()))
+              (if (eof-object? line)
+                  (reverse result)
+                  (loop (get-line port) (cons line result))))))
+        '()))
+
+  (define* (list-diff old new #:key file?)
+    (define (mktemp)
+      "Create temporary file and return its path."
+      (let* ((port (mkstemp "/tmp/guix-moe.XXXXXX"))
+             (file-name (port-filename port)))
+        (close-port port)
+        file-name))
+
+    (define (touch file)
+      "Create empty FILE if it doesn't exist."
+      (unless (file-exists? file)
+        (call-with-output-file file (const #t))))
+
+    (define %diff      (mktemp))
+    (define %to-copy   (mktemp))
+    (define %to-delete (mktemp))
+
+    (for-each touch (list old new))
+    (with-output-to-file %diff
+      (lambda ()
+        ($ `("/bin/sh" "-c"
+             ,(format #f "diff --unified ~a ~a | tail +4" old new)))))
+    (with-output-to-file %to-copy
+      (lambda ()
+        (false-if-exception
+         ($ `("/bin/sh" "-c"
+              ,(format #f "rg '^\\+' ~a --no-line-number --replace ''" %diff))))))
+    (with-output-to-file %to-delete
+      (lambda ()
+        (false-if-exception
+         ($ `("/bin/sh" "-c"
+              ,(format #f "rg '^-' ~a --no-line-number --replace ''" %diff))))))
+    (delete-file* %diff)
+    (let ((to-copy   (list-read %to-copy))
+          (to-delete (list-read %to-delete)))
+      (if file?
+          (values %to-copy
+                  %to-delete)
+          (begin
+            (for-each delete-file* (list %to-copy %to-delete))
+            (values to-copy
+                    to-delete)))))
+
+  (define (copy-narinfo/cdn old new)
+    (catch 'system-error
+      (lambda ()
+        (with-atomic-file-output new
+          (lambda (port)
+            (for-each
+             (match-lambda
+               ((field . value)
+                (format port "~a: ~a~%"
+                        field
+                        (if (string=? field "URL")
+                            (string-append "https://nars.guix.moe/" value)
+                            value))))
+             (call-with-input-file old recutils->alist))
+            ;; Make file world-readable.
+            (chmod port (logand #o644 (lognot (umask)))))))
+      (lambda args
+        (unless (= ENOENT (system-error-errno args))
+          (apply throw args)))))
+
+  ;;;
+  ;;; Syncing procedures.
+  ;;;
+
+  (define (narinfo-list publish-cache old new)
+    (format #t "Listing narinfo files...~%")
+    (with-output-to-file new
+      (lambda ()
+        (with-directory-excursion publish-cache
+          ($ `("/bin/sh" "-c" "fd --glob '*.narinfo' --type f | sort")))))
+    (list-diff old new))
+
+  (define (narinfo-copy publish-cache mirror-cache narinfo-to-copy)
+    (format #t "Copying new narinfo files...~%")
     (with-directory-excursion mirror-cache
-      (unless (file-exists? %nars-list)
-        (call-with-output-file %nars-list (const #t)))
-      (invoke* "diff" "--unified" %nars-list %nars-list-new "|" "tail" "+4" ">" %nars-diff)
-      (false-if-exception
-       (invoke* "rg" "'^\\+'" %nars-diff "--no-line-number" "--replace" "''" ">" %nars-to-copy))
-      (false-if-exception
-       (invoke* "rg" "'^-'"   %nars-diff "--no-line-number" "--replace" "''" ">" %nars-to-delete))
-      (delete-file* %nars-diff)))
+      (for-each (lambda (narinfo)
+                  (copy-file*
+                   (in-vicinity publish-cache narinfo)
+                   (in-vicinity "narinfo" narinfo))
+                  (copy-narinfo/cdn
+                   (in-vicinity "narinfo" narinfo)
+                   (in-vicinity "narinfo-cdn" narinfo)))
+                narinfo-to-copy)))
 
-  (define (upload-new-nars mirror-cache publish-cache rclone-s3-bucket)
+  (define (narinfo-delete mirror-cache narinfo-to-delete)
+    (format #t "Deleting expired narinfo files...~%")
     (with-directory-excursion mirror-cache
-      (apply invoke "rclone" "copy" "--files-from" %nars-to-copy
-             (in-vicinity publish-cache "nar")
-             (in-vicinity rclone-s3-bucket "nar")
-             %rclone-arguments)
-      (delete-file* %nars-to-copy)))
+      (for-each (lambda (narinfo)
+                  (for-each delete-file*
+                            (list (in-vicinity "narinfo-cdn" narinfo)
+                                  (in-vicinity "narinfo" narinfo))))
+                narinfo-to-delete)))
 
-  (define (delete-expired-nars mirror-cache rclone-s3-bucket)
-    (with-directory-excursion mirror-cache
-      (apply invoke "rclone" "delete" "--files-from" %nars-to-delete
-             (in-vicinity rclone-s3-bucket "nar")
-             %rclone-arguments)
-      (delete-file* %nars-to-delete)))
+  (define (nars-list publish-cache old new)
+    (format #t "Listing NAR archives...~%")
+    (with-output-to-file new
+      (lambda ()
+        (with-directory-excursion (in-vicinity publish-cache "nar")
+          ($ `("/bin/sh" "-c" "fd --exclude '*.tmp' --type f | sort")))))
+    ;; File lists will be passed to rclone.
+    (list-diff old new #:file? #t))
+
+  (define (nars-copy publish-cache rclone-s3-bucket nars-to-copy)
+    (format #t "Copying new NAR archives...~%")
+    ($ `("rclone" "copy" "--files-from" ,nars-to-copy
+         ,(in-vicinity publish-cache "nar")
+         ,(in-vicinity rclone-s3-bucket "nar")
+         ,@%rclone-arguments)))
+
+  (define (nars-delete rclone-s3-bucket nars-to-delete)
+    (format #t "Deleting expired NAR archives...~%")
+    ($ `("rclone" "delete" "--files-from" ,nars-to-delete
+         ,(in-vicinity rclone-s3-bucket "nar")
+         ,@%rclone-arguments)))
+
+  ;;;
+  ;;; Entrypoint.
+  ;;;
 
   (with-file-lock/no-wait "/var/lock/guix-moe-mirror.lock"
     (lambda _
       (error "found ongoing syncing process, exiting"))
     (begin
       (setenv "PATH" "/run/current-system/profile/bin")
-      (mkdir-p %mirror-cache)
-
-      (list-changed-nars   %mirror-cache %publish-cache)
-      (upload-new-nars     %mirror-cache %publish-cache "r2:substitutes-apac")
-      (sync-narinfo        %mirror-cache %publish-cache)
-      (delete-expired-nars %mirror-cache "r2:substitutes-apac")
-
-      (with-directory-excursion %mirror-cache
-        (rename-file %nars-list-new %nars-list))))
+      (for-each mkdir-p
+                (list (in-vicinity %publish-cache "nar")
+                      (in-vicinity %mirror-cache  "narinfo")
+                      (in-vicinity %mirror-cache  "narinfo-cdn")))
+      ;; Operate in the following steps to avoid dangling narinfo files.
+      (let ((narinfo-to-copy
+             narinfo-to-delete
+             (narinfo-list %publish-cache %narinfo-list %narinfo-list-new))
+            (nars-to-copy
+             nars-to-delete
+             (nars-list %publish-cache %nars-list %nars-list-new)))
+        (nars-copy      %publish-cache "r2:substitutes-apac" nars-to-copy)
+        (narinfo-delete %mirror-cache narinfo-to-delete)
+        (narinfo-copy   %publish-cache %mirror-cache narinfo-to-copy)
+        (nars-delete    "r2:substitutes-apac" nars-to-delete)
+        (for-each delete-file* (list nars-to-copy nars-to-delete)))
+      (rename-file %nars-list-new    %nars-list)
+      (rename-file %narinfo-list-new %narinfo-list)))
 #+end_src
 
 ** Web Servers & Services
@@ -917,7 +1060,7 @@ rsync://cache.guix.moe
   	import logging cache-cdn.guix.moe
 
   	handle /*.narinfo {
-  		root * /var/cache/guix-moe/narinfo
+  		root * /var/cache/guix-moe/narinfo-cdn
   		file_server
   	}
 
