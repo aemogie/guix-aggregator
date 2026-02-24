@@ -28,6 +28,7 @@
                      linux
                      lisp
                      mail
+                     messaging
                      mp3
                      networking
                      package-management
@@ -47,6 +48,7 @@
 (define-public %sleep-home-packages
   (list
    ;; graphical-env
+   adwaita-icon-theme
    brightnessctl
    fnott
    foot
@@ -54,6 +56,7 @@
    gnome-themes-extra
    gsettings-desktop-schemas
    gtk+
+   hicolor-icon-theme
    libnotify
    librewolf
    swayfx
@@ -133,6 +136,7 @@
    guile-taglib
 
    ;; communication
+   gajim
    isync
    mu
    signal-desktop

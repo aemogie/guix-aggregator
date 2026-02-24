@@ -19,6 +19,7 @@
   #:use-module (gnu packages admin)
   #:use-module (gnu packages golang-crypto)
   #:use-module (gnu packages i2p)
+  #:use-module (gnu packages messaging)
   #:use-module (gnu packages tls)
   #:use-module (gnu packages package-management)
   #:use-module (gnu packages rsync))
@@ -203,9 +204,44 @@
                  (volumes
                   '(("technitium-dns-config" . "/etc/dns"))))))))
 
+      (service prosody-service-type
+               (prosody-configuration
+                 (plugin-paths (list prosody-cloud-notify))
+                 (modules-enabled
+                  (cons* "groups"
+                         "mam"
+                         "muc_mam"
+                         "smacks"
+                         "csi"
+                         "cloud_notify"
+                         %default-modules-enabled))
+                 (int-components
+                  (list
+                   (int-component-configuration
+                     (plugin "muc")
+                     (hostname (format #f "group.~a" %domain-name))
+                     (mod-muc (mod-muc-configuration
+                                (restrict-room-creation #t))))
+                   (int-component-configuration
+                     (plugin "http_file_share")
+                     (hostname (format #f "upload.~a" %domain-name)))))
+                 (virtualhosts
+                  (list
+                   (virtualhost-configuration
+                     (domain %domain-name))))
+                 (admins
+                  (list (format #f "~a@~a" %username %domain-name)))))
+
       (service
        nginx-service-type
-       (let ((certs-path (format #f "/etc/letsencrypt/live/~a" %domain-name)))
+       (let ((certs-path (format #f "/etc/letsencrypt/live/~a" %domain-name))
+             (proxy-headers '("proxy_set_header Host $host;"
+                              "proxy_set_header X-Real-IP $remote_addr;"
+                              "proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;"
+                              "proxy_set_header X-Forwarded-Proto $scheme;"
+                              "proxy_set_header X-Forwarded-Protocol $scheme;"
+                              "proxy_set_header X-Forwarded-Host $http_host;"
+                              "proxy_buffering off;")))
          (nginx-configuration
            (shepherd-requirement '(wireguard-wg0))
            (server-blocks
@@ -242,8 +278,10 @@
               #:port 7070)
 
              (app-server-block
-              "xmpp.remote" %ipv6-wireguard-vps "::1"
-              #:port 5280))))))
+              "upload" "::" "::1"
+              #:port 5281
+              #:certs-path certs-path
+              #:extra proxy-headers))))))
 
       (service
        yggdrasil-service-type
@@ -286,30 +324,6 @@
          (client-cert "/etc/pounce/libera.pem")
          (nick %irc-nick)
          (join (list "#guix" "#yggdrasil"))))
-
-      (service prosody-service-type
-               (prosody-configuration
-                 (modules-enabled
-                  (cons* "groups"
-                         "mam"
-                         "muc_mam"
-                         "smacks"
-                         "csi"
-                         "http_file_share"
-                         %default-modules-enabled))
-                 (int-components
-                  (list
-                   (int-component-configuration
-                     (hostname (format #f "group.~a" %domain-name))
-                     (plugin "muc")
-                     (mod-muc (mod-muc-configuration
-                                (restrict-room-creation #t))))))
-                 (virtualhosts
-                  (list
-                   (virtualhost-configuration
-                     (domain %domain-name))))
-                 (admins
-                  (list (format #f "~a@~a" %username %domain-name)))))
 
       (simple-service
        'my-timers
