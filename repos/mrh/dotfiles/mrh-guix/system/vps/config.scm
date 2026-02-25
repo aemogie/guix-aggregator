@@ -108,19 +108,19 @@
                (addresses
                 (list (network-address
                         (device "eth0")
-                        (value (format #f "~a/64" %ipv6-gua-vps)))
+                        (value (format #f "~a::1138/64" %ipv6-vps-prefix)))
                       (network-address
                         (device "eth0")
-                        (value (format #f "~a/24" %ipv4-public-vps)))))
+                        (value (format #f "~a.49/24" %ipv4-vps-prefix)))))
                (routes
                 (list (network-route
                         (device "eth0")
                         (destination "default")
-                        (gateway %ipv6-gua-vps))
+                        (gateway (format #f "~a::1" %ipv6-vps-prefix)))
                       (network-route
                         (device "eth0")
                         (destination "default")
-                        (gateway %ipv4-public-vps)))))))
+                        (gateway (format #f "~a.1" %ipv4-vps-prefix))))))))
 
       (service
        nftables-service-type
@@ -208,12 +208,20 @@
                (prosody-configuration
                  (plugin-paths (list prosody-cloud-notify))
                  (modules-enabled
-                  (cons* "groups"
+                  (cons* "bookmarks"
+                         "bosh"
+                         "csi"
+                         "csi_simple"
+                         "cloud_notify"
+                         "groups"
+                         "invites_adhoc"
+                         "invites_register"
                          "mam"
                          "muc_mam"
+                         "s2s_bidi"
                          "smacks"
-                         "csi"
-                         "cloud_notify"
+                         "vcard4"
+                         "websocket"
                          %default-modules-enabled))
                  (int-components
                   (list
@@ -221,10 +229,11 @@
                      (plugin "muc")
                      (hostname (format #f "group.~a" %domain-name))
                      (mod-muc (mod-muc-configuration
-                                (restrict-room-creation #t))))
+                                (name "wumpus groups")
+                                (restrict-room-creation "local"))))
                    (int-component-configuration
                      (plugin "http_file_share")
-                     (hostname (format #f "upload.~a" %domain-name)))))
+                     (hostname (format #f "share.~a" %domain-name)))))
                  (virtualhosts
                   (list
                    (virtualhost-configuration

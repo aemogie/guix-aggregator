@@ -43,7 +43,6 @@
   :custom
   (dired-listing-switches "-Ahl --group-directories-first")
   (dired-kill-when-opening-new-dired-buffer t)
-  (dired-dwim-target t)
   :config
   (defun my/dired-run-command (command)
     "Run COMMAND on files marked in `dired'."
@@ -164,15 +163,15 @@ Otherwise set locally with `keymap-local-set'."
 
 (use-package consult
   :custom
-  (consult-buffer-sources '(consult--source-hidden-buffer
-                            consult--source-modified-buffer
-                            consult--source-buffer
-                            consult--source-bookmark
-                            consult--source-recent-file
-                            consult--source-file-register
-                            consult--source-project-buffer-hidden
-                            consult--source-project-recent-file-hidden
-                            consult--source-project-root-hidden)))
+  (consult-buffer-sources '(consult-source-hidden-buffer
+                            consult-source-modified-buffer
+                            consult-source-buffer
+                            consult-source-bookmark
+                            consult-source-recent-file
+                            consult-source-file-register
+                            consult-source-project-buffer-hidden
+                            consult-source-project-recent-file-hidden
+                            consult-source-project-root-hidden)))
 
 (use-package isearch
   :custom
@@ -340,7 +339,7 @@ See `my/dired-run-command'."
   (:map org-mode-map
         ("C-c l" . org-cycle-list-bullet))
   :custom
-  (org-startup-folded t)
+  (org-startup-folded 'fold)
   (org-M-RET-may-split-line '((default . nil)))
   (org-clock-sound t)
   (org-insert-heading-respect-content t)
@@ -577,6 +576,19 @@ and save an appropriate entry for `elfeed-feeds' to the kill ring."
   
   (load (expand-file-name "feeds.el" user-emacs-directory))
   (advice-add 'elfeed-search-quit-window :after #'my/kill-elfeed-search-buffer))
+
+(defun my/erc-pounce ()
+  "Connect to irc via tls using pounce server"
+  (interactive)
+  (erc-tls :server (format "irc.remote.%s" my/website-domain)
+           :nick erc-nick))
+
+(defun my/erc-libera ()
+  "Connect to libera.chat irc via tls using certificate authorization"
+  (interactive)
+  (erc-tls :server "irc.libera.chat"
+           :nick erc-nick
+           :client-certificate t))
 
 (use-package gnus
   :defer nil)
