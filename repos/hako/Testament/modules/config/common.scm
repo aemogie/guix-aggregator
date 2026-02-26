@@ -15,6 +15,7 @@
   #:use-module (guix modules)
   #:use-module (guix packages)
   #:use-module (guix store)
+  #:use-module (rosenthal utils file)
   #:use-module (sops secrets)
   ;; Guix origin methods
   #:use-module (guix git-download)
@@ -173,21 +174,18 @@ WARNED."
 
 (define %network-manager-ipv6-privacy
   `("ip6-privacy.conf"
-    ,(plain-file "ip6-privacy.conf" "\
-# Use IPv6 Privacy Extensions.
-[connection]
-ipv6.ip6-privacy=2\n")))
+    ,(ini-file "ip6-privacy.conf"
+       #~'(("connection"
+            ("ipv6.ip6-privacy" . 2))))))
 
 ;; NOTE: When using on cloud machines, refer to the terms of the provider
 ;; first.
 (define %network-manager-random-mac-address
-  `("rand_mac.conf"
-   ,(plain-file "rand_mac.conf" "\
-# Generate a random MAC for each network connection and associate the two
-# permanently.
-[connection-mac-randomization]
-ethernet.cloned-mac-address=stable
-wifi.cloned-mac-address=stable\n")))
+  `("random-mac-address.conf"
+    ,(ini-file "random-mac-address.conf"
+       #~'(("connection-mac-randomization"
+            ("ethernet.cloned-mac-address" . "stable")
+            ("wifi.cloned-mac-address" . "stable"))))))
 
 
 ;;;

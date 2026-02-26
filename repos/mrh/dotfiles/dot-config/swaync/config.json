@@ -1,0 +1,12 @@
+{
+    "timeout": 4,
+    "timeout-low": 2,
+    "notification-window-width": 500,
+    "widgets": [
+        "title",
+        "volume",
+        "menubar",
+        "dnd",
+        "notifications"
+    ]
+}

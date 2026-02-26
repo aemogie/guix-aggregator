@@ -3,8 +3,9 @@ set color-status                blue default
 set color-status-info           blue default
 set color-status-fail           red default
 set color-list-item             default default
-set color-list-item-unread      blue default
+set color-list-item-unread      default bold
 set color-list-item-important   yellow default
+set color-list-item-selected    black blue
 set color-list-feed             default default
 set color-list-feed-unread      blue default
 set color-list-section          default default

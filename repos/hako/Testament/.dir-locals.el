@@ -41,6 +41,8 @@
  (scheme-mode
   .
   ((eval . (put 'computed-file 'scheme-indent-function 1))
+   (eval . (put 'ini-file 'scheme-indent-function 1))
+   (eval . (put 'json-file 'scheme-indent-function 1))
    (eval . (put 'mixed-text-file 'scheme-indent-function 1))
    (eval . (put 'plain-file 'scheme-indent-function 1))
    (eval . (put 'program-file 'scheme-indent-function 1))

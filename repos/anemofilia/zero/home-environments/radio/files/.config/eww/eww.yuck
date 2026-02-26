@@ -24,15 +24,14 @@
          :text {focused-toplevel[0].title}))
 
 ;; (network) __________________________________________________________________
-(defpoll wireless
+(defpoll net-interfaces
   :interval "${365*24*60*60}s"
-  `ip a | grep -Ewom1 'wl[^:]+'`)
+  `echo "{\
+   \\"wireless\\": \\"$(ip a | grep -Ewom1 'wl[^:]+')\\",\
+   \\"ethernet\\": \\"$(ip a | grep -Ewom1 'en[^:]+')\\"\
+}"`)
 
-(defpoll ethernet
-  :interval "${365*24*60*60}s"
-  `ip a | grep -Ewom1 'en[^:]+'`)
-
-(defvar current-interface "wlp1s0")
+(defvar current-interface "wireless")
 
 (defwidget net-block [value]
  (box :space-evenly false
@@ -44,16 +43,15 @@
 
 (defwidget net []
   (eventbox :class "net"
-            :orientation "horizontal"
             :halign "end"
-            :onclick {current-interface =~ '^wl.*' ?
-                      "${EWW_CMD} update current-interface=${ethernet}" :
-                      "${EWW_CMD} update current-interface=${wireless}"}
+            :onclick {current-interface == "wireless" ?
+                      "${EWW_CMD} update current-interface=ethernet" :
+                      "${EWW_CMD} update current-interface=wireless"}
   (box :space-evenly false
-       (image :path "/home/radio/.config/eww/icons/net-upload.png")
-       (net-block :value {EWW_NET[current-interface]["NET_UP"]})
-       (image :path "/home/radio/.config/eww/icons/net-download.png")
-       (net-block :value {EWW_NET[current-interface]["NET_DOWN"]}))))
+       (image :path "icons/net-upload.png")
+       (net-block :value {EWW_NET[net-interfaces[current-interface]]["NET_UP"]})
+       (image :path "icons/net-download.png")
+       (net-block :value {EWW_NET[net-interfaces[current-interface]]["NET_DOWN"]}))))
 
 ;; (memory) ___________________________________________________________________
 (defwidget memory []

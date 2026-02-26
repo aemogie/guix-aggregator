@@ -1,0 +1,14 @@
+* {
+    font-family: DejaVuSansMono;
+    font-size: 20px;
+    padding: 5px;
+    color: #e8e4b1;
+}
+
+.notification {
+    background-color: rgba(53, 39, 24, 0.8);
+}
+
+.control-center {
+    background-color: rgba(53, 39, 24, 0.8);
+}

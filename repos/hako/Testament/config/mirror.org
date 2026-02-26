@@ -7,7 +7,7 @@
 #+begin_src scheme :tangle ../files/tangled/mirror.scm :noweb yes
   (use-modules <<module>>)
 
-  (define (%os mirror-name bios-boot)
+  (lambda (mirror-name bios-boot)
     (operating-system
       (host-name (string-append mirror-name ".guix.moe"))
       (timezone "Etc/GMT-8")
@@ -54,8 +54,6 @@
          (string-append
           (plain-file-content %sudoers-specification)
           "%wheel ALL = NOPASSWD: ALL\n")))))
-
-  %os
 #+end_src
 
 ** Base

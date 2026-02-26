@@ -7,7 +7,7 @@
 #+begin_src scheme :tangle ../files/tangled/worker.scm :noweb yes
   (use-modules <<module>>)
 
-  (define (%os host-name system 32bit-support? workers bios-boot)
+  (lambda (host-name system 32bit-support? workers bios-boot)
     (operating-system
       (host-name host-name)
       (timezone "Etc/GMT-8")
@@ -58,8 +58,6 @@
          (string-append
           (plain-file-content %sudoers-specification)
           "%wheel ALL = NOPASSWD: ALL\n")))))
-
-  %os
 #+end_src
 
 ** Base

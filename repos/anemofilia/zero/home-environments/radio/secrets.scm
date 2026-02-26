@@ -16,9 +16,7 @@
 (define aerc
   (common-sops-secrets
     '(aerc disroot lgcoelho user)
-    '(aerc disroot lgcoelho password)
-    '(aerc disroot anemofilia user)
-    '(aerc disroot anemofilia password)))
+    '(aerc disroot lgcoelho password)))
 
 (define senpai
   (common-sops-secrets

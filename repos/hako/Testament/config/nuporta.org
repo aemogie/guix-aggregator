@@ -7,68 +7,65 @@
 #+begin_src scheme :tangle ../files/tangled/nuporta.scm :noweb yes
   (use-modules <<module>>)
 
-  (define %os
-    (operating-system
-      (host-name "nuporta")
-      (timezone "Etc/GMT-8")
-      ;; GRUB has issue booting from the ZFS dataset with /gnu/store.
-      ;; See https://savannah.gnu.org/bugs/?47742 and issues with same error.
-      ;; NOTE: This bootloader currently doesn't support choosing system
-      ;; generation on boot and switching system generations / rolling back.
-      (bootloader
-       (bootloader-configuration
-         (bootloader uefi-uki-removable-bootloader)
-         (targets '("/efi"))))
-      (kernel linux/dolly)
-      ;; Required for the current implementation of the "copy out-of-tree modules
-      ;; to Linux initrd" patch.
-      (kernel-loadable-modules (list `(,zfs "module")))
-      (kernel-arguments
-       (cons* "kernel.sysrq=0"
-              "zswap.enabled=1"
-              "zswap.max_pool_percent=90"
-              %default-kernel-arguments))
-      (file-systems (append <<file-systems>> %base-file-systems))
-      (swap-devices
-       (list (swap-space
-               (target (file-system-label "swap")))))
-      (users (cons* <<user>> %base-user-accounts))
-      (packages (append %testament-cli-packages %base-packages))
-      (services
-       (cons* <<service>>
+  (operating-system
+    (host-name "nuporta")
+    (timezone "Etc/GMT-8")
+    ;; GRUB has issue booting from the ZFS dataset with /gnu/store.
+    ;; See https://savannah.gnu.org/bugs/?47742 and issues with same error.
+    ;; NOTE: This bootloader currently doesn't support choosing system
+    ;; generation on boot and switching system generations / rolling back.
+    (bootloader
+     (bootloader-configuration
+       (bootloader uefi-uki-removable-bootloader)
+       (targets '("/efi"))))
+    (kernel linux/dolly)
+    ;; Required for the current implementation of the "copy out-of-tree modules
+    ;; to Linux initrd" patch.
+    (kernel-loadable-modules (list `(,zfs "module")))
+    (kernel-arguments
+     (cons* "kernel.sysrq=0"
+            "zswap.enabled=1"
+            "zswap.max_pool_percent=90"
+            %default-kernel-arguments))
+    (file-systems (append <<file-systems>> %base-file-systems))
+    (swap-devices
+     (list (swap-space
+             (target (file-system-label "swap")))))
+    (users (cons* <<user>> %base-user-accounts))
+    (packages (append %testament-cli-packages %base-packages))
+    (services
+     (cons* <<service>>
 
-              (service guix-publish-service-type
-                (guix-publish-configuration
-                  (guix guix/dolly)
-                  (port 49637)
-                  (compression '(("zstd" 19)))
-                  (cache "/var/cache/guix/publish")
-                  ;; 180 days
-                  (ttl (* 180 24 3600))
-                  ;; 2 minutes
-                  (negative-ttl (* 2 60))))
+            (service guix-publish-service-type
+              (guix-publish-configuration
+                (guix guix/dolly)
+                (port 49637)
+                (compression '(("zstd" 19)))
+                (cache "/var/cache/guix/publish")
+                ;; 180 days
+                (ttl (* 180 24 3600))
+                ;; 2 minutes
+                (negative-ttl (* 2 60))))
 
-              (simple-service 'extend-guix guix-service-type
-                (guix-extension
-                  (authorized-keys %guix-keys)
-                  (substitute-urls
-                   '("https://cache-cdn.guix.moe"
-                     "https://substitutes.nonguix.org"))))
+            (simple-service 'extend-guix guix-service-type
+              (guix-extension
+                (authorized-keys %guix-keys)
+                (substitute-urls
+                 '("https://cache-cdn.guix.moe"
+                   "https://substitutes.nonguix.org"))))
 
-              (simple-service 'guix-gc shepherd-root-service-type
-                (list (shepherd-timer '(guix-gc)
-                        #~(calendar-event #:days-of-week '(sunday) #:hours '(12) #:minutes '(0))
-                        #~("/run/current-system/profile/bin/guix" "gc" "--delete-generations=1m")
-                        #:requirement '(user-processes guix-daemon))))
+            (simple-service 'guix-gc shepherd-root-service-type
+              (list (shepherd-timer '(guix-gc)
+                      #~(calendar-event #:days-of-week '(sunday) #:hours '(12) #:minutes '(0))
+                      #~("/run/current-system/profile/bin/guix" "gc" "--delete-generations=1m")
+                      #:requirement '(user-processes guix-daemon))))
 
-              %base-services))
-      (privileged-programs
-       (cons* (privileged-program
-                (program (file-append manage-cuirass "/bin/manage-cuirass"))
-                (setuid? #t))
-              %default-privileged-programs))))
-
-  %os
+            %base-services))
+    (privileged-programs
+     (cons* (privileged-program
+              (program (file-append manage-cuirass "/bin/manage-cuirass"))
+              (setuid? #t))
+            %default-privileged-programs)))
 #+end_src
 
 ** Base
@@ -1266,58 +1263,58 @@ rsync://cache.guix.moe
     (forgejo-configuration
       (postgresql-password-file "/run/secrets/postgres/forgejo")
       (config
-       `((#f
-          ("APP_NAME" . "URSpace VCS")
-          ("RUN_USER" . "forgejo")
-          ("WORK_PATH" . "/var/lib/forgejo")
-          ("RUN_MODE" . "prod"))
-         ,@(call-with-input-string (sops-str %sops-nuporta '("forgejo")) read)
-         ("database"
-          ("DB_TYPE" . "postgres")
-          ("HOST" . "127.0.0.1:5432")
-          ("NAME" . "forgejo")
-          ("USER" . "forgejo")
-          ("PASSWD" . "placeholder")
-          ("SSL_MODE" . "disable")
-          ("LOG_SQL" . "false"))
-         ("ui"
-          ("AMBIGUOUS_UNICODE_DETECTION" . "false"))
-         ("repository"
-          ("ROOT" . "/var/lib/forgejo/data/forgejo-repositories")
-          ("PREFERRED_LICENSES" . "GPL-3.0-or-later")
-          ("ENABLE_PUSH_CREATE_USER" . "true")
-          ("ENABLE_PUSH_CREATE_ORG" . "true")
-          ("DEFAULT_REPO_UNITS" . "repo.code,repo.releases,repo.issues,repo.pulls")
-          ("DEFAULT_BRANCH" . "trunk")
-          ("DISABLE_DOWNLOAD_SOURCE_ARCHIVES" . "true"))
-         ("lfs"
-          ("PATH" . "/var/lib/forgejo/data/lfs"))
-         ("service"
-          ("REGISTER_EMAIL_CONFIRM" . "true")
-          ("ENABLE_NOTIFY_MAIL" . "true")
-          ("DISABLE_REGISTRATION" . "true")
-          ("ALLOW_ONLY_EXTERNAL_REGISTRATION" . "false")
-          ("ENABLE_CAPTCHA" . "false")
-          ("REQUIRE_SIGNIN_VIEW" . "false")
-          ("DEFAULT_KEEP_EMAIL_PRIVATE" . "true")
-          ("DEFAULT_ALLOW_CREATE_ORGANIZATION" . "true")
-          ("DEFAULT_ENABLE_TIMETRACKING" . "true")
-          ("NO_REPLY_ADDRESS" . "noreply.localhost"))
-         ("openid"
-          ("ENABLE_OPENID_SIGNIN" . "false")
-          ("ENABLE_OPENID_SIGNUP" . "false"))
-         ("cron.update_checker"
-          ("ENABLED" . "false"))
-         ("session"
-          ("PROVIDER" . "file"))
-         ("log"
-          ("MODE" . "file")
-          ("LEVEL" . "info")
-          ("ROOT_PATH" . "/var/log/forgejo"))
-         ("repository.pull-request"
-          ("DEFAULT_MERGE_STYLE" . "rebase"))
-         ("repository.signing"
-          ("DEFAULT_TRUST_MODEL" . "committer"))))
+       #~'((#f
+            ("APP_NAME" . "URSpace VCS")
+            ("RUN_USER" . "forgejo")
+            ("WORK_PATH" . "/var/lib/forgejo")
+            ("RUN_MODE" . "prod"))
+           #$@(call-with-input-string (sops-str %sops-nuporta '("forgejo")) read)
+           ("database"
+            ("DB_TYPE" . "postgres")
+            ("HOST" . "127.0.0.1:5432")
+            ("NAME" . "forgejo")
+            ("USER" . "forgejo")
+            ("PASSWD" . "placeholder")
+            ("SSL_MODE" . "disable")
+            ("LOG_SQL" . "false"))
+           ("ui"
+            ("AMBIGUOUS_UNICODE_DETECTION" . "false"))
+           ("repository"
+            ("ROOT" . "/var/lib/forgejo/data/forgejo-repositories")
+            ("PREFERRED_LICENSES" . "GPL-3.0-or-later")
+            ("ENABLE_PUSH_CREATE_USER" . "true")
+            ("ENABLE_PUSH_CREATE_ORG" . "true")
+            ("DEFAULT_REPO_UNITS" . "repo.code,repo.releases,repo.issues,repo.pulls")
+            ("DEFAULT_BRANCH" . "trunk")
+            ("DISABLE_DOWNLOAD_SOURCE_ARCHIVES" . "true"))
+           ("lfs"
+            ("PATH" . "/var/lib/forgejo/data/lfs"))
+           ("service"
+            ("REGISTER_EMAIL_CONFIRM" . "true")
+            ("ENABLE_NOTIFY_MAIL" . "true")
+            ("DISABLE_REGISTRATION" . "true")
+            ("ALLOW_ONLY_EXTERNAL_REGISTRATION" . "false")
+            ("ENABLE_CAPTCHA" . "false")
+            ("REQUIRE_SIGNIN_VIEW" . "false")
+            ("DEFAULT_KEEP_EMAIL_PRIVATE" . "true")
+            ("DEFAULT_ALLOW_CREATE_ORGANIZATION" . "true")
+            ("DEFAULT_ENABLE_TIMETRACKING" . "true")
+             ("NO_REPLY_ADDRESS" . "noreply.localhost"))
+           ("openid"
+            ("ENABLE_OPENID_SIGNIN" . "false")
+            ("ENABLE_OPENID_SIGNUP" . "false"))
+           ("cron.update_checker"
+            ("ENABLED" . "false"))
+           ("session"
+            ("PROVIDER" . "file"))
+           ("log"
+            ("MODE" . "file")
+            ("LEVEL" . "info")
+            ("ROOT_PATH" . "/var/log/forgejo"))
+           ("repository.pull-request"
+            ("DEFAULT_MERGE_STYLE" . "rebase"))
+           ("repository.signing"
+            ("DEFAULT_TRUST_MODEL" . "committer"))))
       (group-id 969)
       (user-id 974)))
 #+end_src
@@ -1351,25 +1348,25 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
       (postgresql-password-file "/run/secrets/postgres/misskey")
       (image "ghcr.io/rakino/misskey:latest")
       (config
-       `(("url" . "https://boiledscript.com")
-         ("port" . 54493)
-         ("db"
-          ("host" . "localhost")
-          ("port" . 5432)
-          ("db" . "misskey")
-          ("user" . "misskey")
-          ("pass" . "placeholder"))
-         ("dbReplications" . #f)
-         ("redis"
-          ("host" . "localhost")
-          ("port" . 6379))
-         ("fulltextSearch"
-          ("provider" . "sqlLike"))
-         ("id" . "aidx")
-         ("clusterLimit" . 1)
-         ("outgoingAddressFamily" . "dual")
-         ("proxyRemoteFiles" . #t)
-         ("signToActivityPubGet" . #t)))
+       #~'(("url" . "https://boiledscript.com")
+           ("port" . 54493)
+           ("db"
+            ("host" . "localhost")
+            ("port" . 5432)
+            ("db" . "misskey")
+            ("user" . "misskey")
+            ("pass" . "placeholder"))
+           ("dbReplications" . #f)
+           ("redis"
+            ("host" . "localhost")
+            ("port" . 6379))
+           ("fulltextSearch"
+            ("provider" . "sqlLike"))
+           ("id" . "aidx")
+           ("clusterLimit" . 1)
+           ("outgoingAddressFamily" . "dual")
+           ("proxyRemoteFiles" . #t)
+           ("signToActivityPubGet" . #t)))
       (user-id 975)))
 #+end_src
 
@@ -1429,19 +1426,19 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
     (grafana-configuration
       (postgresql-password-file "")
       (config
-       `(("paths"
-          ("data" . "/var/lib/grafana")
-          ("logs" . "/var/log/grafana")
-          ("plugins" . "/var/lib/grafana/plugins"))
-         ("server"
-          ("http_addr" . "127.0.0.1")
-          ("http_port" . "13064"))
-         ("database"
-          ("type" . "postgres")
-          ("host" . "127.0.0.1:5432")
-          ("user" . "grafana")
-          ("password" . "placeholder")
-          ("ssl_mode" . "disable"))))
+       #~'(("paths"
+            ("data" . "/var/lib/grafana")
+            ("logs" . "/var/log/grafana")
+            ("plugins" . "/var/lib/grafana/plugins"))
+           ("server"
+            ("http_addr" . "127.0.0.1")
+            ("http_port" . "13064"))
+           ("database"
+            ("type" . "postgres")
+            ("host" . "127.0.0.1:5432")
+            ("user" . "grafana")
+            ("password" . "placeholder")
+            ("ssl_mode" . "disable"))))
       (group-id 971)
       (user-id 978)))
 #+end_src
@@ -1451,24 +1448,24 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
   (service mimir-service-type
     (mimir-configuration
       (config
-       `(("multitenancy_enabled" . #f)
-         ("server"
-          ("http_listen_address" . "127.0.0.1")
-          ("http_listen_port" . 49951)
-          ("grpc_listen_port" . 32773)
-          ("log_level" . "error"))
-         ,@(call-with-input-string (sops-str %sops-nuporta '("mimir")) read)
-         ("ingester"
-          ("ring"
-           ("replication_factor" . 1)))
-         ("alertmanager"
-          ("sharding_ring"
-           ("replication_factor" . 1)))
-         ("store_gateway"
-          ("sharding_ring"
-           ("replication_factor" . 1)))
-         ("usage_stats"
-          ("enabled" . #f))))
+       #~'(("multitenancy_enabled" . #f)
+           ("server"
+            ("http_listen_address" . "127.0.0.1")
+            ("http_listen_port" . 49951)
+            ("grpc_listen_port" . 32773)
+            ("log_level" . "error"))
+           #$@(call-with-input-string (sops-str %sops-nuporta '("mimir")) read)
+           ("ingester"
+            ("ring"
+             ("replication_factor" . 1)))
+           ("alertmanager"
+            ("sharding_ring"
+             ("replication_factor" . 1)))
+           ("store_gateway"
+            ("sharding_ring"
+             ("replication_factor" . 1)))
+           ("usage_stats"
+            ("enabled" . #f))))
       (group-id 972)
       (user-id 979)))
 #+end_src
@@ -1478,31 +1475,31 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
   (service loki-service-type
     (loki-configuration
       (config
-       `(("auth_enabled" . #f)
-         ("server"
-          ("http_listen_address" . "127.0.0.1")
-          ("http_listen_port" . 50968)
-          ("grpc_listen_port" . 11365))
-         ("common"
-          ("path_prefix" . "/var/lib/loki")
-          ,@(call-with-input-string (sops-str %sops-nuporta '("loki")) read)
-          ("ring"
-           ("kvstore"
-            ("store" . "inmemory")))
-          ("replication_factor" . 1))
-         ("schema_config"
-          ("configs"
-           . #((("from" . "2020-05-15")
-                ("store" . "tsdb")
-                ("object_store" . "s3")
-                ("schema" . "v13")
-                ("index"
-                 ("prefix" . "index_")
-                 ("period" . "24h"))))))
-         ("pattern_ingester"
-          ("enabled" . #t))
-         ("analytics"
-          ("reporting_enabled" . #f))))
+       #~'(("auth_enabled" . #f)
+           ("server"
+            ("http_listen_address" . "127.0.0.1")
+            ("http_listen_port" . 50968)
+            ("grpc_listen_port" . 11365))
+           ("common"
+            ("path_prefix" . "/var/lib/loki")
+            #$@(call-with-input-string (sops-str %sops-nuporta '("loki")) read)
+            ("ring"
+             ("kvstore"
+              ("store" . "inmemory")))
+            ("replication_factor" . 1))
+           ("schema_config"
+            ("configs"
+             . #((("from" . "2020-05-15")
+                  ("store" . "tsdb")
+                  ("object_store" . "s3")
+                  ("schema" . "v13")
+                  ("index"
+                   ("prefix" . "index_")
+                   ("period" . "24h"))))))
+           ("pattern_ingester"
+            ("enabled" . #t))
+           ("analytics"
+            ("reporting_enabled" . #f))))
       (group-id 973)
       (user-id 980)))
 #+end_src

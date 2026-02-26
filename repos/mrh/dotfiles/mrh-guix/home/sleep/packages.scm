@@ -50,7 +50,6 @@
    ;; graphical-env
    adwaita-icon-theme
    brightnessctl
-   fnott
    foot
    fuzzel
    gnome-themes-extra
@@ -63,6 +62,7 @@
    swaybg
    swayidle
    swaylock
+   swaynotificationcenter
    waybar
    wf-recorder
    wl-clipboard

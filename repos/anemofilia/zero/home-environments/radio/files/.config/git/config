@@ -37,8 +37,16 @@
     root = rev-parse --show-toplevel
 [credential]
     helper = cache
+[diff]
+    algorithm = histogram
+    colorMoved = plain
+    mnemonicPrefix = true
+    renames = true
 [commit]
     gpgsign = true
+    verbose = true
+[push]
+    autoSetupRemote = true
 [interactive]
     diffFilter = diff-so-fancy --patch
 [sendemail]

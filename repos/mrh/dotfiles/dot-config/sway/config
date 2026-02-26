@@ -117,7 +117,7 @@ exec swayidle -w timeout 900 'swaymsg "output * power off"' resume 'swaymsg "out
 
 # Programs to execute (at startup & after reload).
 ##################################################
-exec_always fnott
+exec_always swaync
 
 # Theming.
 ##########

@@ -38,7 +38,6 @@
         #:use-module (gnu packages maths)
         #:use-module (gnu packages messaging)
   #|N|# #:use-module (gnu packages ncurses)
-        #:use-module (gnu packages networking)
   #|O|# #:use-module (gnu packages ocr)
   #|P|# #:use-module (gnu packages pdf)
   #|R|# #:use-module (gnu packages rust-apps)
@@ -124,7 +123,6 @@
         #|image      |# grim slurp
         #|libcanberra|# sound-theme-freedesktop
         #|ncurses    |# ncurses
-        #|networking |# socat
         #|terminals  |# foot
         #|toys       |# wayneko
         #|video      |# wf-recorder
@@ -162,7 +160,7 @@
   (list #|disk         |# lf
         #|file         |# file
         #|image-viewers|# chafa
-        #|pdf          |# img2pdf poppler
+        #|pdf          |# poppler
         #|seninha      |# fmutils
         #|video        |# ffmpegthumbnailer))
 
@@ -186,7 +184,7 @@
                  (name 'guix)
                  (url "https://git.guix.gnu.org/guix.git")
                  (branch "master")
-                 (commit "5f02ecf097d0266b0f3ce40b49718cf3d5f73e3b")
+                 (commit "1d3d7912d5ee8198e4c7dba2d643aca67d34c854")
                  (introduction
                    (make-channel-introduction
                      "9edb3f66fd807b096b48283debdcddccfea34bad"
@@ -219,8 +217,7 @@
   (list #|lean|# lean4))
 
 (define sound
-  (list #|linux    |# wireplumber-minimal
-        #|audio    |# ncpamixer))
+  (list #|audio    |# ncpamixer))
 
 (define tex
   (list #|tex|# rubber
