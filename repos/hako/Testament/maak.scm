@@ -5,6 +5,7 @@
 ;;; Example usage: `maak update-channels'.
 
 (define-module (maak)
+  #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-19)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 textual-ports)
@@ -74,28 +75,44 @@
   ($guix `("shell" "emacs-minimal" "--" "emacs" ,@args)))
 
 
-(define (%.org->%.scm file)
-  (for-each
-   (lambda (f)
-     (when (file-exists? f)
-       (delete-file-recursively f)))
-   (list (string-append "files/tangled/" file)
-         (string-append "files/tangled/" file ".scm")))
-  ($emacs `("-quick" "-batch"
-            "--load" "ob-tangle"
-            "--eval" "(setopt org-babel-load-languages '((shell . t)))"
-            "--eval" "(setopt org-confirm-babel-evaluate nil)"
-            "--eval" ,(format #f "(org-babel-tangle-file ~s)"
-                              (string-append "config/" file ".org"))))
-  (string-append "files/tangled/" file ".scm"))
+(define* (%.org->%.scm name #:optional dependencies)
+  (let ((file.org (string-append "config/" name ".org"))
+        (tangled-file (string-append "files/tangled/" name))
+        (dependencies.org
+         (map (cut string-append "config/shared/" <> ".org")
+              (or dependencies '())))
+        (tangled-dependencies
+         (map (cut string-append "files/tangled/" <>)
+              (or dependencies '()))))
+    (for-each (lambda (file)
+                (when (file-exists? file)
+                  (delete-file-recursively file)))
+              (cons tangled-file
+                    tangled-dependencies))
+    ($emacs `("-quick" "-batch"
+              "--load" "ob-tangle"
+              "--load" "ob-lob"
+              "--eval" "(setopt org-babel-load-languages '((shell . t)))"
+              "--eval" "(setopt org-confirm-babel-evaluate nil)"
+              ,@(append-map
+                 (lambda (file)
+                   (list "--eval" (format #f "(org-babel-lob-ingest ~s)" file)))
+                 dependencies.org)
+              ,@(append-map
+                 (lambda (file)
+                   (list "--eval" (format #f "(org-babel-tangle-file ~s)" file)))
+                 (cons file.org
+                       dependencies.org))))
+    (string-append tangled-file "/" name ".scm")))
 
 
-(define* (build-% system #:key local?)
-  ($guix `("system" "build" ,(%.org->%.scm system) ,@%build-options)
-         #:local? local?))
+(define* (build-% system #:key deps local?)
+  (let ((config (%.org->%.scm system deps)))
+    ($guix `("system" "build" ,config ,@%build-options)
+           #:local? local?)))
 
-(define* (deploy-% system #:key local?)
-  (let* ((config (%.org->%.scm system))
+(define* (deploy-% system #:key deps local?)
+  (let* ((config (%.org->%.scm system deps))
          (deploy (in-vicinity "files/deploy" (basename config))))
     ($guix `("deploy" ,deploy
              ,@(if %deploy-command
@@ -142,7 +159,7 @@
 (define (pull)
   ($guix `("pull" "--channels=channels.lock" ,%substitute-urls)))
 
-(define (build-dorphine) (build-% "dorphine" #:local? #t))
+(define (build-dorphine) (build-% "dorphine" #:local? #t #:deps '("emacs")))
 (define (build-chapra)   (build-% "chapra"   #:local? #t))
 (define (build-ignamma)  (build-% "ignamma"))
 (define (build-nuporta)  (build-% "nuporta"  #:local? #t))
@@ -152,7 +169,7 @@
   (build-ignamma)
   (build-nuporta))
 
-(define (deploy-dorphine) (deploy-% "dorphine" #:local? #t))
+(define (deploy-dorphine) (deploy-% "dorphine" #:local? #t #:deps '("emacs")))
 (define (deploy-chapra)   (deploy-% "chapra"   #:local? #t))
 (define (deploy-ignamma)  (deploy-% "ignamma"))
 (define (deploy-nuporta)  (deploy-% "nuporta"  #:local? #t))

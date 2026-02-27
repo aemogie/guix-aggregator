@@ -4,7 +4,7 @@
 #+PROPERTY: header-args :mkdirp yes :noweb-prefix no
 
 ** Guix System
-#+begin_src scheme :tangle ../files/tangled/ignamma.scm :noweb yes
+#+begin_src scheme :tangle ../files/tangled/ignamma/ignamma.scm :noweb yes
   (use-modules <<module>>)
 
   (operating-system

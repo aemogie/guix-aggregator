@@ -3,7 +3,7 @@
 
 (list
  (machine
-   (operating-system (load "../tangled/nuporta.scm"))
+   (operating-system (load "../tangled/nuporta/nuporta.scm"))
    (environment managed-host-environment-type)
    (configuration
     (machine-ssh-configuration

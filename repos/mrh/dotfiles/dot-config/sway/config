@@ -40,6 +40,7 @@ assign [app_id="mpv-album"] 9
 assign [app_id="mpv"] 3
 assign [app_id="org.pwmt.zathura"] 8
 assign [app_id="signal"] 10
+assign [app_id="org.gajim.Gajim"] 10
 
 # default layout
 workspace_layout tabbed

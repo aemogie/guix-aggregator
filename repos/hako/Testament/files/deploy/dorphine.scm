@@ -3,7 +3,7 @@
 
 (list
  (machine
-   (operating-system (load "../tangled/dorphine.scm"))
+   (operating-system (load "../tangled/dorphine/dorphine.scm"))
    (environment managed-host-environment-type)
    (configuration
     (machine-ssh-configuration

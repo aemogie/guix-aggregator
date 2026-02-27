@@ -206,7 +206,8 @@
 
       (service prosody-service-type
                (prosody-configuration
-                 (plugin-paths (list prosody-cloud-notify))
+                 (plugin-paths (list prosody-cloud-notify
+                                     prosody-vcard-muc))
                  (modules-enabled
                   (cons* "bookmarks"
                          "bosh"
@@ -217,29 +218,36 @@
                          "invites_adhoc"
                          "invites_register"
                          "mam"
-                         "muc_mam"
+                         "pubsub"
                          "s2s_bidi"
                          "smacks"
-                         "vcard4"
+                         "vcard_legacy"
                          "websocket"
                          %default-modules-enabled))
+                 (modules-disabled '("vcard"))
                  (int-components
                   (list
                    (int-component-configuration
                      (plugin "muc")
                      (hostname (format #f "group.~a" %domain-name))
+                     (modules-enabled '("muc_mam"
+                                        "vcard_muc"))
                      (mod-muc (mod-muc-configuration
                                 (name "wumpus groups")
                                 (restrict-room-creation "local"))))
                    (int-component-configuration
                      (plugin "http_file_share")
-                     (hostname (format #f "share.~a" %domain-name)))))
+                     (hostname (format #f "share.~a" %domain-name)))
+                   (int-component-configuration
+                     (plugin "proxy65")
+                     (hostname (format #f "proxy.~a" %domain-name)))))
                  (virtualhosts
                   (list
                    (virtualhost-configuration
                      (domain %domain-name))))
                  (admins
-                  (list (format #f "~a@~a" %username %domain-name)))))
+                  (list (format #f "~a@~a" %username %domain-name)))
+                 (raw-content "legacy_ssl_ports = { 5223; 5270 }\n")))
 
       (service
        nginx-service-type

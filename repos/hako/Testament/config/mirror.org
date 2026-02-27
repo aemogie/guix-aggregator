@@ -4,7 +4,7 @@
 #+PROPERTY: header-args :mkdirp yes :noweb-prefix no
 
 ** Guix System
-#+begin_src scheme :tangle ../files/tangled/mirror.scm :noweb yes
+#+begin_src scheme :tangle ../files/tangled/mirror/mirror.scm :noweb yes
   (use-modules <<module>>)
 
   (lambda (mirror-name bios-boot)

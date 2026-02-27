@@ -1,0 +1,862 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright © 2026 Hilton Chain <hako@ultrarare.space>
+#+TITLE: Emacs
+#+PROPERTY: header-args :mkdirp yes :noweb-prefix no
+
+** Base
+Library of Babel doesn't support noweb reference, use =name= keyword as a
+workaround.
+
+#+name: home-service/emacs
+#+begin_src scheme :noweb yes
+  <<home-service>>
+#+end_src
+
+#+name: package/emacs
+#+begin_src scheme :noweb yes
+  <<package>>
+#+end_src
+
+#+name: module/emacs
+#+begin_src scheme :noweb yes
+  <<module>>
+#+end_src
+
+Configuration file and services for Emacs:
+
+#+begin_src emacs-lisp :noweb yes :tangle ../../files/tangled/emacs/emacs-init.el
+  ;;; -*- lexical-binding: t -*-
+
+  (setopt custom-file (locate-user-emacs-file "custom.el"))
+  (if (not (file-exists-p custom-file))
+      (make-empty-file custom-file)
+    (load custom-file))
+
+  ;; Tweak garbage collection strategy.
+  (use-package gcmh
+    :config
+    (gcmh-mode 1))
+
+  ;; Set default storage locations for various packages.
+  (use-package no-littering
+    :config
+    (no-littering-theme-backups))
+
+  (use-package emacs
+    :custom
+    (auth-source-gpg-encrypt-to '("220F98D95E86204C0036DA7B6DEC4360408B4185"))
+    (auth-sources '("~/.local/share/authinfo.gpg"))
+    (compile-command "make -k -j$(nproc)")
+    (user-full-name "Hilton Chain")
+    (user-mail-address "hako@ultrarare.space")
+    ;; Workaround to use fish as login shell.
+    (shell-file-name "/bin/sh"))
+
+  <<emacs-fonts>>
+  <<emacs-init>>
+#+end_src
+
+=ESHELl= is set in combination with =shell-file-name=, to use fish as login
+shell while using Emacs.
+
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'emacs-environment home-environment-variables-service-type
+    `(("EDITOR" . "emacsclient")
+      ("VISUAL" . "$EDITOR")
+      ("ESHELL" . ,(file-append fish "/bin/fish"))))
+#+end_src
+
+#+begin_src scheme :noweb-ref package
+  "emacs-pgtk"
+  "emacs-gcmh"
+  "emacs-no-littering"
+  "emacs-beancount"
+  "emacs-caddyfile-mode"
+  "emacs-edit-indirect"
+  "emacs-fish-mode"
+  "emacs-json-mode"
+  "emacs-kdl-mode"
+  "emacs-markdown-mode"
+  "emacs-nftables-mode"
+  "emacs-zig-mode"
+#+end_src
+
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'emacs-configuration home-xdg-configuration-files-service-type
+    `(("emacs/init.el"
+       ,(computed-substitution-with-inputs "init.el"
+          (local-file (testament-plain "emacs/emacs-init.el"))
+          (list ccls
+                python-lsp-server
+                rust-analyzer
+                zig-zls-0.15)))))
+#+end_src
+
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'emacs home-shepherd-service-type
+    (list (shepherd-service
+            (provision '(emacs-daemon))
+            (start #~(make-forkexec-constructor '("emacs" "--fg-daemon")))
+            (stop #~(make-kill-destructor)))))
+#+end_src
+
+** Interface
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package emacs
+    :custom
+    (blink-cursor-mode nil)
+    (enable-recursive-minibuffers t)
+    (inhibit-startup-screen t)
+    (initial-scratch-message ";; `M-x butterfly'\n\n")
+    (uniquify-buffer-name-style 'forward)
+    ;; Exclude unavailable completions.
+    (read-extended-command-predicate 'command-completion-default-include-p)
+    ;; Case-insensitive completion.
+    (completion-ignore-case t)
+    (read-buffer-completion-ignore-case t)
+    (read-file-name-completion-ignore-case t)
+    :bind
+    ([remap list-buffers] . switch-to-buffer)
+    ("M-o" . other-window)
+    :hook
+    ;; Scrolling enhancement.
+    (after-init . pixel-scroll-precision-mode)
+    ;; Indicatior for recursive minibuffers.
+    (after-init . minibuffer-depth-indicate-mode)
+    ;; Save minibuffer history.
+    (after-init . savehist-mode)
+    ;; Indicator for `fill-column'.
+    (prog-mode . display-fill-column-indicator-mode))
+#+end_src
+
+Theming
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package emacs
+    :custom
+    (fringe-mode 0)
+    (modus-themes-italic-constructs t)
+    (scroll-bar-mode nil)
+    (tool-bar-mode nil)
+    (tooltip-mode nil)
+    :config
+    (load-theme 'modus-operandi-tinted :no-confirm)
+    :hook
+    (after-init . menu-bar-mode))
+#+end_src
+
+*** emacs-adaptive-wrap
+#+begin_src scheme :noweb-ref package
+  "emacs-adaptive-wrap"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package adaptive-wrap
+    :hook
+    (visual-line-mode . adaptive-wrap-prefix-mode))
+#+end_src
+
+*** emacs completion-preview
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package completion-preview
+    :custom
+    (global-completion-preview-mode t))
+#+end_src
+
+*** emacs-doom-modeline
+#+begin_src scheme :noweb-ref package
+  "emacs-doom-modeline"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package doom-modeline
+    :custom
+    (doom-modeline-icon nil)
+    (doom-modeline-height 18)
+    :hook
+    (after-init . doom-modeline-mode))
+#+end_src
+
+*** emacs-helpful
+#+begin_src scheme :noweb-ref package
+  "emacs-helpful"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package helpful
+    :bind
+    ([remap describe-function] . helpful-callable)
+    ([remap describe-variable] . helpful-variable)
+    ([remap describe-key]      . helpful-key)
+    ([remap describe-command]  . helpful-command)
+    ([remap describe-symbol]   . helpful-symbol)
+    ("C-c C-d" . helpful-at-point))
+#+end_src
+
+*** emacs-hl-todo
+#+begin_src scheme :noweb-ref package
+  "emacs-hl-todo"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package hl-todo
+    :custom
+    (hl-todo-highlight-punctuation ":")
+    :hook
+    (prog-mode . hl-todo-mode))
+#+end_src
+
+*** emacs isearch
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package isearch
+    :custom
+    (isearch-lazy-count t)
+    (isearch-wrap-pause 'no-ding)
+    (regexp-search-ring-max 200)
+    (search-ring-max 200))
+#+end_src
+
+*** emacs-mwim
+#+begin_src scheme :noweb-ref package
+  "emacs-mwim"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package mwim
+    :bind
+    ([remap move-beginning-of-line] . mwim-beginning)
+    ([remap move-end-of-line] . mwim-end))
+#+end_src
+
+*** emacs-orderless
+#+begin_src scheme :noweb-ref package
+  "emacs-orderless"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package orderless
+    :custom
+    (completion-styles '(orderless basic))
+    (completion-category-overrides '((file (styles basic partial-completion))))
+    (orderless-matching-styles '(orderless-literal orderless-flex orderless-regexp)))
+#+end_src
+
+*** emacs-org-rainbow-tags
+#+begin_src scheme :noweb-ref package
+  "emacs-org-rainbow-tags"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package org-rainbow-tags
+    :hook
+    (org-mode . org-rainbow-tags-mode))
+#+end_src
+
+*** emacs paren
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package paren
+    :custom
+    (show-paren-context-when-offscreen 'overlay)
+    :hook
+    (after-init . show-paren-mode))
+#+end_src
+
+*** emacs-rainbow-delimiters
+#+begin_src scheme :noweb-ref package
+  "emacs-rainbow-delimiters"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package rainbow-delimiters
+    :hook
+    (prog-mode . rainbow-delimiters-mode))
+#+end_src
+
+*** emacs-valign
+#+begin_src scheme :noweb-ref package
+  "emacs-valign"
+#+end_src
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package valign
+    :hook
+    (org-mode . valign-mode))
+#+end_src
+*** emacs-vertico
+#+begin_src scheme :noweb-ref package
+  "emacs-vertico"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package vertico
+    :hook
+    (after-init . vertico-mode))
+
+  (use-package vertico-directory
+    :after (vertico)
+    :bind
+    ;; More convenient directory navigation commands.
+    (:map vertico-map
+          ("RET" . vertico-directory-enter)
+          ("DEL" . vertico-directory-delete-char)
+          ("M-DEL" . vertico-directory-delete-word))
+    ;; Tidy shadowed file names.
+    :hook
+    (rfn-eshadow-update-overlay . vertico-directory-tidy))
+#+end_src
+
+*** emacs-visual-fill-column
+#+begin_src scheme :noweb-ref package
+  "emacs-visual-fill-column"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package visual-fill-column
+    :custom
+    (visual-fill-column-center-text t)
+    :hook
+    (visual-line-mode . visual-fill-column-mode))
+#+end_src
+
+*** emacs which-key
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package which-key
+    :config
+    (which-key-setup-side-window-right-bottom)
+    :hook
+    (after-init . which-key-mode))
+#+end_src
+
+** Editing
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package emacs
+    :custom
+    ;; Disable tab indentation.
+    (indent-tabs-mode nil)
+    ;; CJK support.
+    (word-wrap-by-category t)
+    :config
+    ;; Avoid re-indenting current line after entering `RET'.
+    (setopt electric-indent-inhibit t)
+    :hook
+    (before-save . delete-trailing-whitespace)
+    ;; Automatic parenthesis pairing.
+    (after-init . electric-pair-mode))
+#+end_src
+
+*** emacs-citre
+#+begin_src scheme :noweb-ref package
+  "emacs-citre"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package citre
+    :custom
+    (citre-default-create-tags-file-location 'global-cache)
+    (citre-edit-ctags-options-manually nil)
+    :bind
+    ([remap xref-find-definitions] . citre-jump)
+    ([remap xref-find-references]  . citre-jump-to-reference)
+    ([remap xref-go-back]          . citre-jump-back)
+    ("C-x c p" . citre-ace-peek)
+    ("C-x c u" . citre-update-this-tags-file))
+
+  (use-package citre-xref-adapter
+    :after (citre)
+    :config
+    (defvar citre-dumb-jump-backend
+      (citre-xref-backend-to-citre-backend
+       'dumb-jump
+       (lambda () t)))
+    (defvar citre-elisp-backend
+      (citre-xref-backend-to-citre-backend
+       'elisp
+       (lambda () (derived-mode-p 'scheme-mode))))
+    (citre-register-backend 'dumb-jump citre-dumb-jump-backend)
+    (citre-register-backend 'elisp citre-elisp-backend))
+
+  (use-package citre-backend-interface
+    :custom
+    (citre-find-definition-backends
+     '(eglot elisp tags dumb-jump))
+    (citre-find-reference-backends
+     '(eglot elisp dumb-jump)))
+
+  (use-package citre-config)
+#+end_src
+
+*** emacs-dumb-jump
+#+begin_src scheme :noweb-ref package
+  "emacs-dumb-jump"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package dumb-jump
+    :after (xref)
+    :config
+    (add-hook 'xref-backend-functions #'dumb-jump-xref-activate))
+#+end_src
+
+*** emacs eglot
+#+begin_src scheme :noweb-ref package
+  "python"
+  "rust"
+  "rust:cargo"
+  "zig"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package eglot
+    :config
+    (dolist (program
+             `(((rust-ts-mode rust-mode)
+                "$$bin/rust-analyzer$$")
+               ((python-mode python-ts-mode)
+                "$$bin/pylsp$$")
+               ((c-mode c-ts-mode c++-mode c++-ts-mode)
+                "$$bin/ccls$$"
+                ,(concat
+                  "--init="
+                  (json-serialize
+                   `((cache
+                      (directory
+                       . ,(concat (or (getenv "XDG_CACHE_HOME")
+                                      "~/.cache")
+                                  "/ccls-cache")))))))
+               ((zig-mode)
+                "$$bin/zls$$")))
+      (add-to-list 'eglot-server-programs program)))
+#+end_src
+
+*** emacs-flycheck
+Check syntax on the fly.
+
+#+begin_src scheme :noweb-ref package
+  "emacs-flycheck"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package flycheck
+    :hook
+    (after-init . global-flycheck-mode))
+#+end_src
+
+*** emacs-flycheck-guile
+#+begin_src scheme :noweb-ref package
+  "emacs-flycheck-guile"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package flycheck-guile
+    :after (flycheck geiser-guile))
+#+end_src
+
+*** emacs-geiser
+#+begin_src scheme :noweb-ref package
+  "emacs-geiser"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package geiser
+    :custom
+    (geiser-autodoc-identifier-format "%s → %s")
+    (geiser-repl-query-on-kill-p nil))
+
+  (use-package geiser-mode
+    :custom
+    (geiser-mode-smart-tab-p t)
+    (geiser-mode-start-repl-p t)
+    :bind
+    (:map geiser-mode-map
+          ("M-." . nil)
+          ("M-," . nil)))
+#+end_src
+
+*** emacs-geiser-guile
+#+begin_src scheme :noweb-ref package
+  "emacs-geiser-guile"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package geiser-guile
+    :after (geiser)
+    :custom
+    (geiser-default-implementation 'guile)
+    (geiser-active-implementation '(guile))
+    :config
+    ;; TODO: Make `flycheck-guile' support `guix repl'.
+    (dolist (path
+             (mapcar
+              #'expand-file-name
+              '("~/.config/guix/current/lib/guile/3.0/site-ccache"
+                "~/.config/guix/current/share/guile/site/3.0"
+                "~/.guix-profile/lib/guile/3.0/site-ccache"
+                "~/.guix-profile/share/guile/site/3.0"
+                "~/.guix-home/profile/lib/guile/3.0/site-ccache"
+                "~/.guix-home/profile/share/guile/site/3.0"
+                "/run/current-system/profile/lib/guile/3.0/site-ccache"
+                "/run/current-system/profile/share/guile/site/3.0")))
+      (add-to-list 'geiser-guile-load-path path t)))
+#+end_src
+
+*** emacs-macrostep
+#+begin_src scheme :noweb-ref package
+  "emacs-macrostep"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package macrostep
+    :bind
+    ("C-c e" . macrostep-expand))
+#+end_src
+
+*** emacs-macrostep-geiser
+#+begin_src scheme :noweb-ref package
+  "emacs-macrostep-geiser"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package macrostep-geiser
+    :after (geiser-mode)
+    :hook
+    (geiser-mode . macrostep-geiser-setup))
+
+  (use-package macrostep-geiser
+    :after (geiser-repl)
+    :hook
+    (geiser-repl-mode . macrostep-geiser-setup))
+#+end_src
+
+*** emacs org
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package org
+    :custom
+    (org-babel-load-languages
+     '((scheme . t)
+       (python . t)
+       (scheme . t)
+       (shell . t)))
+    (org-id-track-globally t)
+    (org-insert-heading-respect-content t)
+    (org-link-file-path-type 'relative)
+    (org-log-into-drawer t)
+    (org-special-ctrl-a/e t)
+    (org-special-ctrl-k t)
+    (org-startup-folded 'content)
+    (org-todo-keywords '((sequence "TODO(t!)" "DOING(g!)" "|" "DONE(d!)"))))
+#+end_src
+
+*** emacs-ox-hugo
+#+begin_src scheme :noweb-ref package
+  "emacs-ox-hugo"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package ox-hugo
+    :after (ox))
+#+end_src
+
+*** emacs-puni
+#+begin_src scheme :noweb-ref package
+  "emacs-puni"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package puni
+    :hook
+    ((eval-expression-minibuffer-setup nxml-mode prog-mode sgml-mode tex-mode)
+     . puni-mode))
+#+end_src
+
+*** emacs-treesit-auto
+#+begin_src scheme :noweb-ref package
+  "emacs-treesit-auto"
+  "tree-sitter-cmake"
+  "tree-sitter-dockerfile"
+  "tree-sitter-go"
+  "tree-sitter-gomod"
+  "tree-sitter-kdl"
+  "tree-sitter-lua"
+  "tree-sitter-rust"
+  "tree-sitter-typescript"
+  "tree-sitter-yaml"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package treesit-auto
+    :config
+    ;; FIXME: These modes aren't loaded automatically.
+    (require 'cmake-ts-mode)
+    (require 'dockerfile-ts-mode)
+    (require 'go-ts-mode)
+    (require 'lua-ts-mode)
+    (require 'rust-ts-mode)
+    (require 'typescript-ts-mode)
+    (require 'yaml-ts-mode)
+    ;; https://github.com/renzmann/treesit-auto/issues/32#issuecomment-1826270447
+    (defun hako/get-tree-sitter-mode (mode)
+      (treesit-auto--set-major-remap)
+      (alist-get mode major-mode-remap-alist mode))
+    (define-advice org-src-get-lang-mode (:filter-return (mode) tree-sitter)
+      (hako/get-tree-sitter-mode mode))
+    :hook
+    (after-init . global-treesit-auto-mode))
+#+end_src
+
+*** emacs-yasnippet
+#+begin_src scheme :noweb-ref package
+  "emacs-yasnippet"
+  "emacs-yasnippet-snippets"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package yasnippet
+    :hook
+    (after-init . yas-global-mode))
+#+end_src
+
+Disable a few yasnippet snippets.
+
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'disable-yasnippet-snippets home-xdg-configuration-files-service-type
+    (let ((empty-file (plain-file "empty" "")))
+      (map (lambda (snippet)
+             (list (in-vicinity "emacs/etc/yasnippet/snippets" snippet)
+                   empty-file))
+           '("prog-mode/comment"
+             "prog-mode/commentblock"
+             "prog-mode/commentline"
+             "prog-mode/fixme"
+             "prog-mode/todo"
+             "prog-mode/xxx"))))
+#+end_src
+
+** Miscellaneous
+*** emacs-daemons
+#+begin_src scheme :noweb-ref package
+  "emacs-daemons"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package daemons
+    :custom
+    (daemons-list-fill-frame t))
+#+end_src
+
+*** emacs dired
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package dired
+    :custom
+    (dired-listing-switches
+     "-lv --all --group-directories-first --human-readable")
+    :bind
+    ([remap list-directory] . dired))
+
+  (use-package dired-aux
+    :custom
+    (dired-compress-directory-default-suffix ".tar.zst")
+    (dired-create-destination-dirs 'ask)
+    (dired-create-destination-dirs-on-trailing-dirsep t)
+    (dired-vc-rename-file t))
+#+end_src
+
+*** emacs-eat
+emacs-eat with patches <https://codeberg.org/akib/emacs-eat/pulls/133> and
+<https://codeberg.org/akib/emacs-eat/pulls/228>.
+
+#+begin_src scheme :noweb-ref package
+  "emacs-eat-dolly"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package eat
+    :custom
+    (eat-kill-buffer-on-exit t)
+    (eshell-visual-commands nil)
+    :hook
+    (eshell-load . eat-eshell-mode))
+
+  (use-package project
+    :config
+    (add-to-list 'project-switch-commands '(eat-project "Eat") t)
+    :bind
+    (:map project-prefix-map
+          ("t" . eat-project)))
+#+end_src
+
+*** emacs-envrc
+#+begin_src scheme :noweb-ref package
+  "emacs-envrc"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package envrc
+    :hook
+    (after-init . envrc-global-mode))
+#+end_src
+
+*** emacs-magit
+#+begin_src scheme :noweb-ref package
+  "emacs-magit"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package magit
+    :custom
+    (git-commit-cd-to-toplevel t))
+
+  (use-package project
+    :config
+    (add-to-list 'project-switch-commands '(magit-project-status "Magit") t)
+    :bind
+    (:map project-prefix-map
+          ("m" . magit-project-status)))
+#+end_src
+
+*** emacs-forge
+#+begin_src scheme :noweb-ref package
+  "emacs-forge"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package forge
+    :after (magit))
+#+end_src
+
+*** emacs-notmuch
+#+begin_src scheme :noweb-ref package
+  "emacs-notmuch"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package notmuch
+    :custom
+    (mail-user-agent 'notmuch-user-agent)
+    (message-hidden-headers '("^Face:" "^X-Face:" "^X-Draft-From:"))
+    (message-kill-buffer-on-exit t)
+    (mml-secure-openpgp-encrypt-to-self t)
+    (mml-secure-openpgp-signers '("220F98D95E86204C0036DA7B6DEC4360408B4185"))
+    (notmuch-show-logo nil)
+    (notmuch-draft-folder "local/Drafts")
+    (notmuch-fcc-dirs "imap/INBOX")
+    (notmuch-message-headers
+     '("Subject" "To" "Cc" "Date" "Message-ID" "In-Reply-To" "References"))
+    (notmuch-search-oldest-first nil)
+    :config
+    (remove-hook 'notmuch-show-hook 'notmuch-show-turn-on-visual-line-mode)
+    (remove-hook 'notmuch-show-insert-text/plain-hook 'notmuch-wash-excerpt-citations)
+    :hook
+    (notmuch-show-insert-text/plain . notmuch-wash-convert-inline-patch-to-part)
+    :bind
+    ("C-c M-m" . message-mark-inserted-region))
+#+end_src
+
+*** emacs smtpmail
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package smtpmail
+    :custom
+    (smtpmail-default-smtp-server "mail.boiledscript.com")
+    (smtpmail-smtp-service 465)
+    (smtpmail-stream-type 'ssl)
+    (smtpmail-queue-mail t)
+    (smtpmail-queue-dir "~/.local/share/queued-mail"))
+#+end_src
+
+** Fonts
+https://github.com/nykma/nema/blob/develop/my-sample/font.el
+
+#+begin_src scheme :noweb-ref package
+  "fontconfig"
+  "font-adobe-source-serif"
+  "font-chiron-sung-hk"
+  "font-google-noto-emoji"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-fonts
+  (defvar nema--font-size 12 "Font size")
+  (defvar nema-fonts '((sans     . "sans")
+                       (serif    . "serif")
+                       (mono     . "monospace")
+                       (cjk      . "Chiron Sung HK VF")
+                       (symbol   . "Noto Color Emoji")
+                       (modeline . "Source Serif 4"))
+    "Fonts to use.")
+
+  (defun nema//get-font-family (key)
+    (alist-get key nema-fonts))
+
+  (defun nema//generate-font-spec (key)
+    (format "%s-%d"
+            (nema//get-font-family key)
+            nema--font-size))
+
+  (defun nema//load-base-font ()
+    "Load the default font for ascii characters."
+    (let* ((font-spec (nema//generate-font-spec 'mono)))
+      (set-frame-parameter nil 'font font-spec)
+      (add-to-list 'default-frame-alist (cons 'font font-spec))))
+
+  (defun nema//load-face-font ()
+    "Load fonts used in faces.
+
+  This function must be called after frame creation."
+    (let ((mono (nema//generate-font-spec 'mono))
+          (sans (nema//generate-font-spec 'sans))
+          (serif (nema//generate-font-spec 'sans-serif))
+          (modeline (nema//generate-font-spec 'modeline)))
+      (set-face-attribute 'variable-pitch nil :font sans)
+      (set-face-attribute 'variable-pitch-text nil :font serif)
+      (set-face-attribute 'fixed-pitch nil :font mono)
+      (set-face-attribute 'fixed-pitch-serif nil :font mono)
+      (set-face-attribute 'mode-line nil :font modeline)
+      (set-face-attribute 'mode-line-inactive nil :font modeline)))
+
+  (defun nema//load-ext-font ()
+    "Load fonts used for non-ascii characters.
+
+  This function must be called after frame creation."
+    (let ((font (frame-parameter nil 'font))
+          (font-spec-cjk (font-spec :family (nema//get-font-family 'cjk)))
+          (font-spec-symbol (font-spec :family (nema//get-font-family 'symbol))))
+      (dolist (charset '(kana han hangul cjk-misc bopomofo))
+        (set-fontset-font font charset font-spec-cjk))
+      (set-fontset-font font 'symbol font-spec-symbol)))
+
+  (defun nema/load-font ()
+    "Load all font configuration."
+    (interactive)
+    (when (display-graphic-p)
+      (nema//load-base-font)
+      (nema//load-ext-font)
+      (nema//load-face-font)))
+
+  (if (daemonp)
+      (add-hook 'server-after-make-frame-hook #'nema/load-font)
+    ;; Else: not in daemon
+    (add-hook 'after-init-hook #'nema/load-font))
+#+end_src
+
+** Modules
+Within this repository
+#+begin_src scheme :noweb-ref module
+  (common)
+#+end_src
+
+Utilities
+#+begin_src scheme :noweb-ref module
+  (guix gexp)
+  (rosenthal utils file)
+#+end_src
+
+Guix Home - services
+#+begin_src scheme :noweb-ref module
+  (gnu home services)
+  (gnu home services shepherd)
+#+end_src
+
+Guix packages
+#+begin_src scheme :noweb-ref module
+  (gnu packages cpp)
+  (gnu packages python-xyz)
+  (gnu packages rust)
+  (gnu packages shells)
+  (gnu packages zig-xyz)
+#+end_src

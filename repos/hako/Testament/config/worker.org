@@ -4,7 +4,7 @@
 #+PROPERTY: header-args :mkdirp yes :noweb-prefix no
 
 ** Guix System
-#+begin_src scheme :tangle ../files/tangled/worker.scm :noweb yes
+#+begin_src scheme :tangle ../files/tangled/worker/worker.scm :noweb yes
   (use-modules <<module>>)
 
   (lambda (host-name system 32bit-support? workers bios-boot)
