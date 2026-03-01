@@ -290,24 +290,25 @@ time in `current-time' format."
   (jack-html
    `(:div (@ :class "navigation")
           (:a (@ :href ,(my/get-up-directory level "index.html"))
-              "The Wumpus Warehouse")
-          " | "
+              (:img (@ :style "border-width:0" :src (my/get-up-directory level "static/images/icons/favicon.png")))
+              " Homepage")
+          (:br)
           (:a (@ :href ,(my/get-up-directory level "posts/index.html"))
               (:img (@ :style "border-width:0" :src (my/get-up-directory level "static/images/icons/blog.png")))
               " Posts")
-          " | "
+          (:br)
           (:a (@ :href ,(my/get-up-directory level "posts/rss.xml"))
               (:img (@ :style "border-width:0" :src (my/get-up-directory level "static/images/icons/rss.png")))
               " RSS")
-          " | "
+          (:br)
           (:a (@ :href ,my/code-repo)
               (:img (@ :style "border-width:0" :src ,(my/get-up-directory level "static/images/icons/git.png")))
               " Code")
-          " | "
+          (:br)
           (:a (@ :href ,(my/get-up-directory level "donate.html"))
               (:img (@ :style "border-width:0" :src ,(my/get-up-directory level "static/images/icons/money-bag.png")))
               " Donate")
-          " | "
+          (:br)
           (:a (@ :href ,(my/get-up-directory level "about.html"))
               (:img (@ :style "border-width:0" :src ,(my/get-up-directory level "static/images/icons/yes-man-sepia.jpg")))
               " About"))))
