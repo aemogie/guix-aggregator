@@ -2081,6 +2081,50 @@ parses its input."
          (setq completion-category-defaults nil)
          (setq enable-recursive-minibuffers t)
 
+         ,#~"\n;; Works around an Emacs bug where completion boundary handling
+;; doubles the directory prefix (e.g. examples/ -> examples/examples/...)
+;; when using `completion-at-point' in the minibuffer."
+
+         ;; TODO: [Andrew Tropin, 2026-02-27] Report the problem upstream and
+         ;; put ticket number for tracking here.
+         (defun rde-minibuffer-completion-at-point ()
+           "Variant of `completion-at-point' for minibuffers.
+Works around an Emacs bug where completion boundary handling
+doubles the directory prefix."
+           (interactive)
+           (let* ((res (run-hook-wrapped
+                        'completion-at-point-functions
+                        (function completion--capf-wrapper) 'all))
+                  (data (and (consp res) (consp (cdr res)) (cdr res)))
+                  (start (nth 0 data))
+                  (end (nth 1 data))
+                  (collection (nth 2 data))
+                  (plist (nthcdr 3 data))
+                  (pred (plist-get plist :predicate))
+                  (initial (and start end
+                                (buffer-substring-no-properties start end)))
+                  (md (and initial
+                           (completion-metadata initial collection pred)))
+                  (candidates
+                   (and initial
+                        (completion-all-completions
+                         initial collection pred (length initial) md))))
+             (when candidates
+               (setcdr (last candidates) nil)
+               (let ((result (completing-read
+                              "Complete: " candidates nil nil initial)))
+                 (when (and result (not (string-empty-p result)))
+                   (delete-region start end)
+                   (goto-char start)
+                   (insert result))))))
+
+         (define-key minibuffer-local-map
+                     (vector 'remap 'completion-at-point)
+                     'rde-minibuffer-completion-at-point)
+         (define-key minibuffer-local-map
+                     (vector 'remap 'complete-symbol)
+                     'rde-minibuffer-completion-at-point)
+
          ;; (setq resize-mini-windows nil)
 
          ;; MAYBE: Make transient use child-frame:
@@ -4400,7 +4444,8 @@ Indentation and refile configurations, visual adjustment."
           (org-agenda-files #f)
           (org-agenda-custom-commands %rde-org-agenda-custom-commands)
           (org-agenda-prefix-format #f)
-          (org-agenda-appt? #f))
+          (org-agenda-appt? #f)
+          (org-agenda-highlight-items-with-body? #t))
   "Configure org-agenda for GNU Emacs."
   (define (maybe-path-or-list? elt)
     (or (maybe-path? elt) (maybe-list? elt)))
@@ -4410,6 +4455,7 @@ Indentation and refile configurations, visual adjustment."
   (ensure-pred list? org-agenda-custom-commands)
   (ensure-pred maybe-list? org-agenda-prefix-format)
   (ensure-pred boolean? org-agenda-appt?)
+  (ensure-pred boolean? org-agenda-highlight-items-with-body?)
 
   (define emacs-f-name 'org-agenda)
   (define f-name (symbol-append 'emacs- emacs-f-name))
@@ -4429,6 +4475,11 @@ Indentation and refile configurations, visual adjustment."
         (defgroup rde-org-agenda nil
           "Custom enhancements to the Org Agenda."
           :group 'rde)
+
+        (defface rde-org-agenda-has-body
+          '((t :inherit menu))
+          "Face for agenda items that have body content."
+          :group 'rde-org-agenda)
 
         ,@(if org-agenda-appt?
               (org-agenda-appt config)
@@ -4467,6 +4518,75 @@ result is longer than LEN."
             (if (and (not project-title) (numberp len))
                 (s-truncate len (s-pad-right len " " result))
                 result)))
+
+        (defun rde-org-agenda-reschedule-count ()
+          "Return the number of times the entry at point was rescheduled.
+Counts Rescheduled entries in the LOGBOOK drawer.  Intended for use
+in `org-agenda-prefix-format' via %(rde-org-agenda-reschedule-count)."
+          (save-excursion
+            (let ((count 0)
+                  (bound (org-entry-end-position)))
+              (when (re-search-forward
+                     "^[ \t]*:LOGBOOK:[ \t]*$" bound t)
+                (let ((drawer-end
+                       (save-excursion
+                         (if (re-search-forward
+                              "^[ \t]*:END:[ \t]*$" bound t)
+                             (point)
+                           bound))))
+                  (while (re-search-forward
+                          "^[ \t]*-[ \t]+Rescheduled" drawer-end t)
+                    (setq count (+ count 1)))))
+              (cond
+               ((> count 9) "R:∞ ")
+               ((> count 0) (format "R:%d  " count))
+               (t "     ")))))
+
+        (defun rde-org-agenda-entry-has-body-p (marker)
+          "Return non-nil if the org entry at MARKER has meaningful body content.
+Body content is text that is not a planning line, drawer, or blank line."
+          (with-current-buffer (marker-buffer marker)
+            (save-excursion
+              (goto-char (marker-position marker))
+              (let ((entry-end (org-entry-end-position))
+                    (has-body nil))
+                ;; Move past the heading line
+                (forward-line 1)
+                (while (and (not has-body) (< (point) entry-end))
+                  (let ((line (buffer-substring-no-properties
+                               (line-beginning-position) (line-end-position))))
+                    (cond
+                     ;; Skip planning lines
+                     ((string-match-p
+                       "^[ \t]*\\(SCHEDULED\\|DEADLINE\\|CLOSED\\):" line))
+                     ;; Skip drawers: jump from :DRAWER: to :END:
+                     ((string-match-p "^[ \t]*:[A-Z_]+:[ \t]*$" line)
+                      (when (re-search-forward
+                             "^[ \t]*:END:[ \t]*$" entry-end t)
+                        (forward-line 0)))
+                     ;; Skip blank lines
+                     ((string-match-p "^[ \t]*$" line))
+                     ;; Anything else is body content
+                     (t (setq has-body t))))
+                  (forward-line 1))
+                has-body))))
+
+        (defun rde-org-agenda-highlight-items-with-body ()
+          "Apply `rde-org-agenda-has-body' face to agenda items with body content."
+          (save-excursion
+            (goto-char (point-min))
+            (while (not (eobp))
+              (let ((marker (get-text-property (point) 'org-marker)))
+                (when (and marker (rde-org-agenda-entry-has-body-p marker))
+                  (let ((txt-start
+                         (text-property-any
+                          (line-beginning-position) (line-end-position)
+                          'org-heading t)))
+                    (when txt-start
+                      (add-face-text-property
+                       txt-start (line-end-position)
+                       'rde-org-agenda-has-body t)))))
+              (forward-line 1))))
 
         (define-key global-map (kbd "C-x C-a") 'org-agenda)
         (add-hook 'org-agenda-mode-hook
@@ -4525,6 +4645,10 @@ result is longer than LEN."
                    `(quote ,org-agenda-prefix-format))
                   (else
                    ''())))
+          ,@(if org-agenda-highlight-items-with-body?
+                '((add-hook 'org-agenda-finalize-hook
+                            'rde-org-agenda-highlight-items-with-body))
+                '())
           (autoload 'org-super-agenda-mode "org-super-agenda")
           (org-super-agenda-mode)))
       #:elisp-packages (list emacs-org-wild-notifier emacs-org-super-agenda)

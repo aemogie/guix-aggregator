@@ -9,7 +9,7 @@
 
 (define wlo-emacs-packages
   (list
-   emacs-pgtk-xwidgets                 ; the big emacs package
+   emacs-pgtk                 ; the big emacs package
    
    emacs-no-littering
    emacs-pdf-tools
@@ -31,6 +31,7 @@
    emacs-org-roam
    emacs-org-roam-ui                   ; requires nonguix
    emacs-magit
+   emacs-autothemer
    emacs-ef-themes
    emacs-elcord                        ; from my repo, useless garbage
    emacs-pass
@@ -79,5 +80,10 @@
    emacs-dirvish
    emacs-circe
    emacs-ultra-scroll
+   ;; Email
+   emacs-mu4e-alert
+   emacs-message-view-patch
+   ;; emacs-org-msg ; 2024-09-14 uncomment when latest version is merged in guix repos
+
    ))
  

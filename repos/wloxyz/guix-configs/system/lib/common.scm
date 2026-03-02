@@ -12,6 +12,7 @@
   #:use-module (gnu services networking)
   #:use-module (gnu services ssh)
   #:use-module (gnu services xorg)
+  #:use-module (gnu packages android)
   #:use-module (gnu packages security-token)
   #:use-module (gnu packages firmware)
   #:use-module (gnu packages display-managers)
@@ -23,6 +24,16 @@
 	    wlo-common-packages
 	    wlo-common-services))
 
+
+(define %zmk-udev-rules
+  (udev-rule
+   "90-zmk-devices.rules"
+   (string-append "ATTRS{idVendor}==\"0011\", ATTRS{idProduct}==\"0006\", "
+                  "MODE=\"0666\", ENV{ID_MM_DEVICE_IGNORE}=\"1\", "
+                  "ENV{ID_MM_PORT_IGNORE}=\"1\"\n"
+                  "ATTRS{idVendor}==\"0011\", ATTRS{idProduct}==\"DEAD\", "
+                  "MODE=\"0666\", ENV{ID_MM_DEVICE_IGNORE}=\"1\", "
+                  "ENV{ID_MM_PORT_IGNORE}=\"1\"")))
 
 ;; a list of all of the services i use across every computer
 (define wlo-common-services
@@ -44,8 +55,11 @@
          (udev-rules-service 'yubikey yubikey-personalization)
 	 ;; enable configuration of my keyboard
          (udev-rules-service 'qmk qmk-udev-rules)
+         ;; configuration of the endgame trackball
+         (udev-rules-service 'zmk %zmk-udev-rules)
          ;; allow non-root users to adjust brightness
          (udev-rules-service 'light light)
+         (udev-rules-service 'android android-udev-rules)
          ;; weylus (and probably ydotool)
          (udev-rules-service 'weylus
                              (udev-rule
@@ -127,8 +141,8 @@
   (cons* (user-group (name "plugdev")) ;; for qmk firmware access
 	 (user-group (name "seat"))
 	 (user-group (name "realtime"))
+	 (user-group (name "adbusers"))
 	 (user-group (name "uinput")) ;; for use with weylus
-	 ;; (user-group (name "cgroup"))
          %base-groups))
 
 (define wlo-common-accounts
@@ -139,5 +153,5 @@
           (home-directory "/home/willow")
           ;; the kvm group allows access to raw qemu
           (supplementary-groups '("wheel" "netdev" "audio" "video" "plugdev"
-                                  "libvirt" "realtime" "kvm" "cgroup")))
+                                  "libvirt" "realtime" "kvm" "cgroup" "adbusers")))
 	 %base-user-accounts))

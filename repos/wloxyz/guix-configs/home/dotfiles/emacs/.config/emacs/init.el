@@ -110,12 +110,16 @@
   :hook (after-init . envrc-global-mode))
 
 (use-package rainbow-mode
+  :custom
+  (rainbow-ansi-colors nil)
+  (rainbow-html-colors nil)
+  (rainbow-x-colors nil)
   :config
   (rainbow-mode))
 
-(use-package ef-themes
+(use-package autothemer
   :config
-  (load-theme 'ef-wlo t))
+  (load-theme 'wlo-autothemer t))
 
 (use-package ultra-scroll
   :init
@@ -124,13 +128,13 @@
   :config
   (ultra-scroll-mode 1))
 
-(use-package base16-theme
-  :custom
-  (base16-distant-fringe-background 0)
-  :config
-  (setq base16-theme-256-color-source 'colors)
-  (setq base16-distinct-fringe-background nil))
-  ;; (load-theme 'base16-wlo t))
+;; (use-package base16-theme
+;;   :custom
+;;   (base16-distant-fringe-background 0)
+;;   :config
+;;   (setq base16-theme-256-color-source 'colors)
+;;   (setq base16-distinct-fringe-background nil))
+;;   ;; (load-theme 'base16-wlo t))
 
 (use-package tool-bar
   :ensure nil
@@ -248,6 +252,10 @@
 ;;   (beacon-mode 1))
 
 (use-package rainbow-delimiters
+  :custom
+  (rainbow-x-colors nil)
+  (rainbow-ansi-colors nil)
+  (rainbow-html-colors nil)
   :hook (prog-mode . rainbow-delimiters-mode))
 
 ;; might be useful for lisp debugging

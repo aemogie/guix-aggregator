@@ -52,18 +52,19 @@
 	      ;; screensharing and other wlroots stuff
 	      "xdg-desktop-portal"
 	      "xdg-desktop-portal-gnome"
-	      "xdg-desktop-portal-gtk"
+	      ;; "xdg-desktop-portal-gtk"
 	      "slurp"
 	      "grimshot"                ; for screenshots
 	      "wl-clipboard"
               "fuzzel"
               "swww"
-	      ;; experimental
-	      "nyxt"
               ;; essentials
 	      "password-store"
-	      "firefox"                 ; courtesy of nonguix
-	      ;; "passff-host" ; - no worky
+              ;; "librewolf"
+              "icecat"
+              "ublock-origin-icecat"
+              "passff-icecat"
+	      "passff-host"
 	      "htop"
 	      "flatpak"
               "flatpak-xdg-utils"
@@ -100,6 +101,13 @@
 	      "zathura"
 	      "zathura-pdf-mupdf"
 	      "imv"
+              "ffmpeg"
+              "gst-libav"
+              "gst-plugins-bad"
+              "gst-plugins-base"
+              "gst-plugins-good"
+              "gst-plugins-ugly"
+
 	      ;; music
 	      "carla"
 	      ;; "reaper"                  ; nonguix
@@ -160,6 +168,7 @@
 	      "wget"
 	      "jq"
 	      "bat"
+              "python"
 	      ;; server management
 	      "talosctl"
 	      "kubectl"
@@ -169,18 +178,17 @@
 	      "aspell-dict-en"
 	      "xdg-utils"
 	      "udiskie"
-	      "p7zip"
+	      "7zip"
 	      "rsync"
 	      "imagemagick"           ; needed for emacs-pdf-tools
               "bind:utils"
 	      ;; documentation
-	      "sicp"                  ; a fun lil textbook :)
+	      "book-sicp"                  ; a fun lil textbook :)
 	      "clhs"                  ; common lisp hyperspec, nonfree
 	      ;; showoff tools
 	      "hyfetch"
               ;; from saayix channel
-              "prismlauncher"
-              "zen-browser-bin"))))
+              "prismlauncher"))))
 
  ;; Below is the list of Home services.  To search for available
  ;; services, run 'guix home search KEYWORD' in a terminal.
@@ -193,7 +201,7 @@
                      ("EDITOR" . "emacsclient")
                      ("VISUAL" . "emacsclient")
                      ("TERMINAL" . "foot")
-		     ;; ("XDG_CURRENT_DESKTOP" . "sway")
+                     ("MOZ_PERMISSIVE_CONTENT_SANDBOX" . "1")
                      ;; make flatpak work regardless of shell
                      ("XDG_DATA_DIRS" . "${XDG_DATA_HOME}/flatpak/exports/share:${XDG_DATA_DIRS}")
                      ("XCURSOR_PATH" . "${XCURSOR_PATH}:~/.local/share/icons")))

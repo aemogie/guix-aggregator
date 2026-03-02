@@ -10,6 +10,13 @@ input {
         accel-profile "flat"
         accel-speed 0
     }
+    trackball {
+        accel-profile "flat"
+        accel-speed 0
+    }
+//    tablet {
+//           map-to-output "DP-1"
+//    }
     focus-follows-mouse max-scroll-amount="0%"
 }
 
@@ -71,15 +78,15 @@ layout {
         // - CSS-like notation: "rgb(255, 127, 0)", rgba(), hsl() and a few others.
 
         // Color of the ring on the active monitor.
-        active-color "#bd7dae"
+        active-color "#d6aaea"
 
         // Color of the ring on inactive monitors.
         //
         // The focus ring only draws around the active window, so the only place
         // where you can see its inactive-color is on other monitors.
-        inactive-color "#22222e"
+        inactive-color "#14131f"
 
-        urgent-color "#bd7d8c"
+        urgent-color "#f3a3bb"
 
         // You can also use gradients. They take precedence over solid colors.
         // Gradients are rendered the same as CSS linear-gradient(angle, from, to).
@@ -171,21 +178,21 @@ window-rule {
     match is-window-cast-target=true
 
     focus-ring {
-        active-color "#f38ba8"
-        inactive-color "#7d0d2d"
+        active-color "#f3a3bb"
+        inactive-color "#99566b"
     }
 
     border {
-        inactive-color "#7d0d2d"
+        inactive-color "#99566b"
     }
 
     shadow {
-        color "#7d0d2d70"
+        color "#99566b70"
     }
 
     tab-indicator {
-        active-color "#f38ba8"
-        inactive-color "#7d0d2d"
+        active-color "#f3a3bb"
+        inactive-color "#99566b"
     }
 }
 
