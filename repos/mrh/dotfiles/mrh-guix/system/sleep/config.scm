@@ -155,7 +155,7 @@
          (config-file
           (format #f "~a/.config/yggdrasil/yggdrasil-private.conf" %user-home))
          (json-config
-          '((peers . #("tcp://ygg-us-ny.nadeko.net:44441"
+          '((peers . #("tcp://marisa.nadeko.net:44441"
                        "tls://ygg.jjolly.dev:3443"))))))
 
       (service

@@ -177,7 +177,7 @@
          (config-file
           (format #f "~a/data/om-ygg.conf" %user-home))
          (json-config
-          '((peers . #("tcp://ygg-us-ny.nadeko.net:44441"
+          '((peers . #("tcp://marisa.nadeko.net:44441"
                        "tls://ygg.jjolly.dev:3443"))
             (listen . #("tcp://[::1]:31341"))
             (multicastinterfaces . #(((regex . "wlp.*"))))))))
@@ -223,7 +223,9 @@
          (list (oci-network-configuration
                 (name "media"))
                (oci-network-configuration
-                (name "paperless"))))
+                (name "paperless"))
+               (oci-network-configuration
+                (name "immich"))))
         (containers
          (append %homepage-oci
                  %paperless-oci

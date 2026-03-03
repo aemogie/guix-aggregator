@@ -1,6 +1,6 @@
 ;;; rde --- Reproducible development environment.
 ;;;
-;;; Copyright © 2022, 2023, 2024, 2025 Andrew Tropin <andrew@trop.in>
+;;; Copyright © 2022-2026 Andrew Tropin <andrew@trop.in>
 ;;; Copyright © 2022 Samuel Culpepper <samuel@samuelculpepper.com>
 ;;; Copyright © 2022 Demis Balbach <db@minikn.xyz>
 ;;; Copyright © 2022-2025 Nicolas Graves <ngraves@ngraves.fr>
@@ -321,11 +321,8 @@ different level headings will have different size."
      (rde-elisp-configuration-service
       emacs-f-name
       config
-      `((eval-when-compile
-          (require 'modus-themes)
-          (require 'cl-seq))
-        (eval-when-compile
-         (load-theme ',theme :no-confirm))
+      `((autoload 'modus-themes-with-colors "modus-themes" nil nil 'macro)
+
         (defgroup rde-modus-themes nil
           "Configuration related to `modus-themes'."
           :group 'rde)
@@ -353,7 +350,7 @@ different level headings will have different size."
         (defun rde-modus-themes-set-custom-faces (&optional _theme)
           "Set faces based on the current theme."
           (interactive)
-          (when (modus-themes--current-theme)
+          (when (modus-themes-get-current-theme)
             (modus-themes-with-colors
               (custom-set-faces
                `(window-divider ((,c :foreground ,bg-main)))
@@ -385,9 +382,13 @@ different level headings will have different size."
 
         (defun rde-modus-themes--dark-theme-p (&optional theme)
           "Indicate if there is a curently-active dark THEME."
-          (if theme
-              (eq theme ',light-theme)
-              (eq (car custom-enabled-themes) ',dark-theme)))
+          (let ((th (or theme (modus-themes-get-current-theme))))
+            (if (member
+                 th
+                 (modus-themes-filter-by-background-mode
+                  (modus-themes-get-themes) 'dark))
+                t
+                nil)))
 
         (setq rde-modus-themes-header-line-padding ,header-line-padding)
         (setq rde-modus-themes-tab-bar-padding ,tab-bar-padding)
@@ -396,7 +397,9 @@ different level headings will have different size."
                     :after 'rde-modus-themes-run-after-enable-theme-hook)
         ,@(map (lambda (hook)
                  `(add-hook 'rde-modus-themes-after-enable-theme-hook ',hook))
-               extra-after-enable-theme-hooks)
+               (append
+                '(rde-modus-themes-set-custom-faces)
+                extra-after-enable-theme-hooks))
 
         (with-eval-after-load 'rde-keymaps
           (define-key rde-toggle-map (kbd "t") 'modus-themes-toggle))
@@ -459,13 +462,10 @@ different level headings will have different size."
                                                       (7 . (0.9))
                                                       (8 . (0.9))))))
                 '()))
-        (load-theme ',theme t (not (display-graphic-p)))
-        ,@(if (get-value 'emacs-server-mode? config #f)
-              `((add-hook 'server-after-make-frame-hook
-                          (lambda ()
-                            (when (null custom-enabled-themes)
-                              (enable-theme ',theme)))))
-              '()))
+        (if after-init-time
+            (load-theme ',theme t (not (display-graphic-p)))
+            (add-hook 'after-init-hook
+                      (lambda () (load-theme ',theme t)))))
       #:elisp-packages (list emacs-modus-themes)
       #:summary "Modus Themes extensions"
       #:commentary "Customizations to Modus Themes, the elegant,
@@ -4445,7 +4445,8 @@ Indentation and refile configurations, visual adjustment."
           (org-agenda-custom-commands %rde-org-agenda-custom-commands)
           (org-agenda-prefix-format #f)
           (org-agenda-appt? #f)
-          (org-agenda-highlight-items-with-body? #t))
+          (org-agenda-highlight-items-with-body? #t)
+          (org-agenda-swap-g-r? #t))
   "Configure org-agenda for GNU Emacs."
   (define (maybe-path-or-list? elt)
     (or (maybe-path? elt) (maybe-list? elt)))
@@ -4456,6 +4457,7 @@ Indentation and refile configurations, visual adjustment."
   (ensure-pred maybe-list? org-agenda-prefix-format)
   (ensure-pred boolean? org-agenda-appt?)
   (ensure-pred boolean? org-agenda-highlight-items-with-body?)
+  (ensure-pred boolean? org-agenda-swap-g-r?)
 
   (define emacs-f-name 'org-agenda)
   (define f-name (symbol-append 'emacs- emacs-f-name))
@@ -4648,6 +4650,10 @@ Body content is text that is not a planning line, drawer, or blank line."
           ,@(if org-agenda-highlight-items-with-body?
                 '((add-hook 'org-agenda-finalize-hook
                             'rde-org-agenda-highlight-items-with-body))
+                '())
+          ,@(if org-agenda-swap-g-r?
+                '((define-key org-agenda-mode-map (kbd "g") 'org-agenda-redo)
+                  (define-key org-agenda-mode-map (kbd "r") 'org-agenda-redo-all))
                 '())
           (autoload 'org-super-agenda-mode "org-super-agenda")
           (org-super-agenda-mode)))

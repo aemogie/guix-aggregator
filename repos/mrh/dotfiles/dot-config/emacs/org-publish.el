@@ -322,7 +322,7 @@ time in `current-time' format."
       (:a (@ :xmlns:cc "https://creativecommons.org/ns" :href ,(format "https://%s/" my/website-domain) :property "cc:attributionName" :rel "cc:attributionURL")
           ,my/website-domain)
       " by "
-      ,user-full-name
+      ,my/pen-name
       " is licensed under a "
       (:a (@ :rel "license" :href "https://creativecommons.org/licenses/by-sa/4.0/")
           "Creative Commons Attribution-ShareAlike 4.0 License")
@@ -362,7 +362,8 @@ time in `current-time' format."
                                           "png"
                                           "svg"
                                           "webm"
-                                          "ttf"))
+                                          "ttf"
+                                          "woff"))
            :recursive t)
           ("site.pages"
            :base-directory ,site-source-directory
