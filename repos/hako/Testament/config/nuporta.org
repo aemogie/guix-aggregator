@@ -10,13 +10,9 @@
   (operating-system
     (host-name "nuporta")
     (timezone "Etc/GMT-8")
-    ;; GRUB has issue booting from the ZFS dataset with /gnu/store.
-    ;; See https://savannah.gnu.org/bugs/?47742 and issues with same error.
-    ;; NOTE: This bootloader currently doesn't support choosing system
-    ;; generation on boot and switching system generations / rolling back.
     (bootloader
      (bootloader-configuration
-       (bootloader uefi-uki-removable-bootloader)
+       (bootloader limine-efi-removable-bootloader)
        (targets '("/efi"))))
     (kernel linux/dolly)
     ;; Required for the current implementation of the "copy out-of-tree modules
@@ -1019,6 +1015,13 @@ rsync://cache.guix.moe
   		reverse_proxy 127.0.0.1:26372
   	}
 
+  	@heisenbridge_media {
+  		path /_heisenbridge/media/*
+  	}
+  	handle @heisenbridge_media {
+  		reverse_proxy 127.0.0.1:27873
+  	}
+
   	handle {
   		root * /var/lib/webpublic/cinny
   		try_files {path} / index.html
@@ -1323,10 +1326,26 @@ rsync://cache.guix.moe
 #+begin_src scheme :noweb-ref service
   (service heisenbridge-service-type
     (heisenbridge-configuration
+      (homeserver "http://localhost:26372")
       (config
-       (plain-file "heisenbridge.yaml"
-         (sops-str %sops-nuporta '("heisenbridge"))))
-      (homeserver "http://localhost:26372")))
+       (yaml-file "heisenbridge.yaml"
+         #~'(("id" . "heisenbridge")
+             ("url" . "http://127.0.0.1:27873")
+             #$@(call-with-input-string (sops-str %sops-nuporta '("heisenbridge")) read)
+             ("rate_limited" . #f)
+             ("sender_localpart" . "heisenbridge")
+             ("namespaces"
+              ("users"
+               . #((("regex" . "@irc_.*")
+                    ("exclusive" . #t))
+                   (("regex" . "@heisenbridge:.*")
+                    ("exclusive" . #t))))
+              ("aliases" . #())
+              ("rooms" . #()))
+             ("heisenbridge"
+              ("media_url" . "https://matrix.guix.moe")))))
+      (group-id 963)
+      (user-id 967)))
 #+end_src
 
 *** mautrix-telegram
@@ -1387,25 +1406,21 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
     (conduit-configuration
       (conduit (file-append tuwunel-bin "/bin/tuwunel"))
       (database-path "/var/lib/tuwunel")
-      (config (local-file (testament-plain "nuporta/tuwunel.toml")))
+      (config
+       #~'(("Global"
+            ("address" . #("127.0.0.1" "::1"))
+            ("port" . 26372)
+            ("server_name" . "guix.moe")
+            ("database_path" . "/var/lib/tuwunel")
+            ("new_user_displayname_suffix" . "")
+            ("require_auth_for_profile_requests" . #t)
+            ("allow_public_room_directory_over_federation" . #t)
+            ("trusted_servers" . #("matrix.org"))
+            ("well_known"
+             ("client" . "https://matrix.guix.moe")
+             ("server" . "matrix.guix.moe:443")))))
       (group-id 968)
       (user-id 973)))
-#+end_src
-
-#+begin_src toml :tangle ../files/tangled/nuporta/tuwunel.toml
-  [global]
-  address = ["127.0.0.1", "::1"]
-  port = 26372
-  server_name = "guix.moe"
-  database_path = "/var/lib/tuwunel"
-  new_user_displayname_suffix = ""
-  require_auth_for_profile_requests = true
-  allow_public_room_directory_over_federation = true
-  trusted_servers = ["matrix.org"]
-
-  [global.well_known]
-  client = "https://matrix.guix.moe"
-  server = "matrix.guix.moe:443"
 #+end_src
 
 *** vaultwarden

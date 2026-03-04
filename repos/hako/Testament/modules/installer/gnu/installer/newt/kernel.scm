@@ -26,13 +26,13 @@
   ;; TRANSLATORS: "Hurd" is a proper noun and must not be translated.
   (let* ((hurd-x86 (G_ "Hurd 32-bit (experimental)"))
          (hurd-x86_64 (G_ "Hurd 64-bit (highly experimental!)"))
+         (linux-libre "Linux Libre")
          (linux "Linux")
          (linux-lts "Linux long-term support (LTS)")
-         (linux-libre "Linux Libre")
          (kernels (parameterize ((%current-target-system #f))
-                    `(,linux
+                    `(,linux-libre
+                      ,linux
                       ,linux-lts
-                      ,linux-libre
                       ,@(cond ((target-x86-64?)
                                (list hurd-x86 hurd-x86_64))
                               ((target-x86?)
@@ -44,14 +44,14 @@
                         ((equal? (%current-target-system) "x86_64-pc-gnu")
                          hurd-x86_64)
                         (else
-                         linux)))
+                         linux-libre)))
          (result
           (run-listbox-selection-page
            #:title (G_ "Kernel")
            #:info-text
            ;; TRANSLATORS: "Hurd" is a proper noun and must not be translated.
            ;; TRANSLATORS: "Linux Libre" is a literal and must not be translated.
-           (G_ "Please select a kernel.  When in doubt, choose \"Linux\".
+           (G_ "Please select a kernel.  When in doubt, choose \"Linux Libre\".
 
 The Hurd is offered as a technology preview and development aid; many packages \
 are not yet available in Guix, such as a desktop environment or even a \

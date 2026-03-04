@@ -10,13 +10,9 @@
   (operating-system
     (host-name "chapra")
     (timezone "Etc/GMT-8")
-    ;; GRUB has issue booting from the ZFS dataset with /gnu/store.
-    ;; See https://savannah.gnu.org/bugs/?47742 and issues with same error.
-    ;; NOTE: This bootloader currently doesn't support choosing system
-    ;; generation on boot and switching system generations / rolling back.
     (bootloader
      (bootloader-configuration
-       (bootloader uefi-uki-removable-bootloader)
+       (bootloader limine-efi-removable-bootloader)
        (targets '("/efi"))))
     (kernel linux/dolly)
     ;; Required for the current implementation of the "copy out-of-tree modules
@@ -394,18 +390,13 @@
 #+begin_src scheme :noweb-ref service
   (service navidrome-service-type
     (navidrome-configuration
-      (extra-config
-       (string-append
-        (file-content (testament-plain "chapra/navidrome.toml"))
-        (sops-str %sops-chapra '("navidrome"))))))
-#+end_src
-
-#+begin_src toml :tangle ../files/tangled/chapra/navidrome.toml
-  BaseUrl = 'https://music.urspace.moe'
-  Address = '127.0.0.1'
-  Port = 43502
-  MusicFolder = '/mnt/Ocimeae/Library/Music'
-  EnableSharing = true
+      (config
+       #~'(("BaseUrl" . "https://music.urspace.moe")
+           ("Address" . "127.0.0.1")
+           ("Port" . 43502)
+           ("MusicFolder" . "/mnt/Ocimeae/Library/Music")
+           ("EnableSharing" . #t)
+           #$@(call-with-input-string (sops-str %sops-chapra '("navidrome")) read)))))
 #+end_src
 
 *** qbittorrent

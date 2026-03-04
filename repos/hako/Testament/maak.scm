@@ -20,15 +20,12 @@
 (define %substitute-urls
   (string-append
    "--substitute-urls="
-   ;; NOTE: Sort by download speed and substitutes availablity.
+   ;; NOTE: Sort by download speed and substitutes availablity
+   ;; Adding too many URLs will affect performance.
    (string-join
-    '(;; Guix Moe substitutes mirror.
-      "https://cache-cdn.guix.moe"
-      ;; Official Guix substitute servers.
-      "https://ci.guix.gnu.org"
-      "https://bordeaux.guix.gnu.org"
-      ;; Official Nonguix substitute server.
-      "https://substitutes.nonguix.org"))))
+    '("https://cache-cdn.guix.moe"
+      "https://mirror.sjtu.edu.cn/guix"
+      "https://mirror.sjtu.edu.cn/guix-bordeaux"))))
 
 (define %build-options
   `("--keep-going"
