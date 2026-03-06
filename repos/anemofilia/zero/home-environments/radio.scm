@@ -109,6 +109,7 @@
                                   font-adobe-source-han-sans
                                   font-adobe-source-sans
                                   font-adobe-source-serif
+                                  font-dejavu
                                   font-openmoji
                                   font-juliamono
                                   font-meslo-lg

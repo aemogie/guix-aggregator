@@ -52,7 +52,6 @@
                       #:prefix home-environment:)
 
   #|Radix packages|#
-  #|A|# #:use-module (radix packages admin)
   #|L|# #:use-module (radix packages linux)
   #|T|# #:use-module (radix packages text-editors)
 

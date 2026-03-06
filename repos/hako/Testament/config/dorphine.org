@@ -473,7 +473,7 @@ Generate passwordless ECC key:
 #+begin_src scheme :noweb-ref home-service
   (service home-gpg-agent-service-type
     (home-gpg-agent-configuration
-      (pinentry-program (file-append pinentry-qt "/bin/pinentry-qt"))
+      (pinentry-program (file-append bb-auth "/libexec/pinentry-bb"))
       (ssh-support? #t)))
 #+end_src
 
@@ -538,7 +538,7 @@ Open TCP port 5558 and connect to server IPv4 address.
       (config
        (computed-substitution-with-inputs "niri.kdl"
          (local-file (testament-plain "dorphine/niri.kdl"))
-         (list wezterm xwayland-satellite)))))
+         (list foot xwayland-satellite)))))
 #+end_src
 
 #+begin_src kdl :tangle ../files/tangled/dorphine/niri.kdl
@@ -631,7 +631,7 @@ Open TCP port 5558 and connect to server IPv4 address.
       XF86AudioLowerVolume  allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "volume" "decrease"; }
       XF86AudioMute         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "volume" "muteOutput"; }
       XF86AudioMicMute      allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "volume" "muteInput"; }
-      XF86AudioPlay         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "media" "play"; }
+      XF86AudioPlay         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "media" "playPause"; }
       XF86AudioStop         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "media" "pause"; }
       XF86AudioPrev         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "media" "previous"; }
       XF86AudioNext         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "media" "next"; }
@@ -642,11 +642,12 @@ Open TCP port 5558 and connect to server IPv4 address.
       Mod+O           { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
       Mod+D           { spawn "noctalia-shell" "ipc" "call" "plugin:clipper" "togglePanel"; }
       Mod+S           { spawn "noctalia-shell" "ipc" "call" "settings" "toggle"; }
+      Mod+L           { spawn "noctalia-shell" "ipc" "call" "lockScreen" "lock"; }
       Ctrl+Alt+Delete { spawn "noctalia-shell" "ipc" "call" "sessionMenu" "toggle"; }
       Mod+Shift+E     { spawn "herd" "restart" "noctalia-shell"; }
 
       Mod+E       { spawn "emacsclient" "--create-frame" "--no-wait"; }
-      Mod+Return  { spawn "$$bin/wezterm$$"; }
+      Mod+Return  { spawn "$$bin/foot$$"; }
 
       Mod+Left                       { focus-column-left; }
       Mod+Down                       { focus-window-down; }
@@ -723,13 +724,15 @@ Autostart Shepherd in environments that support XDG Autostart (e.g. GNOME).
 *** noctalia-shell
 Run ~herd restart noctalia-shell~ after home environment reconfiguration.
 
+Also install the Noctalia shell plugin: <https://github.com/anthonyhab/noctalia-plugins/blob/main/bb-auth/README.md>.
+
 #+begin_src scheme :noweb-ref home-service
   (service home-noctalia-shell-service-type)
 #+end_src
 
-*** polkit-gnome
+*** bb-auth
 #+begin_src scheme :noweb-ref home-service
-  (service home-polkit-gnome-service-type)
+  (service home-bb-auth-service-type)
 #+end_src
 
 *** qogir-icon-theme
@@ -1173,25 +1176,50 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
 #+end_src
 
 #+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/xfce4/helpers.rc
-  TerminalEmulator=open-wezterm-here
+  TerminalEmulator=foot
 #+end_src
 
-*** wezterm
+*** foot
 #+begin_src scheme :noweb-ref package
-  "wezterm"
+  "foot"
 #+end_src
 
-#+begin_src lua :tangle ../files/tangled/dorphine/dotfiles/.config/wezterm/wezterm.lua
-  local wezterm = require 'wezterm'
-  local config = wezterm.config_builder()
-
-  -- This improves input latency when using NVIDIA proprietary driver.
-  config.enable_wayland = false
-
-  config.window_background_opacity = 0.97
-  config.color_scheme = 'Catppuccin Mocha'
-
-  return config
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'foot-config home-xdg-configuration-files-service-type
+    `(("foot/foot.ini"
+       ,(ini-file "foot.ini"
+          #~'((#f
+               ("font" . "monospace:size=12"))
+              ("colors"
+               ("alpha" . 0.97)
+               ;; https://github.com/catppuccin/foot/blob/main/themes/catppuccin-mocha.ini
+               ("cursor" . "11111b f5e0dc")
+               ("foreground" . "cdd6f4")
+               ("background" . "1e1e2e")
+               ("regular0" . "45475a")
+               ("regular1" . "f38ba8")
+               ("regular2" . "a6e3a1")
+               ("regular3" . "f9e2af")
+               ("regular4" . "89b4fa")
+               ("regular5" . "f5c2e7")
+               ("regular6" . "94e2d5")
+               ("regular7" . "bac2de")
+               ("bright0" . "585b70")
+               ("bright1" . "f38ba8")
+               ("bright2" . "a6e3a1")
+               ("bright3" . "f9e2af")
+               ("bright4" . "89b4fa")
+               ("bright5" . "f5c2e7")
+               ("bright6" . "94e2d5")
+               ("bright7" . "a6adc8")
+               ("16" . "fab387")
+               ("17" . "f5e0dc")
+               ("selection-foreground" . "cdd6f4")
+               ("selection-background" . "414356")
+               ("search-box-no-match" . "11111b f38ba8")
+               ("search-box-match" . "cdd6f4 313244")
+               ("jump-labels" . "11111b fab387")
+               ("urls" . "89b4fa")))))))
 #+end_src
 
 *** wget
@@ -1275,5 +1303,6 @@ Guix packages
   (gnu packages video)
   (gnu packages xorg)
   (nongnu packages nvidia)
+  (rosenthal packages authentication)
   (rosenthal packages password-utils)
 #+end_src

@@ -85,9 +85,9 @@
    ffmpeg
    grimshot
    imagemagick
-   imv
    mpv
    perl-image-exiftool
+   swayimg
    yt-dlp
 
    ;; emacs

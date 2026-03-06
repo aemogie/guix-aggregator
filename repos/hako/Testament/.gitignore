@@ -1,3 +1,4 @@
 # -*- mode: conf -*-
 /pre-inst-env
 /files/tangled/
+/.blue-store/

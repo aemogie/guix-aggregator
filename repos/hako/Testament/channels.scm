@@ -1,6 +1,15 @@
 (use-modules (guix channels))
 
 (list (channel
+        (name 'bluebox)
+        (branch "main")
+        (url "https://codeberg.org/lapislazuli/bluebox")
+        (introduction
+         (make-channel-introduction
+          "63350484aaacc362aea28fb14236019fced4050f"
+          (openpgp-fingerprint
+           "5132 3571 CEED 988F 52FC 467C 6F98 DBF3 EA7F 4B37"))))
+      (channel
         (name 'nonguix)
         (url "https://gitlab.com/nonguix/nonguix")
         (introduction

@@ -17,7 +17,7 @@ Guix [[https://guix.gnu.org/manual/devel/en/html_node/Channels.html][channels]] 
 + [[https://codeberg.org/hako/rosenthal.git][rosenthal]]
 + [[https://github.com/fishinthecalculator/sops-guix][sops-guix]]
 
-See [[file:.envrc][.envrc]] for environment setup and targets in [[file:maak.scm][maak.scm]] for usage.
+See [[file:.envrc][.envrc]] for environment setup and commands in [[file:blueprint.scm][blueprint.scm]] for usage.
 
 ** Systems
 *** [[file:config/dorphine.org][dorphine]] (x86_64-linux, UEFI, ZFS, NVIDIA) | [[file:files/deploy/dorphine.scm][deploy]]

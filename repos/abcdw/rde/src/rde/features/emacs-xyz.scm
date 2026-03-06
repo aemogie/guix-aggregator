@@ -284,6 +284,7 @@ Almost all visual elements are disabled.")))
 (define* (feature-emacs-modus-themes
           #:key
           (emacs-modus-themes emacs-modus-themes)
+          (emacs-ef-themes emacs-ef-themes)
           (extra-after-enable-theme-hooks '())
           (dark? #f)
           (deuteranopia? #t)
@@ -296,6 +297,7 @@ which helps people with color blindness.  If DEUTERANOPIA-RED-BLUE-DIFFS?  is
 set, red/blue colors will be used instead.  If HEADINGS-SCALING? is set,
 different level headings will have different size."
   (ensure-pred file-like? emacs-modus-themes)
+  (ensure-pred file-like? emacs-ef-themes)
   (ensure-pred list? extra-after-enable-theme-hooks)
   (ensure-pred boolean? dark?)
   (ensure-pred boolean? deuteranopia?)
@@ -461,12 +463,20 @@ different level headings will have different size."
                                                       (6 . (1.0))
                                                       (7 . (0.9))
                                                       (8 . (0.9))))))
-                '()))
+                '())
+
+          ;; A small hack to defer execution of
+          ;; `modus-themes-include-derivatives-mode' and avoid recursive
+          ;; infinite loading of modus-themes.
+          (run-at-time 0 nil (lambda ()
+                               (require 'ef-themes)
+                               (modus-themes-include-derivatives-mode))))
+
         (if after-init-time
             (load-theme ',theme t (not (display-graphic-p)))
             (add-hook 'after-init-hook
                       (lambda () (load-theme ',theme t)))))
-      #:elisp-packages (list emacs-modus-themes)
+      #:elisp-packages (list emacs-modus-themes emacs-ef-themes)
       #:summary "Modus Themes extensions"
       #:commentary "Customizations to Modus Themes, the elegant,
 highly legible Emacs themes.\
@@ -3391,6 +3401,7 @@ language for GNU Emacs."
           (emacs-magit-todos emacs-magit-todos)
           (emacs-git-timemachine emacs-git-timemachine)
           (emacs-git-link emacs-git-link)
+          (emacs-git-email emacs-git-email-sans-mu4e)
           (emacs-git-gutter-fringe emacs-git-gutter-fringe)
           (emacs-git-gutter-transient emacs-git-gutter-transient))
   "Configure git-related utilities for GNU Emacs, including magit,
@@ -3401,6 +3412,7 @@ git-link, git-timemachine."
   (ensure-pred file-like? emacs-magit-todos)
   (ensure-pred file-like? emacs-git-timemachine)
   (ensure-pred file-like? emacs-git-link)
+  (ensure-pred file-like? emacs-git-email)
   (ensure-pred file-like? emacs-git-gutter-fringe)
   (ensure-pred file-like? emacs-git-gutter-transient)
 
@@ -3467,6 +3479,8 @@ git-link, git-timemachine."
          (defvar rde-projects-directory ,(or project-directory 'nil)
            "Directory where project repositories are stored.")
 
+         (git-email-magit-setup)
+
          (autoload 'git-link--parse-remote "git-link")
          (defun rde-get-local-repo-path-from-url (url)
            "Get directory from repository url and suggest it to
@@ -3519,6 +3533,7 @@ Almost all other operations are covered by magit."
       #:keywords '(convenience faces)
       #:elisp-packages (list emacs-magit emacs-magit-todos
                              emacs-git-link emacs-git-timemachine
+                             emacs-git-email
                              emacs-git-gutter-fringe
                              emacs-git-gutter-transient))))
 
@@ -3970,9 +3985,9 @@ built-in help that provides much more contextual information."
               '())
         (add-hook 'helpful-mode-hook 'visual-line-mode)
         (with-eval-after-load 'helpful
-          (define-key helpful-mode-map "q" 'kill-this-buffer))
+          (define-key helpful-mode-map "q" 'kill-current-buffer))
         (with-eval-after-load 'help-mode
-          (define-key help-mode-map "q" 'kill-this-buffer)
+          (define-key help-mode-map "q" 'kill-current-buffer)
           (setq help-window-select t)))
       #:elisp-packages (list emacs-helpful))))
 
@@ -4022,7 +4037,7 @@ built-in help that provides much more contextual information."
                 (add-hook 'Info-mode-hook 'rde-info-set-custom-faces))
               '())
         (with-eval-after-load 'info
-          (define-key Info-mode-map "q" 'kill-this-buffer)
+          (define-key Info-mode-map "q" 'kill-current-buffer)
           (setq Info-use-header-line nil)
           (require 'info+)
           (add-hook 'Info-mode-hook 'visual-line-mode)
@@ -4479,7 +4494,7 @@ Indentation and refile configurations, visual adjustment."
           :group 'rde)
 
         (defface rde-org-agenda-has-body
-          '((t :inherit menu))
+          '((t :inherit message-separator))
           "Face for agenda items that have body content."
           :group 'rde-org-agenda)
 
@@ -5648,7 +5663,7 @@ with a floating-point value between 0 and 1."
           (setq ebdb-completion-display-record nil)
           (setq ebdb-complete-mail-allow-cycling nil)
           (setq ebdb-save-on-exit t)
-          (define-key ebdb-mode-map "q" 'kill-this-buffer)))
+          (define-key ebdb-mode-map "q" 'kill-current-buffer)))
       #:elisp-packages (list emacs-ebdb))))
 
   (feature
