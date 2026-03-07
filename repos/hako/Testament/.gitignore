@@ -2,3 +2,4 @@
 /pre-inst-env
 /files/tangled/
 /.blue-store/
+/.nrepl-port

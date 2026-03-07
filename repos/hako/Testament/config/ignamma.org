@@ -225,7 +225,7 @@
 #+begin_src scheme :noweb-ref service
   (service qemu-binfmt-service-type
     (qemu-binfmt-configuration
-      (platforms (lookup-qemu-platforms "aarch64"))))
+      (platforms (lookup-qemu-platforms "aarch64" "arm"))))
 #+end_src
 
 ** Continuous Integration
@@ -236,7 +236,7 @@ Open TCP port 5558 and connect to server IPv4 address.
     (cuirass-remote-worker-configuration
       (publish-port 5558)
       (workers 4)
-      (systems '("x86_64-linux" "i686-linux" "aarch64-linux"))
+      (systems '("x86_64-linux" "aarch64-linux" "i686-linux" "armhf-linux"))
       (server "100.97.195.93:5555")       ;nuporta (Tailscale)
       (substitute-urls
        '("https://ci.guix.moe"

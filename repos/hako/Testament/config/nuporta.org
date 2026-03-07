@@ -443,6 +443,29 @@ Remember to open TCP port 5555 and 5556.
 #+end_src
 
 *** cuirass specifications
+**** asahi
+#+begin_src scheme :noweb-ref cuirass-spec
+  (specification
+    (name "asahi")
+    (build '(channels asahi))
+    (channels
+     (list (channel
+             (inherit %default-guix-channel)
+             (url "https://git.urspace.moe/mirror/guix.git"))
+           (channel
+             (name 'asahi)
+             (url "https://codeberg.org/asahi-guix/channel")
+             (branch "main")
+             (introduction
+              (make-channel-introduction
+               "3eeb493b037bea44f225c4314c5556aa25aff36c"
+               (openpgp-fingerprint
+                "D226 A339 D8DF 4481 5DDE  0CA0 3DDA 5252 7D2A C199"))))))
+    (priority 5)
+    (systems '("aarch64-linux"))
+    (properties '((forge-type . forgejo))))
+#+end_src
+
 **** atomized
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification

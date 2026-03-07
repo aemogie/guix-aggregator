@@ -29,7 +29,7 @@
 (current-guix-package
  (package
    (inherit (guix-for-channels
-             (channel-list '((channel-file . "channels.lock")))))
+             (channel-list '((channel-file . "config/live/channels.lock")))))
    (propagated-inputs (package-propagated-inputs guix))))
 
 

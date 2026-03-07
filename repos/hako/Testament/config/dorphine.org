@@ -39,22 +39,23 @@
               (uuid "7de33202-1010-4297-ba9c-8e7fa419f891")))))
     (users (cons* <<user>> %base-user-accounts))
     (packages
-     (replace-mesa
-      (append (specifications->packages
-               '(;; Desktop applications.
-                 "digikam"
-                 "gimp"
-                 "imv"
-                 "kdenlive"
-                 "libreoffice"
-                 "obs-nvidia"
-                 "telegram-desktop"
-                 "zathura"
-                 "zathura-pdf-poppler"
+     (cons* wezterm          ;XXX: Performance issue on NVIDIA proprietary driver.
+            (replace-mesa
+             (append (specifications->packages
+                      '(;; Desktop applications.
+                        "digikam"
+                        "gimp"
+                        "imv"
+                        "kdenlive"
+                        "libreoffice"
+                        "obs-nvidia"
+                        "telegram-desktop"
+                        "zathura"
+                        "zathura-pdf-poppler"
 
-                 <<package>>))
-              %testament-cli-packages
-              %base-packages)))
+                        <<package>>))
+                     %testament-cli-packages
+                     %base-packages))))
     (services
      (replace-mesa
       (cons* <<service>>
@@ -538,7 +539,7 @@ Open TCP port 5558 and connect to server IPv4 address.
       (config
        (computed-substitution-with-inputs "niri.kdl"
          (local-file (testament-plain "dorphine/niri.kdl"))
-         (list foot xwayland-satellite)))))
+         (list xwayland-satellite)))))
 #+end_src
 
 #+begin_src kdl :tangle ../files/tangled/dorphine/niri.kdl
@@ -647,7 +648,7 @@ Open TCP port 5558 and connect to server IPv4 address.
       Mod+Shift+E     { spawn "herd" "restart" "noctalia-shell"; }
 
       Mod+E       { spawn "emacsclient" "--create-frame" "--no-wait"; }
-      Mod+Return  { spawn "$$bin/foot$$"; }
+      Mod+Return  { spawn "wezterm"; }
 
       Mod+Left                       { focus-column-left; }
       Mod+Down                       { focus-window-down; }
@@ -1176,50 +1177,18 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
 #+end_src
 
 #+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/xfce4/helpers.rc
-  TerminalEmulator=foot
+  TerminalEmulator=open-wezterm-here
 #+end_src
 
-*** foot
-#+begin_src scheme :noweb-ref package
-  "foot"
-#+end_src
+*** wezterm
+#+begin_src lua :tangle ../files/tangled/dorphine/dotfiles/.config/wezterm/wezterm.lua
+  local wezterm = require 'wezterm'
+  local config = wezterm.config_builder()
 
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'foot-config home-xdg-configuration-files-service-type
-    `(("foot/foot.ini"
-       ,(ini-file "foot.ini"
-          #~'((#f
-               ("font" . "monospace:size=12"))
-              ("colors"
-               ("alpha" . 0.97)
-               ;; https://github.com/catppuccin/foot/blob/main/themes/catppuccin-mocha.ini
-               ("cursor" . "11111b f5e0dc")
-               ("foreground" . "cdd6f4")
-               ("background" . "1e1e2e")
-               ("regular0" . "45475a")
-               ("regular1" . "f38ba8")
-               ("regular2" . "a6e3a1")
-               ("regular3" . "f9e2af")
-               ("regular4" . "89b4fa")
-               ("regular5" . "f5c2e7")
-               ("regular6" . "94e2d5")
-               ("regular7" . "bac2de")
-               ("bright0" . "585b70")
-               ("bright1" . "f38ba8")
-               ("bright2" . "a6e3a1")
-               ("bright3" . "f9e2af")
-               ("bright4" . "89b4fa")
-               ("bright5" . "f5c2e7")
-               ("bright6" . "94e2d5")
-               ("bright7" . "a6adc8")
-               ("16" . "fab387")
-               ("17" . "f5e0dc")
-               ("selection-foreground" . "cdd6f4")
-               ("selection-background" . "414356")
-               ("search-box-no-match" . "11111b f38ba8")
-               ("search-box-match" . "cdd6f4 313244")
-               ("jump-labels" . "11111b fab387")
-               ("urls" . "89b4fa")))))))
+  config.window_background_opacity = 0.97
+  config.color_scheme = 'Catppuccin Mocha'
+
+  return config
 #+end_src
 
 *** wget

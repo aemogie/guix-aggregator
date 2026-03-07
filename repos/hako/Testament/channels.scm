@@ -37,4 +37,4 @@
            "8D10 60B9 6BB8 292E 829B  7249 AED4 1CC1 93B7 01E2"))))
       (channel
         (inherit %default-guix-channel)
-        (url "https://mirror.nju.edu.cn/git/guix.git")))
+        (url "https://mirrors.hust.edu.cn/git/guix.git")))

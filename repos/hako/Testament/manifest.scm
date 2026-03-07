@@ -13,6 +13,8 @@
         '("blue"
           "gnupg"
           "sops"
+          "guile-next"
+          "guile-ares-rs"
           ;; For Guix System installer.
           "guile-newt"
           "guile-parted"

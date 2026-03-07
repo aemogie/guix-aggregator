@@ -68,12 +68,15 @@ shell while using Emacs.
 
 #+begin_src scheme :noweb-ref package
   "emacs-pgtk"
+
   "emacs-gcmh"
   "emacs-no-littering"
+
   "emacs-beancount"
   "emacs-caddyfile-mode"
   "emacs-edit-indirect"
   "emacs-fish-mode"
+  "emacs-guix"
   "emacs-json-mode"
   "emacs-kdl-mode"
   "emacs-markdown-mode"
@@ -342,6 +345,52 @@ Theming
     (after-init . electric-pair-mode))
 #+end_src
 
+*** emacs-arei
+#+begin_src scheme :noweb-ref package
+  "emacs-arei-dolly"
+#+end_src
+
+See also =ares= command in blueprint.scm.  Run ~blue ares~ to start the server.
+
+To start the server in another project, start a shell in its root directory and
+run the following command:
+
+#+begin_example
+  echo "(begin (use-modules (ares server) (guix gexp)) (run-nrepl-server))" |
+      guix shell guile-next guile-ares-rs -- \
+          guix repl -t machine
+#+end_example
+
+In Emacs, Use ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to
+connect to the server.
+
+Arei's builtin xref backend provides =xref-buffer-location= but Citre expects
+=xref-file-location=.  Define a custom xref backend for Citre:
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package arei
+    :after (xref)
+    :custom
+    ;; Prevent geiser from interfering with completion.
+    (geiser-mode-auto-p nil)
+    :config
+    (defun hako/arei--xref-backend () 'hako/arei)
+    (defun hako/arei-xref--make-xref-loc (identifier)
+      (when-let* ((info (arei-xref--request-lookup identifier))
+                  (file (arei-nrepl-dict-get info "file"))
+                  (line (arei-nrepl-dict-get info "line"))
+                  (column (arei-nrepl-dict-get info "column")))
+        (xref-make-file-location file line column)))
+    (cl-defmethod xref-backend-identifier-at-point ((_backend (eql hako/arei)))
+      (thing-at-point 'symbol t))
+    (cl-defmethod xref-backend-definitions ((_backend (eql hako/arei)) identifier)
+      (when (arei-connected-p)
+        (when-let* ((loc (hako/arei-xref--make-xref-loc identifier)))
+          (list (xref-make identifier loc)))))
+    :hook
+    (after-init . global-arei-mode))
+#+end_src
+
 *** emacs-citre
 #+begin_src scheme :noweb-ref package
   "emacs-citre"
@@ -362,6 +411,10 @@ Theming
   (use-package citre-xref-adapter
     :after (citre)
     :config
+    (defvar citre-arei-backend
+      (citre-xref-backend-to-citre-backend
+       'hako/arei
+       (lambda () (derived-mode-p 'scheme-mode))))
     (defvar citre-dumb-jump-backend
       (citre-xref-backend-to-citre-backend
        'dumb-jump
@@ -370,13 +423,14 @@ Theming
       (citre-xref-backend-to-citre-backend
        'elisp
        (lambda () (derived-mode-p 'scheme-mode))))
+    (citre-register-backend 'arei citre-arei-backend)
     (citre-register-backend 'dumb-jump citre-dumb-jump-backend)
     (citre-register-backend 'elisp citre-elisp-backend))
 
   (use-package citre-backend-interface
     :custom
     (citre-find-definition-backends
-     '(eglot elisp tags dumb-jump))
+     '(eglot arei elisp tags dumb-jump))
     (citre-find-reference-backends
      '(eglot elisp dumb-jump)))
 
@@ -439,64 +493,6 @@ Check syntax on the fly.
     (after-init . global-flycheck-mode))
 #+end_src
 
-*** emacs-flycheck-guile
-#+begin_src scheme :noweb-ref package
-  "emacs-flycheck-guile"
-#+end_src
-
-#+begin_src emacs-lisp :noweb-ref emacs-init
-  (use-package flycheck-guile
-    :after (flycheck geiser-guile))
-#+end_src
-
-*** emacs-geiser
-#+begin_src scheme :noweb-ref package
-  "emacs-geiser"
-#+end_src
-
-#+begin_src emacs-lisp :noweb-ref emacs-init
-  (use-package geiser
-    :custom
-    (geiser-autodoc-identifier-format "%s → %s")
-    (geiser-repl-query-on-kill-p nil))
-
-  (use-package geiser-mode
-    :custom
-    (geiser-mode-smart-tab-p t)
-    (geiser-mode-start-repl-p t)
-    :bind
-    (:map geiser-mode-map
-          ("M-." . nil)
-          ("M-," . nil)))
-#+end_src
-
-*** emacs-geiser-guile
-#+begin_src scheme :noweb-ref package
-  "emacs-geiser-guile"
-#+end_src
-
-#+begin_src emacs-lisp :noweb-ref emacs-init
-  (use-package geiser-guile
-    :after (geiser)
-    :custom
-    (geiser-default-implementation 'guile)
-    (geiser-active-implementation '(guile))
-    :config
-    ;; TODO: Make `flycheck-guile' support `guix repl'.
-    (dolist (path
-             (mapcar
-              #'expand-file-name
-              '("~/.config/guix/current/lib/guile/3.0/site-ccache"
-                "~/.config/guix/current/share/guile/site/3.0"
-                "~/.guix-profile/lib/guile/3.0/site-ccache"
-                "~/.guix-profile/share/guile/site/3.0"
-                "~/.guix-home/profile/lib/guile/3.0/site-ccache"
-                "~/.guix-home/profile/share/guile/site/3.0"
-                "/run/current-system/profile/lib/guile/3.0/site-ccache"
-                "/run/current-system/profile/share/guile/site/3.0")))
-      (add-to-list 'geiser-guile-load-path path t)))
-#+end_src
-
 *** emacs-macrostep
 #+begin_src scheme :noweb-ref package
   "emacs-macrostep"
@@ -506,23 +502,6 @@ Check syntax on the fly.
   (use-package macrostep
     :bind
     ("C-c e" . macrostep-expand))
-#+end_src
-
-*** emacs-macrostep-geiser
-#+begin_src scheme :noweb-ref package
-  "emacs-macrostep-geiser"
-#+end_src
-
-#+begin_src emacs-lisp :noweb-ref emacs-init
-  (use-package macrostep-geiser
-    :after (geiser-mode)
-    :hook
-    (geiser-mode . macrostep-geiser-setup))
-
-  (use-package macrostep-geiser
-    :after (geiser-repl)
-    :hook
-    (geiser-repl-mode . macrostep-geiser-setup))
 #+end_src
 
 *** emacs org
