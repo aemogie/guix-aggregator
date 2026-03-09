@@ -8,13 +8,14 @@
             (format #t "sending contents of ~a/~a into ~a/~a~%"
                     source-directory dir
                     target-directory dir)
-            (system* "rsync" "-Phruav"
+            (system* "rsync" "-Phuav"
                      "--exclude=guix-sandbox-home"
                      "--exclude=movies"
                      "--exclude=shows"
                      "--exclude=jellyfin"
                      "--exclude=radarr"
                      "--exclude=sonarr"
+                     "--exclude=Trash"
                      (format #f "~a/~a/" source-directory dir)
                      (format #f "~a/~a/" target-directory dir)))
           '("data"
