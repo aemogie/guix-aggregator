@@ -180,15 +180,16 @@
 (define-command (ares-command arguments)
   ((invoke "ares")
    (category 'dispatch))
-  ($ `("guile" "-c"
-       ,(call-with-output-string
-          (cut write
-               '(begin
-                  (use-modules (ares server)
-                               ;; Load reader extensions.
-                               (guix gexp))
-                  (run-nrepl-server))
-               <>)))))
+  ($guix `("shell" "guile" "guile-ares-rs" "--"
+           "guile" "-c"
+           ,(call-with-output-string
+              (cut write
+                   '(begin
+                      (use-modules (ares server)
+                                   ;; Load reader extensions.
+                                   (guix gexp))
+                      (run-nrepl-server))
+                   <>)))))
 
 (define-command (build-os-command arguments)
   ((invoke "build-os")

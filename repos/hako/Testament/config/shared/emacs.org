@@ -357,8 +357,7 @@ run the following command:
 
 #+begin_example
   echo "(begin (use-modules (ares server) (guix gexp)) (run-nrepl-server))" |
-      guix shell guile-next guile-ares-rs -- \
-          guix repl -t machine
+      guix shell guile guile-ares-rs -- guix repl -t machine
 #+end_example
 
 In Emacs, Use ~arei-connect~ (=C-c C-a=) or ~sesman-start~ (=C-c C-s C-s=) to

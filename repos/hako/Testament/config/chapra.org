@@ -18,43 +18,26 @@
     ;; Required for the current implementation of the "copy out-of-tree modules
     ;; to Linux initrd" patch.
     (kernel-loadable-modules (list `(,zfs "module")))
-    (kernel-arguments
-     (cons* "kernel.sysrq=0"
-            "memtest=3"
-            "zswap.enabled=1"
-            "zswap.max_pool_percent=90"
-            %default-kernel-arguments))
+    (kernel-arguments (cons* <<kernel-argument>> %default-kernel-arguments))
     (file-systems (append <<file-systems>> %base-file-systems))
-    (swap-devices
-     (list (swap-space
-             (target
-              (uuid "b955a6b1-9dd9-4e91-b9d9-b4e15473396c")))))
+    (swap-devices (append <<swap-devices>>))
     (users (cons* <<user>> %base-user-accounts))
     (packages (append %testament-cli-packages %base-packages))
     (services
      (cons* <<service>>
-
-            (simple-service 'extend-guix guix-service-type
-              (guix-extension
-                (authorized-keys %guix-keys)
-                (substitute-urls '("https://cache-cdn.guix.moe"))))
-
-            (simple-service 'guix-gc shepherd-root-service-type
-              (list (shepherd-timer '(guix-gc)
-                      #~(calendar-event #:days-of-week '(sunday) #:hours '(12) #:minutes '(0))
-                      #~("/run/current-system/profile/bin/guix" "gc" "--delete-generations=1m")
-                      #:requirement '(user-processes guix-daemon))))
-
-            (modify-services %base-services
-              (guix-service-type
-               config => (guix-configuration
-                           (inherit config)
-                           (discover? #t))))))
+            (modify-services %base-services <<modify-service>>)))
     (name-service-switch %mdns-host-lookup-nss))
 #+end_src
 
 ** Base
 *** Kernel
+#+begin_src scheme :noweb-ref kernel-argument
+  "kernel.sysrq=0"
+  "memtest=3"
+  "zswap.enabled=1"
+  "zswap.max_pool_percent=90"
+#+end_src
+
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-kernel-module-loader kernel-module-loader-service-type
     '("sch_fq_pie" "tcp_bbr"))
@@ -143,6 +126,33 @@
                          (invoke #$(file-append zfs-auto-snapshot "/sbin/zfs-auto-snapshot")
                                  "--default-exclude" "--skip-scrub" "--keep=31" "--label=daily" "//")))))
             #:requirement '(user-processes))))
+#+end_src
+
+#+begin_src scheme :noweb-ref swap-devices
+  (list (swap-space
+          (target
+           (uuid "b955a6b1-9dd9-4e91-b9d9-b4e15473396c"))))
+#+end_src
+
+*** Guix Daemon
+#+begin_src scheme :noweb-ref modify-service
+  (guix-service-type
+   config => (guix-configuration
+               (inherit config)
+               (discover? #t)))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'extend-guix guix-service-type
+    (guix-extension
+      (authorized-keys %guix-keys)
+      (substitute-urls '("https://cache-cdn.guix.moe"))))
+
+  (simple-service 'guix-gc shepherd-root-service-type
+    (list (shepherd-timer '(guix-gc)
+            #~(calendar-event #:days-of-week '(sunday) #:hours '(12) #:minutes '(0))
+            #~("/run/current-system/profile/bin/guix" "gc" "--delete-generations=1m")
+            #:requirement '(user-processes guix-daemon))))
 #+end_src
 
 *** Users

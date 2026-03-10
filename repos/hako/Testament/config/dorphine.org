@@ -21,22 +21,10 @@
     ;; Required for the current implementation of the "copy out-of-tree modules
     ;; to Linux initrd" patch.
     (kernel-loadable-modules (list `(,zfs "module")))
-    (kernel-arguments
-     (cons* "kernel.sysrq=1"
-            "mem_sleep_default=s2idle"
-            "memtest=3"
-            "modprobe.blacklist=hid_nintendo,nouveau,pcspkr"
-            "nvidia.NVreg_EnableS0ixPowerManagement=1"
-            "nvidia_drm.modeset=1"
-            "zswap.enabled=1"
-            "zswap.max_pool_percent=90"
-            %default-kernel-arguments))
+    (kernel-arguments (cons* <<kernel-argument>> %default-kernel-arguments))
     (initrd microcode-initrd)
     (file-systems (append <<file-systems>> %base-file-systems))
-    (swap-devices
-     (list (swap-space
-             (target
-              (uuid "7de33202-1010-4297-ba9c-8e7fa419f891")))))
+    (swap-devices (append <<swap-devices>>))
     (users (cons* <<user>> %base-user-accounts))
     (packages
      (cons* wezterm          ;XXX: Performance issue on NVIDIA proprietary driver.
@@ -59,51 +47,7 @@
     (services
      (replace-mesa
       (cons* <<service>>
-
-             (service nvidia-service-type
-               (nvidia-configuration
-                 (module nvidia-module-open)))
-
-             (service guix-publish-service-type
-               (guix-publish-configuration
-                 (port 49637)
-                 (host "0.0.0.0")
-                 (advertise? #t)))
-
-             (simple-service 'extend-guix guix-service-type
-               (guix-extension
-                 (authorized-keys %guix-keys)
-                 (substitute-urls '("https://cache-cdn.guix.moe"))))
-
-             (simple-service 'guix-gc shepherd-root-service-type
-               (list (shepherd-timer '(guix-gc)
-                       #~(calendar-event #:days-of-week '(sunday) #:hours '(12) #:minutes '(0))
-                       #~("/run/current-system/profile/bin/guix" "gc" "--delete-generations=1m")
-                       #:requirement '(user-processes guix-daemon))))
-
-             (modify-services %rosenthal-desktop-services/tuigreet
-               (upower-service-type
-                config => (upower-configuration
-                            (inherit config)
-                            (critical-power-action 'power-off)))
-               (elogind-service-type
-                config => (elogind-configuration
-                            (inherit config)
-                            (handle-suspend-key 'ignore)
-                            (handle-hibernate-key 'ignore)
-                            (handle-lid-switch 'ignore)
-                            (handle-lid-switch-external-power 'ignore)))
-               (guix-service-type
-                config => (guix-configuration
-                            (inherit config)
-                            (discover? #t)
-                            (tmpdir "/var/tmp")))
-               (network-manager-service-type
-                config => (network-manager-configuration
-                            (inherit config)
-                            (extra-configuration-files
-                             (list %network-manager-ipv6-privacy
-                                   %network-manager-random-mac-address))))))))
+             (modify-services %rosenthal-desktop-services/gdm <<modify-service>>))))
     (name-service-switch %mdns-host-lookup-nss))
 #+end_src
 
@@ -132,6 +76,13 @@
 
 ** Base
 *** Kernel
+#+begin_src scheme :noweb-ref kernel-argument
+  "kernel.sysrq=1"
+  "memtest=3"
+  "zswap.enabled=1"
+  "zswap.max_pool_percent=90"
+#+end_src
+
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-kernel-module-loader kernel-module-loader-service-type
     '("sch_fq_pie" "tcp_bbr"))
@@ -155,6 +106,18 @@
   DBPATH="/home/hako/.config"
   COLORS=light
   IGNORE=(nvidia nvidia_drm nvidia_modeset nvidia_uvm)
+#+end_src
+
+NVIDIA proprietary driver
+#+begin_src scheme :noweb-ref kernel-argument
+  "mem_sleep_default=s2idle"
+  "modprobe.blacklist=nouveau"
+  "nvidia.NVreg_EnableS0ixPowerManagement=1"
+  "nvidia_drm.modeset=1"
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (service nvidia-service-type)
 #+end_src
 
 *** File Systems
@@ -257,6 +220,40 @@
                          (invoke #$(file-append zfs-auto-snapshot "/sbin/zfs-auto-snapshot")
                                  "--default-exclude" "--skip-scrub" "--keep=31" "--label=daily" "//")))))
             #:requirement '(user-processes))))
+#+end_src
+
+#+begin_src scheme :noweb-ref swap-devices
+  (list (swap-space
+          (target
+           (uuid "7de33202-1010-4297-ba9c-8e7fa419f891"))))
+#+end_src
+
+*** Guix Daemon
+#+begin_src scheme :noweb-ref modify-service
+  (guix-service-type
+   config => (guix-configuration
+               (inherit config)
+               (discover? #t)
+               (tmpdir "/var/tmp")))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'extend-guix guix-service-type
+    (guix-extension
+      (authorized-keys %guix-keys)
+      (substitute-urls '("https://cache-cdn.guix.moe"))))
+
+  (service guix-publish-service-type
+    (guix-publish-configuration
+      (port 49637)
+      (host "0.0.0.0")
+      (advertise? #t)))
+
+  (simple-service 'guix-gc shepherd-root-service-type
+    (list (shepherd-timer '(guix-gc)
+            #~(calendar-event #:days-of-week '(sunday) #:hours '(12) #:minutes '(0))
+            #~("/run/current-system/profile/bin/guix" "gc" "--delete-generations=1m")
+            #:requirement '(user-processes guix-daemon))))
 #+end_src
 
 *** Users
@@ -370,7 +367,26 @@ Generate passwordless ECC key:
                (file %sops-dorphine))))))
 #+end_src
 
+** Power Management
+*** upower
+#+begin_src scheme :noweb-ref modify-service
+  (upower-service-type
+   config => (upower-configuration
+               (inherit config)
+               (critical-power-action 'power-off)))
+#+end_src
+
 ** Networking & SSH
+*** network-manager
+#+begin_src scheme :noweb-ref modify-service
+  (network-manager-service-type
+   config => (network-manager-configuration
+               (inherit config)
+               (extra-configuration-files
+                (list %network-manager-ipv6-privacy
+                      %network-manager-random-mac-address))))
+#+end_src
+
 *** nftables
 #+begin_src scheme :noweb-ref service
   (service nftables-service-type
@@ -403,10 +419,6 @@ Generate passwordless ECC key:
 
           # allow avahi
           udp dport mdns accept
-
-          # allow caddy
-          tcp dport https accept
-          udp dport https accept
 
           # allow cuirass
           tcp dport 5558 accept
@@ -474,13 +486,25 @@ Generate passwordless ECC key:
 #+begin_src scheme :noweb-ref home-service
   (service home-gpg-agent-service-type
     (home-gpg-agent-configuration
-      (pinentry-program (file-append bb-auth "/libexec/pinentry-bb"))
+      (pinentry-program (file-append pinentry-qt "/bin/pinentry-qt"))
       (ssh-support? #t)))
 #+end_src
 
 *** libfido2
 #+begin_src scheme :noweb-ref service
   (udev-rules-service 'u2f libfido2 #:groups '("plugdev"))
+#+end_src
+
+** Session and Seat Management
+*** elogind
+#+begin_src scheme :noweb-ref modify-service
+  (elogind-service-type
+   config => (elogind-configuration
+               (inherit config)
+               (handle-suspend-key 'ignore)
+               (handle-hibernate-key 'ignore)
+               (handle-lid-switch 'ignore)
+               (handle-lid-switch-external-power 'ignore)))
 #+end_src
 
 ** Containers & Virtualization
@@ -523,6 +547,39 @@ Open TCP port 5558 and connect to server IPv4 address.
 #+end_src
 
 ** Graphical Session
+*** gdm
+#+begin_src scheme :noweb-ref modify-service
+  (gdm-service-type
+   config => (gdm-configuration
+               (inherit config)
+               (auto-suspend? #f)))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (set-xorg-configuration
+   (xorg-configuration
+     (modules (cons nvda %default-xorg-modules))
+     (keyboard-layout keyboard-layout))
+   gdm-service-type)
+#+end_src
+
+Disable amdgpu for now.
+
+#+begin_example
+  libmutter-Message: 20:32:02.883: Device '/dev/dri/card1' prefers shadow buffer
+  libmutter-Message: 20:32:02.892: Added device '/dev/dri/card1' (nvidia-drm) using atomic mode setting.
+  libmutter-Message: 20:32:02.938: Device '/dev/dri/card0' prefers shadow buffer
+  libmutter-Message: 20:32:02.939: Added device '/dev/dri/card0' (amdgpu) using atomic mode setting.
+  libmutter-Message: 20:32:02.941: Failed to initialize accelerated iGPU/dGPU framebuffer sharing: Not hardware accelerated
+  libmutter-Message: 20:32:02.941: Created gbm renderer for '/dev/dri/card1'
+  libmutter-Message: 20:32:02.942: Created gbm renderer for '/dev/dri/card0'
+  libmutter-Message: 20:32:02.942: GPU /dev/dri/card0 selected as primary
+#+end_example
+
+#+begin_src scheme :noweb-ref kernel-argument
+  "modprobe.blacklist=amdgpu"
+#+end_src
+
 *** niri
 #+begin_src scheme :noweb-ref package
   "niri"
@@ -617,14 +674,6 @@ Open TCP port 5558 and connect to server IPv4 address.
           natural-scroll
       }
       warp-mouse-to-focus
-  }
-
-  output "eDP-1" {
-      mode "2560x1440@240.002"
-  }
-
-  output "DP-1" {
-      focus-at-startup
   }
 
   binds {
@@ -725,15 +774,13 @@ Autostart Shepherd in environments that support XDG Autostart (e.g. GNOME).
 *** noctalia-shell
 Run ~herd restart noctalia-shell~ after home environment reconfiguration.
 
-Also install the Noctalia shell plugin: <https://github.com/anthonyhab/noctalia-plugins/blob/main/bb-auth/README.md>.
-
 #+begin_src scheme :noweb-ref home-service
   (service home-noctalia-shell-service-type)
 #+end_src
 
-*** bb-auth
+*** polkit-gnome
 #+begin_src scheme :noweb-ref home-service
-  (service home-bb-auth-service-type)
+  (service home-polkit-gnome-service-type)
 #+end_src
 
 *** qogir-icon-theme
@@ -1062,7 +1109,6 @@ Copied from =%default-dotguile=.
   (simple-service 'jellyfin-mpv-shim home-shepherd-service-type
     (list (shepherd-service
             (provision '(jellyfin-mpv-shim))
-            (requirement '(network-online))
             (start
              #~(make-forkexec-constructor
                 '(#$(file-append jellyfin-mpv-shim "/bin/jellyfin-mpv-shim"))))
@@ -1145,17 +1191,23 @@ Copied from =%default-nanorc=.
     `(("GUIX_SANDBOX_HOME" . "/var/lib/Sandbox")))
 #+end_src
 
-#+begin_src scheme :noweb yes :noweb-ref service
+#+begin_src scheme :noweb-ref service
   (udev-rules-service 'steam-devices steam-devices-udev-rules)
-  (udev-rules-service 'controller <<controller-permission-udev-rule>>)
 #+end_src
 
 See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
-#+name: controller-permission-udev-rule
-#+begin_src scheme
-  (udev-rule "60-controller-permission.rules" "\
+
+#+begin_src scheme :noweb-ref scheme
+  (udev-rules-service 'controller
+      (udev-rule "60-controller-permission.rules" "\
   KERNEL==\"event*\", ATTRS{idVendor}==\"045e\", ATTRS{idProduct}==\"028e\", \
-  MODE=\"0660\", GROUP=\"users\"")
+  MODE=\"0660\", GROUP=\"users\""))
+#+end_src
+
+Disable
+
+#+begin_src scheme :noweb-ref kernel-argument
+  "modprobe.blacklist=hid_nintendo"
 #+end_src
 
 *** syncthing
@@ -1173,7 +1225,10 @@ See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
   "thunar-archive-plugin"
   "thunar-media-tags-plugin"
   "thunar-volman"
+  ;; Thumbnails.
+  "ffmpegthumbnailer"
   "tumbler"
+  "webp-pixbuf-loader"
 #+end_src
 
 #+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/xfce4/helpers.rc
@@ -1272,6 +1327,5 @@ Guix packages
   (gnu packages video)
   (gnu packages xorg)
   (nongnu packages nvidia)
-  (rosenthal packages authentication)
   (rosenthal packages password-utils)
 #+end_src

@@ -6,13 +6,10 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 popen)
   #:use-module (ice-9 textual-ports)
-  #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-26)
   ;; Utilities
   #:use-module ((guix diagnostics) #:select (leave))
   #:use-module (guix gexp)
   #:use-module ((guix i18n) #:select (G_))
-  #:use-module (guix modules)
   #:use-module (guix packages)
   #:use-module (guix store)
   #:use-module (rosenthal utils file)
@@ -265,17 +262,14 @@ WARNED."
         "19yc7x8cfdf61i2f14rf85p6rmz27s7py60gj06z3sj8qmyf3f3x")))))
 
 (define linux/dolly
-  (let ((base linux-6.12))
+  (let ((base linux-6.18))
     (customize-linux
      #:name "linux-dolly"
      #:linux base
      #:source
      (origin
        (inherit (package-source base))
-       (patches
-        (map (cut file-append %kernel-patches <>)
-             '("/6.12/arch-patches-sep/0002-arch-Kconfig-Default-to-maximum-amount-of-ASLR-bits.patch"
-               "/6.12/bbr3-patches/0001-tcp-bbr3-initial-import.patch")))))))
+       (patches (list (local-file "../../../Workspace/Repository/linux/kernel-patches/6.18/bbr3-patches/0001-tcp-bbr3-add-BBRv3-congestion-control.patch")))))))
 
 (define manage-cuirass
   (let ((script

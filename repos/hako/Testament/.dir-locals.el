@@ -52,6 +52,7 @@
    (eval . (put 'simple-service 'scheme-indent-function 2))
    (eval . (put 'text-file* 'scheme-indent-function 1))
    (eval . (put 'toml-file 'scheme-indent-function 1))
+   (eval . (put 'udev-rules-service 'scheme-indent-function 2))
    (eval . (put 'yaml-file 'scheme-indent-function 1))
  ;; SOPS
    (eval . (put 'home-sops-service-configuration 'scheme-indent-function 0))

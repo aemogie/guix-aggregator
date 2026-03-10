@@ -19,40 +19,15 @@
                grub-efi-removable-bootloader))
          (targets (list (or bios-boot "/efi")))))
       (kernel linux/dolly)
-      (kernel-arguments
-       (cons* "kernel.sysrq=0"
-              "zswap.enabled=1"
-              "zswap.max_pool_percent=90"
-              %default-kernel-arguments))
-      (initrd-modules
-       (cons* "sd_mod"
-              "virtio_scsi"
-              %base-initrd-modules))
+      (kernel-arguments (cons* <<kernel-argument>> %default-kernel-arguments))
+      (initrd-modules (cons* "sd_mod" %base-initrd-modules))
       (file-systems (append <<file-systems>> %base-file-systems))
-      (swap-devices
-       (list (swap-space
-               (target (file-system-label "swap")))))
+      (swap-devices (append <<swap-devices>>))
       (users (cons* <<user>> %base-user-accounts))
       (packages (append %testament-cli-packages %base-packages))
       (services
        (cons* <<service>>
-
-              (simple-service 'extend-guix guix-service-type
-                (guix-extension
-                  (authorized-keys %guix-keys)
-                  (substitute-urls '("https://cache-cdn.guix.moe"))))
-
-              (simple-service 'guix-gc shepherd-root-service-type
-                (list (shepherd-timer '(guix-gc)
-                        #~(calendar-event #:days-of-week '(sunday) #:hours '(12) #:minutes '(0))
-                        #~("/run/current-system/profile/bin/guix" "gc" "--delete-generations=1m")
-                        #:requirement '(user-processes guix-daemon))))
-
-              (modify-services %base-services
-                (guix-service-type
-                 config => (guix-configuration
-                             (inherit config)
-                             (build-accounts (* 2 workers)))))))
+              (modify-services %base-services <<modify-service>>)))
       (sudoers-file
        (plain-file "sudoers"
          (string-append
@@ -62,6 +37,12 @@
 
 ** Base
 *** Kernel
+#+begin_src scheme :noweb-ref kernel-argument
+  "kernel.sysrq=0"
+  "zswap.enabled=1"
+  "zswap.max_pool_percent=90"
+#+end_src
+
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-kernel-module-loader kernel-module-loader-service-type
     '("sch_fq_pie" "tcp_bbr"))
@@ -84,6 +65,32 @@
               (device (file-system-label "boot"))
               (mount-point "/efi")
               (type "vfat"))))
+#+end_src
+
+#+begin_src scheme :noweb-ref swap-devices
+  (list (swap-space
+          (target (file-system-label "swap"))))
+#+end_src
+
+*** Guix Daemon
+#+begin_src scheme :noweb-ref modify-service
+  (guix-service-type
+   config => (guix-configuration
+               (inherit config)
+               (build-accounts (* 2 workers))))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'extend-guix guix-service-type
+    (guix-extension
+      (authorized-keys %guix-keys)
+      (substitute-urls '("https://cache-cdn.guix.moe"))))
+
+  (simple-service 'guix-gc shepherd-root-service-type
+    (list (shepherd-timer '(guix-gc)
+            #~(calendar-event #:days-of-week '(sunday) #:hours '(12) #:minutes '(0))
+            #~("/run/current-system/profile/bin/guix" "gc" "--delete-generations=1m")
+            #:requirement '(user-processes guix-daemon))))
 #+end_src
 
 *** Users
