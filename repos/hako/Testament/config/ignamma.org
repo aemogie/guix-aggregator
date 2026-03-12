@@ -51,7 +51,8 @@
           (device (file-system-label "boot"))
           (mount-point "/efi")
           (type "vfat")
-          (create-mount-point? #t))
+          (flags '(no-exec no-suid no-dev))
+          (options "fmask=0177,dmask=0077"))
         (file-system
           (device (file-system-label "root"))
           (mount-point "/")

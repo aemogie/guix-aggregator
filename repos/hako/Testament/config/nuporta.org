@@ -85,13 +85,15 @@
 
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
+          (device (file-system-label "boot"))
+          (mount-point "/efi")
+          (type "vfat")
+          (flags '(no-exec no-suid no-dev))
+          (options "fmask=0177,dmask=0077"))
+        (file-system
           (device "zfs:Lycoris/Root")
           (mount-point "/")
           (type "zfs"))
-        (file-system
-          (device (file-system-label "boot"))
-          (mount-point "/efi")
-          (type "vfat"))
         (file-system
           (device "zfs:Lycoris/Config")
           (mount-point "/etc")

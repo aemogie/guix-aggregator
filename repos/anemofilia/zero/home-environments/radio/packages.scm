@@ -89,13 +89,12 @@
   #|B|# #:use-module (saayix packages binaries)
   #|W|# #:use-module (saayix packages wm)
 
-  #:export (blogging
-            desktop
+  #:export (desktop
             development
             documentation
             downloads
             emacs
-            file-managing
+            file-management
             games
             haskell
             image
@@ -110,9 +109,6 @@
             typst
             video
             web))
-
-(define blogging
-  (list #|guile-xyz|# haunt))
 
 (define desktop
   (list #|admin      |# fastfetch-minimal
@@ -156,7 +152,7 @@
         #|curl      |# curl
         #|video     |# yt-dlp-minimal))
 
-(define file-managing
+(define file-management
   (list #|disk         |# lf
         #|file         |# file
         #|image-viewers|# chafa
@@ -231,7 +227,7 @@
                 texlive-collection-mathscience))
 
 (define typst
-  (list #|rust-apps|# (@ (gnu packages rust-apps) typst) typstyle
+  (list #|rust-apps|# rheo (@ (gnu packages rust-apps) typst) typstyle
         #|tree-sitter|# tree-sitter-typst))
 
 (define video

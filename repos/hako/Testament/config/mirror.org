@@ -65,7 +65,9 @@
       (list (file-system
               (device (file-system-label "boot"))
               (mount-point "/efi")
-              (type "vfat"))))
+              (type "vfat")
+              (flags '(no-exec no-suid no-dev))
+              (options "fmask=0177,dmask=0077"))))
 #+end_src
 
 #+begin_src scheme :noweb-ref swap-devices

@@ -5,38 +5,38 @@ $focused-bg: #2B2B2B;
 $focused-fg: #8581E0;
 
 box {
-  border-radius: 0pt;
-  padding-top: 1pt;
-  padding-bottom: 1pt;
-  padding-right: 4pt;
-  padding-left: 4pt;
-  min-height: 0pt;
+  border-radius: 0em;
+  padding-top: 1em;
+  padding-bottom: 1em;
+  padding-right: 3em;
+  padding-left: 3em;
+  min-height: 0em;
 }
 
 .focused-occupied {
-  min-width: 12pt;
-  border-top: 2pt solid $focused-fg;
+  min-width: 1.2em;
+  border-top: 0.2em solid $focused-fg;
   background: $focused-bg;
   color: $focused-fg;
 }
 
 .focused-empty {
-  min-width: 12pt;
-  border-top: 2pt solid transparent;
+  min-width: 1.2em;
+  border-top: 0.2em solid transparent;
   background: $focused-bg;
   color: $focused-fg;
 }
 
 .unfocused-occupied {
-  min-width: 12pt;
-  border-top: 2pt solid $normal-fg;
+  min-width: 1.2em;
+  border-top: 0.2em solid $normal-fg;
   background: transparent;
 }
 
 .unfocused-empty {
-  min-width: 12pt;
-  border-top: 2pt solid transparent;
-  border-radius: 0pt;
+  min-width: 1.2em;
+  border-top: 0.2em solid transparent;
+  border-radius: 0em;
 }
 
 .tags {
@@ -46,72 +46,72 @@ box {
 .focused-toplevel {
   color: $focused-fg;
   background: $normal-bg;
-  margin-left: 10pt;
+  margin-left: 1em;
 }
 
 .separator-1 {
-  font-size: 0pt;
-  border-top: 8pt solid $normal-bg;
-  border-bottom: 8pt solid $normal-bg;
-  border-right: 8pt solid $focused-bg;
+  font-size: 0px;
+  border-top: 10px solid $normal-bg;
+  border-bottom: 10px solid $normal-bg;
+  border-right: 10px solid $focused-bg;
 }
 
 .separator-2 {
-  font-size: 0pt;
-  border-top: 8pt solid $focused-bg;
-  border-bottom: 8pt solid $focused-bg;
-  border-right: 8pt solid $normal-bg;
+  font-size: 0px;
+  border-top: 10px solid $focused-bg;
+  border-bottom: 10px solid $focused-bg;
+  border-right: 10px solid $normal-bg;
 }
 
 .net {
   background: $focused-bg;
-  border-right: 5pt solid $focused-bg;
+  border-right: 0.75em solid $focused-bg;
 }
 
 .memory {
   background: $normal-bg;
-  border-right: 5pt solid $normal-bg;
+  border-right: 0.75em solid $normal-bg;
 }
 
 .cpu {
   background: $focused-bg;
-  border-right: 5pt solid $focused-bg;
+  border-right: 0.75em solid $focused-bg;
 }
 
 .temperature {
   background: $normal-bg;
-  border-right: 5pt solid $normal-bg;
+  border-right: 0.75em solid $normal-bg;
 }
 
 .volume {
   background: $focused-bg;
-  border-right: 5pt solid $focused-bg;
+  border-right: 0.75em solid $focused-bg;
 }
 
 .battery {
   background: $normal-bg;
-  border-right: 5pt solid $normal-bg;
+  border-right: 0.75em solid $normal-bg;
 }
 
 .time {
   background: $focused-bg;
-  border-right: 5pt solid $focused-bg;
+  border-right: 0.75em solid $focused-bg;
 }
 
 .layout {
   background: $normal-bg;
-  border-right: 5pt solid $normal-bg;
+  border-right: 0.75em solid $normal-bg;
 }
 
 .bar {
   background: $normal-bg;
   color: $normal-fg;
   font-family: mono;
-  font-size: 10.5pt;
+  font-size: 3.5mm;
 }
 
 calendar {
-  font-size: 12pt;
+  font-size: 3mm;
   background-color: $normal-bg;
   color: $normal-fg;
 }
@@ -123,7 +123,7 @@ calendar:selected {
 }
 
 calendar.header {
-  font-size: 2pt;
+  font-size: 0.5mm;
   font-weight: bold;
 }
 
@@ -134,8 +134,8 @@ calendar.button {
 calendar.highlight {
   color: $focused-fg;
   font-weight: bold;
-  padding-left: 3pt;
-  padding-right: 3pt;
+  padding-left: 0.75mm;
+  padding-right: 0.75mm;
 }
 
 calendar:indeterminate {

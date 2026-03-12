@@ -64,9 +64,8 @@
 (define radio
   (home-environment
     (packages
-      (append #|B|# packages:blogging
-              #|D|# packages:desktop packages:development packages:downloads
-              #|F|# packages:file-managing
+      (append #|D|# packages:desktop packages:development packages:downloads
+              #|F|# packages:file-management
               #|I|# packages:image
               #|M|# packages:messaging packages:music
               #|P|# packages:password

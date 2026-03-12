@@ -43,11 +43,13 @@
 
                         <<package>>))
                      %testament-cli-packages
-                     %base-packages))))
+                     %base-packages)
+             #:driver nvdb)))
     (services
      (replace-mesa
       (cons* <<service>>
-             (modify-services %rosenthal-desktop-services/gdm <<modify-service>>))))
+             (modify-services %rosenthal-desktop-services/gdm <<modify-service>>))
+      #:driver nvdb))
     (name-service-switch %mdns-host-lookup-nss))
 #+end_src
 
@@ -85,7 +87,8 @@
 
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-kernel-module-loader kernel-module-loader-service-type
-    '("sch_fq_pie" "tcp_bbr"))
+    '("sch_fq_pie" "tcp_bbr"
+      "ntsync"))
 
   (simple-service 'extend-sysctl sysctl-service-type
     '(("net.core.default_qdisc" . "fq_pie")
@@ -110,14 +113,22 @@
 
 NVIDIA proprietary driver
 #+begin_src scheme :noweb-ref kernel-argument
-  "mem_sleep_default=s2idle"
   "modprobe.blacklist=nouveau"
-  "nvidia.NVreg_EnableS0ixPowerManagement=1"
   "nvidia_drm.modeset=1"
+
+  "nvidia.NVreg_UseKernelSuspendNotifiers=1"
+
+  "mem_sleep_default=s2idle"
+  "nvidia.NVreg_EnableS0ixPowerManagement=1"
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (service nvidia-service-type)
+  (service nvidia-service-type
+    (nvidia-configuration
+      (driver nvdb)
+      (firmware nvidia-firmware-beta)
+      (module nvidia-module-open-beta)
+      (modprobe nvidia-modprobe-beta)))
 #+end_src
 
 *** File Systems
@@ -126,6 +137,8 @@ NVIDIA proprietary driver
           (device (uuid "2574-B3EC" 'fat))
           (mount-point "/efi")
           (type "vfat")
+          (flags '(no-exec no-suid no-dev))
+          (options "fmask=0177,dmask=0077")
           (create-mount-point? #t))
         (file-system
           (device "tmpfs")
@@ -137,7 +150,7 @@ NVIDIA proprietary driver
           (device "tmpfs")
           (mount-point "/var/lock")
           (type "tmpfs")
-          (flags '(no-suid no-dev strict-atime))
+          (flags '(no-suid no-dev))
           (options "mode=1777,nr_inodes=800k,size=20%")
           (create-mount-point? #t)
           (check? #f)))
@@ -495,18 +508,6 @@ Generate passwordless ECC key:
   (udev-rules-service 'u2f libfido2 #:groups '("plugdev"))
 #+end_src
 
-** Session and Seat Management
-*** elogind
-#+begin_src scheme :noweb-ref modify-service
-  (elogind-service-type
-   config => (elogind-configuration
-               (inherit config)
-               (handle-suspend-key 'ignore)
-               (handle-hibernate-key 'ignore)
-               (handle-lid-switch 'ignore)
-               (handle-lid-switch-external-power 'ignore)))
-#+end_src
-
 ** Containers & Virtualization
 *** podman
 #+begin_src scheme :noweb-ref service
@@ -548,17 +549,10 @@ Open TCP port 5558 and connect to server IPv4 address.
 
 ** Graphical Session
 *** gdm
-#+begin_src scheme :noweb-ref modify-service
-  (gdm-service-type
-   config => (gdm-configuration
-               (inherit config)
-               (auto-suspend? #f)))
-#+end_src
-
 #+begin_src scheme :noweb-ref service
   (set-xorg-configuration
    (xorg-configuration
-     (modules (cons nvda %default-xorg-modules))
+     (modules (list nvdb))
      (keyboard-layout keyboard-layout))
    gdm-service-type)
 #+end_src
@@ -745,23 +739,46 @@ Disable amdgpu for now.
   }
 #+end_src
 
-[[https://niri-wm.github.io/niri/Nvidia.html][High VRAM usage fix]]:
-
 #+begin_src scheme :noweb-ref service
-  (simple-service 'niri-nvidia-profile etc-service-type
-    `(("nvidia/nvidia-application-profiles-rc.d/50-limit-free-buffer-pool-in-wayland-compositors.json"
-       ,(json-file "50-limit-free-buffer-pool-in-wayland-compositors.json"
-          #~'(("rules"
+  (simple-service 'nvidia-application-profiles etc-service-type
+    `(;; https://github.com/Frogging-Family/nvidia-all/blob/master/system/limit-vram-usage
+      ("nvidia/nvidia-application-profiles-rc.d/limit-vram-usage.json"
+       ,(json-file "nvidia-application-profile-limit-vram-usage.json"
+          #~`(("profiles"
+                 . #((("name" . "No VidMem Reuse")
+                      ("settings"
+                       . #((("key" . "GLVidHeapReuseRatio")
+                            ("value" . 0)))))))
+              ("rules"
                . #((("pattern"
-                     ("feature" . "procname")
-                     ("matches" . "niri"))
-                    ("profile" . "Limit Free Buffer Pool On Wayland Compositors"))))
-              ("profiles"
-               . #((("name" . "Limit Free Buffer Pool On Wayland Compositors")
-                    ("settings"
-                     . #((("key" . "GLVidHeapReuseRatio")
-                          ("value" . 0))))))))))))
+                     ("op" . "or")
+                     ("sub"
+                      . ,(list->vector
+                          (map (lambda (name)
+                                 `(("feature" . "procname")
+                                   ("matches" . ,name)))
+                               '("librewolf"
+                                 "niri")))))
+                    ("profile" . "No VidMem Reuse")))))))
+      ;; https://github.com/Frogging-Family/nvidia-all/blob/master/system/cuda-no-stable-perf-limit
+      ("nvidia/nvidia-application-profiles-rc.d/cuda-no-stable-perf-limit.json"
+       ,(json-file "nvidia-application-profile-cuda-no-stable-perf-limit.json"
+          #~`(("profiles"
+               . #((("name" . "CudaNoStablePerfLimit")
+                    ("settings" . #("0x166c5e" 0)))))
+              ("rules"
+               . #((("pattern"
+                     ("op" . "or")
+                     ("sub"
+                      . ,(list->vector
+                          (map (lambda (name)
+                                 `(("feature" . "procname")
+                                   ("matches" . ,name)))
+                               '("librewolf"
+                                 "obs")))))
+                    ("profile" . "CudaNoStablePerfLimit")))))))))
 #+end_src
+
 *** shepherd
 Autostart Shepherd in environments that support XDG Autostart (e.g. GNOME).
 #+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/autostart/shepherd.desktop

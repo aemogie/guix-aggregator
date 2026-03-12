@@ -73,13 +73,15 @@
 
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
+          (device (uuid "4E36-D157" 'fat))
+          (mount-point "/efi")
+          (type "vfat")
+          (flags '(no-exec no-suid no-dev))
+          (options "fmask=0177,dmask=0077"))
+        (file-system
           (device "zfs:Ocimeae/Root")
           (mount-point "/")
           (type "zfs"))
-        (file-system
-          (device (uuid "4E36-D157" 'fat))
-          (mount-point "/efi")
-          (type "vfat"))
         (file-system
           (device "zfs:Ocimeae/Config")
           (mount-point "/etc")

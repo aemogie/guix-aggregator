@@ -142,18 +142,15 @@
   "Select %systems from ARGUMENTS, select all if no argument is provided."
   (if (null? arguments)
       %systems
-      (filter-map
-       (lambda (argument)
-         (find (lambda (system)
-                 (string=? argument (first system)))
-               %systems))
-       arguments)))
+      (filter (lambda (system)
+                (member (first system) arguments))
+              %systems)))
 
 (define (images-from-arguments arguments)
   "Select %images from ARGUMENTS, select all if no argument is provided."
   (if (null? arguments)
       %images
-      (filter (cut member <> %images) arguments)))
+      (filter (cut member <> arguments) %images)))
 
 
 ;;;
