@@ -69,9 +69,9 @@
           (default-font-size 11)
           (font-monospace
            (font
-            (name "Iosevka")
+            (name "Iosevka Term")
             (size default-font-size)
-            (package font-iosevka)))
+            (package font-iosevka-term)))
           (font-serif
            (font
             (name "Iosevka Etoile")
@@ -200,6 +200,7 @@ font-monospace default value, and it will be ignored if
           (setq fontaine-presets
                 '((t
                    :default-family ,(font-name font-monospace)
+                   :default-weight regular
                    :default-height ,default-font-height
                    :fixed-pitch-family ,(font-name font-monospace)
                    :fixed-pitch-height 1.0
@@ -207,7 +208,7 @@ font-monospace default value, and it will be ignored if
                    :variable-pitch-height 1.0
                    :variable-pitch-weight ,(font-weight font-variable))
                   (regular)
-                  (large :default-weight semilight
+                  (large :default-weight regular
                          :default-height ,(+ default-font-height 40)
                          :bold-weight extrabold)
                   ,@extra-fontaine-presets))

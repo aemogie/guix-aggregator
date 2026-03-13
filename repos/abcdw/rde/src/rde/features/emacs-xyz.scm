@@ -81,6 +81,7 @@
             feature-emacs-mct
             feature-emacs-corfu
             feature-emacs-tempel
+            feature-emacs-completion-preview
 
             ;; Focus
             feature-emacs-monocle
@@ -293,8 +294,7 @@ Almost all visual elements are disabled.")))
           (extra-modus-themes-overrides '()))
   "Configure modus-themes, a set of elegant and highly accessible
 themes for Emacs.  DEUTERANOPIA? replaces red/green tones with yellow/blue,
-which helps people with color blindness.  If DEUTERANOPIA-RED-BLUE-DIFFS?  is
-set, red/blue colors will be used instead.  If HEADINGS-SCALING? is set,
+which helps people with color blindness.  If HEADINGS-SCALING? is set,
 different level headings will have different size."
   (ensure-pred file-like? emacs-modus-themes)
   (ensure-pred file-like? emacs-ef-themes)
@@ -303,6 +303,11 @@ different level headings will have different size."
   (ensure-pred boolean? deuteranopia?)
   (ensure-pred boolean? headings-scaling?)
   (ensure-pred elisp-config? extra-modus-themes-overrides)
+
+  (when deuteranopia-red-blue-diffs?
+    (warning
+     (G_ "'~a' in feature-emacs-modus-themes is deprecated and ignored~%")
+     'deuteranopia-red-blue-diffs?))
 
   (define emacs-f-name 'modus-themes)
   (define f-name (symbol-append 'emacs- emacs-f-name))
@@ -418,37 +423,7 @@ different level headings will have different size."
                   (bg-region bg-ochre)
                   (fg-region unspecified)
                   ,@extra-modus-themes-overrides))
-          ,@(if deuteranopia-red-blue-diffs?
-                `((setq modus-operandi-deuteranopia-palette-overrides
-                        '((bg-changed         "#ffdfa9")
-                          (bg-changed-faint   "#ffefbf")
-                          (bg-changed-refine  "#fac090")
-                          (bg-changed-fringe  "#d7c20a")
-                          (fg-changed         "#553d00")
-                          (fg-changed-intense "#655000")
 
-                          (bg-removed         "#ffd8d5")
-                          (bg-removed-faint   "#ffe9e9")
-                          (bg-removed-refine  "#f3b5af")
-                          (bg-removed-fringe  "#d84a4f")
-                          (fg-removed         "#8f1313")
-                          (fg-removed-intense "#aa2222")))
-
-                  (setq modus-vivendi-deuteranopia-palette-overrides
-                        '((bg-changed         "#363300")
-                          (bg-changed-faint   "#2a1f00")
-                          (bg-changed-refine  "#4a4a00")
-                          (bg-changed-fringe  "#8a7a00")
-                          (fg-changed         "#efef80")
-                          (fg-changed-intense "#c0b05f")
-
-                          (bg-removed         "#4f1119")
-                          (bg-removed-faint   "#380a0f")
-                          (bg-removed-refine  "#781a1f")
-                          (bg-removed-fringe  "#b81a1f")
-                          (fg-removed         "#ffbfbf")
-                          (fg-removed-intense "#ff9095"))))
-                '())
           (setq modus-themes-to-toggle '(,light-theme ,dark-theme))
           (setq modus-themes-italic-constructs t)
           (setq modus-themes-bold-constructs t)
@@ -721,7 +696,13 @@ utilizing reverse-im package."
          (add-hook 'post-command-hook
                    '(lambda ()
                       (set-cursor-color
-                       (if current-input-method "DarkOrange1" "black"))))
+                       (if current-input-method
+                           (if (fboundp 'modus-themes-get-color-value)
+                               (modus-themes-get-color-value 'accent-0)
+                               "DarkOrange1")
+                         (if (fboundp 'modus-themes-get-color-value)
+                             (modus-themes-get-color-value 'cursor)
+                             "black")))))
 
          ,@(map (lambda (x) `(require ',(strip-emacs-name x)))
                 input-method-packages)
@@ -2289,6 +2270,87 @@ Annotations for completion candidates using marginalia."
              (emacs-mini-frame? . ,mini-frame?)))
    (home-services-getter get-home-services)))
 
+(define* (feature-emacs-completion-preview
+          #:key
+          (minimum-symbol-length 2))
+  "Enable completion-preview-mode, a built-in Emacs 30+ feature that
+shows inline completion suggestions as you type.  The keybindings should be
+intuitive, just use the same motion actions like <forward-sentence> to
+complete the candidate appeared in preview overlay.  There is an option to go
+through multiple candidates, either one by one (with <backward-paragraph> and
+<forward-paragraph>) or with minibuffer completion interface (just tap C-M-i
+or call `completion-at-point')."
+
+  (define emacs-f-name 'completion-preview)
+  (define f-name (symbol-append 'emacs- emacs-f-name))
+
+  (define (get-home-services config)
+    (list
+     (rde-elisp-configuration-service
+      emacs-f-name
+      config
+      `((add-hook 'after-init-hook 'global-completion-preview-mode)
+        (define-key global-map (kbd "M-i") 'completion-preview-complete)
+        (with-eval-after-load 'completion-preview
+          (setopt completion-preview-minimum-symbol-length
+                  ,minimum-symbol-length)
+          (defun rde-disable-compeltion-preview-during-capf
+            (orig-fun &rest args)
+            "Disable completion preview overlay, when capf triggered."
+            (let ((preview-overlay
+                   (and (bound-and-true-p completion-preview--overlay)
+                        completion-preview--overlay)))
+              (when (bound-and-true-p completion-preview-active-mode)
+                (completion-preview-active-mode))
+              (apply orig-fun args)
+              (completion-preview-active-mode)))
+
+          (advice-add 'consult-completion-in-region
+                      :around 'rde-disable-compeltion-preview-during-capf)
+
+          (defun rde-minibuffer-completion-preview-mode ()
+            "Set message format to nil for completion-preview mode in
+minibuffer."
+            (setq-local completion-preview-message-format nil)
+            (completion-preview-mode))
+
+          (with-eval-after-load 'vertico
+            (setopt completion-preview-sort-function
+                    (vertico--sort-function)))
+
+          (add-hook 'minibuffer-mode-hook
+                    'rde-minibuffer-completion-preview-mode)
+
+          (let ((map completion-preview-active-mode-map))
+            (keymap-set map "<remap> <forward-word>"
+                        'completion-preview-complete)
+            (keymap-set map "<remap> <forward-sentence>"
+                        'completion-preview-insert)
+            (keymap-set map "<remap> <forward-sexp>"
+                        'completion-preview-insert)
+            (keymap-set map "<remap> <sp-forward-sexp>"
+                        'completion-preview-insert)
+
+            ;; For modes like org mode, where M-e bound to other function
+            (define-key map (kbd "M-e") 'completion-preview-insert)
+
+            ;; Usually C-<up>/<down>
+            (define-key map "<remap> <backward-paragraph>"
+              'completion-preview-next-candidate)
+            (define-key map "<remap> <forward-paragraph>"
+              'completion-preview-prev-candidate))))
+      #:summary "\
+Inline completion preview"
+      #:commentary "\
+Enable `global-completion-preview-mode' and configure keybindings for
+inline completion suggestions.  Integrates with consult, vertico, and
+minibuffer completion."
+      #:keywords '(convenience completion))))
+
+  (feature
+   (name f-name)
+   (values `((,f-name . #t)))
+   (home-services-getter get-home-services)))
 
 (define* (feature-emacs-vertico
           #:key
@@ -3601,7 +3663,7 @@ Geiser is configured for the Guile scheme implementation.")))
 
 (define* (feature-emacs-guix
           #:key
-          (emacs-guix emacs-guix-latest)
+          (emacs-guix emacs-guix)
           (guix-key "s-G")
           (guix-directory "~/work/gnu/guix"))
   "Configure emacs for guix usage and development."
@@ -4494,7 +4556,7 @@ Indentation and refile configurations, visual adjustment."
           :group 'rde)
 
         (defface rde-org-agenda-has-body
-          '((t :inherit message-separator))
+          '((t :inherit org-verse))
           "Face for agenda items that have body content."
           :group 'rde-org-agenda)
 
@@ -4662,10 +4724,20 @@ Body content is text that is not a planning line, drawer, or blank line."
                    `(quote ,org-agenda-prefix-format))
                   (else
                    ''())))
+
+          (defun rde-org-agenda-preserve-truncate-lines (orig-fun &rest r)
+            "Preserve `truncate-lines' state across `org-agenda-redo'."
+            (let ((truncate-p truncate-lines))
+              (apply orig-fun r)
+              (setq truncate-lines truncate-p)))
+          (advice-add 'org-agenda-redo :around
+                      'rde-org-agenda-preserve-truncate-lines)
+
           ,@(if org-agenda-highlight-items-with-body?
                 '((add-hook 'org-agenda-finalize-hook
                             'rde-org-agenda-highlight-items-with-body))
                 '())
+
           ,@(if org-agenda-swap-g-r?
                 '((define-key org-agenda-mode-map (kbd "g") 'org-agenda-redo)
                   (define-key org-agenda-mode-map (kbd "r") 'org-agenda-redo-all))

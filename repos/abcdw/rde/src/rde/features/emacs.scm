@@ -1,6 +1,6 @@
 ;;; rde --- Reproducible development environment.
 ;;;
-;;; Copyright © 2021, 2022, 2023, 2024 Andrew Tropin <andrew@trop.in>
+;;; Copyright © 2021, 2022, 2023, 2024, 2026 Andrew Tropin <andrew@trop.in>
 ;;; Copyright © 2022 Samuel Culpepper <samuel@samuelculpepper.com>
 ;;; Copyright © 2022 Demis Balbach <db@minikn.xyz>
 ;;; Copyright © 2022 Nicolas Graves <ngraves@ngraves.fr>
@@ -270,6 +270,8 @@ Prefix keymap for binding various minor modes for toggling functionalitty.")
                 "/emacs/auto-save-list"))
 
        ,#~""
+       ;; TODO: [Andrew Tropin, 2026-03-05] Try ultra-scroll
+       ;; https://github.com/jdtsmith/ultra-scroll
        (pixel-scroll-precision-mode 1)
        (column-number-mode 1)
        (save-place-mode 1)
@@ -417,6 +419,7 @@ Prefix argument can be used to kill a few words."
        ;;         display-buffer-same-window))
        ;; If a popup does happen, don't resize windows to be equal-sized
        (setq even-window-sizes nil)
+       (setq split-width-threshold 120)
        ;; Configure ediff for window manager.
        (setq ediff-diff-options "-w"
              ediff-split-window-function 'split-window-horizontally
