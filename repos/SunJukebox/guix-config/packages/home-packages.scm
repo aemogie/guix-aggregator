@@ -1,4 +1,4 @@
-(define-module (anon packages my-packages)
+(define-module (anon packages home-packages)
   #:use-module (gnu)
   #:use-module(guix)
   #:use-module (nongnu packages editors)

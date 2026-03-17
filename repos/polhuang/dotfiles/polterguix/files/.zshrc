@@ -1,10 +1,16 @@
+# on guix systems, go to ~/.config/zsh/ and delete the cache to reconfigure if using a package manager.
+
+# load private key into keychain
+eval "$(keychain --eval --quiet id_ed25519)"
+
 # history
 HISTFILE=~/.histfile
-HISTSIZE=5000
+HISTSIZE=50000
 SAVEHIST=$HISTSIZE
 setopt APPEND_HISTORY
 setopt SHARE_HISTORY
 setopt EXTENDED_HISTORY
+setopt HIST_IGNORE_DUPS
 
 # autocompletion
 autoload -Uz compinit
@@ -20,8 +26,6 @@ bindkey "^[[3~" delete-char
 
 # word characters are alphanumeric characters only
 WORDCHARS='*?_-.[]~=&;!#$%^(){}<>'
-
-# on guix systems, go to ~/.config/zsh/ and delete the cache to reconfigure if using a package manager. avoiding here.
 
 TMOUT=600
 
@@ -46,12 +50,19 @@ eval "$(zoxide init zsh)"
 # starship
 # use starship only in kitty
 # since starship causes formatting errors in eat (terminal emulator)
-if [[ "$TERM" == "xterm-kitty" ]]; then
-    eval "$(starship init zsh)"
-else
-    PROMPT="🦂 [eat] > %~ > "
-fi
 
+if [[ "$TERMINFO" == */elpa/eat-*/terminfo ]]; then
+    PROMPT="🦂 [eat] > %~ > "
+else
+    eval "$(starship init zsh)"
+fi 
+    
 # bun
 export BUN_INSTALL="$HOME/.bun" 
 export PATH="$BUN_INSTALL/bin:$PATH" 
+
+# ghostty
+
+if [[ -n "$GHOSTTY_RESOURCES_DIR" ]]; then
+    source "$GHOSTTY_RESOURCES_DIR/shell-integration/zsh/ghostty-integration"
+fi

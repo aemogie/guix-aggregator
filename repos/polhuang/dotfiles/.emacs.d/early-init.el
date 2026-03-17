@@ -1,3 +1,4 @@
+;;;  -*- lexical-binding: t; -*-
 ;; increase GC threshold during startup (reset in init.el)
 (setq gc-cons-threshold most-positive-fixnum
       gc-cons-percentage 0.6)

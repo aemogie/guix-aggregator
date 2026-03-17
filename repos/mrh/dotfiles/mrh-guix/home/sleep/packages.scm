@@ -140,7 +140,6 @@
    isync
    mu
    signal-desktop
-   zoom
 
    ;; security
    gnupg

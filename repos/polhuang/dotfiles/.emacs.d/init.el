@@ -41,6 +41,8 @@
                                 user-emacs-directory)))
     (start-process-shell-command "org" nil (concat "aplay " file))))
 
+(setq warning-suppress-log-types '((files missing-lexbind-cookie)))
+
 ;;;;;;;;;;;;;;;;;;;;;;
 ;; package settings ;; 
 ;;;;;;;;;;;;;;;;;;;;;;
@@ -100,7 +102,7 @@
 
 ;; exclude from recentf
 (require 'recentf)
-(setq recentf-exclude '("schedule.org" "tasks.org" "init.el" "bookmark-default.el" "COMMIT_EDITMSG" "oauth2-auto.plist"))
+(setq recentf-exclude '("schedule.org" "personal.org" "work.org" "habits.org" "init.el" "bookmark-default.el" "COMMIT_EDITMSG" "oauth2-auto.plist"))
 
 ;;;;;;;;;;;;;;;;;
 ;; ui settings ;;
@@ -448,7 +450,6 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
 (set-register ?p (cons 'file "~/org/agenda/projects.org"))
 (set-register ?s (cons 'file "~/org/agenda/schedule.org"))
 (set-register ?S (cons 'file "~/projects/cherry-seoul256/cherry-seoul256-theme.el"))
-(set-register ?t (cons 'file "~/org/agenda/tasks.org"))
 (set-register ?z (cons 'file "~/polterguix/files/.zshrc"))
 (set-register ?g (cons 'file (concat "~/.dotfiles/polterguix/systems/"
                                      (system-name)
@@ -545,7 +546,7 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
   (org-startup-with-inline-images t)
   (org-startup-with-latex-preview t)
   (org-preview-latex-default-process 'dvipng)
-  (org-agenda-files '("~/org/agenda/tasks.org" "~/org/agenda/projects.org" "~/org/agenda/schedule.org" "~/org/agenda/habits.org" "~/org/agenda/ticktick.org" "~/org/agenda/activities.org"))
+  (org-agenda-files '("~/org/agenda/personal.org" "~/org/agenda/work.org" "~/org/agenda/inbox.org" "~/org/agenda/habits.org" "~/org/agenda/schedule.org" "~/org/agenda/activities.org"))
   (org-agenda-format-date (lambda (date)
                             (require 'cal-iso)
                             (let* ((dayname (calendar-day-name date))
@@ -619,6 +620,7 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
   (org-todo-keywords '((sequence "TODO" "IN PROGRESS" "|" "DONE")
                        (sequence "TABLED" "TODO" "IN PROGRESS" "|" "DONE")
                        (sequence "UPCOMING" "|" "DONE")
+                       (sequence "HABIT" "|" "DONE")
                        (sequence "ACTIVITY")
                        (sequence "ENTRY")
                        ))
@@ -642,7 +644,7 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
  :empty-lines 1)
           ("s")
           ("t" "Task" entry
-           (file ,(concat org-directory "/tasks.org"))
+           (file ,(concat org-directory "/agenda/inbox.org"))
            "* TODO %?\nSCHEDULED: <%(org-read-date nil nil)>
 :PROPERTIES:
 :notify: nil
@@ -683,7 +685,7 @@ Each element is a cons cell (FONT-NAME . HEIGHT).")
   (defun suppress-org-element-warning (orig-fun &rest args)
     "Suppress ‘org-element-at-point’ warning in non-Org buffers."
     (let ((warning-minimum-level :error))
-      (apply orig-fun args)))
+      (apply orig-fun args)))  
   
   (advice-add 'org-element-at-point :around #'suppress-org-element-warning)
 
@@ -1419,20 +1421,20 @@ T - tag prefix
 	xref-show-definitions-function #'consult-xref)
 
   :custom
-  (consult-buffer-sources '(consult--source-buffer
-                            consult--source-recent-file
-                            consult--source-file-register
-                            consult--source-bookmark
-                            consult--source-project-buffer-hidden
-                            consult--source-project-recent-file-hidden
-                            consult--source-project-root-hidden))
+  (consult-buffer-sources '(consult-source-buffer
+                            consult-source-recent-file
+                            consult-source-file-register
+                            consult-source-bookmark
+                            consult-source-project-buffer-hidden
+                            consult-source-project-recent-file-hidden
+                            consult-source-project-root-hidden))
   :config
   (consult-customize
    consult-theme :preview-key '(:debounce 0.1 any)
    consult-ripgrep consult-git-grep consult-grep
    consult-bookmark consult-recent-file consult-xref
-   consult--source-bookmark consult--source-file-register
-   consult--source-recent-file consult--source-project-recent-file
+   consult-source-bookmark consult-source-file-register
+   consult-source-recent-file consult-source-project-recent-file
    ;; :preview-key "M-."sq
    :preview-key '(:debounce 0.1 any))
 
@@ -1830,21 +1832,21 @@ Otherwise, call eat."
   :ensure t
   :hook (after-init . global-flycheck-mode))
 
-;; (setq major-mode-remap-alist
-;;       '((yaml-mode . yaml-ts-mode)
-;;         (bash-mode . bash-ts-mode)
-;;         (c-mode . c-ts-mode)
-;;         (javascript-mode . tsx-ts-mode)
-;;         (js-mode . tsx-ts-mode)
-;;         (js2-mode . tsx-ts-mode)
-;;         (js-jsx-mode . tsx-ts-mode)
-;;         (rjsx-mode . tsx-ts-mode)
-;;         ;; (rust-mode . rust-ts-mode)
-;;         (typescript-mode . tsx-ts-mode)
-;;         (json-mode . json-ts-mode)
-;;         (shell-mode . bash-ts-mode)
-;;         (css-mode . css-ts-mode)
-;;         (python-mode . python-ts-mode)))
+(setq major-mode-remap-alist
+      '((yaml-mode . yaml-ts-mode)
+        (bash-mode . bash-ts-mode)
+        (c-mode . c-ts-mode)
+        (javascript-mode . tsx-ts-mode)
+        (js-mode . tsx-ts-mode)
+        (js2-mode . tsx-ts-mode)
+        (js-jsx-mode . tsx-ts-mode)
+        (rjsx-mode . tsx-ts-mode)
+        ;; (rust-mode . rust-ts-mode)
+        (typescript-mode . tsx-ts-mode)
+        (json-mode . json-ts-mode)
+        (shell-mode . bash-ts-mode)
+        (css-mode . css-ts-mode)
+        (python-mode . python-ts-mode)))
 
 
 ;; treesit-auto
@@ -2228,24 +2230,19 @@ Otherwise, call eat."
 ;; parrot
 (use-package parrot
   :ensure t
-  :functions parrot-set-parrot-type
-  :hook (emacs-startup . parrot-mode)
+  :vc (:url "https://github.com/dp12/parrot.git"
+       :rev "1.1.1")
   :custom
+  (parrot-animation-frame-interval 0.04)
   (parrot-num-rotations nil)
   :config
-  (parrot-set-parrot-type 'emacs))
+  (parrot-mode))
 
 ;; elcord
 (use-package elcord
   :ensure t
   :hook (emacs-startup . elcord-mode)
   :custom (elcord-idle-message "call me maybe?"))
-
-;; slack
-(use-package slack
-  :ensure t
-  :vc (:url "https://github.com/emacs-slack/emacs-slack" :rev :newest)
-  )
 
 ;; erc (irc)
 (use-package erc
@@ -2406,6 +2403,8 @@ Add :notify: event on import."
   :load-path "~/projects/org-roam-obsidian-sync"
   :config
   (setq org-roam-obsidian-sync-on-change 1))
+
+
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.

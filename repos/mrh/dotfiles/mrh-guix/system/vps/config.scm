@@ -147,27 +147,36 @@
                 %ipv4-wireguard-vps))
          (port %wireguard-port)
          (peers
-          (list (wireguard-peer
-                  (name "om")
-                  (endpoint (format #f "[~a]:~a" %ipv6-gua-om %wireguard-port))
-                  (public-key %om-wireguard-key)
-                  (allowed-ips
-                   (list %ipv6-wireguard-om
-                         %ipv4-wireguard-om)))
+          (list
+           ;; (wireguard-peer
+           ;;   (name "om")
+           ;;   (endpoint (format #f "[~a]:~a" %ipv6-gua-om %wireguard-port))
+           ;;   (public-key %om-wireguard-key)
+           ;;   (allowed-ips
+           ;;    (list %ipv6-wireguard-om
+           ;;          %ipv4-wireguard-om)))
 
-                (wireguard-peer
-                  (name "sleep")
-                  (public-key %sleep-wireguard-key)
-                  (allowed-ips
-                   (list %ipv6-wireguard-sleep
-                         %ipv4-wireguard-sleep)))
+           (wireguard-peer
+             (name "smoulder")
+             (endpoint (format #f "[~a]:~a" %ipv6-gua-om %wireguard-port))
+             (public-key %smoulder-wireguard-key)
+             (allowed-ips
+              (list %ipv6-wireguard-om
+                    %ipv4-wireguard-om)))
 
-                (wireguard-peer
-                  (name "lamb")
-                  (public-key %lamb-wireguard-key)
-                  (allowed-ips
-                   (list %ipv6-wireguard-lamb
-                         %ipv4-wireguard-lamb)))))
+           (wireguard-peer
+             (name "sleep")
+             (public-key %sleep-wireguard-key)
+             (allowed-ips
+              (list %ipv6-wireguard-sleep
+                    %ipv4-wireguard-sleep)))
+
+           (wireguard-peer
+             (name "lamb")
+             (public-key %lamb-wireguard-key)
+             (allowed-ips
+              (list %ipv6-wireguard-lamb
+                    %ipv4-wireguard-lamb)))))
          (dns
           (list %ipv6-wireguard-vps
                 %ipv4-wireguard-vps))))

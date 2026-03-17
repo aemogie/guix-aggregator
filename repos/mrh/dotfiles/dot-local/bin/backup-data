@@ -12,6 +12,7 @@
                      "--exclude=guix-sandbox-home"
                      "--exclude=movies"
                      "--exclude=shows"
+                     "--exclude=gow"
                      "--exclude=jellyfin"
                      "--exclude=radarr"
                      "--exclude=sonarr"

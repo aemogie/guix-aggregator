@@ -22,10 +22,9 @@
   ;; #:use-module (anon home services dotfiles)
   #:use-module (anon home services texlive)
   ;; #:use-module (anon home services emacs)
-
+  
   #:use-module (anon packages my-packages)
   #:use-module (anon packages fonts)
-  ;; #:use-module (anon packages neovim)
   #:use-module (anon packages texlab)
   #:use-module (anon packages textutils))
 ;; #:use-module (anon packages tree-sitter))
@@ -56,8 +55,8 @@
                      password-utils
                      pdf
                      pulseaudio
-		     python
-		     python-xyz
+                     python
+                     python-xyz
                      qt
                      shells
                      shellutils
@@ -75,14 +74,14 @@
 (define my-home-environment
   (home-environment
     (packages (append (list
-                       unzip
-
+                       ;; unzip
+                       
                        ;; text editor
                        ;; neovim
                        ;; tree-sitter-cli
                        ;; texlab
                        ;; vscodium
-					   python
+                       python
 
                        ;; media
                        inkscape
@@ -162,7 +161,7 @@
 
                        ;; networking
                        openvpn
-                       network-manager-openvpn)
+                       network-manager-openvpn) 
                       %wm-packages
                       %emacs-metapackage))
 
@@ -196,24 +195,24 @@
                              ("ECORE_EVAS_ENGINE" . "wayland-egl")
                              ("QT_QPA_PLATFORM" . "wayland-egl")))
 
-           (service home-zsh-service-type)
-
            (service home-dotfiles-service-type
                     (home-dotfiles-configuration (directories (list (format #f
                                                                             "~a/src/my-channel/anon/files"
                                                                             (getenv
                                                                              "HOME"))))
-						 (excluded '(".*~" ".*\\.swp" "\\.git/.*" ".*/\\.git/.*" "\\.gitignore"))))
-           
-          (service home-zsh-service-type
-                   (home-zsh-configuration
-                    (zprofile
-                     `(,(plain-file "zprofile-extras"
-                                    (string-append
-                                     ;; Load the Nix profile
-                                     "if [ -f /run/current-system/profile/etc/profile.d/nix.sh ]; then\n"
-                                     "  . /run/current-system/profile/etc/profile.d/nix.sh\n"
-                                     "fi\n"))))))
+                                                 (excluded '(".*~" ".*\\.swp"
+                                                             "\\.git/.*"
+                                                             ".*/\\.git/.*"
+                                                             "\\.gitignore"))))
+
+           (service home-zsh-service-type
+                    (home-zsh-configuration (zprofile `(,(plain-file
+                                                          "zprofile-extras"
+                                                          (string-append
+                                                           ;; Load the Nix profile
+                                                           "if [ -f /run/current-system/profile/etc/profile.d/nix.sh ]; then\n"
+                                                           "  . /run/current-system/profile/etc/profile.d/nix.sh\n"
+                                                           "fi\n"))))))
 
            (service home-dbus-service-type)
 
@@ -230,7 +229,7 @@
            (service home-texlive-service-type)
 
            ;; (service home-emacs-config-service-type)
-
+           
            ;; (service (service-type (name 'home-xdg-desktop-portal)
            ;; (extensions (list (service-extension
            ;; home-profile-service-type
@@ -244,7 +243,7 @@
            ;; "../files/.config/xdg-desktop-portal/portals.conf")))))))
            ;; (default-value #f)
            ;; (description #f)))
-
+           
            (simple-service 'additional-channels-service
                            home-channels-service-type
                            (list (channel

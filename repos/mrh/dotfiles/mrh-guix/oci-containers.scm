@@ -1,4 +1,4 @@
-(define-module (mrh-guix system om oci-containers)
+(define-module (mrh-guix oci-containers)
   #:use-module (mrh-guix personal)
   #:use-module (ice-9 popen)
   #:use-module (ice-9 textual-ports)
@@ -18,7 +18,7 @@
        (ports '("[::1]:8081:8081"))
        (volumes
         `((,(format #f "~a/dot-config/~a" %dots-dir sabnzbd-name) . "/config")
-          ("/mnt/wd/media/downloads" . "/media/downloads")))
+          ("/mnt/big/media/downloads" . "/media/downloads")))
        (container-user (format #f "~a:~a" oci-uid oci-gid))))))
 
 (define-public %jellyfin-oci
@@ -36,7 +36,7 @@
        (volumes
         `((,(format #f "~a/dot-config/~a" %dots-dir jellyfin-name) . "/config")
           ("jellyfin-cache" . "/cache")
-          ("/mnt/wd/media" . "/media")))
+          ("/mnt/big/media" . "/media")))
        (container-user (format #f "~a:~a" oci-uid oci-gid))
        (extra-arguments
         (let ((video-group-id (get-line
@@ -53,22 +53,22 @@
        (environment '(("TZ" . "Etc/UTC")))
        (image "lscr.io/linuxserver/radarr")
        (provision radarr-name)
-       (network "media")
+       (network "host")
        (ports '("[::1]:7878:7878"))
        (volumes
         `((,(format #f "~a/dot-config/~a" %dots-dir radarr-name) . "/config")
-          ("/mnt/wd/media" . "/media")))
+          ("/mnt/big/media" . "/media")))
        (container-user (format #f "~a:~a" oci-uid oci-gid)))
 
      (oci-container-configuration
        (environment '(("TZ" . "Etc/UTC")))
        (image "ghcr.io/linuxserver/sonarr")
        (provision sonarr-name)
-       (network "media")
+       (network "host")
        (ports '("[::1]:8989:8989"))
        (volumes
         `((,(format #f "~a/dot-config/~a" %dots-dir sonarr-name) . "/config")
-          ("/mnt/wd/media" . "/media")))
+          ("/mnt/big/media" . "/media")))
        (container-user (format #f "~a:~a" oci-uid oci-gid))))))
 
 (define-public %paperless-oci

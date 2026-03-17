@@ -108,7 +108,10 @@
             (folders
              (let ((om (syncthing-device
                          (name "om")
-                         (id %om-syncthing-id)))                   
+                         (id %om-syncthing-id)))
+                   (smoulder (syncthing-device
+                               (name "smoulder")
+                               (id %smoulder-syncthing-id)))
                    (lamb (syncthing-device
                            (name "lamb")
                            (id %lamb-syncthing-id))))
@@ -116,12 +119,12 @@
                        (id "default")
                        (label "default")
                        (path (format #f "~a/sync" %user-home))
-                       (devices (list om lamb)))
+                       (devices (list om smoulder lamb)))
                      (syncthing-folder
                        (id "paperless-upload")
                        (label "paperless-upload")
                        (path (format #f "~a/data/paperless" %user-home))
-                       (devices (list om lamb))))))))))
+                       (devices (list om smoulder lamb))))))))))
 
       (service
        bluetooth-service-type
