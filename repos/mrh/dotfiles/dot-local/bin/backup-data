@@ -2,28 +2,25 @@
 !#
 
 (define source-directory (getenv "HOME"))
-(define target-directory "/mnt/backup-ssd")
+(define target-directory "root@smoulder.lan:/mnt/big")
 
 (for-each (lambda (dir)
-            (format #t "sending contents of ~a/~a into ~a/~a~%"
+            (format #t "~%sending contents of ~a/~a into ~a/~a~%"
                     source-directory dir
                     target-directory dir)
             (system* "rsync" "-Phuav"
+                     "--exclude=temp"
+                     "--exclude=Trash"
                      "--exclude=guix-sandbox-home"
                      "--exclude=movies"
                      "--exclude=shows"
-                     "--exclude=gow"
-                     "--exclude=jellyfin"
-                     "--exclude=radarr"
-                     "--exclude=sonarr"
-                     "--exclude=Trash"
                      (format #f "~a/~a/" source-directory dir)
                      (format #f "~a/~a/" target-directory dir)))
           '("data"
             "documents"
             "downloads"
             ".gnupg"
-            ".librewolf"
+            ".librewolf/native-messaging-hosts"
             ".local/share"
             "mail"
             "media"

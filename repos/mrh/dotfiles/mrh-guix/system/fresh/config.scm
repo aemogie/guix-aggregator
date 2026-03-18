@@ -3,14 +3,15 @@
              (gnu))
 
 (use-package-modules admin
-                     certs
                      cryptsetup
                      curl
                      package-management
                      rsync
                      version-control)
 
-(use-service-modules desktop networking ssh)
+(use-service-modules desktop
+                     networking
+                     ssh)
 
 (operating-system
   (kernel linux)
@@ -27,19 +28,19 @@
                 (keyboard-layout keyboard-layout)))
 
   (file-systems
-   (cons* (file-system (mount-point "/")
+   (cons* (file-system (mount-point "/boot/efi")
+                       (device (uuid "REPLACE-ME" 'fat32))
+                       (type "vfat"))
+          (file-system (mount-point "/")
                        (device
                         (uuid "REPLACE-ME" 'ext4))
                        (type "ext4"))
-          (file-system (mount-point "/boot/efi")
-                       (device (uuid "REPLACE-ME" 'fat32))
-                       (type "vfat"))
           %base-file-systems))
 
   (users (cons (user-account
-                 (name %username)
+                 (name "mrh")
                  (group "users")
-                 (home-directory %user-home)
+                 (home-directory "/home/mrh")
                  (supplementary-groups '("audio"
                                          "input"
                                          "lp"

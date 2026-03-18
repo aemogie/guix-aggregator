@@ -39,19 +39,25 @@
   (locale "en_US.utf8")
   (keyboard-layout (keyboard-layout "us" "dvorak"))
 
-  (bootloader (bootloader-configuration
-                (bootloader grub-efi-bootloader)
-                (targets (list "/boot/efi"))
-                (keyboard-layout keyboard-layout)))
+  (bootloader
+    (bootloader-configuration
+      (bootloader grub-efi-bootloader)
+      (targets (list "/boot/efi"))
+      (keyboard-layout keyboard-layout)))
 
   (file-systems
-   (cons* (file-system (mount-point "/")
+   (cons* (file-system (mount-point "/boot/efi")
+                       (device (uuid "5E8C-6F8B" 'fat32))
+                       (type "vfat"))
+          (file-system (mount-point "/")
                        (device
                         (uuid "c0c2d7e9-abfa-478f-abc6-01ef1ec0262a" 'ext4))
                        (type "ext4"))
-          (file-system (mount-point "/boot/efi")
-                       (device (uuid "5E8C-6F8B" 'fat32))
-                       (type "vfat"))
+          (file-system
+            (mount-point "/mnt/big")
+            (device
+             (uuid "5781ea1d-72c6-4dd7-9af0-9442a0502fc4" 'ext4))
+            (type "ext4"))
           %base-file-systems))
 
   (users (cons (user-account
@@ -215,7 +221,7 @@
     (service
      copyparty-service-type
      (copyparty-configuration
-      (user "oci-container")
+      (user "mrh")
       (group "users")
       (conf (local-file
              (format #f "~a/copyparty.conf" %guix-dots-dir)))))

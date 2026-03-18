@@ -17,7 +17,7 @@
        (network "media")
        (ports '("[::1]:8081:8081"))
        (volumes
-        `((,(format #f "~a/dot-config/~a" %dots-dir sabnzbd-name) . "/config")
+        '(("/mnt/big/services/sabnzbd" . "/config")
           ("/mnt/big/media/downloads" . "/media/downloads")))
        (container-user (format #f "~a:~a" oci-uid oci-gid))))))
 
@@ -34,9 +34,9 @@
                     (format #f "~a:8096:8096" %ipv4-lan-om)
                     "[::]:7359:7359"))
        (volumes
-        `((,(format #f "~a/dot-config/~a" %dots-dir jellyfin-name) . "/config")
-          ("jellyfin-cache" . "/cache")
-          ("/mnt/big/media" . "/media")))
+        '(("/mnt/big/services/jellyfin" . "/config")
+          ("/mnt/big/media" . "/media")
+          ("jellyfin-cache" . "/cache")))
        (container-user (format #f "~a:~a" oci-uid oci-gid))
        (extra-arguments
         (let ((video-group-id (get-line
@@ -56,7 +56,7 @@
        (network "host")
        (ports '("[::1]:7878:7878"))
        (volumes
-        `((,(format #f "~a/dot-config/~a" %dots-dir radarr-name) . "/config")
+        '(("/mnt/big/services/radarr" . "/config")
           ("/mnt/big/media" . "/media")))
        (container-user (format #f "~a:~a" oci-uid oci-gid)))
 
@@ -67,7 +67,7 @@
        (network "host")
        (ports '("[::1]:8989:8989"))
        (volumes
-        `((,(format #f "~a/dot-config/~a" %dots-dir sonarr-name) . "/config")
+        '(("/mnt/big/services/sonarr" . "/config")
           ("/mnt/big/media" . "/media")))
        (container-user (format #f "~a:~a" oci-uid oci-gid))))))
 
@@ -82,7 +82,7 @@
        (network "paperless")
        (respawn? #t)
        (volumes
-        `((,(format #f "~a/redis" %paperless-share) . "/data"))))
+        '(("/mnt/big/services/paperless/redis" . "/data"))))
 
      (oci-container-configuration
        (environment
@@ -94,7 +94,7 @@
        (network "paperless")
        (respawn? #t)
        (volumes
-        `((,(format #f "~a/postgres" %paperless-share) . "/var/lib/postgresql"))))
+        '(("/mnt/big/services/paperless/postgres" . "/var/lib/postgresql"))))
 
      (oci-container-configuration
        (environment
@@ -110,7 +110,7 @@
         (cons* (cons (format #f "~a/data/paperless" %user-home)
                      "/usr/src/paperless/consume")
                (map (lambda (volume)
-                      (cons (format #f "~a/~a" %paperless-share volume)
+                      (cons (format #f "/mnt/big/services/paperless/~a" volume)
                             (format #f "/usr/src/paperless/~a" volume)))
                     '("data" "media" "export"))))))))
 
@@ -125,7 +125,7 @@
        (network "host")
        (ports '("[::1]:3000:3000"))
        (volumes
-        `((,(format #f "~a/dot-config/~a" %dots-dir homepage-name) . "/app/config")))
+        '(("/mnt/big/services/homepage" . "/app/config")))
        (container-user (format #f "~a:~a" oci-uid oci-gid))))))
 
 (define-public %immich-oci
