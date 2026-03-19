@@ -221,7 +221,7 @@
     (service
      copyparty-service-type
      (copyparty-configuration
-      (user "mrh")
+      (user "oci-container")
       (group "users")
       (conf (local-file
              (format #f "~a/copyparty.conf" %guix-dots-dir)))))

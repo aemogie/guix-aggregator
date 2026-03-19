@@ -12,8 +12,7 @@
                      "--exclude=temp"
                      "--exclude=Trash"
                      "--exclude=guix-sandbox-home"
-                     "--exclude=movies"
-                     "--exclude=shows"
+                     "--exclude=to-watch"
                      (format #f "~a/~a/" source-directory dir)
                      (format #f "~a/~a/" target-directory dir)))
           '("data"
