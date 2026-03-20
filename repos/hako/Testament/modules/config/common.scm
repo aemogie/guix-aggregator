@@ -6,6 +6,7 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 popen)
   #:use-module (ice-9 textual-ports)
+  #:use-module (srfi srfi-26)
   ;; Utilities
   #:use-module ((guix diagnostics) #:select (leave))
   #:use-module (guix gexp)
@@ -32,10 +33,12 @@
   #:use-module (gnu packages version-control)
   #:use-module (nongnu packages linux)
   #:use-module (rosenthal packages password-utils)
-  #:export (testament-plain
+  #:export (testament-path
+            testament-plain
 
             sops-str
             sops-num
+            sops-sexp
 
             %sops-chapra
             %sops-dorphine
@@ -111,12 +114,18 @@ WARNED."
 (define (sops-num file key)
   (get-sops-secret key #:file file #:number? #t))
 
+(define (sops-sexp file key)
+  (let ((out (call-with-input-string (sops-str file key) read)))
+    (if (eof-object? out)
+        '()
+        out)))
+
 (define %sops-chapra
-  (local-file "../../../Workspace/SOPS/chapra.yaml"))
+  (local-file (in-vicinity testament-path "files/plain/sops/chapra.yaml")))
 (define %sops-dorphine
-  (local-file "../../../Workspace/SOPS/dorphine.yaml"))
+  (local-file (in-vicinity testament-path "files/plain/sops/dorphine.yaml")))
 (define %sops-nuporta
-  (local-file "../../../Workspace/SOPS/nuporta.yaml"))
+  (local-file (in-vicinity testament-path "files/plain/sops/nuporta.yaml")))
 
 
 ;;;
@@ -248,18 +257,16 @@ WARNED."
         unzip))
 
 (define %kernel-patches
-  (let ((name "kernel-patches")
-        (revision "0")
-        (commit "3f13d1fb09ab2803a3c5ad1040380c00c75dbd5a"))
+  (let ((commit "efe2c30a7601a0472069544d36e2d8f12b9807cf"))
     (origin
       (method git-fetch)
       (uri (git-reference
-             (url "https://github.com/sirlucjan/kernel-patches")
+             (url "https://github.com/rakino/kernel-patches")
              (commit commit)))
-      (file-name (git-file-name name (git-version "0.0.0" revision commit)))
+      (file-name (git-file-name "kernel-patches" (string-take commit 7)))
       (sha256
        (base32
-        "19yc7x8cfdf61i2f14rf85p6rmz27s7py60gj06z3sj8qmyf3f3x")))))
+        "07asnniwybkiz3rfdqsdwg53g5djazbhdszj74mzybm36091ps4b")))))
 
 (define linux/dolly
   (let ((base linux-6.18))
@@ -269,7 +276,9 @@ WARNED."
      #:source
      (origin
        (inherit (package-source base))
-       (patches (list (local-file "../../../Workspace/Repository/linux/kernel-patches/6.18/bbr3-patches/0001-tcp-bbr3-add-BBRv3-congestion-control.patch")))))))
+       (patches
+        (map (cut file-append %kernel-patches <>)
+             '("/6.18/bbr3-patches/0001-tcp-bbr3-add-BBRv3-congestion-control.patch")))))))
 
 (define manage-cuirass
   (let ((script

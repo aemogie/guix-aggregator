@@ -1,9 +1,13 @@
-(use-modules (gnu machine)
+(use-modules (common)
+             (gnu machine)
              (gnu machine ssh))
+
+(define %os
+  (load (in-vicinity testament-path "files/tangled/nuporta/nuporta.scm")))
 
 (list
  (machine
-   (operating-system (load "../tangled/nuporta/nuporta.scm"))
+   (operating-system %os)
    (environment managed-host-environment-type)
    (configuration
     (machine-ssh-configuration

@@ -1,9 +1,13 @@
-(use-modules (gnu machine)
+(use-modules (common)
+             (gnu machine)
              (gnu machine ssh))
+
+(define %os
+  (load (in-vicinity testament-path "files/tangled/dorphine/dorphine.scm")))
 
 (list
  (machine
-   (operating-system (load "../tangled/dorphine/dorphine.scm"))
+   (operating-system %os)
    (environment managed-host-environment-type)
    (configuration
     (machine-ssh-configuration

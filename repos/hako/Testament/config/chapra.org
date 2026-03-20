@@ -250,6 +250,9 @@
           tcp dport https accept
           udp dport https accept
 
+          # allow komga
+          tcp dport 44293 accept
+
           # allow mosh
           tcp dport ssh accept
           udp dport 60000-61000 accept
@@ -408,7 +411,7 @@
            ("Port" . 43502)
            ("MusicFolder" . "/mnt/Ocimeae/Library/Music")
            ("EnableSharing" . #t)
-           #$@(call-with-input-string (sops-str %sops-chapra '("navidrome")) read)))))
+           #$@(sops-sexp %sops-chapra '("navidrome"))))))
 #+end_src
 
 *** qbittorrent

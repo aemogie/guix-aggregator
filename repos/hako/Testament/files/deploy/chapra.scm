@@ -1,9 +1,13 @@
-(use-modules (gnu machine)
+(use-modules (common)
+             (gnu machine)
              (gnu machine ssh))
+
+(define %os
+  (load (in-vicinity testament-path "files/tangled/chapra/chapra.scm")))
 
 (list
  (machine
-   (operating-system (load "../tangled/chapra/chapra.scm"))
+   (operating-system %os)
    (environment managed-host-environment-type)
    (configuration
     (machine-ssh-configuration

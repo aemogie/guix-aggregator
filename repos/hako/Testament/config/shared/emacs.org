@@ -12,9 +12,9 @@ workaround.
   <<home-service>>
 #+end_src
 
-#+name: package/emacs
+#+name: package-spec/emacs
 #+begin_src scheme :noweb yes
-  <<package>>
+  <<package-spec>>
 #+end_src
 
 #+name: module/emacs
@@ -66,7 +66,7 @@ shell while using Emacs.
       ("ESHELL" . ,(file-append fish "/bin/fish"))))
 #+end_src
 
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-pgtk"
 
   "emacs-gcmh"
@@ -148,7 +148,7 @@ Theming
 #+end_src
 
 *** emacs-adaptive-wrap
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-adaptive-wrap"
 #+end_src
 
@@ -166,7 +166,7 @@ Theming
 #+end_src
 
 *** emacs-doom-modeline
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-doom-modeline"
 #+end_src
 
@@ -180,7 +180,7 @@ Theming
 #+end_src
 
 *** emacs-helpful
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-helpful"
 #+end_src
 
@@ -196,7 +196,7 @@ Theming
 #+end_src
 
 *** emacs-hl-todo
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-hl-todo"
 #+end_src
 
@@ -219,7 +219,7 @@ Theming
 #+end_src
 
 *** emacs-mwim
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-mwim"
 #+end_src
 
@@ -231,7 +231,7 @@ Theming
 #+end_src
 
 *** emacs-orderless
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-orderless"
 #+end_src
 
@@ -244,7 +244,7 @@ Theming
 #+end_src
 
 *** emacs-org-rainbow-tags
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-org-rainbow-tags"
 #+end_src
 
@@ -264,7 +264,7 @@ Theming
 #+end_src
 
 *** emacs-rainbow-delimiters
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-rainbow-delimiters"
 #+end_src
 
@@ -275,7 +275,7 @@ Theming
 #+end_src
 
 *** emacs-valign
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-valign"
 #+end_src
 #+begin_src emacs-lisp :noweb-ref emacs-init
@@ -284,7 +284,7 @@ Theming
     (org-mode . valign-mode))
 #+end_src
 *** emacs-vertico
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-vertico"
 #+end_src
 
@@ -307,7 +307,7 @@ Theming
 #+end_src
 
 *** emacs-visual-fill-column
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-visual-fill-column"
 #+end_src
 
@@ -346,7 +346,7 @@ Theming
 #+end_src
 
 *** emacs-arei
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-arei-dolly"
 #+end_src
 
@@ -391,7 +391,7 @@ Arei's builtin xref backend provides =xref-buffer-location= but Citre expects
 #+end_src
 
 *** emacs-citre
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-citre"
 #+end_src
 
@@ -437,7 +437,7 @@ Arei's builtin xref backend provides =xref-buffer-location= but Citre expects
 #+end_src
 
 *** emacs-dumb-jump
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-dumb-jump"
 #+end_src
 
@@ -449,7 +449,7 @@ Arei's builtin xref backend provides =xref-buffer-location= but Citre expects
 #+end_src
 
 *** emacs eglot
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "python"
   "rust"
   "rust:cargo"
@@ -482,7 +482,7 @@ Arei's builtin xref backend provides =xref-buffer-location= but Citre expects
 *** emacs-flycheck
 Check syntax on the fly.
 
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-flycheck"
 #+end_src
 
@@ -493,7 +493,7 @@ Check syntax on the fly.
 #+end_src
 
 *** emacs-macrostep
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-macrostep"
 #+end_src
 
@@ -523,7 +523,7 @@ Check syntax on the fly.
 #+end_src
 
 *** emacs-ox-hugo
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-ox-hugo"
 #+end_src
 
@@ -533,7 +533,7 @@ Check syntax on the fly.
 #+end_src
 
 *** emacs-puni
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-puni"
 #+end_src
 
@@ -545,7 +545,7 @@ Check syntax on the fly.
 #+end_src
 
 *** emacs-treesit-auto
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-treesit-auto"
   "tree-sitter-cmake"
   "tree-sitter-dockerfile"
@@ -580,7 +580,7 @@ Check syntax on the fly.
 #+end_src
 
 *** emacs-yasnippet
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-yasnippet"
   "emacs-yasnippet-snippets"
 #+end_src
@@ -609,7 +609,7 @@ Disable a few yasnippet snippets.
 
 ** Miscellaneous
 *** emacs-daemons
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-daemons"
 #+end_src
 
@@ -640,7 +640,7 @@ Disable a few yasnippet snippets.
 emacs-eat with patches <https://codeberg.org/akib/emacs-eat/pulls/133> and
 <https://codeberg.org/akib/emacs-eat/pulls/228>.
 
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-eat-dolly"
 #+end_src
 
@@ -661,7 +661,7 @@ emacs-eat with patches <https://codeberg.org/akib/emacs-eat/pulls/133> and
 #+end_src
 
 *** emacs-envrc
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-envrc"
 #+end_src
 
@@ -672,7 +672,7 @@ emacs-eat with patches <https://codeberg.org/akib/emacs-eat/pulls/133> and
 #+end_src
 
 *** emacs-magit
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-magit"
 #+end_src
 
@@ -690,7 +690,7 @@ emacs-eat with patches <https://codeberg.org/akib/emacs-eat/pulls/133> and
 #+end_src
 
 *** emacs-forge
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-forge"
 #+end_src
 
@@ -700,7 +700,7 @@ emacs-eat with patches <https://codeberg.org/akib/emacs-eat/pulls/133> and
 #+end_src
 
 *** emacs-notmuch
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "emacs-notmuch"
 #+end_src
 
@@ -741,7 +741,7 @@ emacs-eat with patches <https://codeberg.org/akib/emacs-eat/pulls/133> and
 ** Fonts
 https://github.com/nykma/nema/blob/develop/my-sample/font.el
 
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "fontconfig"
   "font-adobe-source-serif"
   "font-chiron-sung-hk"

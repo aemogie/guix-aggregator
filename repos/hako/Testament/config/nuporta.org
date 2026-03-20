@@ -1331,7 +1331,7 @@ rsync://cache.guix.moe
             ("RUN_USER" . "forgejo")
             ("WORK_PATH" . "/var/lib/forgejo")
             ("RUN_MODE" . "prod"))
-           #$@(call-with-input-string (sops-str %sops-nuporta '("forgejo")) read)
+           #$@(sops-sexp %sops-nuporta '("forgejo"))
            ("database"
             ("DB_TYPE" . "postgres")
             ("HOST" . "127.0.0.1:5432")
@@ -1391,7 +1391,7 @@ rsync://cache.guix.moe
        (yaml-file "heisenbridge.yaml"
          #~'(("id" . "heisenbridge")
              ("url" . "http://127.0.0.1:27873")
-             #$@(call-with-input-string (sops-str %sops-nuporta '("heisenbridge")) read)
+             #$@(sops-sexp %sops-nuporta '("heisenbridge"))
              ("rate_limited" . #f)
              ("sender_localpart" . "heisenbridge")
              ("namespaces"
@@ -1529,7 +1529,7 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
             ("http_listen_port" . 49951)
             ("grpc_listen_port" . 32773)
             ("log_level" . "error"))
-           #$@(call-with-input-string (sops-str %sops-nuporta '("mimir")) read)
+           #$@(sops-sexp %sops-nuporta '("mimir"))
            ("ingester"
             ("ring"
              ("replication_factor" . 1)))
@@ -1557,7 +1557,7 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
             ("grpc_listen_port" . 11365))
            ("common"
             ("path_prefix" . "/var/lib/loki")
-            #$@(call-with-input-string (sops-str %sops-nuporta '("loki")) read)
+            #$@(sops-sexp %sops-nuporta '("loki"))
             ("ring"
              ("kvstore"
               ("store" . "inmemory")))

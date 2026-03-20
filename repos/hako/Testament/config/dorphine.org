@@ -40,8 +40,8 @@
                         "telegram-desktop"
                         "zathura"
                         "zathura-pdf-poppler"
-
-                        <<package>>))
+                        <<package-spec>>))
+                     (list <<package>>)
                      %testament-cli-packages
                      %base-packages)
              #:driver nvdb)))
@@ -63,12 +63,11 @@
                          %rosenthal-desktop-home-services))))))
 #+end_src
 
-=dotfiles= directory is created when tangling this file.
-
 #+begin_src scheme :noweb yes :noweb-ref home-service
   (service home-dotfiles-service-type
     (home-dotfiles-configuration
-      (directories '("dotfiles"))))
+      (directories
+       (list (in-vicinity testament-path "files/tangled/dorphine/dotfiles")))))
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref home-service
@@ -300,25 +299,6 @@ Generate random password hash:
     `(("root" ,%ssh-key-deploy)))
 #+end_src
 
-#+begin_src scheme :noweb-ref home-service
-  (service home-fish-service-type
-    (home-fish-configuration
-      (config
-       ;; Merge search paths on Guix System.
-       (list (mixed-text-file "merge-search-paths.fish" "\
-  status is-login
-  and begin
-      set --prepend fish_function_path " fish-foreign-env "/share/fish/functions
-      fenv eval \"$(guix package --search-paths \\
-          --profile=$HOME/.config/guix/current \\
-          --profile=$HOME/.guix-profile \\
-          --profile=$HOME/.guix-home/profile \\
-          --profile=/run/current-system/profile)\"
-      set --prepend PATH /run/privileged/bin
-      set --erase fish_function_path[1]
-  end\n")))))
-#+end_src
-
 *** Shell Utilities
 #+begin_src scheme :noweb-ref home-service
   (service home-fish-plugin-atuin-service-type)
@@ -517,23 +497,6 @@ Generate passwordless ECC key:
       (subuids (list (subid-range (name "hako"))))))
 #+end_src
 
-** Continuous Integration
-*** cuirass-remote-worker
-Open TCP port 5558 and connect to server IPv4 address.
-#+begin_src scheme :noweb-ref service
-  (service cuirass-remote-worker-service-type
-    (cuirass-remote-worker-configuration
-      (publish-port 5558)
-      (workers 2)
-      (systems '("x86_64-linux" "i686-linux"))
-      (server "100.97.195.93:5555")       ;nuporta (Tailscale)
-      (substitute-urls
-       '("https://ci.guix.moe"
-         "https://ci.guix.gnu.org"
-         "https://bordeaux.guix.gnu.org"
-         "https://substitutes.nonguix.org"))))
-#+end_src
-
 ** Monitoring
 *** alloy
 #+begin_src scheme :noweb-ref service
@@ -575,7 +538,7 @@ Disable amdgpu for now.
 #+end_src
 
 *** niri
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "niri"
   "dconf"
   "wl-clipboard"
@@ -683,8 +646,7 @@ Disable amdgpu for now.
       XF86MonBrightnessDown allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "brightness" "decrease"; }
 
       Mod+A           { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }
-      Mod+O           { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
-      Mod+D           { spawn "noctalia-shell" "ipc" "call" "plugin:clipper" "togglePanel"; }
+      Mod+D           { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
       Mod+S           { spawn "noctalia-shell" "ipc" "call" "settings" "toggle"; }
       Mod+L           { spawn "noctalia-shell" "ipc" "call" "lockScreen" "lock"; }
       Ctrl+Alt+Delete { spawn "noctalia-shell" "ipc" "call" "sessionMenu" "toggle"; }
@@ -810,7 +772,7 @@ Run ~herd restart noctalia-shell~ after home environment reconfiguration.
 #+end_src
 
 *** fontconfig
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "font-apple-new-york"
   "font-apple-sf-pro"
   "font-chiron-hei-hk"
@@ -885,8 +847,8 @@ See [[file:shared/emacs.org][shared/emacs.org]].
   <<home-service/emacs>>
 #+end_src
 
-#+begin_src scheme :noweb yes :noweb-ref package
-  <<package/emacs>>
+#+begin_src scheme :noweb yes :noweb-ref package-spec
+  <<package-spec/emacs>>
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref module
@@ -1133,7 +1095,7 @@ Copied from =%default-dotguile=.
 #+end_src
 
 *** librewolf
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "librewolf"
   "adaptive-tab-bar-colour-icecat"
   "bitwarden-icecat"
@@ -1143,7 +1105,7 @@ Copied from =%default-dotguile=.
 #+end_src
 
 *** mpv
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "mpv-nvidia"
 #+end_src
 
@@ -1185,7 +1147,7 @@ Copied from =%default-nanorc=.
 #+end_src
 
 *** prismlauncher
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "prismlauncher-dolly"
 #+end_src
 
@@ -1199,8 +1161,11 @@ Copied from =%default-nanorc=.
 
 *** steam
 #+begin_src scheme :noweb-ref package
+  (steam-for nvdb)
+#+end_src
+
+#+begin_src scheme :noweb-ref package-spec
   "mangohud"
-  "steam-nvidia"
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
@@ -1235,7 +1200,7 @@ Disable
 #+end_src
 
 *** thunar
-#+begin_src scheme :noweb-ref package
+#+begin_src scheme :noweb-ref package-spec
   "exo"
   "file-roller"
   "thunar"
@@ -1343,6 +1308,7 @@ Guix packages
   (gnu packages terminals)
   (gnu packages video)
   (gnu packages xorg)
+  (nongnu packages game-client)
   (nongnu packages nvidia)
   (rosenthal packages password-utils)
 #+end_src
