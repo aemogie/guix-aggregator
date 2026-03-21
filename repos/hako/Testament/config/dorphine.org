@@ -4,7 +4,7 @@
 #+PROPERTY: header-args :mkdirp yes :noweb-prefix no
 
 ** Guix System
-#+begin_src scheme :tangle ../files/tangled/dorphine/dorphine.scm :noweb yes
+#+begin_src scheme :tangle ../tangled/dorphine/dorphine.scm :noweb yes
   (use-modules <<module>>)
 
   (operating-system
@@ -53,6 +53,11 @@
     (name-service-switch %mdns-host-lookup-nss))
 #+end_src
 
+#+begin_src nftables :noweb-ref nftables-filter-input
+  # allow avahi
+  udp dport mdns accept
+#+end_src
+
 ** Guix Home
 #+begin_src scheme :noweb yes :noweb-ref service
   (service guix-home-service-type
@@ -67,7 +72,7 @@
   (service home-dotfiles-service-type
     (home-dotfiles-configuration
       (directories
-       (list (in-vicinity testament-path "files/tangled/dorphine/dotfiles")))))
+       (list (in-vicinity testament-path "tangled/dorphine/dotfiles")))))
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref home-service
@@ -104,7 +109,7 @@
             #~(#$(file-append modprobed-db "/bin/modprobed-db") "storesilent"))))
 #+end_src
 
-#+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/modprobed-db.conf
+#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/modprobed-db.conf
   DBPATH="/home/hako/.config"
   COLORS=light
   IGNORE=(nvidia nvidia_drm nvidia_modeset nvidia_uvm)
@@ -115,10 +120,13 @@ NVIDIA proprietary driver
   "modprobe.blacklist=nouveau"
   "nvidia_drm.modeset=1"
 
-  "nvidia.NVreg_UseKernelSuspendNotifiers=1"
+  ;; https://github.com/Frogging-Family/nvidia-all/blob/master/customization.cfg
+  "nvidia.NVreg_RegistryDwords=RmEnableAggressiveVblank=1"
+  "nvidia.NVreg_UsePageAttributeTable=1"
 
   "mem_sleep_default=s2idle"
   "nvidia.NVreg_EnableS0ixPowerManagement=1"
+  "nvidia.NVreg_UseKernelSuspendNotifiers=1"
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -268,6 +276,10 @@ NVIDIA proprietary driver
             #:requirement '(user-processes guix-daemon))))
 #+end_src
 
+#+begin_src nftables :noweb-ref nftables-filter-input
+  tcp dport 49637 accept
+#+end_src
+
 *** Users
 Generate password hash:
 #+begin_src shell
@@ -384,10 +396,10 @@ Generate passwordless ECC key:
 #+begin_src scheme :noweb-ref service
   (service nftables-service-type
     (nftables-configuration
-      (ruleset (local-file (testament-plain "dorphine/dorphine.nftables")))))
+      (ruleset (local-file (testament-file "dorphine/dorphine.nftables")))))
 #+end_src
 
-#+begin_src nftables :tangle ../files/tangled/dorphine/dorphine.nftables
+#+begin_src nftables :noweb yes :tangle ../tangled/dorphine/dorphine.nftables
   flush ruleset
 
   table inet filter {
@@ -410,28 +422,7 @@ Generate passwordless ECC key:
           ip protocol icmp accept
           ip6 nexthdr icmpv6 accept
 
-          # allow avahi
-          udp dport mdns accept
-
-          # allow cuirass
-          tcp dport 5558 accept
-
-          # allow guix-publish
-          tcp dport 49637 accept
-
-          # allow minecraft
-          tcp dport 25565 accept
-
-          # allow syncthing
-          udp dport 21027 accept
-          meta l4proto { tcp, udp } th dport 22000 accept
-
-          # allow tailscale
-          tcp dport 41641 accept
-
-          # allow warframe
-          udp dport { 4950, 4955 } accept
-          tcp dport 6695-6699 accept
+          <<nftables-filter-input>>
 
           # reject everything else
           reject with icmpx type port-unreachable
@@ -448,6 +439,10 @@ Generate passwordless ECC key:
 *** tailscale
 #+begin_src scheme :noweb-ref service
   (service tailscale-service-type)
+#+end_src
+
+#+begin_src nftables :noweb-ref nftables-filter-input
+  tcp dport 41641 accept
 #+end_src
 
 *** openssh
@@ -506,7 +501,7 @@ Generate passwordless ECC key:
        (plain-file "dorphine.alloy"
          (string-join
           (list (sops-str %sops-dorphine '("alloy"))
-                (file-content (testament-plain "alloy/node-exporter.alloy")))
+                (file-content (testament-file "alloy/node-exporter.alloy")))
           "\n")))))
 #+end_src
 
@@ -552,11 +547,11 @@ Disable amdgpu for now.
     (home-niri-configuration
       (config
        (computed-substitution-with-inputs "niri.kdl"
-         (local-file (testament-plain "dorphine/niri.kdl"))
+         (local-file (testament-file "dorphine/niri.kdl"))
          (list xwayland-satellite)))))
 #+end_src
 
-#+begin_src kdl :tangle ../files/tangled/dorphine/niri.kdl
+#+begin_src kdl :tangle ../tangled/dorphine/niri.kdl
   prefer-no-csd
   screenshot-path "~/Pictures/Screenshots/%Y%m%d-%H%M%S.png"
 
@@ -743,7 +738,7 @@ Disable amdgpu for now.
 
 *** shepherd
 Autostart Shepherd in environments that support XDG Autostart (e.g. GNOME).
-#+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/autostart/shepherd.desktop
+#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/autostart/shepherd.desktop
   [Desktop Entry]
   Type=Application
   Name=Shepherd
@@ -868,7 +863,7 @@ See [[file:shared/emacs.org][shared/emacs.org]].
                                  (guix build utils))
                     ;; Sync with mail server.
                     (invoke #$(file-append isync "/bin/mbsync") "-a"
-                            "--config" #$(local-file (testament-plain "dorphine/mbsync.conf")))
+                            "--config" #$(local-file (testament-file "dorphine/mbsync.conf")))
                     ;; Index.
                     (let ((notmuch #$(file-append notmuch "/bin/notmuch")))
                       (invoke notmuch "new")
@@ -907,7 +902,7 @@ See [[file:shared/emacs.org][shared/emacs.org]].
 #+end_src
 
 mbsync:
-#+begin_src conf :tangle ../files/tangled/dorphine/mbsync.conf
+#+begin_src conf :tangle ../tangled/dorphine/mbsync.conf
   Create Both
   Expunge Both
   CopyArrivalDate yes
@@ -934,7 +929,7 @@ mbsync:
 #+end_src
 
 l2md:
-#+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/l2md/config
+#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/l2md/config
   [general]
           base = ~/.local/share/l2md/
           oneshot = 1
@@ -961,7 +956,7 @@ l2md:
 #+end_src
 
 notmuch:
-#+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/notmuch/default/config
+#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/notmuch/default/config
   [database]
   path=/home/hako/.local/share/mail
 
@@ -991,7 +986,7 @@ notmuch:
 
 *** gdb
 Copied from =%default-gdbinit=.
-#+begin_src scheme :tangle ../files/tangled/dorphine/dotfiles/.config/gdb/gdbinit
+#+begin_src scheme :tangle ../tangled/dorphine/dotfiles/.config/gdb/gdbinit
   # Tell GDB where to look for separate debugging files.
   guile
   (use-modules (gdb))
@@ -1014,7 +1009,7 @@ Copied from =%default-gdbinit=.
 #+end_src
 
 *** git
-#+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/git/config
+#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/git/config
   [core]
           quotePath = false
   [init]
@@ -1046,7 +1041,7 @@ Copied from =%default-gdbinit=.
 #+end_src
 
 For emacs-forge.
-#+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/git/config
+#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/git/config
   [github]
           user = rakino
   [gitlab]
@@ -1054,7 +1049,7 @@ For emacs-forge.
 #+end_src
 
 [[https://forgejo.org/docs/latest/user/agit-support/][AGit Workflow]] helpers.
-#+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/git/config
+#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/git/config
   [alias]
   	pr-push  = "!f() { branch=$1; topic=$(git branch --show-current); shift; git push origin $topic:refs/for/$branch/$topic -o force-push \"$@\"; }; f"
   	pr-apply = "!f() { for id in $(git cherry HEAD pullreqs/$1 | cut -c2-); do git cherry-pick --signoff $id; done; }; f"
@@ -1062,7 +1057,7 @@ For emacs-forge.
 
 *** guile
 Copied from =%default-dotguile=.
-#+begin_src scheme :tangle ../files/tangled/dorphine/dotfiles/.guile
+#+begin_src scheme :tangle ../tangled/dorphine/dotfiles/.guile
   (cond ((false-if-exception (resolve-interface '(ice-9 readline)))
          =>
          (lambda (module)
@@ -1109,7 +1104,7 @@ Copied from =%default-dotguile=.
   "mpv-nvidia"
 #+end_src
 
-#+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/mpv/mpv.conf
+#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/mpv/mpv.conf
   # https://vcb-s.com/archives/7594
   profile=high-quality
   cscale=catmull_rom
@@ -1141,7 +1136,7 @@ Copied from =%default-dotguile=.
 *** nano
 Copied from =%default-nanorc=.
 
-#+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/nano/naonrc
+#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/nano/naonrc
   # Include all the syntax highlighting modules.
   include /run/current-system/profile/share/nano/*.nanorc
 #+end_src
@@ -1149,6 +1144,10 @@ Copied from =%default-nanorc=.
 *** prismlauncher
 #+begin_src scheme :noweb-ref package-spec
   "prismlauncher-dolly"
+#+end_src
+
+#+begin_src nftables :noweb-ref nftables-filter-input
+  tcp dport 25565 accept
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
@@ -1162,6 +1161,12 @@ Copied from =%default-nanorc=.
 *** steam
 #+begin_src scheme :noweb-ref package
   (steam-for nvdb)
+#+end_src
+
+#+begin_src nftables :noweb-ref nftables-filter-input
+  # allow warframe
+  udp dport { 4950, 4955 } accept
+  tcp dport 6695-6699 accept
 #+end_src
 
 #+begin_src scheme :noweb-ref package-spec
@@ -1199,6 +1204,11 @@ Disable
       (user "hako")))
 #+end_src
 
+#+begin_src nftables :noweb-ref nftables-filter-input
+  udp dport 21027 accept
+  meta l4proto { tcp, udp } th dport 22000 accept
+#+end_src
+
 *** thunar
 #+begin_src scheme :noweb-ref package-spec
   "exo"
@@ -1213,12 +1223,12 @@ Disable
   "webp-pixbuf-loader"
 #+end_src
 
-#+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/xfce4/helpers.rc
+#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/xfce4/helpers.rc
   TerminalEmulator=open-wezterm-here
 #+end_src
 
 *** wezterm
-#+begin_src lua :tangle ../files/tangled/dorphine/dotfiles/.config/wezterm/wezterm.lua
+#+begin_src lua :tangle ../tangled/dorphine/dotfiles/.config/wezterm/wezterm.lua
   local wezterm = require 'wezterm'
   local config = wezterm.config_builder()
 
@@ -1229,7 +1239,7 @@ Disable
 #+end_src
 
 *** wget
-#+begin_src conf :tangle ../files/tangled/dorphine/dotfiles/.config/wgetrc
+#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/wgetrc
   hsts-file = ~/.cache/wget-hsts
 #+end_src
 

@@ -8,11 +8,10 @@
   #:use-module (ice-9 textual-ports)
   #:use-module (srfi srfi-26)
   ;; Utilities
-  #:use-module ((guix diagnostics) #:select (leave))
   #:use-module (guix gexp)
-  #:use-module ((guix i18n) #:select (G_))
   #:use-module (guix packages)
   #:use-module (guix store)
+  #:use-module (guix utils)
   #:use-module (rosenthal utils file)
   #:use-module (sops secrets)
   ;; Guix origin methods
@@ -34,7 +33,7 @@
   #:use-module (nongnu packages linux)
   #:use-module (rosenthal packages password-utils)
   #:export (testament-path
-            testament-plain
+            testament-file
 
             sops-str
             sops-num
@@ -69,15 +68,11 @@
 (define testament-path
   (getcwd))
 
-(define (testament-plain . name)
-  (let ((plain (in-vicinity testament-path "files/plain"))
-        (tangled (in-vicinity testament-path "files/tangled")))
-    (match name
-      (()
-       (local-file plain #:recursive? #t))
-      ((file)
-       (or (search-path (list plain tangled) file)
-           (leave (G_ "file '~a' not found.~%") file))))))
+(define (testament-file name)
+  (let ((tangled (in-vicinity (string-append testament-path "/tangled") name)))
+    (if (file-exists? tangled)
+        tangled
+        (error "file '~a' not found.~%" name))))
 
 
 ;;;
@@ -121,11 +116,11 @@ WARNED."
         out)))
 
 (define %sops-chapra
-  (local-file (in-vicinity testament-path "files/plain/sops/chapra.yaml")))
+  (local-file (in-vicinity testament-path "secrets/chapra.yaml")))
 (define %sops-dorphine
-  (local-file (in-vicinity testament-path "files/plain/sops/dorphine.yaml")))
+  (local-file (in-vicinity testament-path "secrets/dorphine.yaml")))
 (define %sops-nuporta
-  (local-file (in-vicinity testament-path "files/plain/sops/nuporta.yaml")))
+  (local-file (in-vicinity testament-path "secrets/nuporta.yaml")))
 
 
 ;;;
@@ -250,7 +245,10 @@ WARNED."
         gnupg
         mosh
         ncurses
-        rclone
+        (package/inherit rclone
+          (arguments
+           (substitute-keyword-arguments (package-arguments rclone)
+             ((#:tests? _ #t) #f))))
         ripgrep
         rsync
         sops

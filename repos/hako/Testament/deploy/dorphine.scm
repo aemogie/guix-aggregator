@@ -3,7 +3,7 @@
              (gnu machine ssh))
 
 (define %os
-  (load (in-vicinity testament-path "files/tangled/nuporta/nuporta.scm")))
+  (load (in-vicinity testament-path "tangled/dorphine/dorphine.scm")))
 
 (list
  (machine
@@ -11,6 +11,6 @@
    (environment managed-host-environment-type)
    (configuration
     (machine-ssh-configuration
-      (host-name "nuporta")
+      (host-name "dorphine")
       (system "x86_64-linux")
-      (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILdDyVMnEcVsuTZvnKjnQsgmTN+ebX9ub4ek4xwsqu+K")))))
+      (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAsyytSPRGw89e4YrWeLemUs16dgFB1vTnNLPwupqN+B")))))

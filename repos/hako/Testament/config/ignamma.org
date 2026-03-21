@@ -4,7 +4,7 @@
 #+PROPERTY: header-args :mkdirp yes :noweb-prefix no
 
 ** Guix System
-#+begin_src scheme :tangle ../files/tangled/ignamma/ignamma.scm :noweb yes
+#+begin_src scheme :tangle ../tangled/ignamma/ignamma.scm :noweb yes
   (use-modules <<module>>)
 
   (operating-system
@@ -12,7 +12,7 @@
     (timezone "Etc/GMT-8")
     (bootloader
      (bootloader-configuration
-       (bootloader limine-efi-removable-bootloader)
+       (bootloader grub-efi-removable-bootloader)
        (targets '("/efi"))))
     (kernel linux/dolly)
     (kernel-arguments (cons* <<kernel-argument>> %default-kernel-arguments))
@@ -91,6 +91,10 @@
             #:requirement '(user-processes guix-daemon))))
 #+end_src
 
+#+begin_src nftables :noweb-ref nftables-filter-input
+  tcp dport 49637 accept
+#+end_src
+
 *** Users
 #+begin_src scheme :noweb-ref user
   (user-account
@@ -149,14 +153,18 @@
   (service avahi-service-type)
 #+end_src
 
+#+begin_src nftables :noweb-ref nftables-filter-input
+  udp dport mdns accept
+#+end_src
+
 *** nftables
 #+begin_src scheme :noweb-ref service
   (service nftables-service-type
     (nftables-configuration
-      (ruleset (local-file (testament-plain "ignamma/ignamma.nftables")))))
+      (ruleset (local-file (testament-file "ignamma/ignamma.nftables")))))
 #+end_src
 
-#+begin_src nftables :tangle ../files/tangled/ignamma/ignamma.nftables
+#+begin_src nftables :noweb yes :tangle ../tangled/ignamma/ignamma.nftables
   flush ruleset
 
   table inet filter {
@@ -179,21 +187,7 @@
           ip protocol icmp accept
           ip6 nexthdr icmpv6 accept
 
-          # allow avahi
-          udp dport mdns accept
-
-          # allow cuirass
-          tcp dport 5558 accept
-
-          # allow guix-publish
-          tcp dport 49637 accept
-
-          # allow mosh
-          tcp dport ssh accept
-          udp dport 60000-61000 accept
-
-          # allow tailscale
-          tcp dport 41641 accept
+          <<nftables-filter-input>>
 
           # reject everything else
           reject with icmpx type port-unreachable
@@ -212,6 +206,10 @@
   (service tailscale-service-type)
 #+end_src
 
+#+begin_src nftables :noweb-ref nftables-filter-input
+  tcp dport 41641 accept
+#+end_src
+
 *** openssh
 #+begin_src scheme :noweb-ref service
   (service openssh-service-type
@@ -219,6 +217,12 @@
       (openssh openssh-sans-x)
       (permit-root-login 'prohibit-password)
       (password-authentication? #f)))
+#+end_src
+
+#+begin_src nftables :noweb-ref nftables-filter-input
+  tcp dport ssh accept
+  # allow mosh
+  udp dport 60000-61000 accept
 #+end_src
 
 *** fail2ban
@@ -256,6 +260,10 @@ Open TCP port 5558 and connect to server IPv4 address.
          "https://substitutes.nonguix.org"))))
 #+end_src
 
+#+begin_src nftables :noweb-ref nftables-filter-input
+  tcp dport 5558 accept
+#+end_src
+
 ** Monitoring
 *** alloy
 #+begin_src scheme :noweb-ref service
@@ -265,7 +273,7 @@ Open TCP port 5558 and connect to server IPv4 address.
        (plain-file "ignamma.alloy"
          (string-join
           (list (sops-str %sops-dorphine '("alloy"))
-                (file-content (testament-plain "alloy/node-exporter.alloy")))
+                (file-content (testament-file "alloy/node-exporter.alloy")))
           "\n")))))
 #+end_src
 

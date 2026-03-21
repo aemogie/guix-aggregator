@@ -4,7 +4,7 @@
 #+PROPERTY: header-args :mkdirp yes :noweb-prefix no
 
 ** Guix System
-#+begin_src scheme :tangle ../files/tangled/chapra/chapra.scm :noweb yes
+#+begin_src scheme :tangle ../tangled/chapra/chapra.scm :noweb yes
   (use-modules <<module>>)
 
   (operating-system
@@ -213,14 +213,18 @@
   (service avahi-service-type)
 #+end_src
 
+#+begin_src nftables :noweb-ref nftables-filter-input
+  udp dport mdns accept
+#+end_src
+
 *** nftables
 #+begin_src scheme :noweb-ref service
   (service nftables-service-type
     (nftables-configuration
-      (ruleset (local-file (testament-plain "chapra/chapra.nftables")))))
+      (ruleset (local-file (testament-file "chapra/chapra.nftables")))))
 #+end_src
 
-#+begin_src nftables :tangle ../files/tangled/chapra/chapra.nftables
+#+begin_src nftables :noweb yes :tangle ../tangled/chapra/chapra.nftables
   flush ruleset
 
   table inet filter {
@@ -243,25 +247,7 @@
           ip protocol icmp accept
           ip6 nexthdr icmpv6 accept
 
-          # allow avahi
-          udp dport mdns accept
-
-          # allow caddy
-          tcp dport https accept
-          udp dport https accept
-
-          # allow komga
-          tcp dport 44293 accept
-
-          # allow mosh
-          tcp dport ssh accept
-          udp dport 60000-61000 accept
-
-          # allow qbittorrent
-          meta l4proto { tcp, udp } th dport 15308 accept
-
-          # allow tailscale
-          tcp dport 41641 accept
+          <<nftables-filter-input>>
 
           # reject everything else
           reject with icmpx type port-unreachable
@@ -280,6 +266,10 @@
   (service tailscale-service-type)
 #+end_src
 
+#+begin_src nftables :noweb-ref nftables-filter-input
+  tcp dport 41641 accept
+#+end_src
+
 *** openssh
 #+begin_src scheme :noweb-ref service
   (service openssh-service-type
@@ -287,6 +277,12 @@
       (openssh openssh-sans-x)
       (permit-root-login 'prohibit-password)
       (password-authentication? #f)))
+#+end_src
+
+#+begin_src nftables :noweb-ref nftables-filter-input
+  tcp dport ssh accept
+  # allow mosh
+  udp dport 60000-61000 accept
 #+end_src
 
 *** fail2ban
@@ -322,11 +318,16 @@
   (service caddy-service-type
     (caddy-configuration
       (caddy caddy/dolly)
-      (caddyfile (local-file (testament-plain "chapra/chapra.caddyfile")))
+      (caddyfile (local-file (testament-file "chapra/chapra.caddyfile")))
       (shepherd-requirement '(network-online))))
 #+end_src
 
-#+begin_src caddyfile :tangle ../files/tangled/chapra/chapra.caddyfile
+#+begin_src nftables :noweb-ref nftables-filter-input
+  tcp dport https accept
+  udp dport https accept
+#+end_src
+
+#+begin_src caddyfile :noweb yes :tangle ../tangled/chapra/chapra.caddyfile
   {
   	dns cloudflare {file./run/secrets/cloudflare}
   	acme_dns cloudflare {file./run/secrets/cloudflare}
@@ -353,36 +354,22 @@
   	}
   }
 
-  
-  # qBittorrent
-  dl.urspace.moe {
-  	reverse_proxy localhost:35951
-  }
-
-  # Komga
-  manga.urspace.moe {
-  	reverse_proxy localhost:44293
-  }
-
-  # Navidrome
-  music.urspace.moe {
-  	reverse_proxy localhost:43502
-  }
-
-  # Jellyfin
-  shows.urspace.moe {
-  	reverse_proxy localhost:22443
-  }
-
-  
   :80, :443 {
   	respond /* "Access denied" 403 {
   		close
   	}
   }
+
+  <<caddy-site>>
 #+end_src
 
 *** jellyfin
+#+begin_src caddyfile :noweb-ref caddy-site
+  shows.urspace.moe {
+  	reverse_proxy localhost:22443
+  }
+#+end_src
+
 #+begin_src scheme :noweb-ref service
   (service jellyfin-service-type
     (jellyfin-configuration
@@ -395,13 +382,29 @@
 #+end_src
 
 *** komga
+#+begin_src caddyfile :noweb-ref caddy-site
+  manga.urspace.moe {
+  	reverse_proxy localhost:44293
+  }
+#+end_src
+
 #+begin_src scheme :noweb-ref service
   (service komga-service-type
     (komga-configuration
       (port 44293)))
 #+end_src
 
+#+begin_src nftables :noweb-ref nftables-filter-input
+  tcp dport 44293 accept
+#+end_src
+
 *** navidrome
+#+begin_src caddyfile :noweb-ref caddy-site
+  music.urspace.moe {
+  	reverse_proxy localhost:43502
+  }
+#+end_src
+
 #+begin_src scheme :noweb-ref service
   (service navidrome-service-type
     (navidrome-configuration
@@ -415,11 +418,21 @@
 #+end_src
 
 *** qbittorrent
+#+begin_src caddyfile :noweb-ref caddy-site
+  dl.urspace.moe {
+  	reverse_proxy localhost:35951
+  }
+#+end_src
+
 #+begin_src scheme :noweb-ref service
   (service qbittorrent-service-type
     (qbittorrent-configuration
       (qbittorrent qbittorrent-enhanced-no-x)
       (webui-port 35951)))
+#+end_src
+
+#+begin_src nftables :noweb-ref nftables-filter-input
+  meta l4proto { tcp, udp } th dport 15308 accept
 #+end_src
 
 ** Monitoring
@@ -431,9 +444,9 @@
        (plain-file "chapra.alloy"
          (string-join
           (list (sops-str %sops-dorphine '("alloy"))
-                (file-content (testament-plain "alloy/node-exporter.alloy"))
-                (file-content (testament-plain "alloy/docker.alloy"))
-                (file-content (testament-plain "alloy/caddy.alloy")))
+                (file-content (testament-file "alloy/node-exporter.alloy"))
+                (file-content (testament-file "alloy/docker.alloy"))
+                (file-content (testament-file "alloy/caddy.alloy")))
           "\n")))))
 #+end_src
 

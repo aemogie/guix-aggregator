@@ -24,7 +24,7 @@ workaround.
 
 Configuration file and services for Emacs:
 
-#+begin_src emacs-lisp :noweb yes :tangle ../../files/tangled/emacs/emacs-init.el
+#+begin_src emacs-lisp :noweb yes :tangle ../../tangled/emacs/emacs-init.el
   ;;; -*- lexical-binding: t -*-
 
   (setopt custom-file (locate-user-emacs-file "custom.el"))
@@ -88,7 +88,7 @@ shell while using Emacs.
   (simple-service 'emacs-configuration home-xdg-configuration-files-service-type
     `(("emacs/init.el"
        ,(computed-substitution-with-inputs "init.el"
-          (local-file (testament-plain "emacs/emacs-init.el"))
+          (local-file (testament-file "emacs/emacs-init.el"))
           (list ccls
                 python-lsp-server
                 rust-analyzer

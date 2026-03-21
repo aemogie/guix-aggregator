@@ -1,0 +1,71 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright © 2026 Hilton Chain <hako@ultrarare.space>
+#+TITLE: Caddy snippets
+#+PROPERTY: header-args :mkdirp yes :noweb-prefix no
+
+#+begin_src caddyfile :tangle ../../tangled/caddy
+  placeholder
+#+end_src
+
+** Logging
+#+name: caddy-snippet-logging
+#+begin_src caddyfile
+  (logging) {
+  	log {
+  		output file /var/log/caddy/{args[0]}.log
+  		format filter {
+  			wrap json
+  			request>remote_ip ip_mask {
+  				ipv4 20
+  				ipv6 44
+  			}
+  			request>client_ip ip_mask {
+  				ipv4 20
+  				ipv6 44
+  			}
+  			fields {
+  				request>uri query {
+  					delete access_token
+  				}
+  			}
+  		}
+  	}
+  }
+#+end_src
+
+** Block bots
+#+name: caddy-snippet-block-bots
+#+begin_src caddyfile
+  (block_bots) {
+  	import $$share/ai-robots-txt/Caddyfile$$
+  	handle @aibots {
+  		log_skip
+  		respond /* "Access denied" 403 {
+  			close
+  		}
+  	}
+
+  	@fake {
+  		header User-Agent *Chrome*
+  		header User-Agent *Firefox*
+  		header !Sec-Fetch-Mode
+  	}
+  	handle @fake {
+  		log_skip
+  		respond /* "Access denied" 403 {
+  			close
+  		}
+  	}
+  }
+#+end_src
+
+** Tailscale
+#+name: caddy-snippet-tailscale
+#+begin_src caddyfile
+  (tailscale) {
+  	@tailscale client_ip 100.64.0.0/10 fd7a:115c:a1e0::/48
+  	handle @tailscale {
+  		{block}
+  	}
+  }
+#+end_src

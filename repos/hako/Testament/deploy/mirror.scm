@@ -3,7 +3,7 @@
              (gnu machine ssh))
 
 (define %os
-  (load (in-vicinity testament-path "files/tangled/mirror/mirror.scm")))
+  (load (in-vicinity testament-path "tangled/mirror/mirror.scm")))
 
 (define* (mirror #:key mirror-name host-name system ssh-host-key (bios-boot #f))
   (machine

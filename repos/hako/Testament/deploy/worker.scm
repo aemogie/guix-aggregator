@@ -3,7 +3,7 @@
              (gnu machine ssh))
 
 (define %os
-  (load (in-vicinity testament-path "files/tangled/worker/worker.scm")))
+  (load (in-vicinity testament-path "tangled/worker/worker.scm")))
 
 (define* (build-worker #:key host-name address system (32bit-support? #t) ssh-host-key workers (bios-boot #f))
   (machine

@@ -3,7 +3,7 @@
              (gnu machine ssh))
 
 (define %os
-  (load (in-vicinity testament-path "files/tangled/ignamma/ignamma.scm")))
+  (load (in-vicinity testament-path "tangled/ignamma/ignamma.scm")))
 
 (list
  (machine

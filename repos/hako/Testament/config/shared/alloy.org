@@ -1,0 +1,141 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright © 2026 Hilton Chain <hako@ultrarare.space>
+#+TITLE: Alloy
+#+PROPERTY: header-args :mkdirp yes :noweb-prefix no
+
+** Caddy
+#+begin_src conf :tangle ../../tangled/alloy/caddy.alloy
+  discovery.relabel "metrics_caddy" {
+  	targets = [{
+  		__address__ = "localhost:2019",
+  	}]
+
+  	rule {
+  		target_label = "instance"
+  		replacement  = constants.hostname
+  	}
+  }
+
+  prometheus.scrape "metrics_caddy" {
+  	targets    = discovery.relabel.metrics_caddy.output
+  	forward_to = [prometheus.remote_write.metrics.receiver]
+  	job_name   = "caddy"
+  }
+
+  local.file_match "logs_caddy" {
+      path_targets = [{
+          __address__ = "localhost",
+          __path__    = "/var/log/caddy/*.log",
+          instance    = constants.hostname,
+          job         = "caddy",
+      }]
+  }
+
+  loki.process "logs_caddy_process" {
+      forward_to = [loki.write.logs.receiver]
+
+      stage.drop {
+          drop_counter_reason = "status.guix.moe"
+          expression          = ".*zma66hlgwmkjf2hdmi2ik8fx2y13c965.*"
+      }
+  }
+
+  loki.source.file "logs_caddy" {
+      targets    = local.file_match.logs_caddy.targets
+      forward_to = [loki.process.logs_caddy_process.receiver]
+  }
+#+end_src
+
+** Docker
+#+begin_src conf :tangle ../../tangled/alloy/docker.alloy
+  prometheus.exporter.cadvisor "metrics_docker" {
+      docker_only = true
+  }
+
+  discovery.relabel "metrics_docker" {
+      targets = prometheus.exporter.cadvisor.metrics_docker.targets
+
+      rule {
+          target_label = "job"
+          replacement  = "docker"
+      }
+
+      rule {
+          target_label = "instance"
+          replacement  = constants.hostname
+      }
+  }
+
+  prometheus.scrape "metrics_docker" {
+      targets    = discovery.relabel.metrics_docker.output
+      forward_to = [prometheus.remote_write.metrics.receiver]
+  }
+
+  discovery.docker "logs_docker" {
+      host             = "unix:///var/run/docker.sock"
+      refresh_interval = "5s"
+  }
+
+  discovery.relabel "logs_docker" {
+      targets = []
+
+      rule {
+          target_label = "job"
+          replacement  = "docker"
+      }
+
+      rule {
+          target_label = "instance"
+          replacement  = constants.hostname
+      }
+
+      rule {
+          source_labels = ["__meta_docker_container_name"]
+          regex         = "/(.*)"
+          target_label  = "container"
+      }
+
+      rule {
+          source_labels = ["__meta_docker_container_log_stream"]
+          target_label  = "stream"
+      }
+  }
+
+  loki.source.docker "logs_docker" {
+      host             = "unix:///var/run/docker.sock"
+      targets          = discovery.docker.logs_docker.targets
+      forward_to       = [loki.write.logs.receiver]
+      relabel_rules    = discovery.relabel.logs_docker.rules
+      refresh_interval = "5s"
+  }
+#+end_src
+
+** Node exporter
+#+begin_src conf :tangle ../../tangled/alloy/node-exporter.alloy
+  prometheus.exporter.unix "node_exporter" {
+    include_exporter_metrics = true
+  }
+
+  discovery.relabel "node_exporter" {
+    targets = prometheus.exporter.unix.node_exporter.targets
+
+    rule {
+      target_label = "instance"
+      replacement  = constants.hostname
+    }
+
+    rule {
+      target_label = "job"
+      replacement = "node_exporter"
+    }
+  }
+
+  prometheus.scrape "node_exporter" {
+    targets    = discovery.relabel.node_exporter.output
+    forward_to = [prometheus.relabel.node_exporter.receiver]
+  }
+
+  prometheus.relabel "node_exporter" {
+    forward_to = [prometheus.remote_write.metrics.receiver]
+  }
+#+end_src

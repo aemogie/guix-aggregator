@@ -4,36 +4,37 @@
 
 This repository contains my dotfiles and Guix System literate configurations.
 
-** Structure
-+ [[file:config][config]] :: [[https://guix.gnu.org/manual/devel/en/html_node/operating_002dsystem-Reference.html][=operating-system=]] declarations and configuration files written in
-  [[https://orgmode.org/][Org mode]], to be [[https://orgmode.org/manual/Extracting-Source-Code.html][tangled]] as the final Guix System configurations.
-+ [[file:files/plain][files/plain]] :: Files to be referenced in the declarations.
-+ [[file:files/deploy][files/deploy]] :: [[https://guix.gnu.org/manual/devel/en/html_node/Invoking-guix-deploy.html][~guix deploy~]] configurations.
-+ [[file:modules][modules]] :: Guile [[https://www.gnu.org/software/guile/manual/html_node/Modules.html][modules]].
+** Usage
+Environment setup is done via [[https://guix.gnu.org/manual/devel/en/html_node/Invoking-guix-time_002dmachine.html][~guix time-machine~]] and [[https://guix.gnu.org/manual/devel/en/html_node/Invoking-guix-shell.html][~guix shell~]].  [[file:.envrc][.envrc]] is
+available for [[https://direnv.net/][direnv]] to automate the process.
 
-Guix [[https://guix.gnu.org/manual/devel/en/html_node/Channels.html][channels]] in use:
-+ [[https://codeberg.org/guix/guix.git][guix]] (additional [[https://codeberg.org/hako/Rosenthal/src/branch/trunk/modules/rosenthal/packages/patches/][patches]] are used locally for root on ZFS support)
-+ [[https://gitlab.com/nonguix/nonguix][nonguix]]
-+ [[https://codeberg.org/hako/rosenthal.git][rosenthal]]
-+ [[https://github.com/fishinthecalculator/sops-guix][sops-guix]]
+#+begin_example
+  $ guix time-machine -C channels.lock -- shell -m manifest.scm
+#+end_example
 
-See [[file:.envrc][.envrc]] for environment setup and commands in [[file:blueprint.scm][blueprint.scm]] for usage.
+This repository uses [[https://codeberg.org/lapislazuli/blue][BLUE build system]], the entry point is at [[file:blueprint.scm][blueprint.scm]].
+
+#+begin_example
+  $ blue configure
+  $ blue build
+  $ blue help
+#+end_example
 
 ** Systems
-*** [[file:config/dorphine.org][dorphine]] (x86_64-linux, UEFI, ZFS, NVIDIA) | [[file:files/deploy/dorphine.scm][deploy]]
-#+html: <img src="https://s3.boiledscript.com/misskey/a052b129-6554-4239-8203-a2697112b172.webp">
-#+html: <img src="https://s3.boiledscript.com/misskey/a7776bb9-4543-4adc-9d81-3e7d58e28492.webp">
+*** [[file:config/dorphine.org][dorphine]] (x86_64-linux, UEFI, ZFS, NVIDIA) | [[file:deploy/dorphine.scm][deploy]]
+#+html: <img src="https://s3.boiledscript.com/misskey/a6987cd5-beb0-4ad3-b32a-3a0b6e2eb487.png">
+#+html: <img src="https://s3.boiledscript.com/misskey/050ff3d7-d928-43a9-bc4f-1cba9afa9dea.png">
 
-*** [[file:config/chapra.org][chapra]] (x86_64-linux, UEFI, ZFS) | [[file:files/deploy/chapra.scm][deploy]]
+*** [[file:config/chapra.org][chapra]] (x86_64-linux, UEFI, ZFS) | [[file:deploy/chapra.scm][deploy]]
 
-*** [[file:config/nuporta.org][nuporta]] (x86_64-linux, UEFI, ZFS) | [[file:files/deploy/nuporta.scm][deploy]]
+*** [[file:config/nuporta.org][nuporta]] (x86_64-linux, UEFI, ZFS) | [[file:deploy/nuporta.scm][deploy]]
 
-*** [[file:config/ignamma.org][ignamma]] (x86_64-linux, UEFI, XFS) | [[file:files/deploy/ignamma.scm][deploy]]
+*** [[file:config/ignamma.org][ignamma]] (x86_64-linux, UEFI, XFS) | [[file:deploy/ignamma.scm][deploy]]
 
-*** [[file:config/worker.org][worker]] | [[file:files/deploy/worker.scm][deploy]]
+*** [[file:config/worker.org][worker]] | [[file:deploy/worker.scm][deploy]]
 Build workers for Guix Moe build farm.
 
-*** [[file:config/mirror.org][mirror]] | [[file:files/deploy/mirror.scm][deploy]]
+*** [[file:config/mirror.org][mirror]] | [[file:deploy/mirror.scm][deploy]]
 Substitute mirrors for Guix Moe build farm.
 
 ** [[file:config/live][LiveCDs]]
@@ -88,7 +89,6 @@ Default keybindings:
 + =Super+D= :: Open application launcher.
 + =Super+Return= :: Open terminal emulator: [[https://wezterm.org/][WezTerm]].
 
-#+html: <img src="https://s3.boiledscript.com/misskey/7371f3db-92a7-4c51-9eb1-991743fdaebb.webp">
 #+html: <img src="https://s3.boiledscript.com/misskey/9e9928ab-36ba-46bd-8ac4-35cda328606d.webp">
 #+html: <img src="https://s3.boiledscript.com/misskey/0bcd4fe2-8bf2-484b-9b3a-4d127846a46c.webp">
 

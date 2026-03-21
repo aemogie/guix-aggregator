@@ -50,8 +50,8 @@
            (error (format #f "Command ~s exited with non-zero exit status: ~s"
                           (string-join cmd) exit-val)))))))
 
-(define* ($guix args #:key local? (channels "channels.lock") #:allow-other-keys)
-  (if local?
+(define* ($guix args #:key fork? (channels "channels.lock") #:allow-other-keys)
+  (if fork?
       ($ `("./pre-inst-env" "guix" ,@args))
       ($ `("guix" "time-machine" "-C" ,channels ,%substitute-urls "--" ,@args))))
 
@@ -75,15 +75,22 @@
 (define-method (ask-build-manifest (buildable <shared-config>)
                                    (inputs <list>)
                                    (outputs <list>))
+  (define input
+    (first inputs))
+
+  (define output
+    (first outputs))
+
   (make-build-manifest
-   (string-append "TANGLE\t" (first outputs))
+   (string-append "TANGLE\t" output)
    (lambda ()
      ($emacs
       `("--quick" "--batch"
         "--load" "ob-tangle"
         "--eval" "(setopt org-babel-load-languages '((shell . t)))"
         "--eval" "(setopt org-confirm-babel-evaluate nil)"
-        "--eval" ,(format #f "(org-babel-tangle-file ~s)" (first inputs)))))))
+        "--eval" ,(format #f "(org-babel-tangle-file ~s)" input)))
+     ($ `("touch" ,output)))))
 
 (define-method (ask-build-manifest (buildable <system-config>)
                                    (inputs <list>)
@@ -94,8 +101,14 @@
      buildable-inputs
      (filter shared-config? (buildable-inputs buildable))))
 
+  (define input
+    (first inputs))
+
+  (define output
+    (first outputs))
+
   (make-build-manifest
-   (string-append "TANGLE\t" (first outputs))
+   (string-append "TANGLE\t" output)
    (lambda ()
      ($emacs
       `("--quick" "--batch"
@@ -107,24 +120,38 @@
            (lambda (file)
              (list "--eval" (format #f "(org-babel-lob-ingest ~s)" file)))
            dependencies)
-        "--eval" ,(format #f "(org-babel-tangle-file ~s)" (first inputs)))))))
+        "--eval" ,(format #f "(org-babel-tangle-file ~s)" input)))
+     ($ `("touch" ,output)))))
 
 
 ;;;
 ;;; Buildables.
 ;;;
 
+(define %shared-config-alloy
+  (shared-config
+   (inputs '("config/shared/alloy.org"))
+   (outputs '("tangled/alloy"))))
+
+(define %shared-config-caddy
+  (shared-config
+   (inputs '("config/shared/caddy.org"))
+   (outputs '("tangled/caddy"))))
+
 (define %shared-config-emacs
   (shared-config
    (inputs '("config/shared/emacs.org"))
-   (outputs '("files/tangled/emacs"))))
+   (outputs '("tangled/emacs"))))
 
 (define %systems
-  `(("dorphine" #:local? #t #:dependencies (,%shared-config-emacs))
-    ("chapra"   #:local? #t)
-    ("ignamma")
-    ("nuporta"  #:local? #t)
-    ("mirror")
+  `(("dorphine" #:fork? #t #:dependencies ,(list %shared-config-alloy
+                                                 %shared-config-emacs))
+    ("chapra"   #:fork? #t #:dependencies ,(list %shared-config-alloy))
+    ("ignamma"             #:dependencies ,(list %shared-config-alloy))
+    ("nuporta"  #:fork? #t #:dependencies ,(list %shared-config-alloy
+                                                 %shared-config-caddy))
+    ("mirror"              #:dependencies ,(list %shared-config-alloy
+                                                 %shared-config-caddy))
     ("worker")))
 
 (define %images
@@ -133,7 +160,7 @@
 
 (define* (system-config-for name #:key (dependencies '()) #:allow-other-keys)
   (let ((input (string-append "config/" name ".org"))
-        (output (string-append "files/tangled/" name)))
+        (output (string-append "tangled/" name)))
     (system-config
      (inputs (cons input dependencies))
      (outputs (list output)))))
@@ -157,44 +184,58 @@
 ;;; Commands.
 ;;;
 
-(define-command (authenticate-command arguments)
-  ((invoke "authenticate")
-   (category 'dispatch))
-  ($guix `("git" "authenticate"
-           "c5d46fdfdfbc84fe413f1d930049d1f703f9a0ff"
-           "F4C2 D1DF 3FDE EA63 D1D3  0776 ACC6 6D09 CA52 8292")))
-
-(define-command (update-channels-command arguments)
-  ((invoke "update-channels")
-   (category 'dispatch))
+(define-command (update-command arguments)
+  ((invoke "update")
+   (category 'development)
+   (synopsis "Update channels.lock to latest channel revisions"))
   ($guix `("repl" "--" "scripts/describe.scm") #:channels "channels.scm"))
 
-(define-command (pull-command arguments)
-  ((invoke "pull")
-   (category 'dispatch))
-  ($guix `("pull" "--channels=channels.lock" ,%substitute-urls)))
-
-(define-command (ares-command arguments)
-  ((invoke "ares")
-   (category 'dispatch))
-  ($guix `("shell" "guile" "guile-ares-rs" "--"
-           "guile" "-c"
-           ,(call-with-output-string
-              (cut write
-                   '(begin
-                      (use-modules (ares server)
-                                   ;; Load reader extensions.
-                                   (guix gexp))
-                      (run-nrepl-server))
-                   <>)))))
+(define-command (serve-command arguments)
+  ((invoke "serve")
+   (category 'development)
+   (synopsis "Start nREPL server for emacs-arei")
+   (help "
+Start nREPL server for emacs-arei, also compile Guix when its git submodule is \
+checked out."))
+  ;; Update Citre tags.
+  (let ((citre-tags-file "/home/hako/.cache/tags/!home!hako!Testament!.tags"))
+    (when (file-exists? citre-tags-file)
+      ($emacs `("--quick" "--batch"
+                "--load" "citre-ctags"
+                "--eval"
+                ,(format #f "(citre-update-tags-file ~s)" citre-tags-file)))))
+  (let ((pre-inst-env? (file-exists? "channels/guix/bootstrap")))
+    ;; Compile Guix.
+    (when pre-inst-env?
+      (with-directory-excursion "channels/guix"
+        ($ '("./bootstrap"))
+        ($ '("./configure"))
+        ($ '("make" "-j8"))))
+    ;; Start nREPL server.
+    ($guix `("shell" "guile" "guile-ares-rs" "--"
+             ,@(if pre-inst-env?
+                   '("./pre-inst-env")
+                   '())
+             "guile" "-c"
+             ,(call-with-output-string
+                (cut write
+                     '(begin
+                        (use-modules (ares server)
+                                     ;; Load reader extensions.
+                                     (guix gexp))
+                        (run-nrepl-server))
+                     <>))))))
 
 (define-command (build-os-command arguments)
   ((invoke "build-os")
-   (category 'deploy))
+   (category 'deployment)
+   (synopsis "Build Guix System")
+   (help "[SYSTEMS] ...
+Build all Guix Systems in this repository or only those matching SYSTEMS."))
   (for-each
    (match-lambda
      ((name . args)
-      (let ((config (string-append "files/tangled/" name "/" name ".scm")))
+      (let ((config (string-append "tangled/" name "/" name ".scm")))
         (print-header "BUILD OS" name)
         (apply $guix `("system" "build" ,config ,@%build-options) args))))
    (remove
@@ -204,11 +245,14 @@
 
 (define-command (deploy-os-command arguments)
   ((invoke "deploy-os")
-   (category 'deploy))
+   (category 'deployment)
+   (synopsis "Deploy Guix System")
+   (help "[SYSTEMS] ...
+Deploy all Guix Systems in this repository or only those matching SYSTEMS."))
   (for-each
    (match-lambda
      ((name . args)
-      (let ((config (string-append "files/deploy/" name ".scm")))
+      (let ((config (string-append "deploy/" name ".scm")))
         (print-header "DEPLOY OS" name)
         (apply $guix
                `("deploy" ,config
@@ -220,7 +264,11 @@
 
 (define-command (build-iso-command arguments)
   ((invoke "build-iso")
-   (category 'deploy))
+   (category 'deployment)
+   (synopsis "Build LiveCD")
+   (help "[VARIANTS] ...
+Build all Guix System LiveCDs in this repository or only those matching \
+VARIANTS, saving the results under dist/."))
   (for-each
    (lambda (variant)
      (let ((config (string-append "config/live/" variant ".scm"))
@@ -259,14 +307,10 @@
                        "https://mirror.sjtu.edu.cn/guix-bordeaux"))))
            (hint "Substitute URLs"))))))
  (buildables
-  (cons* %shared-config-emacs
-         (map (cut apply system-config-for <>) %systems)))
+  (map (cut apply system-config-for <>) %systems))
  (commands
-  (list authenticate-command
-        update-channels-command
-        pull-command
-        ares-command
-
+  (list update-command
+        serve-command
         build-os-command
         deploy-os-command
         build-iso-command)))

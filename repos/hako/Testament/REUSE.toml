@@ -2,21 +2,27 @@ version = 1
 
 [[annotations]]
 path = [
+        "*.patch",
         ".envrc",
         ".gitignore",
+        ".gitmodules",
         ".guix-authorizations",
+        ".sops.yaml",
         "channels.lock",
         "channels.scm",
-        "config/live/**",
+        "deploy/*",
         "dist/**",
-        "files/**",
         "manifest.scm",
         "pre-inst-env",
+        "secrets/*",
        ]
 SPDX-FileCopyrightText = ""
 SPDX-License-Identifier = "CC0-1.0"
 
 [[annotations]]
-path = ["modules/installer/**"]
+path = [
+        "config/live/**",
+        "modules/installer/**",
+       ]
 SPDX-FileCopyrightText = ""
 SPDX-License-Identifier = "GPL-3.0-or-later"

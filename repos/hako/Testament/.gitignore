@@ -1,5 +1,4 @@
 # -*- mode: conf -*-
-/pre-inst-env
-/files/tangled/
+/tangled/
 /.blue-store/
 /.nrepl-port
