@@ -100,11 +100,17 @@
     ;; dont think this is dangerous info tho, maybe generate?
     (make-persist-service "/var/lib/bluetooth/" "root")
     ;; should be migrated to guix home's mounts when i get to it
+
     ;; guix caches channel checkouts here
     (make-persist-service "/root/.cache/guix/" "root")
     (make-persist-service "/home/aemogie/.cache/guix/" "aemogie")
     (make-persist-service "/home/aemogie/.config/guix/" "aemogie")
-    (make-persist-service "/home/aemogie/.librewolf/" "aemogie")
+
+    ;; syncthing backed
+    (make-persist-service "/home/aemogie/sync" "aemogie")
+    (make-persist-service "/home/aemogie/.password-store" "aemogie")
+    (make-persist-service "/home/aemogie/Music" "aemogie")
+
     ;; temporary configs i copied from nivea
     (make-persist-service "/home/aemogie/.gnupg/" "aemogie")
     (make-persist-service "/home/aemogie/.config/hypr/" "aemogie")
@@ -114,6 +120,9 @@
     (make-persist-service "/home/aemogie/.config/WebCord/" "aemogie")
     (make-persist-service "/home/aemogie/.local/share/direnv/" "aemogie")
     #;(make-persist-service "/home/aemogie/.emacs" "aemogie")
+
+    ;; stateful
+    (make-persist-service "/home/aemogie/.librewolf/" "aemogie")
     (make-persist-service "/home/aemogie/dev/" "aemogie"))))
 
 (define serena-file-systems

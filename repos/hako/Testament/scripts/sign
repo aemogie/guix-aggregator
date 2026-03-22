@@ -1,0 +1,22 @@
+#!/bin/sh
+
+set -e
+
+sha256_checksum_and_sign () {
+    sha256sum "$1" > "$1.sha256"
+    gpg --verbose --armor --detach-sign "$1"
+}
+
+for file in "$@"
+do
+    if [[ -f $file ]]; then
+        sha256_checksum_and_sign "$file"
+    elif [[ -d $file ]]; then
+        pushd "$file"
+        for build in *
+        do
+            sha256_checksum_and_sign "$build"
+        done
+        popd
+    fi
+done

@@ -1,17 +1,17 @@
-From 40776b631feac66220a5e97698c27bbf36a18816 Mon Sep 17 00:00:00 2001
+From 7a5fd48ffcc81410085f038e13fff57beae5803e Mon Sep 17 00:00:00 2001
 From: Hilton Chain <hako@ultrarare.space>
 Date: Sat, 24 Jan 2026 23:32:13 +0800
 Subject: [PATCH 2/5] modules/installer: Call %rosenthal-set-keymap script when
  setting keyboard layout.
 
 ---
- modules/installer/gnu/installer.scm | 17 +++++++++++++++--
+ config/live/modules/gnu/installer.scm | 17 +++++++++++++++--
  1 file changed, 15 insertions(+), 2 deletions(-)
 
-diff --git a/modules/installer/gnu/installer.scm b/modules/installer/gnu/installer.scm
+diff --git a/config/live/modules/gnu/installer.scm b/config/live/modules/gnu/installer.scm
 index adc891e..0f0c766 100644
---- a/modules/installer/gnu/installer.scm
-+++ b/modules/installer/gnu/installer.scm
+--- a/config/live/modules/gnu/installer.scm
++++ b/config/live/modules/gnu/installer.scm
 @@ -195,8 +195,21 @@ been performed at build time."
    ;; Apply the specified keymap. Use the default keyboard model.
    #~(match-lambda

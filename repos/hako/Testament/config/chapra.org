@@ -152,7 +152,7 @@
 
   (simple-service 'guix-gc shepherd-root-service-type
     (list (shepherd-timer '(guix-gc)
-            #~(calendar-event #:days-of-week '(sunday) #:hours '(12) #:minutes '(0))
+            #~(calendar-event #:days-of-month '(1) #:hours '(12) #:minutes '(0))
             #~("/run/current-system/profile/bin/guix" "gc" "--delete-generations=1m")
             #:requirement '(user-processes guix-daemon))))
 #+end_src
@@ -329,24 +329,10 @@
 
 #+begin_src caddyfile :noweb yes :tangle ../tangled/chapra/chapra.caddyfile
   {
+  	admin off
   	dns cloudflare {file./run/secrets/cloudflare}
   	acme_dns cloudflare {file./run/secrets/cloudflare}
   	ech hello.boiledscript.com
-  	metrics
-  	log {
-  		output file /var/log/caddy/caddy.log
-  		format filter {
-  			request>remote_ip ip_mask {
-  				ipv4 20
-  				ipv6 44
-  			}
-  			request>client_ip ip_mask {
-  				ipv4 20
-  				ipv6 44
-  			}
-  			wrap json
-  		}
-  	}
   	servers {
   		trusted_proxies static private_ranges
   		client_ip_headers X-Forwarded-For X-Real-IP
@@ -435,21 +421,6 @@
   meta l4proto { tcp, udp } th dport 15308 accept
 #+end_src
 
-** Monitoring
-*** alloy
-#+begin_src scheme :noweb-ref service
-  (service alloy-service-type
-    (alloy-configuration
-      (config
-       (plain-file "chapra.alloy"
-         (string-join
-          (list (sops-str %sops-dorphine '("alloy"))
-                (file-content (testament-file "alloy/node-exporter.alloy"))
-                (file-content (testament-file "alloy/docker.alloy"))
-                (file-content (testament-file "alloy/caddy.alloy")))
-          "\n")))))
-#+end_src
-
 ** Modules
 Within this repository
 #+begin_src scheme :noweb-ref module
@@ -473,9 +444,7 @@ Guix System - services
   (gnu services ssh)
   (gnu services sysctl)
   (rosenthal services bittorrent)
-  (rosenthal services child-error)
   (rosenthal services file-systems)
-  (rosenthal services monitoring)
   (rosenthal services networking)
   (rosenthal services web)
   (sops services sops)
@@ -483,8 +452,6 @@ Guix System - services
 
 Guix packages
 #+begin_src scheme :noweb-ref module
-  (gnu packages admin)
-  (gnu packages bash)
   (gnu packages bittorrent)
   (gnu packages file-systems)
   (gnu packages fonts)

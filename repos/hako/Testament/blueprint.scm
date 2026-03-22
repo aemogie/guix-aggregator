@@ -2,6 +2,7 @@
 ;;; Copyright © 2026 Hilton Chain <hako@ultrarare.space>
 
 (use-modules (ice-9 match)
+             (ice-9 threads)
              (oop goops)
              (srfi srfi-1)
              (srfi srfi-19)
@@ -35,20 +36,17 @@
 (define (build-options)
   `("--keep-going"
     "--verbosity=1"
-    "--load-path=modules/config"
+    "--load-path=modules"
     ,%substitute-urls))
 
 (define (print-header header target)
   (format (current-output-port) "\t~a\t~a\n" header target))
 
 (define ($ cmd)
-  "Run command from CMD list, raise an error for non-zero return value."
   (match cmd
     ((prog . args)
      (let ((exit-val (popen prog args)))
-       (or (zero? exit-val)
-           (error (format #f "Command ~s exited with non-zero exit status: ~s"
-                          (string-join cmd) exit-val)))))))
+       (zero? exit-val)))))
 
 (define* ($guix args #:key fork? (channels "channels.lock") #:allow-other-keys)
   (if fork?
@@ -89,6 +87,7 @@
         "--load" "ob-tangle"
         "--eval" "(setopt org-babel-load-languages '((shell . t)))"
         "--eval" "(setopt org-confirm-babel-evaluate nil)"
+        "--eval" "(setopt org-id-track-globally nil)"
         "--eval" ,(format #f "(org-babel-tangle-file ~s)" input)))
      ($ `("touch" ,output)))))
 
@@ -116,6 +115,7 @@
         "--load" "ob-lob"
         "--eval" "(setopt org-babel-load-languages '((shell . t)))"
         "--eval" "(setopt org-confirm-babel-evaluate nil)"
+        "--eval" "(setopt org-id-track-globally nil)"
         ,@(append-map
            (lambda (file)
              (list "--eval" (format #f "(org-babel-lob-ingest ~s)" file)))
@@ -128,11 +128,6 @@
 ;;; Buildables.
 ;;;
 
-(define %shared-config-alloy
-  (shared-config
-   (inputs '("config/shared/alloy.org"))
-   (outputs '("tangled/alloy"))))
-
 (define %shared-config-caddy
   (shared-config
    (inputs '("config/shared/caddy.org"))
@@ -144,15 +139,12 @@
    (outputs '("tangled/emacs"))))
 
 (define %systems
-  `(("dorphine" #:fork? #t #:dependencies ,(list %shared-config-alloy
-                                                 %shared-config-emacs))
-    ("chapra"   #:fork? #t #:dependencies ,(list %shared-config-alloy))
-    ("ignamma"             #:dependencies ,(list %shared-config-alloy))
-    ("nuporta"  #:fork? #t #:dependencies ,(list %shared-config-alloy
-                                                 %shared-config-caddy))
-    ("mirror"              #:dependencies ,(list %shared-config-alloy
-                                                 %shared-config-caddy))
-    ("worker")))
+  `(("ignamma")
+    ("mirror"              #:dependencies ,(list %shared-config-caddy))
+    ("worker")
+    ("chapra"   #:fork? #t #:dependencies ,(list %shared-config-caddy))
+    ("dorphine" #:fork? #t #:dependencies ,(list %shared-config-emacs))
+    ("nuporta"  #:fork? #t #:dependencies ,(list %shared-config-caddy))))
 
 (define %images
   '("minimal"
@@ -184,19 +176,12 @@
 ;;; Commands.
 ;;;
 
-(define-command (update-command arguments)
-  ((invoke "update")
+(define-command (compile-command arguments)
+  ((invoke "compile")
    (category 'development)
-   (synopsis "Update channels.lock to latest channel revisions"))
-  ($guix `("repl" "--" "scripts/describe.scm") #:channels "channels.scm"))
-
-(define-command (serve-command arguments)
-  ((invoke "serve")
-   (category 'development)
-   (synopsis "Start nREPL server for emacs-arei")
-   (help "
-Start nREPL server for emacs-arei, also compile Guix when its git submodule is \
-checked out."))
+   (synopsis "Compile Guix from its git submodule"))
+  ;; Update and check out submodules.
+  ($ '("git" "submodule" "update" "--init"))
   ;; Update Citre tags.
   (let ((citre-tags-file "/home/hako/.cache/tags/!home!hako!Testament!.tags"))
     (when (file-exists? citre-tags-file)
@@ -204,27 +189,36 @@ checked out."))
                 "--load" "citre-ctags"
                 "--eval"
                 ,(format #f "(citre-update-tags-file ~s)" citre-tags-file)))))
-  (let ((pre-inst-env? (file-exists? "channels/guix/bootstrap")))
-    ;; Compile Guix.
-    (when pre-inst-env?
-      (with-directory-excursion "channels/guix"
-        ($ '("./bootstrap"))
-        ($ '("./configure"))
-        ($ '("make" "-j8"))))
-    ;; Start nREPL server.
-    ($guix `("shell" "guile" "guile-ares-rs" "--"
-             ,@(if pre-inst-env?
-                   '("./pre-inst-env")
-                   '())
-             "guile" "-c"
-             ,(call-with-output-string
-                (cut write
-                     '(begin
-                        (use-modules (ares server)
-                                     ;; Load reader extensions.
-                                     (guix gexp))
-                        (run-nrepl-server))
-                     <>))))))
+  ;; Compile Guix.
+  (with-directory-excursion "channels/guix"
+    (unless (file-exists? "Makefile")
+      ($ '("./bootstrap"))
+      ($ '("./configure")))
+    ($ `("make" "-j" ,(number->string (current-processor-count))))))
+
+(define-command (serve-command arguments)
+  ((invoke "serve")
+   (category 'development)
+   (synopsis "Start nREPL server for emacs-arei"))
+  ($guix `("shell" "guile" "guile-ares-rs" "--"
+           ,@(if (file-exists? "channels/guix/scripts/guix")
+                 '("./pre-inst-env")
+                 '())
+           "guile" "-c"
+           ,(call-with-output-string
+              (cut write
+                   '(begin
+                      (use-modules (ares server)
+                                   ;; Load reader extensions.
+                                   (guix gexp))
+                      (run-nrepl-server))
+                   <>)))))
+
+(define-command (update-command arguments)
+  ((invoke "update")
+   (category 'development)
+   (synopsis "Update channels.lock to latest channel revisions"))
+  ($guix `("repl" "--" "scripts/write-channels.scm") #:channels "channels.scm"))
 
 (define-command (build-os-command arguments)
   ((invoke "build-os")
@@ -232,16 +226,17 @@ checked out."))
    (synopsis "Build Guix System")
    (help "[SYSTEMS] ...
 Build all Guix Systems in this repository or only those matching SYSTEMS."))
-  (for-each
-   (match-lambda
-     ((name . args)
-      (let ((config (string-append "tangled/" name "/" name ".scm")))
-        (print-header "BUILD OS" name)
-        (apply $guix `("system" "build" ,config ,@%build-options) args))))
-   (remove
-    (lambda (system)
-      (member (first system) '("mirror" "worker")))
-    (systems-from-arguments arguments))))
+  (every
+   (cut eq? #t <>)
+   (map (match-lambda
+          ((name . args)
+           (let ((config (string-append "tangled/" name "/" name ".scm")))
+             (print-header "BUILD OS" name)
+             (apply $guix `("system" "build" ,config ,@%build-options) args))))
+        (remove
+         (lambda (system)
+           (member (first system) '("mirror" "worker")))
+         (systems-from-arguments arguments)))))
 
 (define-command (deploy-os-command arguments)
   ((invoke "deploy-os")
@@ -249,41 +244,43 @@ Build all Guix Systems in this repository or only those matching SYSTEMS."))
    (synopsis "Deploy Guix System")
    (help "[SYSTEMS] ...
 Deploy all Guix Systems in this repository or only those matching SYSTEMS."))
-  (for-each
-   (match-lambda
-     ((name . args)
-      (let ((config (string-append "deploy/" name ".scm")))
-        (print-header "DEPLOY OS" name)
-        (apply $guix
-               `("deploy" ,config
-                 ,@(if #%?CMD
-                       `(,@%build-options "-x" "--" "sh" "--login" "-c" ,#%?CMD)
-                       %build-options))
-               args))))
-   (systems-from-arguments arguments)))
+  (every
+   (cut eq? #t <>)
+   (map (match-lambda
+          ((name . args)
+           (let ((config (string-append "deploy/" name ".scm")))
+             (print-header "DEPLOY OS" name)
+             (apply $guix
+                    `("deploy" ,config
+                      ,@(if #%?CMD
+                            `(,@%build-options "-x" "--" "sh" "--login" "-c" ,#%?CMD)
+                            %build-options))
+                    args))))
+        (systems-from-arguments arguments))))
 
 (define-command (build-iso-command arguments)
   ((invoke "build-iso")
    (category 'deployment)
-   (synopsis "Build LiveCD")
+   (synopsis "Build Live ISO")
    (help "[VARIANTS] ...
-Build all Guix System LiveCDs in this repository or only those matching \
+Build all Guix System Live ISOs in this repository or only those matching \
 VARIANTS, saving the results under dist/."))
-  (for-each
-   (lambda (variant)
-     (let ((config (string-append "config/live/" variant ".scm"))
-           (iso (format #f "rosenthal-~a-~a.~a.iso"
-                        variant
-                        (date->string (current-date) "~Y~m~d")
-                        (%current-system))))
-       (print-header "BUILD ISO" iso)
-       ($guix `("repl" "--" "scripts/build-image.scm" ,(in-vicinity "dist" iso)
-                ,config
-                "--image-type=iso9660"
-                "--load-path=modules/installer"
-                ,@%build-options)
-              #:channels "config/live/channels.lock")))
-   (images-from-arguments arguments)))
+  (every
+   (cut eq? #t <>)
+   (map (lambda (variant)
+          (let ((config (string-append "config/live/" variant ".scm"))
+                (iso (format #f "rosenthal-~a-~a.~a.iso"
+                             variant
+                             (date->string (current-date) "~Y~m~d")
+                             (%current-system))))
+            (print-header "BUILD ISO" iso)
+            ($guix `("repl" "--" "scripts/build-image.scm" ,(in-vicinity "dist" iso)
+                     ,config
+                     "--image-type=iso9660"
+                     "--load-path=config/live/modules"
+                     ,@%build-options)
+                   #:channels "config/live/channels.lock")))
+        (images-from-arguments arguments))))
 
 
 ;;;
@@ -296,21 +293,19 @@ VARIANTS, saving the results under dist/."))
    (variables
     (list (variable
            (name "CMD")
-           (value (delay #f))
+           (value #f)
            (hint "Deployment command for 'guix deploy'"))
           (variable
            (name "URL")
-           (value (delay
-                    (string-join
-                     '("https://cache-cdn.guix.moe"
-                       "https://mirror.sjtu.edu.cn/guix"
-                       "https://mirror.sjtu.edu.cn/guix-bordeaux"))))
-           (hint "Substitute URLs"))))))
+           (value "https://bordeaux.guix.gnu.org https://ci.guix.gnu.org")
+           (hint "Substitute server URLs"))))))
  (buildables
   (map (cut apply system-config-for <>) %systems))
  (commands
-  (list update-command
+  (list compile-command
         serve-command
+        update-command
+
         build-os-command
         deploy-os-command
         build-iso-command)))

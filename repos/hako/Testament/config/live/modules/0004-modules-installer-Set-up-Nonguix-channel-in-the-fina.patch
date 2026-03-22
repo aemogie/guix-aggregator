@@ -1,17 +1,17 @@
-From fde31ec419ce1986d7cc70424fef118d457e30e1 Mon Sep 17 00:00:00 2001
+From e3a43ff0da21769de87cde90f4ba709bdccc1333 Mon Sep 17 00:00:00 2001
 From: Hilton Chain <hako@ultrarare.space>
 Date: Sat, 24 Jan 2026 23:33:04 +0800
-Subject: [PATCH] modules/installer: Set up Nonguix channel in the final
+Subject: [PATCH 4/5] modules/installer: Set up Nonguix channel in the final
  system.
 
 ---
- modules/installer/gnu/installer/steps.scm | 27 ++++++++++++++++++-----
+ config/live/modules/gnu/installer/steps.scm | 27 +++++++++++++++++----
  1 file changed, 22 insertions(+), 5 deletions(-)
 
-diff --git a/modules/installer/gnu/installer/steps.scm b/modules/installer/gnu/installer/steps.scm
+diff --git a/config/live/modules/gnu/installer/steps.scm b/config/live/modules/gnu/installer/steps.scm
 index b70e5eb..8c3039c 100644
---- a/modules/installer/gnu/installer/steps.scm
-+++ b/modules/installer/gnu/installer/steps.scm
+--- a/config/live/modules/gnu/installer/steps.scm
++++ b/config/live/modules/gnu/installer/steps.scm
 @@ -242,13 +242,30 @@ found in RESULTS."
  ;; Indicate which modules to import to access the variables
  ;; used in this configuration.\n"))

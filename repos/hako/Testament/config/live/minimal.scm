@@ -39,10 +39,7 @@
 
 (define %installation-os
   (make-installation-os
-   #:efi-only?
-   (string=? (or (getenv "SYSTEM")
-                 (%current-system))
-             "aarch64-linux")))
+   #:efi-only? (string=? (%current-system) "aarch64-linux")))
 
 (define %os
   (operating-system

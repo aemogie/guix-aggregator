@@ -1,17 +1,17 @@
-From 88daf0fb87d8252be9c3399915616bc2de53a699 Mon Sep 17 00:00:00 2001
+From d7a20132b268d0edf3c43d2acaa21278c48b34f1 Mon Sep 17 00:00:00 2001
 From: Hilton Chain <hako@ultrarare.space>
 Date: Sat, 24 Jan 2026 23:33:21 +0800
 Subject: [PATCH 5/5] modules/installer: Set Guile load paths to use modules
  from external channels. [WORKAROUND]
 
 ---
- modules/installer/gnu/installer/final.scm | 2 ++
+ config/live/modules/gnu/installer/final.scm | 2 ++
  1 file changed, 2 insertions(+)
 
-diff --git a/modules/installer/gnu/installer/final.scm b/modules/installer/gnu/installer/final.scm
+diff --git a/config/live/modules/gnu/installer/final.scm b/config/live/modules/gnu/installer/final.scm
 index 22c44a2..e88d612 100644
---- a/modules/installer/gnu/installer/final.scm
-+++ b/modules/installer/gnu/installer/final.scm
+--- a/config/live/modules/gnu/installer/final.scm
++++ b/config/live/modules/gnu/installer/final.scm
 @@ -221,6 +221,8 @@ or #f.  Return #t on success and #f on failure."
               (setvbuf (current-error-port) 'none)
  

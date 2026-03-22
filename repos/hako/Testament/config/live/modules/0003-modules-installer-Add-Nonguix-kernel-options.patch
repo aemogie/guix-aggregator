@@ -1,17 +1,17 @@
-From 9d5a4ea3b2d63e1f68819efa1ea2f9da6034e87a Mon Sep 17 00:00:00 2001
+From 2b8cbadb2e0e9c9cfccb31c2f504246f6de179f4 Mon Sep 17 00:00:00 2001
 From: Hilton Chain <hako@ultrarare.space>
 Date: Tue, 3 Mar 2026 00:22:35 +0800
-Subject: [PATCH] modules/installer: Add Nonguix kernel options.
+Subject: [PATCH 3/5] modules/installer: Add Nonguix kernel options.
 
 ---
- modules/installer/gnu/installer/kernel.scm    | 36 ++++++++++++-------
- .../installer/gnu/installer/newt/kernel.scm   |  4 +++
+ config/live/modules/gnu/installer/kernel.scm  | 36 ++++++++++++-------
+ .../modules/gnu/installer/newt/kernel.scm     |  4 +++
  2 files changed, 27 insertions(+), 13 deletions(-)
 
-diff --git a/modules/installer/gnu/installer/kernel.scm b/modules/installer/gnu/installer/kernel.scm
+diff --git a/config/live/modules/gnu/installer/kernel.scm b/config/live/modules/gnu/installer/kernel.scm
 index 2700931..968cb49 100644
---- a/modules/installer/gnu/installer/kernel.scm
-+++ b/modules/installer/gnu/installer/kernel.scm
+--- a/config/live/modules/gnu/installer/kernel.scm
++++ b/config/live/modules/gnu/installer/kernel.scm
 @@ -17,6 +17,7 @@
  ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
  
@@ -59,10 +59,10 @@ index 2700931..968cb49 100644
 +       (setuid-programs %setuid-programs/hurd)))
 +    (_
 +     '())))
-diff --git a/modules/installer/gnu/installer/newt/kernel.scm b/modules/installer/gnu/installer/newt/kernel.scm
+diff --git a/config/live/modules/gnu/installer/newt/kernel.scm b/config/live/modules/gnu/installer/newt/kernel.scm
 index 4570544..253024d 100644
---- a/modules/installer/gnu/installer/newt/kernel.scm
-+++ b/modules/installer/gnu/installer/newt/kernel.scm
+--- a/config/live/modules/gnu/installer/newt/kernel.scm
++++ b/config/live/modules/gnu/installer/newt/kernel.scm
 @@ -27,8 +27,12 @@
    (let* ((hurd-x86 (G_ "Hurd 32-bit (experimental)"))
           (hurd-x86_64 (G_ "Hurd 64-bit (highly experimental!)"))

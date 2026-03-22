@@ -7,50 +7,61 @@
 #+begin_src scheme :tangle ../tangled/dorphine/dorphine.scm :noweb yes
   (use-modules <<module>>)
 
+  (define %os
+    (operating-system
+      (host-name "dorphine")
+      (timezone "Etc/GMT-8")
+      (keyboard-layout
+       (keyboard-layout "us" "dvorak" #:options '("ctrl:nocaps")))
+      (bootloader
+       (bootloader-configuration
+         (bootloader limine-efi-removable-bootloader)
+         (targets '("/efi"))))
+      (kernel linux/dolly)
+      (firmware (cons* linux-firmware %base-firmware))
+      ;; Required for the current implementation of the "copy out-of-tree modules
+      ;; to Linux initrd" patch.
+      (kernel-loadable-modules (list `(,zfs "module")))
+      (kernel-arguments (cons* <<kernel-argument>> %default-kernel-arguments))
+      (initrd microcode-initrd)
+      (file-systems (append <<file-systems>> %base-file-systems))
+      (swap-devices (append <<swap-devices>>))
+      (users (cons* <<user>> %base-user-accounts))
+      (packages
+       (append (specifications->packages
+                '(;; Desktop applications.
+                  "digikam"
+                  "gimp"
+                  "imv"
+                  "kdenlive"
+                  "libreoffice"
+                  "obs-nvidia"
+                  "telegram-desktop"
+                  "zathura"
+                  "zathura-pdf-poppler"
+                  <<package-spec>>))
+               (list <<package>>)
+               %testament-cli-packages
+               %base-packages))
+      (services
+       (cons* <<service>>
+              (modify-services %rosenthal-desktop-services/gdm <<modify-service>>)))
+      (name-service-switch %mdns-host-lookup-nss)))
+
+  (define %transformed-os
+    ((nonguix-transformation-nvidia
+      #:driver nvdb
+      #:open-source-kernel-module? #t
+      #:configure-xorg? #t)
+     %os))
+
   (operating-system
-    (host-name "dorphine")
-    (timezone "Etc/GMT-8")
-    (keyboard-layout
-     (keyboard-layout "us" "dvorak" #:options '("ctrl:nocaps")))
-    (bootloader
-     (bootloader-configuration
-       (bootloader limine-efi-removable-bootloader)
-       (targets '("/efi"))))
-    (kernel linux/dolly)
-    (firmware (cons* linux-firmware %base-firmware))
-    ;; Required for the current implementation of the "copy out-of-tree modules
-    ;; to Linux initrd" patch.
-    (kernel-loadable-modules (list `(,zfs "module")))
-    (kernel-arguments (cons* <<kernel-argument>> %default-kernel-arguments))
-    (initrd microcode-initrd)
-    (file-systems (append <<file-systems>> %base-file-systems))
-    (swap-devices (append <<swap-devices>>))
-    (users (cons* <<user>> %base-user-accounts))
+    (inherit %transformed-os)
     (packages
-     (cons* wezterm          ;XXX: Performance issue on NVIDIA proprietary driver.
-            (replace-mesa
-             (append (specifications->packages
-                      '(;; Desktop applications.
-                        "digikam"
-                        "gimp"
-                        "imv"
-                        "kdenlive"
-                        "libreoffice"
-                        "obs-nvidia"
-                        "telegram-desktop"
-                        "zathura"
-                        "zathura-pdf-poppler"
-                        <<package-spec>>))
-                     (list <<package>>)
-                     %testament-cli-packages
-                     %base-packages)
-             #:driver nvdb)))
-    (services
-     (replace-mesa
-      (cons* <<service>>
-             (modify-services %rosenthal-desktop-services/gdm <<modify-service>>))
-      #:driver nvdb))
-    (name-service-switch %mdns-host-lookup-nss))
+     ;; XXX: WezTerm has performance issue on NVIDIA proprietary driver, don't
+     ;; apply transformation onto it.
+     (cons wezterm
+           (operating-system-packages %transformed-os))))
 #+end_src
 
 #+begin_src nftables :noweb-ref nftables-filter-input
@@ -89,6 +100,17 @@
   "zswap.max_pool_percent=90"
 #+end_src
 
+Extra kernel arguments for NVIDIA proprietary driver
+#+begin_src scheme :noweb-ref kernel-argument
+  ;; https://github.com/Frogging-Family/nvidia-all/blob/master/customization.cfg
+  "nvidia.NVreg_RegistryDwords=RmEnableAggressiveVblank=1"
+  "nvidia.NVreg_UsePageAttributeTable=1"
+
+  "mem_sleep_default=s2idle"
+  "nvidia.NVreg_EnableS0ixPowerManagement=1"
+  "nvidia.NVreg_UseKernelSuspendNotifiers=1"
+#+end_src
+
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-kernel-module-loader kernel-module-loader-service-type
     '("sch_fq_pie" "tcp_bbr"
@@ -113,29 +135,6 @@
   DBPATH="/home/hako/.config"
   COLORS=light
   IGNORE=(nvidia nvidia_drm nvidia_modeset nvidia_uvm)
-#+end_src
-
-NVIDIA proprietary driver
-#+begin_src scheme :noweb-ref kernel-argument
-  "modprobe.blacklist=nouveau"
-  "nvidia_drm.modeset=1"
-
-  ;; https://github.com/Frogging-Family/nvidia-all/blob/master/customization.cfg
-  "nvidia.NVreg_RegistryDwords=RmEnableAggressiveVblank=1"
-  "nvidia.NVreg_UsePageAttributeTable=1"
-
-  "mem_sleep_default=s2idle"
-  "nvidia.NVreg_EnableS0ixPowerManagement=1"
-  "nvidia.NVreg_UseKernelSuspendNotifiers=1"
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (service nvidia-service-type
-    (nvidia-configuration
-      (driver nvdb)
-      (firmware nvidia-firmware-beta)
-      (module nvidia-module-open-beta)
-      (modprobe nvidia-modprobe-beta)))
 #+end_src
 
 *** File Systems
@@ -271,7 +270,7 @@ NVIDIA proprietary driver
 
   (simple-service 'guix-gc shepherd-root-service-type
     (list (shepherd-timer '(guix-gc)
-            #~(calendar-event #:days-of-week '(sunday) #:hours '(12) #:minutes '(0))
+            #~(calendar-event #:days-of-month '(1) #:hours '(12) #:minutes '(0))
             #~("/run/current-system/profile/bin/guix" "gc" "--delete-generations=1m")
             #:requirement '(user-processes guix-daemon))))
 #+end_src
@@ -492,25 +491,11 @@ Generate passwordless ECC key:
       (subuids (list (subid-range (name "hako"))))))
 #+end_src
 
-** Monitoring
-*** alloy
-#+begin_src scheme :noweb-ref service
-  (service alloy-service-type
-    (alloy-configuration
-      (config
-       (plain-file "dorphine.alloy"
-         (string-join
-          (list (sops-str %sops-dorphine '("alloy"))
-                (file-content (testament-file "alloy/node-exporter.alloy")))
-          "\n")))))
-#+end_src
-
 ** Graphical Session
 *** gdm
 #+begin_src scheme :noweb-ref service
   (set-xorg-configuration
    (xorg-configuration
-     (modules (list nvdb))
      (keyboard-layout keyboard-layout))
    gdm-service-type)
 #+end_src
@@ -1271,7 +1256,6 @@ Guix System
 Guix System - services
 #+begin_src scheme :noweb-ref module
   (gnu services containers)
-  (gnu services cuirass)
   (gnu services linux)
   (gnu services networking)
   (gnu services security)
@@ -1280,14 +1264,10 @@ Guix System - services
   (gnu services syncthing)
   (gnu services sysctl)
   (gnu services xorg)
-  (nongnu services nvidia)
   (rosenthal services file-systems)
   (rosenthal services keyboard)
-  (rosenthal services monitoring)
   (rosenthal services networking)
   (rosenthal services shellutils)
-  (rosenthal services web)
-  (sops services sops)
 #+end_src
 
 Guix Home - services
@@ -1302,13 +1282,11 @@ Guix Home - services
 Guix packages
 #+begin_src scheme :noweb-ref module
   (gnu packages android)
-  (gnu packages bash)
   (gnu packages fcitx5)
   (gnu packages file-systems)
   (gnu packages games)
   (gnu packages gnome-xyz)
   (gnu packages gnupg)
-  (gnu packages guile)
   (gnu packages java)
   (gnu packages linux)
   (gnu packages mail)

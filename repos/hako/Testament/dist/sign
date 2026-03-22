@@ -1,9 +1,0 @@
-#!/bin/sh
-
-pushd "$1"
-for build in *
-do
-    sha256sum $build > $build.sha256
-    gpg --verbose --armor --detach-sign $build
-done
-popd

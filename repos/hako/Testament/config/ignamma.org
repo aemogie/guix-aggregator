@@ -86,7 +86,7 @@
 
   (simple-service 'guix-gc shepherd-root-service-type
     (list (shepherd-timer '(guix-gc)
-            #~(calendar-event #:days-of-week '(sunday) #:hours '(12) #:minutes '(0))
+            #~(calendar-event #:days-of-month '(1) #:hours '(12) #:minutes '(0))
             #~("/run/current-system/profile/bin/guix" "gc" "--delete-generations=1m")
             #:requirement '(user-processes guix-daemon))))
 #+end_src
@@ -264,19 +264,6 @@ Open TCP port 5558 and connect to server IPv4 address.
   tcp dport 5558 accept
 #+end_src
 
-** Monitoring
-*** alloy
-#+begin_src scheme :noweb-ref service
-  (service alloy-service-type
-    (alloy-configuration
-      (config
-       (plain-file "ignamma.alloy"
-         (string-join
-          (list (sops-str %sops-dorphine '("alloy"))
-                (file-content (testament-file "alloy/node-exporter.alloy")))
-          "\n")))))
-#+end_src
-
 ** Modules
 Within this repository
 #+begin_src scheme :noweb-ref module
@@ -299,7 +286,6 @@ Guix System - services
   (gnu services ssh)
   (gnu services sysctl)
   (gnu services virtualization)
-  (rosenthal services monitoring)
   (rosenthal services networking)
 #+end_src
 

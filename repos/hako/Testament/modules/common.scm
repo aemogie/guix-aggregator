@@ -247,7 +247,7 @@ WARNED."
         ncurses
         (package/inherit rclone
           (arguments
-           (substitute-keyword-arguments (package-arguments rclone)
+           (substitute-keyword-arguments arguments
              ((#:tests? _ #t) #f))))
         ripgrep
         rsync

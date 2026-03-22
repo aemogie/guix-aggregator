@@ -60,16 +60,13 @@
 | Lycoris/Config                | legacy (/etc)               |                            | true                  |
 | Lycoris/Store                 | legacy (/gnu)               | atime=off                  |                       |
 | Lycoris/Cache                 | /var/cache                  |                            |                       |
-| Lycoris/Cache/GuixMoe         | /var/cache/guix-moe         |                            | true                  |
-| Lycoris/Cache/GuixMoe/Narinfo | /var/cache/guix-moe/narinfo | recordsize=8K              | true                  |
-| Lycoris/Cache/GuixPublish     | /var/cache/guix/publish     | recordsize=8K              | true                  |
-| Lycoris/Cache/GuixPublish/Nar | /var/cache/guix/publish/nar | compress=off,recordsize=1M | true                  |
+| Lycoris/Cache/GuixMoe         | /var/cache/guix-moe         |                            |                       |
+| Lycoris/Cache/GuixMoe/Narinfo | /var/cache/guix-moe/narinfo | recordsize=8K              |                       |
+| Lycoris/Cache/GuixPublish     | /var/cache/guix/publish     | recordsize=8K              |                       |
+| Lycoris/Cache/GuixPublish/Nar | /var/cache/guix/publish/nar | compress=off,recordsize=1M |                       |
 | Lycoris/Data                  | /var/lib                    |                            |                       |
-| Lycoris/Data/Forgejo          | /var/lib/forgejo            |                            | true                  |
-| Lycoris/Data/Grafana          | /var/lib/grafana            |                            | true                  |
-| Lycoris/Data/Loki             | /var/lib/loki               |                            | true                  |
+| Lycoris/Data/Forgejo          | /var/lib/forgejo            |                            |                       |
 | Lycoris/Data/Mail             | /var/lib/docker-mailserver  |                            | true                  |
-| Lycoris/Data/Mimir            | /var/lib/mimir              |                            | true                  |
 | Lycoris/Data/PostgreSQL       | /var/lib/postgresql         | recordsize=32K             | true                  |
 | Lycoris/Data/Redis            | /var/lib/redis              |                            | true                  |
 | Lycoris/Data/SOPS             | /var/lib/sops               |                            | true                  |
@@ -160,7 +157,7 @@
 
   (simple-service 'guix-gc shepherd-root-service-type
     (list (shepherd-timer '(guix-gc)
-            #~(calendar-event #:days-of-week '(sunday) #:hours '(12) #:minutes '(0))
+            #~(calendar-event #:days-of-month '(1) #:hours '(12) #:minutes '(0))
             #~("/run/current-system/profile/bin/guix" "gc" "--delete-generations=1m")
             #:requirement '(user-processes guix-daemon))))
 
@@ -231,14 +228,6 @@
                (group "caddy"))
              (sops-secret
                (key '("caddy" "cuirass" "forgejo"))
-               (file %sops-nuporta)
-               (group "caddy"))
-             (sops-secret
-               (key '("caddy" "loki"))
-               (file %sops-nuporta)
-               (group "caddy"))
-             (sops-secret
-               (key '("caddy" "mimir"))
                (file %sops-nuporta)
                (group "caddy"))))))
 #+end_src
@@ -692,7 +681,6 @@ Pin commit for aarch64-linux as the build resource is limited
 #+begin_src caddyfile :noweb-ref caddy-site
   cache-cdn.guix.moe {
   	import block_bots
-  	import logging cache-cdn.guix.moe
 
   	handle /*.narinfo {
   		root * /var/cache/guix-moe/narinfo-cdn
@@ -710,7 +698,6 @@ Pin commit for aarch64-linux as the build resource is limited
 
   cache-fi.guix.moe, cache-de.guix.moe, cache-it.guix.moe {
   	import block_bots
-  	import logging cache-fi.guix.moe
 
   	handle /*.narinfo {
   		root * /var/cache/guix-moe/narinfo
@@ -718,9 +705,7 @@ Pin commit for aarch64-linux as the build resource is limited
   	}
 
   	handle /nar/* {
-  		reverse_proxy https://nars.guix.moe {
-  			header_up Host {upstream_hostport}
-  		}
+  		reverse_proxy https://nars.guix.moe
   	}
 
   	respond "Visit guix [dot] moe for more information." 404 {
@@ -1028,24 +1013,10 @@ See [[file:shared/caddy.org][shared/caddy.org]].
 
 #+begin_src caddyfile :noweb yes :tangle ../tangled/nuporta/nuporta.caddyfile
   {
+  	admin off
   	dns cloudflare {file./run/secrets/cloudflare}
   	acme_dns cloudflare {file./run/secrets/cloudflare}
   	ech hello.boiledscript.com
-  	metrics
-  	log {
-  		output file /var/log/caddy/caddy.log
-  		format filter {
-  			request>remote_ip ip_mask {
-  				ipv4 20
-  				ipv6 44
-  			}
-  			request>client_ip ip_mask {
-  				ipv4 20
-  				ipv6 44
-  			}
-  			wrap json
-  		}
-  	}
   	servers {
   		trusted_proxies static private_ranges
   		client_ip_headers X-Forwarded-For X-Real-IP
@@ -1053,7 +1024,6 @@ See [[file:shared/caddy.org][shared/caddy.org]].
   	}
   }
 
-  <<caddy-snippet-logging>>
   <<caddy-snippet-block-bots>>
   <<caddy-snippet-tailscale>>
 
@@ -1431,129 +1401,6 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
       (user-id 977)))
 #+end_src
 
-** Monitoring
-*** grafana
-#+begin_src caddyfile :noweb-ref caddy-site
-  dash.urspace.moe {
-  	import tailscale {
-  		reverse_proxy localhost:13064
-  	}
-  }
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (service grafana-service-type
-    (grafana-configuration
-      (postgresql-password-file "")
-      (config
-       #~'(("paths"
-            ("data" . "/var/lib/grafana")
-            ("logs" . "/var/log/grafana")
-            ("plugins" . "/var/lib/grafana/plugins"))
-           ("server"
-            ("http_addr" . "127.0.0.1")
-            ("http_port" . "13064"))
-           ("database"
-            ("type" . "postgres")
-            ("host" . "127.0.0.1:5432")
-            ("user" . "grafana")
-            ("password" . "placeholder")
-            ("ssl_mode" . "disable"))))
-      (group-id 971)
-      (user-id 978)))
-#+end_src
-
-*** mimir
-#+begin_src caddyfile :noweb-ref caddy-site
-  metrics.urspace.moe {
-  	import block_bots
-  	import /run/secrets/caddy/mimir
-  	reverse_proxy localhost:49951
-  }
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (service mimir-service-type
-    (mimir-configuration
-      (config
-       #~'(("multitenancy_enabled" . #f)
-           ("server"
-            ("http_listen_address" . "127.0.0.1")
-            ("http_listen_port" . 49951)
-            ("grpc_listen_port" . 32773)
-            ("log_level" . "error"))
-           #$@(sops-sexp %sops-nuporta '("mimir"))
-           ("ingester"
-            ("ring"
-             ("replication_factor" . 1)))
-           ("alertmanager"
-            ("sharding_ring"
-             ("replication_factor" . 1)))
-           ("store_gateway"
-            ("sharding_ring"
-             ("replication_factor" . 1)))
-           ("usage_stats"
-            ("enabled" . #f))))
-      (group-id 972)
-      (user-id 979)))
-#+end_src
-
-*** loki
-#+begin_src caddyfile :noweb-ref caddy-site
-  logs.urspace.moe {
-  	import block_bots
-  	import /run/secrets/caddy/loki
-  	reverse_proxy localhost:50968
-  }
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (service loki-service-type
-    (loki-configuration
-      (config
-       #~'(("auth_enabled" . #f)
-           ("server"
-            ("http_listen_address" . "127.0.0.1")
-            ("http_listen_port" . 50968)
-            ("grpc_listen_port" . 11365))
-           ("common"
-            ("path_prefix" . "/var/lib/loki")
-            #$@(sops-sexp %sops-nuporta '("loki"))
-            ("ring"
-             ("kvstore"
-              ("store" . "inmemory")))
-            ("replication_factor" . 1))
-           ("schema_config"
-            ("configs"
-             . #((("from" . "2020-05-15")
-                  ("store" . "tsdb")
-                  ("object_store" . "s3")
-                  ("schema" . "v13")
-                  ("index"
-                   ("prefix" . "index_")
-                   ("period" . "24h"))))))
-           ("pattern_ingester"
-            ("enabled" . #t))
-           ("analytics"
-            ("reporting_enabled" . #f))))
-      (group-id 973)
-      (user-id 980)))
-#+end_src
-
-*** alloy
-#+begin_src scheme :noweb-ref service
-  (service alloy-service-type
-    (alloy-configuration
-      (config
-       (plain-file "nuporta.alloy"
-         (string-join
-          (list (sops-str %sops-dorphine '("alloy"))
-                (file-content (testament-file "alloy/node-exporter.alloy"))
-                (file-content (testament-file "alloy/docker.alloy"))
-                (file-content (testament-file "alloy/caddy.alloy")))
-          "\n")))))
-#+end_src
-
 ** Modules
 Within this repository
 #+begin_src scheme :noweb-ref module
@@ -1583,7 +1430,6 @@ Guix System - services
   (rosenthal services file-systems)
   (rosenthal services mail)
   (rosenthal services messaging)
-  (rosenthal services monitoring)
   (rosenthal services networking)
   (rosenthal services web)
   (sops services sops)

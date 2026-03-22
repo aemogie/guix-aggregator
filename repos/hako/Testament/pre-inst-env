@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 TOP_DIR="$(dirname "$(realpath "$0")")"
 
 set_guix_env () {
@@ -22,4 +24,5 @@ set_channel_env channels/nonguix
 set_channel_env channels/rosenthal/modules
 set_channel_env channels/sops-guix/modules
 
+stat "$GUIX" >/dev/null
 exec "$@"

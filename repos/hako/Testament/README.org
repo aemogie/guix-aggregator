@@ -3,6 +3,7 @@
 #+TITLE: Testament - Personal dot(?)files
 
 This repository contains my dotfiles and Guix System literate configurations.
+(README for [[file:config/live][LiveCDs]] has been moved to its own directory.)
 
 ** Usage
 Environment setup is done via [[https://guix.gnu.org/manual/devel/en/html_node/Invoking-guix-time_002dmachine.html][~guix time-machine~]] and [[https://guix.gnu.org/manual/devel/en/html_node/Invoking-guix-shell.html][~guix shell~]].  [[file:.envrc][.envrc]] is
@@ -17,7 +18,32 @@ This repository uses [[https://codeberg.org/lapislazuli/blue][BLUE build system]
 #+begin_example
   $ blue configure
   $ blue build
+#+end_example
+
+For available commands, run ~blue help~.
+
+#+begin_example
   $ blue help
+#+end_example
+
+Examples:
+
+- Configure [[https://guix.gnu.org/manual/devel/en/html_node/Substitutes.html][substitute servers]]:
+
+#+begin_example
+  $ blue configure URL='https://bordeaux.guix.gnu.org https://ci.guix.gnu.org'
+#+end_example
+
+- Variables can also be set temporarily:
+
+#+begin_example
+  $ blue URL='https://cache-cdn.guix.moe' build-os
+#+end_example
+
+- Multiple commands can be chained by =--=, they'll be executed in order.
+
+#+begin_example
+  $ blue configure -- build -- compile -- build-os
 #+end_example
 
 ** Systems
@@ -36,61 +62,6 @@ Build workers for Guix Moe build farm.
 
 *** [[file:config/mirror.org][mirror]] | [[file:deploy/mirror.scm][deploy]]
 Substitute mirrors for Guix Moe build farm.
-
-** [[file:config/live][LiveCDs]]
-I provide Guix System installation images in this repository, pre-built images
-below.
-
-Variants:
-- Minimal: console-based installation, the installer runs on [[https://www.freedesktop.org/wiki/Software/kmscon/][kmscon]].
-- Niri: start installation in a desktop environment built around [[https://github.com/YaLTeR/niri][niri]] Wayland
-  compositor and [[https://noctalia.dev/][Noctalia]] desktop shell. (3D acceleration required)
-
-Build date: 2026-02-19 ([[https://codeberg.org/hako/Testament/src/commit/1c94304683e603ac649bafc1b58c747102bae52b/channels.lock][channels]], [[https://codeberg.org/hako/Testament/commits/branch/trunk/config/live][changes to the images]])
-
-Installation process with GNOME desktop environment is tested for x86_64-linux
-images.
-
-| System        | Variant | Image       | Signature       | SHA256 Checksum                                                    |
-|---------------+---------+-------------+-----------------+--------------------------------------------------------------------|
-| x86_64-linux  | Minimal | [[https://files.guix.moe/2026-02-19/rosenthal-minimal-20260219.x86_64-linux.iso][minimal.iso]] | [[https://files.guix.moe/2026-02-19/rosenthal-minimal-20260219.x86_64-linux.iso.asc][minimal.iso.asc]] | =ffcfaa60e5e416f1038984984c8714256e532b9e7c8ab989b4a457a7de04092f= |
-| x86_64-linux  | Niri    | [[https://files.guix.moe/2026-02-19/rosenthal-niri-20260219.x86_64-linux.iso][niri.iso]]    | [[https://files.guix.moe/2026-02-19/rosenthal-niri-20260219.x86_64-linux.iso.asc][niri.iso.asc]]    | =8ae89958be8e8ca63ee6cf6875ba754f31658a9b36f9b839e01a63b09109e547= |
-| aarch64-linux | Minimal | [[https://files.guix.moe/2026-02-19/rosenthal-minimal-20260219.aarch64-linux.iso][minimal.iso]] | [[https://files.guix.moe/2026-02-19/rosenthal-minimal-20260219.aarch64-linux.iso.asc][minimal.iso.asc]] | =80317c2d05a44276c7c0dfa4e9827ca11b833ed5048ad5a3df52029e50324de8= |
-| aarch64-linux | Niri    | [[https://files.guix.moe/2026-02-19/rosenthal-niri-20260219.aarch64-linux.iso][niri.iso]]    | [[https://files.guix.moe/2026-02-19/rosenthal-niri-20260219.aarch64-linux.iso.asc][niri.iso.asc]]    | =5cf3888bafc966b396076030515d66cb6fac1c8b60d9cb5fdd0853b8d3b699b7= |
-
-Once downloaded, follow Guix System's [[https://guix.gnu.org/manual/devel/en/html_node/System-Installation.html][installation instructions]].  Loading of the
-desktop environment may take quite a while, depending on the read performance of
-your installation media.  It will be much better when the system is installed
-on-disk.
-
-Comparing with the official one, these images integrate Linux kernel and
-non-free firmware from [[https://gitlab.com/nonguix/nonguix][Nonguix channel]] to support more hardware.  The process
-should be the same as installing on hardware that supports Linux Libre.
-
-To provide similiar downloading experience around the world, they are configured
-to use [[https://guix.moe/][Guix Moe]]'s infrastructure.  It won't be available in the installed
-system, so you'll need to set it up later if you want.
-
-For manual installation, [[https://fishshell.com/][fish]] is chosen as the login shell and several Guix
-System configuration examples are available under =/etc/configuration=.  These
-examples are based on the ones shipped in Guix, with Nonguix channel configured.
-
-For the desktop environment:
-
-User name: =live=, password: =live=, in case you'll need them.
-
-Dotfiles, including a pre-configured Emacs text editor, are [[https://codeberg.org/hako/Rosenthal/src/branch/trunk/modules/rosenthal/examples][managed in the
-Rosenthal channel]], exposed as =%rosenthal-skeletons= and available under
-=/etc/skel= when configured.
-
-*** niri
-Default keybindings:
-+ =Super+Shift+/= :: Open an overlay for available hotkeys.
-+ =Super+D= :: Open application launcher.
-+ =Super+Return= :: Open terminal emulator: [[https://wezterm.org/][WezTerm]].
-
-#+html: <img src="https://s3.boiledscript.com/misskey/9e9928ab-36ba-46bd-8ac4-35cda328606d.webp">
-#+html: <img src="https://s3.boiledscript.com/misskey/0bcd4fe2-8bf2-484b-9b3a-4d127846a46c.webp">
 
 ** Resources
 + [[https://files.spritely.institute/papers/scheme-primer.html][A Scheme Primer]] :: Nice short guide to get you started with Scheme.

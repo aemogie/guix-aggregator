@@ -7,32 +7,6 @@
   placeholder
 #+end_src
 
-** Logging
-#+name: caddy-snippet-logging
-#+begin_src caddyfile
-  (logging) {
-  	log {
-  		output file /var/log/caddy/{args[0]}.log
-  		format filter {
-  			wrap json
-  			request>remote_ip ip_mask {
-  				ipv4 20
-  				ipv6 44
-  			}
-  			request>client_ip ip_mask {
-  				ipv4 20
-  				ipv6 44
-  			}
-  			fields {
-  				request>uri query {
-  					delete access_token
-  				}
-  			}
-  		}
-  	}
-  }
-#+end_src
-
 ** Block bots
 #+name: caddy-snippet-block-bots
 #+begin_src caddyfile

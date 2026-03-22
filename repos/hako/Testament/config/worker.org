@@ -90,7 +90,7 @@
 
   (simple-service 'guix-gc shepherd-root-service-type
     (list (shepherd-timer '(guix-gc)
-            #~(calendar-event #:days-of-week '(sunday) #:hours '(12) #:minutes '(0))
+            #~(calendar-event #:days-of-month '(1) #:hours '(12) #:minutes '(0))
             #~("/run/current-system/profile/bin/guix" "gc" "--delete-generations=1m")
             #:requirement '(user-processes guix-daemon))))
 #+end_src

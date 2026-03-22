@@ -429,7 +429,7 @@ Arei's builtin xref backend provides =xref-buffer-location= but Citre expects
   (use-package citre-backend-interface
     :custom
     (citre-find-definition-backends
-     '(eglot arei elisp tags dumb-jump))
+     '(eglot arei tags elisp dumb-jump))
     (citre-find-reference-backends
      '(eglot elisp dumb-jump)))
 
