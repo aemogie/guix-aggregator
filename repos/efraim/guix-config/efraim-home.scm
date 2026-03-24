@@ -1,4 +1,5 @@
 (define-module (efraim-home)
+  #:use-module (dfsg contrib services dropbox)
   #:use-module (gnu home)
   #:use-module (gnu home services)
   #:use-module (gnu home services desktop)
@@ -357,6 +358,9 @@
     (if work-machine?
         ""
         #~(string-append "[gpg]\n"
+                         ;#$@(if (supported-package? (S "sequoia-chameleon-gnupg"))
+                         ;       #~("    program = " #$(file-append (S "sequoia-chameleon-gnupg") "/bin/gpg-sq") "\n")
+                         ;       #~("    program = " #$(file-append (S "gnupg") "/bin/gpg") "\n"))))
                          "    program = " #$(file-append (S "gnupg") "/bin/gpg") "\n"))
     "[imap]\n"
     "    folder = Drafts\n"
@@ -695,14 +699,15 @@
       "\n" 'suffix)))
 
 (define %sq-config
+  ;; See the options with `sq config template | less`
   (mixed-text-file
     "sq-config.toml"
     "[encrypt]\n"
     (string-append "for-self = [\"" %self-gpg-signature "\"]\n")
-    "[pki]\n"
-    (string-append "vouch.certifier-self = \"" %self-gpg-signature "\"\n")
     "[sign]\n"
-    (string-append "signer-self = [\"" %self-gpg-signature "\"]\n")))
+    (string-append "signer-self = [\"" %self-gpg-signature "\"]\n")
+    "[pki]\n"
+    (string-append "vouch.certifier-self = \"" %self-gpg-signature "\"\n")))
 
 
 (define %streamlink-config
@@ -1138,38 +1143,6 @@
     (stop #~(make-kill-destructor))
     (respawn? #t)))
 
-;; https://github.com/keybase/client/blob/master/packaging/linux/systemd/keybase.service
-(define %keybase-user-service
-  (shepherd-service
-    (documentation "Provide access to Keybase™")
-    (provision '(keybase))
-    (start #~(make-forkexec-constructor
-               (list #$(file-append (S "keybase") "/bin/keybase")
-                     "service")
-               #:log-file (string-append #$%logdir "/keybase.log")))
-    (stop #~(make-system-destructor
-              (string-append #$(file-append (S "keybase")
-                                            "/bin/keybase")
-                             " ctl stop")))
-    ;; Starts too fast at login.
-    (auto-start? #f)
-    (respawn? #t)))
-
-;; https://github.com/keybase/client/blob/master/packaging/linux/systemd/kbfs.service
-(define %keybase-fuse-user-service
-  (shepherd-service
-    (documentation "Provide access to Keybase™ fuse store")
-    (requirement '(keybase))
-    (provision '(kbfs))
-    (start #~(make-forkexec-constructor
-               (list #$(file-append (S "keybase") "/bin/kbfsfuse")
-                     "-log-to-file")
-               #:log-file (string-append #$%logdir "/kbfs.log")))
-    (stop #~(make-kill-destructor))
-    ;; Depends on keybase.
-    (auto-start? #f)
-    (respawn? #t)))
-
 ;; kdeconnect-indicator must not be running when it it started
 (define %kdeconnect-user-service
   (shepherd-service
@@ -1304,16 +1277,21 @@ fi")))))
                  (home-shepherd-configuration
                    (services
                      (list
-                       %dropbox-user-service
+                       ;%dropbox-user-service
                        ;%vdirsyncer-user-service    ; error with 'match'
                        ;%mbsync-user-service        ; error with 'match'
-
-                       ;%keybase-user-service
-                       ;%keybase-fuse-user-service
 
                        %kdeconnect-user-service))))
 
         (service home-dbus-service-type)
+
+        (service home-dbxfs-service-type
+                 (dbxfs-configuration
+                   (package (S "dbxfs"))
+                   (config-json %dbxfs-config-json)
+                   ;; Needs gpg key to unlock.
+                   (autostart? #f)
+                   (verbosity 1)))
 
         ;; Can't seem to get (if headless?) to work
         #;(service home-gpg-agent-service-type
