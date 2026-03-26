@@ -1,3 +1,10 @@
 #!/bin/sh
 
-yt-dlp --embed-chapters --embed-subs --limit-rate 5M --sub-lang "en.*" -o "$HOME/media/videos/temp/%(title).100s.%(ext)s" "$1"
+yt-dlp \
+    --embed-chapters \
+    --embed-subs \
+    --limit-rate 5M \
+    --sub-lang "en.*" \
+    --remote-components=ejs:github \
+    --js-runtimes quickjs:$(guix build quickjs)/bin/qjs \
+    -o "$HOME/media/videos/temp/%(title).100s.%(ext)s" "$1"

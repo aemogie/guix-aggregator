@@ -21,14 +21,9 @@
     (kernel-arguments (cons* <<kernel-argument>> %default-kernel-arguments))
     (file-systems (append <<file-systems>> %base-file-systems))
     (swap-devices <<swap-devices>>)
-    (users (cons* <<user>> %base-user-accounts))
+    (users (cons* <<user-account>> %base-user-accounts))
     (packages (append %testament-cli-packages %base-packages))
-    (services (cons* <<service>> %base-services))
-    (privileged-programs
-     (cons* (privileged-program
-              (program (file-append manage-cuirass "/bin/manage-cuirass"))
-              (setuid? #t))
-            %default-privileged-programs)))
+    (services (cons* <<service>> %base-services)))
 #+end_src
 
 ** Base
@@ -174,7 +169,7 @@
 #+end_src
 
 *** Users
-#+begin_src scheme :noweb-ref user
+#+begin_src scheme :noweb-ref user-account
   (user-account
     (inherit %root-account)
     (password #f)
@@ -187,10 +182,12 @@
     (shell (file-append fish "/bin/fish")))
   (user-account
     (name "jonathan")
-    (group "users"))
+    (group "users")
+    (supplementary-groups '("wheel")))
   (user-account
     (name "podiki")
-    (group "users"))
+    (group "users")
+    (supplementary-groups '("wheel")))
 #+end_src
 
 #+begin_src scheme :noweb-ref service

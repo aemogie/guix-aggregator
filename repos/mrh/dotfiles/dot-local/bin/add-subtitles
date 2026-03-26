@@ -1,3 +1,14 @@
 #!/bin/sh
 
-ffmpeg -i $1 -i $2 -map 0 -map 1 -metadata:s:s:0 language=eng -c copy out.mkv
+ffmpeg \
+    -i $1 -i $2 \
+    -map 0 -map 1 \
+    -metadata:s:s:0 language=eng \
+    -disposition:s:0 default \
+    -c copy \
+    out.mkv
+
+# "-i foo -i bar" sets foo to input 0 and bar to input 1
+# "-map n:[v|a|s]:m" selects the m-th video/audio/subtitle stream from the n-th input
+# "-metadata:s:[v|a|s]:n key=val" sets metadata "key" to "val" for the n-th video/audio/subtitle stream
+# "-c copy" don't transcode

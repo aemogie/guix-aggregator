@@ -21,7 +21,7 @@
     (kernel-arguments (cons* <<kernel-argument>> %default-kernel-arguments))
     (file-systems (append <<file-systems>> %base-file-systems))
     (swap-devices (append <<swap-devices>>))
-    (users (cons* <<user>> %base-user-accounts))
+    (users (cons* <<user-account>> %base-user-accounts))
     (packages (append %testament-cli-packages %base-packages))
     (services
      (cons* <<service>>
@@ -158,7 +158,7 @@
 #+end_src
 
 *** Users
-#+begin_src scheme :noweb-ref user
+#+begin_src scheme :noweb-ref user-account
   (user-account
     (inherit %root-account)
     (password #f)

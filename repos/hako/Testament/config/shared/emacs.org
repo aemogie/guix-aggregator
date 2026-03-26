@@ -541,7 +541,12 @@ Check syntax on the fly.
   (use-package puni
     :hook
     ((eval-expression-minibuffer-setup nxml-mode prog-mode sgml-mode tex-mode)
-     . puni-mode))
+     . puni-mode)
+    :bind
+    (:map puni-mode-map
+          ("C-M-r" . puni-raise)
+          ("C-M-," . puni-slurp-backward)
+          ("C-M-." . puni-slurp-forward)))
 #+end_src
 
 *** emacs-treesit-auto
