@@ -34,7 +34,8 @@
   (string-append "--substitute-urls=" urls))
 
 (define (build-options)
-  `("--keep-going"
+  `("--keep-failed"
+    "--keep-going"
     "--verbosity=1"
     "--load-path=modules"
     ,%substitute-urls))

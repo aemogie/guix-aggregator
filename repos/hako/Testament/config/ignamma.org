@@ -9,12 +9,12 @@
 
   (operating-system
     (host-name "ignamma")
-    (timezone "Etc/GMT-8")
+    (timezone "Asia/Hong_Kong")
     (bootloader
      (bootloader-configuration
        (bootloader grub-efi-removable-bootloader)
        (targets '("/efi"))))
-    (kernel linux/dolly)
+    (kernel linux-server/dolly)
     (kernel-arguments (cons* <<kernel-argument>> %default-kernel-arguments))
     (file-systems (append <<file-systems>> %base-file-systems))
     (swap-devices (append <<swap-devices>>))
@@ -30,19 +30,7 @@
 *** Kernel
 #+begin_src scheme :noweb-ref kernel-argument
   "consoleblank=60"
-  "kernel.sysrq=0"
   "memtest=3"
-  "zswap.enabled=1"
-  "zswap.max_pool_percent=90"
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (simple-service 'extend-kernel-module-loader kernel-module-loader-service-type
-    '("sch_fq_pie" "tcp_bbr"))
-
-  (simple-service 'extend-sysctl sysctl-service-type
-    '(("net.core.default_qdisc" . "fq_pie")
-      ("net.ipv4.tcp_congestion_control" . "bbr")))
 #+end_src
 
 *** File Systems
@@ -280,11 +268,9 @@ Guix System - services
 #+begin_src scheme :noweb-ref module
   (gnu services avahi)
   (gnu services cuirass)
-  (gnu services linux)
   (gnu services networking)
   (gnu services security)
   (gnu services ssh)
-  (gnu services sysctl)
   (gnu services virtualization)
   (rosenthal services networking)
 #+end_src

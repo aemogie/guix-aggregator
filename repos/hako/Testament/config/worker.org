@@ -10,7 +10,7 @@
   (lambda (host-name system 32bit-support? workers bios-boot)
     (operating-system
       (host-name host-name)
-      (timezone "Etc/GMT-8")
+      (timezone "Asia/Hong_Kong")
       (bootloader
        (bootloader-configuration
          (bootloader
@@ -18,7 +18,7 @@
                grub-bootloader
                grub-efi-removable-bootloader))
          (targets (list (or bios-boot "/efi")))))
-      (kernel linux/dolly)
+      (kernel linux-server/dolly)
       (kernel-arguments (cons* <<kernel-argument>> %default-kernel-arguments))
       (initrd-modules (cons* "sd_mod" %base-initrd-modules))
       (file-systems (append <<file-systems>> %base-file-systems))
@@ -36,22 +36,6 @@
 #+end_src
 
 ** Base
-*** Kernel
-#+begin_src scheme :noweb-ref kernel-argument
-  "kernel.sysrq=0"
-  "zswap.enabled=1"
-  "zswap.max_pool_percent=90"
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (simple-service 'extend-kernel-module-loader kernel-module-loader-service-type
-    '("sch_fq_pie" "tcp_bbr"))
-
-  (simple-service 'extend-sysctl sysctl-service-type
-    '(("net.core.default_qdisc" . "fq_pie")
-      ("net.ipv4.tcp_congestion_control" . "bbr")))
-#+end_src
-
 *** File Systems
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
@@ -190,10 +174,8 @@ Guix System - services
 #+begin_src scheme :noweb-ref module
   (gnu services avahi)
   (gnu services cuirass)
-  (gnu services linux)
   (gnu services networking)
   (gnu services ssh)
-  (gnu services sysctl)
   (rosenthal services networking)
 #+end_src
 

@@ -10,18 +10,15 @@
   (define %os
     (operating-system
       (host-name "dorphine")
-      (timezone "Etc/GMT-8")
+      (timezone "Asia/Hong_Kong")
       (keyboard-layout
        (keyboard-layout "us" "dvorak" #:options '("ctrl:nocaps")))
       (bootloader
        (bootloader-configuration
          (bootloader limine-efi-removable-bootloader)
          (targets '("/efi"))))
-      (kernel linux/dolly)
+      (kernel linux-desktop/dolly)
       (firmware (cons* linux-firmware %base-firmware))
-      ;; Required for the current implementation of the "copy out-of-tree modules
-      ;; to Linux initrd" patch.
-      (kernel-loadable-modules (list `(,zfs "module")))
       (kernel-arguments (cons* <<kernel-argument>> %default-kernel-arguments))
       (initrd microcode-initrd)
       (file-systems (append <<file-systems>> %base-file-systems))
@@ -46,14 +43,13 @@
                %base-packages))
       (services
        (cons* <<service>>
-              (modify-services %rosenthal-desktop-services/gdm <<modify-service>>)))
+              (modify-services %rosenthal-desktop-services/base <<modify-service>>)))
       (name-service-switch %mdns-host-lookup-nss)))
 
   (define %transformed-os
     ((nonguix-transformation-nvidia
-      #:driver nvdb
-      #:open-source-kernel-module? #t
-      #:configure-xorg? #t)
+      #:open-source-kernel-module? #f
+      #:configure-xorg? sddm-service-type)
      %os))
 
   (operating-system
@@ -70,14 +66,69 @@
   udp dport mdns accept
 #+end_src
 
+Extra configurations for NVIDIA proprietary driver
+
+Performance
+#+begin_src scheme :noweb-ref kernel-argument
+  "nvidia.NVreg_RegistryDwords=RmEnableAggressiveVblank=1"
+  "nvidia.NVreg_UsePageAttributeTable=1"
+#+end_src
+
+Power management and suspend
+#+begin_src scheme :noweb-ref kernel-argument
+  "nvidia.NVreg_UseKernelSuspendNotifiers=1"
+  "nvidia.NVreg_TemporaryFilePath=/var/tmp"
+  "mem_sleep_default=s2idle"
+  "nvidia.NVreg_EnableS0ixPowerManagement=1"
+#+end_src
+
+Application profiles
+#+begin_src scheme :noweb-ref service
+  (simple-service 'nvidia-application-profiles etc-service-type
+    `(;; https://github.com/Frogging-Family/nvidia-all/blob/master/system/limit-vram-usage
+      ("nvidia/nvidia-application-profiles-rc.d/limit-vram-usage.json"
+       ,(json-file "nvidia-application-profile-limit-vram-usage.json"
+          #~`(("profiles"
+                 . #((("name" . "No VidMem Reuse")
+                      ("settings"
+                       . #((("key" . "GLVidHeapReuseRatio")
+                            ("value" . 0)))))))
+              ("rules"
+               . #((("pattern"
+                     ("op" . "or")
+                     ("sub"
+                      . ,(list->vector
+                          (map (lambda (name)
+                                 `(("feature" . "procname")
+                                   ("matches" . ,name)))
+                               '("librewolf"
+                                 "niri")))))
+                    ("profile" . "No VidMem Reuse")))))))
+      ;; https://github.com/Frogging-Family/nvidia-all/blob/master/system/cuda-no-stable-perf-limit
+      ("nvidia/nvidia-application-profiles-rc.d/cuda-no-stable-perf-limit.json"
+       ,(json-file "nvidia-application-profile-cuda-no-stable-perf-limit.json"
+          #~`(("profiles"
+               . #((("name" . "CudaNoStablePerfLimit")
+                    ("settings" . #("0x166c5e" 0)))))
+              ("rules"
+               . #((("pattern"
+                     ("op" . "or")
+                     ("sub"
+                      . ,(list->vector
+                          (map (lambda (name)
+                                 `(("feature" . "procname")
+                                   ("matches" . ,name)))
+                               '("librewolf"
+                                 "obs")))))
+                    ("profile" . "CudaNoStablePerfLimit")))))))))
+#+end_src
+
 ** Guix Home
 #+begin_src scheme :noweb yes :noweb-ref service
   (service guix-home-service-type
     `(("hako" ,(home-environment
                  (services
-                  (cons* <<home-service>>
-                         (service home-keyboard-service-type keyboard-layout)
-                         %rosenthal-desktop-home-services))))))
+                  (cons* <<home-service>> %rosenthal-desktop-home-services))))))
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref home-service
@@ -95,34 +146,13 @@
 ** Base
 *** Kernel
 #+begin_src scheme :noweb-ref kernel-argument
-  "kernel.sysrq=1"
   "memtest=3"
-  "zswap.enabled=1"
   "zswap.max_pool_percent=90"
-#+end_src
-
-Extra kernel arguments for NVIDIA proprietary driver
-#+begin_src scheme :noweb-ref kernel-argument
-  ;; https://github.com/Frogging-Family/nvidia-all/blob/master/customization.cfg
-  "nvidia.NVreg_RegistryDwords=RmEnableAggressiveVblank=1"
-  "nvidia.NVreg_UsePageAttributeTable=1"
-
-  "mem_sleep_default=s2idle"
-  "nvidia.NVreg_EnableS0ixPowerManagement=1"
-  "nvidia.NVreg_UseKernelSuspendNotifiers=1"
 #+end_src
 
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-kernel-module-loader kernel-module-loader-service-type
-    '("sch_fq_pie" "tcp_bbr"
-      "ntsync"))
-
-  (simple-service 'extend-sysctl sysctl-service-type
-    '(("net.core.default_qdisc" . "fq_pie")
-      ("net.ipv4.tcp_congestion_control" . "bbr")
-      ;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
-      ("net.core.rmem_max" . "7500000")
-      ("net.core.wmem_max" . "7500000")))
+    '("ntsync"))
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
@@ -135,7 +165,7 @@ Extra kernel arguments for NVIDIA proprietary driver
 #+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/modprobed-db.conf
   DBPATH="/home/hako/.config"
   COLORS=light
-  IGNORE=(nvidia nvidia_drm nvidia_modeset nvidia_uvm zfs)
+  IGNORE=(nvidia nvidia_drm nvidia_modeset nvidia_peermem nvidia_uvm)
 #+end_src
 
 *** File Systems
@@ -186,7 +216,9 @@ Extra kernel arguments for NVIDIA proprietary driver
 |-------------------------+----------------------+----------------+-----------------------|
 
 #+begin_src scheme :noweb-ref service
-  (service zfs-service-type)
+  (service zfs-service-type
+    (zfs-configuration
+      (kernel-has-zfs-module? #t)))
 #+end_src
 
 #+begin_src scheme :noweb-ref file-systems
@@ -504,29 +536,21 @@ Generate passwordless ECC key:
 #+end_src
 
 ** Graphical Session
-*** gdm
+*** sddm
+#+begin_src scheme :noweb-ref service
+  (service sddm-service-type
+    (sddm-configuration
+      (sddm sddm-qt5)
+      (theme "sugar-light")
+      (themes-directory
+       (file-append sugar-light-sddm-theme/dolly "/share/sddm/themes"))))
+#+end_src
+
 #+begin_src scheme :noweb-ref service
   (set-xorg-configuration
    (xorg-configuration
      (keyboard-layout keyboard-layout))
-   gdm-service-type)
-#+end_src
-
-Disable amdgpu for now.
-
-#+begin_example
-  libmutter-Message: 20:32:02.883: Device '/dev/dri/card1' prefers shadow buffer
-  libmutter-Message: 20:32:02.892: Added device '/dev/dri/card1' (nvidia-drm) using atomic mode setting.
-  libmutter-Message: 20:32:02.938: Device '/dev/dri/card0' prefers shadow buffer
-  libmutter-Message: 20:32:02.939: Added device '/dev/dri/card0' (amdgpu) using atomic mode setting.
-  libmutter-Message: 20:32:02.941: Failed to initialize accelerated iGPU/dGPU framebuffer sharing: Not hardware accelerated
-  libmutter-Message: 20:32:02.941: Created gbm renderer for '/dev/dri/card1'
-  libmutter-Message: 20:32:02.942: Created gbm renderer for '/dev/dri/card0'
-  libmutter-Message: 20:32:02.942: GPU /dev/dri/card0 selected as primary
-#+end_example
-
-#+begin_src scheme :noweb-ref kernel-argument
-  "modprobe.blacklist=amdgpu"
+   sddm-service-type)
 #+end_src
 
 *** niri
@@ -691,46 +715,6 @@ Disable amdgpu for now.
       Ctrl+Print                     { screenshot-screen; }
       Alt+Print                      { screenshot-window; }
   }
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (simple-service 'nvidia-application-profiles etc-service-type
-    `(;; https://github.com/Frogging-Family/nvidia-all/blob/master/system/limit-vram-usage
-      ("nvidia/nvidia-application-profiles-rc.d/limit-vram-usage.json"
-       ,(json-file "nvidia-application-profile-limit-vram-usage.json"
-          #~`(("profiles"
-                 . #((("name" . "No VidMem Reuse")
-                      ("settings"
-                       . #((("key" . "GLVidHeapReuseRatio")
-                            ("value" . 0)))))))
-              ("rules"
-               . #((("pattern"
-                     ("op" . "or")
-                     ("sub"
-                      . ,(list->vector
-                          (map (lambda (name)
-                                 `(("feature" . "procname")
-                                   ("matches" . ,name)))
-                               '("librewolf"
-                                 "niri")))))
-                    ("profile" . "No VidMem Reuse")))))))
-      ;; https://github.com/Frogging-Family/nvidia-all/blob/master/system/cuda-no-stable-perf-limit
-      ("nvidia/nvidia-application-profiles-rc.d/cuda-no-stable-perf-limit.json"
-       ,(json-file "nvidia-application-profile-cuda-no-stable-perf-limit.json"
-          #~`(("profiles"
-               . #((("name" . "CudaNoStablePerfLimit")
-                    ("settings" . #("0x166c5e" 0)))))
-              ("rules"
-               . #((("pattern"
-                     ("op" . "or")
-                     ("sub"
-                      . ,(list->vector
-                          (map (lambda (name)
-                                 `(("feature" . "procname")
-                                   ("matches" . ,name)))
-                               '("librewolf"
-                                 "obs")))))
-                    ("profile" . "CudaNoStablePerfLimit")))))))))
 #+end_src
 
 *** shepherd
@@ -1275,15 +1259,14 @@ Guix System - services
   (gnu services containers)
   (gnu services linux)
   (gnu services networking)
+  (gnu services sddm)
   (gnu services security)
   (gnu services security-token)
   (gnu services ssh)
   (gnu services syncthing)
-  (gnu services sysctl)
   (gnu services virtualization)
   (gnu services xorg)
   (rosenthal services file-systems)
-  (rosenthal services keyboard)
   (rosenthal services networking)
   (rosenthal services shellutils)
 #+end_src
@@ -1300,6 +1283,7 @@ Guix Home - services
 Guix packages
 #+begin_src scheme :noweb-ref module
   (gnu packages android)
+  (gnu packages display-managers)
   (gnu packages fcitx5)
   (gnu packages file-systems)
   (gnu packages games)

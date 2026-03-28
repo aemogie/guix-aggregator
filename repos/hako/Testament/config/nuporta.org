@@ -9,15 +9,12 @@
 
   (operating-system
     (host-name "nuporta")
-    (timezone "Etc/GMT-8")
+    (timezone "Asia/Hong_Kong")
     (bootloader
      (bootloader-configuration
        (bootloader limine-efi-removable-bootloader)
        (targets '("/efi"))))
-    (kernel linux/dolly)
-    ;; Required for the current implementation of the "copy out-of-tree modules
-    ;; to Linux initrd" patch.
-    (kernel-loadable-modules (list `(,zfs "module")))
+    (kernel linux-server/dolly)
     (kernel-arguments (cons* <<kernel-argument>> %default-kernel-arguments))
     (file-systems (append <<file-systems>> %base-file-systems))
     (swap-devices <<swap-devices>>)
@@ -28,20 +25,9 @@
 
 ** Base
 *** Kernel
-#+begin_src scheme :noweb-ref kernel-argument
-  "kernel.sysrq=0"
-  "zswap.enabled=1"
-  "zswap.max_pool_percent=90"
-#+end_src
-
 #+begin_src scheme :noweb-ref service
-  (simple-service 'extend-kernel-module-loader kernel-module-loader-service-type
-    '("sch_fq_pie" "tcp_bbr"))
-
   (simple-service 'extend-sysctl sysctl-service-type
-    '(("net.core.default_qdisc" . "fq_pie")
-      ("net.ipv4.tcp_congestion_control" . "bbr")
-      ;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
+    '(;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
       ("net.core.rmem_max" . "7500000")
       ("net.core.wmem_max" . "7500000")))
 #+end_src
@@ -72,7 +58,9 @@
 |-------------------------------+-----------------------------+----------------------------+-----------------------|
 
 #+begin_src scheme :noweb-ref service
-  (service zfs-service-type)
+  (service zfs-service-type
+    (zfs-configuration
+      (kernel-has-zfs-module? #t)))
 #+end_src
 
 #+begin_src scheme :noweb-ref file-systems
@@ -1417,7 +1405,6 @@ Guix System - services
   (gnu services cuirass)
   (gnu services databases)
   (gnu services docker)
-  (gnu services linux)
   (gnu services networking)
   (gnu services rsync)
   (gnu services security)

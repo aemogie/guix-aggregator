@@ -43,11 +43,23 @@ Examples:
 - Multiple commands can be chained by =--=, they'll be executed in order.
 
 #+begin_example
-  $ blue configure -- build -- compile -- build-os
+  $ blue build -- compile -- build-os
 #+end_example
 
 ** Systems
 *** [[file:config/dorphine.org][dorphine]] (x86_64-linux, UEFI, ZFS, NVIDIA) | [[file:deploy/dorphine.scm][deploy]]
+Notes on ZFS:
+- support is currently implemented as =zfs-service-type= in [[https://codeberg.org/hako/Rosenthal][Rosenthal channel]]
+- root on ZFS requires [[https://codeberg.org/hako/Rosenthal/src/branch/trunk/modules/rosenthal/packages/patches/guix-wip-zfs-boot-support.patch][a patch to Guix System]]
+- I'm using use a customized kernel with ZFS module built in to avoid
+  compatibility issue with Guix initrd.
+- GRUB bootloader is not supported, it reports [[https://savannah.gnu.org/bugs/?47742][this error]] when booting from
+  the ZFS dataset containing =/gnu/store= so I use Limine and unified kernel
+  images instead.
+
+Notes on NVIDIA proprietary driver:
+- don't use GDM
+
 #+html: <img src="https://s3.boiledscript.com/misskey/a6987cd5-beb0-4ad3-b32a-3a0b6e2eb487.png">
 #+html: <img src="https://s3.boiledscript.com/misskey/050ff3d7-d928-43a9-bc4f-1cba9afa9dea.png">
 

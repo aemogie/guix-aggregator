@@ -15,7 +15,7 @@
   (package
     (inherit blue)
     (inputs
-     (modify-inputs (package-inputs blue)
+     (modify-inputs inputs
        (replace "guile" guile-3.0-latest)))))
 
 (concatenate-manifests
