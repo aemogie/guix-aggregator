@@ -1148,3 +1148,14 @@ See https://codeberg.org/mrh/dotfiles/dot-local/bin/ for more info."
      nil
      0)))
 #+end_src
+
+** Images
+#+begin_src emacs-lisp
+(use-package image
+  :custom
+  (image-use-external-converter 'convert)
+  (imagemagick-enabled-types t)
+  :config
+  (add-to-list 'image-file-name-extensions "avif")
+  (add-to-list 'image-file-name-extensions "jxl"))
+#+end_src

@@ -1,0 +1,15 @@
+#!/bin/sh
+
+ffmpeg \
+    -i $1 \
+    -map 0 \
+    -disposition:v:$2 default \
+    -disposition:a:$3 default \
+    -disposition:s:$4 default \
+    -metadata:s:s:$4 language=eng \
+    -c copy \
+    out.mkv \
+    && \
+    mv $1 $1.bkp \
+    && \
+    mv out.mkv $1

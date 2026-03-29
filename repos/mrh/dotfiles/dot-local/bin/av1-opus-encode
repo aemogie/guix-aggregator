@@ -1,0 +1,14 @@
+#!/bin/sh
+
+ffmpeg \
+    -i $1 \
+    -c:v libsvtav1 \
+    -preset 7 \
+    -c:a libopus \
+    out.mkv \
+    && \
+    mv $1 $1.bkp \
+    && \
+    mv out.mkv $1
+
+# higher preset (0-13) = higher speed + lower quality

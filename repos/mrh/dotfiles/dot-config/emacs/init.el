@@ -93,17 +93,18 @@
                         ("M-#" . dictionary-lookup-definition)
                         ("C-x b" . consult-buffer)
                         ("C-c c" . org-capture)
-                        ("C-c y" . consult-yank-from-kill-ring)
-                        ("C-c r s" . consult-register-store)
-                        ("C-c r l" . consult-register-load)
+                        ("C-c k" . shr-maybe-probe-and-copy-url)
                         ("C-c t" . modus-themes-toggle)
-                        ("C-c b k" . kill-buffer-and-window)
+                        ("C-c y" . consult-yank-from-kill-ring)
                         ("C-c b h" . my/hide-buffer)
+                        ("C-c b k" . kill-buffer-and-window)
                         ("C-c b u" . my/unhide-buffer)
-                        ("C-c m v" . my/mpv)
                         ("C-c m a" . my/play-album)
+                        ("C-c m v" . my/mpv)
+                        ("C-c p c" . org-publish-current-file)
                         ("C-c p p" . org-publish)
-                        ("C-c p c" . org-publish-current-file)))
+                        ("C-c r l" . consult-register-load)
+                        ("C-c r s" . consult-register-store)))
 
   (defun my/activate-keybinds (&optional local)
     "Activate personal keybinds stored in `my/keybinds'.
@@ -239,7 +240,7 @@ See also `my/hide-buffer'."
   (writeroom-major-modes '(text-mode))
   (writeroom-major-modes-exceptions '(mhtml-mode nxml-mode))
   :config
-  (global-writeroom-mode 1))
+  (global-writeroom-mode -1))
 
 (use-package prog-mode
   :config
@@ -367,8 +368,8 @@ Helpful advice for face changing functions."
   (defun my/org-audio-link (path desc format)
     "Allow org to handle audio links."
     (when (equal format 'html)
-      (format "<center><audio controls src=\"%s\">%s</audio></center>"
-              path (or desc ""))))
+      (format "<center><audio controls src=\"%s\" type=\"audio/ogg\">%s</audio></center>"
+              path (or desc "your browser does not support the audio tag"))))
 
   (org-link-set-parameters "audio"
                            :follow #'my/mpv
@@ -634,3 +635,10 @@ See https://codeberg.org/mrh/dotfiles/dot-local/bin/ for more info."
                (shell-quote-argument audio)))
      nil
      0)))
+
+(use-package image
+  :custom
+  (image-use-external-converter 'convert)
+  (imagemagick-enabled-types t)
+  :config
+  (add-to-list 'image-file-name-extensions "avif"))
