@@ -350,7 +350,8 @@ Theming
   "emacs-arei-dolly"
 #+end_src
 
-See also =ares= command in blueprint.scm.  Run ~blue ares~ to start the server.
+See also =serve= command in blueprint.scm.  Run ~blue serve~ to start the
+server.
 
 To start the server in another project, start a shell in its root directory and
 run the following command:
@@ -692,6 +693,17 @@ emacs-eat with patches <https://codeberg.org/akib/emacs-eat/pulls/133> and
     :bind
     (:map project-prefix-map
           ("m" . magit-project-status)))
+#+end_src
+
+*** emacs-magit-delta
+#+begin_src scheme :noweb-ref package-spec
+  "emacs-magit-delta-dolly"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package magit-delta
+    :hook
+    (magit-mode . magit-delta-mode))
 #+end_src
 
 *** emacs-forge

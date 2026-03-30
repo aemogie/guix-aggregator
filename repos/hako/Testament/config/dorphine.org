@@ -1021,8 +1021,8 @@ Copied from =%default-gdbinit=.
   	pushInsteadOf = "https://github.com/"
   [url "git@gitlab.com:"]
   	pushInsteadOf = "https://gitlab.com/"
-  [url "forgejo@git.urspace.moe:"]
-  	pushInsteadOf = "https://git.urspace.moe/"
+  [url "forgejo@git.guix.moe:"]
+  	pushInsteadOf = "https://git.guix.moe/"
 #+end_src
 
 For emacs-forge.
@@ -1081,6 +1081,7 @@ Copied from =%default-dotguile=.
   "adaptive-tab-bar-colour-icecat"
   "bitwarden-icecat"
   "livemarks-icecat"
+  "miniflux-injector-icecat"
   "ohmyech-icecat"
   "ublock-origin-icecat"
 #+end_src

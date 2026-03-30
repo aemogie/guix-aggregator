@@ -231,7 +231,7 @@ See also `my/hide-buffer'."
 
 (use-package ispell
   :custom
-  (ispell-personal-dictionary "~/documents/personal-dictionary"))
+  (ispell-personal-dictionary "~/data/personal-dictionary"))
 
 (use-package writeroom-mode
   :custom
@@ -641,4 +641,5 @@ See https://codeberg.org/mrh/dotfiles/dot-local/bin/ for more info."
   (image-use-external-converter 'convert)
   (imagemagick-enabled-types t)
   :config
-  (add-to-list 'image-file-name-extensions "avif"))
+  (add-to-list 'image-file-name-extensions "avif")
+  (add-to-list 'image-file-name-extensions "jxl"))

@@ -373,6 +373,7 @@
 *** cuirass
 #+begin_src caddyfile :noweb-ref caddy-site
   ci.guix.moe {
+  	import cloudflare_dns
   	import block_bots
 
   	@guix_publish {
@@ -447,7 +448,7 @@
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.urspace.moe/mirror/guix.git"))
+             (url "https://git.guix.moe/mirror/guix.git"))
            (channel
              (name 'asahi)
              (url "https://codeberg.org/asahi-guix/channel")
@@ -470,7 +471,7 @@
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.urspace.moe/mirror/guix.git"))
+             (url "https://git.guix.moe/mirror/guix.git"))
            (channel
              (name 'atomized)
              (url "https://codeberg.org/ieure/atomized-guix.git")
@@ -493,7 +494,7 @@
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.urspace.moe/mirror/guix.git"))
+             (url "https://git.guix.moe/mirror/guix.git"))
            (channel
              (name 'cast)
              (branch "main")
@@ -516,7 +517,7 @@
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.urspace.moe/mirror/guix.git"))
+             (url "https://git.guix.moe/mirror/guix.git"))
            (channel
              (name 'emacs-master)
              (url "https://github.com/gs-101/emacs-master.git")
@@ -538,7 +539,7 @@
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.urspace.moe/mirror/guix.git"))))
+             (url "https://git.guix.moe/mirror/guix.git"))))
     (priority 9)
     (systems '("x86_64-linux")))
 #+end_src
@@ -551,7 +552,7 @@ Pin commit for aarch64-linux as the build resource is limited
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.urspace.moe/hako/guix.git")
+             (url "https://git.guix.moe/hako/guix.git")
              (branch "pinned"))))
     (priority 9)
     (systems '("aarch64-linux")))
@@ -565,7 +566,7 @@ Pin commit for aarch64-linux as the build resource is limited
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.urspace.moe/mirror/guix.git"))
+             (url "https://git.guix.moe/mirror/guix.git"))
            (channel
              (name 'guixcn)
              (url "https://codeberg.org/guixcn/guix-channel.git")
@@ -587,7 +588,7 @@ Pin commit for aarch64-linux as the build resource is limited
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.urspace.moe/mirror/guix.git"))
+             (url "https://git.guix.moe/mirror/guix.git"))
            (channel
              (name 'nonguix)
              (url "https://gitlab.com/nonguix/nonguix")
@@ -608,7 +609,7 @@ Pin commit for aarch64-linux as the build resource is limited
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.urspace.moe/mirror/guix.git"))
+             (url "https://git.guix.moe/mirror/guix.git"))
            (channel
              (name 'rain-and-roses)
              (url "https://codeberg.org/untrusem/rain-and-roses.git")
@@ -626,7 +627,7 @@ Pin commit for aarch64-linux as the build resource is limited
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.urspace.moe/mirror/guix.git"))
+             (url "https://git.guix.moe/mirror/guix.git"))
            (channel
              (name 'rde)
              (url "https://git.sr.ht/~abcdw/rde")
@@ -647,7 +648,7 @@ Pin commit for aarch64-linux as the build resource is limited
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.urspace.moe/mirror/guix.git"))
+             (url "https://git.guix.moe/mirror/guix.git"))
            (channel
              (name 'rosenthal)
              (url "https://codeberg.org/hako/rosenthal.git")
@@ -665,6 +666,7 @@ Pin commit for aarch64-linux as the build resource is limited
 *** Mirroring
 #+begin_src caddyfile :noweb-ref caddy-site
   cache-cdn.guix.moe {
+  	import cloudflare_dns
   	import block_bots
 
   	handle /*.narinfo {
@@ -682,6 +684,7 @@ Pin commit for aarch64-linux as the build resource is limited
   }
 
   cache-fi.guix.moe, cache-de.guix.moe, cache-it.guix.moe {
+  	import cloudflare_dns
   	import block_bots
 
   	handle /*.narinfo {
@@ -999,9 +1002,7 @@ See [[file:shared/caddy.org][shared/caddy.org]].
 #+begin_src caddyfile :noweb yes :tangle ../tangled/nuporta/nuporta.caddyfile
   {
   	admin off
-  	dns cloudflare {file./run/secrets/cloudflare}
-  	acme_dns cloudflare {file./run/secrets/cloudflare}
-  	ech hello.boiledscript.com
+  	email admin@boiledscript.com
   	servers {
   		trusted_proxies static private_ranges
   		client_ip_headers X-Forwarded-For X-Real-IP
@@ -1010,6 +1011,7 @@ See [[file:shared/caddy.org][shared/caddy.org]].
   }
 
   <<caddy-snippet-block-bots>>
+  <<caddy-snippet-cloudflare-dns>>
   <<caddy-snippet-tailscale>>
 
   :80, :443 {
@@ -1019,6 +1021,7 @@ See [[file:shared/caddy.org][shared/caddy.org]].
   }
 
   guix.moe {
+  	import cloudflare_dns
   	handle /.well-known/matrix/* {
   		reverse_proxy 127.0.0.1:26372
   	}
@@ -1029,6 +1032,7 @@ See [[file:shared/caddy.org][shared/caddy.org]].
   }
 
   ultrarare.space {
+  	import cloudflare_dns
   	root * /var/lib/webpublic/ultrarare.space
   	handle_errors {
   		rewrite * /{err.status_code}.html
@@ -1043,6 +1047,7 @@ See [[file:shared/caddy.org][shared/caddy.org]].
 *** docker-mailserver
 #+begin_src caddyfile :noweb-ref caddy-site
   mta-sts.boiledscript.com {
+  	import cloudflare_dns
   	import block_bots
   	handle /.well-known/mta-sts.txt {
   		respond <<EOF
@@ -1055,6 +1060,7 @@ See [[file:shared/caddy.org][shared/caddy.org]].
   }
 
   mail.boiledscript.com {
+  	import cloudflare_dns
   	respond /* "Access denied" 403 {
   		close
   	}
@@ -1155,7 +1161,8 @@ See [[file:shared/caddy.org][shared/caddy.org]].
 
 *** forgejo
 #+begin_src caddyfile :noweb-ref caddy-site
-  git.urspace.moe {
+  git.guix.moe {
+  	import cloudflare_dns
   	import tailscale {
   		reverse_proxy localhost:48071
   	}
@@ -1168,7 +1175,6 @@ See [[file:shared/caddy.org][shared/caddy.org]].
       (postgresql-password-file "/run/secrets/postgres/forgejo")
       (config
        #~'((#f
-            ("APP_NAME" . "URSpace VCS")
             ("RUN_USER" . "forgejo")
             ("WORK_PATH" . "/var/lib/forgejo")
             ("RUN_MODE" . "prod"))
@@ -1181,39 +1187,28 @@ See [[file:shared/caddy.org][shared/caddy.org]].
             ("PASSWD" . "placeholder")
             ("SSL_MODE" . "disable")
             ("LOG_SQL" . "false"))
-           ("ui"
-            ("AMBIGUOUS_UNICODE_DETECTION" . "false"))
            ("repository"
             ("ROOT" . "/var/lib/forgejo/data/forgejo-repositories")
             ("PREFERRED_LICENSES" . "GPL-3.0-or-later")
             ("ENABLE_PUSH_CREATE_USER" . "true")
-            ("ENABLE_PUSH_CREATE_ORG" . "true")
-            ("DEFAULT_REPO_UNITS" . "repo.code,repo.releases,repo.issues,repo.pulls")
-            ("DEFAULT_BRANCH" . "trunk")
             ("DISABLE_DOWNLOAD_SOURCE_ARCHIVES" . "true"))
            ("lfs"
             ("PATH" . "/var/lib/forgejo/data/lfs"))
            ("service"
-            ("REGISTER_EMAIL_CONFIRM" . "true")
-            ("ENABLE_NOTIFY_MAIL" . "true")
-            ("DISABLE_REGISTRATION" . "true")
-            ("ALLOW_ONLY_EXTERNAL_REGISTRATION" . "false")
-            ("ENABLE_CAPTCHA" . "false")
-            ("REQUIRE_SIGNIN_VIEW" . "false")
+            ("REGISTER_MANUAL_CONFIRM" . "true")
             ("DEFAULT_KEEP_EMAIL_PRIVATE" . "true")
-            ("DEFAULT_ALLOW_CREATE_ORGANIZATION" . "true")
-            ("DEFAULT_ENABLE_TIMETRACKING" . "true")
-             ("NO_REPLY_ADDRESS" . "noreply.localhost"))
+            ("DEFAULT_ALLOW_CREATE_ORGANIZATION" . "false")
+            ("NO_REPLY_ADDRESS" . "noreply.localhost"))
            ("openid"
             ("ENABLE_OPENID_SIGNIN" . "false")
             ("ENABLE_OPENID_SIGNUP" . "false"))
            ("cron.update_checker"
             ("ENABLED" . "false"))
            ("session"
-            ("PROVIDER" . "file"))
+            ("PROVIDER" . "db"))
            ("log"
             ("MODE" . "file")
-            ("LEVEL" . "info")
+            ("LEVEL" . "warn")
             ("ROOT_PATH" . "/var/log/forgejo"))
            ("repository.pull-request"
             ("DEFAULT_MERGE_STYLE" . "rebase"))
@@ -1222,6 +1217,13 @@ See [[file:shared/caddy.org][shared/caddy.org]].
       (group-id 969)
       (user-id 974)))
 #+end_src
+
+Troubleshooting:
+#+begin_example
+  sudo -u forgejo \
+      "$(guix gc -R /run/current-system | grep forgejo-)"/bin/forgejo doctor check \
+      --config "$(sudo herd configuration forgejo)"
+#+end_example
 
 *** heisenbridge
 #+begin_src scheme :noweb-ref service
@@ -1263,6 +1265,7 @@ See [[file:shared/caddy.org][shared/caddy.org]].
 *** misskey
 #+begin_src caddyfile :noweb-ref caddy-site
   boiledscript.com {
+  	import cloudflare_dns
   	import block_bots
   	reverse_proxy localhost:54493
   }
@@ -1300,6 +1303,7 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
 *** miniflux
 #+begin_src caddyfile :noweb-ref caddy-site
   reader.urspace.moe {
+  	import cloudflare_dns
   	import block_bots
   	reverse_proxy localhost:51787
   }
@@ -1318,6 +1322,7 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
 *** tuwunel
 #+begin_src caddyfile :noweb-ref caddy-site
   matrix.guix.moe, matrix.guix.moe:8448 {
+  	import cloudflare_dns
   	import block_bots
 
   	@tuwunel {
@@ -1371,6 +1376,7 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
 *** vaultwarden
 #+begin_src caddyfile :noweb-ref caddy-site
   vault.urspace.moe {
+  	import cloudflare_dns
   	import block_bots
   	reverse_proxy localhost:23263
   }

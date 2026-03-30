@@ -205,7 +205,7 @@
            ,@(if (file-exists? "channels/guix/scripts/guix")
                  '("./pre-inst-env")
                  '())
-           "guile" "-c"
+           "guile" "-L" "modules" "-c"
            ,(call-with-output-string
               (cut write
                    '(begin

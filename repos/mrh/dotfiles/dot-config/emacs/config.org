@@ -564,7 +564,7 @@ Enable narrowing commands
 #+begin_src emacs-lisp
 (use-package ispell
   :custom
-  (ispell-personal-dictionary "~/documents/personal-dictionary"))
+  (ispell-personal-dictionary "~/data/personal-dictionary"))
 #+end_src
 
 ** Writeroom

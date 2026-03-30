@@ -33,6 +33,16 @@
   }
 #+end_src
 
+** Cloudflare DNS
+#+name: caddy-snippet-cloudflare-dns
+#+begin_src caddyfile
+  (cloudflare_dns) {
+  	tls {
+  		dns cloudflare {file./run/secrets/cloudflare}
+  	}
+  }
+#+end_src
+
 ** Tailscale
 #+name: caddy-snippet-tailscale
 #+begin_src caddyfile

@@ -3,6 +3,7 @@ version = 1
 [[annotations]]
 path = [
         "*.patch",
+        "*.tmp",
         ".envrc",
         ".gitignore",
         ".gitmodules",
@@ -14,6 +15,7 @@ path = [
         "dist/**",
         "manifest.scm",
         "pre-inst-env",
+        "scripts/**",
         "secrets/*",
        ]
 SPDX-FileCopyrightText = ""

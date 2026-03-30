@@ -56,6 +56,8 @@ Notes on ZFS:
 - GRUB bootloader is not supported, it reports [[https://savannah.gnu.org/bugs/?47742][this error]] when booting from
   the ZFS dataset containing =/gnu/store= so I use Limine and unified kernel
   images instead.
+- At least datasets containing =/gnu=, =/var/guix=, =/etc= (needed for boot) and
+  =/home= (=account-service-type=) should be managed by Guix System.
 
 Notes on NVIDIA proprietary driver:
 - don't use GDM

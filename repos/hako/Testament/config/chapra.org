@@ -321,15 +321,15 @@
 #+begin_src caddyfile :noweb yes :tangle ../tangled/chapra/chapra.caddyfile
   {
   	admin off
-  	dns cloudflare {file./run/secrets/cloudflare}
-  	acme_dns cloudflare {file./run/secrets/cloudflare}
-  	ech hello.boiledscript.com
+  	email admin@boiledscript.com
   	servers {
   		trusted_proxies static private_ranges
   		client_ip_headers X-Forwarded-For X-Real-IP
   		trusted_proxies_strict
   	}
   }
+
+  <<caddy-snippet-cloudflare-dns>>
 
   :80, :443 {
   	respond /* "Access denied" 403 {
@@ -343,6 +343,7 @@
 *** jellyfin
 #+begin_src caddyfile :noweb-ref caddy-site
   shows.urspace.moe {
+  	import cloudflare_dns
   	reverse_proxy localhost:22443
   }
 #+end_src
@@ -361,6 +362,7 @@
 *** komga
 #+begin_src caddyfile :noweb-ref caddy-site
   manga.urspace.moe {
+  	import cloudflare_dns
   	reverse_proxy localhost:44293
   }
 #+end_src
@@ -378,6 +380,7 @@
 *** navidrome
 #+begin_src caddyfile :noweb-ref caddy-site
   music.urspace.moe {
+  	import cloudflare_dns
   	reverse_proxy localhost:43502
   }
 #+end_src
@@ -397,6 +400,7 @@
 *** qbittorrent
 #+begin_src caddyfile :noweb-ref caddy-site
   dl.urspace.moe {
+  	import cloudflare_dns
   	reverse_proxy localhost:35951
   }
 #+end_src
