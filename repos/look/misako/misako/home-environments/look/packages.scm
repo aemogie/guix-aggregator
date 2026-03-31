@@ -265,4 +265,4 @@
 
 (define-public typst
   (list (@ (gnu packages rust-apps) typst)
-        tinymist))
+        tinymist-bin))

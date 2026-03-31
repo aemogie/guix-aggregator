@@ -575,12 +575,16 @@ Check syntax on the fly.
     (require 'rust-ts-mode)
     (require 'typescript-ts-mode)
     (require 'yaml-ts-mode)
-    ;; https://github.com/renzmann/treesit-auto/issues/32#issuecomment-1826270447
-    (defun hako/get-tree-sitter-mode (mode)
-      (treesit-auto--set-major-remap)
-      (alist-get mode major-mode-remap-alist mode))
-    (define-advice org-src-get-lang-mode (:filter-return (mode) tree-sitter)
-      (hako/get-tree-sitter-mode mode))
+    ;; https://github.com/renzmann/treesit-auto/issues/32
+    (dolist (mode
+             '(("cmake"      . cmake-ts)
+               ("dockerfile" . dockerfile-ts)
+               ("go"         . go-ts)
+               ("lua"        . lua-ts)
+               ("rust"       . rust-ts)
+               ("typescript" . typescript-ts)
+               ("yaml"       . yaml-ts)))
+      (add-to-list 'org-src-lang-modes mode))
     :hook
     (after-init . global-treesit-auto-mode))
 #+end_src
