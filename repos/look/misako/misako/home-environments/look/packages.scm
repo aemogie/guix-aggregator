@@ -161,6 +161,7 @@
         font-adobe-source-sans
         font-adobe-source-serif
         font-google-noto-emoji
+        font-google-noto
         font-ipa-mj-mincho
         font-jetbrains-mono
         font-microsoft-arial
@@ -248,7 +249,7 @@
         easyeffects))
 
 (define-public terminals
-  (list ghostty-latest foot))
+  (list ghostty foot))
 
 (define-public text-editor
   (list helix))
