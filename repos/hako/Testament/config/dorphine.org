@@ -38,7 +38,6 @@
                   "zathura"
                   "zathura-pdf-poppler"
                   <<package-spec>>))
-               (list <<package>>)
                %testament-cli-packages
                %base-packages))
       (services
@@ -48,8 +47,10 @@
 
   (define %transformed-os
     ((nonguix-transformation-nvidia
+      #:driver nvda-595
       #:open-source-kernel-module? #f
-      #:configure-xorg? sddm-service-type)
+      #:configure-xorg? sddm-service-type
+      #:remove-nvenc-restriction? #t)
      %os))
 
   (operating-system
@@ -1146,18 +1147,15 @@ Copied from =%default-nanorc=.
 #+end_src
 
 *** steam
-#+begin_src scheme :noweb-ref package
-  (steam-for nvdb)
+#+begin_src scheme :noweb-ref package-spec
+  "mangohud"
+  "steam-nvidia@595"
 #+end_src
 
 #+begin_src nftables :noweb-ref nftables-filter-input
   # allow warframe
   udp dport { 4950, 4955 } accept
   tcp dport 6695-6699 accept
-#+end_src
-
-#+begin_src scheme :noweb-ref package-spec
-  "mangohud"
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
@@ -1299,7 +1297,6 @@ Guix packages
   (gnu packages terminals)
   (gnu packages video)
   (gnu packages xorg)
-  (nongnu packages game-client)
   (nongnu packages nvidia)
   (rosenthal packages password-utils)
 #+end_src

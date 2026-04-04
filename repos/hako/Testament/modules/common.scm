@@ -11,6 +11,7 @@
   #:use-module (guix gexp)
   #:use-module (guix packages)
   #:use-module (guix store)
+  #:use-module (guix utils)
   #:use-module (rosenthal utils file)
   #:use-module (sops secrets)
   ;; Guix origin methods
@@ -19,6 +20,7 @@
   ;; Guix build systems
   #:use-module (guix build-system trivial)
   ;; Guix packages
+  #:use-module (gnu packages admin)
   #:use-module (gnu packages base)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages curl)
@@ -26,6 +28,8 @@
   #:use-module (gnu packages file)
   #:use-module (gnu packages gnupg)
   #:use-module (gnu packages linux)
+  #:use-module (gnu packages lsof)
+  #:use-module (gnu packages ncdu)
   #:use-module (gnu packages ncurses)
   #:use-module (gnu packages rsync)
   #:use-module (gnu packages rust-apps)
@@ -34,6 +38,7 @@
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages vim)
   #:use-module (nongnu packages linux)
+  #:use-module (rosenthal packages package-management)
   #:use-module (rosenthal packages password-utils)
   #:export (testament-path
             testament-file
@@ -249,9 +254,16 @@ WARNED."
         file
         git
         gnupg
+        htop
+        lsof
+        mirror-substitutes
         mosh
+        ncdu
         ncurses
-        rclone
+        (package/inherit rclone
+          (arguments
+           (substitute-keyword-arguments arguments
+             ((#:tests? _ #f) #f))))
         ripgrep
         rsync
         sops
@@ -310,7 +322,7 @@ WARNED."
        (version version)))))
 
 (define linux-server/dolly
-  (let ((cachyos-version "6.18.20-1"))
+  (let ((cachyos-version "6.18.21-1"))
     (make-linux/dolly
      linux-6.18
      cachyos-version
@@ -320,7 +332,7 @@ WARNED."
              "https://github.com/CachyOS/linux/releases/download/cachyos-"
              cachyos-version "/cachyos-" cachyos-version ".tar.gz"))
        (sha256
-        (base32 "1iwkqiqjn611igvnpqkiv7fl6prmbgicf2rf3czas8wk46g5r691")))
+        (base32 "12474qw0c156vwy7a14blvjxyif9lgsm36ibj4cvahrirhrzjk21")))
      #:defconfig (%kernel-config "/defconfig_server")
      #:configs
      (string-join
@@ -339,7 +351,7 @@ WARNED."
       "\n"))))
 
 (define linux-desktop/dolly
-  (let ((cachyos-version "6.19.10-1"))
+  (let ((cachyos-version "6.19.11-2"))
     (make-linux/dolly
      linux-6.19
      cachyos-version
@@ -349,7 +361,7 @@ WARNED."
              "https://github.com/CachyOS/linux/releases/download/cachyos-"
              cachyos-version "/cachyos-" cachyos-version ".tar.gz"))
        (sha256
-        (base32 "024mfb94nxr2kdbq398r76bfw3yk0ijg45f3z0cfpl3by5qvb478"))
+        (base32 "0w2f8yb56cpklwcgimm1c2dy7lavl0xwbclh2dyixwq70xvlryy5"))
        (patches
         (map %kernel-config
              '("/patches/bore-cachy-6.19.patch"

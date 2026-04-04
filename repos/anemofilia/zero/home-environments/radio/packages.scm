@@ -87,7 +87,6 @@
 
   #|saayix packages|#
   #|B|# #:use-module (saayix packages binaries)
-  #|W|# #:use-module (saayix packages wm)
 
   #:export (desktop
             development
@@ -122,7 +121,7 @@
         #|terminals  |# foot
         #|toys       |# wayneko
         #|video      |# wf-recorder
-        #|wm         |# eww/wayland fnott lswt river-bedload rivercarro wbg wlr-randr
+        #|wm         |# eww fnott lswt river-bedload rivercarro wbg wlr-randr
         #|web        |# jq
         #|xdisorg    |# fuzzel-lowercase gammastep-minimal wl-clipboard wlrctl
         #|zig-xyz    |# river-minimal))
@@ -177,15 +176,8 @@
 (define messaging
   (let* ((channels
           (list (channel
-                 (name 'guix)
-                 (url "https://git.guix.gnu.org/guix.git")
-                 (branch "master")
-                 (commit "1d3d7912d5ee8198e4c7dba2d643aca67d34c854")
-                 (introduction
-                   (make-channel-introduction
-                     "9edb3f66fd807b096b48283debdcddccfea34bad"
-                     (openpgp-fingerprint
-                       "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA"))))))
+                 (inherit channel:guix)
+                 (commit "0c8e1042f684c7f2733ced97c26e660afae13540"))))
          (inferior (inferior-for-channels channels))
          (telegram-desktop
           (car (lookup-inferior-packages inferior "telegram-desktop"))))
@@ -217,6 +209,7 @@
 
 (define tex
   (list #|tex|# rubber
+                texlive-abntex2
                 texlive-collection-fontsextra
                 texlive-collection-fontsrecommended
                 texlive-collection-latexextra
@@ -234,18 +227,7 @@
   (list #|video|# ani-cli/wayland ffmpeg mpv-minimal/wayland))
 
 (define web
-  (list #|binaries|#
-        (package/inherit zen-browser-bin
-         (name "zen-browser-bin-twilight")
-         (version "1.19t")
-         (source
-           (origin
-             (method url-fetch)
-             (uri (string-append
-                     "https://github.com/zen-browser/desktop/releases/download/"
-                     "twilight/zen.linux-x86_64.tar.xz"))
-             (sha256
-               (base32 "0pmi5mzb0fs1a92fxdhnpbhaf063vyxrl1ns5nlnsirq2rrnspvq")))))
+  (list #|binaries|# zen-browser-bin
         #|gtk     |# gtk+)) ;needed for zen not crash when using termfilechooser
 
 (define emacs:base

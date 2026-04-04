@@ -31,7 +31,7 @@ Examples:
 - Configure [[https://guix.gnu.org/manual/devel/en/html_node/Substitutes.html][substitute servers]]:
 
 #+begin_example
-  $ blue configure URL='https://bordeaux.guix.gnu.org https://ci.guix.gnu.org'
+  $ blue --fresh-store configure URL='https://bordeaux.guix.gnu.org https://ci.guix.gnu.org'
 #+end_example
 
 - Variables can also be set temporarily:
