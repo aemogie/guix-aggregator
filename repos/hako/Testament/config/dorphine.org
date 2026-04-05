@@ -382,14 +382,14 @@ Generate passwordless ECC key:
   MY_GPGHOME="<GPG homedir>"
   MY_NAME="<Your Name>"
 
-  echo '
+  echo "
   %no-protection
   Key-Type: EDDSA
   Key-Curve: ed25519
   Subkey-Type: ECDH
   Subkey-Curve: cv25519
   Name-Real: $MY_NAME
-  Expire-Date: 0' | gpg --homedir "$MY_GPGHOME" --batch --generate-key
+  Expire-Date: 0" | gpg --homedir "$MY_GPGHOME" --batch --generate-key
 
   unset MY_GPGHOME MY_NAME
 #+end_src

@@ -50,14 +50,11 @@
 | Lycoris/Cache/GuixPublish/Nar    | /var/cache/guix/publish/nar    | compression=off,recordsize=1M |                       |
 | Lycoris/Data                     | /var/lib                       |                               |                       |
 | Lycoris/Data/Forgejo             | /var/lib/forgejo               |                               |                       |
-| Lycoris/Data/Mail                | /var/lib/docker-mailserver     |                               | true                  |
 | Lycoris/Data/PostgreSQL          | /var/lib/postgresql            | recordsize=32K                | true                  |
-| Lycoris/Data/Redis               | /var/lib/redis                 |                               | true                  |
 | Lycoris/Data/SOPS                | /var/lib/sops                  |                               | true                  |
 | Lycoris/Data/Tailscale           | /var/lib/tailscale             |                               | true                  |
 | Lycoris/Data/Tuwunel             | /var/lib/tuwunel               |                               | true                  |
 | Lycoris/Data/WebPublic           | /var/lib/webpublic             |                               | true                  |
-| Lycoris/Data/Vaultwarden         | /var/lib/vaultwarden           |                               | true                  |
 |----------------------------------+--------------------------------+-------------------------------+-----------------------|
 
 #+begin_src scheme :noweb-ref service
@@ -201,12 +198,6 @@
                (file %sops-nuporta)
                (user "caddy"))
              (sops-secret
-               (key '("docker-mailserver" "ecprivkey.pem"))
-               (file %sops-nuporta))
-             (sops-secret
-               (key '("docker-mailserver" "ecpubkey.pem"))
-               (file %sops-nuporta))
-             (sops-secret
                (key '("rclone"))
                (file %sops-nuporta))
 
@@ -322,17 +313,6 @@
   (service elogind-service-type)
 #+end_src
 
-** Containers & Virtualization
-*** containerd
-#+begin_src scheme :noweb-ref service
-  (service containerd-service-type)
-#+end_src
-
-*** docker
-#+begin_src scheme :noweb-ref service
-  (service docker-service-type)
-#+end_src
-
 ** Databases
 *** postgresql
 #+begin_src scheme :noweb-ref service
@@ -365,11 +345,6 @@
             ;; Logging
             ("logging_collector" #t)
             ("log_directory" "/var/log/postgresql")))))))
-#+end_src
-
-*** redis
-#+begin_src scheme :noweb-ref service
-  (service redis-service-type)
 #+end_src
 
 ** Continuous Integration
@@ -683,10 +658,6 @@
   	handle /*.narinfo {
   		root * /var/cache/guix-moe/narinfo-cdn
   		file_server
-  	}
-
-  	handle /nar/* {
-  		redir https://nars.guix.moe{uri}
   	}
 
   	respond "Visit guix [dot] moe for more information." 404 {
@@ -1146,132 +1117,7 @@ See [[file:shared/caddy.org][shared/caddy.org]].
   	}
   }
 
-  ultrarare.space {
-  	import cloudflare_dns
-  	root * /var/lib/webpublic/ultrarare.space
-  	handle_errors {
-  		rewrite * /{err.status_code}.html
-  		file_server
-  	}
-  	file_server
-  }
-
   <<caddy-site>>
-#+end_src
-
-*** docker-mailserver
-#+begin_src caddyfile :noweb-ref caddy-site
-  mta-sts.boiledscript.com {
-  	import cloudflare_dns
-  	import block_bots
-  	handle /.well-known/mta-sts.txt {
-  		respond <<EOF
-  		version: STSv1
-  		mode: testing
-  		mx: mail.boiledscript.com
-  		max_age: 604800
-  		EOF 200
-  	}
-  }
-
-  mail.boiledscript.com {
-  	import cloudflare_dns
-  	respond /* "Access denied" 403 {
-  		close
-  	}
-  }
-#+end_src
-
-#+begin_src nftables :noweb-ref nftables-filter-input
-  tcp dport imap accept
-  tcp dport imaps accept
-  tcp dport smtp accept
-  tcp dport smtps accept
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (service docker-mailserver-service-type
-    (docker-mailserver-configuration
-      (shepherd-requirement '(redis))
-      (options
-       '(("ENABLE_AMAVIS" . "0")
-         ("ENABLE_FAIL2BAN" . "1")
-         ("ENABLE_MTA_STS" . "1")
-         ("ENABLE_OPENDKIM" . "0")
-         ("ENABLE_OPENDMARC" . "0")
-         ("ENABLE_POLICYD_SPF" . "0")
-         ("ENABLE_RSPAMD" . "1")
-         ("ENABLE_RSPAMD_REDIS" . "0")
-         ("ENABLE_SPAMASSASSIN" . "0")
-         ("NETWORK_INTERFACE" . "enp35s0")
-         ("OVERRIDE_HOSTNAME" . "mail.boiledscript.com")
-         ("POSTMASTER_ADDRESS" . "admin@boiledscript.com")
-         ("RSPAMD_LEARN" . "1")
-         ("SPOOF_PROTECTION" . "1")
-         ("SSL_TYPE" . "letsencrypt")))
-      (extra-arguments
-       `("--cap-add=NET_ADMIN"      ;For fail2ban.
-
-         "--volume"
-         ,(string-append
-           "/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/mail.boiledscript.com/mail.boiledscript.com.crt"
-           ":/etc/letsencrypt/live/mail.boiledscript.com/fullchain.pem")
-         "--volume"
-         ,(string-append
-           "/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/mail.boiledscript.com/mail.boiledscript.com.key"
-           ":/etc/letsencrypt/live/mail.boiledscript.com/privkey.pem")
-
-         "--volume"
-         ,(file-append
-           (plain-file "rspamd-redis.conf" "\
-  servers = \"127.0.0.1:6379\";
-  expand_keys = true;")
-           ":/etc/rspamd/local.d/redis.conf:ro")
-         "--volume"
-         ,(file-append
-           (local-file (testament-file "nuporta/rspamd-dkim-signing.conf"))
-           ":/etc/rspamd/override.d/dkim_signing.conf:ro")
-
-         "--volume"
-         ,(file-append
-           (local-file (testament-file "nuporta/mail-crypt.conf"))
-           ":/etc/dovecot/conf.d/10-custom.conf:ro")
-         "--volume" "/run/secrets/docker-mailserver:/certs:ro"))))
-#+end_src
-
-#+begin_src conf :tangle ../tangled/nuporta/rspamd-dkim-signing.conf
-  enabled = true;
-  sign_authenticated = true;
-  sign_local = true;
-
-  use_domain = "header";
-  use_redis = false;
-  use_esld = true;
-  check_pubkey = true;
-
-  domain {
-      boiledscript.com {
-          path = "/tmp/docker-mailserver/rspamd/dkim/rsa-2048-mail-boiledscript.com.private.txt";
-          selector = "mail";
-      }
-      ultrarare.space {
-          path = "/tmp/docker-mailserver/rspamd/dkim/rsa-2048-mail-ultrarare.space.private.txt";
-          selector = "mail";
-      }
-      urspace.moe {
-          path = "/tmp/docker-mailserver/rspamd/dkim/rsa-2048-mail-urspace.moe.private.txt";
-          selector = "mail";
-      }
-  }
-#+end_src
-
-#+begin_src conf :tangle ../tangled/nuporta/mail-crypt.conf
-  mail_plugins = $mail_plugins mail_crypt
-  plugin {
-    mail_crypt_global_private_key = </certs/ecprivkey.pem
-    mail_crypt_global_public_key = </certs/ecpubkey.pem
-    mail_crypt_save_version = 2
-  }
 #+end_src
 
 *** forgejo
@@ -1377,44 +1223,6 @@ Troubleshooting:
       (user-id 968)))
 #+end_src
 
-*** misskey
-#+begin_src caddyfile :noweb-ref caddy-site
-  boiledscript.com {
-  	import cloudflare_dns
-  	import block_bots
-  	reverse_proxy localhost:54493
-  }
-#+end_src
-
-https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
-#+begin_src scheme :noweb-ref service
-  (service misskey-service-type
-    (misskey-configuration
-      (postgresql-password-file "/run/secrets/postgres/misskey")
-      (image "ghcr.io/rakino/misskey:latest")
-      (config
-       #~'(("url" . "https://boiledscript.com")
-           ("port" . 54493)
-           ("db"
-            ("host" . "localhost")
-            ("port" . 5432)
-            ("db" . "misskey")
-            ("user" . "misskey")
-            ("pass" . "placeholder"))
-           ("dbReplications" . #f)
-           ("redis"
-            ("host" . "localhost")
-            ("port" . 6379))
-           ("fulltextSearch"
-            ("provider" . "sqlLike"))
-           ("id" . "aidx")
-           ("clusterLimit" . 1)
-           ("outgoingAddressFamily" . "dual")
-           ("proxyRemoteFiles" . #t)
-           ("signToActivityPubGet" . #t)))
-      (user-id 975)))
-#+end_src
-
 *** miniflux
 #+begin_src caddyfile :noweb-ref caddy-site
   reader.guix.moe {
@@ -1488,25 +1296,6 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
       (user-id 973)))
 #+end_src
 
-*** vaultwarden
-#+begin_src caddyfile :noweb-ref caddy-site
-  vault.urspace.moe {
-  	import cloudflare_dns
-  	import block_bots
-  	reverse_proxy localhost:23263
-  }
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (service vaultwarden-service-type
-    (vaultwarden-configuration
-      (postgresql-password-file "")
-      (database-url "postgresql://vaultwarden:placeholder@localhost/vaultwarden")
-      (port 23263)
-      (extra-options '(("ROCKET_ADDRESS" . "127.0.0.1")))
-      (user-id 977)))
-#+end_src
-
 ** Modules
 Within this repository
 #+begin_src scheme :noweb-ref module
@@ -1525,7 +1314,6 @@ Guix System - services
   (gnu services avahi)
   (gnu services cuirass)
   (gnu services databases)
-  (gnu services docker)
   (gnu services networking)
   (gnu services rsync)
   (gnu services security)
@@ -1533,7 +1321,6 @@ Guix System - services
   (gnu services sysctl)
   (gnu services web)
   (rosenthal services file-systems)
-  (rosenthal services mail)
   (rosenthal services messaging)
   (rosenthal services networking)
   (rosenthal services web)

@@ -141,6 +141,7 @@
 
 (define %systems
   `(("ignamma")
+    ("involemi"            #:dependencies ,(list %shared-config-caddy))
     ("mirror"              #:dependencies ,(list %shared-config-caddy))
     ("worker")
     ("chapra"   #:fork? #t #:dependencies ,(list %shared-config-caddy))

@@ -49,6 +49,7 @@
 
             %sops-chapra
             %sops-dorphine
+            %sops-involemi
             %sops-nuporta
 
             %guix-keys
@@ -129,6 +130,8 @@ WARNED."
   (local-file (in-vicinity testament-path "secrets/chapra.yaml")))
 (define %sops-dorphine
   (local-file (in-vicinity testament-path "secrets/dorphine.yaml")))
+(define %sops-involemi
+  (local-file (in-vicinity testament-path "secrets/involemi.yaml")))
 (define %sops-nuporta
   (local-file (in-vicinity testament-path "secrets/nuporta.yaml")))
 

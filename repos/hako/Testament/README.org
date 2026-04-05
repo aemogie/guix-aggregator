@@ -71,6 +71,8 @@ Notes on NVIDIA proprietary driver:
 
 *** [[file:config/ignamma.org][ignamma]] (x86_64-linux, UEFI, XFS) | [[file:deploy/ignamma.scm][deploy]]
 
+*** [[file:config/involemi.org][involemi]] (x86_64-linux, BIOS, XFS) | [[file:deploy/involemi.scm][deploy]]
+
 *** [[file:config/worker.org][worker]] | [[file:deploy/worker.scm][deploy]]
 Build workers for Guix Moe build farm.
 

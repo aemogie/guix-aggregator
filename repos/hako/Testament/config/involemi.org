@@ -1,0 +1,597 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright © 2026 Hilton Chain <hako@ultrarare.space>
+#+TITLE: involemi
+#+PROPERTY: header-args :mkdirp yes :noweb-prefix no
+
+** Guix System
+#+begin_src scheme :tangle ../tangled/involemi/involemi.scm :noweb yes
+  (use-modules <<module>>)
+
+  (operating-system
+    (host-name "involemi")
+    (timezone "Asia/Hong_Kong")
+    (bootloader
+     (bootloader-configuration
+       (bootloader grub-bootloader)
+       (targets '("/dev/sda"))))
+    (kernel linux-server/dolly)
+    (kernel-arguments (cons* <<kernel-argument>> %default-kernel-arguments))
+    (file-systems (append <<file-systems>> %base-file-systems))
+    (swap-devices <<swap-devices>>)
+    (groups (cons* <<user-group>> %base-groups))
+    (users (cons* <<user-account>> %base-user-accounts))
+    (packages (append %testament-cli-packages %base-packages))
+    (services (cons* <<service>> %base-services)))
+#+end_src
+
+** Base
+*** Kernel
+#+begin_src scheme :noweb-ref service
+  (simple-service 'extend-sysctl sysctl-service-type
+    '(;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
+      ("net.core.rmem_max" . "7500000")
+      ("net.core.wmem_max" . "7500000")))
+#+end_src
+
+*** File Systems
+#+begin_src scheme :noweb-ref file-systems
+  (list (file-system
+          (device (file-system-label "root"))
+          (mount-point "/")
+          (type "xfs")))
+#+end_src
+
+#+begin_src scheme :noweb-ref swap-devices
+  (list (swap-space
+          (target (file-system-label "swap"))))
+#+end_src
+
+*** Guix Daemon
+#+begin_src scheme :noweb-ref service
+  (simple-service 'extend-guix guix-service-type
+    (guix-extension
+      (authorized-keys %guix-keys)
+      (substitute-urls '("https://cache-cdn.guix.moe"))))
+
+  (simple-service 'guix-gc shepherd-root-service-type
+    (list (shepherd-timer '(guix-gc)
+            #~(calendar-event #:days-of-month '(1) #:hours '(12) #:minutes '(0))
+            #~("/run/current-system/profile/bin/guix" "gc" "--delete-generations=1m")
+            #:requirement '(user-processes guix-daemon))))
+#+end_src
+
+*** Users
+#+begin_src scheme :noweb-ref user-account
+  (user-account
+    (inherit %root-account)
+    (password #f)
+    (shell (file-append fish "/bin/fish")))
+
+  (user-account
+    (name "hako")
+    (group "users")
+    (supplementary-groups '("wheel"))
+    (shell (file-append fish "/bin/fish")))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'extend-openssh openssh-service-type
+    `(("root" ,%ssh-key-deploy)
+      ("hako" ,%ssh-key-hako)))
+#+end_src
+
+*** SOPS Secrets
+#+begin_src scheme :noweb-ref service
+  (service sops-secrets-service-type
+    (sops-service-configuration
+      (sops sops)
+      (gnupg-home "/var/lib/sops")
+      (secrets
+       (list (sops-secret
+               (key '("cloudflare"))
+               (file %sops-involemi)
+               (user "caddy"))
+             (sops-secret
+               (key '("docker-mailserver" "ecprivkey.pem"))
+               (file %sops-involemi))
+             (sops-secret
+               (key '("docker-mailserver" "ecpubkey.pem"))
+               (file %sops-involemi))))))
+#+end_src
+
+** Networking & SSH
+*** network-manager
+#+begin_src scheme :noweb-ref service
+  (service network-manager-service-type
+    (network-manager-configuration
+      (shepherd-requirement '())))
+#+end_src
+
+*** ntp
+#+begin_src scheme :noweb-ref service
+  (service ntp-service-type)
+#+end_src
+
+*** nftables
+#+begin_src scheme :noweb-ref service
+  (service nftables-service-type
+    (nftables-configuration
+      (ruleset (local-file (testament-file "involemi/involemi.nftables")))))
+#+end_src
+
+#+begin_src nftables :noweb yes :tangle ../tangled/involemi/involemi.nftables
+  flush ruleset
+
+  table inet filter {
+      chain input {
+          type filter hook input priority 0; policy drop;
+
+          # early drop of invalid connections
+          ct state invalid drop
+
+          # allow established/related connections
+          ct state { established, related } accept
+
+          # allow from loopback
+          iif lo accept
+          # drop connections to lo not coming from lo
+          iif != lo ip daddr 127.0.0.1/8 drop
+          iif != lo ip6 daddr ::1/128 drop
+
+          # allow icmp
+          ip protocol icmp accept
+          ip6 nexthdr icmpv6 accept
+
+          <<nftables-filter-input>>
+
+          # reject everything else
+          reject with icmpx type port-unreachable
+      }
+      chain forward {
+          type filter hook forward priority 0; policy drop;
+      }
+      chain output {
+          type filter hook output priority 0; policy accept;
+      }
+  }
+#+end_src
+
+*** tailscale
+#+begin_src scheme :noweb-ref service
+  (service tailscale-service-type)
+#+end_src
+
+#+begin_src nftables :noweb-ref nftables-filter-input
+  tcp dport 41641 accept
+#+end_src
+
+*** openssh
+#+begin_src scheme :noweb-ref service
+  (service openssh-service-type
+    (openssh-configuration
+      (openssh openssh-sans-x)
+      (permit-root-login 'prohibit-password)
+      (password-authentication? #f)))
+#+end_src
+
+#+begin_src nftables :noweb-ref nftables-filter-input
+  tcp dport ssh accept
+  # allow mosh
+  udp dport 60000-61000 accept
+#+end_src
+
+*** fail2ban
+#+begin_src scheme :noweb-ref service
+  (service fail2ban-service-type
+    (fail2ban-configuration
+      (extra-jails
+       (list (fail2ban-jail-configuration
+               (name "sshd")
+               (enabled? #t))))))
+#+end_src
+
+** Session and Seat Management
+*** elogind
+#+begin_src scheme :noweb-ref service
+  (service elogind-service-type)
+#+end_src
+
+** Containers & Virtualization
+*** containerd
+#+begin_src scheme :noweb-ref service
+  (service containerd-service-type)
+#+end_src
+
+*** docker
+#+begin_src scheme :noweb-ref service
+  (service docker-service-type)
+#+end_src
+
+** Databases
+*** postgresql
+#+begin_src scheme :noweb-ref service
+  (service postgresql-service-type
+    (postgresql-configuration
+      (postgresql postgresql-16)
+      (config-file
+       (postgresql-config-file
+         (log-destination "stderr")
+         (extra-config
+          '(("max_connections" 200)
+            ("shared_buffers" "768MB")
+            ("effective_cache_size" "2304MB")
+            ("maintenance_work_mem" "192MB")
+            ("checkpoint_completion_target" 0.9)
+            ("wal_buffers" "16MB")
+            ("default_statistics_target" 100)
+            ("random_page_cost" 4)
+            ("effective_io_concurrency" 2)
+            ("work_mem" "3780kB")
+            ("huge_pages" "off")
+            ("min_wal_size" "1GB")
+            ("max_wal_size" "4GB")
+            ;; Logging
+            ("logging_collector" #t)
+            ("log_directory" "/var/log/postgresql")))))))
+#+end_src
+
+*** redis
+#+begin_src scheme :noweb-ref service
+  (service redis-service-type)
+#+end_src
+
+*** mirroring
+#+begin_src caddyfile :noweb-ref caddy-site
+  cache-de.guix.moe, cache-it.guix.moe {
+  	import cloudflare_dns
+  	import block_bots
+
+  	@publish_substitutes {
+  		path /*.narinfo || /nix-cache-info
+  	}
+  	handle @publish_substitutes {
+  		reverse_proxy localhost:13778
+  	}
+
+  	handle /nar/* {
+  		reverse_proxy https://nars.guix.moe
+  	}
+
+  	respond "Visit guix [dot] moe for more information." 404 {
+  		close
+  	}
+  }
+#+end_src
+
+#+begin_src scheme :noweb-ref user-group
+  (user-group
+    (name "guix-moe")
+    (system? #t))
+#+end_src
+
+#+begin_src scheme :noweb-ref user-account
+  (user-account
+    (name "guix-moe")
+    (group "guix-moe")
+    ;; Writable HOME is required.
+    (home-directory "/var/cache/guix-moe")
+    (shell (file-append shadow "/sbin/nologin"))
+    (system? #t))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'guix-moe-mirror shepherd-root-service-type
+    (list (shepherd-service
+            (provision '(guix-moe-mirror-publish))
+            (requirement '(user-processes loopback))
+            (start
+             #~(make-forkexec-constructor
+                (list "/run/current-system/profile/bin/publish-substitutes"
+                      "--cache=/var/cache/guix-moe/mirror"
+                      "--listen=127.0.0.1"
+                      "--port=13778"
+                      "--ttl=6m"
+                      "--negative-ttl=300s")
+                #:user "guix-moe"
+                #:group "guix-moe"
+                #:log-file "/var/log/guix-moe-mirror-publish.log"))
+            (stop #~(make-kill-destructor)))
+
+          (shepherd-timer '(guix-moe-mirror-sync)
+            #~(calendar-event #:minutes '(40))
+            #~("/run/privileged/bin/sudo" "-u" "guix-moe" "-g" "guix-moe"
+               "/bin/sh" "--login"
+               #$(local-file (testament-file "involemi/setup-mirror.sh")) "latest")
+            #:requirement '(user-processes networking))))
+#+end_src
+
+#+begin_src sh :tangle ../tangled/involemi/setup-mirror.sh
+  #!/bin/sh
+
+  set -e
+
+  MIRROR_DIR="/var/cache/guix-moe/mirror"
+  SUBSTITUTES="https://cache-test.guix.moe"
+  STORE_PATHS="https://raw.githubusercontent.com/rakino/guix-store-paths/refs/heads/trunk/$1"
+
+  WORK_DIR="$(mktemp --directory /tmp/guix-moe-mirror-sync.XXXXXXXXXX)"
+  pushd "$WORK_DIR"
+
+  for list in guix.txt guix-packages.txt nonguix-packages.txt
+  do
+      wget --quiet --output-document "$list" "$STORE_PATHS/$list"
+  done
+
+  mirror-substitutes -o "$MIRROR_DIR" --narinfo-only --substitute-urls="$SUBSTITUTES" \
+                     -i guix.txt
+  mirror-substitutes -o "$MIRROR_DIR" --narinfo-only --substitute-urls="$SUBSTITUTES" \
+                     -i guix-packages.txt
+  mirror-substitutes -o "$MIRROR_DIR" --narinfo-only --substitute-urls="$SUBSTITUTES" \
+                     -i nonguix-packages.txt
+
+  popd
+#+end_src
+
+** Web Servers & Services
+*** caddy
+#+begin_src scheme :noweb-ref service
+  (service caddy-service-type
+    (caddy-configuration
+      (caddy caddy/dolly)
+      (caddyfile
+       (computed-substitution-with-inputs "involemi.caddyfile"
+         (local-file (testament-file "involemi/involemi.caddyfile"))
+         (list ai-robots-txt)))
+      (group-id 967)
+      (user-id 972)))
+#+end_src
+
+#+begin_src nftables :noweb-ref nftables-filter-input
+  tcp dport https accept
+  udp dport https accept
+#+end_src
+
+See [[file:shared/caddy.org][shared/caddy.org]].
+
+#+begin_src caddyfile :noweb yes :tangle ../tangled/involemi/involemi.caddyfile
+  {
+  	admin off
+  	email admin@boiledscript.com
+  	servers {
+  		trusted_proxies static private_ranges
+  		client_ip_headers X-Forwarded-For X-Real-IP
+  		trusted_proxies_strict
+  	}
+  }
+
+  <<caddy-snippet-block-bots>>
+  <<caddy-snippet-cloudflare-dns>>
+  <<caddy-snippet-tailscale>>
+
+  :80, :443 {
+  	respond /* "Access denied" 403 {
+  		close
+  	}
+  }
+
+  ultrarare.space {
+  	import cloudflare_dns
+  	root * /var/lib/webpublic/ultrarare.space
+  	handle_errors {
+  		rewrite * /{err.status_code}.html
+  		file_server
+  	}
+  	file_server
+  }
+
+  <<caddy-site>>
+#+end_src
+
+*** docker-mailserver
+#+begin_src caddyfile :noweb-ref caddy-site
+  mta-sts.boiledscript.com {
+  	import cloudflare_dns
+  	import block_bots
+  	handle /.well-known/mta-sts.txt {
+  		respond <<EOF
+  		version: STSv1
+  		mode: testing
+  		mx: mail.boiledscript.com
+  		max_age: 604800
+  		EOF 200
+  	}
+  }
+
+  mail.boiledscript.com {
+  	import cloudflare_dns
+  	respond /* "Access denied" 403 {
+  		close
+  	}
+  }
+#+end_src
+
+#+begin_src nftables :noweb-ref nftables-filter-input
+  tcp dport imap accept
+  tcp dport imaps accept
+  tcp dport smtp accept
+  tcp dport smtps accept
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (service docker-mailserver-service-type
+    (docker-mailserver-configuration
+      (shepherd-requirement '(redis))
+      (options
+       '(("ENABLE_AMAVIS" . "0")
+         ("ENABLE_FAIL2BAN" . "1")
+         ("ENABLE_MTA_STS" . "1")
+         ("ENABLE_OPENDKIM" . "0")
+         ("ENABLE_OPENDMARC" . "0")
+         ("ENABLE_POLICYD_SPF" . "0")
+         ("ENABLE_RSPAMD" . "1")
+         ("ENABLE_RSPAMD_REDIS" . "0")
+         ("ENABLE_SPAMASSASSIN" . "0")
+         ("NETWORK_INTERFACE" . "eth0")
+         ("OVERRIDE_HOSTNAME" . "mail.boiledscript.com")
+         ("POSTMASTER_ADDRESS" . "admin@boiledscript.com")
+         ("RSPAMD_LEARN" . "1")
+         ("SPOOF_PROTECTION" . "1")
+         ("SSL_TYPE" . "letsencrypt")))
+      (extra-arguments
+       `("--cap-add=NET_ADMIN"      ;For fail2ban.
+
+         "--volume"
+         ,(string-append
+           "/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/mail.boiledscript.com/mail.boiledscript.com.crt"
+           ":/etc/letsencrypt/live/mail.boiledscript.com/fullchain.pem")
+         "--volume"
+         ,(string-append
+           "/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/mail.boiledscript.com/mail.boiledscript.com.key"
+           ":/etc/letsencrypt/live/mail.boiledscript.com/privkey.pem")
+
+         "--volume"
+         ,(file-append
+           (plain-file "rspamd-redis.conf" "\
+  servers = \"127.0.0.1:6379\";
+  expand_keys = true;")
+           ":/etc/rspamd/local.d/redis.conf:ro")
+         "--volume"
+         ,(file-append
+           (local-file (testament-file "involemi/rspamd-dkim-signing.conf"))
+           ":/etc/rspamd/override.d/dkim_signing.conf:ro")
+
+         "--volume"
+         ,(file-append
+           (local-file (testament-file "involemi/mail-crypt.conf"))
+           ":/etc/dovecot/conf.d/10-custom.conf:ro")
+         "--volume" "/run/secrets/docker-mailserver:/certs:ro"))))
+#+end_src
+
+#+begin_src conf :tangle ../tangled/involemi/rspamd-dkim-signing.conf
+  enabled = true;
+  sign_authenticated = true;
+  sign_local = true;
+
+  use_domain = "header";
+  use_redis = false;
+  use_esld = true;
+  check_pubkey = true;
+
+  domain {
+      boiledscript.com {
+          path = "/tmp/docker-mailserver/rspamd/dkim/rsa-2048-mail-boiledscript.com.private.txt";
+          selector = "mail";
+      }
+      ultrarare.space {
+          path = "/tmp/docker-mailserver/rspamd/dkim/rsa-2048-mail-ultrarare.space.private.txt";
+          selector = "mail";
+      }
+      urspace.moe {
+          path = "/tmp/docker-mailserver/rspamd/dkim/rsa-2048-mail-urspace.moe.private.txt";
+          selector = "mail";
+      }
+  }
+#+end_src
+
+#+begin_src conf :tangle ../tangled/involemi/mail-crypt.conf
+  mail_plugins = $mail_plugins mail_crypt
+  plugin {
+    mail_crypt_global_private_key = </certs/ecprivkey.pem
+    mail_crypt_global_public_key = </certs/ecpubkey.pem
+    mail_crypt_save_version = 2
+  }
+#+end_src
+
+*** misskey
+#+begin_src caddyfile :noweb-ref caddy-site
+  boiledscript.com {
+  	import cloudflare_dns
+  	import block_bots
+  	reverse_proxy localhost:54493
+  }
+#+end_src
+
+https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
+#+begin_src scheme :noweb-ref service
+  (service misskey-service-type
+    (misskey-configuration
+      (postgresql-password-file "/run/secrets/postgres/misskey")
+      (image "ghcr.io/rakino/misskey:latest")
+      (config
+       #~'(("url" . "https://boiledscript.com")
+           ("port" . 54493)
+           ("db"
+            ("host" . "localhost")
+            ("port" . 5432)
+            ("db" . "misskey")
+            ("user" . "misskey")
+            ("pass" . "placeholder"))
+           ("dbReplications" . #f)
+           ("redis"
+            ("host" . "localhost")
+            ("port" . 6379))
+           ("fulltextSearch"
+            ("provider" . "sqlLike"))
+           ("id" . "aidx")
+           ("clusterLimit" . 1)
+           ("outgoingAddressFamily" . "dual")
+           ("proxyRemoteFiles" . #t)
+           ("signToActivityPubGet" . #t)))
+      (user-id 975)))
+#+end_src
+
+*** vaultwarden
+#+begin_src caddyfile :noweb-ref caddy-site
+  vault.urspace.moe {
+  	import cloudflare_dns
+  	import block_bots
+  	reverse_proxy localhost:23263
+  }
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (service vaultwarden-service-type
+    (vaultwarden-configuration
+      (postgresql-password-file "")
+      (database-url "postgresql://vaultwarden:placeholder@localhost/vaultwarden")
+      (port 23263)
+      (extra-options '(("ROCKET_ADDRESS" . "127.0.0.1")))
+      (user-id 977)))
+#+end_src
+
+** Modules
+Within this repository
+#+begin_src scheme :noweb-ref module
+  (common)
+#+end_src
+
+Utilities
+#+begin_src scheme :noweb-ref module
+  (gnu)
+  (rosenthal)
+  (sops secrets)
+#+end_src
+
+Guix System - services
+#+begin_src scheme :noweb-ref module
+  (gnu services databases)
+  (gnu services docker)
+  (gnu services networking)
+  (gnu services security)
+  (gnu services ssh)
+  (gnu services sysctl)
+  (rosenthal services mail)
+  (rosenthal services networking)
+  (rosenthal services web)
+  (sops services sops)
+#+end_src
+
+Guix packages
+#+begin_src scheme :noweb-ref module
+  (gnu packages admin)
+  (gnu packages databases)
+  (gnu packages shells)
+  (gnu packages ssh)
+  (rosenthal packages password-utils)
+  (rosenthal packages web)
+#+end_src
