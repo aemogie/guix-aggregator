@@ -30,9 +30,10 @@
               (modify-services %base-services <<modify-service>>)))
       (sudoers-file
        (plain-file "sudoers"
-         (string-append
-          (plain-file-content %sudoers-specification)
-          "%wheel ALL = NOPASSWD: ALL\n")))))
+         (string-join
+          (list (plain-file-content %sudoers-specification)
+                "deploy ALL=(ALL) NOPASSWD: ALL")
+          "\n")))))
 #+end_src
 
 ** Base
@@ -85,6 +86,12 @@
     (inherit %root-account)
     (password #f)
     (shell (file-append fish "/bin/fish")))
+  (user-account
+    (name "deploy")
+    (group "nogroup")
+    (home-directory "/var/empty")
+    (create-home-directory? #f)
+    (system? #t))
 
   (user-account
     (name "hako")
@@ -103,7 +110,7 @@
 
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-openssh openssh-service-type
-    `(("root" ,%ssh-key-deploy)
+    `(("deploy" ,%ssh-key-deploy)
       ("hako" ,%ssh-key-hako)
       ("jonathan" ,%ssh-key-jonathan)
       ("podiki" ,%ssh-key-podiki)))

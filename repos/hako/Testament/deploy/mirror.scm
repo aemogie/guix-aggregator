@@ -15,6 +15,7 @@
         (or host-name
             (string-append mirror-name ".guix.moe")))
        (system system)
+       (user "deploy")
        (host-key ssh-host-key)))))
 
 (list (mirror

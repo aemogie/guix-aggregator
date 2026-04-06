@@ -13,6 +13,7 @@
      (machine-ssh-configuration
        (host-name address)
        (system system)
+       (user "deploy")
        (host-key ssh-host-key)))))
 
 (list #;(build-worker

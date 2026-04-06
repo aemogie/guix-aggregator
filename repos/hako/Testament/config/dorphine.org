@@ -43,7 +43,13 @@
       (services
        (cons* <<service>>
               (modify-services %rosenthal-desktop-services/base <<modify-service>>)))
-      (name-service-switch %mdns-host-lookup-nss)))
+      (name-service-switch %mdns-host-lookup-nss)
+      (sudoers-file
+       (plain-file "sudoers"
+         (string-join
+          (list (plain-file-content %sudoers-specification)
+                "deploy ALL=(ALL) NOPASSWD: ALL")
+          "\n")))))
 
   (define %transformed-os
     ((nonguix-transformation-nvidia
@@ -333,6 +339,13 @@ Generate random password hash:
     (shell (file-append fish "/bin/fish")))
 
   (user-account
+    (name "deploy")
+    (group "nogroup")
+    (home-directory "/var/empty")
+    (create-home-directory? #f)
+    (system? #t))
+
+  (user-account
     (name "hako")
     (group "users")
     (supplementary-groups '("kvm" "wheel" "audio" "video" <<account-group-hako>>))
@@ -341,7 +354,7 @@ Generate random password hash:
 
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-openssh openssh-service-type
-    `(("root" ,%ssh-key-deploy)))
+    `(("deploy" ,%ssh-key-deploy)))
 #+end_src
 
 *** Shell Utilities

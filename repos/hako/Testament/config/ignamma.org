@@ -23,7 +23,13 @@
     (services
      (cons* <<service>>
             (modify-services %base-services <<modify-service>>)))
-    (name-service-switch %mdns-host-lookup-nss))
+    (name-service-switch %mdns-host-lookup-nss)
+    (sudoers-file
+     (plain-file "sudoers"
+       (string-join
+        (list (plain-file-content %sudoers-specification)
+              "deploy ALL=(ALL) NOPASSWD: ALL")
+        "\n"))))
 #+end_src
 
 ** Base
@@ -91,6 +97,13 @@
     (shell (file-append fish "/bin/fish")))
 
   (user-account
+    (name "deploy")
+    (group "nogroup")
+    (home-directory "/var/empty")
+    (create-home-directory? #f)
+    (system? #t))
+
+  (user-account
     (name "hako")
     (group "users")
     (supplementary-groups '("wheel"))
@@ -99,7 +112,7 @@
 
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-openssh openssh-service-type
-    `(("root" ,%ssh-key-deploy)
+    `(("deploy" ,%ssh-key-deploy)
       ("hako" ,%ssh-key-hako)))
 #+end_src
 
