@@ -20,6 +20,7 @@
     (swap-devices <<swap-devices>>)
     (groups (cons* <<user-group>> %base-groups))
     (users (cons* <<user-account>> %base-user-accounts))
+    (skeletons %rosenthal-skeletons)
     (packages (append %testament-cli-packages %base-packages))
     (services (cons* <<service>> %base-services))
     (sudoers-file

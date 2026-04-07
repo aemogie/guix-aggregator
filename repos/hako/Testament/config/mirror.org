@@ -24,6 +24,7 @@
       (file-systems (append <<file-systems>> %base-file-systems))
       (swap-devices (append <<swap-devices>>))
       (users (cons* <<user-account>> %base-user-accounts))
+      (skeletons %rosenthal-skeletons)
       (packages (append %testament-cli-packages %base-packages))
       (services (cons* <<service>> %base-services))
       (sudoers-file

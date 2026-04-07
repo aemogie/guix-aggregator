@@ -25,6 +25,7 @@
       (swap-devices (append <<swap-devices>>))
       (groups (cons* <<user-group>> %base-groups))
       (users (cons* <<user-account>> %base-user-accounts))
+      (skeletons %rosenthal-skeletons)
       (packages
        (append (specifications->packages
                 '(;; Desktop applications.
@@ -293,7 +294,8 @@ Application profiles
    config => (guix-configuration
                (inherit config)
                (discover? #t)
-               (tmpdir "/var/tmp")))
+               (tmpdir "/var/tmp")
+               (substitute-urls '())))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -302,21 +304,11 @@ Application profiles
       (authorized-keys %guix-keys)
       (substitute-urls '("https://cache-cdn.guix.moe"))))
 
-  (service guix-publish-service-type
-    (guix-publish-configuration
-      (port 49637)
-      (host "0.0.0.0")
-      (advertise? #t)))
-
   (simple-service 'guix-gc shepherd-root-service-type
     (list (shepherd-timer '(guix-gc)
             #~(calendar-event #:days-of-month '(1) #:hours '(12) #:minutes '(0))
             #~("/run/current-system/profile/bin/guix" "gc" "--delete-generations=1m")
             #:requirement '(user-processes guix-daemon))))
-#+end_src
-
-#+begin_src nftables :noweb-ref nftables-filter-input
-  tcp dport 49637 accept
 #+end_src
 
 *** Users
@@ -983,30 +975,6 @@ notmuch:
       (qt-im-module? #t)))
 #+end_src
 
-*** gdb
-Copied from =%default-gdbinit=.
-#+begin_src scheme :tangle ../tangled/dorphine/dotfiles/.config/gdb/gdbinit
-  # Tell GDB where to look for separate debugging files.
-  guile
-  (use-modules (gdb))
-  (execute (string-append "set debug-file-directory "
-                          (string-join
-                            (filter file-exists?
-                                    (append
-                                      (if (getenv "GDB_DEBUG_FILE_DIRECTORY")
-                                        (list (getenv "GDB_DEBUG_FILE_DIRECTORY"))
-                                        '())
-                                      (list "~/.guix-profile/lib/debug"
-                                            "~/.guix-home/profile/lib/debug"
-                                            "/run/current-system/profile/lib/debug")))
-                            ":")))
-  end
-
-  # Authorize extensions found in the store, such as the
-  # pretty-printers of libstdc++.
-  set auto-load safe-path /gnu/store/*/lib
-#+end_src
-
 *** git
 #+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/git/config
   [core]
@@ -1052,29 +1020,6 @@ For emacs-forge.
   [alias]
   	pr-push  = "!f() { branch=$1; topic=$(git branch --show-current); shift; git push origin $topic:refs/for/$branch/$topic -o force-push \"$@\"; }; f"
   	pr-apply = "!f() { for id in $(git cherry HEAD pullreqs/$1 | cut -c2-); do git cherry-pick --signoff $id; done; }; f"
-#+end_src
-
-*** guile
-Copied from =%default-dotguile=.
-#+begin_src scheme :tangle ../tangled/dorphine/dotfiles/.guile
-  (cond ((false-if-exception (resolve-interface '(ice-9 readline)))
-         =>
-         (lambda (module)
-           ;; Enable completion and input history at the REPL.
-           ((module-ref module 'activate-readline))))
-        (else
-         (display "Consider installing the 'guile-readline' package for
-  convenient interactive line editing and input history.\n\n")))
-
-        (unless (getenv "INSIDE_EMACS")
-          (cond ((false-if-exception (resolve-interface '(ice-9 colorized)))
-                 =>
-                 (lambda (module)
-                   ;; Enable completion and input history at the REPL.
-                   ((module-ref module 'activate-colorized))))
-                (else
-                 (display "Consider installing the 'guile-colorized' package
-  for a colorful Guile experience.\n\n"))))
 #+end_src
 
 *** jellyfin-mpv-shim
@@ -1132,14 +1077,6 @@ Copied from =%default-dotguile=.
   (simple-service 'mpv-mpris home-xdg-configuration-files-service-type
     `(("mpv/scripts/mpris.so"
        ,(file-append mpv-mpris "/lib/mpris.so"))))
-#+end_src
-
-*** nano
-Copied from =%default-nanorc=.
-
-#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/nano/naonrc
-  # Include all the syntax highlighting modules.
-  include /run/current-system/profile/share/nano/*.nanorc
 #+end_src
 
 *** prismlauncher
