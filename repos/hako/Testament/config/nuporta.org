@@ -786,6 +786,8 @@
                "--exclude" "*.tmp"
                "--max-age" "7h"
                "--verbose"
+               ;; Don't require CreateBucket permission.
+               "--s3-no-check-bucket"
                ;; Reduce S3 operations.
                "--checksum"
                "--fast-list"
@@ -799,7 +801,10 @@
                "r2:substitutes-apac/nar"
                "--config" "/run/secrets/rclone"
                "--exclude" "*.tmp"
+               "--delete-excluded"
                "--verbose"
+               ;; Don't require CreateBucket permission.
+               "--s3-no-check-bucket"
                ;; Reduce S3 operations.
                "--size-only"
                "--fast-list")

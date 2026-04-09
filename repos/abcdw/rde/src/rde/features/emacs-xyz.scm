@@ -3519,8 +3519,14 @@ git-link, git-timemachine."
         (define-key global-map (kbd ,git-gutter-transient-key)
           'git-gutter-transient)
 
-        (with-eval-after-load
-         'transient
+        (with-eval-after-load 'transient
+          ;; Jumping around options in transient menu doesn't make much sense,
+          ;; but sometimes occupied bindings for arrow get in the
+          ;; way. e.g. rebase in majutsu
+          (keymap-unset transient-map "<left>")
+          (keymap-unset transient-map "<right>")
+          (keymap-unset transient-map "<up>")
+          (keymap-unset transient-map "<down>")
           (setq transient-history-file
                 (concat (or (getenv "XDG_CACHE_HOME") "~/.cache")
                         "/emacs/transient/history.el")))
@@ -3606,13 +3612,11 @@ Almost all other operations are covered by magit."
 
 (define* (feature-emacs-geiser
           #:key
-          (emacs-geiser emacs-geiser-latest)
-          (emacs-gider emacs-gider-latest)
-          (emacs-geiser-guile emacs-geiser-guile-latest)
-          (emacs-geiser-eros emacs-geiser-eros-latest))
+          (emacs-geiser emacs-geiser)
+          (emacs-geiser-guile emacs-geiser-guile)
+          (emacs-geiser-eros emacs-geiser-eros))
   "Configure geiser for emacs."
   (ensure-pred file-like? emacs-geiser)
-  (ensure-pred file-like? emacs-gider)
   (ensure-pred file-like? emacs-geiser-guile)
   (ensure-pred file-like? emacs-geiser-eros)
 
@@ -3632,8 +3636,7 @@ Almost all other operations are covered by magit."
                                   (xdg-cache-home)))
           (setq geiser-repl-add-project-paths nil))
         (with-eval-after-load 'geiser-mode
-          (geiser-eros-mode)
-          (gider-mode))
+          (geiser-eros-mode))
         (with-eval-after-load 'geiser-impl
           (setq geiser-default-implementation 'guile)
           (setq geiser-active-implementations '(guile))
@@ -3650,7 +3653,7 @@ Almost all other operations are covered by magit."
                         '((:results . "scalar")))))
               '()))
       #:elisp-packages
-      (list emacs-geiser emacs-geiser-guile emacs-geiser-eros emacs-gider)
+      (list emacs-geiser emacs-geiser-guile emacs-geiser-eros)
       #:summary "\
 Scheme interpreter, giving access to a REPL and live metadata."
       #:commentary "\
@@ -4419,14 +4422,39 @@ Indentation and refile configurations, visual adjustment."
         :log t
         :order 100)
        (:name none
-        :todo ("IDEA")
-        :order 1)
+        :time-grid t
+        :order 6)
        (:name none
         :todo ("PROJ")
-        :order 2)
+        :order 8)
+       (:name none
+        :todo ("IDEA")
+        :order 9)
        (:name none
         :todo ,org-done-keywords-for-agenda
         :order 10)))))
+
+(define %rde-org-super-agenda-daily-config
+  `((org-super-agenda-unmatched-name 'none)
+    (org-super-agenda-unmatched-order 5)
+    (org-super-agenda-header-separator "\n")
+    (org-super-agenda-final-group-separator "\n")
+    (org-super-agenda-hide-empty-groups nil)
+    (org-super-agenda-groups
+     `((:name "Clocked today"
+        :log t
+        :order 100)
+       (:discard (:todo ,org-done-keywords-for-agenda))
+       (:name none
+        :time-grid t
+        :order 6)
+       (:name "To Do"
+        :todo ("TODO")
+        :order 1)
+
+       (:name "To Plan"
+        :todo ("PROJ" "IDEA")
+        :order 8)))))
 
 (define %rde-org-agenda-custom-commands
   `(list
@@ -4436,9 +4464,9 @@ Indentation and refile configurations, visual adjustment."
         ""
         ((org-agenda-span 1)
          (org-agenda-scheduled-leaders '("" "Sched.%2dx: "))
-         (org-agenda-block-separator nil)
+         (org-agenda-block-separator "-")
          (org-scheduled-past-days 0)
-         ,@%rde-org-super-agenda-config
+         ,@%rde-org-super-agenda-daily-config
          ;; We don't need the `org-agenda-date-today'
          ;; highlight because that only has a practical
          ;; utility in multi-day views.
@@ -4617,7 +4645,7 @@ in `org-agenda-prefix-format' via %(rde-org-agenda-reschedule-count)."
                           "^[ \t]*-[ \t]+Rescheduled" drawer-end t)
                     (setq count (+ count 1)))))
               (cond
-               ((> count 9) "R:∞ ")
+               ((> count 9) "R:∞  ")
                ((> count 0) (format "R:%d  " count))
                (t "     ")))))
 
