@@ -8,12 +8,12 @@
         (environment managed-host-environment-type)
         (configuration (machine-ssh-configuration
                          (host-name "rock64.unicorn-typhon.ts.net")
-                         ;(host-name "192.168.68.60")
+                         ;(host-name "192.168.68.68")
                          (system "aarch64-linux")
                          (port 22)
                          (user "efraim")
                          (identity "/home/efraim/.ssh/id_ecdsa")
-                         (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL68NjEeODS0Q+O2YVEr4uFqKsPmNFztljn8VbG77cNE")))))
+                         (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFGUov7RxBLAvJeeRh0Yyp/mpScKCqJcnrCaesv1GAr2")))))
 
 ;; For /etc/passwd
 ;; efraim ALL = NOPASSWD: ALL

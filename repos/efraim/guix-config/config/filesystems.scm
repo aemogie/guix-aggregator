@@ -12,7 +12,7 @@
   (list
     #~(job '(next-hour '(3))
            (string-append #$btrfs-progs "/bin/btrfs "
-                          "scrub " "start " "-c " "idle "
+                          "scrub " "start "
                           #$mount-point))
     #~(job '(next-hour '(5))
            (string-append #$btrfs-progs "/bin/btrfs "
