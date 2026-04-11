@@ -14,7 +14,7 @@
                          (port 22)
                          (user "efraim")
                          (identity "/home/efraim/.ssh/id_ecdsa")
-                         (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICJCga76AhIpOHWxIs01aC5fDdnFGf9tF6NLUFe0+4w4")))))
+                         (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICJCga76AhIpOHWxIs01aC5fDdnFGf9tF6NLUFe0+4w4"))))
 
       (machine
         (operating-system %rock64-system)

@@ -971,8 +971,44 @@ notmuch:
     (home-fcitx5-configuration
       (themes (list fcitx5-material-color-theme))
       (input-method-editors (list fcitx5-rime))
-      (gtk-im-module? #t)
-      (qt-im-module? #t)))
+      (wayland-frontend? #t)))
+#+end_src
+
+#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/fcitx5/config
+  [Hotkey/TriggerKeys]
+  0=Super+space
+
+  [Behavior]
+  OverrideXkbOption=True
+  CustomXkbOption=ctrl:nocaps
+#+end_src
+
+#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/fcitx5/profile
+  [Groups/0]
+  Name=Default
+  Default Layout=us-dvorak
+  DefaultIM=rime
+
+  [Groups/0/Items/0]
+  Name=keyboard-us-dvorak
+  Layout=
+
+  [Groups/0/Items/1]
+  Name=rime
+  Layout=
+
+  [GroupOrder]
+  0=Default
+#+end_src
+
+#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/fcitx5/conf/classicui.conf
+  Vertical Candidate List=False
+  PerScreenDPI=True
+  Theme=Material-Color-Teal
+  Font="Chiron Sung HK VF 12"
+  MenuFont="Sans 10"
+  TrayFont="Sans Bold 10"
+  PreferTextIcon=True
 #+end_src
 
 *** git

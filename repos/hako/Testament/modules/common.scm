@@ -157,9 +157,6 @@ WARNED."
           "(public-key (ecc (curve Ed25519)
 (q #8C4662FA0BC955B33261EEA5AA15F33081A7BEC991E5F990F7382F0988459B37#)))")
         ;; Guix Moe
-        (plain-file "guix-moe-old.pub"
-          "(public-key (ecc (curve Ed25519)
-(q #374EC58F5F2EC0412431723AF2D527AD626B049D657B5633AAAEBC694F3E33F9#)))")
         (plain-file "guix-moe.pub"
           "(public-key (ecc (curve Ed25519)
 (q #552F670D5005D7EB6ACF05284A1066E52156B51D75DE3EBD3030CD046675D543#)))")
@@ -250,6 +247,12 @@ WARNED."
 ;;; Packages
 ;;;
 
+(define rclone/no-test
+  (package/inherit rclone
+    (arguments
+     (substitute-keyword-arguments arguments
+       ((#:tests? _ #f) #f)))))
+
 (define %testament-cli-packages
   (list binutils
         curl
@@ -263,10 +266,7 @@ WARNED."
         mosh
         ncdu
         ncurses
-        (package/inherit rclone
-          (arguments
-           (substitute-keyword-arguments arguments
-             ((#:tests? _ #f) #f))))
+        rclone/no-test
         ripgrep
         rsync
         sops
