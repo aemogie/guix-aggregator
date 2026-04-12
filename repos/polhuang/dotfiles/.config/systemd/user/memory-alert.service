@@ -1,0 +1,6 @@
+[Unit]
+Description=Check memory usage and notify if above threshold
+
+[Service]
+Type=oneshot
+ExecStart=/home/pol/.bin/memory-alert.sh
