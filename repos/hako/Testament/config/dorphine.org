@@ -402,7 +402,6 @@ Generate passwordless ECC key:
 #+begin_src scheme :noweb-ref home-service
   (service home-sops-secrets-service-type
     (home-sops-service-configuration
-      (sops sops)
       (gnupg-home (in-vicinity %xdg-data-home "sops"))
       (secrets
        (list (sops-secret
@@ -570,6 +569,11 @@ Generate passwordless ECC key:
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
+  (service home-graphical-session-service-type
+    (home-graphical-session-configuration
+      (wayland? #t)
+      (x11? #t)))
+
   (service home-niri-service-type
     (home-niri-configuration
       (config
@@ -582,12 +586,11 @@ Generate passwordless ECC key:
   prefer-no-csd
   screenshot-path "~/Pictures/Screenshots/%Y%m%d-%H%M%S.png"
 
+  spawn-sh-at-startup "herd set-environment graphical-session XDG_CURRENT_DESKTOP=$XDG_CURRENT_DESKTOP XDG_SESSION_TYPE=$XDG_SESSION_TYPE NIRI_SOCKET=$NIRI_SOCKET"
+
   xwayland-satellite {
           path "$$bin/xwayland-satellite$$"
   }
-
-  // Guix Home (home-shepherd-service-type)
-  spawn-at-startup "shepherd"
 
   hotkey-overlay {
           skip-at-startup
@@ -723,15 +726,6 @@ Generate passwordless ECC key:
   }
 #+end_src
 
-*** shepherd
-Autostart Shepherd in environments that support XDG Autostart (e.g. GNOME).
-#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/autostart/shepherd.desktop
-  [Desktop Entry]
-  Type=Application
-  Name=Shepherd
-  Exec=shepherd
-#+end_src
-
 *** noctalia-shell
 Run ~herd restart noctalia-shell~ after home environment reconfiguration.
 
@@ -831,10 +825,6 @@ See [[file:shared/emacs.org][shared/emacs.org]].
 
 #+begin_src scheme :noweb yes :noweb-ref home-service
   <<home-service/emacs>>
-#+end_src
-
-#+begin_src scheme :noweb yes :noweb-ref package-spec
-  <<package-spec/emacs>>
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref module
@@ -1017,12 +1007,9 @@ notmuch:
           quotePath = false
   [init]
           defaultBranch = trunk
-  [commit]
-          gpgsign = true
   [user]
           name = Hilton Chain
           email = hako@ultrarare.space
-          signingkey = ACC66D09CA528292!
   [pull]
           rebase = true
   [rerere]
@@ -1043,18 +1030,16 @@ notmuch:
   	pushInsteadOf = "https://git.guix.moe/"
 #+end_src
 
-For emacs-forge.
-#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/git/config
-  [github]
-          user = rakino
-  [gitlab]
-          user = hakourspace
-#+end_src
+[[https://forgejo.org/docs/latest/user/agit-support/][AGit Workflow]] helpers.  Usage:
 
-[[https://forgejo.org/docs/latest/user/agit-support/][AGit Workflow]] helpers.
+#+begin_example
+  $ git pr-push <my-branch> master
+  $ git pr-apply 233
+#+end_example
+
 #+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/git/config
   [alias]
-  	pr-push  = "!f() { branch=$1; topic=$(git branch --show-current); shift; git push origin $topic:refs/for/$branch/$topic -o force-push \"$@\"; }; f"
+  	pr-push  = "!f() { topic=$1; branch=$2; shift; shift; git push origin $topic:refs/for/$branch/$topic -o force-push \"$@\"; }; f"
   	pr-apply = "!f() { for id in $(git cherry HEAD pullreqs/$1 | cut -c2-); do git cherry-pick --signoff $id; done; }; f"
 #+end_src
 
@@ -1063,11 +1048,30 @@ For emacs-forge.
   (simple-service 'jellyfin-mpv-shim home-shepherd-service-type
     (list (shepherd-service
             (provision '(jellyfin-mpv-shim))
+            (requirement '(graphical-session))
+            (auto-start? #f)
             (start
-             #~(make-forkexec-constructor
-                '(#$(file-append jellyfin-mpv-shim "/bin/jellyfin-mpv-shim"))))
-            (stop #~(make-kill-destructor))
-            (auto-start? #f))))
+             #~(lambda args
+                 ((make-forkexec-constructor
+                   '(#$(file-append jellyfin-mpv-shim "/bin/jellyfin-mpv-shim"))
+                   #:environment-variables (environ))
+                  args)))
+            (stop #~(make-kill-destructor)))))
+#+end_src
+
+*** jujutsu
+#+begin_src toml :tangle ../tangled/dorphine/dotfiles/.config/jj/config.toml
+  [user]
+  name = "Hilton Chain"
+  email = "hako@ultrarare.space"
+
+  [signing]
+  behavior = "drop"
+  backend = "gpg"
+  key = "ACC66D09CA528292"
+
+  [git]
+  sign-on-push = true
 #+end_src
 
 *** librewolf
@@ -1265,6 +1269,7 @@ Guix Home - services
   (gnu home services fontutils)
   (gnu home services gnupg)
   (gnu home services shells)
+  (rosenthal home services desktop)
   (sops home services sops)
 #+end_src
 
@@ -1287,5 +1292,4 @@ Guix packages
   (gnu packages video)
   (gnu packages xorg)
   (nongnu packages nvidia)
-  (rosenthal packages password-utils)
 #+end_src

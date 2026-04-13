@@ -31,6 +31,7 @@
   #:use-module (gnu packages lsof)
   #:use-module (gnu packages ncdu)
   #:use-module (gnu packages ncurses)
+  #:use-module (gnu packages password-utils)
   #:use-module (gnu packages rsync)
   #:use-module (gnu packages rust-apps)
   #:use-module (gnu packages ssh)
@@ -39,7 +40,6 @@
   #:use-module (gnu packages vim)
   #:use-module (nongnu packages linux)
   #:use-module (rosenthal packages package-management)
-  #:use-module (rosenthal packages password-utils)
   #:export (testament-path
             testament-file
 
@@ -261,6 +261,7 @@ WARNED."
         git
         gnupg
         htop
+        jujutsu
         lsof
         mirror-substitutes
         mosh

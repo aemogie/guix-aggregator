@@ -12,7 +12,7 @@
        (name 'guix)
        (url "https://git.guix.gnu.org/guix.git")
        (branch "master")
-       (commit "d9c7933f8e7c29346a41355d26ac2abf318d097d")
+       (commit "7c439d1258a79b712ec3fa3c24d1cca4d39f633d")
        (introduction
         (make-channel-introduction
          "9edb3f66fd807b096b48283debdcddccfea34bad"
@@ -32,7 +32,7 @@
        (name 'rosenthal)
        (url "https://codeberg.org/hako/rosenthal.git")
        (branch "trunk")
-       (commit "f60c19aea3d9825d14c0de9ecfe4b4748a1ea1c6")
+       (commit "6517fe1c325efa7b98734165baf07dd161b24120")
        (introduction
         (make-channel-introduction
          "7677db76330121a901604dfbad19077893865f35"
@@ -42,7 +42,7 @@
        (name 'sops-guix)
        (url "https://github.com/fishinthecalculator/sops-guix.git")
        (branch "main")
-       (commit "56d5285d32d3e58010eb1c8c6d10f5ee4853a30c")
+       (commit "7d3eb6069c71fa3f4281d6a0b209e55cb96a8674")
        (introduction
         (make-channel-introduction
          "0bbaf1fdd25266c7df790f65640aaa01e6d2dbc9"

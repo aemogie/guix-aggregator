@@ -203,7 +203,6 @@
 #+begin_src scheme :noweb-ref service
   (service sops-secrets-service-type
     (sops-service-configuration
-      (sops sops)
       (gnupg-home "/var/lib/sops")
       (secrets
        (list (sops-secret
@@ -792,22 +791,6 @@
                "--checksum"
                "--fast-list"
                "--no-traverse")
-            #:requirement '(user-processes networking))
-
-          #;(shepherd-timer '(guix-moe-mirror-remote-sync)
-            #~(calendar-event #:months '(3 6 9 12) #:days-of-month '(15) #:hours '(12) #:minutes '(0))
-            #~("/run/current-system/profile/bin/rclone" "sync"
-               "/var/cache/guix-moe/mirror/nar"
-               "r2:substitutes-apac/nar"
-               "--config" "/run/secrets/rclone"
-               "--exclude" "*.tmp"
-               "--delete-excluded"
-               "--verbose"
-               ;; Don't require CreateBucket permission.
-               "--s3-no-check-bucket"
-               ;; Reduce S3 operations.
-               "--size-only"
-               "--fast-list")
             #:requirement '(user-processes networking))))
 #+end_src
 
@@ -833,6 +816,18 @@
   mirror-substitutes -o "$MIRROR_DIR" --url-prefix="$URL_PREFIX" --threads=4 --substitute-urls="$GUIX_SUBSTITUTES $NONGUIX_SUBSTITUTES" \
                      -i "$STORE_PATHS/$DATE/nonguix-packages.txt"
 #+end_src
+
+Maintenance: manually sync mirrored substitutes to remote storage.
+
+#+begin_example
+  $ sudo herd stop guix-moe-mirror-remote-upload
+  $ sudo rclone sync /var/cache/guix-moe/mirror/nar r2:substitutes-apac/nar \
+        --verbose --config /run/secrets/rclone \
+        --exclude '*.tmp' --delete-excluded \
+        --s3-no-check-bucket \
+        --size-only --fast-list
+  $ sudo herd start guix-moe-mirror-remote-upload
+#+end_example
 
 TODO: Remove
 
@@ -1355,6 +1350,5 @@ Guix packages
   (rosenthal packages binaries)
   (rosenthal packages ci)
   (rosenthal packages package-management)
-  (rosenthal packages password-utils)
   (rosenthal packages web)
 #+end_src

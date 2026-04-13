@@ -12,11 +12,6 @@ workaround.
   <<home-service>>
 #+end_src
 
-#+name: package-spec/emacs
-#+begin_src scheme :noweb yes
-  <<package-spec>>
-#+end_src
-
 #+name: module/emacs
 #+begin_src scheme :noweb yes
   <<module>>
@@ -66,8 +61,21 @@ shell while using Emacs.
       ("ESHELL" . ,(file-append fish "/bin/fish"))))
 #+end_src
 
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'emacs-configuration home-xdg-configuration-files-service-type
+    `(("emacs/init.el" ,(local-file (testament-file "emacs/emacs-init.el")))))
+#+end_src
+
+#+begin_src scheme :noweb yes :noweb-ref home-service
+  (service home-emacs-service-type
+    (home-emacs-configuration
+      (emacs emacs-pgtk)
+      (packages (specifications->manifest '(<<package-spec>>)))
+      (shepherd-requirement '(graphical-session))))
+#+end_src
+
 #+begin_src scheme :noweb-ref package-spec
-  "emacs-pgtk"
+  "emacs-pgtk:doc"
 
   "emacs-gcmh"
   "emacs-no-littering"
@@ -82,25 +90,6 @@ shell while using Emacs.
   "emacs-markdown-mode"
   "emacs-nftables-mode"
   "emacs-zig-mode"
-#+end_src
-
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'emacs-configuration home-xdg-configuration-files-service-type
-    `(("emacs/init.el"
-       ,(computed-substitution-with-inputs "init.el"
-          (local-file (testament-file "emacs/emacs-init.el"))
-          (list ccls
-                python-lsp-server
-                rust-analyzer
-                zig-zls-0.15)))))
-#+end_src
-
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'emacs home-shepherd-service-type
-    (list (shepherd-service
-            (provision '(emacs-daemon))
-            (start #~(make-forkexec-constructor '("emacs" "--fg-daemon")))
-            (stop #~(make-kill-destructor)))))
 #+end_src
 
 ** Interface
@@ -184,8 +173,21 @@ Theming
   "emacs-helpful"
 #+end_src
 
+=emacs-pgtk:doc= stores Emacs source under =c-source=, which differs from the
+original =src= expected by =helpful--library-path=, redefine the function as a
+workaround.
+
 #+begin_src emacs-lisp :noweb-ref emacs-init
   (use-package helpful
+    :config
+    (defun helpful--library-path (library-name)
+      (when (member (f-ext library-name) '("c" "rs"))
+        (setq library-name
+              (f-expand (f-filename library-name)
+                        find-function-C-source-directory)))
+      (condition-case nil
+          (find-library-name library-name)
+        (error nil)))
     :bind
     ([remap describe-function] . helpful-callable)
     ([remap describe-variable] . helpful-variable)
@@ -451,22 +453,22 @@ Arei's builtin xref backend provides =xref-buffer-location= but Citre expects
 
 *** emacs eglot
 #+begin_src scheme :noweb-ref package-spec
+  "ccls"
   "python"
+  "python-lsp-server"
   "rust"
   "rust:cargo"
+  "rust-analyzer"
   "zig"
+  "zig-zls"
 #+end_src
 
 #+begin_src emacs-lisp :noweb-ref emacs-init
   (use-package eglot
     :config
     (dolist (program
-             `(((rust-ts-mode rust-mode)
-                "$$bin/rust-analyzer$$")
-               ((python-mode python-ts-mode)
-                "$$bin/pylsp$$")
-               ((c-mode c-ts-mode c++-mode c++-ts-mode)
-                "$$bin/ccls$$"
+             `(((c-mode c-ts-mode c++-mode c++-ts-mode)
+                "ccls"
                 ,(concat
                   "--init="
                   (json-serialize
@@ -474,9 +476,7 @@ Arei's builtin xref backend provides =xref-buffer-location= but Citre expects
                       (directory
                        . ,(concat (or (getenv "XDG_CACHE_HOME")
                                       "~/.cache")
-                                  "/ccls-cache")))))))
-               ((zig-mode)
-                "$$bin/zls$$")))
+                                  "/ccls-cache")))))))))
       (add-to-list 'eglot-server-programs program)))
 #+end_src
 
@@ -681,43 +681,38 @@ emacs-eat with patches <https://codeberg.org/akib/emacs-eat/pulls/133> and
     (after-init . envrc-global-mode))
 #+end_src
 
-*** emacs-magit
+*** emacs-majutsu
 #+begin_src scheme :noweb-ref package-spec
-  "emacs-magit"
+  "emacs-majutsu"
 #+end_src
 
 #+begin_src emacs-lisp :noweb-ref emacs-init
   (use-package magit
     :custom
-    (git-commit-cd-to-toplevel t))
+    (magit-define-global-key-bindings nil))
+
+  (use-package majutsu
+    :custom
+    (magit-define-global-key-bindings nil)
+    :init
+    (defun hako/majutsu-project-log ()
+      (interactive)
+      (when (fboundp 'project-root)
+        (majutsu-log (project-root (project-current t)))))
+    (defvaralias 'hako/jjdescription-mode-hook 'git-commit-mode-hook)
+    (defvaralias 'hako/jjdescription-mode-map  'git-commit-mode-map)
+    (define-minor-mode hako/jjdescription-mode "" :lighter "")
+    :hook
+    (majutsu-jjdescription-mode . hako/jjdescription-mode)
+    :bind
+    ("C-x g" . majutsu-log))
 
   (use-package project
     :config
-    (add-to-list 'project-switch-commands '(magit-project-status "Magit") t)
+    (add-to-list 'project-switch-commands '(hako/majutsu-project-log "Majutsu") t)
     :bind
     (:map project-prefix-map
-          ("m" . magit-project-status)))
-#+end_src
-
-*** emacs-magit-delta
-#+begin_src scheme :noweb-ref package-spec
-  "emacs-magit-delta-dolly"
-#+end_src
-
-#+begin_src emacs-lisp :noweb-ref emacs-init
-  (use-package magit-delta
-    :hook
-    (magit-mode . magit-delta-mode))
-#+end_src
-
-*** emacs-forge
-#+begin_src scheme :noweb-ref package-spec
-  "emacs-forge"
-#+end_src
-
-#+begin_src emacs-lisp :noweb-ref emacs-init
-  (use-package forge
-    :after (magit))
+          ("m" . hako/majutsu-project-log)))
 #+end_src
 
 *** emacs-notmuch
@@ -842,20 +837,18 @@ Within this repository
 Utilities
 #+begin_src scheme :noweb-ref module
   (guix gexp)
-  (rosenthal utils file)
 #+end_src
 
 Guix Home - services
 #+begin_src scheme :noweb-ref module
   (gnu home services)
   (gnu home services shepherd)
+  (rosenthal home services emacs)
 #+end_src
 
 Guix packages
 #+begin_src scheme :noweb-ref module
-  (gnu packages cpp)
-  (gnu packages python-xyz)
-  (gnu packages rust)
+  (gnu packages)
+  (gnu packages emacs)
   (gnu packages shells)
-  (gnu packages zig-xyz)
 #+end_src
