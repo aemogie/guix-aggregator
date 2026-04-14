@@ -118,31 +118,3 @@
   :hook
   (dired-mode . nerd-icons-dired-mode)
   :after dired)
-
-(use-package modus-themes
-  :custom
-  (modus-themes-mixed-fonts t)
-  :config
-  (modus-themes-include-derivatives-mode 1)
-
-  (with-eval-after-load 'markdown-mode
-    (add-hook 'markdown-mode-hook #'variable-pitch-mode))
-
-  (with-eval-after-load 'org
-    (advice-add 'modus-themes-load-theme :after #'my/fontify-org-buffers)
-    (add-hook 'org-mode-hook #'variable-pitch-mode)))
-
-(use-package ef-themes
-  :after
-  modus-themes
-  :custom
-  (modus-themes-to-toggle '(ef-melissa-dark ef-melissa-light))
-  :config
-  (with-eval-after-load 'server
-    (add-hook 'server-after-make-frame-hook
-              (lambda ()
-                (modus-themes-load-theme
-                 (car modus-themes-to-toggle)))))
-  
-  ;; (modus-themes-select 'ef-melissa-dark)
-  )

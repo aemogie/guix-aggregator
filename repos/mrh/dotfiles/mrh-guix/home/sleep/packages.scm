@@ -119,7 +119,6 @@
    emacs-trashed
    emacs-vertico
    emacs-wgrep
-   emacs-writeroom
    emacs-yaml-mode
    mrh-emacs-nerd-icons-dired
    mrh-emacs-nm

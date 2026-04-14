@@ -561,7 +561,6 @@ Generate passwordless ECC key:
 *** niri
 #+begin_src scheme :noweb-ref package-spec
   "niri"
-  "dconf"
   "wl-clipboard"
   "xdg-desktop-portal-gnome"
   "xdg-desktop-portal-gtk"
@@ -580,6 +579,14 @@ Generate passwordless ECC key:
        (computed-substitution-with-inputs "niri.kdl"
          (local-file (testament-file "dorphine/niri.kdl"))
          (list xwayland-satellite)))))
+#+end_src
+
+#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/xdg-desktop-portal/niri-portals.conf
+  [preferred]
+  default=gnome;gtk;
+  org.freedesktop.impl.portal.Access=gtk;
+  org.freedesktop.impl.portal.FileChooser=gtk;
+  org.freedesktop.impl.portal.Notification=gtk;
 #+end_src
 
 #+begin_src kdl :tangle ../tangled/dorphine/niri.kdl
@@ -738,17 +745,11 @@ Run ~herd restart noctalia-shell~ after home environment reconfiguration.
   (service home-polkit-gnome-service-type)
 #+end_src
 
-*** qogir-icon-theme
-#+begin_src scheme :noweb-ref home-service
-  (service home-theme-service-type
-    (home-theme-configuration
-      (packages (list qogir-icon-theme))
-      (icon-theme "Qogir")
-      (cursor-theme "Qogir")))
-#+end_src
-
-*** fontconfig
+*** icon theme & fonts
 #+begin_src scheme :noweb-ref package-spec
+  "dconf"
+  "glib:bin"
+
   "font-apple-new-york"
   "font-apple-sf-pro"
   "font-chiron-hei-hk"
@@ -758,6 +759,20 @@ Run ~herd restart noctalia-shell~ after home environment reconfiguration.
   "font-nerd-symbols"
   "font-sarasa-gothic"
   "font-victor-mono"
+#+end_src
+
+#+begin_example
+  $ gsettings set org.gnome.desktop.interface icon-theme Qogir
+  $ gsettings set org.gnome.desktop.interface cursor-theme Qogir
+  $ gsettings set org.gnome.desktop.interface font-name Sans
+#+end_example
+
+#+begin_src scheme :noweb-ref home-service
+  (service home-theme-service-type
+    (home-theme-configuration
+      (packages (list qogir-icon-theme))
+      (icon-theme "Qogir")
+      (cursor-theme "Qogir")))
 #+end_src
 
 fontconfig on Guix is [[https://codeberg.org/guix/guix/pulls/5654#issuecomment-9928509][known]] not working with some locales (e.g. =zh_CN.utf8=),
@@ -960,7 +975,7 @@ notmuch:
   (service home-fcitx5-service-type
     (home-fcitx5-configuration
       (themes (list fcitx5-material-color-theme))
-      (input-method-editors (list fcitx5-rime))
+      (input-method-editors (list fcitx5-rime fcitx5-skk))
       (wayland-frontend? #t)))
 #+end_src
 
@@ -971,6 +986,42 @@ notmuch:
   [Behavior]
   OverrideXkbOption=True
   CustomXkbOption=ctrl:nocaps
+#+end_src
+
+UI
+
+#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/fcitx5/conf/classicui.conf
+  Vertical Candidate List=False
+  PerScreenDPI=True
+  Theme=Material-Color-Teal
+  Font="Chiron Sung HK VF 12"
+  MenuFont="Sans 10"
+  TrayFont="Sans Bold 10"
+  PreferTextIcon=True
+#+end_src
+
+skk
+
+#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/fcitx5/conf/skk.conf
+  Candidate Layout=Horizontal
+  EggLikeNewLine=True
+  NTriggersToShowCandWin=0
+
+  [CandidatesPageUpKey]
+  0=Page_Up
+  1=Alt+V
+
+  [CandidatesPageDownKey]
+  0=Next
+  1=Control+V
+
+  [CursorUp]
+  0=Up
+  1=Control+P
+
+  [CursorDown]
+  0=Down
+  1=Control+N
 #+end_src
 
 #+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/fcitx5/profile
@@ -987,21 +1038,43 @@ notmuch:
   Name=rime
   Layout=
 
+  [Groups/0/Items/2]
+  Name=skk
+  Layout=
+
   [GroupOrder]
   0=Default
 #+end_src
 
-#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/fcitx5/conf/classicui.conf
-  Vertical Candidate List=False
-  PerScreenDPI=True
-  Theme=Material-Color-Teal
-  Font="Chiron Sung HK VF 12"
-  MenuFont="Sans 10"
-  TrayFont="Sans Bold 10"
-  PreferTextIcon=True
+*** flatpak
+#+begin_src scheme :noweb-ref package-spec
+  "flatpak"
 #+end_src
 
-*** git
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'flatpak-xdg-data-dir home-environment-variables-service-type
+    `(("XDG_DATA_DIRS" . "$XDG_DATA_DIRS:$XDG_DATA_HOME/flatpak/exports/share")))
+#+end_src
+
+Expose icons and fonts for Guix Home.  Those of Guix System are already handled
+by a patch.
+
+#+begin_src scheme :noweb-ref service
+  (extra-special-file
+   "/usr/share/icons"
+   "/var/guix/profiles/per-user/hako/guix-home/profile/share/icons")
+  (extra-special-file
+   "/usr/local/share/fonts"
+   "/var/guix/profiles/per-user/hako/guix-home/profile/share/fonts")
+#+end_src
+
+Expose =/gnu/store= to Flatpak:
+
+#+begin_example
+  $ flatpak --user override --filesystem=/gnu/store:ro
+#+end_example
+
+*** git & jujutsu
 #+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/git/config
   [core]
           quotePath = false
@@ -1043,6 +1116,22 @@ notmuch:
   	pr-apply = "!f() { for id in $(git cherry HEAD pullreqs/$1 | cut -c2-); do git cherry-pick --signoff $id; done; }; f"
 #+end_src
 
+Jujutsu:
+
+#+begin_src toml :tangle ../tangled/dorphine/dotfiles/.config/jj/config.toml
+  [user]
+  name = "Hilton Chain"
+  email = "hako@ultrarare.space"
+
+  [signing]
+  behavior = "drop"
+  backend = "gpg"
+  key = "ACC66D09CA528292"
+
+  [git]
+  sign-on-push = true
+#+end_src
+
 *** jellyfin-mpv-shim
 #+begin_src scheme :noweb-ref home-service
   (simple-service 'jellyfin-mpv-shim home-shepherd-service-type
@@ -1057,21 +1146,6 @@ notmuch:
                    #:environment-variables (environ))
                   args)))
             (stop #~(make-kill-destructor)))))
-#+end_src
-
-*** jujutsu
-#+begin_src toml :tangle ../tangled/dorphine/dotfiles/.config/jj/config.toml
-  [user]
-  name = "Hilton Chain"
-  email = "hako@ultrarare.space"
-
-  [signing]
-  behavior = "drop"
-  backend = "gpg"
-  key = "ACC66D09CA528292"
-
-  [git]
-  sign-on-push = true
 #+end_src
 
 *** librewolf
@@ -1162,14 +1236,15 @@ notmuch:
 
 See also: <https://github.com/ValveSoftware/steam-for-linux/issues/2092>
 
-#+begin_src scheme :noweb-ref scheme
+#+begin_src scheme :noweb-ref service
   (udev-rules-service 'controller
       (udev-rule "60-controller-permission.rules" "\
   KERNEL==\"event*\", ATTRS{idVendor}==\"045e\", ATTRS{idProduct}==\"028e\", \
   MODE=\"0660\", GROUP=\"users\""))
 #+end_src
 
-Disable
+My controller offers two interfaces without a toggle, resulting in a race
+condition.  Disable one of them.
 
 #+begin_src scheme :noweb-ref kernel-argument
   "modprobe.blacklist=hid_nintendo"

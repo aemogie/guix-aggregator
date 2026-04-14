@@ -1,3 +1,30 @@
+(use-package modus-themes
+  :custom
+  (modus-themes-mixed-fonts t)
+  :config
+  (modus-themes-include-derivatives-mode 1)
+
+  (with-eval-after-load 'markdown-mode
+    (add-hook 'markdown-mode-hook #'variable-pitch-mode))
+
+  (with-eval-after-load 'org
+    (advice-add 'modus-themes-load-theme :after #'my/fontify-org-buffers)
+    (add-hook 'org-mode-hook #'variable-pitch-mode)))
+
+(use-package ef-themes
+  :after
+  modus-themes
+  :custom
+  (modus-themes-to-toggle '(ef-melissa-dark ef-melissa-light))
+  :config
+  (with-eval-after-load 'server
+    (add-hook 'server-after-make-frame-hook
+              (lambda ()
+                (modus-themes-load-theme
+                 (car modus-themes-to-toggle)))))
+  
+  (modus-themes-select 'ef-melissa-dark))
+
 (setopt default-directory "~/")
 
 (defvar personal-data (expand-file-name "personal.el" user-emacs-directory))
@@ -233,15 +260,6 @@ See also `my/hide-buffer'."
   :custom
   (ispell-personal-dictionary "~/data/personal-dictionary"))
 
-(use-package writeroom-mode
-  :custom
-  (writeroom-width 90)
-  (writeroom-fullscreen-effect 'maximized)
-  (writeroom-major-modes '(text-mode))
-  (writeroom-major-modes-exceptions '(mhtml-mode nxml-mode))
-  :config
-  (global-writeroom-mode -1))
-
 (use-package prog-mode
   :config
   (global-prettify-symbols-mode 1))
@@ -376,6 +394,22 @@ Helpful advice for face changing functions."
                            :export #'my/org-audio-link
                            :complete #'org-link-complete-file)
 
+  (defun my/org-video-link (path desc format)
+    "Allow org to handle video links."
+    (when (equal format 'html)
+      (format
+       (jack-html
+        `(:center
+          (:video (@ :playsinline t :controls t)
+                  (:source (@ :src "%s")))))
+       path
+       (or desc "your browser does not support the video tag"))))
+
+  (org-link-set-parameters "video"
+                           :follow #'my/mpv
+                           :export #'my/org-video-link
+                           :complete #'org-link-complete-file)
+
   (add-to-list 'org-structure-template-alist '("m" . "src emacs-lisp"))
 
   (org-babel-do-load-languages
@@ -404,7 +438,11 @@ Helpful advice for face changing functions."
 
 (use-package ox-html
   :custom
-  (org-html-htmlize-output-type 'css))
+  (org-html-htmlize-output-type 'css)
+  (org-html-inline-image-rules
+   '(("file" . #1=
+      "\\(?:\\.\\(?:avif\\|gif\\|jxl\\|jp\\(?:e?g\\)\\|png\\|svg\\|webp\\)\\)")
+     ("http" . #1#) ("https" . #1#))))
 
 (use-package ox-publish
   :commands
@@ -426,7 +464,9 @@ Helpful advice for face changing functions."
   :commands org-capture
   :custom
   (org-capture-templates
-   '(("w" "website" entry
+   '(("d" "default" entry
+      (file ""))
+     ("w" "website" entry
       (file+headline "" "Websites"))
      ("m" "misc" item
       (file+headline "" "Miscellaneous")))))

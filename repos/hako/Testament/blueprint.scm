@@ -184,13 +184,6 @@
    (synopsis "Compile Guix from its git submodule"))
   ;; Update and check out submodules.
   ($ '("git" "submodule" "update" "--init"))
-  ;; Update Citre tags.
-  (let ((citre-tags-file "/home/hako/.cache/tags/!home!hako!Testament!.tags"))
-    (when (file-exists? citre-tags-file)
-      ($emacs `("--quick" "--batch"
-                "--load" "citre-ctags"
-                "--eval"
-                ,(format #f "(citre-update-tags-file ~s)" citre-tags-file)))))
   ;; Compile Guix.
   (with-directory-excursion "channels/guix"
     (unless (file-exists? "Makefile")

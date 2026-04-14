@@ -2,13 +2,15 @@
 !#
 
 (define source-directory (getenv "HOME"))
-(define target-directory "root@smoulder.lan:/mnt/big")
+(define target-directory (cadr (command-line)))
 
 (for-each (lambda (dir)
             (format #t "~%sending contents of ~a/~a into ~a/~a~%"
                     source-directory dir
                     target-directory dir)
             (system* "rsync" "-Phuav"
+                     ;; "--dry-run"
+                     ;; "--delete-after"
                      "--exclude=temp"
                      "--exclude=Trash"
                      "--exclude=guix-sandbox-home"

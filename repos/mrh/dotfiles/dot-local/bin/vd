@@ -1,10 +1,16 @@
 #!/bin/sh
 
 yt-dlp \
+    --abort-on-error \
     --embed-chapters \
+    --embed-thumbnail \
     --embed-subs \
-    --limit-rate 5M \
     --sub-lang "en.*" \
+    --limit-rate 3M \
+    --sleep-requests 0.5 \
+    --min-sleep-interval 5 \
+    --max-sleep-interval 15 \
     --remote-components=ejs:github \
     --js-runtimes quickjs:$(guix build quickjs)/bin/qjs \
-    -o "$HOME/media/videos/temp/%(title).100s.%(ext)s" "$1"
+    -o "$HOME/media/videos/temp/%(title).100s.%(ext)s" \
+    "$1"

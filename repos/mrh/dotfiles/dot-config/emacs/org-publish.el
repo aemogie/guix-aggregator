@@ -357,13 +357,15 @@ time in `current-time' format."
            :publishing-directory ,(concat site-target-directory "static/")
            :publishing-function org-publish-attachment
            
-           :base-extension ,(regexp-opt '("css"
+           :base-extension ,(regexp-opt '("avif"
+                                          "css"
                                           "asc"
                                           "gif"
                                           "ico"
                                           "js"
                                           "jpg"
                                           "jpeg"
+                                          "jxl"
                                           "mkv"
                                           "ogg"
                                           "opus"
