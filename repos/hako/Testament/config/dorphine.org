@@ -642,6 +642,7 @@ Generate passwordless ECC key:
   }
 
   layout {
+          always-center-single-column
           // Set transparent workspace background color so you see the backdrop at all times.
           background-color "transparent"
 
@@ -734,16 +735,13 @@ Generate passwordless ECC key:
 #+end_src
 
 *** noctalia-shell
-Run ~herd restart noctalia-shell~ after home environment reconfiguration.
+NOTE: Run ~herd restart noctalia-shell~ after home environment reconfiguration.
 
 #+begin_src scheme :noweb-ref home-service
   (service home-noctalia-shell-service-type)
 #+end_src
 
-*** polkit-gnome
-#+begin_src scheme :noweb-ref home-service
-  (service home-polkit-gnome-service-type)
-#+end_src
+Use <https://noctalia.dev/plugins/polkit-agent/> as Polkit agent.
 
 *** icon theme & fonts
 #+begin_src scheme :noweb-ref package-spec
@@ -1264,12 +1262,14 @@ condition.  Disable one of them.
 
 *** thunar
 #+begin_src scheme :noweb-ref package-spec
-  "exo"
-  "file-roller"
   "thunar"
   "thunar-archive-plugin"
   "thunar-media-tags-plugin"
   "thunar-volman"
+
+  "exo"
+  "file-roller"
+  "xfconf"
   ;; Thumbnails.
   "ffmpegthumbnailer"
   "tumbler"
