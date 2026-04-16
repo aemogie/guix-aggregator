@@ -10,3 +10,6 @@
 [submodule "channels/sops-guix"]
 	path = channels/sops-guix
 	url = https://github.com/fishinthecalculator/sops-guix.git
+[submodule "installer"]
+	path = config/live/modules
+	url = https://codeberg.org/nonguix/installer.git

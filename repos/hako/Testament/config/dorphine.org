@@ -10,6 +10,7 @@
   (define %os
     (operating-system
       (host-name "dorphine")
+      (locale "en_US.UTF-8")
       (timezone "Asia/Hong_Kong")
       (keyboard-layout
        (keyboard-layout "us" "dvorak" #:options '("ctrl:nocaps")))

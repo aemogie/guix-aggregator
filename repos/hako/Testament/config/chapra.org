@@ -9,6 +9,7 @@
 
   (operating-system
     (host-name "chapra")
+    (locale "en_US.UTF-8")
     (timezone "Asia/Hong_Kong")
     (bootloader
      (bootloader-configuration

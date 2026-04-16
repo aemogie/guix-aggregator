@@ -9,6 +9,7 @@
 
   (operating-system
     (host-name "nuporta")
+    (locale "en_US.UTF-8")
     (timezone "Asia/Hong_Kong")
     (bootloader
      (bootloader-configuration
@@ -381,10 +382,19 @@
   	}
 
   	handle /admin/* {
-  		import /run/secrets/caddy/cuirass/admin
+  		respond /* "Access denied" 403 {
+  			close
+  		}
   	}
 
   	reverse_proxy localhost:17732
+  }
+
+  cuirass.guix.moe {
+  	import cloudflare_dns
+  	import tailscale {
+  		reverse_proxy localhost:17732
+  	}
   }
 #+end_src
 
@@ -677,7 +687,7 @@
   	}
   }
 
-  cache-fi.guix.moe, cache-de.guix.moe, cache-it.guix.moe {
+  cache-fi.guix.moe {
   	import cloudflare_dns
   	import block_bots
 

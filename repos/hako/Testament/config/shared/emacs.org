@@ -70,7 +70,15 @@ shell while using Emacs.
   (service home-emacs-service-type
     (home-emacs-configuration
       (emacs emacs-pgtk)
-      (packages (specifications->manifest '(<<package-spec>>)))
+      (packages
+       (with-transformation
+           (compose (options->transformation
+                     '((without-tests . "emacs-el-mock")))
+                    (package-input-rewriting
+                     `((,(@ (gnu packages emacs) emacs)         . ,emacs)
+                       (,(@ (gnu packages emacs) emacs-minimal) . ,emacs)
+                       (,(@ (gnu packages emacs) emacs-no-x)    . ,emacs))))
+         (specifications->manifest '(<<package-spec>>))))
       (shepherd-requirement '(graphical-session))))
 #+end_src
 
@@ -837,6 +845,9 @@ Within this repository
 Utilities
 #+begin_src scheme :noweb-ref module
   (guix gexp)
+  (guix packages)
+  (guix transformations)
+  (nonguix utils)
 #+end_src
 
 Guix Home - services

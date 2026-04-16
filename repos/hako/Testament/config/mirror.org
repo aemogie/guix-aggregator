@@ -10,6 +10,7 @@
   (lambda (mirror-name bios-boot)
     (operating-system
       (host-name (string-append mirror-name ".guix.moe"))
+      (locale "en_US.UTF-8")
       (timezone "Asia/Hong_Kong")
       (bootloader
        (bootloader-configuration
