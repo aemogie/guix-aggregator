@@ -44,7 +44,8 @@
                 "thunar-archive-plugin"
                 "thunar-media-tags-plugin"
                 "thunar-volman"
-                "tumbler"))
+                "tumbler"
+                "xfconf"))
              (home-environment-packages %graphical-home)))
     (services
      (cons* (service home-noctalia-shell-service-type)

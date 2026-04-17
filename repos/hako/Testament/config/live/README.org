@@ -14,9 +14,9 @@ tested for =x86_64-linux= ones.
 
 | Image                     | Signature | SHA256 Checksum                                                    | Build Date |
 |---------------------------+-----------+--------------------------------------------------------------------+------------|
-| [[https://files.guix.moe/2026-02-19/rosenthal-minimal-20260219.x86_64-linux.iso][minimal.x86_64-linux.iso]]  | [[https://files.guix.moe/2026-02-19/rosenthal-minimal-20260219.x86_64-linux.iso.asc][iso.asc]]   | =ffcfaa60e5e416f1038984984c8714256e532b9e7c8ab989b4a457a7de04092f= | 2026-02-19 |
+| [[https://files.guix.moe/2026-04-16/rosenthal-minimal-20260416.x86_64-linux.iso][minimal.x86_64-linux.iso]]  | [[https://files.guix.moe/2026-04-16/rosenthal-minimal-20260416.x86_64-linux.iso.asc][iso.asc]]   | =5b51feb12d6eb031d8482e3e31c9e8f5e781df76c9d62dd9f046ba0922a1f35f= | 2026-04-16 |
 | [[https://files.guix.moe/2026-02-19/rosenthal-minimal-20260219.aarch64-linux.iso][minimal.aarch64-linux.iso]] | [[https://files.guix.moe/2026-02-19/rosenthal-minimal-20260219.aarch64-linux.iso.asc][iso.asc]]   | =80317c2d05a44276c7c0dfa4e9827ca11b833ed5048ad5a3df52029e50324de8= | 2026-02-19 |
-| [[https://files.guix.moe/2026-02-19/rosenthal-niri-20260219.x86_64-linux.iso][niri.x86_64-linux.iso]]     | [[https://files.guix.moe/2026-02-19/rosenthal-niri-20260219.x86_64-linux.iso.asc][iso.asc]]   | =8ae89958be8e8ca63ee6cf6875ba754f31658a9b36f9b839e01a63b09109e547= | 2026-02-19 |
+| [[https://files.guix.moe/2026-04-16/rosenthal-niri-20260416.x86_64-linux.iso][niri.x86_64-linux.iso]]     | [[https://files.guix.moe/2026-04-16/rosenthal-niri-20260416.x86_64-linux.iso.asc][iso.asc]]   | =50c6ea408c364bcd3b7fc3d899819dc241ec71919c65ce4be90768f272c82065= | 2026-04-16 |
 | [[https://files.guix.moe/2026-02-19/rosenthal-niri-20260219.aarch64-linux.iso][niri.aarch64-linux.iso]]    | [[https://files.guix.moe/2026-02-19/rosenthal-niri-20260219.aarch64-linux.iso.asc][iso.asc]]   | =5cf3888bafc966b396076030515d66cb6fac1c8b60d9cb5fdd0853b8d3b699b7= | 2026-02-19 |
 
 Once downloaded, follow Guix System's [[https://guix.gnu.org/manual/devel/en/html_node/System-Installation.html][installation instructions]].  Loading of the

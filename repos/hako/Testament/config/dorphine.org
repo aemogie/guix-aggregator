@@ -56,8 +56,9 @@
   (define %transformed-os
     ((nonguix-transformation-nvidia
       #:driver nvda-595
-      #:open-source-kernel-module? #f
+      #:open-source-kernel-module? #t
       #:configure-xorg? sddm-service-type
+      #:dynamic-boost? #t
       #:remove-nvenc-restriction? #t)
      %os))
 
@@ -513,7 +514,8 @@ Generate passwordless ECC key:
   (service home-gpg-agent-service-type
     (home-gpg-agent-configuration
       (pinentry-program (file-append pinentry-qt "/bin/pinentry-qt"))
-      (ssh-support? #t)))
+      (ssh-support? #t)
+      (shepherd-requirement '(graphical-session))))
 #+end_src
 
 *** libfido2
@@ -562,10 +564,13 @@ Generate passwordless ECC key:
 *** niri
 #+begin_src scheme :noweb-ref package-spec
   "niri"
-  "wl-clipboard"
+
   "xdg-desktop-portal-gnome"
   "xdg-desktop-portal-gtk"
   "xdg-utils"
+
+  "dconf"
+  "wl-clipboard"
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
@@ -746,7 +751,6 @@ Use <https://noctalia.dev/plugins/polkit-agent/> as Polkit agent.
 
 *** icon theme & fonts
 #+begin_src scheme :noweb-ref package-spec
-  "dconf"
   "glib:bin"
 
   "font-apple-new-york"
@@ -1082,6 +1086,7 @@ Expose =/gnu/store= to Flatpak:
   [user]
           name = Hilton Chain
           email = hako@ultrarare.space
+          signingkey = ACC66D09CA528292!
   [pull]
           rebase = true
   [rerere]

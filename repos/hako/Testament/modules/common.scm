@@ -40,6 +40,7 @@
   #:use-module (gnu packages vim)
   #:use-module (nongnu packages linux)
   #:use-module (rosenthal packages package-management)
+  #:use-module (rosenthal packages version-control)
   #:export (testament-path
             testament-file
 
@@ -261,7 +262,7 @@ WARNED."
         git
         gnupg
         htop
-        jujutsu
+        jujutsu/dolly
         lsof
         mirror-substitutes
         mosh

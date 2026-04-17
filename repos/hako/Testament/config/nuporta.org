@@ -587,6 +587,31 @@
     (systems '("x86_64-linux" "aarch64-linux")))
 #+end_src
 
+**** nonguix-pinned
+Pinned for latest Live ISOs.
+
+#+begin_src scheme :noweb-ref cuirass-spec
+  (specification
+    (name "nonguix-pinned")
+    (build '(channels nonguix))
+    (channels
+     (list (channel
+             (inherit %default-guix-channel)
+             (url "https://git.guix.moe/mirror/guix.git")
+             (commit "1fa06cd064714d1f6d9b1e185980c0312b067966"))
+           (channel
+             (name 'nonguix)
+             (url "https://gitlab.com/nonguix/nonguix")
+             (commit "1980960f932063f42f97ad3be4b020f68d24e62b")
+             (introduction
+              (make-channel-introduction
+               "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
+               (openpgp-fingerprint
+                "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))))
+    (priority 3)
+    (systems '("x86_64-linux" "aarch64-linux")))
+#+end_src
+
 **** rain-and-roses
 #+begin_src scheme :noweb-ref cuirass-spec
   (specification
@@ -805,16 +830,12 @@
 #+end_src
 
 #+begin_src sh :tangle ../tangled/nuporta/setup-mirror.sh
-  #!/bin/sh
-
   set -e
 
   MIRROR_DIR="/var/cache/guix-moe/mirror"
   URL_PREFIX="https://nars.guix.moe/nar/"
-
   GUIX_SUBSTITUTES="https://ci.guix.gnu.org https://bordeaux.guix.gnu.org"
   NONGUIX_SUBSTITUTES="https://substitutes.nonguix.org"
-
   # https://github.com/rakino/guix-store-paths
   STORE_PATHS="/var/cache/guix-moe/store-paths"
   DATE="$1"
@@ -1204,9 +1225,9 @@ See [[file:shared/caddy.org][shared/caddy.org]].
 
 Troubleshooting:
 #+begin_example
-  sudo -u forgejo \
-      "$(guix gc -R /run/current-system | grep forgejo-)"/bin/forgejo doctor check \
-      --config "$(sudo herd configuration forgejo)"
+  $ sudo -u forgejo \
+       /run/current-system/profile/bin/forgejo doctor check \
+       --config "$(sudo herd configuration forgejo)"
 #+end_example
 
 *** heisenbridge
@@ -1298,12 +1319,10 @@ Troubleshooting:
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (service conduit-service-type
-    (conduit-configuration
-      (conduit (file-append tuwunel-bin "/bin/tuwunel"))
-      (database-path "/var/lib/tuwunel")
+  (service tuwunel-service-type
+    (tuwunel-configuration
       (config
-       #~'(("Global"
+       #~'(("global"
             ("address" . #("127.0.0.1" "::1"))
             ("port" . 26372)
             ("server_name" . "guix.moe")
@@ -1314,7 +1333,11 @@ Troubleshooting:
             ("trusted_servers" . #("matrix.org"))
             ("well_known"
              ("client" . "https://matrix.guix.moe")
-             ("server" . "matrix.guix.moe:443")))))
+             ("server" . "matrix.guix.moe:443"))
+            ("media_storage_providers" . #("r2"))
+            ("store_media_on_providers" . #("r2"))
+            ("storage_provider"
+             ("r2" ("S3" #$@(sops-sexp %sops-nuporta '("tuwunel"))))))))
       (group-id 968)
       (user-id 973)))
 #+end_src

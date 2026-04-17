@@ -320,30 +320,26 @@
 #+end_src
 
 #+begin_src sh :tangle ../tangled/involemi/setup-mirror.sh
-  #!/bin/sh
-
   set -e
 
   MIRROR_DIR="/var/cache/guix-moe/mirror"
   SUBSTITUTES="https://cache-test.guix.moe"
   STORE_PATHS="https://raw.githubusercontent.com/rakino/guix-store-paths/refs/heads/trunk/$1"
-
   WORK_DIR="$(mktemp --directory /tmp/guix-moe-mirror-sync.XXXXXXXXXX)"
-  pushd "$WORK_DIR"
 
+  pushd "$WORK_DIR"
   for list in guix.txt guix-packages.txt nonguix-packages.txt
   do
       wget --quiet --output-document "$list" "$STORE_PATHS/$list"
   done
-
   mirror-substitutes -o "$MIRROR_DIR" --narinfo-only --substitute-urls="$SUBSTITUTES" \
                      -i guix.txt
   mirror-substitutes -o "$MIRROR_DIR" --narinfo-only --substitute-urls="$SUBSTITUTES" \
                      -i guix-packages.txt
   mirror-substitutes -o "$MIRROR_DIR" --narinfo-only --substitute-urls="$SUBSTITUTES" \
                      -i nonguix-packages.txt
-
   popd
+  rm -rf "$WORK_DIR"
 #+end_src
 
 ** Web Servers & Services

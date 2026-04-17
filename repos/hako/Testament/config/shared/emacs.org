@@ -691,7 +691,7 @@ emacs-eat with patches <https://codeberg.org/akib/emacs-eat/pulls/133> and
 
 *** emacs-majutsu
 #+begin_src scheme :noweb-ref package-spec
-  "emacs-majutsu"
+  "emacs-majutsu-dolly"
 #+end_src
 
 #+begin_src emacs-lisp :noweb-ref emacs-init
