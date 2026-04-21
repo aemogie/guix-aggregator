@@ -44,7 +44,7 @@
                %base-packages))
       (services
        (cons* <<service>>
-              (modify-services %rosenthal-desktop-services/base <<modify-service>>)))
+              (modify-services %rosenthal-desktop-services/tuigreet <<modify-service>>)))
       (name-service-switch %mdns-host-lookup-nss)
       (sudoers-file
        (plain-file "sudoers"
@@ -54,12 +54,11 @@
           "\n")))))
 
   ((nonguix-transformation-nvidia
-      #:driver nvda-595
-      #:open-source-kernel-module? #t
-      #:configure-xorg? sddm-service-type
-      #:dynamic-boost? #t
-      #:remove-nvenc-restriction? #t)
-     %os)
+    #:driver nvda-595
+    #:open-source-kernel-module? #t
+    #:dynamic-boost? #t
+    #:remove-nvenc-restriction? #t)
+   %os)
 #+end_src
 
 #+begin_src nftables :noweb-ref nftables-filter-input
@@ -535,21 +534,12 @@ Generate passwordless ECC key:
 #+end_src
 
 ** Graphical Session
-*** sddm
-#+begin_src scheme :noweb-ref service
-  (service sddm-service-type
-    (sddm-configuration
-      (sddm sddm-qt5)
-      (theme "sugar-light")
-      (themes-directory
-       (file-append sugar-light-sddm-theme/dolly "/share/sddm/themes"))))
-#+end_src
+*** localed keyboard layout
+niri supports getting keyboard layout from localed.
 
 #+begin_src scheme :noweb-ref service
-  (set-xorg-configuration
-   (xorg-configuration
-     (keyboard-layout keyboard-layout))
-   sddm-service-type)
+  (simple-service 'localed-keyboard-layout localed-service-type
+    keyboard-layout)
 #+end_src
 
 *** niri
@@ -1327,7 +1317,6 @@ Guix System - services
   (gnu services containers)
   (gnu services linux)
   (gnu services networking)
-  (gnu services sddm)
   (gnu services security)
   (gnu services security-token)
   (gnu services ssh)
@@ -1352,7 +1341,6 @@ Guix Home - services
 Guix packages
 #+begin_src scheme :noweb-ref module
   (gnu packages android)
-  (gnu packages display-managers)
   (gnu packages fcitx5)
   (gnu packages file-systems)
   (gnu packages games)

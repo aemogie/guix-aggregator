@@ -723,10 +723,9 @@ emacs-eat with patches <https://codeberg.org/akib/emacs-eat/pulls/133> and
         (let ((directory (project-root (project-current t))))
           (hako/majutsu-or-magit directory))))
     (defvaralias 'hako/jjdescription-mode-hook 'git-commit-mode-hook)
-    (defvaralias 'hako/jjdescription-mode-map  'git-commit-mode-map)
+    (defvaralias 'hako/jjdescription-mode-map  'git-commit-redundant-bindings)
     (define-minor-mode hako/jjdescription-mode
-      "Set up `git-commit-mode' for `majutsu'."
-      :lighter "")
+      "Set up `git-commit-mode' for `majutsu'.")
     :hook
     (majutsu-jjdescription-mode . hako/jjdescription-mode)
     :bind
