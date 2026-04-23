@@ -21,7 +21,7 @@
 (defwidget focused-toplevel []
   (label :class "focused-toplevel"
          :limit-width 100
-         :text {focused-toplevel[0].title}))
+         :text {replace(focused-toplevel[0].title, "\\\\", "")}))
 
 ;; (network) __________________________________________________________________
 (defpoll net-interfaces

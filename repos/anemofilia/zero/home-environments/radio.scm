@@ -71,7 +71,7 @@
               #|P|# packages:password
               #|R|# packages:reading
               #|S|# packages:scheme packages:sound
-              #|T|# packages:typst
+              #|T|# packages:tex packages:typst
               #|V|# packages:video
               #|W|# packages:web))
 

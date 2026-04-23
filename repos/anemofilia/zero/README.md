@@ -46,8 +46,8 @@ system, for example `buer`, should be in `operating-systems/buer/` and `operatin
   * Uses `home-repositories-service-type`, from radix channel, to declaratively ensure the existence of certain cloned repositories.
   * Avoid dotfiles by opting for [XDG](https://www.freedesktop.org/wiki/) compliant software, setting environment variables and/or explicitly
     passing configuration files and/or parameters to commands, which are then aliased.
-  * Uses the [river](https://codeberg.org/river/river) window manager together with a bar written in [eww](https://elkowar.github.io/eww/eww.html), available in the [saayix channel](https://codeberg.org/look/saayix),
-    the integration is done with [river-bedload](https://git.sr.ht/~novakane/river-bedload), currently available in the radix channel.
+  * Uses the [river](https://codeberg.org/river/river) window manager together with a bar written in [eww](https://elkowar.github.io/eww/eww.html).
+    The integration is done with [river-bedload](https://git.sr.ht/~novakane/river-bedload), currently available in the radix channel.
   * Packages are separated in mutiple variables by their functionality scope in the setup.
   * Uses `home-sops-secrets-service-type`, available in the [sops-guix channel](https://github.com/fishinthecalculator/sops-guix), to manage secrets needed
     to ease the usage of the setup.

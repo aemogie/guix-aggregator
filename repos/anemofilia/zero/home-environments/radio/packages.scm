@@ -210,13 +210,11 @@
 (define tex
   (list #|tex|# rubber
                 texlive-abntex2
-                texlive-collection-fontsextra
                 texlive-collection-fontsrecommended
                 texlive-collection-latexextra
                 texlive-collection-luatex
                 texlive-collection-langportuguese
                 texlive-collection-langenglish
-                texlive-collection-langfrench
                 texlive-collection-mathscience))
 
 (define typst

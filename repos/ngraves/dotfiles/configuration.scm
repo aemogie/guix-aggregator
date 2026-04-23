@@ -234,19 +234,19 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM+hUmwvYmS8BC2HupASOnn88gLkeeZli7b+ji6Wz/M4
             (ssh-privkey-location "/home/graves/.ssh/id_ed25519")
             (ssh-pubkey "\
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPpGldYnfml+ffHz8EuYMUoHXivuhTKzkdUYcIP/f1Bk"))
+   (machine (name "optiplex")
    ;; Might use r8169 module but it works fine without, use linux-libre then.
-;;    (machine (name "optiplex")
-;;             (efi "/dev/sda1")
-;;             (encrypted-uuid-mapped "ad1b7435-9957-424d-b9ac-9a9eac040e72")
-;;             (btrfs-layout (cons* '(home . "/home") root-impermanence-btrfs-layout))
+            (efi "/dev/sda1")
+            (encrypted-uuid-mapped "07bfebe6-20b0-4bf4-ae82-f5ab790a1bf0")
+            (btrfs-layout (cons* '(home . "/home") root-impermanence-btrfs-layout))
 ;;             (ssh-host-key "\
 ;; ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICc0KTnwphWQ7jm/C9C48o8HAU2Ee4fViAoUvj6w80x1")
-;;             (ssh-privkey-location "/home/graves/.ssh/id_ed25519")
+            ;; (ssh-privkey-location "/home/graves/.ssh/id_ed25519")
 ;;             (ssh-pubkey "\
 ;; ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEvBo8x2khzm1oXLKWuxA3GlL29dfIuzHSOedHxoYMSl")
 ;;             (guix-pubkey "\
-;; 1BEC0CE366F2325E65FEE419BC43DAACDDF0F334FF8E7B018687557C0B60BB16"))
-   ))
+;; 1BEC0CE366F2325E65FEE419BC43DAACDDF0F334FF8E7B018687557C0B60BB16")
+            )))
 
 (define %current-machine
   (let* ((raw-name (call-with-input-file
@@ -304,11 +304,7 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPpGldYnfml+ffHz8EuYMUoHXivuhTKzkdUYcIP/f1Bk
                     ,@(map channel-instance->sexp*
                            (submodules-dir->channel-instances
                             "channels"
-                            #:type '(branch . (or "origin/master" "origin/main")))))))
-               ;; ("guix-sources" ,(local-file "/home/graves/spheres/info/guix" #:recursive? #t))
-               ;; ("nonguix-sources" ,(local-file "/home/graves/spheres/info/nonguix" #:recursive? #t))
-               ;; ("rde-sources" ,(local-file "/home/graves/spheres/info/rde" #:recursive? #t))
-               ))
+                            #:type '(branch . (or "origin/master" "origin/main")))))))))
             (service wpa-supplicant-service-type)
             (service network-manager-service-type)
             (service (@@ (gnu system install) cow-store-service-type) 'mooh!)))
@@ -723,28 +719,34 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
    ;;          "1jfplgmx6gxgyzlc358q94l252970kvxnig12zrim2fa27lzmpyj"))))))
    ;; (hidden-package (@ (nrepl-python-channel) nrepl-python))
    (strings->packages
-    "emacs-piem"
-    "emacs-hl-todo"
+    ;; "emacs-borg"
+    "emacs-forge"
+    "emacs-jsonrpc"
+    ;; "emacs-magit-stgit"
+    "emacs-persid"
+    ;; "emacs-parseedn"
+    ;;"emacs-hl-todo"
+    "emacs-claude-code-ide"
     "emacs-consult-dir"
     "emacs-consult-org-roam"
     "emacs-restart-emacs"
     "emacs-csv-mode"
     "emacs-org-glossary"
+    "emacs-org-present"
     ;; "emacs-macrostep"
-    ;; "emacs-ibrowse"
+    "emacs-ibrowse"
     "emacs-link-hint"
     ;; "emacs-forge"
-    "emacs-origami-el"
     "emacs-emojify"
     "emacs-wgrep"
-    "emacs-gptel"
     ;; "emacs-flycheck-package"
-    ;; "python-lsp-server"
+    "emacs-consult-recoll"
     "emacs-shackle"
+    "emacs-agent-shell"
     "emacs-combobulate"
     "emacs-org-pomodoro")))
 
-(define %emacs-features
+(define (get-emacs-features)
   (append
    (list
     (feature-emacs
@@ -972,7 +974,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
        ))
       )))
    %wm-features
-   %emacs-features))
+   (get-emacs-features)))
 
 
 ;;; Machine helpers
@@ -1295,7 +1297,9 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
          (maybe->packages (or@ (guix-submodule submodules)
                                submodules-dir->packages))
          (dev-packages (and=> maybe->packages
-                              (cut <> "packages" #:git-fetch? #t))))
+                              (lambda (get-package)
+                                (false-if-exception
+                                 (get-package "packages" #:git-fetch? #t))))))
     (if dev-packages
         (override-rde-config-with-values config dev-packages)
         config)))
