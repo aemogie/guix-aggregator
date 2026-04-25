@@ -139,37 +139,29 @@
 
 (use-modules (gnu services base))
 
-(define nonguix-service
-  (delay
-    (simple-service
-     'nonguix
-     guix-service-type
-     (guix-extension
-      (substitute-urls (list "https://substitutes.nonguix.org"))
-      (authorized-keys
-       (list
-        (origin
-          (method url-fetch)
-          (uri "https://substitutes.nonguix.org/signing-key.pub")
-          (sha256
-           (base32
-            "0j66nq1bxvbxf5n8q2py14sjbkn57my0mjwq7k1qm9ddghca7177")))))))))
-
-(define guix-science-service
-  (delay
-    (simple-service
-     'guix-science
-     guix-service-type
-     (guix-extension
-      (substitute-urls (list "https://guix.bordeaux.inria.fr"))
-      (authorized-keys
-       (list
-        (origin
-          (method url-fetch)
-          (uri "https://guix.bordeaux.inria.fr/signing-key.pub")
-          (sha256
-           (base32
-            "056cv0vlqyacyhbmwr5651fzg1icyxbw61nkap7sd4j2x8qj7ila")))))))))
+(define (feature-more-substitutes)
+  (feature-custom-services
+   #:feature-name-prefix 'more-substitutes
+   #:system-services
+   (list
+    (simple-service 'more-substitutes guix-service-type
+      (guix-extension
+        (substitute-urls (list "https://substitutes.nonguix.org"
+                               "https://guix.bordeaux.inria.fr"))
+        (authorized-keys
+         (list
+          (origin
+            (method url-fetch)
+            (uri "https://substitutes.nonguix.org/signing-key.pub")
+            (sha256
+             (base32
+              "0j66nq1bxvbxf5n8q2py14sjbkn57my0mjwq7k1qm9ddghca7177")))
+          (origin
+            (method url-fetch)
+            (uri "https://guix.bordeaux.inria.fr/signing-key.pub")
+            (sha256
+             (base32
+              "056cv0vlqyacyhbmwr5651fzg1icyxbw61nkap7sd4j2x8qj7ila"))))))))))
 
 
 ;; Machine record and %current-machine
@@ -249,12 +241,16 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL4eWCzw1QyKx2J5xvL5okysfIeFN6I+lCpUCTx5kUg0
             )))
 
 (define %current-machine
-  (let* ((raw-name (call-with-input-file
-                       "/sys/devices/virtual/dmi/id/product_name"
-                     read-line))
-         (name (string-downcase (car (string-split raw-name #\ )))))
-    (find (lambda (in) (equal? name (machine-name in)))
-          %machines)))
+  (make-parameter
+   (let ((product-name-file "/sys/devices/virtual/dmi/id/product_name"))
+     (if (file-exists? product-name-file)
+         (let* ((raw-name (call-with-input-file product-name-file read-line))
+                (name (string-downcase (car (string-split raw-name #\ )))))
+           (or (find (lambda (in) (equal? name (machine-name in)))
+                     %machines)
+               (error
+                (format #f "No machine matches '~a' product-name." name))))
+         (error (string-append product-name-file " doesn't exist!"))))))
 
 
 ;;; Live systems.
@@ -310,12 +306,9 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL4eWCzw1QyKx2J5xvL5okysfIeFN6I+lCpUCTx5kUg0
             (service (@@ (gnu system install) cow-store-service-type) 'mooh!)))
           (feature-shepherd)
           (feature-base-services)
-          (feature-custom-services
-           #:feature-name-prefix 'more-substitutes
-           #:system-services (list (force nonguix-service)
-                                   (force guix-science-service))))))))))
+          (feature-more-substitutes))))))))
 
-(when (string= (machine-name %current-machine) "20xwcto1ww")
+(when (string= (machine-name (%current-machine)) "20xwcto1ww")
   (use-modules (gnu packages emacs-xyz)
                (rde packages emacs-xyz)
                (contrib features age)
@@ -342,15 +335,14 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL4eWCzw1QyKx2J5xvL5okysfIeFN6I+lCpUCTx5kUg0
     (keyboard-layout "fr" "," #:options '("caps:escape")))))
 
 
-;;; Window management
-(define background
-  (origin
-    (method url-fetch)
-    (uri "https://pour-un-reveil-ecologique.org/media/images/fond_pre.original.jpg")
-    (file-name "fond_pre.jpg")
-    (sha256 (base32 "03rn4fw9j31s7hl635q872hzxj4bj5m9hkjd4iqzl8z4lk0n9iiy"))))
-
-(define %wm-features
+;;; Desktop management
+(define (get-desktop-features)
+  (define background
+    (origin
+      (method url-fetch)
+      (uri "https://pour-un-reveil-ecologique.org/media/images/fond_pre.original.jpg")
+      (file-name "fond_pre.jpg")
+      (sha256 (base32 "03rn4fw9j31s7hl635q872hzxj4bj5m9hkjd4iqzl8z4lk0n9iiy"))))
   (list
    (feature-hidpi)
    (feature-sway
@@ -717,7 +709,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
    ;;        (sha256
    ;;         (base32
    ;;          "1jfplgmx6gxgyzlc358q94l252970kvxnig12zrim2fa27lzmpyj"))))))
-   ;; (hidden-package (@ (nrepl-python-channel) nrepl-python))
+   ;; (@ (nrepl-python-channel) nrepl-python)
    (strings->packages
     ;; "emacs-borg"
     "emacs-forge"
@@ -882,27 +874,15 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
 
 ;;; Main features
 
-(define %main-features
+(define %base-features
   (append
    (list
     (feature-shepherd)
-    (feature-custom-services
-     #:feature-name-prefix 'cups
-     #:system-services
-     (list (service (@ (gnu services cups) cups-service-type))))
-    (feature-custom-services
-     #:feature-name-prefix 'nix
-     #:system-services
-     (list (service (@ (gnu services nix) nix-service-type))))
-
-    ;; (feature-docker)
-
+    ;; XXX: This should probably not be here but in get-desktop-services.
+    ;; Since it contains basic things like elogind, I'm not sure we
+    ;; can actually avoid to pass that there.
     (feature-desktop-services)
-    (feature-backlight #:step 5)
-    (feature-pipewire)
     (feature-networking #:mdns? #t)
-    ;; (feature-bluetooth)
-
     (feature-fonts
      #:default-font-size 14
      #:extra-font-packages
@@ -920,27 +900,80 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
 
     (feature-compile)
     (feature-direnv)
+    (feature-base-packages
+     #:home-packages
+     (strings->packages
+      "rsync" "zip"  ; documents
+      "recutils" "curl" "jq" "htop" ; utils
+      "btrbk" ; snapshot btrfs subvolumes
+      "atool" "unzip" ; provides generic extract tool aunpack
+      )))))
+
+(define (get-main-features)
+  (append
+   (match (machine-name (%current-machine))
+     ("20xwcto1ww"
+      (list
+       (feature-custom-services
+        #:feature-name-prefix 'cups
+        #:system-services
+        (list (service (@ (gnu services cups) cups-service-type))))
+       (feature-custom-services
+        #:feature-name-prefix 'nix
+        #:system-services
+        (list (service (@ (gnu services nix) nix-service-type))))
+       (feature-docker)
+       ;; (feature-podman)
+
+       (feature-backlight #:step 5)
+       (feature-pipewire)
+       ;; (feature-bluetooth)
+       ;; (feature-transmission)
+       ;; (feature-ledger)
+       (feature-markdown)
+       (feature-tex)
+       (feature-mpv)
+       ;; (feature-yt-dlp)
+       (feature-imv)
+       (feature-libreoffice)
+
+       (feature-qemu #:emulate-other-archs '("aarch64"))
+
+       (feature-tmux)
+       ;; (feature-ungoogled-chromium #:default-browser? #t)
+       (feature-librewolf
+        #:browser (hidden-package (@ (nongnu packages mozilla) firefox)))
+
+       (feature-base-packages
+        #:home-packages
+        (cons*
+         (@ (gnu packages version-control) git-lfs)
+         (@ (gnu packages version-control) lfs-s3)
+         ;; (@ (rde packages rust-xyz) rbw-with-ssh)
+         (@ (gnu packages gnupg) pinentry-qt)
+         ;; (@ (claude-desktop-package) claude-desktop-container)
+         (strings->packages
+          ;; "recoll"
+          "hicolor-icon-theme" "adwaita-icon-theme" ; themes
+          "alsa-utils"  ; sound
+          "wev" "wlsunset" "cage"  ; wayland
+          "ccls"
+          ;; "gnu-standards"  ; manual
+          ;; "nerd-dictation-sox-wtype"
+          ;; "task-spooler"
+          ;; "texlive-beamer"
+          ;; "texlive-scheme-full"
+          ;; "go-github-com-mark3labs-mcp-filesystem-server"
+          ;; "mumble"
+          )))))
+     (_
+      (list)))
 
     (feature-git
      #:sign-commits? #t
      #:git-sign-key
      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINd9BmbuU3HS6pbCzCe1IZGxaHHDJERXpQRZZiRkfL3a"
      #:git-send-email? #t)
-
-    ;; (feature-ledger)
-    (feature-markdown)
-    (feature-tex)
-    (feature-mpv)
-    ;; (feature-yt-dlp)
-    (feature-imv)
-    (feature-libreoffice)
-
-    (feature-qemu)
-
-    (feature-tmux)
-    ;; (feature-ungoogled-chromium #:default-browser? #t)
-    (feature-librewolf
-     #:browser (hidden-package (@ (nongnu packages mozilla) firefox)))
 
     (feature-xdg
      #:xdg-user-directories-configuration
@@ -953,27 +986,8 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
       (desktop "~")
       (publicshare "~")
       (templates "~")))
-
-    (feature-base-packages
-     #:home-packages
-     (cons*
-      (hidden-package (@ (gnu packages version-control) git-lfs))
-      (hidden-package (@ (gnu packages version-control) lfs-s3))
-      (map
-       hidden-package
-       (strings->packages
-       "hicolor-icon-theme" "adwaita-icon-theme" ; themes
-       "alsa-utils"  ; sound
-       "rsync" "zip"  ; "thunar"  ; documents
-       "wev" "wlsunset" "cage"  ; wayland
-       "recutils" "curl" "jq" "htop" ; utils
-       "btrbk" ; snapshot btrfs subvolumes
-       "atool" "unzip" ; provides generic extract tool aunpack
-       "ccls"
-       ;; "nerd-dictation-sox-wtype"
-       ))
-      )))
-   %wm-features
+    )
+   (get-desktop-features)
    (get-emacs-features)))
 
 
@@ -1004,42 +1018,42 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
 (define (machine-home-impermanence? machine)
   (not (assoc 'home (machine-btrfs-layout machine))))
 
-(define %mapped-device
+(define (get-mapped-device)
   (let ((uuid (bytevector->uuid
-               (string->uuid (machine-encrypted-uuid-mapped %current-machine)))))
+               (string->uuid (machine-encrypted-uuid-mapped (%current-machine))))))
     (and (uuid? uuid)
          (mapped-device
            (source uuid)
            (targets (list "enc"))
            (type luks-device-mapping)))))
 
-(define root-fs
+(define (get-root-fs)
   (file-system
     (mount-point "/")
-    (type (if (machine-root-impermanence? %current-machine)
+    (type (if (machine-root-impermanence? (%current-machine))
               "tmpfs"
               "btrfs"))
-    (device (if (machine-root-impermanence? %current-machine)
+    (device (if (machine-root-impermanence? (%current-machine))
                 "none"
                 "/dev/mapper/enc"))
     (needed-for-boot? #t)
     (check? #f)))
 
-(define home-fs
-  (if (machine-home-impermanence? %current-machine)
+(define (get-home-fs)
+  (if (machine-home-impermanence? (%current-machine))
       (file-system
         (mount-point "/home/graves")
         (type "tmpfs")
         (device "none")
         ;; User should have dir ownership.
         (options "uid=1000,gid=998")
-        (dependencies (or (and=> %mapped-device list) '())))
+        (dependencies (or (and=> (get-mapped-device) list) '())))
       (file-system
         (mount-point "/home")
         (type "btrfs")
         (device "/dev/mapper/enc")
         (options "autodefrag,compress=zstd,subvol=home")
-        (dependencies (or (and=> %mapped-device list) '())))))
+        (dependencies (or (and=> (get-mapped-device) list) '())))))
 
 (define get-btrfs-file-system
   (match-lambda
@@ -1056,31 +1070,32 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
                 subvol))
        (needed-for-boot? (member mount-point
                                  '("/gnu/store" "/boot" "/var/guix")))
-       (dependencies (append (or (and=> %mapped-device list) '())
-                             (if (not (machine-root-impermanence? %current-machine))
-                                 (list root-fs)
+       (dependencies (append (or (and=> (get-mapped-device) list) '())
+                             (if (not (machine-root-impermanence? (%current-machine)))
+                                 (list (get-root-fs))
                                  '())
-                             (if (and (not (machine-home-impermanence? %current-machine))
+                             (if (and (not (machine-home-impermanence? (%current-machine)))
                                       (string-prefix? "/home/" mount-point))
-                                 (list home-fs)
+                                 (list (get-home-fs))
                                  '())))))))
 
-(define swap-fs (get-btrfs-file-system '(swap . "/swap")))
+(define (get-swap-fs)
+  (get-btrfs-file-system '(swap . "/swap")))
 
-(define btrfs-file-systems
+(define (get-btrfs-file-systems)
   (append
-   (list root-fs)
-   (if (machine-home-impermanence? %current-machine)
-       (list home-fs)
+   (list (get-root-fs))
+   (if (machine-home-impermanence? (%current-machine))
+       (list (get-home-fs))
        '())
    (map get-btrfs-file-system
-        (machine-btrfs-layout %current-machine))
+        (machine-btrfs-layout (%current-machine)))
    (list (file-system
            (mount-point "/boot/efi")
            (type "vfat")
-           (device (machine-efi %current-machine))
+           (device (machine-efi (%current-machine)))
            (needed-for-boot? #t))
-         swap-fs)))
+         (get-swap-fs))))
 
 (use-modules (gnu home-services ssh)
              (gnu services security)
@@ -1094,7 +1109,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
        (systems (list #$(machine-architecture target-machine)))
        (user "graves")
        (host-key #$(machine-ssh-host-key target-machine))
-       (private-key #$(machine-ssh-privkey-location %current-machine)))))
+       (private-key #$(machine-ssh-privkey-location (%current-machine))))))
 
 (define (machine->guix-pubkey target-machine)
   (plain-file
@@ -1111,10 +1126,11 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
     (ssh-host
      (host (string-append (machine-name target-machine) ".local"))
      (options
-      `((identity-file . ,(machine-ssh-privkey-location %current-machine)))))))
+      `((identity-file . ,(machine-ssh-privkey-location (%current-machine))))))))
 
-(define %machine-features
-  (let* ((user-file-systems btrfs-file-systems
+(define* (get-machine-features #:optional (machine (%current-machine)))
+  (let* ((btrfs-file-systems (get-btrfs-file-systems))
+         (user-file-systems btrfs-file-systems
                             (partition
                              (lambda (fs)
                                ;; Or: has a file-system-dependency on HOME
@@ -1127,10 +1143,10 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
      (list
       (feature-bootloader)
       (feature-file-systems
-       #:mapped-devices (list %mapped-device)
+       #:mapped-devices (list (get-mapped-device))
        #:swap-devices
        (list (swap-space (target "/swap/swapfile")
-                         (dependencies (list swap-fs))))
+                         (dependencies (list (get-swap-fs)))))
        #:file-systems btrfs-file-systems
        #:user-pam-file-systems user-file-systems
        #:base-file-systems (list %pseudo-terminal-file-system
@@ -1146,7 +1162,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
                                  %efivars-file-system
                                  %immutable-store))
       (feature-kernel
-       #:kernel (if (null? (machine-firmware %current-machine))
+       #:kernel (if (null? (machine-firmware machine))
                     linux-libre
                     (@ (nongnu packages linux) linux))
        #:initrd (or (or@ (nongnu system linux-initrd) microcode-initrd)
@@ -1155,14 +1171,11 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
        (append (list "vmd") (@(gnu system linux-initrd) %base-initrd-modules))
        #:kernel-arguments  ; not clear, but these are additional to defaults
        (list "modprobe.blacklist=pcspkr" "rootfstype=tmpfs")
-       #:firmware (machine-firmware %current-machine))
+       #:firmware (machine-firmware machine))
       (feature-base-services)
-      (feature-custom-services
-       #:feature-name-prefix 'more-substitutes
-       #:system-services (list (force nonguix-service)
-                               (force guix-science-service))))
+      (feature-more-substitutes))
      ;; Layout-specific features
-     (if (machine-home-impermanence? %current-machine)
+     (if (machine-home-impermanence? machine)
          (list
           (feature-user-pam-hooks
            #:on-login
@@ -1185,7 +1198,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
                 (system ".guix-home/activate")))))
          (list))
      ;; Device specific features
-     (or (and-let* ((nvidia? (machine-nvidia? %current-machine))
+     (or (and-let* ((nvidia? (machine-nvidia? machine))
                     (mesa-utils (or@ (gnu packages gl) mesa-utils)))
            (list (feature-sway-run-on-tty
                   #:sway-tty-number 1
@@ -1200,7 +1213,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
                                         mesa-utils)))))
          (list (feature-sway-run-on-tty #:sway-tty-number 1)))
      ;; Machine-specific features
-     (match (machine-name %current-machine)
+     (match (machine-name machine)
        ("2325k55"
         (list (feature-host-info
                #:host-name "2325k55"
@@ -1212,7 +1225,13 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
                #:host-name "optiplex"
                #:timezone  "Europe/Paris"
                #:locale "fr_FR.utf8")
-              (feature-ssh)))
+              (feature-ssh)
+              (feature-custom-services
+               #:feature-name-prefix 'sudoers-extra-for-guix-deploy
+               #:system-services
+               (list (simple-service 'sudoers-extra-for-guix-deploy
+                         (@ (rde system services admin) sudoers-service-type)
+                       (list "graves ALL= NOPASSWD: ALL"))))))
        ("20xwcto1ww"
         (append
          (list (feature-host-info
@@ -1242,7 +1261,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
          ;;      (map machine->build-machine
          ;;           ;; %machines
          ;;           (filter machine-guix-pubkey
-         ;;                   (delete %current-machine %machines)))))))))
+         ;;                   (delete machine %machines)))))))))
          (force %mail-features)))
        (_ '()))
      ;; Cross-machine features (ssh daemon + guix daemon offload)
@@ -1289,11 +1308,12 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
 ;;; rde-config and helpers for generating home-environment and
 ;;; operating-system records.
 
-(define %config
+(define (get-config)
   (let* ((config (rde-config
                   (features (append %user-features
-                                    %main-features
-                                    %machine-features))))
+                                    %base-features
+                                    (get-main-features)
+                                    (get-machine-features)))))
          (maybe->packages (or@ (guix-submodule submodules)
                                submodules-dir->packages))
          (dev-packages (and=> maybe->packages
@@ -1311,9 +1331,9 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
               (command-line))
              ((subcommand . rest) (if (null? rest) (cons '() '()) rest)))
   (match subcommand
-    ('() %config)  ; (command-line) is guile, probably in ares.
-    ("rde" %config)  ; See guix-rde channel.
-    ("home" (rde-config-home-environment %config))
+    ('() (get-config))  ; (command-line) is guile, probably in ares.
+    ("rde" (get-config))  ; See guix-rde channel.
+    ("home" (rde-config-home-environment (get-config)))
     ("system"
      (match-let (((action opts ...) rest))
        (match action
@@ -1321,17 +1341,35 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
          ("image" (force my-installation-os))
          ;; sudo -E guix system CMD configuration.scm
          (_
-          (or (and-let* ((nvidia (machine-nvidia? %current-machine))
+          (or (and-let* ((nvidia (machine-nvidia? (%current-machine)))
                          (nonguix-transformation-nvidia
                           (or@ (nonguix transformations)
                                nonguix-transformation-nvidia))
                          (nvdb (or@ (nongnu packages nvidia) nvdb)))
                 ((nonguix-transformation-nvidia #:driver nvdb)
-                 (rde-config-operating-system %config)))
-              (rde-config-operating-system %config))))))
+                 (rde-config-operating-system (get-config))))
+              (rde-config-operating-system (get-config)))))))
     ("pull" ((@ (guix-submodule channels) submodules-dir->channels)
              "channels"
              #:type '(branch . (or "origin/master" "origin/main"))))
+    ("deploy"
+     (let* ((this-machine (%current-machine))
+            (target-name "optiplex")
+            (target-machine (find (lambda (in)
+                                    (equal? (machine-name in) target-name))
+                                  %machines)))
+       (parameterize ((%current-machine target-machine))
+         (list
+          ((@ (gnu machine ssh) machine)
+           (operating-system (rde-config-operating-system (get-config)))
+           (environment (@ (gnu machine ssh) managed-host-environment-type))
+           (configuration
+            (machine-ssh-configuration
+              (host-name target-name)
+              (host-key (machine-ssh-host-key target-machine))
+              (system "x86_64-linux")
+              (user "graves")
+              (identity (machine-ssh-privkey-location this-machine)))))))))
     (_        (error "This configuration is configured for \
 rde, home, pull, and system subcommands only!"))))
 
@@ -1408,3 +1446,7 @@ rde, home, pull, and system subcommands only!"))))
 
 ;;; Currently abandonned:
 ;; - system-connection services. see commit log.
+
+;;; Local Variables:
+;;; eval: (put 'simple-service 'scheme-indent-function 2)
+;;; End:
