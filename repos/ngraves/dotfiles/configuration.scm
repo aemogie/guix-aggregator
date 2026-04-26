@@ -163,6 +163,14 @@
              (base32
               "056cv0vlqyacyhbmwr5651fzg1icyxbw61nkap7sd4j2x8qj7ila"))))))))))
 
+(define (feature-sudoers-for-guix-deploy)
+  (feature-custom-services
+   #:feature-name-prefix 'sudoers-extra-for-guix-deploy
+   #:system-services
+   (list (simple-service 'sudoers-extra-for-guix-deploy
+             (@ (rde system services admin) sudoers-service-type)
+           (list "graves ALL= NOPASSWD: ALL")))))
+
 
 ;; Machine record and %current-machine
 (define-record-type* <machine> machine make-machine
@@ -1128,6 +1136,24 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
      (options
       `((identity-file . ,(machine-ssh-privkey-location (%current-machine))))))))
 
+(define (get-deployable-machine target-machine-name)
+  (let* ((this-machine (%current-machine))
+         (target-machine
+          (find (lambda (in)
+                  (equal? (machine-name in) target-machine-name))
+                %machines)))
+    (parameterize ((%current-machine target-machine))
+      ((@ (gnu machine ssh) machine)
+       (operating-system (rde-config-operating-system (get-config)))
+       (environment (@ (gnu machine ssh) managed-host-environment-type))
+       (configuration
+        (machine-ssh-configuration
+          (host-name target-machine-name)
+          (host-key (machine-ssh-host-key target-machine))
+          (system "x86_64-linux")
+          (user "graves")
+          (identity (machine-ssh-privkey-location this-machine))))))))
+
 (define* (get-machine-features #:optional (machine (%current-machine)))
   (let* ((btrfs-file-systems (get-btrfs-file-systems))
          (user-file-systems btrfs-file-systems
@@ -1219,19 +1245,15 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
                #:host-name "2325k55"
                #:timezone  "Europe/Paris"
                #:locale "fr_FR.utf8")
-              (feature-ssh)))
+              (feature-ssh)
+              (feature-sudoers-for-guix-deploy)))
        ("optiplex"
         (list (feature-host-info
                #:host-name "optiplex"
                #:timezone  "Europe/Paris"
                #:locale "fr_FR.utf8")
               (feature-ssh)
-              (feature-custom-services
-               #:feature-name-prefix 'sudoers-extra-for-guix-deploy
-               #:system-services
-               (list (simple-service 'sudoers-extra-for-guix-deploy
-                         (@ (rde system services admin) sudoers-service-type)
-                       (list "graves ALL= NOPASSWD: ALL"))))))
+              (feature-sudoers-for-guix-deploy)))
        ("20xwcto1ww"
         (append
          (list (feature-host-info
@@ -1353,23 +1375,11 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
              "channels"
              #:type '(branch . (or "origin/master" "origin/main"))))
     ("deploy"
-     (let* ((this-machine (%current-machine))
-            (target-name "optiplex")
-            (target-machine (find (lambda (in)
-                                    (equal? (machine-name in) target-name))
-                                  %machines)))
-       (parameterize ((%current-machine target-machine))
-         (list
-          ((@ (gnu machine ssh) machine)
-           (operating-system (rde-config-operating-system (get-config)))
-           (environment (@ (gnu machine ssh) managed-host-environment-type))
-           (configuration
-            (machine-ssh-configuration
-              (host-name target-name)
-              (host-key (machine-ssh-host-key target-machine))
-              (system "x86_64-linux")
-              (user "graves")
-              (identity (machine-ssh-privkey-location this-machine)))))))))
+     (list (get-deployable-machine "optiplex")
+           ;; Not ideal, I can use this one as a desktop, and this only
+           ;; deploys the system (as opposed to home).  It works though.
+           ;; (get-deployable-machine "2325k55")
+           ))
     (_        (error "This configuration is configured for \
 rde, home, pull, and system subcommands only!"))))
 
