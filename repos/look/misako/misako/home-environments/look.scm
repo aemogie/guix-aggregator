@@ -240,6 +240,8 @@
             ("LC_COLLATE"          . "C")
             #|QT|#
             ("QT_QPA_PLATFORM"     . "wayland")
+            #|GTK|#
+            ("GTK_IM_MODULE"       . "simple")
             #|NVIDIA|#
             ,@(if (not nvidia?) '()
                 `(("QT_WAYLAND_DISABLE_WINDOWDECORATION" . "1")

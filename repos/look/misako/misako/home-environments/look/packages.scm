@@ -65,7 +65,6 @@
   #:use-module (saayix packages emacs-xyz)
   #:use-module (saayix packages file-managers)
   #:use-module (saayix packages fonts)
-  #:use-module (saayix packages lsp)
   #:use-module (saayix packages minecraft)
   #:use-module (saayix packages pdf)
   #:use-module (saayix packages productivity)
