@@ -7,7 +7,7 @@
     (name 'guix)
     (url "https://codeberg.org/guix/guix")
     (branch "master")
-    (commit "92c1e44eb8c7a307b5825b5ec8fef3e7d29b2856")
+    (commit "36bbdcc14ea7c2de72491646ed8f15aef2fb10f1")
     (introduction
       (make-channel-introduction
         "9edb3f66fd807b096b48283debdcddccfea34bad"
@@ -19,7 +19,7 @@
     (name 'saayix)
     (url "https://codeberg.org/look/saayix.git")
     (branch "entropy")
-    (commit "7e346639e43869a55eb274b757c774ffe21da9e8")
+    (commit "9fd0b58e7834b0d4f5c38aa52f054b31616d5c0a")
     (introduction
       (make-channel-introduction
         "12540f593092e9a177eb8a974a57bb4892327752"

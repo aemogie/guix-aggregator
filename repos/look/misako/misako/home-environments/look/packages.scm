@@ -244,8 +244,8 @@
   (list wireplumber-minimal
         ncpamixer
         helvum
-        playerctl
-        easyeffects))
+        playerctl))
+        ;; easyeffects))
 
 (define-public terminals
   (list ghostty foot))

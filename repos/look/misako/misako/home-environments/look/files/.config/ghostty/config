@@ -4,6 +4,9 @@ theme = Catppuccin Mocha
 window-decoration = false
 gtk-single-instance = true
 confirm-close-surface = false
+quit-after-last-window-closed = false
+gtk-single-instance = true
 working-directory = home
 window-inherit-working-directory = true
-
+shell-integration = fish
+shell-integration-features = ssh-env
