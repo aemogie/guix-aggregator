@@ -32,7 +32,10 @@
           #~(modify-phases #$phases
               (add-after 'unpack 'unpack-zfs
                 (lambda* (#:key inputs #:allow-other-keys)
-                  (invoke "tar" "xf" #+(package-source zfs))
+                  (let ((zfs-source #+(package-source zfs)))
+                    (if (file-is-directory? zfs-source)
+                        (copy-recursively zfs-source #$zfs-directory)
+                        (invoke "tar" "xf" zfs-source)))
                   (with-directory-excursion #$zfs-directory
                     ;; Copied from zfs package.
                     (substitute* "module/os/linux/zfs/zfs_ctldir.c"
@@ -115,7 +118,8 @@
           '("CONFIG_HID_APPLE=m"))))
 
 ;; https://github.com/CachyOS/linux-cachyos
-(define* (cachyos-configs #:key cachy-config?
+(define* (cachyos-configs #:key (major-version "6")
+                          cachy-config?
                           cpusched
                           cc-harder?
                           per-gov?
@@ -191,32 +195,47 @@
            "CONFIG_NO_HZ_COMMON=y"
            "CONFIG_CONTEXT_TRACKING=y")))
     ,@(if (not (member cpusched '(rt rt-bore)))
-          (match preempt
-            ('full
-             '("CONFIG_PREEMPT_DYNAMIC=y"
-               "CONFIG_PREEMPT=y"
-               "CONFIG_PREEMPT_VOLUNTARY"
-               "CONFIG_PREEMPT_LAZY"
-               "CONFIG_PREEMPT_NONE"))
-            ('lazy
-             '("CONFIG_PREEMPT_DYNAMIC=y"
-               "CONFIG_PREEMPT"
-               "CONFIG_PREEMPT_VOLUNTARY"
-               "CONFIG_PREEMPT_LAZY=y"
-               "CONFIG_PREEMPT_NONE"))
-            ('voluntary
-             '("CONFIG_PREEMPT_DYNAMIC"
-               "CONFIG_PREEMPT=y"
-               "CONFIG_PREEMPT_VOLUNTARY=y"
-               "CONFIG_PREEMPT_LAZY"
-               "CONFIG_PREEMPT_NONE"))
-            ('none
-             '("CONFIG_PREEMPT_DYNAMIC"
-               "CONFIG_PREEMPT"
-               "CONFIG_PREEMPT_VOLUNTARY"
-               "CONFIG_PREEMPT_LAZY"
-               "CONFIG_PREEMPT_NONE=y"))
-            (_ '()))
+          (if (version>=? major-version "7.0")
+              (match preempt
+                ('full
+                 '("CONFIG_PREEMPT_DYNAMIC"
+                   "CONFIG_PREEMPT=y"
+                   "CONFIG_PREEMPT_LAZY"))
+                ('lazy
+                 '("CONFIG_PREEMPT_DYNAMIC"
+                   "CONFIG_PREEMPT"
+                   "CONFIG_PREEMPT_LAZY=y"))
+                ('dynamic
+                 '("CONFIG_PREEMPT_DYNAMIC=y"
+                   "CONFIG_PREEMPT=y"
+                   "CONFIG_PREEMPT_LAZY"))
+                (_ '()))
+              (match preempt
+                ('full
+                 '("CONFIG_PREEMPT_DYNAMIC=y"
+                   "CONFIG_PREEMPT=y"
+                   "CONFIG_PREEMPT_VOLUNTARY"
+                   "CONFIG_PREEMPT_LAZY"
+                   "CONFIG_PREEMPT_NONE"))
+                ('lazy
+                 '("CONFIG_PREEMPT_DYNAMIC=y"
+                   "CONFIG_PREEMPT"
+                   "CONFIG_PREEMPT_VOLUNTARY"
+                   "CONFIG_PREEMPT_LAZY=y"
+                   "CONFIG_PREEMPT_NONE"))
+                ('voluntary
+                 '("CONFIG_PREEMPT_DYNAMIC"
+                   "CONFIG_PREEMPT=y"
+                   "CONFIG_PREEMPT_VOLUNTARY=y"
+                   "CONFIG_PREEMPT_LAZY"
+                   "CONFIG_PREEMPT_NONE"))
+                ('none
+                 '("CONFIG_PREEMPT_DYNAMIC"
+                   "CONFIG_PREEMPT"
+                   "CONFIG_PREEMPT_VOLUNTARY"
+                   "CONFIG_PREEMPT_LAZY"
+                   "CONFIG_PREEMPT_NONE=y"))
+                (_ '())))
           '())
     ,@(if cc-harder?
           '("CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE"
@@ -241,4 +260,6 @@
          '("CONFIG_TRANSPARENT_HUGEPAGE_ALWAYS"
            "CONFIG_TRANSPARENT_HUGEPAGE_MADVISE=y"))
         (_ '()))
-    "CONFIG_USER_NS=y"))
+    ,@(if (version>=? major-version "7.0")
+          '()
+          '("CONFIG_USER_NS=y"))))

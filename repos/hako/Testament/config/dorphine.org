@@ -29,11 +29,13 @@
       (skeletons %rosenthal-skeletons)
       (packages
        (append (specifications->packages
-                '(;; Desktop applications.
-                  "digikam"
+                '("digikam"
+                  "distrobox"
                   "gimp"
                   "imv"
+                  "inkscape"
                   "kdenlive"
+                  "krita"
                   "libreoffice"
                   "obs-nvidia"
                   "telegram-desktop"
@@ -603,6 +605,12 @@ niri supports getting keyboard layout from localed.
   window-rule {
           match app-id="thunar" title="^File Operation Progress$"
           open-floating true
+  }
+
+  window-rule {
+    background-effect {
+      blur true
+    }
   }
 
   // Noctalia
@@ -1276,7 +1284,7 @@ condition.  Disable one of them.
   local wezterm = require 'wezterm'
   local config = wezterm.config_builder()
 
-  config.window_background_opacity = 0.97
+  config.window_background_opacity = 0.90
   config.color_scheme = 'Catppuccin Mocha'
 
   return config

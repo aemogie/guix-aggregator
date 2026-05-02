@@ -25,6 +25,7 @@
   #:use-module (gnu packages compression)
   #:use-module (gnu packages curl)
   #:use-module (gnu packages file)
+  #:use-module (gnu packages file-systems)
   #:use-module (gnu packages gnupg)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages lsof)
@@ -266,7 +267,7 @@ WARNED."
         mosh
         ncdu
         ncurses
-        rclone/no-test
+        rclone
         ripgrep
         rsync
         sops
@@ -279,7 +280,7 @@ WARNED."
 ;;;
 
 (define (%kernel-config path)
-  (let* ((commit "73ec75731ef64e03368dc8cdfbabe8a67cd2fab0")
+  (let* ((commit "1e97d40187f9f1db489d72f44ec40e7651820eaf")
          (source
           (origin
             (method git-fetch)
@@ -288,10 +289,10 @@ WARNED."
                    (commit commit)))
             (file-name (string-append "kernel-config." (string-take commit 7)))
             (sha256
-             (base32 "0nqnzkaqy4pqb3kza6n0cn76p1kh4dwldyx76ycgar7b61p6p8jz")))))
+             (base32 "1zrwna4f63gcfhfbndpxvn2kw3y9ipc7m7iry05qzn3b2dyanaq0")))))
     (file-append source path)))
 
-(define* (make-linux/dolly base version source #:key defconfig modconfig (configs ""))
+(define* (make-linux/dolly base version source #:key defconfig modconfig (configs "") (zfs zfs))
   (let ((kernel
          (customize-linux
           #:name "linux-dolly"
@@ -303,10 +304,11 @@ WARNED."
     (linux-with-zfs
      (package
        (inherit kernel)
-       (version version)))))
+       (version version))
+     zfs)))
 
 (define linux-server/dolly
-  (let ((cachyos-version "6.18.22-1"))
+  (let ((cachyos-version "6.18.25-1"))
     (make-linux/dolly
      linux-6.18
      cachyos-version
@@ -316,11 +318,12 @@ WARNED."
              "https://github.com/CachyOS/linux/releases/download/cachyos-"
              cachyos-version "/cachyos-" cachyos-version ".tar.gz"))
        (sha256
-        (base32 "152dp6bn1fxwbhy7awdfb0mgyfc4ajs6gwk7971ysdqjm1n366xx")))
+        (base32 "0vh5f1ysalc3rqzdcxb3rwzrkyqg6mz3h9hpynbig50w4072h14i")))
      #:defconfig (%kernel-config "/defconfig_server")
      #:configs
      (string-join
       (append (cachyos-configs
+               #:major-version (version-major cachyos-version)
                #:cachy-config? #f
                #:cpusched 'eevdf
                #:cc-harder? #t
@@ -335,9 +338,9 @@ WARNED."
       "\n"))))
 
 (define linux-desktop/dolly
-  (let ((cachyos-version "6.19.12-2"))
+  (let ((cachyos-version "7.0.2-1"))
     (make-linux/dolly
-     linux-6.19
+     linux-7.0
      cachyos-version
      (origin
        (method url-fetch)
@@ -345,16 +348,30 @@ WARNED."
              "https://github.com/CachyOS/linux/releases/download/cachyos-"
              cachyos-version "/cachyos-" cachyos-version ".tar.gz"))
        (sha256
-        (base32 "190j6q7armcdiyachm09a0r1fb2dv1139l2srybvv9dz6156z9fi"))
+        (base32 "1fkj8716yikqpnw50b7xlkd48zawczsj2n13fhkga5faz8dqq3cy"))
        (patches
         (map %kernel-config
-             '("/patches/bore-cachy-6.19.patch"
-               "/patches/cjktty-6.19.patch"
+             '("/patches/bore-cachy-7.0.patch"
+               "/patches/cjktty-7.0.patch"
                "/patches/cjktty-add-cjk32x32-font-data.patch"))))
+     #:zfs
+     (package
+       (inherit zfs)
+       (source
+        (origin
+          (method git-fetch)
+          (uri (git-reference
+                 (url "https://github.com/cachyos/zfs.git")
+                 (commit "0829cf892b5d7b3a0e8aa76cc7aca02b84f62557")))
+          (file-name "zfs-0829cf8")
+          (sha256
+           (base32
+            "1gpvkmagdjclaac1rxab3vwmfjiq5acnhmnsqxl472gksjsdci1r")))))
      #:defconfig (%kernel-config "/defconfig_desktop")
      #:configs
      (string-join
       (append (cachyos-configs
+               #:major-version (version-major cachyos-version)
                #:cachy-config? #t
                #:cpusched 'bore
                #:cc-harder? #t

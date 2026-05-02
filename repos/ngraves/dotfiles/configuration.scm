@@ -194,6 +194,8 @@
             (default '()))
   (nvidia? machine-nvidia?                               ; boolean
            (default #f))
+  (desktop? machine-desktop?                             ; boolean
+            (default #f))
   (kernel-build-options machine-kernel-build-options     ; list of options
                         (default '()))
   ;; SSH key identifying the ssh daemon, found in /etc/ssh/ssh_host_ed25519_key.pub
@@ -217,13 +219,14 @@
                                     (btrbk_snapshots . "/btrbk_snapshots"))
                                   root-impermanence-btrfs-layout
                                   home-impermanence-para-btrfs-layout))
+            (desktop? #t)
             (ssh-host-key "\
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID3dDHB5z2hr6ngtjj7TvXzbovUdhGzAODifATQdSJN5")
             (ssh-privkey-location "/home/graves/.local/share/ssh/id_ed25519")
             (ssh-pubkey "\
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJENtxo6OSdamVVqPlvwBrI5QLe4Wj4244cf51ubp/Uh")
             (guix-pubkey "\
-892E3653363EEF353DDC583A434D3614502D450A4655D1B14D5242AAE6D90B46")
+E5DD64BC1FC283D096D6AD9E2049892130043C7DD38B79A49E169FC43D4CD937")
             (firmware (or (and=> (or@ (nongnu packages linux) iwlwifi-firmware)
                                  list)
                           '())))
@@ -234,24 +237,27 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJENtxo6OSdamVVqPlvwBrI5QLe4Wj4244cf51ubp/Uh
             (firmware (or (and=> (or@ (nongnu packages linux) iwlwifi-firmware)
                                  list)
                           '()))
+            (desktop? #t)
             (ssh-host-key "\
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM+hUmwvYmS8BC2HupASOnn88gLkeeZli7b+ji6Wz/M4")
             (ssh-privkey-location "/home/graves/.ssh/id_ed25519")
             (ssh-pubkey "\
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPpGldYnfml+ffHz8EuYMUoHXivuhTKzkdUYcIP/f1Bk"))
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPpGldYnfml+ffHz8EuYMUoHXivuhTKzkdUYcIP/f1Bk")
+            (guix-pubkey "\
+F69F31102C65DCE9CC25029F21D1D5DCC2CA312600F5A68A86F9CD6F0AAE90D0"))
    (machine (name "optiplex")
    ;; Might use r8169 module but it works fine without, use linux-libre then.
             (efi "/dev/sda1")
             (encrypted-uuid-mapped "07bfebe6-20b0-4bf4-ae82-f5ab790a1bf0")
             (btrfs-layout (cons* '(home . "/home") root-impermanence-btrfs-layout))
+            (desktop? #f)
             (ssh-host-key "\
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIQPKzYGxm2U7EpTRHDO2sKV8P+VPIkVayz/TRp2F4Pn")
             (ssh-privkey-location "/home/graves/.ssh/id_ed25519")
             (ssh-pubkey "\
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL4eWCzw1QyKx2J5xvL5okysfIeFN6I+lCpUCTx5kUg0")
-;;             (guix-pubkey "\
-;; 1BEC0CE366F2325E65FEE419BC43DAACDDF0F334FF8E7B018687557C0B60BB16")
-            )))
+            (guix-pubkey "\
+D4948F399C2E07238E6701F65F472D42AD86324C51D38A0FB48FA253D5A2F9AB"))))
 
 (define %current-machine
   (make-parameter
@@ -447,7 +453,13 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL4eWCzw1QyKx2J5xvL5okysfIeFN6I+lCpUCTx5kUg0
               (file-name "fond_lock_pre.jpg")
               (sha256
                (base32 "1cyvaj0yvy6zvzy9yf1z6i629rwjcq3dni01phb599sp4n2cpa8g"))))))
-   (feature-swaynotificationcenter)))
+   (feature-swaynotificationcenter)
+   ;; Non WM-related features.
+   (feature-backlight #:step 5)
+   (feature-pipewire)
+   (feature-mpv)
+   (feature-imv)
+   (feature-libreoffice)))
 
 
 ;;; Mail
@@ -938,17 +950,12 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
        (feature-docker)
        ;; (feature-podman)
 
-       (feature-backlight #:step 5)
-       (feature-pipewire)
        ;; (feature-bluetooth)
        ;; (feature-transmission)
        ;; (feature-ledger)
        (feature-markdown)
        (feature-tex)
-       (feature-mpv)
        ;; (feature-yt-dlp)
-       (feature-imv)
-       (feature-libreoffice)
 
        (feature-qemu #:emulate-other-archs '("aarch64"))
        (let ((base-os (@ (gnu services virtualization) %hurd-vm-operating-system))
@@ -1015,6 +1022,12 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
           ;; "go-github-com-mark3labs-mcp-filesystem-server"
           ;; "mumble"
           )))))
+     ("2325k55"
+      (append
+       (get-desktop-features)
+       (list (feature-librewolf
+              #:browser (@ (nongnu packages mozilla) firefox)))
+       (get-emacs-features)))
      (_
       (list)))
 
@@ -1034,21 +1047,19 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
       (documents "~/resources")
       (desktop "~")
       (publicshare "~")
-      (templates "~")))
-    )
-   (get-desktop-features)
-   (get-emacs-features)))
+      (templates "~"))))))
 
 
 ;;; Machine helpers
 (define root-impermanence-btrfs-layout
-  '((store  . "/gnu/store")
-    (guix  . "/var/guix")
-    (log  . "/var/log")
-    (lib  . "/var/lib")
+  '((gnu@store  . "/gnu/store")
+    (var@guix  . "/var/guix")
+    (var@log  . "/var/log")
+    (var@lib  . "/var/lib")
     (boot . "/boot")
-    (NetworkManager . "/etc/NetworkManager")
-    (ssh . "/etc/ssh"))) ; Needed for build offloading.
+    (etc@guix . "/etc/guix")
+    (etc@NetworkManager . "/etc/NetworkManager")
+    (etc@ssh . "/etc/ssh")))
 
 (define home-impermanence-para-btrfs-layout
   (append-map
@@ -1172,7 +1183,8 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
      (options
       `((identity-file . ,(machine-ssh-privkey-location (%current-machine))))))))
 
-(define (get-deployable-machine target-machine-name)
+(define* (get-deployable-machine target-machine-name
+                                 #:key (integrate-he-in-os? #t))
   (let* ((this-machine (%current-machine))
          (target-machine
           (find (lambda (in)
@@ -1180,7 +1192,9 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
                 %machines)))
     (parameterize ((%current-machine target-machine))
       ((@ (gnu machine ssh) machine)
-       (operating-system (rde-config-operating-system (get-config)))
+       (operating-system (rde-config-operating-system
+                          (get-config
+                           #:integrate-he-in-os? integrate-he-in-os?)))
        (environment (@ (gnu machine ssh) managed-host-environment-type))
        (configuration
         (machine-ssh-configuration
@@ -1188,7 +1202,8 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
           (host-key (machine-ssh-host-key target-machine))
           (system "x86_64-linux")
           (user "graves")
-          (identity (machine-ssh-privkey-location this-machine))))))))
+          (identity (machine-ssh-privkey-location this-machine))
+          (allow-downgrades? #t)))))))
 
 (define* (get-machine-features #:optional (machine (%current-machine)))
   (let* ((btrfs-file-systems (get-btrfs-file-systems))
@@ -1260,20 +1275,23 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
                 (system ".guix-home/activate")))))
          (list))
      ;; Device specific features
-     (or (and-let* ((nvidia? (machine-nvidia? machine))
-                    (mesa-utils (or@ (gnu packages gl) mesa-utils)))
-           (list (feature-sway-run-on-tty
-                  #:sway-tty-number 1
-                  ;; Currently not working properly on locking
-                  ;; see https://github.com/NVIDIA/open-gpu-kernel-modules/issues/472
-                  #:launch-arguments '("--unsupported-gpu"))
-                 (feature-custom-services
-                  #:feature-name-prefix 'machine
-                  #:system-services
-                  (list (simple-service 'nvidia-mesa-utils-package
-                                        profile-service-type
-                                        mesa-utils)))))
-         (list (feature-sway-run-on-tty #:sway-tty-number 1)))
+     (cond
+      ((machine-nvidia? machine)
+       (list (feature-wayland-compositor-run-on-tty
+              #:tty-number 1
+              ;; Currently not working properly on locking
+              ;; see https://github.com/NVIDIA/open-gpu-kernel-modules/issues/472
+              #:launch-arguments '("--unsupported-gpu"))
+             (feature-custom-services
+              #:feature-name-prefix 'machine
+              #:system-services
+              (list (simple-service 'nvidia-mesa-utils-package
+                        profile-service-type
+                      (@ (gnu packages gl) mesa-utils))))))
+      ((machine-desktop? machine)
+       (list (feature-wayland-compositor-run-on-tty #:tty-number 1)))
+      (else
+       (list)))
      ;; Machine-specific features
      (match (machine-name machine)
        ("2325k55"
@@ -1366,12 +1384,13 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
 ;;; rde-config and helpers for generating home-environment and
 ;;; operating-system records.
 
-(define (get-config)
+(define* (get-config #:key (integrate-he-in-os? #f))
   (let* ((config (rde-config
                   (features (append %user-features
                                     %base-features
                                     (get-main-features)
-                                    (get-machine-features)))))
+                                    (get-machine-features)))
+                  (integrate-he-in-os? integrate-he-in-os?)))
          (maybe->packages (or@ (guix-submodule submodules)
                                submodules-dir->packages))
          (dev-packages (and=> maybe->packages
@@ -1412,8 +1431,6 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
              #:type '(branch . (or "origin/master" "origin/main"))))
     ("deploy"
      (list (get-deployable-machine "optiplex")
-           ;; Not ideal, I can use this one as a desktop, and this only
-           ;; deploys the system (as opposed to home).  It works though.
            ;; (get-deployable-machine "2325k55")
            ))
     (_        (error "This configuration is configured for \
@@ -1441,7 +1458,7 @@ rde, home, pull, and system subcommands only!"))))
 ;; cryptsetup open --type luks2 /dev/<root partition> enc
 ;; mkfs.btrfs /dev/mapper/enc
 ;; mount -t btrfs /dev/mapper/enc /mnt
-;; for subvol in {boot,store,log,lib,guix,NetworkManager,ssh,btrbk_snapshots,swap}; do\
+;; for subvol in {boot,gnu@store,var@log,var@lib,var@guix,etc@guix,etc@NetworkManager,etc@ssh,btrbk_snapshots,swap}; do\
 ;;   btrfs subvolume create /mnt/${subvol};\
 ;; done
 ;; EITHER
@@ -1454,7 +1471,7 @@ rde, home, pull, and system subcommands only!"))))
 ;; umount /mnt
 ;; mount -o subvol=root /dev/mapper/enc /mnt OR mount -t tmpfs none /mnt
 ;; for subvol in {boot,gnu/store,var/guix}; do\
-;;   mkdir -p /mnt/${subvol} && mount -o compress=zstd,subvol=${subvol##*/} /dev/mapper/enc /mnt/${subvol};\
+;;   mkdir -p /mnt/${subvol} && mount -o compress=zstd,subvol=${subvol/\//\@} /dev/mapper/enc /mnt/${subvol};\
 ;; done
 ;; mkdir -p /mnt/boot/efi
 ;; mount /dev/<EFI partition> /mnt/boot/efi

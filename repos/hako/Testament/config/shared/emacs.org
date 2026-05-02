@@ -357,7 +357,7 @@ workaround.
 
 *** emacs-arei
 #+begin_src scheme :noweb-ref package-spec
-  "emacs-arei-dolly"
+  "emacs-arei"
 #+end_src
 
 See also =serve= command in blueprint.scm.  Run ~blue serve~ to start the
