@@ -47,7 +47,6 @@ Examples:
 #+end_example
 
 ** Systems
-*** [[file:config/dorphine.org][dorphine]] (x86_64-linux, UEFI, ZFS, NVIDIA) | [[file:deploy/dorphine.scm][deploy]]
 Notes on ZFS:
 - support is currently implemented as =zfs-service-type= in [[https://codeberg.org/hako/Rosenthal][Rosenthal channel]]
 - root on ZFS requires [[https://codeberg.org/hako/Rosenthal/src/branch/trunk/modules/rosenthal/packages/patches/guix-wip-zfs-boot-support.patch][a patch to Guix System]]
@@ -62,8 +61,9 @@ Notes on ZFS:
 Notes on NVIDIA proprietary driver:
 - don't use GDM
 
-#+html: <img src="https://s3.boiledscript.com/misskey/a6987cd5-beb0-4ad3-b32a-3a0b6e2eb487.png">
-#+html: <img src="https://s3.boiledscript.com/misskey/050ff3d7-d928-43a9-bc4f-1cba9afa9dea.png">
+*** [[file:config/dorphine.org][dorphine]] (x86_64-linux, UEFI, ZFS, NVIDIA) | [[file:deploy/dorphine.scm][deploy]]
+#+html: <img src="https://s3.boiledscript.com/misskey/fe12673c-4e70-4f24-bb20-f21da75af890.png">
+#+html: <img src="https://s3.boiledscript.com/misskey/6b4cb2f8-8996-4b4a-8660-dd85c7585a3d.png">
 
 *** [[file:config/chapra.org][chapra]] (x86_64-linux, UEFI, ZFS) | [[file:deploy/chapra.scm][deploy]]
 

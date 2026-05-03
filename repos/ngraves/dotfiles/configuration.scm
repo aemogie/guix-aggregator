@@ -216,7 +216,9 @@
             (efi "/dev/nvme0n1p1")
             (encrypted-uuid-mapped "9dbcac0f-e5bd-45fc-a7f2-5841c5ea71b9")
             (btrfs-layout (append '(;;(data . "/data")
-                                    (btrbk_snapshots . "/btrbk_snapshots"))
+                                    (btrbk_snapshots . "/btrbk_snapshots")
+                                    ;; Necessary for SSH authentication.
+                                    (etc@childhurd . "/etc/childhurd"))
                                   root-impermanence-btrfs-layout
                                   home-impermanence-para-btrfs-layout))
             (desktop? #t)
@@ -595,19 +597,18 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
         (port . ,(and=> (assoc-ref alist "Port") string->number))
         (user . ,(assoc-ref alist "Username")))))))
 
-(define %ssh-feature
-  (delay
-    (feature-ssh
-     #:ssh-agent? #t
-     #:ssh-configuration
-     (home-ssh-configuration
-      (package (@ (gnu packages ssh) openssh-sans-x))
-      (user-known-hosts-file
-       '("/home/graves/.local/share/ssh/known_hosts"))
-      (default-host "*")
-      (default-options
-        '((address-family . "inet"))))
-     #:ssh-add-keys '("/home/graves/.local/share/ssh/id_sign"))))
+(define (get-ssh-feature)
+  (feature-ssh
+   #:ssh-agent? #t
+   #:ssh-configuration
+   (home-ssh-configuration
+    (package (@ (gnu packages ssh) openssh-sans-x))
+    (user-known-hosts-file
+     '("/home/graves/.local/share/ssh/known_hosts"))
+    (default-host "*")
+    (default-options
+      '((address-family . "inet"))))
+   #:ssh-add-keys '("/home/graves/.local/share/ssh/id_sign")))
 
 
 ;;; Emacs
@@ -1057,9 +1058,9 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
     (var@log  . "/var/log")
     (var@lib  . "/var/lib")
     (boot . "/boot")
-    (etc@guix . "/etc/guix")
+    (etc@guix . "/etc/guix")     ; Necessary to sign and share store artifacts.
     (etc@NetworkManager . "/etc/NetworkManager")
-    (etc@ssh . "/etc/ssh")))
+    (etc@ssh . "/etc/ssh")))            ; Necessary for SSH daemon.
 
 (define home-impermanence-para-btrfs-layout
   (append-map
@@ -1160,7 +1161,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
 (define machine->build-machine
   (lambda (target-machine)
     #~(build-machine
-       (name #$(machine-name target-machine))
+       (name (string-append #$(machine-name target-machine) ".local"))
        (systems (list #$(machine-architecture target-machine)))
        (user "graves")
        (host-key #$(machine-ssh-host-key target-machine))
@@ -1198,7 +1199,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
        (environment (@ (gnu machine ssh) managed-host-environment-type))
        (configuration
         (machine-ssh-configuration
-          (host-name target-machine-name)
+          (host-name (string-append target-machine-name ".local"))
           (host-key (machine-ssh-host-key target-machine))
           (system "x86_64-linux")
           (user "graves")
@@ -1323,7 +1324,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
                 #:password-store (@ (gnu packages password-utils) pass-age)
                 #:password-store-directory (string-append cwd "/files/pass")
                 #:remote-password-store-url "git@git.sr.ht:~ngraves/pass")
-               (force %ssh-feature))
+               (get-ssh-feature))
          ;; (list
          ;; (feature-custom-services
          ;;  #:feature-name-prefix 'build-machines
