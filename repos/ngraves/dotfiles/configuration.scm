@@ -196,6 +196,8 @@
            (default #f))
   (desktop? machine-desktop?                             ; boolean
             (default #f))
+  (offload? machine-offload?                             ; boolean
+            (default #f))
   (kernel-build-options machine-kernel-build-options     ; list of options
                         (default '()))
   ;; SSH key identifying the ssh daemon, found in /etc/ssh/ssh_host_ed25519_key.pub
@@ -222,6 +224,7 @@
                                   root-impermanence-btrfs-layout
                                   home-impermanence-para-btrfs-layout))
             (desktop? #t)
+            (offload? #f)
             (ssh-host-key "\
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID3dDHB5z2hr6ngtjj7TvXzbovUdhGzAODifATQdSJN5")
             (ssh-privkey-location "/home/graves/.local/share/ssh/id_ed25519")
@@ -240,6 +243,7 @@ E5DD64BC1FC283D096D6AD9E2049892130043C7DD38B79A49E169FC43D4CD937")
                                  list)
                           '()))
             (desktop? #t)
+            (offload? #t)
             (ssh-host-key "\
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM+hUmwvYmS8BC2HupASOnn88gLkeeZli7b+ji6Wz/M4")
             (ssh-privkey-location "/home/graves/.ssh/id_ed25519")
@@ -253,6 +257,7 @@ F69F31102C65DCE9CC25029F21D1D5DCC2CA312600F5A68A86F9CD6F0AAE90D0"))
             (encrypted-uuid-mapped "07bfebe6-20b0-4bf4-ae82-f5ab790a1bf0")
             (btrfs-layout (cons* '(home . "/home") root-impermanence-btrfs-layout))
             (desktop? #f)
+            (offload? #f)
             (ssh-host-key "\
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIQPKzYGxm2U7EpTRHDO2sKV8P+VPIkVayz/TRp2F4Pn")
             (ssh-privkey-location "/home/graves/.ssh/id_ed25519")
@@ -1158,14 +1163,16 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
            (needed-for-boot? #t))
          (get-swap-fs))))
 
-(define machine->build-machine
-  (lambda (target-machine)
-    #~(build-machine
-       (name (string-append #$(machine-name target-machine) ".local"))
-       (systems (list #$(machine-architecture target-machine)))
-       (user "graves")
-       (host-key #$(machine-ssh-host-key target-machine))
-       (private-key #$(machine-ssh-privkey-location (%current-machine))))))
+(define (machine->build-machine-gexp target-machine)
+  (unless (machine-guix-pubkey target-machine)
+    (error (format #f "A guix public key is necessary to offload on '~a'."
+                   (machine-name target-machine))))
+  #~(build-machine
+     (name #$(string-append (machine-name target-machine) ".local"))
+     (systems (list #$(machine-architecture target-machine)))
+     (user "graves")
+     (host-key #$(machine-ssh-host-key target-machine))
+     (private-key #$(machine-ssh-privkey-location (%current-machine)))))
 
 (define (machine->guix-pubkey target-machine)
   (plain-file
@@ -1324,62 +1331,53 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
                 #:password-store (@ (gnu packages password-utils) pass-age)
                 #:password-store-directory (string-append cwd "/files/pass")
                 #:remote-password-store-url "git@git.sr.ht:~ngraves/pass")
-               (get-ssh-feature))
-         ;; (list
-         ;; (feature-custom-services
-         ;;  #:feature-name-prefix 'build-machines
-         ;;  #:system-services
-         ;;  (list
-         ;;   (simple-service
-         ;;    'build-machines
-         ;;    guix-service-type
-         ;;    (guix-extension
-         ;;     (build-machines
-         ;;      (map machine->build-machine
-         ;;           ;; %machines
-         ;;           (filter machine-guix-pubkey
-         ;;                   (delete machine %machines)))))))))
+               (get-ssh-feature)
+               (feature-custom-services
+                #:feature-name-prefix 'build-machines
+                #:system-services
+                (list
+                 (simple-service 'build-machines guix-service-type
+                   (guix-extension
+                     (build-machines
+                      (map machine->build-machine-gexp
+                           (filter machine-offload?
+                                   (delete machine %machines)))))))))
          (force %mail-features)))
        (_ '()))
      ;; Cross-machine features (ssh daemon + guix daemon offload)
-     (list (feature-custom-services
-            #:feature-name-prefix 'ssh-daemon
-            #:home-services
-            (list (simple-service
-                   'ssh-server-authorized-key
-                   home-files-service-type
-                   `((".ssh/authorized_keys"
-                      ,(plain-file "authorized-keys"
-                                   (string-join
-                                    (filter-map machine-ssh-pubkey %machines)
-                                    "\n"))))))
-            #:system-services
-            (list (service openssh-service-type
-                           (openssh-configuration
-                            (openssh
-                             (@ (gnu packages ssh) openssh-sans-x))
-                            (allow-empty-passwords? #t)
-                            (password-authentication? #f)))))
-           (feature-custom-services
-            #:feature-name-prefix 'ssh-build-machines
-            #:home-services
-            (list
-             (simple-service
-              'local-ssh-machines
-              home-ssh-service-type
-              (home-ssh-extension
-               (extra-config (map machine->ssh-host %machines))))))
-           (feature-custom-services
-            #:feature-name-prefix 'build-machines-keys
-            #:system-services
-            (list
-             (simple-service
-              'build-machines
-              guix-service-type
-              (guix-extension
-               (authorized-keys
-                (map machine->guix-pubkey
-                     (filter machine-guix-pubkey %machines)))))))))))
+     (list
+      (feature-custom-services
+       #:feature-name-prefix 'ssh-daemon-authorize-keys
+       #:home-services
+       (list (simple-service 'authorize-keys home-files-service-type
+               `((".ssh/authorized_keys"
+                  ,(plain-file "authorized-keys"
+                               (string-join
+                                (filter-map machine-ssh-pubkey %machines)
+                                "\n"))))))
+       #:system-services
+       (list (service openssh-service-type
+                      (openssh-configuration
+                        (openssh
+                         (@ (gnu packages ssh) openssh-sans-x))
+                        (allow-empty-passwords? #t)
+                        (password-authentication? #f)))))
+      (feature-custom-services
+       #:feature-name-prefix 'ssh-build-machines
+       #:home-services
+       (list
+        (simple-service 'local-ssh-machines home-ssh-service-type
+          (home-ssh-extension
+           (extra-config (map machine->ssh-host %machines))))))
+      (feature-custom-services
+       #:feature-name-prefix 'build-machines-keys
+       #:system-services
+       (list
+        (simple-service 'build-machines guix-service-type
+          (guix-extension
+            (authorized-keys
+             (map machine->guix-pubkey
+                  (filter machine-guix-pubkey %machines)))))))))))
 
 
 ;;; rde-config and helpers for generating home-environment and
