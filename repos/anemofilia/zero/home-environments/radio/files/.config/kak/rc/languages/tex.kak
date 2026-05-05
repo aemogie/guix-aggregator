@@ -5,4 +5,5 @@ set-option -add global lsp_server_configuration texlab.build.args=["-pdf","-new-
 hook -group config global BufSetOption filetype=latex %{
   add-highlighter window/ column 80 StatusLine
   set-option window auto_pairs ( ) [ ] { } '"' '"' $ $
+  set-option window indentwidth 2
 }

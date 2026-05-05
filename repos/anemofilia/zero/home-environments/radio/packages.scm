@@ -1,6 +1,7 @@
 (define-module (home-environments radio packages)
   #|GNU packages|#
   #|A|# #:use-module (gnu packages admin)
+        #:use-module (gnu packages aspell)
         #:use-module (gnu packages audio)
   #|B|# #:use-module (gnu packages base)
         #:use-module (gnu packages bittorrent)
@@ -128,6 +129,7 @@
 
 (define development
   (list #|admin         |# tree
+        #|aspell        |# aspell aspell-dict-en
         #|base          |# patch
         #|databases     |# recutils
         #|gnupg         |# gnupg pinentry

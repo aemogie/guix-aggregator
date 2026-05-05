@@ -370,7 +370,11 @@
 
             (simple-service 'home-applications-environment-variables
                             home-environment-variables-service-type
-                            `(("EMACSLOADPATH"
+                            `(("ASPELL_CONF"
+                               . #s"per-conf $XDG_CONFIG_HOME/aspell/aspell.conf;~
+                                    personal $XDG_DATA_HOME/aspell/en.pws;~
+                                    repl $XDG_DATA_HOME/aspell/en.prepl")
+                              ("EMACSLOADPATH"
                                . "$HOME/.guix-home/profile/share/emacs/site-lisp")
                               ("MINETEST_USER_PATH" . "$XDG_DATA_HOME/minetest")
                               ("PASSWORD_STORE_DIR" . "$XDG_DATA_HOME/pass")))
