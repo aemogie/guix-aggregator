@@ -6,4 +6,4 @@
       ;; (setopt telega-proxies
       ;;         '((:type (:@type "proxyTypeSocks5")
       ;;            :server "localhost" :port "8123" :enable t)))
-      )))
+      (telega-adblock-mode 1))))

@@ -341,6 +341,15 @@ GUIX_PROFILE=/data/abcdw/work/abcdw/rde/examples/target/profiles/guix
 if [ -f $GUIX_PROFILE/etc/profile ]; then source $GUIX_PROFILE/etc/profile; fi
 ")))
 
+(define xkb-symbols-us-service
+  (simple-service
+   'xkb-symbols-us
+   home-xdg-configuration-files-service-type
+   `(("xkb/symbols/us"
+      ,(local-file
+        ((@ (rde lib file) find-file-in-load-path)
+         "rde-configs/files/config/xkb/symbols/us"))))))
+
 (define (feature-additional-services)
   (feature-custom-services
    #:feature-name-prefix 'abcdw
@@ -348,6 +357,7 @@ if [ -f $GUIX_PROFILE/etc/profile ]; then source $GUIX_PROFILE/etc/profile; fi
    (list
     home-extra-packages-service
     sway-extra-config-service
+    xkb-symbols-us-service
     ssh-extra-config-service
     i2pd-add-ilita-irc-service
     ;; rde-guix-add-to-shell-profile-service
@@ -627,10 +637,12 @@ subject:/home:/) and tag:new}\"'"
          :query "query:rde-inbox" :key "ir")
         (:name "RDE All"
          :query "query:rde-all" :key "pr")
-        (:name "Project Debugger: RDE Internship 2025"
-         :query "rde internship or tag:guile-debugger" :key "pd")
         (:name "Project Suitbl"
          :query "to: 2024-10-272@NLnet.nl or tag:suitbl" :key "ps")
+        (:name "Project Guile Build Daemon"
+         :query "to:2023-04-050@nlnet.nl or tag:guile-build-daemon" :key "pg")
+        (:name "Project Guile Hoot IDE"
+         :query "to:2025-10-436@nlnet.nl or tag:guile-hoot-ide" :key "ph")
         (:name "Work Inbox (Unsorted)"
          :query "(tag:work and tag:inbox) and not query:rde-all"
          :key "iu")
@@ -670,5 +682,5 @@ subject:/home:/) and tag:new}\"'"
      ;; cat `guix build xorgproto`/include/X11/keysymdef.h
      #:keyboard-layout
      (keyboard-layout
-      "us,ru" "dvorak,"
+      "us,ru" "dvoruk,"
       #:options '("grp:shifts_toggle" "ctrl:nocaps"))))))

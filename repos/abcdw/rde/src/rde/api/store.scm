@@ -46,24 +46,36 @@
     (set-build-options store
                        #:print-build-trace #t
                        #:print-extended-build-trace? #t
+                       ;; #:use-substitutes? #f
+                       #:verbosity 3
+                       ;; #:substitute-urls (list "https://ci.guix.gnu.org"
+                       ;;                         "https://bordeaux.guix.gnu.org")
                        #:multiplexed-build-output? #t)
-    (with-status-verbosity %build-verbosity
-      (let* ((guile  (or (%guile-for-build)
-                         (default-guile-derivation store)))
-             (values (run-with-store store
-                       (if build?
-                           (mlet %store-monad ((obj mvalue))
-                             (if (derivation? obj)
-                                 (mbegin %store-monad
-                                   (built-derivations (list obj))
-                                   (return
-                                    (match (derivation->output-paths obj)
-                                      (((_ . files) ...) files))))
-                                 (return (list obj))))
-                           (mlet %store-monad ((obj mvalue))
-                             (return (list obj))))
-                       #:guile-for-build guile)))
-        values))))
+    (let* ((guile  (or (%guile-for-build)
+                       (default-guile-derivation store)))
+           (collect-event
+            (lambda (event old-status status)
+              (match event
+                (('build-log pid line)
+                 (display line))
+                (_ #t)))))
+      (parameterize
+          ((current-build-output-port
+            (build-event-output-port
+             (build-status-updater collect-event))))
+        (run-with-store store
+          (if build?
+              (mlet %store-monad ((obj mvalue))
+                (if (derivation? obj)
+                    (mbegin %store-monad
+                      (built-derivations (list obj))
+                      (return
+                       (match (derivation->output-paths obj)
+                         (((_ . files) ...) files))))
+                    (return (list obj))))
+              (mlet %store-monad ((obj mvalue))
+                (return (list obj))))
+          #:guile-for-build guile)))))
 
 (define-syntax-rule (save-load-path-excursion body ...)
   "Save the current values of '%load-path' and '%load-compiled-path', run
@@ -113,7 +125,8 @@ Display and return the build's stdout as a string.  Always rebuild."
             (lambda (event old-status status)
               (match event
                 (('build-log pid line)
-                 (display line))
+                 (when pid
+                   (display line)))
                 (_ #t)))))
       (parameterize
           ((current-build-output-port
@@ -139,7 +152,25 @@ Display and return the build's stdout as a string.  Always rebuild."
           (return (derivation-output-path
                    (assoc-ref (derivation-outputs drv) "out"))))))))
 
+(define-public (really-lower-object obj)
+  (with-store %store
+    (run-with-store %store
+      (lower-object obj))))
+
 (define-public (run obj)
   (with-store %store
     (run-with-store %store obj)))
 
+;; (use-modules (gnu packages admin)
+;;              (guix packages)
+;;              (gnu packages))
+
+;; (build-with-store htop)
+
+;; (build-with-store
+;;  (file-union "dir"
+;;             `(("sources" ,(package-source htop))
+;;               ("htop" ,(file-append htop "/bin/htop")))))
+
+;; (eval-with-store
+;;  #~(+ 1 2))

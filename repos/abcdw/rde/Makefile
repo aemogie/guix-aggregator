@@ -49,11 +49,13 @@ ares:
 repl: ares
 
 examples/ixy/home/reconfigure:
+	make -C examples env/sync
 	RDE_TARGET=ixy-home ${GUIX} home \
 	${RDE_SRC_LOAD_PATH} ${EXAMPLES_LOAD_PATH} \
 	reconfigure ${CONFIGS}
 
 examples/ixy/home/build:
+	make -C examples env/sync
 	RDE_TARGET=ixy-home ${GUIX} home \
 	${RDE_SRC_LOAD_PATH} ${EXAMPLES_LOAD_PATH} \
 	build ${CONFIGS}
@@ -111,3 +113,5 @@ clean:
 	rm -f doc/rde.pdf
 	rm -f doc/rde.info
 	rm -f doc/rde-tool-list.texi
+
+-include Makefile.local
