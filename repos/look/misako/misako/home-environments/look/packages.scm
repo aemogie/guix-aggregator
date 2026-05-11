@@ -96,7 +96,11 @@
            (base32 "0hnq8vwr31scpf20qnv17zc0fn7llf0wlhym0a8p39n6ag1g1dwc")))))))
 
 (define-public bar
-  (list eww/wayland waybar quickshell/latest))
+  (list eww/wayland
+        waybar
+        quickshell/latest
+        qtgraphicaleffects
+        qt5compat))
 
 (define-public browser
   (list zen-browser-bin))
