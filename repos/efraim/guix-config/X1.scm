@@ -22,6 +22,7 @@
   xorg)
 (use-package-modules
   linux)
+(export %X1-system)
 
 (define with-transformations
   (options->transformation
@@ -48,7 +49,8 @@
     ;; bindsym XF86Favorites
     ))
 
-(operating-system
+(define %X1-system
+ (operating-system
   (host-name "X1")
   (timezone "Asia/Jerusalem")
   (locale "en_IL.utf8")
@@ -225,4 +227,6 @@
                          (extra-options %extra-options)))))))
 
   ;; Allow resolution of '.local' host names with mDNS.
-  (name-service-switch %mdns-host-lookup-nss))
+  (name-service-switch %mdns-host-lookup-nss)))
+
+%X1-system

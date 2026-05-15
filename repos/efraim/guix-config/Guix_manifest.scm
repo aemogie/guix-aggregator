@@ -75,7 +75,6 @@
         "ffmpeg"
         "git-annex"
         "isync"
-        "keybase"
         "khal"
         "khard"
         "libhdate"

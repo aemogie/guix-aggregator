@@ -70,8 +70,6 @@ autocmd Syntax * syn match ExtraWhitespace /\s+$\| \+\ze\t/ containedin=ALL
 " security risk.
 let use_local_vimrc = [
             \ '/home/efraim/workspace/guix',
-            \ '/home/efraim/workspace/guix-bioinformatics',
-            \ '/home/efraim/workspace/guix-past',
             \ '/home/efraim/workspace/guix-rust-team',
             \ '/home/efraim/workspace/my-guix']
 " This only checks the directory of the current window.
@@ -104,7 +102,6 @@ endif
 " Guix.vim
 let g:guix_binary = "/home/efraim/workspace/guix/pre-inst-env guix "
 let g:guix_build_options = "-L /home/efraim/workspace/my-guix -L /home/efraim/workspace/guix-config"
-let g:guix_build_options_work = "-L /home/efraim/workspace/guix-past/modules -L /home/efraim/workspace/guix-bioinformatics -L /home/efraim/workspace/guix-science"
 
 " gtags.vim
 set cscopetag

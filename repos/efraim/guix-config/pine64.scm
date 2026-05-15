@@ -67,8 +67,10 @@
   (packages
     (append
       (map specification->package
-           (list "screen"))
-      (delete (specification->package "guix-icons") %base-packages)))
+           (list "screen"
+                 ;; Some packages for debugging
+                 "file" "gdb" "strace"))
+      %base-packages))
 
   (services
     (cons* (service guix-home-service-type

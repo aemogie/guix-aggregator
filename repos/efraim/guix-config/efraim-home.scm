@@ -691,6 +691,7 @@
     (string-join
       (list "startup_message off"
             "term screen-256color"
+            "truecolor on"
             "defscrollback 50000"
             "altscreen on"
             "termcapinfo xterm* ti@:te@"
@@ -975,6 +976,12 @@
                                       "eurosign:e"))))))        ; euro on e
     (outputs
      (append
+      ;; The background needs to be first so it doesn't override the monitor positions?
+      (list (sway-output
+              (identifier '*)
+              (background
+                (file-append (S "guix-backgrounds")
+                             "/share/backgrounds/guix/guix-checkered-16-9.svg"))))
       (cond
         ((string=? (gethostname) "3900XT")
          (list (sway-output
@@ -999,12 +1006,7 @@
                  (resolution "1920x1080")
                  (position (point (x 0)
                                   (y 0))))))
-        (#t '()))
-      (list (sway-output
-              (identifier '*)
-              (background
-                (file-append (S "guix-backgrounds")
-                             "/share/backgrounds/guix/guix-checkered-16-9.svg"))))))
+        (#t '()))))
     (bar
       (sway-bar
         (identifier 'bar0)
@@ -1040,7 +1042,8 @@
         "for_window [title = \"IceCat — Sharing Indicator\"] floating enable"
         "for_window [title = \"Join Channel\"] floating enable"
         "include /run/current-system/profile/etc/sway/config.d/*"
-        "include /etc/sway/config.d/*"))))
+        "include /etc/sway/config.d/*"
+        "include ~/.config/sway/config.d/*"))))
 
 ;;; Executables for the $HOME/bin folder.
 

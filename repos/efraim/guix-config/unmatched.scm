@@ -66,8 +66,10 @@
   (packages
     (append
       (map specification->package
-           (list "screen"))
-      (delete (specification->package "guix-icons") %base-packages)))
+           (list "screen"
+                 ;; Some packages for debugging
+                 "file" "gdb" "strace"))
+      %base-packages))
 
   (services
     (cons* (service openssh-service-type
@@ -81,11 +83,7 @@
                       (package (specification->package "tailscale"))
                       (dev-net-tun? #f)))
 
-           (service openntpd-service-type
-                    (openntpd-configuration
-                      (listen-on '("127.0.0.1" "::1"))
-                      ;; Prevent moving to year 2116.
-                      (constraints-from '("https://www.google.com/"))))
+           (service ntp-service-type)
 
            (service dhcpcd-service-type)
 
