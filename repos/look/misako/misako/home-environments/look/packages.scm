@@ -98,7 +98,7 @@
 (define-public bar
   (list eww/wayland
         waybar
-        quickshell/latest
+        quickshell-latest/ctm
         qtgraphicaleffects
         qt5compat))
 
@@ -168,6 +168,7 @@
         font-ipa-mj-mincho
         font-jetbrains-mono
         font-microsoft-arial
+        font-inter
         font-microsoft-times-new-roman
         font-nerd-symbols))
 

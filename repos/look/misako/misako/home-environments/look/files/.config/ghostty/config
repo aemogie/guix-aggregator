@@ -10,3 +10,4 @@ working-directory = home
 window-inherit-working-directory = true
 shell-integration = fish
 shell-integration-features = ssh-env
+window-padding-color = extend-always
