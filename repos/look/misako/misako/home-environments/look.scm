@@ -204,7 +204,8 @@
                 ('yazi.desktop mime-types:file-manager)
                 ('mpv.desktop mime-types:audio-video)
                 ('imv.desktop mime-types:image)
-                ('zathura.desktop mime-types:pdf)))))
+                ('zathura.desktop mime-types:pdf)
+                ('zaread.desktop mime-types:docx)))))
 
         (simple-service 'environment-variables
                         home-environment-variables-service-type

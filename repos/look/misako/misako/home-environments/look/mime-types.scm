@@ -175,3 +175,17 @@
 
 (define pdf
   '("application/pdf"))
+
+(define-public docx
+  '("application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+    "application/msword"
+    "application/vnd.ms-powerpoint"
+    "application/vnd.oasis.opendocument.text"
+    "application/vnd.oasis.opendocument.presentation"
+    "application/vnd.ms-word.document.macroEnabled.12"
+    "application/vnd.ms-powerpoint.presentation.macroEnabled.12"
+    "application/vnd.openxmlformats-officedocument.presentationml.slideshow"
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.template"
+    "text/rtf"
+    "application/x-mobipocket-ebook"))

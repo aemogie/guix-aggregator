@@ -174,7 +174,7 @@
             "CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y")
           '())
     ,@(match tickrate
-        ('perodic
+        ('periodic
          '("CONFIG_NO_HZ_IDLE"
            "CONFIG_NO_HZ_FULL"
            "CONFIG_NO_HZ"
@@ -198,17 +198,11 @@
           (if (version>=? major-version "7.0")
               (match preempt
                 ('full
-                 '("CONFIG_PREEMPT_DYNAMIC"
-                   "CONFIG_PREEMPT=y"
+                 '("CONFIG_PREEMPT=y"
                    "CONFIG_PREEMPT_LAZY"))
                 ('lazy
-                 '("CONFIG_PREEMPT_DYNAMIC"
-                   "CONFIG_PREEMPT"
+                 '("CONFIG_PREEMPT"
                    "CONFIG_PREEMPT_LAZY=y"))
-                ('dynamic
-                 '("CONFIG_PREEMPT_DYNAMIC=y"
-                   "CONFIG_PREEMPT=y"
-                   "CONFIG_PREEMPT_LAZY"))
                 (_ '()))
               (match preempt
                 ('full

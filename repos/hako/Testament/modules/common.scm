@@ -308,7 +308,7 @@ WARNED."
      zfs)))
 
 (define linux-server/dolly
-  (let ((cachyos-version "6.18.25-1"))
+  (let ((cachyos-version "6.18.32-1"))
     (make-linux/dolly
      linux-6.18
      cachyos-version
@@ -318,7 +318,7 @@ WARNED."
              "https://github.com/CachyOS/linux/releases/download/cachyos-"
              cachyos-version "/cachyos-" cachyos-version ".tar.gz"))
        (sha256
-        (base32 "0vh5f1ysalc3rqzdcxb3rwzrkyqg6mz3h9hpynbig50w4072h14i")))
+        (base32 "10fj05ckqzxcjzw07a4w8518j51hndkh0869nh1apjngvqszbl8l")))
      #:defconfig (%kernel-config "/defconfig_server")
      #:configs
      (string-join
@@ -338,7 +338,7 @@ WARNED."
       "\n"))))
 
 (define linux-desktop/dolly
-  (let ((cachyos-version "7.0.2-1"))
+  (let ((cachyos-version "7.0.9-1"))
     (make-linux/dolly
      linux-7.0
      cachyos-version
@@ -348,12 +348,8 @@ WARNED."
              "https://github.com/CachyOS/linux/releases/download/cachyos-"
              cachyos-version "/cachyos-" cachyos-version ".tar.gz"))
        (sha256
-        (base32 "1fkj8716yikqpnw50b7xlkd48zawczsj2n13fhkga5faz8dqq3cy"))
-       (patches
-        (map %kernel-config
-             '("/patches/bore-cachy-7.0.patch"
-               "/patches/cjktty-7.0.patch"
-               "/patches/cjktty-add-cjk32x32-font-data.patch"))))
+        (base32 "08d695hrvipd079k2489mpqdj7frdk9d4smf4kshnwhy4y79wip1"))
+       (patches (map %kernel-config '("/patches/bore-cachy-7.0.patch"))))
      #:zfs
      (package
        (inherit zfs)
