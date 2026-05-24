@@ -97,6 +97,7 @@
 
 (define-public bar
   (list eww/wayland
+        morewaita-icon-theme
         waybar
         quickshell-latest/ctm
         qtgraphicaleffects
@@ -169,6 +170,8 @@
         font-jetbrains-mono
         font-microsoft-arial
         font-inter
+        font-google-material-design-icons
+        font-material-design-symbols
         font-microsoft-times-new-roman
         font-nerd-symbols))
 

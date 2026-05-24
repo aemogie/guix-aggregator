@@ -1,5 +1,5 @@
 # https://docs.helix-editor.com/master/configuration.html
-theme = "catppuccin_mocha"
+theme = "modus_operandi_tinted"
 
 [editor]
 line-number = "relative"

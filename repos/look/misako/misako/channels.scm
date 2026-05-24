@@ -19,7 +19,7 @@
     (name 'saayix)
     (url "https://codeberg.org/look/saayix.git")
     (branch "entropy")
-    (commit "1872094fd80382fc26a6de5dbc9f4bf88ad0929d")
+    (commit "224bfac55f0468dbcf9b95e6714fbe5b07f94313")
     (introduction
       (make-channel-introduction
         "12540f593092e9a177eb8a974a57bb4892327752"

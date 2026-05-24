@@ -1,6 +1,6 @@
 font-family = JetBrains Mono NL
 font-size = 13
-theme = Catppuccin Mocha
+theme = Modus Operandi Tinted
 window-decoration = false
 gtk-single-instance = true
 confirm-close-surface = false
