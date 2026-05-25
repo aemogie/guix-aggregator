@@ -6,79 +6,9 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 regex)
   ;; Utilities
-  #:use-module (guix gexp)
-  #:use-module (guix packages)
   #:use-module (guix utils)
-  ;; Guix packages
-  #:use-module (gnu packages autotools)
-  #:use-module (gnu packages file-systems)
-  #:use-module (gnu packages linux)
-  #:use-module (gnu packages onc-rpc)
-  #:use-module (gnu packages pkg-config)
-  #:export (linux-with-zfs
-            default-initrd-configs
+  #:export (default-initrd-configs
             cachyos-configs))
-
-(define* (linux-with-zfs linux #:optional (zfs zfs))
-  "Return a kernel package based on LINUX, with ZFS kernel modules built in."
-  (let ((zfs-directory
-         (string-append (package-name zfs) "-" (package-version zfs))))
-    (package
-      (inherit linux)
-      (arguments
-       (substitute-keyword-arguments arguments
-         ((#:substitutable? _ #t) #f)
-         ((#:phases phases)
-          #~(modify-phases #$phases
-              (add-after 'unpack 'unpack-zfs
-                (lambda* (#:key inputs #:allow-other-keys)
-                  (let ((zfs-source #+(package-source zfs)))
-                    (if (file-is-directory? zfs-source)
-                        (copy-recursively zfs-source #$zfs-directory)
-                        (invoke "tar" "xf" zfs-source)))
-                  (with-directory-excursion #$zfs-directory
-                    ;; Copied from zfs package.
-                    (substitute* "module/os/linux/zfs/zfs_ctldir.c"
-                      (("/usr/bin/env\", \"umount")
-                       (string-append
-                        (search-input-file inputs "/bin/umount") "\", \"-n"))
-                      (("/usr/bin/env\", \"mount")
-                       (string-append
-                        (search-input-file inputs "/bin/mount") "\", \"-n"))))))
-              ;; https://github.com/openzfs/zfs/issues/10450#issuecomment-643654436
-              (add-after 'patch-source-shebangs 'add-zfs-to-kernel-tree
-                (lambda _
-                  (invoke "make" "defconfig" "prepare")
-                  (with-directory-excursion #$zfs-directory
-                    (invoke "./autogen.sh")
-                    (substitute* "configure"
-                      (("/bin/sh") (which "sh")))
-                    (invoke "./configure" "--enable-linux-builtin"
-                            "--with-linux=.."
-                            "--with-linux-obj=..")
-                    (invoke "./copy-builtin" ".."))
-                  (delete-file-recursively #$zfs-directory)))
-              (add-after 'configure 'enable-zfs
-                (lambda _
-                  (for-each
-                   (lambda (config)
-                     (invoke "./scripts/config" "--enable" config))
-                   '("CONFIG_CRYPTO_DEFLATE"
-                     "CONFIG_ZLIB_DEFLATE"
-                     "CONFIG_KALLSYMS"
-                     "CONFIG_EFI_PARTITION"
-                     "CONFIG_ZFS"))))))))
-      (native-inputs
-       (modify-inputs native-inputs
-         (prepend autoconf
-                  automake
-                  libtool
-                  pkg-config)))
-      (inputs
-       (modify-inputs inputs
-         (prepend libtirpc
-                  util-linux
-                  `(,util-linux "lib")))))))
 
 (define* (default-initrd-configs
            #:optional

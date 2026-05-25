@@ -46,52 +46,48 @@
 | ZFS Dataset                      | Mount Point                    | Options                       | com.sun:auto-snapshot |
 |----------------------------------+--------------------------------+-------------------------------+-----------------------|
 | Lycoris                          | /mnt/Lycoris                   | acltype=posix                 |                       |
+|                                  |                                |                               |                       |
 | Lycoris/Root                     | legacy (/)                     |                               |                       |
 | Lycoris/Config                   | legacy (/etc)                  |                               | true                  |
+| Lycoris/Cache                    | legacy (/var/cache)            |                               |                       |
+| Lycoris/State                    | legacy (/var/lib)              |                               |                       |
 | Lycoris/Store                    | legacy (/gnu)                  | atime=off                     |                       |
-| Lycoris/Cache                    | /var/cache                     |                               |                       |
+|                                  |                                |                               |                       |
 | Lycoris/Cache/GuixMoe            | /var/cache/guix-moe            |                               |                       |
 | Lycoris/Cache/GuixMoe/Mirror     | /var/cache/guix-moe/mirror     | recordsize=8K                 |                       |
 | Lycoris/Cache/GuixMoe/Mirror/Nar | /var/cache/guix-moe/mirror/nar | compression=off,recordsize=1M |                       |
 | Lycoris/Cache/GuixMoe/Narinfo    | /var/cache/guix-moe/narinfo    | recordsize=8K                 |                       |
 | Lycoris/Cache/GuixPublish        | /var/cache/guix/publish        | recordsize=8K                 |                       |
 | Lycoris/Cache/GuixPublish/Nar    | /var/cache/guix/publish/nar    | compression=off,recordsize=1M |                       |
-| Lycoris/Data                     | /var/lib                       |                               |                       |
-| Lycoris/Data/Forgejo             | /var/lib/forgejo               |                               |                       |
-| Lycoris/Data/PostgreSQL          | /var/lib/postgresql            | recordsize=32K                | true                  |
-| Lycoris/Data/SOPS                | /var/lib/sops                  |                               | true                  |
-| Lycoris/Data/Tailscale           | /var/lib/tailscale             |                               | true                  |
-| Lycoris/Data/Tuwunel             | /var/lib/tuwunel               |                               | true                  |
-| Lycoris/Data/WebPublic           | /var/lib/webpublic             |                               | true                  |
+|                                  |                                |                               |                       |
+| Lycoris/State/Forgejo            | /var/lib/forgejo               |                               |                       |
+| Lycoris/State/PostgreSQL         | /var/lib/postgresql            | recordsize=32K                | true                  |
+| Lycoris/State/SOPS               | /var/lib/sops                  |                               | true                  |
+| Lycoris/State/Tailscale          | /var/lib/tailscale             |                               | true                  |
+| Lycoris/State/Tuwunel            | /var/lib/tuwunel               |                               | true                  |
+| Lycoris/State/WebPublic          | /var/lib/webpublic             |                               | true                  |
 |----------------------------------+--------------------------------+-------------------------------+-----------------------|
 
-#+begin_src scheme :noweb-ref service
-  (service zfs-service-type
-    (zfs-configuration
-      (kernel-has-zfs-module? #t)))
-#+end_src
-
 #+begin_src scheme :noweb-ref file-systems
-  (list (file-system
+  (cons (file-system
           (device (file-system-label "boot"))
           (mount-point "/efi")
           (type "vfat")
           (flags '(no-exec no-suid no-dev))
           (options "fmask=0177,dmask=0077"))
-        (file-system
-          (device "zfs:Lycoris/Root")
-          (mount-point "/")
-          (type "zfs"))
-        (file-system
-          (device "zfs:Lycoris/Config")
-          (mount-point "/etc")
-          (type "zfs")
-          (needed-for-boot? #t))
-        (file-system
-          (device "zfs:Lycoris/Store")
-          (mount-point "/gnu")
-          (type "zfs")
-          (needed-for-boot? #t)))
+        (map (match-lambda
+               ((path . mount-point)
+                (file-system
+                  (device (zfs-dataset "Lycoris" path))
+                  (mount-point mount-point)
+                  (type "zfs")
+                  (create-mount-point? #t)
+                  (check? #f))))
+             '(("Root"   . "/")
+               ("Config" . "/etc")
+               ("Cache"  . "/var/cache")
+               ("State"  . "/var/lib")
+               ("Store"  . "/gnu"))))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -1348,6 +1344,11 @@ Within this repository
   (common)
 #+end_src
 
+Guile builtins
+#+begin_src scheme :noweb-ref module
+  (ice-9 match)
+#+end_src
+
 Utilities
 #+begin_src scheme :noweb-ref module
   (gnu)
@@ -1366,7 +1367,6 @@ Guix System - services
   (gnu services ssh)
   (gnu services sysctl)
   (gnu services web)
-  (rosenthal services file-systems)
   (rosenthal services messaging)
   (rosenthal services networking)
   (rosenthal services web)

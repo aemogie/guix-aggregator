@@ -49,48 +49,42 @@
 
 *** File Systems
 
-| ZFS Dataset            | Mount Point          | Options                               | com.sun:auto-snapshot |
-|------------------------+----------------------+---------------------------------------+-----------------------|
-| Ocimeae                | /mnt/Ocimeae         | acltype=posix,secondarycache=metadata |                       |
-| Ocimeae/Library        | /mnt/Ocimeae/Library |                                       | true                  |
-| Ocimeae/Root           | legacy (/)           |                                       |                       |
-| Ocimeae/Config         | legacy (/etc)        |                                       | true                  |
-| Ocimeae/Store          | legacy (/gnu)        | atime=off                             |                       |
-| Ocimeae/Data           | /var/lib             |                                       |                       |
-| Ocimeae/Data/Jellyfin  | /var/lib/jellyfin    |                                       | true                  |
-| Ocimeae/Data/Komga     | /var/lib/komga       |                                       | true                  |
-| Ocimeae/Data/Navidrome | /var/lib/navidrome   |                                       | true                  |
-| Ocimeae/Data/SOPS      | /var/lib/sops        |                                       | true                  |
-| Ocimeae/Data/Tailscale | /var/lib/tailscale   |                                       | true                  |
-|------------------------+----------------------+---------------------------------------+-----------------------|
-
-#+begin_src scheme :noweb-ref service
-  (service zfs-service-type
-    (zfs-configuration
-      (kernel-has-zfs-module? #t)))
-#+end_src
+| ZFS Dataset             | Mount Point          | Options       | com.sun:auto-snapshot |
+|-------------------------+----------------------+---------------+-----------------------|
+| Ocimeae                 | /mnt/Ocimeae         | acltype=posix |                       |
+| Ocimeae/Library         | /mnt/Ocimeae/Library |               | true                  |
+|                         |                      |               |                       |
+| Ocimeae/Root            | legacy (/)           |               |                       |
+| Ocimeae/Config          | legacy (/etc)        |               | true                  |
+| Ocimeae/State           | legacy (/var/lib)    |               |                       |
+| Ocimeae/Store           | legacy (/gnu)        | atime=off     |                       |
+|                         |                      |               |                       |
+| Ocimeae/State/Jellyfin  | /var/lib/jellyfin    |               | true                  |
+| Ocimeae/State/Komga     | /var/lib/komga       |               | true                  |
+| Ocimeae/State/Navidrome | /var/lib/navidrome   |               | true                  |
+| Ocimeae/State/SOPS      | /var/lib/sops        |               | true                  |
+| Ocimeae/State/Tailscale | /var/lib/tailscale   |               | true                  |
+|-------------------------+----------------------+---------------+-----------------------|
 
 #+begin_src scheme :noweb-ref file-systems
-  (list (file-system
+  (cons (file-system
           (device (uuid "4E36-D157" 'fat))
           (mount-point "/efi")
           (type "vfat")
           (flags '(no-exec no-suid no-dev))
           (options "fmask=0177,dmask=0077"))
-        (file-system
-          (device "zfs:Ocimeae/Root")
-          (mount-point "/")
-          (type "zfs"))
-        (file-system
-          (device "zfs:Ocimeae/Config")
-          (mount-point "/etc")
-          (type "zfs")
-          (needed-for-boot? #t))
-        (file-system
-          (device "zfs:Ocimeae/Store")
-          (mount-point "/gnu")
-          (type "zfs")
-          (needed-for-boot? #t)))
+        (map (match-lambda
+               ((path . mount-point)
+                (file-system
+                  (device (zfs-dataset "Ocimeae" path))
+                  (mount-point mount-point)
+                  (type "zfs")
+                  (create-mount-point? #t)
+                  (check? #f))))
+             '(("Root"   . "/")
+               ("Config" . "/etc")
+               ("State"  . "/var/lib")
+               ("Store"  . "/gnu"))))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -436,6 +430,11 @@ Within this repository
   (common)
 #+end_src
 
+Guile builtins
+#+begin_src scheme :noweb-ref module
+  (ice-9 match)
+#+end_src
+
 Utilities
 #+begin_src scheme :noweb-ref module
   (gnu)
@@ -452,7 +451,6 @@ Guix System - services
   (gnu services ssh)
   (gnu services sysctl)
   (rosenthal services bittorrent)
-  (rosenthal services file-systems)
   (rosenthal services networking)
   (rosenthal services web)
   (sops services sops)

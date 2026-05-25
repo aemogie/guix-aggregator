@@ -46,20 +46,14 @@ Examples:
   $ blue build -- compile -- build-os
 #+end_example
 
-** Systems
-Notes on ZFS:
-- support is currently implemented as =zfs-service-type= in [[https://codeberg.org/hako/Rosenthal][Rosenthal channel]]
-- root on ZFS requires [[https://codeberg.org/hako/Rosenthal/src/branch/trunk/modules/rosenthal/packages/patches/guix-wip-zfs-boot-support.patch][a patch to Guix System]]
-- I'm using use a customized kernel with ZFS module built in to avoid
-  compatibility issue with Guix initrd.
-- GRUB bootloader is not supported, it reports [[https://savannah.gnu.org/bugs/?47742][this error]] when booting from
-  the ZFS dataset containing =/gnu/store= so I use Limine and unified kernel
-  images instead.
-- At least datasets containing =/gnu=, =/var/guix=, =/etc= (needed for boot) and
-  =/home= (=account-service-type=) should be managed by Guix System.
+** Shared configurations
++ [[file:config/shared/caddy.org][caddy]]
++ [[file:config/shared/emacs.org][emacs]]
 
-Notes on NVIDIA proprietary driver:
-- don't use GDM
+** Hosts
+NOTE:
+- ZFS support is implemented in https://codeberg.org/guix/guix/pulls/8346
+- For NVIDIA proprietary driver: avoid GDM if you encounter issues
 
 *** [[file:config/dorphine.org][dorphine]] (x86_64-linux, UEFI, ZFS, NVIDIA) | [[file:deploy/dorphine.scm][deploy]]
 #+html: <img src="https://s3.boiledscript.com/misskey/fe12673c-4e70-4f24-bb20-f21da75af890.png">
@@ -74,17 +68,28 @@ Notes on NVIDIA proprietary driver:
 *** [[file:config/involemi.org][involemi]] (x86_64-linux, BIOS, XFS) | [[file:deploy/involemi.scm][deploy]]
 
 *** [[file:config/worker.org][worker]] | [[file:deploy/worker.scm][deploy]]
-Build workers for Guix Moe build farm.
+Build workers for <https://guix.moe>.
 
 *** [[file:config/mirror.org][mirror]] | [[file:deploy/mirror.scm][deploy]]
-Substitute mirrors for Guix Moe build farm.
+Mirrors for <https://guix.moe>.
 
-** Resources
-+ [[https://files.spritely.institute/papers/scheme-primer.html][A Scheme Primer]] :: Nice short guide to get you started with Scheme.
-+ [[https://guix.gnu.org/manual/devel/en/][GNU Guix Reference Manual]] (~info "(guix)"~) :: See [[https://guix.gnu.org/manual/devel/en/html_node/Getting-Started.html][Getting Started]] if you want
-  an entry point.
-+ [[https://guix.gnu.org/cookbook/en/guix-cookbook.html][GNU Guix Cookbook]] (~info "(guix-cookbook)"~) :: Tutorials and detailed
-  examples.  Some entries may be outdated, contribution is welcome ;)
-+ [[https://packages.guix.gnu.org/][Packages — GNU Guix]] :: Package index for =guix= channel.
-+ [[https://toys.whereis.social/][Toys / Webring for GNU Guix channels]] :: Package and service index for most
-  known Guix channels.
+** Guix Resources
+*** Getting started
+1. GNU Guix [[https://codeberg.org/guix/guix#readme][README]] and [[https://guix.gnu.org/manual/devel/en/html_node/Introduction.html][Introduction]]
+2. [[https://guix.gnu.org/manual/devel/en/html_node/Getting-Started.html][Getting started with GNU Guix]]
+3. [[https://guix.gnu.org/manual/devel/en/html_node/Getting-Started-with-the-System.html][Getting started with Guix System]]
+
+*** Documentation
++ [[https://guix.gnu.org/manual/devel/][GNU Guix Reference Manual]]
++ [[https://guix.gnu.org/cookbook/][GNU Guix Cookbook]]: Tutorials and detailed examples for GNU Guix
++ [[https://doc.guix.gnu.org/][Guix Documentation Center]]: Documentation of Guix-adjacent software
+
+*** Publication
++ [[https://planet.guix.gnu.org/][Planet Guix]]: Meta-blog that collects posts from the blogs of various Guix hackers and contributors
++ [[https://files.spritely.institute/papers/scheme-primer.html][A Scheme Primer]]: Primer for the Scheme family of programming languages
++ [[https://nixos.org/~eelco/pubs/phd-thesis.pdf][The Purely Functional Software Deployment Model]]: The foundation Guix operates on
++ [[https://guix.gnu.org/publications/][GNU Guix Publications]]: Written materials that talk about GNU Guix
+
+*** Community
++ [[https://toys.whereis.social/][toys]]: Search engine for [[https://guix.gnu.org/manual/devel/en/html_node/Channels.html][Guix channels]]
++ [[https://github.com/aemogie/guix-aggregator][guix-aggregator]]: Dotfiles aggregator

@@ -1,5 +1,3 @@
-(use-modules (guix channels))
-
 (list (channel
         (name 'bluebox)
         (branch "main")
