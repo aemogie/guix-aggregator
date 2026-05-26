@@ -22,6 +22,7 @@
   #:use-module (rde features)
   #:use-module (rde predicates)
   #:use-module (rde system services admin)
+  #:use-module ((rde system services greetd) #:prefix greetd:)
 
   #:use-module (gnu system)
   #:use-module (gnu system setuid)
@@ -38,7 +39,6 @@
   #:use-module (gnu services dbus)
   #:use-module (gnu home services)
   #:use-module (gnu home services admin)
-  #:use-module (gnu home services desktop)
   #:use-module (gnu home services shepherd)
 
   #:use-module (gnu packages avahi)
@@ -166,7 +166,7 @@ be a symbol, which will be used to construct feature name."
 
 (define %rde-base-system-services
   (list
-   (service greetd-service-type)
+   (service greetd:greetd-service-type)
    (service virtual-terminal-service-type)
    (service console-font-service-type '())
 
@@ -256,9 +256,10 @@ be a symbol, which will be used to construct feature name."
          (privileged? guix-daemon-privileged?)
          (extra-options guix-daemon-extra-options)
          (http-proxy guix-http-proxy)))
-       (greetd-service-type
+       (greetd:greetd-service-type
         config =>
         (greetd-configuration
+         (inherit config)
          (terminals
           (map (lambda (x)
                  (greetd-terminal-configuration
@@ -344,8 +345,17 @@ Defaults:%wheel env_keep+=TERMINFO")))))
   (ensure-pred file-like? upower)
 
   (define (get-home-services _)
-    (list (service home-dbus-service-type
-                   (home-dbus-configuration (dbus dbus)))))
+    (list
+     (simple-service
+      'dbus-dummy-shepherd-service
+      home-shepherd-service-type
+      (list
+       (shepherd-service
+        (documentation "Provide the D-Bus session bus started elsewhere.")
+        (provision '(dbus))
+        (one-shot? #t)
+        (start #~(lambda _ #t))
+        (stop #~(lambda _ #t)))))))
 
   (define (get-system-services _)
     (cons*

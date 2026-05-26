@@ -35,7 +35,7 @@
                       "-" (string-take commit 7)))
       (source
        (git-checkout
-        (url "https://codeberg.org/guix/guix-mirror")
+        (url "https://git.guix.gnu.org/guix.git")
         (commit commit)))
       (arguments
        (substitute-keyword-arguments (package-arguments guix)

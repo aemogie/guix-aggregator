@@ -22,6 +22,7 @@
   #:use-module (rde features emacs-xyz)
   #:use-module (rde features fontutils)
   #:use-module (rde features gnupg)
+  #:use-module (rde features ghostty)
   #:use-module (rde features gtk)
   #:use-module (rde features guile)
   #:use-module (rde features irc)
@@ -31,6 +32,7 @@
   #:use-module (rde features mail)
   #:use-module (rde features markup)
   #:use-module (rde features networking)
+  #:use-module (rde features niri)
   #:use-module (rde features ocaml)
   #:use-module (rde features password-utils)
   #:use-module (rde features presets)
@@ -415,12 +417,17 @@ if [ -f $GUIX_PROFILE/etc/profile ]; then source $GUIX_PROFILE/etc/profile; fi
               (feature-name f)
               '(base-services
                 kernel
+                sway
                 swaylock
                 xdg
                 guile
-                git)))
+                git
+                wayland-compositor-run-on-tty
+                vterm)))
            %all-features)
    (list
+    (feature-niri)
+    (feature-sway #:primary-wayland-compositor? #f)
     (feature-git)
     (feature-guile
      #:guile-ares-rs guile-ares-rs-local
@@ -521,6 +528,7 @@ if [ -f $GUIX_PROFILE/etc/profile ]; then source $GUIX_PROFILE/etc/profile; fi
                         #:auto-start? #t)
 
     (feature-foot)
+    (feature-ghostty)
     (feature-yggdrasil)
     (feature-i2pd
      #:outproxy 'http://acetone.i2p:3128
@@ -638,7 +646,9 @@ subject:/home:/) and tag:new}\"'"
         (:name "RDE All"
          :query "query:rde-all" :key "pr")
         (:name "Project Suitbl"
-         :query "to: 2024-10-272@NLnet.nl or tag:suitbl" :key "ps")
+         :query "to: 2024-10-272@NLnet.nl or \
+to:srfi-269@srfi.schemers.org or tag:suitbl"
+         :key "ps")
         (:name "Project Guile Build Daemon"
          :query "to:2023-04-050@nlnet.nl or tag:guile-build-daemon" :key "pg")
         (:name "Project Guile Hoot IDE"

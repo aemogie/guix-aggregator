@@ -1,6 +1,6 @@
 # pipefail is not POSIX complaint
 
-GUIXTM=guix time-machine -C ./env/guix/rde/env/guix/channels.scm
+GUIXTM=guix time-machine --unsafe-channel-evaluation -C ./env/guix/rde/env/guix/channels.scm
 GUIX=$(GUIXTM) --
 EMACS=$(GUIX) shell emacs emacs-ox-html-stable-ids -- emacs
 HUT=$(GUIX) shell hut -- hut
@@ -30,6 +30,7 @@ all: ares
 	@echo default target
 
 check:
+	${GUIX} shell guile -- \
 	guile -L ./src -L ./tests -L ./files/emacs/gider/src -c \
 	'((@ (rde test-runners) run-project-tests-cli))'
 

@@ -24,6 +24,7 @@
   #:use-module (rde predicates)
   #:use-module (rde features emacs)
   #:use-module (rde features fontutils)
+  #:use-module ((rde system services greetd) #:prefix greetd:)
   #:use-module (gnu system)
   #:use-module (gnu system keyboard)
   #:use-module (rde packages)
@@ -127,9 +128,9 @@
           (xwayland? #f)
           (primary-wayland-compositor? #t))
   "Setup and configure sway.  When PRIMARY-WAYLAND-COMPOSITOR? is @code{#t},
-set the @code{primary-wayland-compositor} rde value to @code{sway}, which is
-used by @code{feature-wayland-compositor-run-on-tty} to determine the
-compositor to launch."
+set the @code{primary-wayland-compositor} rde value to @code{sway}.  This is
+kept for compatibility with deprecated
+@code{feature-wayland-compositor-run-on-tty}."
   (ensure-pred sway-config? extra-config)
   (ensure-pred boolean? add-keyboard-layout-to-config?)
   (ensure-pred boolean? xwayland?)
@@ -145,6 +146,30 @@ compositor to launch."
     (warning
      (G_ "'~a' in feature-wm is deprecated and ignored, use '~a' in feature-shepherd instead~%")
      'shepherd 'shepherd))
+
+  (define sway-cmd
+    (file-append sway "/bin/sway"))
+
+  (define sway-greetd-env-vars
+    `(("XDG_SESSION_TYPE" . "wayland")
+      ("XDG_CURRENT_DESKTOP" . "sway")
+      ;; FIXME: Should be in feature-pipewire.
+      ("RTC_USE_PIPEWIRE" . "true")
+      ("SDL_VIDEODRIVER" . "wayland")
+      ("MOZ_ENABLE_WAYLAND" . "1")
+      ("CLUTTER_BACKEND" . "wayland")
+      ("ELM_ENGINE" . "wayland_egl")
+      ("ECORE_EVAS_ENGINE" . "wayland-egl")
+      ("QT_QPA_PLATFORM" . "wayland-egl")
+      ("_JAVA_AWT_WM_NONREPARENTING" . "1")))
+
+  (define sway-greetd-login-session
+    (greetd:greetd-login-session
+     (name "sway")
+     (command sway-cmd)
+     (command-args '())
+     (extra-env sway-greetd-env-vars)
+     (xdg-session-type "wayland")))
 
   (define (sway-home-services config)
     "Returns home services related to sway."
@@ -183,6 +208,13 @@ compositor to launch."
 
             (,#~"\n\n# General settings:")
             (set $mod ,sway-mod)
+
+            (,#~"\n\n# D-Bus activation environment:")
+            (exec_always
+             ,(file-append (get-value 'dbus config dbus)
+                           "/bin/dbus-update-activation-environment")
+             XDG_CURRENT_DESKTOP XDG_SESSION_TYPE
+             WAYLAND_DISPLAY SWAYSOCK DISPLAY)
 
             (floating_modifier $mod normal)
 
@@ -338,6 +370,15 @@ frame-title-format."
           #:elisp-packages
           (list emacs-sway))))))
 
+  (define (sway-system-services config)
+    (list
+     (simple-service
+      'sway-greetd-login-session
+      greetd:greetd-greeter-service-type
+      (list (greetd:greetd-login-session-with-dbus
+             sway-greetd-login-session
+             (get-value 'dbus config))))))
+
   (feature
    (name 'sway)
    (values `((sway . ,sway)
@@ -347,18 +388,21 @@ frame-title-format."
              (wl-clipboard . ,wl-clipboard)
              (wayland . #t)
              (xwayland? . ,xwayland?)))
-   (home-services-getter sway-home-services)))
+   (home-services-getter sway-home-services)
+   (system-services-getter sway-system-services)))
 
 
 ;;;
-;;; wayland-compositor-run-on-tty.
+;;; wayland-compositor-run-on-tty (deprecated).
 ;;;
 
 (define* (feature-wayland-compositor-run-on-tty
           #:key
           (tty-number 2)
           (launch-arguments '()))
-  "Launch the primary Wayland compositor on specified tty upon user login.
+  "Deprecated.  Use greetd login sessions provided by the compositor feature.
+
+Launch the primary Wayland compositor on specified tty upon user login.
 Also, automatically switch to TTY-NUMBER on boot.  The compositor is
 determined by the @code{primary-wayland-compositor} rde value, which should be
 a symbol (e.g. @code{sway}, @code{niri}).  The corresponding rde value with
@@ -367,6 +411,9 @@ is launched with additional list of strings LAUNCH-ARGUMENTS.  The log file is
 written to @file{$XDG_STATE_HOME/log/<compositor-name>.log}."
   (ensure-pred tty-number? tty-number)
   (ensure-pred list-of-strings? launch-arguments)
+  (warning
+   (G_ "'~a' is deprecated, use greetd login sessions from '~a' or '~a' instead~%")
+   'feature-wayland-compositor-run-on-tty 'feature-sway 'feature-niri)
 
   (define (wayland-compositor-run-on-tty-home-services config)
     (require-value 'primary-wayland-compositor config)
@@ -443,14 +490,14 @@ exec ~a ~a"
    (home-services-getter wayland-compositor-run-on-tty-home-services)
    (system-services-getter wayland-compositor-run-on-tty-system-services)))
 
-;; Deprecated, use feature-wayland-compositor-run-on-tty instead.
+;; Deprecated, use greetd login sessions from feature-sway instead.
 (define* (feature-sway-run-on-tty
           #:key
           (sway-tty-number 2)
           (launch-arguments '()))
-  (warning (G_ "'~a' is deprecated, use '~a' instead~%")
+  (warning (G_ "'~a' is deprecated, use greetd login sessions from '~a' instead~%")
            'feature-sway-run-on-tty
-           'feature-wayland-compositor-run-on-tty)
+           'feature-sway)
   (feature-wayland-compositor-run-on-tty
    #:tty-number sway-tty-number
    #:launch-arguments launch-arguments))

@@ -113,6 +113,12 @@ description('\\[TODO\\]*') | description('\\[WIP\\]*') | ~signed()")
                   ,(file-append jujutsu "/bin/jj"))
           (setopt majutsu-no-confirm t))
         (with-eval-after-load 'majutsu-log
+          (setopt majutsu-log-template-timestamp
+                  (vector :author :timestamp :ago))
+          (setopt majutsu-log-template-author
+                  (vector :if
+                          (vector :not (vector :mine))
+                          (vector :author :name)))
           (unless (cl-find 'signature majutsu-log-commit-columns
                            :key (lambda (c) (plist-get c :field)))
             (setopt majutsu-log-commit-columns
