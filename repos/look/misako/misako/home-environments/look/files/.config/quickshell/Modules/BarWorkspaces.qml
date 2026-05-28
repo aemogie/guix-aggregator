@@ -8,7 +8,7 @@ import ".."
 BarModule {
     id: root
     color: "transparent"
-    width: implicitWidth
+    width: implicitWidth - main.barModuleSideMargin * 2
 
     Row {
         anchors.centerIn: parent
@@ -60,11 +60,11 @@ BarModule {
                                 implicitSize: 18
                                 Rectangle {
                                     anchors.horizontalCenter: parent.horizontalCenter
+                                    anchors.top: parent.bottom
                                     visible: modelData.activated
-                                    width: parent.width * 0.7
-                                    height: 2
+                                    implicitWidth: parent.width * 0.7
+                                    implicitHeight: 2
                                     radius: 4
-                                    y: y + 18
                                     color: Theme.colorFill
                                 }
                                 // StyledText {

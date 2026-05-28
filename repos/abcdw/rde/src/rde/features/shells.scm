@@ -1,6 +1,6 @@
 ;;; rde --- Reproducible development environment.
 ;;;
-;;; Copyright © 2021, 2022, 2024 Andrew Tropin <andrew@trop.in>
+;;; Copyright © 2021, 2022, 2024, 2026 Andrew Tropin <andrew@trop.in>
 ;;;
 ;;; This file is part of rde.
 ;;;
@@ -72,7 +72,22 @@
          (zshrc `("# Improve the behavior and perfomance of auto suggestions"
                   "ZSH_AUTOSUGGEST_MANUAL_REBIND=true"
                   "ZSH_AUTOSUGGEST_USE_ASYNC=true"
-                  "ZSH_AUTOSUGGEST_STRATEGY=(history completion)"
+                  "\
+# The completion strategy uses zpty internally.  Probe zpty, if it fails
+# exclude completion from suggestion sources. It prevents tons of warnings in
+# containarized environments like guix home container.
+
+# If at some point startup will become an issue, this check can be cached, by
+# creating a temporary file, so the newly spawn shells can make a simplier
+# check and start quicker.
+
+if zmodload zsh/zpty 2>/dev/null &&
+   zpty __rde_zsh_autosuggestions_pty_probe true 2>/dev/null; then
+  zpty -d __rde_zsh_autosuggestions_pty_probe 2>/dev/null
+  ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+else
+  ZSH_AUTOSUGGEST_STRATEGY=(history)
+fi"
                   ,#~(format #f "source ~a/share/zsh/plugins/~a/~a.zsh"
                              #$zsh-autosuggestions
                              "zsh-autosuggestions"

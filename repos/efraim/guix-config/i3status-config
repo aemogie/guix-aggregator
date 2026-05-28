@@ -56,7 +56,7 @@ load {
 
 cpu_temperature 0 {
         format = "T: %degrees °C"
-        path = "/sys/devices/platform/PNP0C14:00/wmi_bus/wmi_bus-PNP0C14:00/DEADBEEF-2001-0000-00A0-C90629100000/hwmon/hwmon3/temp1_input"
+        path = "/sys/class/hwmon/hwmon2/temp1_input"
 }
 
 memory {

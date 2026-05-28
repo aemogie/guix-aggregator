@@ -11,8 +11,8 @@
 (use-service-modules
   guix
   linux
-  mcron
   networking
+  shepherd
   ssh)
 (use-package-modules
   linux)
@@ -86,12 +86,17 @@
                     (tailscaled-configuration
                       (package (specification->package "tailscale"))))
 
-           (service mcron-service-type
-                    (mcron-configuration
-                      (jobs
-                        (list
-                          #~(job '(next-hour '(3))
-                                 "guix gc --free-space=15G")))))
+           (simple-service
+             'timers-service
+             shepherd-root-service-type
+             (list
+              (shepherd-timer '(guix-gc)
+                              #~(calendar-event #:hours '(3)
+                                                #:minutes '(0))
+                              ;#~(#$(file-append (specification->package "guix") "/bin/guix")
+                              #~("/run/current-system/profile/bin/guix"
+                                 "gc" "--free-space=15G")
+                              #:requirement '(guix-daemon))))
 
            (service earlyoom-service-type
                     (earlyoom-configuration

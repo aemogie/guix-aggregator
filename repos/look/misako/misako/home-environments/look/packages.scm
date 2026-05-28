@@ -39,6 +39,7 @@
   #:use-module (gnu packages telegram)
   #:use-module (gnu packages terminals)
   #:use-module (gnu packages text-editors)
+  #:use-module (gnu packages tor-browsers)
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages video)
   #:use-module (gnu packages wm)
@@ -96,15 +97,14 @@
            (base32 "0hnq8vwr31scpf20qnv17zc0fn7llf0wlhym0a8p39n6ag1g1dwc")))))))
 
 (define-public bar
-  (list eww/wayland
-        morewaita-icon-theme
-        waybar
+  (list morewaita-icon-theme
         quickshell-latest/ctm
         qtgraphicaleffects
         qt5compat))
 
 (define-public browser
-  (list zen-browser-bin))
+  (list zen-browser-bin
+        mullvadbrowser))
 
 (define-public clipboard
   (list wl-clipboard))
@@ -262,10 +262,10 @@
   (list helix))
 
 (define-public video
-  (list (@@ (saayix packages video) mpv-minimal/wayland)
-        yt-dlp
+  (list yt-dlp
         obs-pipewire-audio-capture
-        (yumiko?* ffmpeg/nvidia obs-nvidia nvidia-vaapi-driver)
+        (@@ (saayix packages video) mpv-minimal/wayland)
+        (yumiko?* ffmpeg/nvidia-595 obs-nvidia nvidia-vaapi-driver)
         (yuria?* ffmpeg obs)))
 
 (define-public virtual-keyboard

@@ -144,6 +144,7 @@
         "bash-completion"
         "codespell"
         "file"
+        "forgejo-cli"
         "git"
         "git:send-email"
         "glibc-locales"
@@ -180,6 +181,7 @@
         "vim-gnupg"
         "vim-guix-vim"
         "wcalc"
+        "wcurl"
         "wget"
         "wgetpaste"
         "xdg-utils"))
@@ -888,9 +890,6 @@
     (openssh-host (name "ct-tor")
                   (host-name "teiefezsytzpsennj3ramwqaroh6thqyzdvbu3fxktonvxguqt3rxsid.onion")
                   (identity-file "~/.ssh/id_ed25519"))
-    (openssh-host (name "E5400-tor")
-                  (host-name "k27pjetdse4otw2l6qkn5qdqzv3ucuky7jsn4fmibnkxqeleec3yelad.onion")
-                  (extra-content "  RemoteForward /run/user/1000/gnupg/S.gpg-agent /run/user/$i/gnupg/S.gpg-agent.extra\n"))
     (openssh-host (name "3900xt-tor")
                   (host-name "edvqnpr5a2jjuswveoy63k3jxthqpgqatwzk53up5k6ve2rjwgd4jgqd.onion")
                   (extra-content "  RemoteForward /run/user/1000/gnupg/S.gpg-agent /run/user/$i/gnupg/S.gpg-agent.extra\n"))
@@ -905,9 +904,6 @@
     (openssh-host (name "berlin")
                   (host-name "berlin.guix.gnu.org")
                   (identity-file "~/.ssh/id_ed25519_overdrive"))
-    #;(openssh-host (name "bayfront")
-                  (host-name "bayfront.guix.gnu.org")
-                  (identity-file "~/.ssh/id_ed25519_overdrive"))
     (openssh-host (name "guixp9")
                   (host-name "p9.tobias.gr")
                   (identity-file "~/.ssh/id_ed25519_overdrive"))
@@ -918,13 +914,12 @@
                     ;; TODO: Replace the custom ~/bin/openbsd-netcat with the line below:
                     ;(proxy-command (string-append (S "netcat-openbsd") "/bin/nc -X 5 -x localhost:9050 %h %p")))
                     (proxy-command (string-append (getenv "HOME") "/bin/openbsd-netcat -X 5 -x localhost:9050 %h %p")))
-                  (extra-content "  ControlPath ${XDG_RUNTIME_DIR}/%r@%k-%p\n"))
+                  (control-file-name "${XDG_RUNTIME_DIR}/%r@%k-%p"))
     (openssh-host (name "*")
                   (user "efraim")
-                  (extra-content
-                    (string-append "  ControlMaster auto\n"
-                                   "  ControlPath ${XDG_RUNTIME_DIR}/%r@%h-%p\n"
-                                   "  ControlPersist 600\n")))))
+                  (control-master 'auto)
+                  (control-file-name "${XDG_RUNTIME_DIR}/%r@%h-%p")
+                  (control-persist "600"))))
 
 (define %home-sway-configuration
   (sway-configuration
@@ -1069,23 +1064,6 @@
 
 ;;; Extra services.
 
-(define %dropbox-user-service
-  (shepherd-service
-    (documentation "Provide access to Dropbox™")
-    (provision '(dropbox dbxfs))
-    (start #~(make-forkexec-constructor
-               (list #$(file-append (S "dbxfs") "/bin/dbxfs")
-                     "--foreground"
-                     "--verbose"
-                     "--config-file" #$%dbxfs-config-json
-                     (string-append (getenv "HOME") "/Dropbox"))
-               #:log-file (string-append #$%logdir "/dbxfs.log")))
-    (stop #~(make-system-destructor
-              (string-append "fusermount -u " (getenv "HOME") "/Dropbox")))
-    ;; Needs gpg key to unlock.
-    (auto-start? #f)
-    (respawn? #f)))
-
 (define %onedrive-user-service
   (shepherd-service
     (documentation "Provide access to Onedrive™")
@@ -1145,24 +1123,6 @@
                  (pid pid))))
     (stop #~(make-kill-destructor))
     (respawn? #t)))
-
-;; kdeconnect-indicator must not be running when it it started
-(define %kdeconnect-user-service
-  (shepherd-service
-    (documentation "Run the KDEconnect daemon")
-    (provision '(kdeconnect))
-    (start #~(make-forkexec-constructor
-               (list #$(file-append (S "dbus") "/bin/dbus-launch")
-                     #$(file-append (S "kdeconnect") "/libexec/kdeconnectd")
-                     ;; KDE Connect was built without "offscreen" support
-                     ;; without this it fails to create wl_display
-                     ;; Is the second part still true?
-                     "-platform" "offscreen"
-                     )
-               #:log-file (string-append #$%logdir "/kdeconnect.log")))
-    ;; TODO: Enable autostart
-    (auto-start? #f)
-    (stop #~(make-kill-destructor))))
 
 ;;;
 
@@ -1276,15 +1236,7 @@ if [ -e ${XDG_CACHE_HOME:-~/.cache}/tofi-drun ]; then
     rm ${XDG_CACHE_HOME:-~/.cache}/tofi-drun
 fi")))))
 
-        (service home-shepherd-service-type
-                 (home-shepherd-configuration
-                   (services
-                     (list
-                       ;%dropbox-user-service
-                       ;%vdirsyncer-user-service    ; error with 'match'
-                       ;%mbsync-user-service        ; error with 'match'
-
-                       %kdeconnect-user-service))))
+        (service home-shepherd-service-type)
 
         (service home-dbus-service-type)
 

@@ -97,6 +97,7 @@ bindkey -e "^[[H"   beginning-of-line
 bindkey -e "^[[F"   end-of-line
 bindkey -e "^[[1;5C" forward-word
 bindkey -e "^[[1;5D" backward-word
+bindkey -e "^H" backward-kill-word
 
 # Launch $VISUAL or $EDITOR, for emacsclient if there is no server
 # avaliable $ALTERNATE_EDITOR will be used.

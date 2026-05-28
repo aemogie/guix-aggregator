@@ -16,7 +16,7 @@ BarModule {
     property int h: 18
 
     color: "transparent"
-    width: childrenRect.width
+    implicitWidth: childrenRect.width
 
     RowLayout {
         anchors.centerIn: parent
@@ -41,7 +41,7 @@ BarModule {
                     left: parent.left
                     right: parent.right
                 }
-                height: (h + 2) * root.usage
+                implicitHeight: (h + 2) * root.usage
                 contentItem: Rectangle {
                     radius: 3
                     color: Theme.colorFill
