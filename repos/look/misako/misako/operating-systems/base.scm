@@ -185,6 +185,7 @@
 
         (service shared-cache-service-type
           (shared-cache-configuration
+            (mode 'share)
             (users (list (user-cache (user "look"))))))
 
         #|Login services|#

@@ -1,10 +1,5 @@
 //@ pragma IconTheme MoreWaita
 import Quickshell
-import Quickshell.Widgets
-import QtQuick.Layouts
-import Quickshell.Hyprland
-import Qt5Compat.GraphicalEffects
-import QtQuick.Controls
 import QtQuick
 import "Modules"
 import "Components"
@@ -22,6 +17,7 @@ ShellRoot {
     readonly property string fontFamily: "Inter Variable"
     readonly property int fontSize: 14
 
+    Idle { }
     Wallpaper { }
     BezelsMask { }
     BarTop { }

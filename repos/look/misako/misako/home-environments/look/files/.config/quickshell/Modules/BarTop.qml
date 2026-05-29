@@ -9,15 +9,12 @@ Variants {
     delegate: PanelWindow {
         id: barTop
 
-        // --- Screen Mapping ---
         required property var modelData
         screen: modelData
 
-        // --- Layer Shell Configuration ---
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.namespace: "quickshell-bartop"
 
-        // --- Geometry & Positioning ---
         anchors {
             top: true
             left: true
@@ -25,11 +22,10 @@ Variants {
         }
 
         margins {
-            left: main.sideSize
-            right: main.sideSize
+            left: main.sideSize * 2
+            right: main.sideSize * 2
         }
 
-        // --- Visual Styling ---
         color: "transparent"
         implicitHeight: main.barSize
 
@@ -37,7 +33,6 @@ Variants {
         Row {
             anchors.verticalCenter: parent.verticalCenter
             spacing: main.barModuleSideMargin
-            padding: main.sideSize
 
             BarLauncher {}
             BarCpuUsage {}
@@ -46,6 +41,13 @@ Variants {
         Row {
             anchors.centerIn: parent
             BarClock {}
+        }
+        Row {
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: parent.right
+            spacing: main.barModuleSideMargin
+            BarNotification {}
+            BarIdle {}
         }
     }
 }

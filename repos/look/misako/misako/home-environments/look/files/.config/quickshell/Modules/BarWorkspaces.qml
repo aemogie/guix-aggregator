@@ -8,10 +8,10 @@ import ".."
 BarModule {
     id: root
     color: "transparent"
-    width: implicitWidth - main.barModuleSideMargin * 2
+    leftMargin: 0
+    rightMargin: 0
 
     Row {
-        anchors.centerIn: parent
         spacing: main.barModuleSideMargin
 
         Repeater {
@@ -19,10 +19,9 @@ BarModule {
             BarModule {
                 border.width: 1
                 border.color: modelData?.focused ? Theme.colorFill : Theme.colorHollow
-                RowLayout {
-                    anchors.centerIn: parent
+                onLeftClick: Hyprland.dispatch("workspace " + modelData?.name)
+                Row {
                     spacing: 4
-                    Layout.alignment: Qt.AlignCenter
                     StyledText {
                         text: {
                             switch (modelData?.name) {
@@ -67,14 +66,6 @@ BarModule {
                                     radius: 4
                                     color: Theme.colorFill
                                 }
-                                // StyledText {
-                                //     visible: modelData.activated
-                                //     text: ""
-                                //     color: Theme.colorFill
-                                //     anchors.horizontalCenter: parent.horizontalCenter
-                                //     y: y + 14
-                                //     font.pixelSize: 7
-                                // }
                             }
                         }
                     }

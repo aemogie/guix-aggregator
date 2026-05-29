@@ -176,8 +176,8 @@
         font-nerd-symbols))
 
 (define-public games
-  (yumiko?* (steam-for nvda)
-            (heroic-for nvda)
+  (yumiko?* steam-nvidia-new-feature
+            heroic-nvidia-new-feature
             mangohud
             mcpelauncher-client
             osu-lazer-bin

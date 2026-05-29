@@ -1,11 +1,15 @@
 import QtQuick
 import Quickshell.Io
+import Quickshell.Hyprland
 import "../Components"
 
 BarButton {
     icon: "󰓅"
     fam: "nf"
     usage: cpuUsage
+
+    onLeftClick: Hyprland.dispatch("exec hyprctl notify 1 5000 0 Left-clicked cpu")
+    onRightClick: Hyprland.dispatch("exec hyprctl notify 1 5000 0 Right-clicked cpu")
 
     property real cpuUsage: 0.0
 

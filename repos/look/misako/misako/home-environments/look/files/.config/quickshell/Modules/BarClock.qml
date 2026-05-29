@@ -8,7 +8,7 @@ BarModule {
         precision: SystemClock.Seconds
     }
 
-    CenteredStyledText {
+    StyledText {
         text: Qt.formatDateTime(clock.date, "hh:mm ddd, MMM dd")
     }
 }

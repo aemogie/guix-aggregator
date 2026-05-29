@@ -10,16 +10,14 @@ BarModule {
     id: root
     property string icon
     property string fam
-    signal leftClick()
-    signal rightClick()
     property real usage: -1
     property int h: 18
 
     color: "transparent"
-    implicitWidth: childrenRect.width
+    leftMargin: 0
+    rightMargin: 0
 
     RowLayout {
-        anchors.centerIn: parent
         spacing: 2
         IconText {
             id: text
@@ -27,7 +25,6 @@ BarModule {
             text: root.icon
         }
         ClippingRectangle {
-            clip: true
             visible: root.usage >= 0
             color: Theme.colorHollow
             Layout.preferredWidth: 4
@@ -46,22 +43,6 @@ BarModule {
                     radius: 3
                     color: Theme.colorFill
                 }
-            }
-        }
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        hoverEnabled: true
-
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
-
-        onClicked: function (mouse) {
-            if (mouse.button === Qt.LeftButton) {
-                parent.leftClick()
-            }
-            else if (mouse.button === Qt.RightButton) {
-                parent.rightClick()
             }
         }
     }

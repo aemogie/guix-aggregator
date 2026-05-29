@@ -99,6 +99,7 @@
                   (home-directory "/home/efraim")
                   (supplementary-groups
                     '("wheel" "netdev" "kvm"
+                      "dialout"
                       ;"plugdev"
                       "audio" "video")))
                 %base-user-accounts))

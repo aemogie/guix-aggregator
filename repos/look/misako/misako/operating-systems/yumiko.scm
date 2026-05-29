@@ -64,7 +64,9 @@
     (services
       (cons* (service pam-limits-service-type
                (list
-                 (pam-limits-entry "*" 'hard 'nofile 1048576)))
+                 (pam-limits-entry "*" 'soft 'core   0)
+                 (pam-limits-entry "*" 'hard 'nofile 65535)
+                 (pam-limits-entry "*" 'soft 'nofile 8192)))
 
              ; (service nvidia-unload-service-type)
              ; (service samba-service-type

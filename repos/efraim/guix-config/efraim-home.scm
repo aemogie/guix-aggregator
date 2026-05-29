@@ -503,6 +503,11 @@
             "gpu-context=wayland"
             "[youtube]"
             "ytdl-raw-options='ignore-config=,sub-langs=\"^en.*\",write-subs=,write-auto-subs='"
+            ;; For vertical videos, yes it is height and not width.
+            "[youtube-shorts]"
+            "profile-cond=get('path', ''):find('^https?://youtube.com/shorts/') ~= nil"
+            "ytdl-raw-options='ignore-config=,sub-langs=\"^en.*\",write-subs=,write-auto-subs='"
+            "ytdl-format='bv*[height<=1080]+ba/b[height<1080]/bv+ba/b'"
             "[twitch]"
             "profile-cond=get('path', ''):find('^https?://[wm]w?w?.twitch.tv/') ~= nil"
             "profile-restore=copy-equal"

@@ -32,3 +32,6 @@ on-notify=exec mpv ~/.guix-home/profile/share/sounds/freedesktop/stereo/complete
 
 [app-name=Spotify]
 invisible=true
+
+[mode=do-not-disturb]
+invisible=1
