@@ -2,25 +2,26 @@
 
 (define-module (misako utils)
   #:use-module (gnu home)
+  #:use-module (gnu packages audio)
   #:use-module (gnu packages gl)
   #:use-module (gnu packages video)
-  #:use-module (gnu packages audio)
   #:use-module (gnu services)
   #:use-module (gnu system setuid)
   #:use-module (gnu system)
-  #:use-module (guix packages)
-  #:use-module (guix utils)
   #:use-module (guix gexp)
+  #:use-module (guix packages)
+  #:use-module (guix scripts build)
   #:use-module (guix transformations)
+  #:use-module (guix utils)
   #:use-module (ice-9 format)
   #:use-module (ice-9 match)
   #:use-module (ice-9 textual-ports)
-  #:use-module (nongnu packages nvidia)
   #:use-module (nongnu packages linux)
+  #:use-module (nongnu packages nvidia)
   #:use-module (nongnu packages video)
   #:use-module (nongnu system linux-initrd)
-  #:use-module (nonguix utils)
   #:use-module (nonguix transformations)
+  #:use-module (nonguix utils)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-43)
@@ -40,7 +41,8 @@
             nvidia?*
             edit
             reconfigure
-            secret))
+            secret
+            bin-fix))
 
 (define misako-dir
   (let* ((relative "/projects/guile/misako")
@@ -113,13 +115,26 @@
 (define list*
   (compose flatten-package-list list))
 
+(define* (bin-fix pkg drv #:optional (bin-name pkg))
+  (let ((store-path (string-trim-right
+                      (with-output-to-string
+                        (lambda ()
+                          (guix-build pkg (string-append "--with-graft=mesa=" drv))))
+                      char-whitespace?)))
+    (list
+      (string-append ".local/bin/" bin-name)
+      (computed-file
+        (string-append "link-" bin-name)
+        #~(symlink #$(string-append store-path "/bin/" bin-name)
+                   #$output)))))
+
 (define-syntax-rule (nvidia-home-environment exp ...)
   "Like 'home-environment' but graft Mesa with the proprietary NVIDIA driver."
   (if nvidia?
-      (replace-mesa (home-environment exp ...) #:driver nvda-new-feature)
+      (replace-mesa (home-environment exp ...) #:driver nvda-595)
       (home-environment exp ...)))
 
 (define-syntax-rule (nvidia-operating-system exp ...)
   ((nonguix-transformation-nvidia #:open-source-kernel-module? #t
-                                  #:driver nvda-new-feature)
+                                  #:driver nvda-595)
    (operating-system exp ...)))

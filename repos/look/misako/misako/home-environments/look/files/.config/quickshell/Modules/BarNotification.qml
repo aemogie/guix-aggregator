@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell.Io
 import "../Components"
 
-BarButton {
+BorderBarModule {
     id: root
 
     property bool doNotDisturb: false

@@ -3,14 +3,13 @@
 
 (use-modules (ice-9 match)
              (ice-9 threads)
-             (oop goops)
              (srfi srfi-1)
              (srfi srfi-19)
              (srfi srfi-26)
              (blue build)
              (blue computation)
-             (blue oop)
              (blue subprocess)
+             (blue types)
              (blue types blueprint)
              (blue types buildable)
              (blue types command)
@@ -50,9 +49,13 @@
        (zero? exit-val)))))
 
 (define* ($guix args #:key fork? (channels "channels.lock") #:allow-other-keys)
-  (if fork?
-      ($ `("./pre-inst-env" "guix" ,@args))
-      ($ `("guix" "time-machine" "-C" ,channels ,%substitute-urls "--" ,@args))))
+  (if (getenv "GUIX")                   ;Using pre-inst-env.
+      ($ `("guix" ,@args))
+      ($ `("guix" "time-machine" ,%substitute-urls
+           "-C" ,@(if fork?
+                      '("channels-fork.lock" "--disable-authentication")
+                      (list channels))
+           "--" ,@args))))
 
 (define ($emacs args)
   ($guix `("shell" "emacs-minimal" "--" "emacs" ,@args)))
@@ -62,23 +65,28 @@
 ;;; Classes.
 ;;;
 
-(define-blue-class <shared-config> (<buildable>))
-(define-blue-class <system-config> (<shared-config>))
+(define-blue-class <shared-config>
+  (inherit <buildable>)
+  (constructor shared-config)
+  (predicate shared-config?))
 
-(define-method (clean! (this <shared-config>))
-  (let ((file (first (buildable-outputs this))))
-    (when (file-exists? file)
-      (print-header "RM" file)
-      (false-if-exception (delete-file-recursively file)))))
+(define-blue-class <system-config>
+  (inherit <buildable>)
+  (constructor system-config)
+  (predicate system-config?))
 
-(define-method (ask-build-manifest (buildable <shared-config>)
-                                   (inputs <list>)
-                                   (outputs <list>))
+(define-blue-method (clean! (this <buildable>))
+  (for-each (lambda (file)
+              (when (file-exists? file)
+                (print-header "RM" file)
+                (false-if-exception (delete-file-recursively file))))
+            (ask-outputs this)))
+
+(define-blue-method (ask-build-manifest (this <shared-config>)
+                                        (inputs <list>)
+                                        (output <string>))
   (define input
-    (first inputs))
-
-  (define output
-    (first outputs))
+    (last inputs))
 
   (make-build-manifest
    (string-append "TANGLE\t" output)
@@ -92,20 +100,15 @@
         "--eval" ,(format #f "(org-babel-tangle-file ~s)" input)))
      ($ `("touch" ,output)))))
 
-(define-method (ask-build-manifest (buildable <system-config>)
-                                   (inputs <list>)
-                                   (outputs <list>))
-  ;; Add <shared-config> dependencies to Library of Babel.
-  (define dependencies
-    (append-map
-     buildable-inputs
-     (filter shared-config? (buildable-inputs buildable))))
-
+(define-blue-method (ask-build-manifest (this <system-config>)
+                                        (inputs <list>)
+                                        (output <string>))
   (define input
-    (first inputs))
+    (last inputs))
 
-  (define output
-    (first outputs))
+  (define library-of-babel
+    (append-map ask-inputs
+                (filter shared-config? (buildable-inputs this))))
 
   (make-build-manifest
    (string-append "TANGLE\t" output)
@@ -118,9 +121,9 @@
         "--eval" "(setopt org-confirm-babel-evaluate nil)"
         "--eval" "(setopt org-id-track-globally nil)"
         ,@(append-map
-           (lambda (file)
-             (list "--eval" (format #f "(org-babel-lob-ingest ~s)" file)))
-           dependencies)
+           (lambda (dependency)
+             (list "--eval" (format #f "(org-babel-lob-ingest ~s)" dependency)))
+           library-of-babel)
         "--eval" ,(format #f "(org-babel-tangle-file ~s)" input)))
      ($ `("touch" ,output)))))
 
@@ -131,13 +134,13 @@
 
 (define %shared-config-caddy
   (shared-config
-   (inputs '("config/shared/caddy.org"))
-   (outputs '("tangled/caddy"))))
+    (inputs '("config/shared/caddy.org"))
+    (outputs '("tangled/caddy"))))
 
 (define %shared-config-emacs
   (shared-config
-   (inputs '("config/shared/emacs.org"))
-   (outputs '("tangled/emacs"))))
+    (inputs '("config/shared/emacs.org"))
+    (outputs '("tangled/emacs"))))
 
 (define %systems
   `(("ignamma")
@@ -156,8 +159,8 @@
   (let ((input (string-append "config/" name ".org"))
         (output (string-append "tangled/" name)))
     (system-config
-     (inputs (cons input dependencies))
-     (outputs (list output)))))
+      (inputs (cons input dependencies))
+      (outputs (list output)))))
 
 (define (systems-from-arguments arguments)
   "Select %systems from ARGUMENTS, select all if no argument is provided."
@@ -178,42 +181,18 @@
 ;;; Commands.
 ;;;
 
-(define-command (compile-command arguments)
-  ((invoke "compile")
-   (category 'development)
-   (synopsis "Compile Guix from its git submodule"))
-  ;; Update and check out submodules.
-  ($ '("git" "submodule" "update" "--init"))
-  ;; Compile Guix.
-  (with-directory-excursion "channels/guix"
-    (unless (file-exists? "Makefile")
-      ($ '("./bootstrap"))
-      ($ '("./configure")))
-    ($ `("make" "-j" ,(number->string (current-processor-count))))))
-
 (define-command (serve-command arguments)
   ((invoke "serve")
    (category 'development)
    (synopsis "Start nREPL server for emacs-arei"))
-  ($guix `("shell" "guile" "guile-ares-rs" "--"
-           ,@(if (file-exists? "channels/guix/scripts/guix")
-                 '("./pre-inst-env")
-                 '())
-           "guile" "-L" "modules" "-c"
-           ,(call-with-output-string
-              (cut write
-                   '(begin
-                      (use-modules (ares server)
-                                   ;; Load reader extensions.
-                                   (guix gexp))
-                      (run-nrepl-server))
-                   <>)))))
+  ($guix `("repl" "-L" "modules" "--" "scripts/run-nrepl-server.scm")))
 
 (define-command (update-command arguments)
   ((invoke "update")
    (category 'development)
    (synopsis "Update channels.lock to latest channel revisions"))
-  ($guix `("repl" "--" "scripts/write-channels.scm") #:channels "channels.scm"))
+  ($guix `("repl" "--" "scripts/write-channels.scm")
+         #:channels "channels.scm"))
 
 (define-command (build-os-command arguments)
   ((invoke "build-os")
@@ -283,24 +262,23 @@ VARIANTS, saving the results under dist/."))
 ;;;
 
 (blueprint
- (configuration
   (configuration
-   (variables
-    (list (variable
-           (name "CMD")
-           (value #f)
-           (hint "Deployment command for 'guix deploy'"))
-          (variable
-           (name "URL")
-           (value "https://bordeaux.guix.gnu.org https://ci.guix.gnu.org")
-           (hint "Substitute server URLs"))))))
- (buildables
-  (map (cut apply system-config-for <>) %systems))
- (commands
-  (list compile-command
-        serve-command
-        update-command
+   (configuration
+     (variables
+      (list (variable
+              (name "CMD")
+              (value #f)
+              (hint "Deployment command for 'guix deploy'"))
+            (variable
+              (name "URL")
+              (value "https://bordeaux.guix.gnu.org https://ci.guix.gnu.org")
+              (hint "Substitute server URLs"))))))
+  (buildables
+   (map (cut apply system-config-for <>) %systems))
+  (commands
+   (list serve-command
+         update-command
 
-        build-os-command
-        deploy-os-command
-        build-iso-command)))
+         build-os-command
+         deploy-os-command
+         build-iso-command)))

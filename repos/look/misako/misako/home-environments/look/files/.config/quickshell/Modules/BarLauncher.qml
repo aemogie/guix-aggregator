@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell.Hyprland
 import "../Components"
 
-BarButton {
+CleanBarModule {
     icon: ""
     fam: "nf"
     onLeftClick: Hyprland.dispatch("exec hyprctl notify 1 5000 0 Left-clicked launcher")

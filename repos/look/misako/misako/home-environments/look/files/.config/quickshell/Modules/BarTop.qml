@@ -45,7 +45,7 @@ Variants {
         Row {
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: parent.right
-            spacing: main.barModuleSideMargin
+            spacing: main.barModuleSideMargin - 6
             BarNotification {}
             BarIdle {}
         }

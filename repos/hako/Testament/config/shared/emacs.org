@@ -689,39 +689,36 @@ emacs-eat with patches <https://codeberg.org/akib/emacs-eat/pulls/133> and
     (after-init . envrc-global-mode))
 #+end_src
 
+*** emacs-magit
+#+begin_src scheme :noweb-ref package-spec
+  "emacs-magit"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package project
+    :config
+    (add-to-list 'project-switch-commands
+                 '(magit-project-status "Magit")
+                 t)
+    :bind
+    (:map project-prefix-map
+          ("m" . magit-project-status)))
+#+end_src
+
 *** emacs-majutsu
 #+begin_src scheme :noweb-ref package-spec
   "emacs-majutsu-dolly"
 #+end_src
 
 #+begin_src emacs-lisp :noweb-ref emacs-init
-  (use-package magit
-    :custom
-    (magit-define-global-key-bindings nil))
-
   (use-package majutsu
-    :demand t
-    :config
-    (defun hako/majutsu-or-magit (&optional directory)
-      "Use `majutsu' for Jujutsu repositories and `magit' otherwise."
-      (interactive
-       (list (and (or current-prefix-arg
-                      (not (or (majutsu-toplevel)
-                               (magit-toplevel))))
-                  (file-name-as-directory
-                   (expand-file-name
-                    (read-directory-name "Repository or directory: "
-                                         nil nil nil))))))
-      (let ((default-directory (or directory default-directory)))
-        (if (majutsu-toplevel default-directory)
-            (majutsu default-directory)
-          (magit default-directory))))
-    (defun hako/majutsu-or-magit-project ()
-      "`hako/majutsu-or-magit' for `project.el'."
+    :init
+    (defun hako/majutsu-project-log ()
+      "`majutsu-log' for `project.el'."
       (interactive)
       (when (fboundp 'project-root)
         (let ((directory (project-root (project-current t))))
-          (hako/majutsu-or-magit directory))))
+          (majutsu-log directory))))
     (defvaralias 'hako/jjdescription-mode-hook 'git-commit-mode-hook)
     (defvaralias 'hako/jjdescription-mode-map  'git-commit-redundant-bindings)
     (define-minor-mode hako/jjdescription-mode
@@ -729,16 +726,16 @@ emacs-eat with patches <https://codeberg.org/akib/emacs-eat/pulls/133> and
     :hook
     (majutsu-jjdescription-mode . hako/jjdescription-mode)
     :bind
-    ("C-x g" . hako/majutsu-or-magit))
+    ("C-x j" . majutsu-log))
 
   (use-package project
     :config
     (add-to-list 'project-switch-commands
-                 '(hako/majutsu-or-magit-project "Majutsu or Magit")
+                 '(hako/majutsu-project-log "Majutsu")
                  t)
     :bind
     (:map project-prefix-map
-          ("m" . hako/majutsu-or-magit-project)))
+          ("j" . hako/majutsu-project-log)))
 #+end_src
 
 *** emacs-notmuch

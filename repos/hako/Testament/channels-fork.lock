@@ -1,0 +1,30 @@
+(list (channel
+       (name 'guix)
+       (url "https://codeberg.org/hako/guix.git")
+       (branch #f)
+       (commit "2026-05-24"))
+      (channel
+       (name 'bluebox)
+       (url "https://codeberg.org/lapislazuli/bluebox")
+       (branch "main")
+       (commit "71628770c8612c041e06672f34c0c8e6fc67c13c"))
+      (channel
+       (name 'noctalia)
+       (url "https://github.com/noctalia-dev/noctalia-shell")
+       (branch "v5")
+       (commit "0e4bb96a8b42abb47af67286902a52eaa628c50a"))
+      (channel
+       (name 'nonguix)
+       (url "https://gitlab.com/nonguix/nonguix")
+       (branch "master")
+       (commit "615f33a7ae0edd58ebeb412da15c56c4757e5547"))
+      (channel
+       (name 'rosenthal)
+       (url "https://codeberg.org/hako/rosenthal.git")
+       (branch "trunk")
+       (commit "2889a00542cc17b21fb90f4e6a43cb7679de0db7"))
+      (channel
+       (name 'sops-guix)
+       (url "https://github.com/fishinthecalculator/sops-guix.git")
+       (branch "main")
+       (commit "c53e27e533836ea8595626ba6796dee5362f8c4a")))

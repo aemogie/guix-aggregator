@@ -174,6 +174,10 @@
               (string-append (getenv "HOME") "/.gnupg"))
             (secrets sops-secrets:all)))
 
+        (service home-files-service-type
+          (list (bin-fix "mpv-nvidia"  "nvda@580" "mpv")
+                (bin-fix "helvum"      "nvda@580")))
+
         (service home-xdg-user-directories-service-type
           (home-xdg-user-directories-configuration
             (desktop     "$HOME/desktop/")

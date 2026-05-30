@@ -40,8 +40,6 @@
                   "obs-nvidia"
                   "picard"
                   "telegram-desktop"
-                  "zathura"
-                  "zathura-pdf-poppler"
                   <<package-spec>>))
                %testament-cli-packages
                %base-packages))
@@ -92,10 +90,10 @@ Application profiles
       ("nvidia/nvidia-application-profiles-rc.d/limit-vram-usage.json"
        ,(json-file "nvidia-application-profile-limit-vram-usage.json"
           #~`(("profiles"
-                 . #((("name" . "No VidMem Reuse")
-                      ("settings"
-                       . #((("key" . "GLVidHeapReuseRatio")
-                            ("value" . 0)))))))
+               . #((("name" . "No VidMem Reuse")
+                    ("settings"
+                     . #((("key" . "GLVidHeapReuseRatio")
+                          ("value" . 0)))))))
               ("rules"
                . #((("pattern"
                      ("op" . "or")
@@ -112,7 +110,9 @@ Application profiles
        ,(json-file "nvidia-application-profile-cuda-no-stable-perf-limit.json"
           #~`(("profiles"
                . #((("name" . "CudaNoStablePerfLimit")
-                    ("settings" . #("0x166c5e" 0)))))
+                    ("settings"
+                     . #((("key" . "0x166c5e")
+                          ("value" . 0)))))))
               ("rules"
                . #((("pattern"
                      ("op" . "or")
@@ -286,12 +286,6 @@ Application profiles
     (guix-extension
       (authorized-keys %guix-keys)
       (substitute-urls '("https://cache-cdn.guix.moe"))))
-
-  (simple-service 'guix-gc shepherd-root-service-type
-    (list (shepherd-timer '(guix-gc)
-            #~(calendar-event #:days-of-month '(1) #:hours '(12) #:minutes '(0))
-            #~("/run/current-system/profile/bin/guix" "gc" "--delete-generations=1m")
-            #:requirement '(user-processes guix-daemon))))
 #+end_src
 
 *** Users
@@ -603,34 +597,8 @@ niri supports getting keyboard layout from localed.
           }
   }
 
-  // Noctalia
-  window-rule {
-          geometry-corner-radius 20
-          clip-to-geometry true
-  }
-
-  debug {
-          honor-xdg-activation-with-invalid-serial
-  }
-
-  // Set the regular wallpaper on the backdrop.
-  layer-rule {
-          match namespace="^noctalia-wallpaper*"
-          place-within-backdrop true
-  }
-
-  // Optionally, disable the workspace shadows in the overview.
-  overview {
-          workspace-shadow {
-                  off
-          }
-  }
-
   layout {
           always-center-single-column
-          // Set transparent workspace background color so you see the backdrop at all times.
-          background-color "transparent"
-
           focus-ring {
                   off
           }
@@ -651,24 +619,45 @@ niri supports getting keyboard layout from localed.
           warp-mouse-to-focus
   }
 
-  binds {
-          XF86AudioRaiseVolume  allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "volume" "increase"; }
-          XF86AudioLowerVolume  allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "volume" "decrease"; }
-          XF86AudioMute         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "volume" "muteOutput"; }
-          XF86AudioMicMute      allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "volume" "muteInput"; }
-          XF86AudioPlay         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "media" "playPause"; }
-          XF86AudioStop         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "media" "pause"; }
-          XF86AudioPrev         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "media" "previous"; }
-          XF86AudioNext         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "media" "next"; }
-          XF86MonBrightnessUp   allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "brightness" "increase"; }
-          XF86MonBrightnessDown allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "brightness" "decrease"; }
 
-          Mod+A           { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }
-          Mod+D           { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
-          Mod+S           { spawn "noctalia-shell" "ipc" "call" "settings" "toggle"; }
-          Mod+L           { spawn "noctalia-shell" "ipc" "call" "lockScreen" "lock"; }
-          Ctrl+Alt+Delete { spawn "noctalia-shell" "ipc" "call" "sessionMenu" "toggle"; }
-          Mod+Shift+E     { spawn "herd" "restart" "noctalia-shell"; }
+  // Noctalia
+  window-rule {
+          geometry-corner-radius 20
+          clip-to-geometry true
+  }
+  window-rule {
+          match app-id="dev.noctalia.Noctalia.Settings"
+          open-floating true
+          default-column-width { fixed 1080; }
+          default-window-height { fixed 920; }
+  }
+  debug {
+          honor-xdg-activation-with-invalid-serial
+  }
+  layer-rule {
+          match namespace="^noctalia-backdrop"
+          place-within-backdrop true
+  }
+
+
+  binds {
+          XF86AudioRaiseVolume  allow-when-locked=true { spawn "noctalia" "msg" "volume-up"; }
+          XF86AudioLowerVolume  allow-when-locked=true { spawn "noctalia" "msg" "volume-down"; }
+          XF86AudioMute         allow-when-locked=true { spawn "noctalia" "msg" "volume-mute"; }
+          XF86AudioMicMute      allow-when-locked=true { spawn "noctalia" "msg" "mic-mute"; }
+          XF86AudioPlay         allow-when-locked=true { spawn "noctalia" "msg" "media" "toggle"; }
+          XF86AudioStop         allow-when-locked=true { spawn "noctalia" "msg" "media" "stop"; }
+          XF86AudioPrev         allow-when-locked=true { spawn "noctalia" "msg" "media" "previous"; }
+          XF86AudioNext         allow-when-locked=true { spawn "noctalia" "msg" "media" "next"; }
+          XF86MonBrightnessUp   allow-when-locked=true { spawn "noctalia" "msg" "brightness-up"; }
+          XF86MonBrightnessDown allow-when-locked=true { spawn "noctalia" "msg" "brightness-down"; }
+
+          Mod+A           { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
+          Mod+D           { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
+          Mod+S           { spawn "noctalia" "msg" "settings-toggle"; }
+          Mod+L           { spawn "noctalia" "msg" "screen-lock"; }
+          Ctrl+Alt+Delete { spawn "noctalia" "msg" "panel-toggle" "session"; }
+          Mod+Shift+E     { spawn "noctalia" "msg" "panel-toggle" "session"; }
 
           Mod+E       { spawn "emacsclient" "--create-frame" "--no-wait"; }
           Mod+Return  { spawn "wezterm"; }
@@ -719,14 +708,12 @@ niri supports getting keyboard layout from localed.
   }
 #+end_src
 
-*** noctalia-shell
-NOTE: Run ~herd restart noctalia-shell~ after home environment reconfiguration.
-
+*** noctalia
 #+begin_src scheme :noweb-ref home-service
-  (service home-noctalia-shell-service-type)
+  (service home-noctalia-service-type
+    (home-noctalia-configuration
+      (noctalia (@ (noctalia) noctalia-git))))
 #+end_src
-
-Use <https://noctalia.dev/plugins/polkit-agent/> as Polkit agent.
 
 *** icon theme & fonts
 #+begin_src scheme :noweb-ref package-spec

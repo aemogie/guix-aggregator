@@ -1,15 +1,3 @@
-[submodule "channels/guix"]
-	path = channels/guix
-	url = https://codeberg.org/hako/guix.git
-[submodule "channels/nonguix"]
-	path = channels/nonguix
-	url = https://gitlab.com/nonguix/nonguix.git
-[submodule "channels/rosenthal"]
-	path = channels/rosenthal
-	url = https://codeberg.org/hako/rosenthal.git
-[submodule "channels/sops-guix"]
-	path = channels/sops-guix
-	url = https://github.com/fishinthecalculator/sops-guix.git
 [submodule "installer"]
 	path = config/live/modules
 	url = https://codeberg.org/nonguix/installer.git

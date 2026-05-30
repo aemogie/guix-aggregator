@@ -1,28 +1,33 @@
 (list (channel
-       (name 'bluebox)
-       (url "https://codeberg.org/lapislazuli/bluebox")
-       (branch "main")
-       (commit "f7f3b1565d626099dd68aae20abb36371ab8a9af")
-       (introduction
-        (make-channel-introduction
-         "63350484aaacc362aea28fb14236019fced4050f"
-         (openpgp-fingerprint
-          "5132 3571 CEED 988F 52FC  467C 6F98 DBF3 EA7F 4B37"))))
-      (channel
        (name 'guix)
        (url "https://git.guix.gnu.org/guix.git")
        (branch "master")
-       (commit "93635a2bff9a4ec29b8a56a4cc2c1277ec7e7570")
+       (commit "950bae548a5e25ef5db37a2748c72d5edb768b45")
        (introduction
         (make-channel-introduction
          "9edb3f66fd807b096b48283debdcddccfea34bad"
          (openpgp-fingerprint
           "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA"))))
       (channel
+       (name 'bluebox)
+       (url "https://codeberg.org/lapislazuli/bluebox")
+       (branch "main")
+       (commit "71628770c8612c041e06672f34c0c8e6fc67c13c")
+       (introduction
+        (make-channel-introduction
+         "63350484aaacc362aea28fb14236019fced4050f"
+         (openpgp-fingerprint
+          "5132 3571 CEED 988F 52FC  467C 6F98 DBF3 EA7F 4B37"))))
+      (channel
+       (name 'noctalia)
+       (url "https://github.com/noctalia-dev/noctalia-shell")
+       (branch "v5")
+       (commit "0e4bb96a8b42abb47af67286902a52eaa628c50a"))
+      (channel
        (name 'nonguix)
        (url "https://gitlab.com/nonguix/nonguix")
        (branch "master")
-       (commit "0107c1c4849460b567424ba2cdc8942294c7a611")
+       (commit "615f33a7ae0edd58ebeb412da15c56c4757e5547")
        (introduction
         (make-channel-introduction
          "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
@@ -32,7 +37,7 @@
        (name 'rosenthal)
        (url "https://codeberg.org/hako/rosenthal.git")
        (branch "trunk")
-       (commit "0b6b5feb72483966ae41ff03aac98bdff52d045c")
+       (commit "2889a00542cc17b21fb90f4e6a43cb7679de0db7")
        (introduction
         (make-channel-introduction
          "7677db76330121a901604dfbad19077893865f35"

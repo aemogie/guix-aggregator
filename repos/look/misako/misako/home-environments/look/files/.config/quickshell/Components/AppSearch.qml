@@ -43,8 +43,13 @@ Singleton {
         return score;
     }
 
+    function normalizeIconName(name) {
+        return name.toLowerCase().replace(/[\s_-]+/g, "");
+    }
+
     function waitaIconPath(iconName) {
         if (!iconName) return "";
+        const needle = normalizeIconName(iconName);
         let fallback = "";
         let fallbackScore = -1;
         for (let i = 0; i < waitaIconModel.allFiles.length; ++i) {
@@ -53,13 +58,14 @@ Singleton {
             const nameNoExt = base.includes(".")
                 ? base.substring(0, base.lastIndexOf("."))
                 : base;
-            if (nameNoExt === iconName) {
+            const normalized = normalizeIconName(nameNoExt);
+            if (normalized === needle) {
                 const score = scoreIconPath(fp) + 10000;
                 if (score > fallbackScore) {
                     fallbackScore = score;
                     fallback = fp;
                 }
-            } else if (nameNoExt.includes(iconName)) {
+            } else if (normalized.includes(needle)) {
                 const score = scoreIconPath(fp);
                 if (score > fallbackScore) {
                     fallbackScore = score;
@@ -72,6 +78,7 @@ Singleton {
 
     function hicolorIconPath(iconName) {
         if (!iconName) return "";
+        const needle = normalizeIconName(iconName);
         let bestFp = "";
         let bestScore = -1;
         for (let i = 0; i < hicolorIconModel.allFiles.length; ++i) {
@@ -80,8 +87,9 @@ Singleton {
             const nameNoExt = base.includes(".")
                 ? base.substring(0, base.lastIndexOf("."))
                 : base;
-            if (nameNoExt === iconName || nameNoExt.includes(iconName)) {
-                const isExact = nameNoExt === iconName;
+            const normalized = normalizeIconName(nameNoExt);
+            if (normalized === needle || normalized.includes(needle)) {
+                const isExact = normalized === needle;
                 const score = scoreIconPath(fp) + (isExact ? 10000 : 0);
                 if (score > bestScore) {
                     bestScore = score;

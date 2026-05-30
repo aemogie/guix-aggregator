@@ -1,5 +1,11 @@
 #!/bin/sh
 
+# Run Guix + channels before they're built by guix time-machine / guix pull.
+# 1. Clone channel repositories under the `channels' directory.
+# 2. Compile guix locally.
+# 3. Adjust `set_guix_env' and `set_channel_env' calls to your channels.
+# 4. Run ./pre-inst-env guix ... or ./pre-inst-env blue ...
+
 set -e
 
 TOP_DIR="$(dirname "$(realpath "$0")")"
@@ -20,6 +26,7 @@ set_channel_env () {
 }
 
 set_guix_env    channels/guix
+set_channel_env channels/noctalia-shell
 set_channel_env channels/nonguix
 set_channel_env channels/rosenthal/modules
 set_channel_env channels/sops-guix/modules

@@ -6,7 +6,7 @@ QtObject {
     readonly property color colorMain: "#f0fbf7f0"
     readonly property color colorAccent: "#e0d4ce"
     readonly property color colorHollow: "#d6c5c4"
-    readonly property color colorFill: "#cd4000"
+    readonly property color colorFill: "#ad6030"
     readonly property color colorFont: "#000000"
     readonly property color colorDeselected: "#000000"
     readonly property color colorSelected: Qt.lighter(colorAccent, 1.5)

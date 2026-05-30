@@ -176,8 +176,8 @@
         font-nerd-symbols))
 
 (define-public games
-  (yumiko?* steam-nvidia-new-feature
-            heroic-nvidia-new-feature
+  (yumiko?* steam-nvidia-595
+            heroic-nvidia-595
             mangohud
             mcpelauncher-client
             osu-lazer-bin
@@ -264,8 +264,8 @@
 (define-public video
   (list yt-dlp
         obs-pipewire-audio-capture
-        (@@ (saayix packages video) mpv-minimal/wayland)
-        (yumiko?* ffmpeg/nvidia-595 obs-nvidia nvidia-vaapi-driver)
+        ;; (@@ (saayix packages video) mpv-minimal/wayland)
+        (yumiko?* obs-nvidia nvidia-vaapi-driver mpv-nvidia)
         (yuria?* ffmpeg obs)))
 
 (define-public virtual-keyboard

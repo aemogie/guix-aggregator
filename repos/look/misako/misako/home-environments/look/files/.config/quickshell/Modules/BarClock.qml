@@ -2,7 +2,7 @@ import Quickshell
 import QtQuick
 import "../Components"
 
-BarModule {
+BorderBarModule {
     SystemClock {
         id: clock
         precision: SystemClock.Seconds

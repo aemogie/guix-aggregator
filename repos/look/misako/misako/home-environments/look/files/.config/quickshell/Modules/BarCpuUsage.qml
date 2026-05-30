@@ -3,7 +3,7 @@ import Quickshell.Io
 import Quickshell.Hyprland
 import "../Components"
 
-BarButton {
+CleanBarModule {
     icon: "󰓅"
     fam: "nf"
     usage: cpuUsage

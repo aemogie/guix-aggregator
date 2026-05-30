@@ -5,26 +5,26 @@ import QtQuick.Layouts
 import "../Components"
 import ".."
 
-BarModule {
+CleanBarModule {
     id: root
-    color: "transparent"
-    leftMargin: 0
-    rightMargin: 0
 
     Row {
         spacing: main.barModuleSideMargin
 
         Repeater {
             model: Hyprland.workspaces.values.filter(w => /^\d+$/.test(w.name))
-            BarModule {
-                border.width: 1
-                border.color: modelData?.focused ? Theme.colorFill : Theme.colorHollow
-                onLeftClick: Hyprland.dispatch("workspace " + modelData?.name)
+            BorderBarModule {
+                id: ws
+                required property var modelData
+                readonly property var data: modelData
+
+                border.color: ws.data?.focused ? Theme.colorFill : Theme.colorHollow
+                onLeftClick: Hyprland.dispatch("workspace " + ws.data?.name)
                 Row {
                     spacing: 4
                     StyledText {
                         text: {
-                            switch (modelData?.name) {
+                            switch (ws.data?.name) {
                                 case "1":
                                     return "α"
                                 case "2":
@@ -52,15 +52,18 @@ BarModule {
                     }
                     Row {
                         Repeater {
-                            model: modelData.toplevels.values
+                            model: ws.data.toplevels.values
                             IconImage {
                                 id: ico
-                                source: AppSearch.guessIcon(modelData.wayland.appId)
+                                required property var modelData
+                                readonly property var w: modelData
+
+                                source: AppSearch.guessIcon(w?.wayland?.appId)
                                 implicitSize: 18
                                 Rectangle {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     anchors.top: parent.bottom
-                                    visible: modelData.activated
+                                    visible: w.activated && ws.data.focused
                                     implicitWidth: parent.width * 0.7
                                     implicitHeight: 2
                                     radius: 4
