@@ -3,6 +3,7 @@ import Quickshell
 import QtQuick
 import "Modules"
 import "Components"
+import "Services"
 
 ShellRoot {
     id: main
@@ -17,8 +18,11 @@ ShellRoot {
     readonly property string fontFamily: "Inter Variable"
     readonly property int fontSize: 14
 
-    Idle { }
-    Wallpaper { }
+    property var _init: [NotificationService]
+
+    Notification { }
+    IdleService { }
+    WallpaperService { }
     BezelsMask { }
     BarTop { }
     BarRight { }

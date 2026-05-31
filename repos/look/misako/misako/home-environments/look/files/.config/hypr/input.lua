@@ -1,0 +1,27 @@
+hl.device({
+    name = "wacom-co.,ltd.-ctl-472-mouse",
+    enabled = false,
+})
+
+hl.config({
+    input = {
+        -- Keyboard
+        kb_layout = "br",
+        numlock_by_default = true,
+        kb_options = "caps:swapescape",
+        repeat_delay = 500,
+        repeat_rate = 45,
+        -- Mouse
+        sensitivity = 0.4,
+        follow_mouse = 1,
+        accel_profile = "flat",
+        touchpad = {
+            natural_scroll = true,
+            disable_while_typing = true,
+            scroll_factor = 1.0,
+            middle_button_emulation = true,
+            tap_to_click = true,
+        },
+    },
+})
+

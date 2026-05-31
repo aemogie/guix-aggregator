@@ -332,7 +332,7 @@
                   (abbreviation
                     (name 'h)
                     (expansion
-                      "WF=% ln -sf /home/look/projects/guile/misako/misako/home-environments/look/files/.config/hypr/\\$WF.conf /home/look/.config/hypr/\\$WF.conf"))
+                      "WF=% ln -sf /home/look/projects/guile/misako/misako/home-environments/look/files/.config/hypr/\\$WF.lua /home/look/.config/hypr/\\$WF.lua"))
                   (map (lambda (channel)
                          (abbreviation
                            (name (symbol-append '@ channel))

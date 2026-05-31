@@ -1,14 +1,9 @@
-import Quickshell
 import QtQuick
 import "../Components"
+import "../Services"
 
 BorderBarModule {
-    SystemClock {
-        id: clock
-        precision: SystemClock.Seconds
-    }
-
     StyledText {
-        text: Qt.formatDateTime(clock.date, "hh:mm ddd, MMM dd")
+        text: Qt.formatDateTime(ClockService.clock.date, "hh:mm ddd, MMM dd")
     }
 }

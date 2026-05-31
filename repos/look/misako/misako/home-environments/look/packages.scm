@@ -220,7 +220,6 @@
 
 (define-public notifications
   (list libnotify
-        mako
         sound-theme-freedesktop))
 
 (define-public password

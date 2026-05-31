@@ -5,9 +5,9 @@
 (define-public guix
   (channel
     (name 'guix)
-    (url "https://codeberg.org/guix/guix")
-    (branch "master")
-    (commit "42ab6a3899550800002531b4603e59fa5c90a37d")
+    (url "https://codeberg.org/look/guix")
+    (branch "hyprland-lua")
+    ;; (commit "42ab6a3899550800002531b4603e59fa5c90a37d")
     (introduction
       (make-channel-introduction
         "9edb3f66fd807b096b48283debdcddccfea34bad"

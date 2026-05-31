@@ -51,8 +51,5 @@
           (program (file-append inetutils "/bin/ping"))
           (capabilities "cap_net_raw=ep"))
         (privileged-program
-          (program (file-append espanso-wayland "/bin/espanso"))
-          (capabilities "cap_dac_override+p"))
-        (privileged-program
           (program (file-append inetutils "/bin/ping6"))
           (capabilities "cap_net_raw=ep"))))

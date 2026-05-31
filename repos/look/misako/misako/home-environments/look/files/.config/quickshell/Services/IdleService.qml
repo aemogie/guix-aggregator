@@ -30,7 +30,7 @@ Item {
         onIsIdleChanged: {
             if (!isIdle) return
             if (SharedVariables.isLocked) return
-            Hyprland.dispatch("exec hyprlock")
+            Hyprland.dispatch(`hl.dsp.exec_cmd("hyprlock")`)
         }
     }
 
@@ -42,7 +42,7 @@ Item {
             if (isIdle) {
                 checkLocked.running = true
             } else {
-                Hyprland.dispatch("dpms on")
+                Hyprland.dispatch(`hl.dsp.dpms({ action = "on" })`)
             }
         }
     }
@@ -51,7 +51,7 @@ Item {
         respectInhibitors: false
         enabled: SharedVariables.idleEnabled
         timeout: root.idleLockscreen + root.idleCheckLockscreen
-        onIsIdleChanged: isIdle ? Hyprland.dispatch("dpms off") : Hyprland.dispatch("dpms on")
+        onIsIdleChanged: isIdle ? Hyprland.dispatch(`hl.dsp.dpms({ action = "off" })`) : Hyprland.dispatch(`hl.dsp.dpms({ action = "on" })`)
     }
 
     Process {
@@ -59,7 +59,7 @@ Item {
         command: ["pidof", "hyprlock"]
         onExited: (exitCode, exitStatus) => {
             if (exitCode === 0) {
-                Hyprland.dispatch("dpms off")
+                Hyprland.dispatch(`hl.dsp.dpms({ action = "off" })`)
             }
         }
     }
