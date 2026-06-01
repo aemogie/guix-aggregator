@@ -1,6 +1,7 @@
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
+import ".."
 
 /**
  * A transparent shell container positioned at the bottom of every connected screen.
@@ -27,7 +28,7 @@ Variants {
         }
 
         // --- Visual Styling ---
-        implicitHeight: main.sideSize
+        implicitHeight: Theme.vars.sideSize
         color: "transparent"
     }
 }

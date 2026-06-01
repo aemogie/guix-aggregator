@@ -55,13 +55,13 @@ Variants {
                     shadowVerticalOffset: 0
                     shadowHorizontalOffset: 0
                     blurMax: 20
-                    shadowBlur: 1.0
+                    shadowBlur: 1.3
                 }
 
                 Rectangle {
                     id: bezelBackground
                     anchors.fill: parent
-                    color: Theme.colorMain
+                    color: Theme.vars.colorMain
                     layer.enabled: true
 
                     // Subtracts the cutoutShape from the solid surface
@@ -90,13 +90,13 @@ Variants {
 
                         // Margins
                         anchors {
-                            leftMargin: main.sideSize
-                            rightMargin: main.sideSize
-                            topMargin: main.barSize
-                            bottomMargin: main.sideSize
+                            leftMargin: Theme.vars.sideSize
+                            rightMargin: Theme.vars.sideSize
+                            topMargin: Theme.vars.barSize
+                            bottomMargin: Theme.vars.sideSize
                         }
 
-                        radius: main.roundness
+                        radius: Theme.vars.roundness
                     }
                 }
             }

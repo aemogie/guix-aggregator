@@ -1,6 +1,7 @@
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
+import ".."
 
 Variants {
     // id: root
@@ -24,7 +25,7 @@ Variants {
         }
 
         // --- Visual Styling ---
-        implicitWidth: main.sideSize
+        implicitWidth: Theme.vars.sideSize
         color: "transparent"
     }
 }

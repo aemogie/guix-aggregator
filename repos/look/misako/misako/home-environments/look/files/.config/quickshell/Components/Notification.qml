@@ -31,18 +31,18 @@ LazyLoader {
 
         // ── Sizing ────────────────────────────────────────────────────────────
         readonly property int notificationW: 300
-        readonly property int notificationH: Theme.notificationAndEmailHeight
+        readonly property int notificationH: Theme.vars.notificationAndEmailHeight
         readonly property int maxNotifications: 5
         readonly property int notificationTimeout: 7000
 
         implicitWidth: notificationW + 12
-        implicitHeight: maxNotifications * (notificationH + notifList.spacing) - notifList.spacing + Theme.shadowMarg * 2
+        implicitHeight: maxNotifications * (notificationH + notifList.spacing) - notifList.spacing + Theme.vars.shadowMarg * 2
 
         // ── Mask ──────────────────────────────────────────────────────────────
         readonly property int maskHeight: {
             var count = Math.min(visibleNotifications.count + animatingCount, maxNotifications)
             return count > 0
-                ? count * (notificationH + notifList.spacing) - notifList.spacing + Theme.shadowMarg * 2
+                ? count * (notificationH + notifList.spacing) - notifList.spacing + Theme.vars.shadowMarg * 2
                 : 0
         }
 
@@ -112,7 +112,7 @@ LazyLoader {
         Component {
             id: removeAnimTimer
             Timer {
-                interval: Theme.notificationDur
+                interval: Theme.vars.notificationDur
                 running: true
                 repeat: false
                 onTriggered: { root.decAnimating(); destroy() }
@@ -122,25 +122,25 @@ LazyLoader {
         // ── List ──────────────────────────────────────────────────────────────
         ListView {
             id: notifList
-            anchors { fill: parent; margins: Theme.shadowMarg }
+            anchors { fill: parent; margins: Theme.vars.shadowMarg }
             spacing: 8
             model: visibleNotifications
 
             remove: Transition {
-                NumberAnimation { property: "opacity"; from: 1; to: 0; duration: Theme.notificationDur; easing.type: Theme.notificationEasing }
-                NumberAnimation { property: "scale"; from: 1; to: 0.85; duration: Theme.notificationDur; easing.type: Theme.notificationEasing }
+                NumberAnimation { property: "opacity"; from: 1; to: 0; duration: Theme.vars.notificationDur; easing.type: Theme.vars.notificationEasing }
+                NumberAnimation { property: "scale"; from: 1; to: 0.85; duration: Theme.vars.notificationDur; easing.type: Theme.vars.notificationEasing }
             }
             displaced: Transition {
-                NumberAnimation { properties: "x,y"; duration: Theme.notificationMakeSpaceDur; easing.type: Theme.notificationMakeSpaceEasing }
+                NumberAnimation { properties: "x,y"; duration: Theme.vars.notificationMakeSpaceDur; easing.type: Theme.vars.notificationMakeSpaceEasing }
             }
 
             delegate: Rectangle {
                 id: notifDelegate
 
                 width: ListView.view.width
-                height: Theme.notificationAndEmailHeight
-                radius: Theme.roundness
-                color: notificationArea.containsMouse ? Qt.lighter(Theme.colorMain, 1.3) : Theme.colorMain
+                height: Theme.vars.notificationAndEmailHeight
+                radius: Theme.vars.roundness
+                color: notificationArea.containsMouse ? Qt.lighter(Theme.vars.colorMain, 1.3) : Theme.vars.colorMain
                 opacity: 0
                 scale: 0.85
 
@@ -148,12 +148,12 @@ LazyLoader {
 
                 Component.onCompleted: { opacity = 1; scale = 1 }
 
-                Behavior on opacity { NumberAnimation { duration: Theme.notificationDur; easing.type: Theme.notificationEasing } }
-                Behavior on scale { NumberAnimation { duration: Theme.notificationDur; easing.type: Theme.notificationEasing } }
+                Behavior on opacity { NumberAnimation { duration: Theme.vars.notificationDur; easing.type: Theme.vars.notificationEasing } }
+                Behavior on scale { NumberAnimation { duration: Theme.vars.notificationDur; easing.type: Theme.vars.notificationEasing } }
 
                 ColorAnimation on color {
-                    from: "transparent"; to: Theme.colorMain
-                    duration: Theme.notificationHighlightDur
+                    from: "transparent"; to: Theme.vars.colorMain
+                    duration: Theme.vars.notificationHighlightDur
                     running: true
                 }
 
@@ -162,15 +162,15 @@ LazyLoader {
                     anchors {
                         left: parent.left; right: parent.right
                         verticalCenter: parent.verticalCenter
-                        margins: Theme.notificationMarg
+                        margins: Theme.vars.notificationMarg
                     }
-                    spacing: Theme.contentSpacing
+                    spacing: Theme.vars.contentSpacing
 
                     ClippingRectangle {
                         anchors.verticalCenter: parent.verticalCenter
-                        width: Theme.notificationIconSize
-                        height: Theme.notificationIconSize
-                        radius: Theme.roundness
+                        width: Theme.vars.notificationIconSize
+                        height: Theme.vars.notificationIconSize
+                        radius: Theme.vars.roundness
                         color: "transparent"
                         visible: appIcon !== ""
 
@@ -182,7 +182,7 @@ LazyLoader {
                     }
 
                     Column {
-                        width: parent.width - (icon.visible ? icon.width + Theme.notificationMarg : 0)
+                        width: parent.width - (icon.visible ? icon.width + Theme.vars.notificationMarg : 0)
                         spacing: 4
 
                         RowLayout {

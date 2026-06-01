@@ -1,5 +1,5 @@
 (define-module (misako home-environments look packages)
-  #:use-module ((gnu packages rust-apps) #:select (helvum typst))
+  #:use-module ((gnu packages rust-apps) #:select (helvum typst jujutsu))
   #:use-module (gnu packages admin)
   #:use-module (gnu packages audio)
   #:use-module (gnu packages base)
@@ -117,6 +117,7 @@
 
 (define-public desktop
   (list git
+        jujutsu
         gnupg
         gsettings-desktop-schemas
         hyfetch

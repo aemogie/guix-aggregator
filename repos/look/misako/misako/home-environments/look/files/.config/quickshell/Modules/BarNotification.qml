@@ -6,8 +6,9 @@ BorderBarModule {
     id: root
 
     icon: SharedVariables.doNotDisturb ? "notifications_off" : "notifications"
-
-    onLeftClick: {
-        SharedVariables.doNotDisturb = !SharedVariables.doNotDisturb
+    InteractArea {
+        onLeftClick: {
+            SharedVariables.doNotDisturb = !SharedVariables.doNotDisturb
+        }
     }
 }

@@ -111,7 +111,8 @@ Singleton {
             const steamPath = steamIconPath(appid);
             if (steamPath !== "") return "file://" + steamPath;
         }
-        return Quickshell.iconPath(str);
+        if (steamIconModel.ready) return Quickshell.iconPath(str);
+        return ""
     }
 
     RecursiveFolderModel {

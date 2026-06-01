@@ -1,7 +1,7 @@
 import Quickshell
 import QtQuick
 import Quickshell.Wayland
-import "../Components"
+import ".."
 
 Variants {
     model: Quickshell.screens
@@ -22,21 +22,22 @@ Variants {
         }
 
         margins {
-            left: main.sideSize * 2
-            right: main.sideSize * 2
+            left: Theme.vars.sideSize * 2
+            right: Theme.vars.sideSize * 2
         }
 
         color: "transparent"
-        implicitHeight: main.barSize
+        implicitHeight: Theme.vars.barSize
 
         // --- Core Modules ---
         Row {
             anchors.verticalCenter: parent.verticalCenter
-            spacing: main.barModuleSideMargin
+            spacing: Theme.vars.barModuleSideMargin
 
             BarLauncher {}
             BarCpuUsage {}
             BarWorkspaces {}
+            BarWindow {}
         }
         Row {
             anchors.centerIn: parent
@@ -45,7 +46,8 @@ Variants {
         Row {
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: parent.right
-            spacing: main.barModuleSideMargin - 6
+            spacing: Theme.vars.barModuleSideMargin - 4
+            BarTray {}
             BarNotification {}
             BarIdle {}
         }

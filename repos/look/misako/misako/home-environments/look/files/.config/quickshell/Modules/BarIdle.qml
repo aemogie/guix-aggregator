@@ -8,5 +8,7 @@ BorderBarModule {
     icon: SharedVariables.idleEnabled ? "visibility" : "visibility_off"
     icon_extra_y: 1
 
-    onLeftClick: SharedVariables.idleEnabled = !SharedVariables.idleEnabled
+    InteractArea {
+        onLeftClick: SharedVariables.idleEnabled = !SharedVariables.idleEnabled
+    }
 }

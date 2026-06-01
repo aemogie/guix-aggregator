@@ -8,8 +8,10 @@ CleanBarModule {
     fam: "nf"
     usage: cpuUsage
 
-    onLeftClick: Hyprland.dispatch("exec hyprctl notify 1 5000 0 Left-clicked cpu")
-    onRightClick: Hyprland.dispatch("exec hyprctl notify 1 5000 0 Right-clicked cpu")
+    InteractArea {
+        onLeftClick: Hyprland.dispatch(`hl.dsp.exec_cmd('exec hyprctl notify 1 5000 0 Left-clicked CPU')`)
+        onRightClick: Hyprland.dispatch(`hl.dsp.exec_cmd('exec hyprctl notify 1 5000 0 Right-clicked CPU')`)
+    }
 
     property real cpuUsage: 0.0
 

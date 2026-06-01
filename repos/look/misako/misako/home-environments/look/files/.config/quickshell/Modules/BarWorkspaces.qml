@@ -9,22 +9,24 @@ CleanBarModule {
     id: root
 
     Row {
-        spacing: main.barModuleSideMargin
+        spacing: Theme.vars.barModuleSideMargin
 
         Repeater {
             model: Hyprland.workspaces.values.filter(w => /^\d+$/.test(w.name))
             BorderBarModule {
                 id: ws
                 required property var modelData
-                readonly property var data: modelData
+                readonly property var model: modelData
 
-                border.color: ws.data?.focused ? Theme.colorFill : Theme.colorHollow
-                onLeftClick: Hyprland.dispatch("workspace " + ws.data?.name)
+                border.color: ws.model?.focused ? Theme.vars.colorFill : Theme.vars.colorHollow
+                InteractArea {
+                    onLeftClick: Hyprland.dispatch(`hl.dsp.focus({ workspace = ${ws.model?.name} })`)
+                }
                 Row {
                     spacing: 4
                     StyledText {
                         text: {
-                            switch (ws.data?.name) {
+                            switch (ws.model?.name) {
                                 case "1":
                                     return "α"
                                 case "2":
@@ -52,7 +54,7 @@ CleanBarModule {
                     }
                     Row {
                         Repeater {
-                            model: ws.data.toplevels.values
+                            model: ws.model.toplevels.values
                             IconImage {
                                 id: ico
                                 required property var modelData
@@ -60,14 +62,15 @@ CleanBarModule {
 
                                 source: AppSearch.guessIcon(w?.wayland?.appId)
                                 implicitSize: 18
+
                                 Rectangle {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     anchors.top: parent.bottom
-                                    visible: w.activated && ws.data.focused
+                                    visible: w.activated && ws.model.focused
                                     implicitWidth: parent.width * 0.7
                                     implicitHeight: 2
                                     radius: 4
-                                    color: Theme.colorFill
+                                    color: Theme.vars.colorFill
                                 }
                             }
                         }
