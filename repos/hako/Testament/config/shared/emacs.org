@@ -723,6 +723,8 @@ emacs-eat with patches <https://codeberg.org/akib/emacs-eat/pulls/133> and
     (defvaralias 'hako/jjdescription-mode-map  'git-commit-redundant-bindings)
     (define-minor-mode hako/jjdescription-mode
       "Set up `git-commit-mode' for `majutsu'.")
+    :config
+    (require 'magit)
     :hook
     (majutsu-jjdescription-mode . hako/jjdescription-mode)
     :bind

@@ -16,7 +16,7 @@ hl.config({
         },
     },
     decoration = {
-        rounding = 12,
+        rounding = 10,
         -- multisample_edges = true
         active_opacity = 0.90,
         inactive_opacity = 0.90,

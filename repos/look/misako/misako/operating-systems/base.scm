@@ -233,6 +233,12 @@
         #|Device management services|#
         (service udev-service-type)
 
+        (service pam-limits-service-type
+          (list
+            (pam-limits-entry "*" 'soft 'core   0)
+            (pam-limits-entry "*" 'hard 'nofile 65535)
+            (pam-limits-entry "*" 'soft 'nofile 8192)))
+
         (simple-service 'uaccess-pam-service pam-root-service-type
           (let ((uaccess-pam-entry
                  (pam-entry

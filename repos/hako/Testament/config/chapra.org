@@ -396,13 +396,7 @@
 #+begin_src scheme :noweb-ref service
   (service navidrome-service-type
     (navidrome-configuration
-      (config
-       #~'(("BaseUrl" . "https://music.urspace.moe")
-           ("Address" . "127.0.0.1")
-           ("Port" . 43502)
-           ("MusicFolder" . "/mnt/Ocimeae/Library/Music")
-           ("EnableSharing" . #t)
-           #$@(sops-sexp %sops-chapra '("navidrome"))))))
+      (config "/etc/chapra-configs/navidrome.toml")))
 #+end_src
 
 *** qbittorrent

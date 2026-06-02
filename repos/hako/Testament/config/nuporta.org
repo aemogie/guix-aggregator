@@ -1173,57 +1173,14 @@ See [[file:shared/caddy.org][shared/caddy.org]].
 #+begin_src scheme :noweb-ref service
   (service forgejo-service-type
     (forgejo-configuration
-      (postgresql-password-file "/run/secrets/postgres/forgejo")
-      (config
-       #~'((#f
-            ("RUN_USER" . "forgejo")
-            ("WORK_PATH" . "/var/lib/forgejo")
-            ("RUN_MODE" . "prod"))
-           #$@(sops-sexp %sops-nuporta '("forgejo"))
-           ("database"
-            ("DB_TYPE" . "postgres")
-            ("HOST" . "127.0.0.1:5432")
-            ("NAME" . "forgejo")
-            ("USER" . "forgejo")
-            ("PASSWD" . "placeholder")
-            ("SSL_MODE" . "disable")
-            ("LOG_SQL" . "false"))
-           ("repository"
-            ("ROOT" . "/var/lib/forgejo/data/forgejo-repositories")
-            ("PREFERRED_LICENSES" . "GPL-3.0-or-later")
-            ("ENABLE_PUSH_CREATE_USER" . "true")
-            ("DISABLE_DOWNLOAD_SOURCE_ARCHIVES" . "true"))
-           ("lfs"
-            ("PATH" . "/var/lib/forgejo/data/lfs"))
-           ("service"
-            ("REGISTER_MANUAL_CONFIRM" . "true")
-            ("DEFAULT_KEEP_EMAIL_PRIVATE" . "true")
-            ("DEFAULT_ALLOW_CREATE_ORGANIZATION" . "false")
-            ("NO_REPLY_ADDRESS" . "noreply.localhost"))
-           ("openid"
-            ("ENABLE_OPENID_SIGNIN" . "false")
-            ("ENABLE_OPENID_SIGNUP" . "false"))
-           ("cron.update_checker"
-            ("ENABLED" . "false"))
-           ("session"
-            ("PROVIDER" . "db"))
-           ("log"
-            ("MODE" . "file")
-            ("LEVEL" . "warn")
-            ("ROOT_PATH" . "/var/log/forgejo"))
-           ("repository.pull-request"
-            ("DEFAULT_MERGE_STYLE" . "rebase"))
-           ("repository.signing"
-            ("DEFAULT_TRUST_MODEL" . "committer"))))
+      (config "/etc/nuporta-configs/forgejo.ini")
       (group-id 969)
       (user-id 974)))
 #+end_src
 
 Troubleshooting:
 #+begin_example
-  $ sudo -u forgejo \
-       /run/current-system/profile/bin/forgejo doctor check \
-       --config "$(sudo herd configuration forgejo)"
+  sudo -u forgejo /run/current-system/profile/bin/forgejo doctor check --config "$(sudo herd configuration forgejo)"
 #+end_example
 
 *** heisenbridge
@@ -1231,36 +1188,20 @@ Troubleshooting:
   (service heisenbridge-service-type
     (heisenbridge-configuration
       (homeserver "http://localhost:26372")
-      (config
-       (yaml-file "heisenbridge.yaml"
-         #~'(("id" . "heisenbridge")
-             ("url" . "http://127.0.0.1:27873")
-             #$@(sops-sexp %sops-nuporta '("heisenbridge"))
-             ("rate_limited" . #f)
-             ("sender_localpart" . "heisenbridge")
-             ("namespaces"
-              ("users"
-               . #((("regex" . "@irc_.*")
-                    ("exclusive" . #t))
-                   (("regex" . "@heisenbridge:.*")
-                    ("exclusive" . #t))))
-              ("aliases" . #())
-              ("rooms" . #()))
-             ("heisenbridge"
-              ("media_url" . "https://matrix.guix.moe")))))
+      (config "/etc/nuporta-configs/heisenbridge.yaml")
       (group-id 963)
-      (user-id 967)))
+      (user-id 967)
+      (shepherd-requirement '(tuwunel))))
 #+end_src
 
 *** mautrix-telegram
 #+begin_src scheme :noweb-ref service
   (service mautrix-telegram-service-type
     (mautrix-telegram-configuration
-      (config
-       (plain-file "mautrix-telegram.yaml"
-         (sops-str %sops-nuporta '("mautrix-telegram"))))
+      (config "/etc/nuporta-configs/mautrix-telegram.yaml")
       (group-id 964)
-      (user-id 968)))
+      (user-id 968)
+      (shepherd-requirement '(tuwunel))))
 #+end_src
 
 *** miniflux
@@ -1317,23 +1258,7 @@ Troubleshooting:
 #+begin_src scheme :noweb-ref service
   (service tuwunel-service-type
     (tuwunel-configuration
-      (config
-       #~'(("global"
-            ("address" . #("127.0.0.1" "::1"))
-            ("port" . 26372)
-            ("server_name" . "guix.moe")
-            ("database_path" . "/var/lib/tuwunel")
-            ("new_user_displayname_suffix" . "")
-            ("require_auth_for_profile_requests" . #t)
-            ("allow_public_room_directory_over_federation" . #t)
-            ("trusted_servers" . #("matrix.org"))
-            ("well_known"
-             ("client" . "https://matrix.guix.moe")
-             ("server" . "matrix.guix.moe:443"))
-            ("media_storage_providers" . #("r2"))
-            ("store_media_on_providers" . #("r2"))
-            ("storage_provider"
-             ("r2" ("S3" #$@(sops-sexp %sops-nuporta '("tuwunel"))))))))
+      (config "/etc/nuporta-configs/tuwunel.toml")
       (group-id 968)
       (user-id 973)))
 #+end_src

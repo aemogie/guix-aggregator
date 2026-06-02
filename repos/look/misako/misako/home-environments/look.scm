@@ -174,9 +174,13 @@
               (string-append (getenv "HOME") "/.gnupg"))
             (secrets sops-secrets:all)))
 
-        (service home-files-service-type
-          (list (bin-fix "mpv-nvidia"  "nvda@580" "mpv")
-                (bin-fix "helvum"      "nvda@580")))
+        ;; TODO: Remove this or rework bin-fix.
+        ;; Without this, it also tries to build nvidia stuff on non-nvidia systems
+        (if (equal? (gethostname) "yumiko")
+            (service home-files-service-type
+              (yumiko?* (bin-fix "mpv-nvidia"  "nvda@580" "mpv")
+                        (bin-fix "helvum"      "nvda@580")))
+            (service home-files-service-type))
 
         (service home-xdg-user-directories-service-type
           (home-xdg-user-directories-configuration

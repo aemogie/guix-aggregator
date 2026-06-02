@@ -62,13 +62,7 @@
     (file-systems %btrfs-ephemeral-file-systems)
 
     (services
-      (cons* (service pam-limits-service-type
-               (list
-                 (pam-limits-entry "*" 'soft 'core   0)
-                 (pam-limits-entry "*" 'hard 'nofile 65535)
-                 (pam-limits-entry "*" 'soft 'nofile 8192)))
-
-             ; (service nvidia-unload-service-type)
+      (cons* ; (service nvidia-unload-service-type)
              ; (service samba-service-type
              ;   (samba-configuration
              ;     (enable-smbd? #t)

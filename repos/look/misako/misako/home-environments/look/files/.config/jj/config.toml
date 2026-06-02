@@ -1,0 +1,13 @@
+#:schema https://docs.jj-vcs.dev/latest/config-schema.json
+
+[user]
+name = "{{{ aerc.primary.name }}}"
+email = "{{{ aerc.primary.email }}}"
+
+[ui]
+default-command = "log"
+
+[signing]
+backend = "gpg"
+behavior = "own"
+key = "8B37296FCE5C491047373BAA3BF514F584DC25AD"

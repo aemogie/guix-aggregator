@@ -266,7 +266,7 @@
         obs-pipewire-audio-capture
         ;; (@@ (saayix packages video) mpv-minimal/wayland)
         (yumiko?* obs-nvidia nvidia-vaapi-driver mpv-nvidia)
-        (yuria?* ffmpeg obs)))
+        (yuria?* ffmpeg obs mpv)))
 
 (define-public virtual-keyboard
   (list xdotool ydotool))

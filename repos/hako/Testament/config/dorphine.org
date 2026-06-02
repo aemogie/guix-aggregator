@@ -655,7 +655,7 @@ niri supports getting keyboard layout from localed.
           Mod+A           { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
           Mod+D           { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
           Mod+S           { spawn "noctalia" "msg" "settings-toggle"; }
-          Mod+L           { spawn "noctalia" "msg" "screen-lock"; }
+          Mod+L           { spawn "noctalia" "msg" "session" "lock"; }
           Ctrl+Alt+Delete { spawn "noctalia" "msg" "panel-toggle" "session"; }
           Mod+Shift+E     { spawn "noctalia" "msg" "panel-toggle" "session"; }
 
@@ -1057,6 +1057,10 @@ Expose =/gnu/store= to Flatpak:
           rebase = true
   [rerere]
           enabled = true
+  [sendemail]
+          smtpEncryption = ssl
+          smtpServer = mail.boiledscript.com
+          smtpUser = hako@ultrarare.space
 
   [diff "scheme"]
           xfuncname = "^(\\(define.*)$"
@@ -1160,7 +1164,7 @@ Jujutsu:
 #+begin_src scheme :noweb-ref home-service
   (simple-service 'mpv-mpris home-xdg-configuration-files-service-type
     `(("mpv/scripts/mpris.so"
-       ,(file-append mpv-mpris "/lib/mpris.so"))))
+       ,(file-append mpv-mpris "/lib/mpv-mpris/mpris.so"))))
 #+end_src
 
 *** prismlauncher

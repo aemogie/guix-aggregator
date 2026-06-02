@@ -13,7 +13,6 @@
   #:use-module (guix store)
   #:use-module (guix utils)
   #:use-module (rosenthal utils file)
-  #:use-module (sops secrets)
   ;; Guix origin methods
   #:use-module (guix download)
   #:use-module (guix git-download)
@@ -42,10 +41,6 @@
   #:use-module (rosenthal packages package-management)
   #:export (testament-path
             testament-file
-
-            sops-str
-            sops-num
-            sops-sexp
 
             %sops-chapra
             %sops-dorphine
@@ -88,42 +83,6 @@
 ;;;
 ;;; SOPS secrets.
 ;;;
-
-(define* (get-sops-secret key #:key file (number? #f))
-  "Return a string (or number if NUMBER? is set to #t) of SOPS secret for KEY
-stored in FILE.  The result will be publicly available in '/gnu/store', YOU ARE
-WARNED."
-  (define %file
-    (if (string? file)
-        file
-        (with-store store
-          (run-with-store store
-            (lower-object file)))))
-
-  (define %key
-    (if (string? key)
-        key
-        (sops-list-key->sops-string-key key)))
-
-  (let* ((port (open-input-pipe
-                (format #f "sops --decrypt --extract ~s ~s" %key %file)))
-         (secret (get-string-all port))
-         (_ (close-pipe port)))
-    (if number?
-        (string->number secret)
-        secret)))
-
-(define (sops-str file key)
-  (get-sops-secret key #:file file))
-
-(define (sops-num file key)
-  (get-sops-secret key #:file file #:number? #t))
-
-(define (sops-sexp file key)
-  (let ((out (call-with-input-string (sops-str file key) read)))
-    (if (eof-object? out)
-        '()
-        out)))
 
 (define %sops-chapra
   (local-file (in-vicinity testament-path "secrets/chapra.yaml")))
@@ -246,18 +205,13 @@ WARNED."
 ;;; Packages
 ;;;
 
-(define rclone/no-test
-  (package/inherit rclone
-    (arguments
-     (substitute-keyword-arguments arguments
-       ((#:tests? _ #f) #f)))))
-
 (define %testament-cli-packages
   (list binutils
         curl
         fd
         file
         git
+        `(,git "send-email")
         gnupg
         htop
         jujutsu
