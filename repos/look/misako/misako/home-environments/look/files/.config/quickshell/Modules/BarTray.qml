@@ -7,9 +7,11 @@ import "../Components"
 
 BorderBarModule {
     id: root
+    visible: repeater.count > 0
 
     Row {
         Repeater {
+            id: repeater
             model: SystemTray.items
             IconImage {
                 id: item

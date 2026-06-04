@@ -74,6 +74,7 @@
         "gst-plugins-base"
         "gst-plugins-good"
         "gst-plugins-ugly"
+        "hunspell"      ; loads DICPATH environment variable
         "i3status"
         "icecat"
         "imv"
@@ -725,14 +726,6 @@
     "default-stream 720p,720p60,1080p,best\n"
     "player=mpv\n"))
 
-(define %tig-config
-  (plain-file
-    "tig-config"
-    (string-join
-      (list "set main-view-id-display = yes")
-      ;; End with a newline.
-      "\n" 'suffix)))
-
 (define %wcalcrc
   (plain-file
     "dot-wcalcrc"
@@ -1309,8 +1302,6 @@ fi")))))
            (".wgetpaste.conf" ,%wgetpaste.conf)
            (".Xdefaults" ,%default-xdefaults)
 
-           (".local/share/qutebrowser/pdfjs"
-            ,(file-append (S "pdfjs") "/share/pdfjs"))
            ;; Also files into the bin directory.
            ("bin/update-guix-keyring" ,%update-guix-gpg-keyring)
            ("bin/openbsd-netcat"
@@ -1350,10 +1341,39 @@ fi")))))
            ("qutebrowser/config.py" ,%qutebrowser-config-py)
            ("sequoia/sq/config.toml" ,%sq-config)
            ("streamlink/config" ,%streamlink-config)
-           ;("tig/config" ,%tig-config)
            ("user-dirs.dirs" ,%xdg-user-dirs)
            ("yt-dlp/config" ,%ytdlp-config)
-           ("zathura/zathurarc" ,%zathurarc)))))))
+           ("zathura/zathurarc" ,%zathurarc)))
+
+        (service home-xdg-data-files-service-type
+         `(("flatpak/overrides/cc.arduino.IDE2"
+            ,(plain-file "flatpak-override-cc.arduino.IDE2"
+                         (string-join
+                           (list "[Context]"
+                                 "sockets=inherit-wayland-socket;session-bus;wayland"
+                                 "devices=usb"
+                                 "filesystems=host")
+                           "\n" 'suffix)))
+           ("flatpak/overrides/org.mozilla.firefox"
+            ,(plain-file "flatpak-override-org.mozilla.firefox"
+                         (string-join
+                           (list "[Context]"
+                                 "persistent=Downloads")
+                           "\n" 'suffix)))
+           ("flatpak/overrides/org.vinegarhq.Sober"
+            ,(plain-file "flatpak-override-org.vinegarhq.Sober"
+                         (string-join
+                           (list "[Environment]"
+                                 "SSL_CERT_DIR=/etc/ssl/certs")
+                           "\n" 'suffix)))
+           ("qutebrowser/pdfjs"
+            ,(file-append (S "pdfjs") "/share/pdfjs"))
+           ("qutebrowser/qtwebengine_dictionaries/en-US.bdic"
+            ,(file-append (@ (dfsg main dictionaries) qtwebengine-dictionary-en-us)
+                          "/share/hunspell-bdic/en-US.bdic"))
+           ("qutebrowser/qtwebengine_dictionaries/he-IL.bdic"
+            ,(file-append (@ (dfsg main dictionaries) qtwebengine-dictionary-he-il)
+                          "/share/hunspell-bdic/he-IL.bdic"))))))))
 
 (define efraim-offload-home-environment
   (home-environment

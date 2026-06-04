@@ -2,6 +2,7 @@ import Quickshell
 import QtQuick
 import Quickshell.Wayland
 import ".."
+import "../Components"
 
 Variants {
     model: Quickshell.screens
@@ -29,15 +30,22 @@ Variants {
         color: "transparent"
         implicitHeight: Theme.vars.barSize
 
-        // --- Core Modules ---
         Row {
             anchors.verticalCenter: parent.verticalCenter
             spacing: Theme.vars.barModuleSideMargin
 
             BarLauncher {}
-            BarCpuUsage {}
+            BarModule {
+                color: "transparent"
+                Row {
+                    spacing: 6
+                    BarCpuUsage {}
+                    BarCpuTemperature {}
+                    BarMemoryUsage {}
+                }
+            }
             BarWorkspaces {}
-            BarWindow {}
+            // BarWindow {}
         }
         Row {
             anchors.centerIn: parent

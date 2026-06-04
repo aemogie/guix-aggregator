@@ -8,7 +8,15 @@ import ".."
 BorderBarModule {
     id: root
     implicitWidth: 200
-    visible: Hyprland.activeToplevel.wayland.activated
+    // TODO: This does not work
+    visible: Hyprland.activeToplevel.wayland
+
+    Connections {
+        target: Hyprland?.activeToplevel?.wayland
+        function onClosed() {
+            root.visible = Hyprland.activeToplevel
+        }
+    }
 
     RowLayout {
         spacing: 4

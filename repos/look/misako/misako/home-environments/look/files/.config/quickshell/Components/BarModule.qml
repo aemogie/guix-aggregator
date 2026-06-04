@@ -15,6 +15,7 @@ WrapperRectangle {
     property real usage: -1
     property int h: 18
     property int icon_extra_y: 0
+    property int pixelSize: text.font.pixelSize
 
     color: Theme.vars.colorAccent
     radius: Theme.vars.roundness
@@ -29,6 +30,7 @@ WrapperRectangle {
             id: text
             fam: root.fam
             text: root.icon
+            font.pixelSize: root.pixelSize
             Layout.topMargin: root.icon_extra_y
             // FIXME
             anchors.horizontalCenter: if (root.usage < 0) parent.horizontalCenter
