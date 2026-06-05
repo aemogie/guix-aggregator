@@ -94,7 +94,7 @@ hl.window_rule({
         class = "^(cinny)$",
     },
     workspace = "name:vesktop silent",
-    no_screen_share = true,
+    -- no_screen_share = true,
 })
 
 hl.window_rule({

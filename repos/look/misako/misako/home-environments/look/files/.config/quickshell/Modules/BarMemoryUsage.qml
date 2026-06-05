@@ -8,7 +8,8 @@ CleanBarModule {
 
     property real memUsage: 0.0
 
-    icon: "memory_alt"
+    icon: "memory"
+    pixelSize: 18
     icon_extra_y: 1
     usage: memUsage
 

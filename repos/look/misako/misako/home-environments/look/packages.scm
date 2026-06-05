@@ -209,7 +209,8 @@
   (list senpai
         catgirl
         cinny-desktop-bin
-        vesktop))
+        fluxer-canary))
+        ;; vesktop))
         ;; telegram-desktop))
 
 (define-public music

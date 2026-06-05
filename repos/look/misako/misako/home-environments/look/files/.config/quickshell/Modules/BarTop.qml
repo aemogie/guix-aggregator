@@ -35,15 +35,9 @@ Variants {
             spacing: Theme.vars.barModuleSideMargin
 
             BarLauncher {}
-            BarModule {
-                color: "transparent"
-                Row {
-                    spacing: 6
-                    BarCpuUsage {}
-                    BarCpuTemperature {}
-                    BarMemoryUsage {}
-                }
-            }
+            BarCpuUsage {}
+            BarCpuTemperature {}
+            BarMemoryUsage {}
             BarWorkspaces {}
             // BarWindow {}
         }

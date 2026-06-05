@@ -1,3 +1,5 @@
+hl.env("HYPRLAND_CONFIG", "/home/look/projects/guile/misako/misako/home-environments/look/files/.config/hypr/hyprland.lua")
+
 require("autostart")
 require("input")
 require("output")
@@ -7,7 +9,7 @@ require("keybinds")
 
 hl.config({
     general = {
-        layout = "dwindle",
+        layout = "master",
         no_focus_fallback = true,
         resize_on_border = false,
         extend_border_grab_area = 15,
@@ -20,7 +22,7 @@ hl.config({
     misc = {
         disable_hyprland_logo = true,
         animate_manual_resizes = false,
-        disable_autoreload = true,
+        -- disable_autoreload = true,
         render_unfocused_fps = 15,
         enable_swallow = false,
         swallow_regex = "^(com.mitchellh.ghostty|foot)$",
@@ -36,11 +38,10 @@ hl.config({
     },
     binds = {
         hide_special_on_workspace_change = true,
-        scroll_event_delay = 0,
+        scroll_event_delay = 50,
     },
     render = {
         direct_scanout = 2, -- controled by content type game
-        cm_enabled = false,
     },
     xwayland = {
         enabled = true,
@@ -49,7 +50,7 @@ hl.config({
         preserve_split = true,
     },
     master = {
-        new_status = "master",
+        new_status = "slave",
     },
     ecosystem = {
         no_update_news = true,
