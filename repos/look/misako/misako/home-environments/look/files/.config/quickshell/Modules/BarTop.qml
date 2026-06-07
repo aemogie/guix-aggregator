@@ -48,8 +48,9 @@ Variants {
         Row {
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: parent.right
-            spacing: Theme.vars.barModuleSideMargin - 4
+            spacing: Theme.vars.barModuleSideMargin - 2
             BarTray {}
+            BarMullvad {}
             BarNotification {}
             BarIdle {}
         }

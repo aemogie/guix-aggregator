@@ -1,8 +1,12 @@
 import QtQuick
 import Quickshell.Hyprland
 import "../Components"
+import ".."
 
 CleanBarModule {
+    id: root
+    property var _public: SharedVariables.launcher = root
+
     icon: ""
     fam: "nf"
     InteractArea {

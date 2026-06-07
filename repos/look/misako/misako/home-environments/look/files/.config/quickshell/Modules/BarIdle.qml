@@ -4,8 +4,9 @@ import "../Components"
 
 BorderBarModule {
     id: root
+    property var _public: SharedVariables.idle = root
 
-    icon: SharedVariables.idleEnabled ? "visibility" : "visibility_off"
+    icon: SharedVariables.idleEnabled ? "visibility_off" : "visibility"
     icon_extra_y: 1
 
     InteractArea {

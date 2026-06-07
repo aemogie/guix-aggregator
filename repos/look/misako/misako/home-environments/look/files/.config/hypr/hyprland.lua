@@ -1,4 +1,4 @@
-hl.env("HYPRLAND_CONFIG", "/home/look/projects/guile/misako/misako/home-environments/look/files/.config/hypr/hyprland.lua")
+hl.env("HYPRLAND_CONFIG", os.getenv("HOME") .. "/projects/guile/misako/misako/home-environments/look/files/.config/hypr/hyprland.lua")
 
 require("autostart")
 require("input")

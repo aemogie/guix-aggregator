@@ -13,6 +13,7 @@ Scope {
         readonly property int barModuleSize: 28
         readonly property int barModuleSideMargin: 7
         readonly property int roundness: 14
+        readonly property int hyprlandGapsOut: 10
 
         /* Font */
         readonly property string fontFamily: "Inter Variable"

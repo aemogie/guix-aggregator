@@ -5,7 +5,7 @@ hl.workspace_rule({
 })
 
 hl.workspace_rule({
-    workspace = "name:vesktop",
+    workspace = "name:fluxer",
     monitor = "HDMI-A-1",
     default = false,
 })
@@ -78,11 +78,11 @@ hl.window_rule({
 })
 
 hl.window_rule({
-    name = "vesktop",
+    name = "fluxer",
     match = {
-        class = "^(vesktop)$",
+        class = "^(fluxer-canary)$",
     },
-    workspace = "name:vesktop silent",
+    workspace = "name:fluxer silent",
     tag = "nofancy",
     idle_inhibit = "none",
     -- no_screen_share = 1
@@ -93,7 +93,7 @@ hl.window_rule({
     match = {
         class = "^(cinny)$",
     },
-    workspace = "name:vesktop silent",
+    workspace = "name:fluxer silent",
     -- no_screen_share = true,
 })
 

@@ -41,7 +41,7 @@ local workspaces = {
   { "bracketleft",  "special:senpai"   },
   { "dead_acute",   "special:newsraft" },
   { "dead_tilde",   "name:spotify"     },
-  { "ccedilla",     "name:vesktop"     },
+  { "ccedilla",     "name:fluxer"      },
   { "bracketright", "name:steam"       },
 }
 

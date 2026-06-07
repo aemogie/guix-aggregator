@@ -31,7 +31,7 @@
     (name 'saayix-nonfree)
     (branch "main")
     (url "https://codeberg.org/look/saayix-nonfree")
-    (commit "1352002f4acfede724affca64bc9313dd4102161")
+    (commit "24bc4982d34c6ef3f487b6a712605d25318043ed")
     (introduction
       (make-channel-introduction
         "8a0caf3d1dbcd0c9257a23f8b251b5d5ff153c97"

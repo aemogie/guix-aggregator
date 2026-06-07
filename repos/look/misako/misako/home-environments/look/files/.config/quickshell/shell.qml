@@ -9,7 +9,7 @@ import "Services"
 ShellRoot {
     id: main
 
-    property var _init: [NotificationService]
+    property var _init: [NotificationService, MullvadService]
 
     Notification { }
     IdleService { }
