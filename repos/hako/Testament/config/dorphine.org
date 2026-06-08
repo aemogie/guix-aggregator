@@ -39,7 +39,6 @@
                   "libreoffice"
                   "obs-nvidia"
                   "picard"
-                  "telegram-desktop"
                   <<package-spec>>))
                %testament-cli-packages
                %base-packages))

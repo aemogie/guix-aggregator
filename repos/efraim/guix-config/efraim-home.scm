@@ -1368,10 +1368,10 @@ fi")))))
                            "\n" 'suffix)))
            ("qutebrowser/pdfjs"
             ,(file-append (S "pdfjs") "/share/pdfjs"))
-           ("qutebrowser/qtwebengine_dictionaries/en-US.bdic"
+           ("qutebrowser/qtwebengine_dictionaries/en-US-99-0.bdic"
             ,(file-append (@ (dfsg main dictionaries) qtwebengine-dictionary-en-us)
                           "/share/hunspell-bdic/en-US.bdic"))
-           ("qutebrowser/qtwebengine_dictionaries/he-IL.bdic"
+           ("qutebrowser/qtwebengine_dictionaries/he-IL-99-0.bdic"
             ,(file-append (@ (dfsg main dictionaries) qtwebengine-dictionary-he-il)
                           "/share/hunspell-bdic/he-IL.bdic"))))))))
 
