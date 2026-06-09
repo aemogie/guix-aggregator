@@ -11,6 +11,7 @@ ShellRoot {
 
     property var _init: [NotificationService, MullvadService]
 
+    VolumeOsdService { }
     Notification { }
     IdleService { }
     WallpaperService { }

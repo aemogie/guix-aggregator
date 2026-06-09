@@ -10,4 +10,6 @@ QtObject {
     property var clock
     property var launcher
     property var idle
+    property var sink
+    property var source
 }

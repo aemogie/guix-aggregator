@@ -173,12 +173,12 @@ functions.
 
 In Guix, =doc= output of the Emacs package stores source code under the
 =c-source= directory, differing from =src= expected by =helpful--library-path=.
-Redefine the function as a workaround.
+Advise the function.
 
 #+begin_src emacs-lisp :noweb-ref emacs-init
   (use-package helpful
     :config
-    (defun helpful--library-path (library-name)
+    (defun hako/helpful--library-path-advice (library-name)
       (when (member (f-ext library-name) '("c" "rs"))
         (setq library-name
               (f-expand (f-filename library-name)
@@ -186,6 +186,7 @@ Redefine the function as a workaround.
       (condition-case nil
           (find-library-name library-name)
         (error nil)))
+    (advice-add #'helpful--library-path :override #'hako/helpful--library-path-advice)
     :bind
     ([remap describe-function] . helpful-callable)
     ([remap describe-variable] . helpful-variable)
@@ -452,19 +453,20 @@ Citre has builtin support for Eglot.  Other backends will be converted later
 in their own sections.
 
 Elisp Xref backend doesn't handle =*.el.gz= files by itself and returns =*.el=
-files instead.  Redefine so that Citre can find them.
+files instead in =elisp--xref-make-xref=.  Advise so that Citre can find the
+files.
 
 #+begin_src emacs-lisp :noweb-ref emacs-init
   (use-package elisp-mode
     :after citre
     :config
-    (defun elisp--xref-make-xref (type symbol file &optional summary)
+    (defun hako/elisp--xref-make-xref-advice (orig type symbol file &rest rest)
       (let ((file* (if (string-suffix-p ".el" file)
                        (find-library-name file)
                      file)))
-        (xref-make (or summary
-  		     (format elisp--xref-format (or type 'defun) symbol))
-  	         (xref-make-elisp-location symbol type file*))))
+        (apply orig type symbol file* rest)))
+    (advice-add #'elisp--xref-make-xref :around #'hako/elisp--xref-make-xref-advice)
+
     (defvar citre-elisp-backend
       (citre-xref-backend-to-citre-backend
        'elisp
@@ -503,19 +505,21 @@ Then connect to the server via ~arei-connect~ (=C-c C-a=) in Emacs.
     (after-init . global-arei-mode))
 #+end_src
 
-Arei Xref backend provides =xref-buffer-location= but Citre expects
-=xref-file-location=.  Redefine it:
+Arei Xref backend provides =xref-buffer-location= in =arei-xref--make-xref-loc=
+but Citre expects =xref-file-location=.  Advise the function.
 
 #+begin_src emacs-lisp :noweb-ref emacs-init
   (use-package arei-xref
     :after citre
     :config
-    (defun arei-xref--make-xref-loc (identifier)
+    (defun hako/arei-xref--make-xref-loc-advice (identifier)
       (when-let* ((info (arei-xref--request-lookup identifier))
                   (file (arei-nrepl-dict-get info "file"))
                   (line (arei-nrepl-dict-get info "line"))
                   (column (arei-nrepl-dict-get info "column")))
         (xref-make-file-location file line column)))
+    (advice-add #'arei-xref--make-xref-loc :override #'hako/arei-xref--make-xref-loc-advice)
+
     (defvar citre-arei-backend
       (citre-xref-backend-to-citre-backend
        'arei
@@ -617,6 +621,28 @@ Flycheck support for Eglot.
   (use-package flycheck-eglot
     :hook
     (after-init . global-flycheck-eglot-mode))
+#+end_src
+
+*** [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Info-Lookup.html][info-look]]
+(builtin) Info documentation lookup (C-h S).
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package info-look
+    :config
+    (info-lookup-add-help
+     :mode 'scheme-mode
+     :regexp "[^()`',\"        \n]+"
+     :ignore-case nil
+     :doc-spec
+     (mapcar (lambda (node-name)
+               (list node-name nil "^[       ]+-+ [^:]+:[    ]*" "\\b"))
+             '("(guile)R5RS Index"
+               "(guix)Programming Index"
+               "(guile)Procedure Index"
+               "(guile)Variable Index"
+               "(r5rs)Index"
+               "(guile)Concept Index"
+               "(guix)Concept Index"))))
 #+end_src
 
 *** [[https://github.com/emacsorphanage/macrostep][macrostep]]

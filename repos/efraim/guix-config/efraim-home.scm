@@ -769,7 +769,9 @@
     "--convert-subtitles srt\n"
     "--restrict-filenames\n"
     ;#~(string-append "--js-runtimes node:" #$(S "node") "/bin/node\n")
-    #~(string-append "--js-runtimes quickjs:" #$(S "quickjs") "/bin/qjs\n")))
+    ;#~(string-append "--js-runtimes quickjs:" #$(S "quickjs-ng") "/bin/qjs\n")
+    #~(string-append "--js-runtimes quickjs:" #$(S "quickjs") "/bin/qjs\n")
+    "--remote-components ejs:github\n"))
 
 (define %zathurarc
   (plain-file

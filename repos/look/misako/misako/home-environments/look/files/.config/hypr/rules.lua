@@ -85,7 +85,7 @@ hl.window_rule({
     workspace = "name:fluxer silent",
     tag = "nofancy",
     idle_inhibit = "none",
-    -- no_screen_share = 1
+    no_screen_share = 1
 })
 
 hl.window_rule({
@@ -94,7 +94,7 @@ hl.window_rule({
         class = "^(cinny)$",
     },
     workspace = "name:fluxer silent",
-    -- no_screen_share = true,
+    no_screen_share = true,
 })
 
 hl.window_rule({

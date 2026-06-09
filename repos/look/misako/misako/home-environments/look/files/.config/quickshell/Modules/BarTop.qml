@@ -51,6 +51,8 @@ Variants {
             spacing: Theme.vars.barModuleSideMargin - 2
             BarTray {}
             BarMullvad {}
+            BarAudioSinkVolume {}
+            BarAudioSourceVolume {}
             BarNotification {}
             BarIdle {}
         }
