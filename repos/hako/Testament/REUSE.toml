@@ -4,11 +4,13 @@ version = 1
 path = [
         "*.patch",
         "*.tmp",
+        ".dir-locals.el",
         ".envrc",
         ".gitignore",
         ".gitmodules",
         ".guix-authorizations",
         ".sops.yaml",
+        "channels-fork.lock",
         "channels.lock",
         "channels.scm",
         "deploy/*",

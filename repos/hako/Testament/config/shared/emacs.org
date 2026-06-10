@@ -3,7 +3,6 @@
 #+TITLE: Emacs
 #+PROPERTY: header-args :mkdirp yes :noweb-prefix no
 
-** Base
 [[https://orgmode.org/manual/Library-of-Babel.html][Library of Babel]] doesn't support [[https://orgmode.org/manual/Noweb-Reference-Syntax.html][noweb reference]], use =name= keyword as a
 workaround.
 
@@ -32,12 +31,7 @@ Services, packages and configuration file for Emacs:
                        (,(@ (gnu packages emacs) emacs-minimal) . ,emacs)
                        (,(@ (gnu packages emacs) emacs-no-x)    . ,emacs))))
          (specifications->manifest
-          '(;; Startup.
-            "emacs-gcmh"
-            "emacs-no-littering"
-            ;; Theming.
-            "emacs-doom-modeline"
-            ;; Configured packages.
+          '(;; Configured packages.
             <<package-spec>>
             ;; Others.
             "emacs-beancount"
@@ -66,99 +60,110 @@ a functional setup with fish login shell.
     `(("emacs/init.el" ,(local-file (testament-file "emacs/emacs-init.el")))))
 #+end_src
 
-#+begin_src emacs-lisp :noweb yes :tangle ../../tangled/emacs/emacs-init.el
+#+begin_src elisp :noweb yes :tangle ../../tangled/emacs/emacs-init.el
   ;;; -*- lexical-binding: t -*-
-  ;;;
-  ;;; Startup.
-  ;;;
 
   (setopt custom-file (locate-user-emacs-file "custom.el"))
   (if (not (file-exists-p custom-file))
       (make-empty-file custom-file)
     (load custom-file))
 
-  ;; Tweak garbage collection strategy.
+  <<emacs-init>>
+#+end_src
+
+** Startup
+*** [[https://gitlab.com/koral/gcmh][gcmh]]
+Enforce a sneaky garbage collection strategy to minimize GC interference with
+user activity.
+
+#+begin_src scheme :noweb-ref package-spec
+  "emacs-gcmh"
+#+end_src
+
+#+begin_src elisp :noweb-ref emacs-init
   (use-package gcmh
     :config
     (gcmh-mode 1))
+#+end_src
 
-  ;; Set default storage locations for various packages.
+*** [[https://github.com/emacscollective/no-littering][no-littering]]
+Keep ~/.config/emacs clean by setting default storage locations for various
+packages.
+
+#+begin_src scheme :noweb-ref package-spec
+  "emacs-no-littering"
+#+end_src
+
+#+begin_src elisp :noweb-ref emacs-init
   (use-package no-littering
     :config
     (no-littering-theme-backups))
+#+end_src
 
-  
-  ;;;
-  ;;; Basic configurations.
-  ;;;
+*** basic configurations
+Basic configuration and theming for builtin packages.
 
-  (use-package emacs
-    :custom
-    (inhibit-startup-screen t)
-    (initial-scratch-message ";; `M-x butterfly'\n\n")
-    (user-full-name "Hilton Chain")
-    (user-mail-address "hako@ultrarare.space")
-    ;; Workaround to use fish as login shell.
-    (shell-file-name "/bin/sh"))
-
-  (use-package emacs
-    :custom
-    (fill-column 80)
-    (indent-tabs-mode nil)
-    (word-wrap-by-category t)             ;CJK support
-    :config
-    (setopt electric-indent-inhibit t)    ;disable automatic re-indentation
-    :bind
-    ([remap list-buffers] . switch-to-buffer)
-    ("M-o" . other-window)
-    :hook
-    (after-init . electric-pair-mode)     ;automatic parenthesis pairing
-    (after-init . pixel-scroll-precision-mode)
-    (before-save . delete-trailing-whitespace))
-
-  
-  ;;;
-  ;;; Theming
-  ;;;
-
+#+begin_src elisp :noweb-ref emacs-init
   (use-package emacs
     :custom
     (blink-cursor-mode nil)
+    (fill-column 80)
     (fringe-mode 0)
+    (indent-tabs-mode nil)
+    (inhibit-startup-screen t)
+    (initial-scratch-message ";; `M-x butterfly'\n\n")
     (scroll-bar-mode nil)
     (show-paren-context-when-offscreen 'overlay)
     (tool-bar-mode nil)
     (tooltip-mode nil)
-    :hook
-    (after-init . menu-bar-mode)
-    (after-init . show-paren-mode)
-    ;; `fill-column' indicator.
-    (prog-mode . display-fill-column-indicator-mode))
-
-  (use-package emacs
-    :custom
-    (modus-themes-italic-constructs t)
+    (user-full-name "Hilton Chain")
+    (user-mail-address "hako@ultrarare.space")
+    (shell-file-name "/bin/sh")           ;workaround to use fish as login shell
+    (word-wrap-by-category t)             ;better CJK support
     :config
-    (load-theme 'modus-operandi-tinted :no-confirm))
+    (setopt electric-indent-inhibit t)    ;disable automatic re-indentation
+    :hook
+    (after-init . electric-pair-mode)          ;automatic parenthesis pairing
+    (after-init . menu-bar-mode)
+    (after-init . pixel-scroll-precision-mode) ;scroll the display precisely
+    (after-init . show-paren-mode)             ;visualize matching parenthesis
+    (before-save . delete-trailing-whitespace)
+    (prog-mode . display-fill-column-indicator-mode) ;`fill-column' indicator
+    :bind
+    ([remap list-buffers] . switch-to-buffer)
+    ("M-o" . other-window))
+#+end_src
 
+** Interface
+*** [[https://github.com/seagle0128/doom-modeline][doom-modeline]]
+Fancy and fast mode-line inspired by minimalism design.
+
+#+begin_src scheme :noweb-ref package-spec
+  "emacs-doom-modeline"
+#+end_src
+
+#+begin_src elisp :noweb-ref emacs-init
   (use-package doom-modeline
     :custom
     (doom-modeline-icon nil)
     (doom-modeline-height 18)
     :hook
     (after-init . doom-modeline-mode))
-
-  <<emacs-fonts>>
-
-  
-  ;;;
-  ;;; Configured packages.
-  ;;;
-
-  <<emacs-init>>
 #+end_src
 
-** Interface
+*** [[https://github.com/casouri/eldoc-box][eldoc-box]]
+Display ElDoc documentations in a childframe.
+
+#+begin_src scheme :noweb-ref package-spec
+  "emacs-eldoc-box"
+#+end_src
+
+#+begin_src elisp :noweb-ref emacs-init
+  (use-package eldoc-box
+    :hook
+    (eldoc-mode . eldoc-box-hover-mode))
+#+end_src
+
 *** [[https://github.com/Wilfred/helpful][helpful]]
 Alternative to the built-in Emacs help that provides much more contextual
 information.
@@ -175,7 +180,7 @@ In Guix, =doc= output of the Emacs package stores source code under the
 =c-source= directory, differing from =src= expected by =helpful--library-path=.
 Advise the function.
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package helpful
     :config
     (defun hako/helpful--library-path-advice (library-name)
@@ -203,7 +208,7 @@ Highlight TODO and similar keywords in comments and strings.
   "emacs-hl-todo"
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package hl-todo
     :custom
     (hl-todo-highlight-punctuation ":")
@@ -214,13 +219,25 @@ Highlight TODO and similar keywords in comments and strings.
 *** [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Incremental-Search.html][isearch]]
 (builtin) Incremental search.
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package isearch
     :custom
     (isearch-lazy-count t)
     (isearch-wrap-pause 'no-ding)
     (regexp-search-ring-max 200)
     (search-ring-max 200))
+#+end_src
+
+*** [[https://protesilaos.com/emacs/modus-themes][modus-themes]]
+(builtin) Accessible themes conforming with the highest standard for colour
+contrast between background and foreground values (WCAG AAA).
+
+#+begin_src elisp :noweb-ref emacs-init
+  (use-package emacs
+    :custom
+    (modus-themes-italic-constructs t)
+    :config
+    (load-theme 'modus-operandi-tinted :no-confirm))
 #+end_src
 
 *** [[https://github.com/alezost/mwim.el][mwim]]
@@ -230,7 +247,7 @@ Move where you really want.
   "emacs-mwim"
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package mwim
     :bind
     ([remap move-beginning-of-line] . mwim-beginning)
@@ -244,7 +261,7 @@ Colorize Org tags automatically to make them visually distinguishable.
   "emacs-org-rainbow-tags"
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package org-rainbow-tags
     :hook
     (org-mode . org-rainbow-tags-mode))
@@ -257,7 +274,7 @@ Frecency based completion sorting and filtering.
   "emacs-prescient"
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package prescient
     :custom
     (prescient-filter-method '(literal fuzzy regexp initialism))
@@ -265,7 +282,7 @@ Frecency based completion sorting and filtering.
     (after-init . prescient-persist-mode))
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package emacs
     :custom
     (completion-styles '(prescient basic))
@@ -275,7 +292,7 @@ Frecency based completion sorting and filtering.
     (after-init . global-completion-preview-mode))
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package vertico-prescient
     :hook
     (after-init . vertico-prescient-mode))
@@ -289,7 +306,7 @@ their depth.  Each successive level is highlighted in a different color.
   "emacs-rainbow-delimiters"
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package rainbow-delimiters
     :hook
     (prog-mode . rainbow-delimiters-mode))
@@ -301,7 +318,7 @@ Pixel-perfect visual alignment for Org and Markdown tables.
 #+begin_src scheme :noweb-ref package-spec
   "emacs-valign"
 #+end_src
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package valign
     :hook
     ((org-mode markdown-mode) . valign-mode))
@@ -314,7 +331,7 @@ Vertical minibuffer completion UI based on the default completion system.
   "emacs-vertico"
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package vertico
     :init
     ;; https://github.com/minad/vertico/wiki#restore-old-tab-behavior-when-completing-tramp-paths
@@ -327,25 +344,25 @@ Vertical minibuffer completion UI based on the default completion system.
     :hook
     (after-init . vertico-mode)
     :bind
-    (:map vertico-map
-          ([remap vertico-insert] . hako/vertico-insert)))
+    ((:map vertico-map)
+     ([remap vertico-insert] . hako/vertico-insert)))
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package vertico-directory
     :after vertico
+    :hook
+    ;; Tidy shadowed file names.
+    (rfn-eshadow-update-overlay . vertico-directory-tidy)
     :bind
     ;; More convenient directory navigation commands.
-    (:map vertico-map
-          ("RET" . vertico-directory-enter)
-          ("DEL" . vertico-directory-delete-char)
-          ("M-DEL" . vertico-directory-delete-word))
-    ;; Tidy shadowed file names.
-    :hook
-    (rfn-eshadow-update-overlay . vertico-directory-tidy))
+    ((:map vertico-map)
+     ("RET" . vertico-directory-enter)
+     ("DEL" . vertico-directory-delete-char)
+     ("M-DEL" . vertico-directory-delete-word)))
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package emacs
     :custom
     (enable-recursive-minibuffers t)
@@ -374,7 +391,7 @@ Vertical minibuffer completion UI based on the default completion system.
 *** [[https://github.com/justbur/emacs-which-key][which-key]]
 (builtin) Display available keybindings in popup.
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package which-key
     :config
     (which-key-setup-side-window-right-bottom)
@@ -394,13 +411,13 @@ visual-fill-column: Wrap =visual-line-mode= buffers at =fill-column=.
   "emacs-visual-fill-column"
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package adaptive-wrap
     :hook
     (visual-line-mode . adaptive-wrap-prefix-mode))
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package visual-fill-column
     :custom
     (visual-fill-column-center-text t)
@@ -419,7 +436,7 @@ citre: Code reading & auto-completion tool with pluggable backends.
   "ripgrep"
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package xref
     :custom
     ;; Used by commands like `dired-do-find-regexp' and `project-find-regexp'.
@@ -430,7 +447,7 @@ Xref stops searching if one backend fails to find the symbol.  Replace it with
 Citre since the latter supports [[https://github.com/universal-ctags/citre/blob/master/docs/user-manual/adapt-an-existing-xref-backend.md][adapting existing Xref backends]] and handles
 multiple backends better.
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package citre
     :custom
     (citre-default-create-tags-file-location 'global-cache)
@@ -456,7 +473,7 @@ Elisp Xref backend doesn't handle =*.el.gz= files by itself and returns =*.el=
 files instead in =elisp--xref-make-xref=.  Advise so that Citre can find the
 files.
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package elisp-mode
     :after citre
     :config
@@ -496,7 +513,7 @@ Or the following one for Guix development:
 
 Then connect to the server via ~arei-connect~ (=C-c C-a=) in Emacs.
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package arei
     :custom
     ;; Prevent geiser from interfering with completion.
@@ -508,7 +525,7 @@ Then connect to the server via ~arei-connect~ (=C-c C-a=) in Emacs.
 Arei Xref backend provides =xref-buffer-location= in =arei-xref--make-xref-loc=
 but Citre expects =xref-file-location=.  Advise the function.
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package arei-xref
     :after citre
     :config
@@ -534,7 +551,7 @@ but Citre expects =xref-file-location=.  Advise the function.
   "emacs-dumb-jump"
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package dumb-jump
     :after citre
     :custom
@@ -565,7 +582,7 @@ but Citre expects =xref-file-location=.  Advise the function.
   "zig-zls"
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package eglot
     :config
     (dolist (program
@@ -604,10 +621,77 @@ On the fly syntax checking.
   "tidy-html"
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package flycheck
     :hook
     (after-init . global-flycheck-mode))
+#+end_src
+
+Set up ElDoc integration.  https://www.masteringemacs.org/article/seamlessly-merge-multiple-documentation-sources-eldoc
+
+#+begin_src elisp :noweb-ref emacs-init
+  (use-package flycheck
+    :init
+    (defun mp/flycheck-eldoc (callback &rest _ignored)
+      "Print flycheck messages at point by calling CALLBACK."
+      (when-let ((flycheck-errors (and flycheck-mode (flycheck-overlay-errors-at (point)))))
+        (mapc (lambda (err)
+                (funcall callback
+                         (format "%s: %s"
+                                 (let ((level (flycheck-error-level err)))
+                                   (pcase level
+                                     ('info (propertize "I" 'face 'flycheck-error-list-info))
+                                     ('error (propertize "E" 'face 'flycheck-error-list-error))
+                                     ('warning (propertize "W" 'face 'flycheck-error-list-warning))
+                                     (_ level)))
+                                 (flycheck-error-message err))
+                         :thing (or (flycheck-error-id err)
+                                    (flycheck-error-group err))
+                         :face 'font-lock-doc-face))
+              flycheck-errors)))
+    (defun mp/flycheck-prefer-eldoc ()
+      (add-hook 'eldoc-documentation-functions #'mp/flycheck-eldoc nil t)
+      (setq eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly)
+      (setq flycheck-display-errors-function nil)
+      (setq flycheck-help-echo-function nil))
+    :hook
+    (flycheck-mode . mp/flycheck-prefer-eldoc))
+#+end_src
+
+Fix org-lint compatibility.  https://github.com/flycheck/flycheck/pull/2165#issuecomment-4537260684
+
+#+begin_src elisp :noweb-ref emacs-init
+  (use-package flycheck
+    :config
+    (defun hako/flycheck-checker-get-advice (orig checker property &rest rest)
+      (if (and (eq 'org-lint checker)
+               (eq 'start property)
+               (string= flycheck-version "36.0"))
+          (lambda (checker callback)
+            (condition-case err
+                (let ((errors
+                       (delq nil
+                             (mapcar
+                              (lambda (e)
+                                (pcase e
+                                  (`(,_n [,line ,_trust ,desc ,_checker])
+                                   (flycheck-error-new-at
+                                    (if (stringp line)
+                                        (string-to-number line)
+                                      line)
+                                    nil 'info desc
+                                    :checker checker))
+                                  (_
+                                   (flycheck-error-new-at
+                                    1 nil 'warning
+                                    (format "Unexpected org-lint format: %S" e)
+                                    :checker checker))))
+                              (org-lint)))))
+                  (funcall callback 'finished errors))
+              (error (funcall callback 'errored
+                              (error-message-string err)))))
+        (apply orig checker property rest)))
+    (advice-add #'flycheck-checker-get :around #'hako/flycheck-checker-get-advice))
 #+end_src
 
 *** [[https://github.com/flycheck/flycheck-eglot][flycheck-eglot]]
@@ -617,16 +701,78 @@ Flycheck support for Eglot.
   "emacs-flycheck-eglot"
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package flycheck-eglot
     :hook
     (after-init . global-flycheck-eglot-mode))
 #+end_src
 
+*** [[https://github.com/flatwhatson/flycheck-guile][flycheck-guile]]
+Flycheck checker for GNU Guile.
+
+#+begin_src scheme :noweb-ref package-spec
+  "emacs-flycheck-guile"
+#+end_src
+
+flycheck-guile gets load paths from geiser.  Define a custom checker to use guix
+repl instead.
+
+#+begin_src elisp :noweb-ref emacs-init
+  (use-package flycheck-guile
+    :after flycheck
+    :config
+    (flycheck-define-checker guile-guix
+      "A GNU Guile syntax checker using `guild compile'."
+      :command
+      ("guild" "compile" "-O0"
+       (option-list "-W" flycheck-guile-warnings)
+       (eval (mapcan
+              (lambda (p)
+                (list "-L" p))
+              (read (shell-command-to-string "echo '(write %load-path)' | guix repl /dev/stdin"))))
+       source)
+      :error-filter flycheck-guile--filter-errors
+      :error-patterns
+      ((warning
+        line-start
+        (file-name) ":" line ":" column ": warning:" (message) line-end)
+       (warning
+        line-start
+        "<unknown-location>: warning:" (message) line-end)
+       (error
+        line-start
+        "ice-9/boot-9.scm:" (+ digit) ":" (+ digit) ":" (+ (any space "\n"))
+        "In procedure raise-exception:"                 (+ (any space "\n"))
+        "In procedure " (id (+ (not (any ":")))) ":"    (+ (any space "\n"))
+        (file-name) ":" line ":" column ":" (message (+? anything)) (* space) string-end)
+       (error
+        line-start
+        "ice-9/boot-9.scm:" (+ digit) ":" (+ digit) ":" (+ (any space "\n"))
+        "In procedure raise-exception:"                 (+ (any space "\n"))
+        (id (+ (not (any ":")))) ":"                    (+ (any space "\n"))
+        (file-name) ":" line ":" column ":" (message (+? anything)) (* space) string-end)
+       (error
+        line-start
+        "ice-9/boot-9.scm:" (+ digit) ":" (+ digit) ":" (+ (any space "\n"))
+        "In procedure raise-exception:"                 (+ (any space "\n"))
+        (message (+? anything)) (* space) string-end)
+       (error
+        line-start
+        (file-name) ":" line ":" column ":"             (+ (any space "\n"))
+        "In procedure raise-exception:"                 (+ (any space "\n"))
+        (message (+? anything)) (* space) string-end)
+       (error
+        line-start
+        (file-name) ":" line ":" column ":"             (+ (any space "\n"))
+        (message (+? anything)) (* space) string-end))
+      :modes (scheme-mode))
+    (add-to-list 'flycheck-checkers 'guile-guix))
+#+end_src
+
 *** [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Info-Lookup.html][info-look]]
 (builtin) Info documentation lookup (C-h S).
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package info-look
     :config
     (info-lookup-add-help
@@ -652,32 +798,11 @@ Interactive macro-expander.
   "emacs-macrostep"
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package macrostep
     :bind
-    (:map emacs-lisp-mode-map
-          ("C-c e" . macrostep-expand)))
-#+end_src
-
-*** [[https://orgmode.org/][org]]
-(builtin) Highly flexible structured plain text file format.
-
-#+begin_src emacs-lisp :noweb-ref emacs-init
-  (use-package org
-    :custom
-    (org-babel-load-languages
-     '((scheme . t)
-       (python . t)
-       (scheme . t)
-       (shell . t)))
-    (org-id-track-globally t)
-    (org-insert-heading-respect-content t)
-    (org-link-file-path-type 'relative)
-    (org-log-into-drawer t)
-    (org-special-ctrl-a/e t)
-    (org-special-ctrl-k t)
-    (org-startup-folded 'content)
-    (org-todo-keywords '((sequence "TODO(t!)" "DOING(g!)" "|" "DONE(d!)"))))
+    ((:map emacs-lisp-mode-map)
+     ("C-c e" . macrostep-expand)))
 #+end_src
 
 *** [[https://github.com/AmaiKinono/puni][puni]]
@@ -688,16 +813,16 @@ supports many major modes out of the box.
   "emacs-puni"
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package puni
     :hook
     ((eval-expression-minibuffer-setup nxml-mode prog-mode sgml-mode tex-mode)
      . puni-mode)
     :bind
-    (:map puni-mode-map
-          ("C-M-r" . puni-raise)
-          ("C-M-," . puni-slurp-backward)
-          ("C-M-." . puni-slurp-forward)))
+    ((:map puni-mode-map)
+     ("C-M-r" . puni-raise)
+     ("C-M-," . puni-slurp-backward)
+     ("C-M-." . puni-slurp-forward)))
 #+end_src
 
 *** [[https://github.com/renzmann/treesit-auto][treesit-auto]]
@@ -720,7 +845,7 @@ Automatic usage and fallback for tree-sitter major modes.
   "tree-sitter-kdl"
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package treesit-auto
     :config
     ;; FIXME: These modes aren't loaded automatically.
@@ -749,7 +874,7 @@ Automatic usage and fallback for tree-sitter major modes.
 *** [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Authentication.html][auth-source]]
 (builtin) Keep persistent authentication information.
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package auth-source
     :custom
     (auth-source-gpg-encrypt-to '("220F98D95E86204C0036DA7B6DEC4360408B4185"))
@@ -763,16 +888,52 @@ Managing init system services.
   "emacs-daemons"
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package daemons
     :custom
     (daemons-list-fill-frame t))
 #+end_src
 
+*** [[https://protesilaos.com/emacs/denote][denote]]
+Simple notes with an efficient file-naming scheme.
+
+#+begin_src scheme :noweb-ref package-spec
+  "emacs-denote"
+#+end_src
+
+#+begin_src elisp :noweb-ref emacs-init
+  (use-package denote
+    :after org
+    :custom
+    (denote-directory "~/Documents/Notes")
+    (denote-known-keywords nil)
+    (denote-date-prompt-use-org-read-date t)
+    (denote-rename-buffer-mode t)
+    :hook
+    (dired-mode . denote-dired-mode)
+    :bind
+    (("C-c n n" . denote-open-or-create)
+     ("C-c n d" . denote-dired)
+     ("C-c n g" . denote-grep)
+     ("C-c n r" . denote-rename-file)
+     ("C-c n R" . denote-rename-file-using-front-matter)
+     (:map org-mode-map)
+     ("C-c n l" . denote-link)
+     ("C-c n L" . denote-add-links)
+     ("C-c n b" . denote-backlinks)
+     ("C-c n q c" . denote-query-contents-link)
+     ("C-c n q f" . denote-query-filenames-link)
+     (:map dired-mode-map)
+     ("C-c C-d C-i" . denote-dired-link-marked-notes)
+     ("C-c C-d C-r" . denote-dired-rename-files)
+     ("C-c C-d C-k" . denote-dired-rename-marked-files-with-keywords)
+     ("C-c C-d C-R" . denote-dired-rename-marked-files-using-front-matter)))
+#+end_src
+
 *** [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Dired.html][dired]]
 (builtin) Directory editor.
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package dired
     :custom
     (dired-listing-switches
@@ -798,7 +959,7 @@ https://codeberg.org/akib/emacs-eat/pulls/228 are applied.
   "emacs-eat-dolly"
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package eat
     :custom
     (eat-kill-buffer-on-exit t)
@@ -810,8 +971,8 @@ https://codeberg.org/akib/emacs-eat/pulls/228 are applied.
     :config
     (add-to-list 'project-switch-commands '(eat-project "Eat") t)
     :bind
-    (:map project-prefix-map
-          ("t" . eat-project)))
+    ((:map project-prefix-map)
+     ("t" . eat-project)))
 #+end_src
 
 *** [[https://github.com/purcell/envrc][envrc]]
@@ -821,7 +982,7 @@ https://codeberg.org/akib/emacs-eat/pulls/228 are applied.
   "emacs-envrc"
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package envrc
     :hook
     (after-init . envrc-global-mode))
@@ -834,15 +995,15 @@ Text-based user interface to [[https://git-scm.com/][Git]].
   "emacs-magit"
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package project
     :config
     (add-to-list 'project-switch-commands
                  '(magit-project-status "Magit")
                  t)
     :bind
-    (:map project-prefix-map
-          ("m" . magit-project-status)))
+    ((:map project-prefix-map)
+     ("m" . magit-project-status)))
 #+end_src
 
 *** [[https://github.com/0WD0/majutsu][majutsu]]
@@ -852,7 +1013,7 @@ Interface for [[https://www.jj-vcs.dev/latest/][Jujutsu]].
   "emacs-majutsu-dolly"
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package majutsu
     :init
     (defun hako/majutsu-project-log ()
@@ -873,15 +1034,15 @@ Interface for [[https://www.jj-vcs.dev/latest/][Jujutsu]].
     ("C-x j" . majutsu-log))
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package project
     :config
     (add-to-list 'project-switch-commands
                  '(hako/majutsu-project-log "Majutsu")
                  t)
     :bind
-    (:map project-prefix-map
-          ("j" . hako/majutsu-project-log)))
+    ((:map project-prefix-map)
+     ("j" . hako/majutsu-project-log)))
 #+end_src
 
 *** [[https://notmuchmail.org/notmuch-emacs/][notmuch]]
@@ -891,7 +1052,7 @@ Interface for [[https://notmuchmail.org/][Notmuch]].
   "emacs-notmuch"
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package notmuch
     :custom
     (mail-user-agent 'notmuch-user-agent)
@@ -914,6 +1075,27 @@ Interface for [[https://notmuchmail.org/][Notmuch]].
     ("C-c M-m" . message-mark-inserted-region))
 #+end_src
 
+*** [[https://orgmode.org/][org]]
+(builtin) Highly flexible structured plain text file format.
+
+#+begin_src elisp :noweb-ref emacs-init
+  (use-package org
+    :custom
+    (org-babel-load-languages
+     '((scheme . t)
+       (python . t)
+       (scheme . t)
+       (shell . t)))
+    (org-id-track-globally t)
+    (org-insert-heading-respect-content t)
+    (org-link-file-path-type 'relative)
+    (org-log-into-drawer t)
+    (org-special-ctrl-a/e t)
+    (org-special-ctrl-k t)
+    (org-startup-folded 'content)
+    (org-todo-keywords '((sequence "TODO(t!)" "DOING(g!)" "|" "DONE(d!)"))))
+#+end_src
+
 *** [[https://ox-hugo.scripter.co/][ox-hugo]]
 Org to [[https://gohugo.io/][Hugo]] exporter.
 
@@ -921,7 +1103,7 @@ Org to [[https://gohugo.io/][Hugo]] exporter.
   "emacs-ox-hugo"
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package ox-hugo
     :after ox)
 #+end_src
@@ -929,7 +1111,7 @@ Org to [[https://gohugo.io/][Hugo]] exporter.
 *** [[https://www.gnu.org/software/emacs/manual/html_node/smtpmail/][smtpmail]]
 (builtin) SMTP library.
 
-#+begin_src emacs-lisp :noweb-ref emacs-init
+#+begin_src elisp :noweb-ref emacs-init
   (use-package smtpmail
     :custom
     (smtpmail-default-smtp-server "mail.boiledscript.com")
@@ -949,7 +1131,7 @@ https://github.com/nykma/nema/blob/develop/my-sample/font.el
   "font-google-noto-emoji"
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref emacs-fonts
+#+begin_src elisp :noweb-ref emacs-init
   (defvar nema--font-size 12 "Font size")
   (defvar nema-fonts '((sans     . "sans")
                        (serif    . "serif")
@@ -1011,6 +1193,84 @@ https://github.com/nykma/nema/blob/develop/my-sample/font.el
       (add-hook 'server-after-make-frame-hook #'nema/load-font)
     ;; Else: not in daemon
     (add-hook 'after-init-hook #'nema/load-font))
+#+end_src
+
+** Indentation
+https://web.archive.org/web/20240525203039/http://community.schemewiki.org/?emacs-indentation
+
+#+begin_src elisp :noweb-ref emacs-init
+  (use-package scheme
+    :init
+    (defun hako/adjust-scheme-indentation ()
+      ;;; Guile
+      (put 'call-with-prompt                  'scheme-indent-function 1)
+      (put 'test-assert                       'scheme-indent-function 1)
+      (put 'test-assertm                      'scheme-indent-function 1)
+      (put 'test-equalm                       'scheme-indent-function 1)
+      (put 'test-equal                        'scheme-indent-function 1)
+      (put 'test-eq                           'scheme-indent-function 1)
+      (put 'call-with-input-string            'scheme-indent-function 1)
+      (put 'guard                             'scheme-indent-function 1)
+      (put 'lambda*                           'scheme-indent-function 1)
+      (put 'with-fluids                       'scheme-indent-function 2)
+      (put 'with-mutex                        'scheme-indent-function 1)
+      (put 'syntax-parameterize               'scheme-indent-function 1)
+      ;; TODO: Contribute these to Emacs' scheme-mode.
+      (put 'let-keywords                      'scheme-indent-function 3)
+      ;;; Guix-specific
+      ;; (gnu services)
+      (put 'modify-services                   'scheme-indent-function 1)
+      ;; (guix build syscalls)
+      (put 'with-file-lock                    'scheme-indent-function 1)
+      (put 'with-file-lock/no-wait            'scheme-indent-function 1)
+      ;; (guix build utils)
+      (put 'substitute*                       'scheme-indent-function 1)
+      (put 'with-directory-excursion          'scheme-indent-function 1)
+      (put 'wrap-program                      'scheme-indent-function 1)
+      (put 'wrap-script                       'scheme-indent-function 1)
+      ;; 'modify-phases' and its keywords.
+      (put 'modify-phases                     'scheme-indent-function 1)
+      (put 'replace                           'scheme-indent-function 1)
+      (put 'add-before                        'scheme-indent-function 2)
+      (put 'add-after                         'scheme-indent-function 2)
+      ;; (guix gexp)
+      (put 'with-imported-modules             'scheme-indent-function 1)
+      (put 'with-extensions                   'scheme-indent-function 1)
+      (put 'with-parameters                   'scheme-indent-function 1)
+      (put 'let-system                        'scheme-indent-function 1)
+      (put 'with-build-variables              'scheme-indent-function 2)
+      (put 'computed-file                     'scheme-indent-function 1)
+      (put 'mixed-text-file                   'scheme-indent-function 1)
+      (put 'plain-file                        'scheme-indent-function 1)
+      (put 'program-file                      'scheme-indent-function 1)
+      (put 'scheme-file                       'scheme-indent-function 1)
+      (put 'text-file*                        'scheme-indent-function 1)
+      ;; (guix packages)
+      (put 'package/inherit                   'scheme-indent-function 1)
+      ;; 'modify-inputs' and its keywords.
+      (put 'modify-inputs                     'scheme-indent-function 1)
+      (put 'replace                           'scheme-indent-function 1)
+      ;; (guix records)
+      (put 'match-record                      'scheme-indent-function 3)
+      (put 'match-record-lambda               'scheme-indent-function 2)
+      ;; (guix utils)
+      (put 'substitute-keyword-arguments      'scheme-indent-function 1)
+      (put 'with-atomic-file-output           'scheme-indent-function 1)
+      (put 'call-with-compressed-output-port  'scheme-indent-function 2)
+      (put 'call-with-decompressed-port       'scheme-indent-function 2)
+      (put 'with-environment-variables        'scheme-indent-function 1)
+      ;;; Nonguix
+      (put 'with-transformation               'scheme-indent-function 1)
+      ;;; Rosenthal
+      (put 'computed-substitution-with-inputs 'scheme-indent-function 1)
+      (put 'hidden-desktop-entry              'scheme-indent-function 1)
+      (put 'modify-services/by-name           'scheme-indent-function 1)
+      (put 'ini-file                          'scheme-indent-function 1)
+      (put 'json-file                         'scheme-indent-function 1)
+      (put 'toml-file                         'scheme-indent-function 1)
+      (put 'yaml-file                         'scheme-indent-function 1))
+    :hook
+    (scheme-mode . hako/adjust-scheme-indentation))
 #+end_src
 
 ** Modules
