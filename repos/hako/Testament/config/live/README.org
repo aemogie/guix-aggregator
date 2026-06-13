@@ -2,7 +2,9 @@
 # Copyright © 2025-2026 Hilton Chain <hako@ultrarare.space>
 #+TITLE: Guix System Installation Live ISOs
 
-I provide Guix System installation images in this repository.
+*NOTE*: Currently installation image updates are blocked by
+https://codeberg.org/guix/guix/issues/7373 , newer ISOs can't be produced unless
+the issue is resolved.
 
 ** Variants
 - [[file:minimal.scm][minimal]]: console-based installation, the installer runs on [[https://www.freedesktop.org/wiki/Software/kmscon/][kmscon]].
@@ -14,9 +16,9 @@ tested for =x86_64-linux= ones.
 
 | Image                     | Signature | SHA256 Checksum                                                    | Build Date |
 |---------------------------+-----------+--------------------------------------------------------------------+------------|
-| [[https://files.guix.moe/2026-04-16/rosenthal-minimal-20260416.x86_64-linux.iso][minimal.x86_64-linux.iso]]  | [[https://files.guix.moe/2026-04-16/rosenthal-minimal-20260416.x86_64-linux.iso.asc][iso.asc]]   | =5b51feb12d6eb031d8482e3e31c9e8f5e781df76c9d62dd9f046ba0922a1f35f= | 2026-04-16 |
+| [[https://files.guix.moe/2026-06-12/rosenthal-minimal-20260612.x86_64-linux.iso][minimal.x86_64-linux.iso]]  | [[https://files.guix.moe/2026-06-12/rosenthal-minimal-20260612.x86_64-linux.iso.asc][iso.asc]]   | =60403fed7019ae9cbf005cf51a5f4caf679a3d6b5970d0496c4aa1be9710d323= | 2026-06-12 |
 | [[https://files.guix.moe/2026-02-19/rosenthal-minimal-20260219.aarch64-linux.iso][minimal.aarch64-linux.iso]] | [[https://files.guix.moe/2026-02-19/rosenthal-minimal-20260219.aarch64-linux.iso.asc][iso.asc]]   | =80317c2d05a44276c7c0dfa4e9827ca11b833ed5048ad5a3df52029e50324de8= | 2026-02-19 |
-| [[https://files.guix.moe/2026-04-16/rosenthal-niri-20260416.x86_64-linux.iso][niri.x86_64-linux.iso]]     | [[https://files.guix.moe/2026-04-16/rosenthal-niri-20260416.x86_64-linux.iso.asc][iso.asc]]   | =50c6ea408c364bcd3b7fc3d899819dc241ec71919c65ce4be90768f272c82065= | 2026-04-16 |
+| [[https://files.guix.moe/2026-06-12/rosenthal-niri-20260612.x86_64-linux.iso][niri.x86_64-linux.iso]]     | [[https://files.guix.moe/2026-06-12/rosenthal-niri-20260612.x86_64-linux.iso.asc][iso.asc]]   | =bff71e1329781125a66974f4a8385b97172da8228468fa1a01168b162902e4c3= | 2026-06-12 |
 | [[https://files.guix.moe/2026-02-19/rosenthal-niri-20260219.aarch64-linux.iso][niri.aarch64-linux.iso]]    | [[https://files.guix.moe/2026-02-19/rosenthal-niri-20260219.aarch64-linux.iso.asc][iso.asc]]   | =5cf3888bafc966b396076030515d66cb6fac1c8b60d9cb5fdd0853b8d3b699b7= | 2026-02-19 |
 
 Once downloaded, follow Guix System's [[https://guix.gnu.org/manual/devel/en/html_node/System-Installation.html][installation instructions]].  Loading of the
@@ -29,8 +31,8 @@ non-free firmware from [[https://gitlab.com/nonguix/nonguix][Nonguix channel]] t
 should be the same as installing on hardware that supports Linux Libre.
 
 To provide better downloading experience in more regions, they are configured to
-use [[https://guix.moe/][Guix Moe]]'s infrastructure.  It won't be available in the installed system,
-you'll need to set it up later if you want.
+use [[https://guix.moe/][Guix Moe]]'s experimental infrastructure.  It won't be available in the
+installed system, you'll need to set it up later if you want.
 
 For manual installation, [[https://fishshell.com/][fish]] is chosen as the login shell and several Guix
 System configuration examples are available under =/etc/configuration=.  These
@@ -52,3 +54,16 @@ Default keybindings:
 
 #+html: <img src="https://s3.boiledscript.com/misskey/9e9928ab-36ba-46bd-8ac4-35cda328606d.webp">
 #+html: <img src="https://s3.boiledscript.com/misskey/0bcd4fe2-8bf2-484b-9b3a-4d127846a46c.webp">
+
+** Build
+#+begin_src bash
+  git clone https://codeberg.org/hako/testament.git
+  cd testament
+
+  guix time-machine -C channels.lock -- shell -m manifest.scm
+
+  blue configure
+  blue build-iso minimal          # or niri
+#+end_src
+
+The resulted image will be copied to the dist directory.

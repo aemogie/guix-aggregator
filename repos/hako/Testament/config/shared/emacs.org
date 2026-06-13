@@ -501,15 +501,15 @@ Guile Scheme IDE based on nREPL protocol, intended for use with [[https://git.sr
 To start nREPL server for Arei, run the following command under project root
 directory:
 
-#+begin_example
+#+begin_src bash
   guix shell guile guile-ares-rs -- guile -c '((@ (ares server) run-nrepl-server))'
-#+end_example
+#+end_src
 
 Or the following one for Guix development:
 
-#+begin_example
+#+begin_src bash
   echo "(begin (use-modules (ares server) (guix gexp)) (run-nrepl-server))" | guix shell guile guile-ares-rs -- guix repl /dev/stdin
-#+end_example
+#+end_src
 
 Then connect to the server via ~arei-connect~ (=C-c C-a=) in Emacs.
 

@@ -9,42 +9,42 @@ This repository contains my dotfiles and Guix System literate configurations.
 Environment setup is done via [[https://guix.gnu.org/manual/devel/en/html_node/Invoking-guix-time_002dmachine.html][~guix time-machine~]] and [[https://guix.gnu.org/manual/devel/en/html_node/Invoking-guix-shell.html][~guix shell~]].  [[file:.envrc][.envrc]] is
 available for [[https://direnv.net/][direnv]] to automate the process.
 
-#+begin_example
-  $ guix time-machine -C channels.lock -- shell -m manifest.scm
-#+end_example
+#+begin_src bash
+  guix time-machine -C channels.lock -- shell -m manifest.scm
+#+end_src
 
 This repository uses [[https://codeberg.org/lapislazuli/blue][BLUE build system]], the entry point is at [[file:blueprint.scm][blueprint.scm]].
 
-#+begin_example
-  $ blue configure
-  $ blue build
-#+end_example
+#+begin_src bash
+  blue configure
+  blue build
+#+end_src
 
 For available commands, run ~blue help~.
 
-#+begin_example
-  $ blue help
-#+end_example
+#+begin_src bash
+  blue help
+#+end_src
 
 Examples:
 
 - Configure [[https://guix.gnu.org/manual/devel/en/html_node/Substitutes.html][substitute servers]]:
 
-#+begin_example
-  $ blue --fresh-store configure URL='https://bordeaux.guix.gnu.org https://ci.guix.gnu.org'
-#+end_example
+#+begin_src bash
+  blue --fresh-store configure URL='https://bordeaux.guix.gnu.org https://ci.guix.gnu.org'
+#+end_src
 
 - Variables can also be set temporarily:
 
-#+begin_example
-  $ blue URL='https://cache-cdn.guix.moe' build-os
-#+end_example
+#+begin_src bash
+  blue URL='https://cache-cdn.guix.moe' build-os
+#+end_src
 
 - Multiple commands can be chained by =--=, they'll be executed in order.
 
-#+begin_example
-  $ blue build -- compile -- build-os
-#+end_example
+#+begin_src bash
+  blue build -- compile -- build-os
+#+end_src
 
 ** Shared configurations
 + [[file:config/shared/caddy.org][caddy]]

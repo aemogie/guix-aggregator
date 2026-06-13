@@ -10,10 +10,6 @@
           (openpgp-fingerprint
            "5132 3571 CEED 988F 52FC 467C 6F98 DBF3 EA7F 4B37"))))
       (channel
-        (name 'noctalia)
-        (url "https://github.com/noctalia-dev/noctalia-shell")
-        (branch "v5"))
-      (channel
         (name 'nonguix)
         (url "https://gitlab.com/nonguix/nonguix")
         (branch "master")

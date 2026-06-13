@@ -19,11 +19,6 @@
          (openpgp-fingerprint
           "5132 3571 CEED 988F 52FC  467C 6F98 DBF3 EA7F 4B37"))))
       (channel
-       (name 'noctalia)
-       (url "https://github.com/noctalia-dev/noctalia-shell")
-       (branch "v5")
-       (commit "5eefba1ace0684e2b9b8a0d98946bbfab1640e54"))
-      (channel
        (name 'nonguix)
        (url "https://gitlab.com/nonguix/nonguix")
        (branch "master")
@@ -37,7 +32,7 @@
        (name 'rosenthal)
        (url "https://codeberg.org/hako/rosenthal.git")
        (branch "trunk")
-       (commit "f1cdc992a24110fbca6a62b23a3e667f28e96c73")
+       (commit "3f71c1448bead4a5847065186ecfe5092c8ac9aa")
        (introduction
         (make-channel-introduction
          "7677db76330121a901604dfbad19077893865f35"

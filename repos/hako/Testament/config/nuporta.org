@@ -846,15 +846,15 @@ Pinned for latest Live ISOs.
 
 Maintenance: manually sync mirrored substitutes to remote storage.
 
-#+begin_example
-  $ sudo herd stop guix-moe-mirror-remote-upload
-  $ sudo rclone sync /var/cache/guix-moe/mirror/nar r2:substitutes-apac/nar \
-        --verbose --config /run/secrets/rclone \
-        --exclude '*.tmp' --delete-excluded \
-        --s3-no-check-bucket \
-        --size-only --fast-list
-  $ sudo herd start guix-moe-mirror-remote-upload
-#+end_example
+#+begin_src bash
+  sudo herd stop guix-moe-mirror-remote-upload
+  sudo rclone sync /var/cache/guix-moe/mirror/nar r2:substitutes-apac/nar \
+       --verbose --config /run/secrets/rclone \
+       --exclude '*.tmp' --delete-excluded \
+       --s3-no-check-bucket \
+       --size-only --fast-list
+  sudo herd start guix-moe-mirror-remote-upload
+#+end_src
 
 TODO: Remove
 
@@ -1179,9 +1179,10 @@ See [[file:shared/caddy.org][shared/caddy.org]].
 #+end_src
 
 Troubleshooting:
-#+begin_example
+
+#+begin_src bash
   sudo -u forgejo /run/current-system/profile/bin/forgejo doctor check --config "$(sudo herd configuration forgejo)"
-#+end_example
+#+end_src
 
 *** heisenbridge
 #+begin_src scheme :noweb-ref service

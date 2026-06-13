@@ -26,7 +26,6 @@ set_channel_env () {
 }
 
 set_guix_env    channels/guix
-set_channel_env channels/noctalia-shell
 set_channel_env channels/nonguix
 set_channel_env channels/rosenthal/modules
 set_channel_env channels/sops-guix/modules
