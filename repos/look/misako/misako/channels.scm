@@ -5,9 +5,9 @@
 (define-public guix
   (channel
     (name 'guix)
-    (url "https://codeberg.org/look/guix")
-    (branch "hyprland-updates-2026-06-07")
-    ;; (commit "f4ee072046cdb76d7eafd00b1ac08ee9362f737c")
+    (url "https://codeberg.org/guix/guix")
+    (branch "master")
+    (commit "4489e726ef210156b66a4fa4ed84c9a35f246b39")
     (introduction
       (make-channel-introduction
         "9edb3f66fd807b096b48283debdcddccfea34bad"
@@ -19,7 +19,7 @@
     (name 'saayix)
     (url "https://codeberg.org/look/saayix.git")
     (branch "entropy")
-    (commit "e0b0483b62e4293dbc1a7ec9f4e250be06499e1a")
+    (commit "66f6f033f3e818df90852295e80633d2f743808e")
     (introduction
       (make-channel-introduction
         "12540f593092e9a177eb8a974a57bb4892327752"
@@ -31,7 +31,7 @@
     (name 'saayix-nonfree)
     (branch "main")
     (url "https://codeberg.org/look/saayix-nonfree")
-    (commit "24bc4982d34c6ef3f487b6a712605d25318043ed")
+    (commit "e064f0ad441828359fbf79e041c34bab3da83879")
     (introduction
       (make-channel-introduction
         "8a0caf3d1dbcd0c9257a23f8b251b5d5ff153c97"

@@ -33,6 +33,7 @@
   #:use-module (gnu packages pciutils)
   #:use-module (gnu packages pdf)
   #:use-module (gnu packages python)
+  #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages qt)
   #:use-module (gnu packages ssh)
   #:use-module (gnu packages syndication)
@@ -80,11 +81,11 @@
    ghostty))
 
 (define-public hyprland-latest
-  (let* ((commit "8e9add2afda58d233a75e4c5ce8503b24fa59ceb")
+  (let* ((commit "70fd412d95b082e3c9a2a2e2597a9e467947d320")
          (revision "1"))
     (package/inherit hyprland
-      (name (package-name hyprland))
-      (version (git-version "0.51.1" revision commit))
+      (name (string-append (package-name hyprland) "-latest"))
+      (version (git-version (package-version hyprland) revision commit))
       (source
         (origin
           (method git-fetch)
@@ -94,7 +95,7 @@
               (commit commit)))
           (file-name (git-file-name name version))
           (sha256
-           (base32 "0hnq8vwr31scpf20qnv17zc0fn7llf0wlhym0a8p39n6ag1g1dwc")))))))
+            (base32 "1770zwx6qsza4ymrdmm3wyyv89b197scw1a0jfm4rlcvya7p9nyw")))))))
 
 (define-public bar
   (list morewaita-icon-theme
@@ -177,8 +178,8 @@
         font-nerd-symbols))
 
 (define-public games
-  (yumiko?* steam-nvidia-595
-            heroic-nvidia-595
+  (yumiko?* steam-nvidia-new-feature
+            heroic-nvidia-new-feature
             mangohud
             mcpelauncher-client
             osu-lazer-bin
