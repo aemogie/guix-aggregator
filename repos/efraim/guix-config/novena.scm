@@ -2,12 +2,14 @@
 (use-modules (guix packages)
              (gnu)
              (gnu bootloader u-boot)
+             (gnu system images novena)
              (gnu system locale)
              (config filesystems)
              (config guix-daemon)
              (dfsg contrib services tailscale)
              (srfi srfi-1))
 (use-service-modules
+  guix
   linux
   mcron
   networking
@@ -18,6 +20,7 @@
 
 (define %novena-system
  (operating-system
+  (inherit novena-barebones-os)
   (host-name "novena")
   (timezone "Asia/Jerusalem")
   (locale "en_IL.utf8")
@@ -34,9 +37,9 @@
       (bootloader u-boot-novena-bootloader)
       (targets '("/dev/mmcblk0"))))     ; SD card/eMMC (SD priority) storage
 
-  (initrd-modules '())
-  (kernel linux-libre-arm-generic-5.10)
-  (kernel-arguments '("console=ttymxc1,115200"))
+  ;(initrd-modules '())
+  ;(kernel linux-libre-arm-generic-5.10)
+  ;(kernel-arguments '("console=ttymxc1,115200"))
   (firmware '())
 
   (file-systems
@@ -70,7 +73,10 @@
       (delete (specification->package "guix-icons") %base-packages)))
 
   (services
-    (cons* (service openssh-service-type
+    (cons* (service guix-home-service-type
+                    `(("efraim" ,(@@ (efraim-home) efraim-offload-home-environment))))
+
+           (service openssh-service-type
                     (openssh-configuration
                       (openssh (specification->package "openssh-sans-x"))
                       (authorized-keys
@@ -88,8 +94,9 @@
                                  "guix gc --free-space=15G")
                           ;; The board powers up at unix date 0.
                           ;; Restart ntpd regularly to set the clock.
-                          #~(job '(next-hour '(0 6 12 18))
-                                 "/run/current-system/profile/bin/herd restart ntpd")))))
+                          ;#~(job '(next-hour '(0 6 12 18))
+                          ;       "/run/current-system/profile/bin/herd restart ntpd")
+                          ))))
 
            (service ntp-service-type)
 

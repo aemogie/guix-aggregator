@@ -207,7 +207,7 @@
   (list #|lean|# lean4))
 
 (define sound
-  (list #|audio    |# ncpamixer))
+  (list #|audio|# pipemixer))
 
 (define tex
   (list #|tex|# rubber

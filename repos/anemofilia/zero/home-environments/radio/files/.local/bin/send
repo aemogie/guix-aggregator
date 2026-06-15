@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[ $1 = "-c" ] && shift 1 && realpath -s "$@" | wl-copy
+[ "$1" = "-c" ] && shift 1 && realpath -s "$@" | wl-copy
 
 lswt | grep -q 'org.telegram' \
 || setsid -f Telegram >/dev/null 2>&1 \
