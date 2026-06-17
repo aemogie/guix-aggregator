@@ -62,7 +62,6 @@
 |                                  |                                |                               |                       |
 | Lycoris/State/Forgejo            | /var/lib/forgejo               |                               |                       |
 | Lycoris/State/PostgreSQL         | /var/lib/postgresql            | recordsize=32K                | true                  |
-| Lycoris/State/SOPS               | /var/lib/sops                  |                               | true                  |
 | Lycoris/State/Tailscale          | /var/lib/tailscale             |                               | true                  |
 | Lycoris/State/Tuwunel            | /var/lib/tuwunel               |                               | true                  |
 | Lycoris/State/WebPublic          | /var/lib/webpublic             |                               | true                  |
@@ -194,30 +193,6 @@
       ("hako" ,%ssh-key-hako)
       ("jonathan" ,%ssh-key-jonathan)
       ("podiki" ,%ssh-key-podiki)))
-#+end_src
-
-*** SOPS Secrets
-#+begin_src scheme :noweb-ref service
-  (service sops-secrets-service-type
-    (sops-service-configuration
-      (gnupg-home "/var/lib/sops")
-      (secrets
-       (list (sops-secret
-               (key '("cloudflare"))
-               (file %sops-nuporta)
-               (user "caddy"))
-             (sops-secret
-               (key '("rclone"))
-               (file %sops-nuporta))
-
-             (sops-secret
-               (key '("caddy" "cuirass" "admin"))
-               (file %sops-nuporta)
-               (group "caddy"))
-             (sops-secret
-               (key '("caddy" "cuirass" "forgejo"))
-               (file %sops-nuporta)
-               (group "caddy"))))))
 #+end_src
 
 ** Networking & SSH
@@ -374,7 +349,7 @@
   		path /admin/forgejo/event || /jobset/*/hook/evaluate
   	}
   	handle @forgejo_hooks {
-  		import /run/secrets/caddy/cuirass/forgejo
+  		import /etc/nuporta-configs/caddy/cuirass-forgejo
   	}
 
   	handle /admin/* {
@@ -786,19 +761,18 @@ Pinned for latest Live ISOs.
                       "--cache=/var/cache/guix-moe/mirror"
                       "--listen=127.0.0.1"
                       "--port=13778"
-                      "--ttl=6m"
-                      "--negative-ttl=300s")
+                      "--ttl=1m"
+                      "--negative-ttl=300s"
+                      ;; Args for mirror-substitutes
+                      "--substitute-urls=https://bordeaux.guix.gnu.org https://ci.guix.gnu.org https://substitutes.nonguix.org"
+                      "--url-prefix=https://nars.guix.moe/nar/")
                 #:user "guix-moe"
                 #:group "guix-moe"
-                #:log-file "/var/log/guix-moe-mirror-publish.log"))
+                #:log-file "/var/log/guix-moe-mirror-publish.log"
+                #:environment-variables
+                (cons* "XDG_CACHE_HOME=/var/cache/guix-moe/user-cache/.cache"
+                       (default-environment-variables))))
             (stop #~(make-kill-destructor)))
-
-          (shepherd-timer '(guix-moe-mirror-sync)
-            #~(calendar-event #:minutes '(30))
-            #~("/run/privileged/bin/sudo" "-u" "guix-moe" "-g" "guix-moe"
-               "/bin/sh" "--login"
-               #$(local-file (testament-file "nuporta/setup-mirror.sh")) "latest")
-            #:requirement '(user-processes networking))
 
           (shepherd-timer '(guix-moe-mirror-update-store-paths)
             #~(calendar-event #:hours (iota 12 1 2) #:minutes '(30))
@@ -812,7 +786,7 @@ Pinned for latest Live ISOs.
             #~("/run/current-system/profile/bin/rclone" "copy"
                "/var/cache/guix-moe/mirror/nar"
                "r2:substitutes-apac/nar"
-               "--config" "/run/secrets/rclone"
+               "--config" "/etc/nuporta-configs/rclone"
                "--exclude" "*.tmp"
                "--max-age" "7h"
                "--verbose"
@@ -825,31 +799,12 @@ Pinned for latest Live ISOs.
             #:requirement '(user-processes networking))))
 #+end_src
 
-#+begin_src sh :tangle ../tangled/nuporta/setup-mirror.sh
-  set -e
-
-  MIRROR_DIR="/var/cache/guix-moe/mirror"
-  URL_PREFIX="https://nars.guix.moe/nar/"
-  GUIX_SUBSTITUTES="https://ci.guix.gnu.org https://bordeaux.guix.gnu.org"
-  NONGUIX_SUBSTITUTES="https://substitutes.nonguix.org"
-  # https://github.com/rakino/guix-store-paths
-  STORE_PATHS="/var/cache/guix-moe/store-paths"
-  DATE="$1"
-
-  mirror-substitutes -o "$MIRROR_DIR" --url-prefix="$URL_PREFIX" --threads=4 --substitute-urls="$GUIX_SUBSTITUTES" \
-                     -i "$STORE_PATHS/$DATE/guix.txt"
-  mirror-substitutes -o "$MIRROR_DIR" --url-prefix="$URL_PREFIX" --threads=4 --substitute-urls="$GUIX_SUBSTITUTES" \
-                     -i "$STORE_PATHS/$DATE/guix-packages.txt"
-  mirror-substitutes -o "$MIRROR_DIR" --url-prefix="$URL_PREFIX" --threads=4 --substitute-urls="$GUIX_SUBSTITUTES $NONGUIX_SUBSTITUTES" \
-                     -i "$STORE_PATHS/$DATE/nonguix-packages.txt"
-#+end_src
-
 Maintenance: manually sync mirrored substitutes to remote storage.
 
 #+begin_src bash
   sudo herd stop guix-moe-mirror-remote-upload
   sudo rclone sync /var/cache/guix-moe/mirror/nar r2:substitutes-apac/nar \
-       --verbose --config /run/secrets/rclone \
+       --verbose --config /etc/nuporta-configs/rclone \
        --exclude '*.tmp' --delete-excluded \
        --s3-no-check-bucket \
        --size-only --fast-list
@@ -910,7 +865,7 @@ rsync://cache.guix.moe
   (define %nars-list-new     (string-append %nars-list ".new"))
 
   (define %rclone-arguments
-    '("--config" "/run/secrets/rclone"
+    '("--config" "/etc/nuporta-configs/rclone"
       "--size-only"
       "--no-traverse"
       "--s3-no-check-bucket"
@@ -1136,9 +1091,40 @@ See [[file:shared/caddy.org][shared/caddy.org]].
   	}
   }
 
-  <<caddy-snippet-block-bots>>
-  <<caddy-snippet-cloudflare-dns>>
-  <<caddy-snippet-tailscale>>
+  (block_bots) {
+  	import $$share/ai-robots-txt/Caddyfile$$
+  	handle @aibots {
+  		log_skip
+  		respond /* "Access denied" 403 {
+  			close
+  		}
+  	}
+
+  	@fake {
+  		header User-Agent *Chrome*
+  		header User-Agent *Firefox*
+  		header !Sec-Fetch-Mode
+  	}
+  	handle @fake {
+  		log_skip
+  		respond /* "Access denied" 403 {
+  			close
+  		}
+  	}
+  }
+
+  (cloudflare_dns) {
+  	tls {
+  		dns cloudflare {file./etc/nuporta-configs/caddy/cloudflare}
+  	}
+  }
+
+  (tailscale) {
+  	@tailscale client_ip 100.64.0.0/10 fd7a:115c:a1e0::/48
+  	handle @tailscale {
+  		{block}
+  	}
+  }
 
   :80, :443 {
   	respond /* "Access denied" 403 {
@@ -1279,7 +1265,6 @@ Utilities
 #+begin_src scheme :noweb-ref module
   (gnu)
   (rosenthal)
-  (sops secrets)
 #+end_src
 
 Guix System - services
@@ -1296,7 +1281,6 @@ Guix System - services
   (rosenthal services messaging)
   (rosenthal services networking)
   (rosenthal services web)
-  (sops services sops)
 #+end_src
 
 Guix packages

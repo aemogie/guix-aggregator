@@ -149,7 +149,7 @@
     ("worker")
     ("chapra"   #:fork? #t #:dependencies ,(list %shared-config-caddy))
     ("dorphine" #:fork? #t #:dependencies ,(list %shared-config-emacs))
-    ("nuporta"  #:fork? #t #:dependencies ,(list %shared-config-caddy))))
+    ("nuporta"  #:fork? #t)))
 
 (define %images
   '("minimal"

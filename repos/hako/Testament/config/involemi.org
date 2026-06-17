@@ -254,94 +254,6 @@
   (service redis-service-type)
 #+end_src
 
-*** mirroring
-#+begin_src caddyfile :noweb-ref caddy-site
-  cache-de.guix.moe, cache-it.guix.moe {
-  	import cloudflare_dns
-  	import block_bots
-
-  	@publish_substitutes {
-  		path /*.narinfo || /nix-cache-info
-  	}
-  	handle @publish_substitutes {
-  		reverse_proxy localhost:13778
-  	}
-
-  	handle /nar/* {
-  		reverse_proxy https://nars.guix.moe
-  	}
-
-  	respond "Visit guix [dot] moe for more information." 404 {
-  		close
-  	}
-  }
-#+end_src
-
-#+begin_src scheme :noweb-ref user-group
-  (user-group
-    (name "guix-moe")
-    (system? #t))
-#+end_src
-
-#+begin_src scheme :noweb-ref user-account
-  (user-account
-    (name "guix-moe")
-    (group "guix-moe")
-    ;; Writable HOME is required.
-    (home-directory "/var/cache/guix-moe")
-    (shell (file-append shadow "/sbin/nologin"))
-    (system? #t))
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (simple-service 'guix-moe-mirror shepherd-root-service-type
-    (list (shepherd-service
-            (provision '(guix-moe-mirror-publish))
-            (requirement '(user-processes loopback))
-            (start
-             #~(make-forkexec-constructor
-                (list "/run/current-system/profile/bin/publish-substitutes"
-                      "--cache=/var/cache/guix-moe/mirror"
-                      "--listen=127.0.0.1"
-                      "--port=13778"
-                      "--ttl=6m"
-                      "--negative-ttl=300s")
-                #:user "guix-moe"
-                #:group "guix-moe"
-                #:log-file "/var/log/guix-moe-mirror-publish.log"))
-            (stop #~(make-kill-destructor)))
-
-          (shepherd-timer '(guix-moe-mirror-sync)
-            #~(calendar-event #:minutes '(40))
-            #~("/run/privileged/bin/sudo" "-u" "guix-moe" "-g" "guix-moe"
-               "/bin/sh" "--login"
-               #$(local-file (testament-file "involemi/setup-mirror.sh")) "latest")
-            #:requirement '(user-processes networking))))
-#+end_src
-
-#+begin_src sh :tangle ../tangled/involemi/setup-mirror.sh
-  set -e
-
-  MIRROR_DIR="/var/cache/guix-moe/mirror"
-  SUBSTITUTES="https://cache-test.guix.moe"
-  STORE_PATHS="https://raw.githubusercontent.com/rakino/guix-store-paths/refs/heads/trunk/$1"
-  WORK_DIR="$(mktemp --directory /tmp/guix-moe-mirror-sync.XXXXXXXXXX)"
-
-  pushd "$WORK_DIR"
-  for list in guix.txt guix-packages.txt nonguix-packages.txt
-  do
-      wget --quiet --output-document "$list" "$STORE_PATHS/$list"
-  done
-  mirror-substitutes -o "$MIRROR_DIR" --narinfo-only --substitute-urls="$SUBSTITUTES" \
-                     -i guix.txt
-  mirror-substitutes -o "$MIRROR_DIR" --narinfo-only --substitute-urls="$SUBSTITUTES" \
-                     -i guix-packages.txt
-  mirror-substitutes -o "$MIRROR_DIR" --narinfo-only --substitute-urls="$SUBSTITUTES" \
-                     -i nonguix-packages.txt
-  popd
-  rm -rf "$WORK_DIR"
-#+end_src
-
 ** Web Servers & Services
 *** caddy
 #+begin_src scheme :noweb-ref service
@@ -512,11 +424,112 @@ See [[file:shared/caddy.org][shared/caddy.org]].
   }
 #+end_src
 
+*** guixcn-planet
+#+begin_src caddyfile :noweb-ref caddy-site
+  planet.guixcn.org {
+  	import cloudflare_dns
+  	root * /var/lib/webpublic/planet.guixcn.org/public
+  	file_server
+  }
+#+end_src
+
+#+begin_src scheme :noweb-ref user-group
+  (user-group
+    (name "guixcn-planet")
+    (system? #t))
+#+end_src
+
+#+begin_src scheme :noweb-ref user-account
+  (user-account
+    (name "guixcn-planet")
+    (group "guixcn-planet")
+    (home-directory "/var/empty")
+    (shell (file-append shadow "/sbin/nologin"))
+    (system? #t))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'guix-moe-mirror shepherd-root-service-type
+    (list (shepherd-timer '(guixcn-planet)
+            #~(calendar-event #:hours '(8) #:minutes '(0))
+            #~("/run/privileged/bin/sudo" "-u" "guixcn-planet" "-g" "guixcn-planet"
+               "/bin/sh" "--login" "-c"
+               #$(string-append
+                  "cd /var/lib/webpublic/planet.guixcn.org;"
+                  "guix shell -m manifest.scm -- "
+                  "guile --no-auto-compile -L . -c '((@ (planet build) build-planet))';"
+                  "chmod -R a+r /var/lib/webpublic/planet.guixcn.org;"))
+            #:requirement '(user-processes networking))))
+#+end_src
+
+*** mirroring
+#+begin_src caddyfile :noweb-ref caddy-site
+  cache-de.guix.moe, cache-it.guix.moe {
+  	import cloudflare_dns
+  	import block_bots
+
+  	@publish_substitutes {
+  		path /*.narinfo || /nix-cache-info
+  	}
+  	handle @publish_substitutes {
+  		reverse_proxy localhost:13778
+  	}
+
+  	handle /nar/* {
+  		reverse_proxy https://nars.guix.moe
+  	}
+
+  	respond "Visit guix [dot] moe for more information." 404 {
+  		close
+  	}
+  }
+#+end_src
+
+#+begin_src scheme :noweb-ref user-group
+  (user-group
+    (name "guix-moe")
+    (system? #t))
+#+end_src
+
+#+begin_src scheme :noweb-ref user-account
+  (user-account
+    (name "guix-moe")
+    (group "guix-moe")
+    ;; Writable HOME is required.
+    (home-directory "/var/cache/guix-moe")
+    (shell (file-append shadow "/sbin/nologin"))
+    (system? #t))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'guix-moe-mirror shepherd-root-service-type
+    (list (shepherd-service
+            (provision '(guix-moe-mirror-publish))
+            (requirement '(user-processes loopback))
+            (start
+             #~(make-forkexec-constructor
+                (list "/run/current-system/profile/bin/publish-substitutes"
+                      "--cache=/var/cache/guix-moe/mirror"
+                      "--listen=127.0.0.1"
+                      "--port=13778"
+                      "--ttl=6m"
+                      "--negative-ttl=300s"
+                      ;; Args for mirror-substitutes
+                      "--substitute-urls=https://cache-test.guix.moe"
+                      "--narinfo-only")
+                #:user "guix-moe"
+                #:group "guix-moe"
+                #:log-file "/var/log/guix-moe-mirror-publish.log"
+                #:environment-variables
+                (cons* "XDG_CACHE_HOME=/var/cache/guix-moe/.cache"
+                       (default-environment-variables))))
+            (stop #~(make-kill-destructor)))))
+#+end_src
+
 *** misskey
 #+begin_src caddyfile :noweb-ref caddy-site
   boiledscript.com {
   	import cloudflare_dns
-  	import block_bots
   	reverse_proxy localhost:54493
   }
 #+end_src

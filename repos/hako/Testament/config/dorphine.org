@@ -31,6 +31,7 @@
        (append (specifications->packages
                 '("digikam"
                   "distrobox"
+                  "firefox"
                   "gimp"
                   "imv"
                   "inkscape"
@@ -101,7 +102,7 @@ Application profiles
                           (map (lambda (name)
                                  `(("feature" . "procname")
                                    ("matches" . ,name)))
-                               '("librewolf"
+                               '("firefox"
                                  "niri")))))
                     ("profile" . "No VidMem Reuse")))))))
       ;; https://github.com/Frogging-Family/nvidia-all/blob/master/system/cuda-no-stable-perf-limit
@@ -120,7 +121,7 @@ Application profiles
                           (map (lambda (name)
                                  `(("feature" . "procname")
                                    ("matches" . ,name)))
-                               '("librewolf"
+                               '("firefox"
                                  "obs")))))
                     ("profile" . "CudaNoStablePerfLimit")))))))))
 #+end_src
@@ -579,7 +580,7 @@ niri supports getting keyboard layout from localed.
   }
 
   window-rule {
-          match app-id="librewolf" title="^Picture-in-Picture$"
+          match app-id="firefox" title="^Picture-in-Picture$"
           open-floating true
   }
 
@@ -1097,17 +1098,6 @@ Jujutsu:
                    #:environment-variables (environ))
                   args)))
             (stop #~(make-kill-destructor)))))
-#+end_src
-
-*** librewolf
-#+begin_src scheme :noweb-ref package-spec
-  "librewolf"
-  "adaptive-tab-bar-colour-icecat"
-  "bitwarden-icecat"
-  "livemarks-icecat"
-  "miniflux-injector-icecat"
-  "ohmyech-icecat"
-  "ublock-origin-icecat"
 #+end_src
 
 *** mpv

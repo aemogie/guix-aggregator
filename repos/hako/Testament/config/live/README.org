@@ -57,7 +57,7 @@ Default keybindings:
 
 ** Build
 #+begin_src bash
-  git clone https://codeberg.org/hako/testament.git
+  git clone --recurse-submodules https://codeberg.org/hako/testament.git
   cd testament
 
   guix time-machine -C channels.lock -- shell -m manifest.scm
