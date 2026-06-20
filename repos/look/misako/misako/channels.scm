@@ -7,7 +7,7 @@
     (name 'guix)
     (url "https://codeberg.org/guix/guix")
     (branch "master")
-    (commit "4489e726ef210156b66a4fa4ed84c9a35f246b39")
+    (commit "35e88b7ff2f9c51cccdb3efac121e1854c4362bd")
     (introduction
       (make-channel-introduction
         "9edb3f66fd807b096b48283debdcddccfea34bad"
@@ -19,7 +19,7 @@
     (name 'saayix)
     (url "https://codeberg.org/look/saayix.git")
     (branch "entropy")
-    (commit "66f6f033f3e818df90852295e80633d2f743808e")
+    (commit "7992f54a11ad1cba8b4870fcb61412b430af66a7")
     (introduction
       (make-channel-introduction
         "12540f593092e9a177eb8a974a57bb4892327752"
@@ -43,7 +43,7 @@
     (name 'nonguix)
     (url "https://gitlab.com/nonguix/nonguix")
     (branch "master")
-    (commit "3ed7c207c59dde11a97db483cad4c96eae1a10c4")
+    (commit "bf39542ca537fde8839b209ac21d6f3254469b15")
     (introduction
       (make-channel-introduction
         "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
@@ -74,11 +74,23 @@
         (openpgp-fingerprint
           "8D10 60B9 6BB8 292E 829B  7249 AED4 1CC1 93B7 01E2")))))
 
+(define-public rosenthal
+  (channel
+    (name 'rosenthal)
+    (url "https://codeberg.org/hako/rosenthal.git")
+    (branch "trunk")
+    (introduction
+      (make-channel-introduction
+        "7677db76330121a901604dfbad19077893865f35"
+        (openpgp-fingerprint
+          "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7")))))
+
 (define-public %misako-channels
   (list guix
         nonguix
         saayix
         saayix-nonfree
+        rosenthal
         radix
         sops-guix))
 

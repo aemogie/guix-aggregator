@@ -42,6 +42,9 @@
   #:use-module (radix packages fish-xyz)
   #|Radix Home Services|#
   #:use-module (radix home services shells)
+  #|Rosenthal|#
+  #:use-module (rosenthal home services desktop)
+  #:use-module (rosenthal services desktop)
   #|Saayix Home Services|#
   #:use-module (saayix services home dotfiles)
   #:use-module (saayix-nonfree services home spotify)
@@ -89,6 +92,14 @@
     (services
       (list
         (service home-channels-service-type channel:%misako-channels)
+
+        (service home-graphical-session-service-type
+          (home-graphical-session-configuration
+            (wayland? #t)))
+
+        (service home-fcitx5-service-type
+          (home-fcitx5-configuration
+            (wayland-frontend? #t)))
 
         (service home-dbus-service-type)
 
@@ -250,7 +261,7 @@
             #|QT|#
             ("QT_QPA_PLATFORM"     . "wayland")
             #|GTK|#
-            ("GTK_IM_MODULE"       . "simple")
+            ;; ("GTK_IM_MODULE"       . "simple")
             #|NVIDIA|#
             ,@(if (not nvidia?) '()
                 `(("QT_WAYLAND_DISABLE_WINDOWDECORATION" . "1")

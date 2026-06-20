@@ -10,6 +10,7 @@ BorderBarModule {
     visible: repeater.count > 0
 
     Row {
+        spacing: 4
         Repeater {
             id: repeater
             model: SystemTray.items
