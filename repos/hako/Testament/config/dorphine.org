@@ -11,7 +11,7 @@
     (operating-system
       (host-name "dorphine")
       (locale "en_US.UTF-8")
-      (timezone "Asia/Hong_Kong")
+      (timezone "Etc/GMT-8")
       (keyboard-layout
        (keyboard-layout "us" "dvorak" #:options '("ctrl:nocaps")))
       (bootloader
@@ -30,16 +30,14 @@
       (packages
        (append (specifications->packages
                 '("digikam"
-                  "distrobox"
                   "firefox"
                   "gimp"
                   "imv"
-                  "inkscape"
                   "kdenlive"
-                  "krita"
                   "libreoffice"
                   "obs-nvidia"
                   "picard"
+                  "showmethekey"
                   <<package-spec>>))
                %testament-cli-packages
                %base-packages))
@@ -56,7 +54,7 @@
 
   ((nonguix-transformation-nvidia
     #:driver nvda-595
-    #:open-source-kernel-module? #t
+    #:open-source-kernel-module? #f
     #:dynamic-boost? #t
     #:remove-nvenc-restriction? #t)
    %os)
@@ -523,12 +521,16 @@ Generate passwordless ECC key:
 #+end_src
 
 ** Graphical Session
-*** localed keyboard layout
+*** keyboard layout
 niri supports getting keyboard layout from localed.
 
 #+begin_src scheme :noweb-ref service
   (simple-service 'localed-keyboard-layout localed-service-type
     keyboard-layout)
+#+end_src
+
+#+begin_src scheme :noweb-ref home-service
+  (service home-keyboard-service-type keyboard-layout)
 #+end_src
 
 *** niri
@@ -579,9 +581,44 @@ niri supports getting keyboard layout from localed.
           skip-at-startup
   }
 
+  // noctalia
+  window-rule {
+          geometry-corner-radius 20
+          clip-to-geometry true
+  }
+  window-rule {
+          match app-id="dev.noctalia.Noctalia.Settings"
+          open-floating true
+          default-column-width { fixed 1080; }
+          default-window-height { fixed 920; }
+  }
+  debug {
+          honor-xdg-activation-with-invalid-serial
+  }
+  layer-rule {
+          match namespace="^noctalia-backdrop"
+          place-within-backdrop true
+  }
+
+  window-rule {
+          background-effect {
+                  blur true
+                  xray false
+          }
+  }
+
   window-rule {
           match app-id="firefox" title="^Picture-in-Picture$"
           open-floating true
+  }
+
+  window-rule {
+          match app-id="showmethekey"
+          open-floating true
+          geometry-corner-radius 0
+          background-effect {
+                  blur false
+          }
   }
 
   window-rule {
@@ -592,13 +629,6 @@ niri supports getting keyboard layout from localed.
   window-rule {
           match app-id="thunar" title="^File Operation Progress$"
           open-floating true
-  }
-
-  window-rule {
-          background-effect {
-                  blur true
-                  xray false
-          }
   }
 
   layout {
@@ -622,27 +652,6 @@ niri supports getting keyboard layout from localed.
           }
           warp-mouse-to-focus
   }
-
-
-  // Noctalia
-  window-rule {
-          geometry-corner-radius 20
-          clip-to-geometry true
-  }
-  window-rule {
-          match app-id="dev.noctalia.Noctalia.Settings"
-          open-floating true
-          default-column-width { fixed 1080; }
-          default-window-height { fixed 920; }
-  }
-  debug {
-          honor-xdg-activation-with-invalid-serial
-  }
-  layer-rule {
-          match namespace="^noctalia-backdrop"
-          place-within-backdrop true
-  }
-
 
   binds {
           XF86AudioRaiseVolume  allow-when-locked=true { spawn "noctalia" "msg" "volume-up"; }
@@ -1280,6 +1289,7 @@ Guix System - services
   (gnu services sysctl)
   (gnu services virtualization)
   (gnu services xorg)
+  (rosenthal services keyboard)
   (rosenthal services networking)
   (rosenthal services shellutils)
 #+end_src

@@ -259,7 +259,7 @@
       (version version))))
 
 (define linux-server/dolly
-  (let ((cachyos-version "6.18.33-1"))
+  (let ((cachyos-version "6.18.36-1"))
     (make-linux/dolly
      linux-6.18
      cachyos-version
@@ -269,7 +269,7 @@
              "https://github.com/CachyOS/linux/releases/download/cachyos-"
              cachyos-version "/cachyos-" cachyos-version ".tar.gz"))
        (sha256
-        (base32 "0q19g5kdkvkaga3s2j9jbhkjbjhzjgq7d16c8hjwwf2rrhg6v7gi")))
+        (base32 "0n3py7dvninj1k2mblaw0cbdq7mjfkj4bwk5w1wgcp1zxinivf2x")))
      #:defconfig (%kernel-config "/defconfig_server")
      #:configs
      (string-join
@@ -289,7 +289,7 @@
       "\n"))))
 
 (define linux-desktop/dolly
-  (let ((cachyos-version "7.0.10-2"))
+  (let ((cachyos-version "7.0.12-2"))
     (make-linux/dolly
      linux-7.0
      cachyos-version
@@ -299,7 +299,7 @@
              "https://github.com/CachyOS/linux/releases/download/cachyos-"
              cachyos-version "/cachyos-" cachyos-version ".tar.gz"))
        (sha256
-        (base32 "0g2drv5rvkkari9z7ya3l25lcfsxpjv50hhcic739arcxx0b8aws"))
+        (base32 "1whzwakpcgyvks07ac7lp7yf9vv5aa6h90cpg6jxx0kwaw9n5ibk"))
        (patches (map %kernel-config '("/patches/bore-cachy-7.0.patch"))))
      #:defconfig (%kernel-config "/defconfig_desktop")
      #:configs

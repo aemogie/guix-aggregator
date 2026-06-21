@@ -91,5 +91,6 @@ Mirrors for <https://guix.moe>.
 + [[https://guix.gnu.org/publications/][GNU Guix Publications]]: Written materials that talk about GNU Guix
 
 *** Community
-+ [[https://toys.whereis.social/][toys]]: Search engine for [[https://guix.gnu.org/manual/devel/en/html_node/Channels.html][Guix channels]]
++ [[https://yhetil.org/guix/][yhetil.org/guix]]: Guix-related mailing lists
++ [[https://toys.whereis.social/][toys.whereis.social]] / [[https://search.guix.moe/][search.guix.moe]]: Search engines for [[https://guix.gnu.org/manual/devel/en/html_node/Channels.html][Guix channels]]
 + [[https://github.com/aemogie/guix-aggregator][guix-aggregator]]: Dotfiles aggregator

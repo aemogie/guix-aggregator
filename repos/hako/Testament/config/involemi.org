@@ -10,7 +10,7 @@
   (operating-system
     (host-name "involemi")
     (locale "en_US.UTF-8")
-    (timezone "Asia/Hong_Kong")
+    (timezone "Etc/GMT-8")
     (bootloader
      (bootloader-configuration
        (bootloader grub-bootloader)
@@ -229,7 +229,6 @@
       (postgresql postgresql-16)
       (config-file
        (postgresql-config-file
-         (log-destination "stderr")
          (extra-config
           '(("max_connections" 200)
             ("shared_buffers" "768MB")
@@ -243,10 +242,7 @@
             ("work_mem" "3780kB")
             ("huge_pages" "off")
             ("min_wal_size" "1GB")
-            ("max_wal_size" "4GB")
-            ;; Logging
-            ("logging_collector" #t)
-            ("log_directory" "/var/log/postgresql")))))))
+            ("max_wal_size" "4GB")))))))
 #+end_src
 
 *** redis

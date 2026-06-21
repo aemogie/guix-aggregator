@@ -10,7 +10,7 @@
   (operating-system
     (host-name "ignamma")
     (locale "en_US.UTF-8")
-    (timezone "Asia/Hong_Kong")
+    (timezone "Etc/GMT-8")
     (bootloader
      (bootloader-configuration
        (bootloader grub-efi-removable-bootloader)

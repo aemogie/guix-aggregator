@@ -10,7 +10,7 @@
   (operating-system
     (host-name "nuporta")
     (locale "en_US.UTF-8")
-    (timezone "Asia/Hong_Kong")
+    (timezone "Etc/GMT-8")
     (bootloader
      (bootloader-configuration
        (bootloader limine-efi-removable-bootloader)
@@ -305,7 +305,6 @@
       (postgresql postgresql-16)
       (config-file
        (postgresql-config-file
-         (log-destination "stderr")
          (extra-config
           '(("max_connections" 200)
             ("shared_buffers" "8GB")
@@ -325,10 +324,7 @@
             ("max_parallel_workers" 4)
             ("max_parallel_maintenance_workers" 2)
             ;; ZFS
-            ("full_page_writes" #f)
-            ;; Logging
-            ("logging_collector" #t)
-            ("log_directory" "/var/log/postgresql")))))))
+            ("full_page_writes" #f)))))))
 #+end_src
 
 ** Continuous Integration
