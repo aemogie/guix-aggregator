@@ -153,6 +153,8 @@
         ;;     (platforms (lookup-qemu-platforms "arm" "aarch64"))))
         (service guix-service-type
           (guix-configuration
+            ;; Temporary non-tmpfs directory for large builds
+            ;; (tmpdir "/home/look/.cache/guix-build")
             (substitute-urls
               '(
                 "https://cache-cdn.guix.moe"

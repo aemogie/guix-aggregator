@@ -24,6 +24,7 @@
   #:use-module (gnu packages irc)
   #:use-module (gnu packages libcanberra)
   #:use-module (gnu packages libreoffice)
+  #:use-module (gnu packages license)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages mail)
   #:use-module (gnu packages messaging)
@@ -119,6 +120,7 @@
 (define-public desktop
   (list git
         jujutsu
+        reuse
         gnupg
         gsettings-desktop-schemas
         hyfetch
