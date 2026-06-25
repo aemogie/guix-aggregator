@@ -15,6 +15,7 @@ WrapperRectangle {
     property real usage: -1
     property int h: 18
     property int icon_extra_y: 0
+    property int icon_extra_spacing: 0
     property int pixelSize: text.font.pixelSize
 
     color: Theme.vars.colorAccent
@@ -25,13 +26,14 @@ WrapperRectangle {
 
     RowLayout {
         id: innerLayout
-        spacing: root.icon ? 1 : 0
+        spacing: 0
         IconText {
             id: text
             fam: root.fam
             text: root.icon
             font.pixelSize: root.pixelSize
             Layout.topMargin: root.icon_extra_y
+            Layout.rightMargin: 2 + root.icon_extra_spacing
             // FIXME
             anchors.horizontalCenter: if (root.usage < 0) parent.horizontalCenter
         }

@@ -7,6 +7,7 @@ CleanBarModule {
     icon: "󰓅"
     fam: "nf"
     usage: cpuUsage
+    icon_extra_spacing: 1
 
     InteractArea {
         onLeftClick: Hyprland.dispatch(`hl.dsp.exec_cmd('exec hyprctl notify 1 5000 0 Left-clicked CPU')`)

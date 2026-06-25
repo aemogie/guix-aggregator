@@ -10,7 +10,6 @@ CleanBarModule {
 
     icon: "memory"
     pixelSize: 18
-    icon_extra_y: 1
     usage: memUsage
 
     InteractArea {

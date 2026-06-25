@@ -232,7 +232,7 @@
 
 (define-public pdf
   (list sioyek
-        zaread zathura zathura-pdf-poppler))
+        zaread zathura zathura-pdf-mupdf))
 
 (define-public portals
   (list xdg-desktop-portal

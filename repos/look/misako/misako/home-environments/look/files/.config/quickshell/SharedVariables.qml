@@ -8,6 +8,7 @@ QtObject {
 
     property var mullvad
     property var clock
+    property var battery
     property var launcher
     property var idle
     property var sink

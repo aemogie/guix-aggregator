@@ -32,12 +32,13 @@ Variants {
 
         Row {
             anchors.verticalCenter: parent.verticalCenter
-            spacing: Theme.vars.barModuleSideMargin
+            spacing: 6
 
             BarLauncher {}
             BarCpuUsage {}
             BarCpuTemperature {}
             BarMemoryUsage {}
+            BarBattery {}
             BarWorkspaces {}
             // BarWindow {}
         }
