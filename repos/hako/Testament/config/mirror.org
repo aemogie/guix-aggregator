@@ -71,8 +71,7 @@
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-guix guix-service-type
     (guix-extension
-      (authorized-keys %guix-keys)
-      (substitute-urls '("https://cache-cdn.guix.moe"))))
+      (authorized-keys %guix-keys)))
 
   (simple-service 'guix-gc shepherd-root-service-type
     (list (shepherd-timer '(guix-gc)

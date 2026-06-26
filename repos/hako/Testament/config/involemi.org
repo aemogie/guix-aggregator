@@ -58,8 +58,7 @@
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-guix guix-service-type
     (guix-extension
-      (authorized-keys %guix-keys)
-      (substitute-urls '("https://cache-cdn.guix.moe"))))
+      (authorized-keys %guix-keys)))
 
   (simple-service 'guix-gc shepherd-root-service-type
     (list (shepherd-timer '(guix-gc)
@@ -274,7 +273,9 @@ See [[file:shared/caddy.org][shared/caddy.org]].
 #+begin_src caddyfile :noweb yes :tangle ../tangled/involemi/involemi.caddyfile
   {
   	admin off
-  	email admin@boiledscript.com
+  	dns cloudflare {file./run/secrets/cloudflare}
+  	acme_dns cloudflare {file./run/secrets/cloudflare}
+  	ech hello.guix.moe
   	servers {
   		trusted_proxies static private_ranges
   		client_ip_headers X-Forwarded-For X-Real-IP
@@ -283,7 +284,6 @@ See [[file:shared/caddy.org][shared/caddy.org]].
   }
 
   <<caddy-snippet-block-bots>>
-  <<caddy-snippet-cloudflare-dns>>
   <<caddy-snippet-tailscale>>
 
   :80, :443 {
@@ -293,7 +293,6 @@ See [[file:shared/caddy.org][shared/caddy.org]].
   }
 
   ultrarare.space {
-  	import cloudflare_dns
   	root * /var/lib/webpublic/ultrarare.space
   	handle_errors {
   		rewrite * /{err.status_code}.html
@@ -308,7 +307,6 @@ See [[file:shared/caddy.org][shared/caddy.org]].
 *** docker-mailserver
 #+begin_src caddyfile :noweb-ref caddy-site
   mta-sts.boiledscript.com {
-  	import cloudflare_dns
   	import block_bots
   	handle /.well-known/mta-sts.txt {
   		respond <<EOF
@@ -321,7 +319,6 @@ See [[file:shared/caddy.org][shared/caddy.org]].
   }
 
   mail.boiledscript.com {
-  	import cloudflare_dns
   	respond /* "Access denied" 403 {
   		close
   	}
@@ -423,7 +420,6 @@ See [[file:shared/caddy.org][shared/caddy.org]].
 *** guixcn-planet
 #+begin_src caddyfile :noweb-ref caddy-site
   planet.guixcn.org {
-  	import cloudflare_dns
   	root * /var/lib/webpublic/planet.guixcn.org/public
   	file_server
   }
@@ -461,7 +457,6 @@ See [[file:shared/caddy.org][shared/caddy.org]].
 *** mirroring
 #+begin_src caddyfile :noweb-ref caddy-site
   cache-de.guix.moe, cache-it.guix.moe {
-  	import cloudflare_dns
   	import block_bots
 
   	@publish_substitutes {
@@ -512,6 +507,7 @@ See [[file:shared/caddy.org][shared/caddy.org]].
                       "--negative-ttl=300s"
                       ;; Args for mirror-substitutes
                       "--substitute-urls=https://cache-test.guix.moe"
+                      "--workers=1"
                       "--narinfo-only")
                 #:user "guix-moe"
                 #:group "guix-moe"
@@ -525,7 +521,6 @@ See [[file:shared/caddy.org][shared/caddy.org]].
 *** misskey
 #+begin_src caddyfile :noweb-ref caddy-site
   boiledscript.com {
-  	import cloudflare_dns
   	reverse_proxy localhost:54493
   }
 #+end_src
@@ -562,7 +557,6 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
 *** vaultwarden
 #+begin_src caddyfile :noweb-ref caddy-site
   vault.urspace.moe {
-  	import cloudflare_dns
   	import block_bots
   	reverse_proxy localhost:23263
   }

@@ -138,8 +138,7 @@
     (guix-extension
       (authorized-keys %guix-keys)
       (substitute-urls
-       '("https://cache-cdn.guix.moe"
-         "https://substitutes.nonguix.org"))))
+       '("https://substitutes.nonguix.org"))))
 
   (simple-service 'guix-gc shepherd-root-service-type
     (list (shepherd-timer '(guix-gc)
@@ -761,6 +760,7 @@ Pinned for latest Live ISOs.
                       "--negative-ttl=300s"
                       ;; Args for mirror-substitutes
                       "--substitute-urls=https://bordeaux.guix.gnu.org https://ci.guix.gnu.org https://substitutes.nonguix.org"
+                      "--workers=4"
                       "--url-prefix=https://nars.guix.moe/nar/")
                 #:user "guix-moe"
                 #:group "guix-moe"

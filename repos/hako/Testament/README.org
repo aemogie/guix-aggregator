@@ -37,7 +37,7 @@ Examples:
 - Variables can also be set temporarily:
 
 #+begin_src bash
-  blue URL='https://cache-cdn.guix.moe' build-os
+  blue URL='https://ci.guix.gnu.org' build-os
 #+end_src
 
 - Multiple commands can be chained by =--=, they'll be executed in order.

@@ -287,7 +287,19 @@ Application profiles
   (simple-service 'extend-guix guix-service-type
     (guix-extension
       (authorized-keys %guix-keys)
-      (substitute-urls '("https://cache-cdn.guix.moe"))))
+      (substitute-urls
+       '("https://mirror.sjtu.edu.cn/guix-bordeaux"
+         "https://mirror.sjtu.edu.cn/guix"))))
+
+  (service guix-publish-service-type
+    (guix-publish-configuration
+      (port 49637)
+      (host "0.0.0.0")
+      (advertise? #t)))
+#+end_src
+
+#+begin_src nftables :noweb-ref nftables-filter-input
+  tcp dport 49637 accept
 #+end_src
 
 *** Users

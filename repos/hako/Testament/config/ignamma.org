@@ -72,7 +72,9 @@
   (simple-service 'extend-guix guix-service-type
     (guix-extension
       (authorized-keys %guix-keys)
-      (substitute-urls '("https://cache-cdn.guix.moe"))))
+      (substitute-urls
+       '("https://mirror.sjtu.edu.cn/guix-bordeaux"
+         "https://mirror.sjtu.edu.cn/guix"))))
 
   (service guix-publish-service-type
     (guix-publish-configuration

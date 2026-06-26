@@ -145,11 +145,11 @@
 (define %systems
   `(("ignamma")
     ("involemi"            #:dependencies ,(list %shared-config-caddy))
-    ("mirror"              #:dependencies ,(list %shared-config-caddy))
     ("worker")
     ("chapra"   #:fork? #t #:dependencies ,(list %shared-config-caddy))
     ("dorphine" #:fork? #t #:dependencies ,(list %shared-config-emacs))
-    ("nuporta"  #:fork? #t)))
+    ("nuporta"  #:fork? #t)
+    ("mirror"              #:dependencies ,(list %shared-config-caddy))))
 
 (define %images
   '("minimal"

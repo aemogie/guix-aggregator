@@ -106,32 +106,102 @@ Basic configuration and theming for builtin packages.
 #+begin_src elisp :noweb-ref emacs-init
   (use-package emacs
     :custom
-    (blink-cursor-mode nil)
     (fill-column 80)
-    (fringe-mode 0)
-    (indent-tabs-mode nil)
-    (inhibit-startup-screen t)
     (initial-scratch-message ";; `M-x butterfly'\n\n")
-    (scroll-bar-mode nil)
-    (show-paren-context-when-offscreen 'overlay)
-    (tool-bar-mode nil)
-    (tooltip-mode nil)
+    (shell-file-name "/bin/sh")           ;use POSIX-compatible shell
+    (word-wrap-by-category t)             ;improve CJK word-wrapping
     (user-full-name "Hilton Chain")
     (user-mail-address "hako@ultrarare.space")
-    (shell-file-name "/bin/sh")           ;workaround to use fish as login shell
-    (word-wrap-by-category t)             ;better CJK support
+    (pixel-scroll-precision-interpolate-page t)
+    (show-paren-context-when-offscreen 'overlay)
+    ;; Theming.
+    (blink-cursor-mode nil)
+    (fringe-mode 0)
+    (inhibit-startup-screen t)
+    (scroll-bar-mode nil)
+    (tool-bar-mode nil)
     :config
     (setopt electric-indent-inhibit t)    ;disable automatic re-indentation
     :hook
-    (after-init . electric-pair-mode)          ;automatic parenthesis pairing
-    (after-init . menu-bar-mode)
-    (after-init . pixel-scroll-precision-mode) ;scroll the display precisely
-    (after-init . show-paren-mode)             ;visualize matching parenthesis
+    (after-init . show-paren-mode)
     (before-save . delete-trailing-whitespace)
-    (prog-mode . display-fill-column-indicator-mode) ;`fill-column' indicator
+    (prog-mode . display-fill-column-indicator-mode)
     :bind
     ([remap list-buffers] . switch-to-buffer)
     ("M-o" . other-window))
+#+end_src
+
+Customizations from [[https://cgit.git.savannah.gnu.org/cgit/emacs.git/tree/etc/themes/newcomers-presets-theme.el][newcomers-presets-theme]] ([[https://github.com/emacs-mirror/emacs/blob/master/etc/themes/newcomers-presets-theme.el][mirror]]).
+
+#+begin_src elisp :noweb-ref emacs-init
+  (use-package emacs
+    :custom
+    ;; Appearance-related options
+    (font-use-system-font t)
+    (frame-resize-pixelwise t)
+    (window-resize-pixelwise t)
+    (mode-line-compact 'long)
+    ;; Mouse-related options
+    (context-menu-mode t)
+    (save-interprogram-paste-before-kill t)
+    (mouse-yank-at-point t)
+    (pixel-scroll-mode t)
+    (pixel-scroll-precision-mode t) ;; see bug#69972
+    (mouse-drag-and-drop-region t)
+    (mouse-drag-and-drop-region-cross-program t)
+    (mouse-drag-mode-line-buffer t)
+    (global-xref-mouse-mode t)
+    ;; Persistence-related options
+    (savehist-mode t)
+    (save-place-mode t)
+    (recentf-mode t)
+    ;; Editing-related options
+    (electric-pair-mode t)
+    (repeat-mode t)
+    ;; (delete-selection-mode t)
+    (editorconfig-mode t)
+    (indent-tabs-mode nil)
+    (imenu-auto-rescan t)
+    (view-read-only t)
+    ;; (column-number-mode t)
+    ;; Directory managment-related options
+    (dired-auto-revert-buffer t)
+    (dired-mouse-drag-files t)
+    (shell-command-prompt-show-cwd t)
+    ;; File-related options
+    ;; (etags-regen-mode t)
+    (vc-auto-revert-mode t)
+    (vc-deduce-backend-nonvc-modes t)
+    (vc-dir-save-some-buffers-on-revert t)
+    (vc-find-revision-no-save t)
+    (vc-follow-symlinks t)
+    (vc-use-incoming-outgoing-prefixes t)
+    ;; Completion-related options
+    (minibuffer-visible-completions t)
+    (completions-detailed t)
+    (completions-group t)
+    (completion-auto-select 'second-tab)
+    (completion-eager-update t)
+    ;; (completion-styles '(basic emacs22 flex))
+    (global-completion-preview-mode t)
+    (tab-always-indent 'complete)
+    (which-key-mode t)
+    ;; Package-related options
+    ;; (package-autosuggest-mode t)
+    ;; (package-menu-use-current-if-no-marks nil)
+    ;; Frame- and window-related options
+    (frame-inhibit-implied-resize t)
+    ;; (tab-bar-history-mode t)
+    ;; (tab-bar-show t)
+    ;; Programming-related options
+    (compilation-scroll-output 'first-error)
+    ;; :hook
+    ;; (prog-mode . display-line-numbers-mode)
+    ;; (prog-mode . flymake-mode)
+    ;; (prog-mode . flyspell-prog-mode)
+    ;; (text-mode . display-line-numbers-mode)
+    ;; (text-mode . flyspell-mode)
+    )
 #+end_src
 
 ** Interface
@@ -287,9 +357,7 @@ Frecency based completion sorting and filtering.
     :custom
     (completion-styles '(prescient basic))
     (completion-category-overrides '((file (styles basic partial-completion))))
-    (completion-preview-sort-function #'prescient-completion-sort)
-    :hook
-    (after-init . global-completion-preview-mode))
+    (completion-preview-sort-function #'prescient-completion-sort))
 #+end_src
 
 #+begin_src elisp :noweb-ref emacs-init
@@ -384,8 +452,7 @@ Vertical minibuffer completion UI based on the default completion system.
                                   (car args))
                           (cdr args)))))
     :hook
-    (after-init . minibuffer-depth-indicate-mode)
-    (after-init . savehist-mode))
+    (after-init . minibuffer-depth-indicate-mode))
 #+end_src
 
 *** [[https://github.com/justbur/emacs-which-key][which-key]]
@@ -394,9 +461,7 @@ Vertical minibuffer completion UI based on the default completion system.
 #+begin_src elisp :noweb-ref emacs-init
   (use-package which-key
     :config
-    (which-key-setup-side-window-right-bottom)
-    :hook
-    (after-init . which-key-mode))
+    (which-key-setup-side-window-right-bottom))
 #+end_src
 
 *** [[https://elpa.gnu.org/packages/adaptive-wrap.html][adaptive-wrap]] & [[https://codeberg.org/joostkremers/visual-fill-column][visual-fill-column]]
