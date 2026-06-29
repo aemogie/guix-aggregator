@@ -901,32 +901,29 @@ Automatic usage and fallback for tree-sitter major modes.
   "tree-sitter-go"
   "tree-sitter-gomod"
   "tree-sitter-json"
+  "tree-sitter-kdl"
   "tree-sitter-lua"
+  "tree-sitter-nix"
   "tree-sitter-rust"
   "tree-sitter-typescript"
   "tree-sitter-yaml"
 
   "emacs-kdl-mode"
-  "tree-sitter-kdl"
+  "emacs-nix-ts-mode"
 #+end_src
 
 #+begin_src elisp :noweb-ref emacs-init
   (use-package treesit-auto
     :config
-    ;; FIXME: These modes aren't loaded automatically.
-    (require 'cmake-ts-mode)
-    (require 'dockerfile-ts-mode)
-    (require 'go-ts-mode)
-    (require 'lua-ts-mode)
-    (require 'rust-ts-mode)
-    (require 'typescript-ts-mode)
-    (require 'yaml-ts-mode)
+    ;; Enable tree-sitter mode for installed grammars.
+    (treesit-auto-add-to-auto-mode-alist t)
     ;; https://github.com/renzmann/treesit-auto/issues/32
     (dolist (mode
              '(("cmake"      . cmake-ts)
                ("dockerfile" . dockerfile-ts)
                ("go"         . go-ts)
                ("lua"        . lua-ts)
+               ("nix"        . nix-ts)
                ("rust"       . rust-ts)
                ("typescript" . typescript-ts)
                ("yaml"       . yaml-ts)))
@@ -1330,6 +1327,7 @@ https://web.archive.org/web/20240525203039/http://community.schemewiki.org/?emac
       (put 'computed-substitution-with-inputs 'scheme-indent-function 1)
       (put 'hidden-desktop-entry              'scheme-indent-function 1)
       (put 'modify-services/by-name           'scheme-indent-function 1)
+      (put 'nix-shell-wrapper                 'scheme-indent-function 1)
       (put 'ini-file                          'scheme-indent-function 1)
       (put 'json-file                         'scheme-indent-function 1)
       (put 'toml-file                         'scheme-indent-function 1)

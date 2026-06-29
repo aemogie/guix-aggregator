@@ -1,4 +1,4 @@
-#+TITLE: Desktop
+#+TITLE: Desktop config
 #+TODO: TODO(t) CHECK(s) | OFF(o)
 #+PROPERTY: header-args                :mkdirp yes
 #+PROPERTY: header-args:emacs-lisp     :eval never-export
@@ -512,7 +512,7 @@ For EXWM windows, the =perspective-exwm= package provides a function called =per
       ("Alacritty"
        (perspective-exwm-assign-window
         :persp-name "term"))
-      ((or "VK" "Slack" "discord" "TelegramDesktop" "Rocket.Chat")
+      ((or "VK" "Slack" "discord" "TelegramDesktop" "Rocket.Chat" "max")
        (perspective-exwm-assign-window
         :workspace-index 3
         :persp-name "comms"))
@@ -828,7 +828,7 @@ Also other local keybindings, that are also available only in =line-mode=:
 (general-define-key
  :keymaps '(exwm-mode-map)
  "C-q" #'exwm-input-send-next-key
- "<print>" (my/app-command "flameshot gui")
+ "<print>" (my/app-command "bash /home/pavel/bin/scripts/screenshot")
  "<mode-line> s-<mouse-4>" #'perspective-exwm-cycle-all-buffers-backward
  "<mode-line> s-<mouse-5>" #'perspective-exwm-cycle-all-buffers-forward
  "M-x" #'execute-extended-command
@@ -914,7 +914,7 @@ And keybindings that are available in both =char-mode= and =line-mode=:
 
         (,(kbd "<XF86AudioPlay>") . ,(my/app-command "mpc toggle"))
         (,(kbd "<XF86AudioPause>") . ,(my/app-command "mpc pause"))
-        (,(kbd "<print>") . ,(my/app-command "flameshot gui"))
+        (,(kbd "<print>") . ,(my/app-command "bash /home/pavel/bin/scripts/screenshot"))
 
         ;; Input method
         (,(kbd "M-\\") . my/toggle-input-method)
@@ -930,8 +930,6 @@ And keybindings that are available in both =char-mode= and =line-mode=:
         (,(kbd "s-}") . perspective-exwm-cycle-all-buffers-forward)
         (,(kbd "s-[") . perspective-exwm-cycle-exwm-buffers-backward)
         (,(kbd "s-]") . perspective-exwm-cycle-exwm-buffers-forward)
-        (,(kbd "s-<mouse-4>") . perspective-exwm-cycle-exwm-buffers-backward)
-        (,(kbd "s-<mouse-5>") . perspective-exwm-cycle-exwm-buffers-forward)
         (,(kbd "s-`") . perspective-exwm-switch-perspective)
         (,(kbd "s-o") . ,(my/app-command "rofi -show window"))
 
@@ -1089,7 +1087,6 @@ And the EXWM config itself.
 #+begin_src emacs-lisp :noweb yes
 (defun my/exwm-init ()
   (exwm-workspace-switch 1)
-
   (my/exwm-run-shepherd)
   (my/exwm-set-wallpaper)
   (my/run-in-background "gpgconf --reload gpg-agent")
@@ -1098,7 +1095,6 @@ And the EXWM config itself.
   (my/exwm-run-systemd)
   (when (my/is-arch)
     (my/run-in-background "set_layout")))
-
 (defun my/exwm-update-class ()
   (exwm-workspace-rename-buffer (format "EXWM :: %s" exwm-class-name)))
 
@@ -1137,7 +1133,9 @@ And the EXWM config itself.
     (my/exwm-set-alpha 90))
 
   (perspective-exwm-mode)
-  (exwm-enable))
+  ;; Why does Daniel Mendler delete functions? Why not just keep the
+  ;; old functions forever?
+  (exwm-wm-mode))
 #+end_src
 * i3wm
 :PROPERTIES:
@@ -1594,8 +1592,7 @@ bindsym XF86MonBrightnessDown exec light -U 5
 
 #+begin_src conf-space
 # Screenshots
-bindsym --release Print exec "flameshot gui"
-bindsym --release Shift+Print exec "xfce4-screenshooter"
+bindsym --release Print exec ~/bin/scripts/screenshot
 #+end_src
 ** Colors
 Application of the XResources theme to the WM.
@@ -2046,7 +2043,7 @@ radius = 0.0
 
 Fonts
 #+begin_src conf-windows
-font-0 = pango:monospace:size=13;2
+font-0 = pango:DejaVu Sans:size=13;2
 font-1 = NotoEmoji:scale=10:antialias=false;1
 font-2 = fontawesome:pixelsize=13;3
 font-3 = JetBrainsMono Nerd Font:style=Medium,Regular:size=13;4
@@ -2885,7 +2882,7 @@ content-background = ${colors.blue}
 #+begin_src conf-windows
 [module/glyph-left-light-background--blue]
 type = custom/text
-content-background = ${colors.backround}
+content-background = ${colors.background}
 content-foreground = ${colors.blue}
 content = ${glyph.gleft}
 content-font = 5
@@ -3148,58 +3145,25 @@ EDITOR=vim
 default_autotype='username :tab pass'
 clip=both
 #+end_src
-* Flameshot
+* Screenshots
 | Arch dependency |
 |-----------------|
-| flameshot       |
+| maim            |
+| satty           |
+| xclip           |
 
-[[https://github.com/flameshot-org/flameshot][flameshot]] is my program of choice to make screenshots.
+I use [[https://github.com/naelstrof/maim][maim]] for selecting the region and [[https://github.com/gabm/Satty][satty]] for annotation and copying.
 
-As it overwrites its own config all the time, I do not keep the file in VC.
+#+begin_src bash :tangle ~/bin/scripts/screenshot :shebang "#!/usr/bin/env bash"
+output_filename="${1:-$HOME/Pictures/screenshots/satty-$(date '+%Y%m%d-%H:%M:%S').png}"
+mkdir -p "$(dirname "$output_filename")"
 
-#+begin_src conf-unix :tangle ./.config/flameshot/flameshot.ini :comments no :noweb yes
-[General]
-disabledTrayIcon=false
-drawColor=#ff0000
-drawThickness=3
-savePath=/home/pavel/Pictures
-savePathFixed=false
-showStartupLaunchMessage=false
-uiColor=<<get-color(name="blue")>>
-
-[Shortcuts]
-TYPE_ARROW=A
-TYPE_CIRCLE=C
-TYPE_CIRCLECOUNT=
-TYPE_COMMIT_CURRENT_TOOL=Ctrl+Return
-TYPE_COPY=Ctrl+C
-TYPE_DRAWER=D
-TYPE_EXIT=Ctrl+Q
-TYPE_IMAGEUPLOADER=Return
-TYPE_MARKER=M
-TYPE_MOVESELECTION=Ctrl+M
-TYPE_MOVE_DOWN=Down
-TYPE_MOVE_LEFT=Left
-TYPE_MOVE_RIGHT=Right
-TYPE_MOVE_UP=Up
-TYPE_OPEN_APP=Ctrl+O
-TYPE_PENCIL=P
-TYPE_PIN=
-TYPE_PIXELATE=B
-TYPE_RECTANGLE=R
-TYPE_REDO=Ctrl+Shift+Z
-TYPE_RESIZE_DOWN=Shift+Down
-TYPE_RESIZE_LEFT=Shift+Left
-TYPE_RESIZE_RIGHT=Shift+Right
-TYPE_RESIZE_UP=Shift+Up
-TYPE_SAVE=Ctrl+S
-TYPE_SELECTION=S
-TYPE_SELECTIONINDICATOR=
-TYPE_SELECT_ALL=Ctrl+A
-TYPE_TEXT=T
-TYPE_TOGGLE_PANEL=Space
-TYPE_UNDO=Ctrl+Z
+maim -s |
+    satty --filename - \
+          --output-filename "$output_filename" \
+          --copy-command "xclip -selection clipboard -t image/png -i"
 #+end_src
+
 * dunst
 | Arch dependency |
 |-----------------|
@@ -4252,6 +4216,7 @@ This section generates manifests for various desktop software that I'm using.
 | browsers | ungoogled-chromium-bin |
 | browsers | firefox                |
 | browsers | firefox-tridactyl      |
+| browsers  | torbrowser-launcher    |
 ** Office & Multimedia
 | Category | Arch dependency             | Disabled | Source  |
 |----------+-----------------------------+----------+---------|
@@ -4355,6 +4320,8 @@ This section generates manifests for various desktop software that I'm using.
 | dev      | traceroute           |          |
 | dev      | docker-buildx        |          |
 | dev      | duckdb               |          |
+| dev      | ansible              |          |
+| dev      | strace               |          |
 ** Games
 | Category | Arch dependency |
 |----------+-----------------|
@@ -4628,6 +4595,26 @@ ExecStart=/usr/bin/opensnitch-ui
 [Install]
 WantedBy=wm-session.target
 #+end_src
+** snixembed
+[[https://git.sr.ht/~steef/snixembed][snixembed]] is a compatibility proxy between two systemtray protocols.
+
+| Arch dependency |
+|-----------------|
+| snixembed       |
+
+#+begin_src conf :tangle .config/systemd/user/snixembed.service
+[Unit]
+Description=snixembed
+
+[Service]
+ExecStart=/usr/bin/snixembed
+Restart=on-failure
+
+[Install]
+WantedBy=wm-session.target
+#+end_src
+
+
 * Arch settings
 Other desktop programs I use are listed below.
 

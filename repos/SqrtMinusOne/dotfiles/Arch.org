@@ -1,4 +1,4 @@
-#+TITLE: Arch Linux
+#+TITLE: Arch Linux config
 #+PROPERTY: header-args :mkdirp yes
 
 I've decided to switch to [[https://archlinux.org/][Arch Linux]] and configure it declaratively with [[https://github.com/ripytide/metapac][metapac]].
@@ -150,6 +150,7 @@ Don't forget to sync mail and enable the sync timer.
 #+begin_src bash
 sudo usermod -a -G libvirt pavel
 sudo usermod -a -G kvm pavel
+sudo virsh net-autostart default
 #+end_src
 
 Install [[https://github.com/retorquere/zotero-better-bibtex][zotero-better-bibtex]] manually.
@@ -192,6 +193,13 @@ sudo systemctl enable --now xrdp
 Set the default browser:
 #+begin_src bash
 xdg-settings set default-web-browser glide-browser-bin.desktop
+#+end_src
+
+Disable systemd coredumps by editing /etc/systemd/coredump.conf
+#+begin_src conf
+[Coredump]
+Storage=none
+ProcessSizeMax=0
 #+end_src
 
 * Metapac configuration
@@ -598,3 +606,22 @@ In =/usr/lib/jvm/java-21-openjdk/conf/security/java.security=, in =jdk.tls.disab
 #+end_example
 
 Leave only ECDH
+** Running MAX in Firejail
+#+begin_src conf-desktop :tangle .local/share/applications/max.desktop
+[Desktop Entry]
+Type=Application
+Terminal=false
+Name=MAX
+Exec=firejail --profile=max /usr/share/max/bin/max %U
+DBusActivatable=false
+Icon=/usr/share/pixmaps/max.png
+MimeType=x-scheme-handler/max;
+Comment=MAX Messenger Client Application
+Comment[ru]=Клиентское приложение мессенджера MAX
+StartupWMClass=max
+Categories=Chat;Network;InstantMessaging;Qt;
+Keywords=max;chat;im;messaging;messenger;sms;
+SingleMainWindow=true
+X-GNOME-UsesNotifications=true
+X-GNOME-SingleWindow=true
+#+end_src

@@ -39,6 +39,8 @@
                   "picard"
                   "showmethekey"
                   <<package-spec>>))
+               (map nix-shell-wrapper->package
+                    (list <<package-nix>>))
                %testament-cli-packages
                %base-packages))
       (services
@@ -204,6 +206,7 @@ Application profiles
 | Mentha/Log             | legacy (/var/log)  |               |                       |
 | Mentha/Guix            | legacy (/var/guix) |               |                       |
 | Mentha/Store           | legacy (/gnu)      | atime=off     |                       |
+| Mentha/Nix             | legacy (/nix)      | atime=off     |                       |
 | Mentha/Home            | legacy (/home)     |               | true                  |
 |                        |                    |               |                       |
 | Mentha/State/Bluetooth | /var/lib/bluetooth |               | true                  |
@@ -229,6 +232,7 @@ Application profiles
          ("Log"    . "/var/log")
          ("Guix"   . "/var/guix")
          ("Store"  . "/gnu")
+         ("Nix"    . "/nix")
          ("Home"   . "/home")))
 #+end_src
 
@@ -568,7 +572,7 @@ niri supports getting keyboard layout from localed.
       (config
        (computed-substitution-with-inputs "niri.kdl"
          (local-file (testament-file "dorphine/niri.kdl"))
-         (list xwayland-satellite)))))
+         (list rofi xwayland-satellite)))))
 #+end_src
 
 #+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/xdg-desktop-portal/niri-portals.conf
@@ -678,7 +682,7 @@ niri supports getting keyboard layout from localed.
           XF86MonBrightnessDown allow-when-locked=true { spawn "noctalia" "msg" "brightness-down"; }
 
           Mod+A           { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
-          Mod+D           { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
+          Mod+D           { spawn "$$bin/rofi$$" "-show" "combi"; }
           Mod+S           { spawn "noctalia" "msg" "settings-toggle"; }
           Mod+L           { spawn "noctalia" "msg" "session" "lock"; }
           Ctrl+Alt+Delete { spawn "noctalia" "msg" "panel-toggle" "session"; }
@@ -1155,6 +1159,31 @@ Jujutsu:
        ,(file-append mpv-mpris "/lib/mpv-mpris/mpris.so"))))
 #+end_src
 
+*** nix
+#+begin_src scheme :noweb-ref service
+  (service nix-service-type
+    (nix-configuration
+      (build-directory "/var/tmp")
+      (extra-config
+       '("experimental-features = nix-command flakes\n"
+         "auto-optimise-store = true\n"
+         "substituters = https://mirrors.ustc.edu.cn/nix-channels/store https://cache.nixos.org\n"))))
+#+end_src
+
+TODO: Address locale issue.
+
+#+begin_src scheme :noweb-ref package-nix
+  (nix-shell-wrapper "nocturne"
+    '("github:NixOS/nixpkgs/nixos-26.05#coreutils"
+      "github:NixOS/nixpkgs/nixos-26.05#nocturne")
+    #:run-command '("env" "LANG=C.UTF-8" "nocturne"))
+
+  (nix-shell-wrapper "readest"
+    '("github:NixOS/nixpkgs/nixos-26.05#coreutils"
+      "github:NixOS/nixpkgs/nixos-26.05#readest")
+    #:run-command '("env" "LANG=C.UTF-8" "readest"))
+#+end_src
+
 *** prismlauncher
 #+begin_src scheme :noweb-ref package-spec
   "prismlauncher-dolly"
@@ -1281,6 +1310,7 @@ Utilities
   (guix packages)
   (nonguix)
   (rosenthal)
+  (rosenthal utils nix)
   (sops secrets)
 #+end_src
 
@@ -1294,6 +1324,7 @@ Guix System - services
   (gnu services containers)
   (gnu services linux)
   (gnu services networking)
+  (gnu services nix)
   (gnu services security)
   (gnu services security-token)
   (gnu services ssh)
@@ -1333,6 +1364,7 @@ Guix packages
   (gnu packages shells)
   (gnu packages ssh)
   (gnu packages video)
+  (gnu packages xdisorg)
   (gnu packages xorg)
   (nongnu packages nvidia)
 #+end_src
