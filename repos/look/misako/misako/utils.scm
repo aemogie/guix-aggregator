@@ -115,11 +115,11 @@
 (define list*
   (compose flatten-package-list list))
 
-(define* (bin-fix pkg drv #:optional (bin-name pkg))
+(define* (bin-fix pkg drv #:optional (bin-name pkg) #:key (graft-from "mesa"))
   (let ((store-path (string-trim-right
                       (with-output-to-string
                         (lambda ()
-                          (guix-build pkg (string-append "--with-graft=mesa=" drv))))
+                          (guix-build pkg (string-append "--with-graft=" graft-from "=" drv))))
                       char-whitespace?)))
     (list
       (string-append ".local/bin/" bin-name)

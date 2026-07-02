@@ -16,6 +16,20 @@ hl.bind("SUPER + SHIFT + return", hl.dsp.exec_cmd(term .. " -e " .. fm))
 hl.bind("SUPER + b"             , hl.dsp.exec_cmd("zen"))
 hl.bind("SUPER + z"             , hl.dsp.exec_cmd("mpv \"$(wl-paste)\""))
 
+hl.bind("CTRL + mouse_down", function()
+    local w = hl.get_active_window()
+    if w ~= nil and w.class == "steam_app_238960" then
+        hl.dispatch(hl.dsp.exec_cmd("xdotool click 1"))
+    end
+end)
+
+hl.bind("CTRL + mouse_up", function()
+    local w = hl.get_active_window()
+    if w ~= nil and w.class == "steam_app_238960" then
+        hl.dispatch(hl.dsp.exec_cmd("xdotool click 1"))
+    end
+end)
+
 --
 -- Window bindings
 --

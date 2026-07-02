@@ -68,6 +68,7 @@
   #:use-module (saayix packages emacs-xyz)
   #:use-module (saayix packages file-managers)
   #:use-module (saayix packages fonts)
+  #:use-module (saayix packages games)
   #:use-module (saayix packages minecraft)
   #:use-module (saayix packages pdf)
   #:use-module (saayix packages productivity)
@@ -183,7 +184,8 @@
   (yumiko?* steam-nvidia-new-feature
             heroic-nvidia-new-feature
             mangohud
-            mcpelauncher-client
+            rusty-path-of-building
+            ;; mcpelauncher-client
             osu-lazer-bin
             prismlauncher))
 
