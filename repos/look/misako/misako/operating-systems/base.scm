@@ -181,9 +181,9 @@
                              "--gc-keep-outputs=yes"))))
 
         #|Home environment services|#
-        (service guix-home-service-type
-          (if (file-exists? "/run/current-system/provenance") '()
-              `(("look" ,home-environment:look))))
+        ;; (service guix-home-service-type
+        ;;   (if (file-exists? "/run/current-system/provenance") '()
+        ;;       `(("look" ,home-environment:look))))
 
         (service shared-cache-service-type
           (shared-cache-configuration

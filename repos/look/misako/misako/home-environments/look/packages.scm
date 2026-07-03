@@ -74,6 +74,7 @@
   #:use-module (saayix packages productivity)
   #:use-module (saayix packages terminals)
   #:use-module (saayix packages wm)
+  #:use-module (saayix-nonfree packages video)
   #:use-module (saayix-nonfree packages binaries)
   #:use-module (sops packages sops))
 
@@ -181,13 +182,13 @@
         font-nerd-symbols))
 
 (define-public games
-  (yumiko?* steam-nvidia-new-feature
-            heroic-nvidia-new-feature
+  (yumiko?* steam-nvidia-595
+            heroic-nvidia-595
             mangohud
             rusty-path-of-building
             ;; mcpelauncher-client
-            osu-lazer-bin
-            prismlauncher))
+            osu-lazer-bin))
+            ;; prismlauncher))
 
 (define-public guile
   (list guile-next guile-colorized guile-gcrypt guile-readline
@@ -262,7 +263,9 @@
         easyeffects))
 
 (define-public terminals
-  (list ghostty foot))
+  (list ghostty
+        stremio-linux-shell
+        foot))
 
 (define-public text-editor
   (list helix))

@@ -187,11 +187,11 @@
 
         ;; TODO: Remove this or rework bin-fix.
         ;; Without this, it also tries to build nvidia stuff on non-nvidia systems
-        (if (equal? (gethostname) "yumiko")
-            (service home-files-service-type
-              (yumiko?* (bin-fix "mpv-nvidia"  "nvda@580" "mpv")
-                        (bin-fix "helvum"      "nvda@580")))
-            (service home-files-service-type))
+        ;; (if (equal? (gethostname) "yumiko")
+        ;;     (service home-files-service-type
+        ;;       (yumiko?* (bin-fix "mpv-nvidia"  "nvda@595" "mpv")
+        ;;                 (bin-fix "helvum"      "nvda@595")))
+        ;;     (service home-files-service-type))
 
         (service home-xdg-user-directories-service-type
           (home-xdg-user-directories-configuration
@@ -266,24 +266,36 @@
             ,@(if (not nvidia?) '()
                 `(("QT_WAYLAND_DISABLE_WINDOWDECORATION" . "1")
                   ; ("QT_OPENGL_NO_SANITY_CHECK"           . "1") ;; Bad flag
-                  ("CUDA_DISABLE_PERF_BOOST"             . "1")
+                  ;; ("CUDA_DISABLE_PERF_BOOST"             . "1")
                   ("__GLX_VENDOR_LIBRARY_NAME"           . "nvidia")
-                  ; ("__EGL_VENDOR_LIBRARY_FILENAMES"      . ,(file-append nvidia-driver "/share/glvnd/egl_vendor.d/10_nvidia.x86_64.json"))
-                  ; ("__NV_PRIME_RENDER_OFFLOAD"           . "1")
-                  ; ("__GL_SHADER_DISK_CACHE_SIZE"         . "21474836480")
+                  ("GBM_BACKEND"                         . "nvidia-drm")
+                  ("NVD_BACKEND"                         . "direct")
+                  ("LIBVA_DRIVER_NAME"                   . "nvidia")
+                  ("VK_ICD_FILENAMES" .
+                   ,(file-append nvda-595 "/share/glvnd/egl_vendor.d/10_nvidia.x86_64.json"))
+                  ("GBM_BACKENDS_PATH" .
+                   ,(file-append nvda-595 "/lib/gbm"))
+                  ("__EGL_EXTERNAL_PLATFORM_CONFIG_DIRS" .
+                   ,(file-append nvda-595 "/share/egl/egl_external_platform.d"))
+                  ("__EGL_VENDOR_LIBRARY_DIRS" .
+                   ,(file-append nvda-595 "/share/glvnd/egl_vendor.d"))
+                  ("LIBVA_DRIVERS_PATH" .
+                   ,(file-append nvda-595 "/lib/dri"))
+                  ("VDPAU_DRIVER_PATH" .
+                   ,(file-append nvda-595 "/lib/vdpau"))
                   ("__GL_SHADER_DISK_CACHE"              . "1")
                   ("__GL_SHADER_DISK_CACHE_PATH"         . "/home/look/games/.nv")
                   ("__GL_SHADER_DISK_CACHE_SKIP_CLEANUP" . "1")
+                  ("MOZ_DISABLE_RDD_SANDBOX"             . "1")
+                  ("XDG_SESSION_TYPE"                    . "wayland")
+                  ("GUIX_SANDBOX_EXTRA_SHARES"           . "/home/look/games")))
                   ; ("__GL_GSYNC_ALLOWED"                  . "1")
                   ; ("__GL_VRR_ALLOWED"                    . "1")
                   ;; This flag below solves prismlauncher problems
                   ; ("__GL_THREADED_OPTIMIZATIONS"         . "0")
-                  ; ("GBM_BACKEND"                         . "nvidia-drm")
-                  ("NVD_BACKEND"                         . "direct")
-                  ("MOZ_DISABLE_RDD_SANDBOX"             . "1")
-                  ("XDG_SESSION_TYPE"                    . "wayland")
-                  ("GUIX_SANDBOX_EXTRA_SHARES"           . "/home/look/games")
-                  ("LIBVA_DRIVER_NAME"                   . "nvidia")))
+                  ; ("__EGL_VENDOR_LIBRARY_FILENAMES"      . ,(file-append nvidia-driver "/share/glvnd/egl_vendor.d/10_nvidia.x86_64.json"))
+                  ; ("__NV_PRIME_RENDER_OFFLOAD"           . "1")
+                  ; ("__GL_SHADER_DISK_CACHE_SIZE"         . "21474836480")
             #|Guile|#
             ("GUILE_HISTORY" . "$XDG_CACHE_HOME/guile/history")
             #|User variables|#
