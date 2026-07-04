@@ -125,9 +125,11 @@ rde-yank () {
 }
 zle -N rde-yank
 
-bindkey -e '\\ew' rde-copy-region-as-kill
-bindkey -e '^W' rde-kill-region
-bindkey -e '^Y' rde-yank
+if [[ -n \"${WAYLAND_DISPLAY:-}\" ]]; then
+  bindkey -e '\\ew' rde-copy-region-as-kill
+  bindkey -e '^W' rde-kill-region
+  bindkey -e '^Y' rde-yank
+fi
 
 " #$wl-copy #$wl-copy #$wl-paste)))))))
 

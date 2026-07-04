@@ -9,7 +9,7 @@ vterm_printf(){
     elif [ "${TERM%%-*}" = "screen" ]; then
         # GNU screen (screen, screen-256color, screen-256color-bce)
         printf "\eP\e]%s\007\e\\" "$1"
-    elif ([ "${TERM%%-*}" = "eterm" ] || [ "${TERM%%-*}" = "dumb" ]); then
+    elif ([ "${TERM%%-*}" = "eterm" ] || [ "${TERM%%-*}" = "dumb" ] || [ -z "${USER}" ]); then
         # Do nothing for Emacs' term and ansi-term, and other dumb terminals.
     else
         printf "\e]%s\e\\" "$1"
