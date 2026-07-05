@@ -569,6 +569,7 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
       (database-url "postgresql://vaultwarden:placeholder@localhost/vaultwarden")
       (port 23263)
       (extra-options '(("ROCKET_ADDRESS" . "127.0.0.1")))
+      (group-id 981)
       (user-id 977)))
 #+end_src
 

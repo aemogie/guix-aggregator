@@ -1331,7 +1331,10 @@ https://web.archive.org/web/20240525203039/http://community.schemewiki.org/?emac
       (put 'ini-file                          'scheme-indent-function 1)
       (put 'json-file                         'scheme-indent-function 1)
       (put 'toml-file                         'scheme-indent-function 1)
-      (put 'yaml-file                         'scheme-indent-function 1))
+      (put 'yaml-file                         'scheme-indent-function 1)
+      ;; My own preferences.
+      (put 'service                           'scheme-indent-function 1)
+      (put 'simple-service                    'scheme-indent-function 2))
     :hook
     (scheme-mode . hako/adjust-scheme-indentation))
 #+end_src

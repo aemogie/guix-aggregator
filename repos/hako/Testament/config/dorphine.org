@@ -28,21 +28,22 @@
       (users (cons* <<user-account>> %base-user-accounts))
       (skeletons %rosenthal-skeletons)
       (packages
-       (append (specifications->packages
-                '("digikam"
-                  "firefox"
-                  "gimp"
-                  "imv"
-                  "kdenlive"
-                  "libreoffice"
-                  "obs-nvidia"
-                  "picard"
-                  "showmethekey"
-                  <<package-spec>>))
-               (map nix-shell-wrapper->package
-                    (list <<package-nix>>))
-               %testament-cli-packages
-               %base-packages))
+       (with-nix-profile
+        (append (specifications->packages
+                 '("digikam"
+                   "firefox"
+                   "gimp"
+                   "imv"
+                   "kdenlive"
+                   "libreoffice"
+                   "obs-nvidia"
+                   "picard"
+                   "showmethekey"
+                   "telegram-desktop"
+                   <<package-spec>>))
+                (list <<package-nix>>)
+                %testament-cli-packages
+                %base-packages)))
       (services
        (cons* <<service>>
               (modify-services %rosenthal-desktop-services/tuigreet <<modify-service>>)))
@@ -133,7 +134,12 @@ Application profiles
                  (essential-services
                   (cons* (service home-writable-files-manager-service-type)
                          (modify-services ((@@ (gnu home) home-environment-default-essential-services) this-home-environment)
-                           (delete home-symlink-manager-service-type))))
+                           (delete home-symlink-manager-service-type)
+                           (home-fontconfig-service-type
+                            _ => '("/run/current-system/profile/share/fonts"
+                                   "~/.guix-home/profile/share/fonts"
+                                   "/nix/var/nix/profiles/guix-system-nix-profile/share/fonts"
+                                   "/var/tmp/guix-home-nix-profile/share/fonts")))))
                  (services
                   (cons* <<home-service>> %rosenthal-desktop-home-services))))))
 #+end_src
@@ -1018,34 +1024,6 @@ skk
   1=Control+N
 #+end_src
 
-*** flatpak
-#+begin_src scheme :noweb-ref package-spec
-  "flatpak"
-#+end_src
-
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'flatpak-xdg-data-dir home-environment-variables-service-type
-    `(("XDG_DATA_DIRS" . "$XDG_DATA_DIRS:$XDG_DATA_HOME/flatpak/exports/share")))
-#+end_src
-
-Expose icons and fonts for Guix Home.  Those of Guix System are already handled
-by a patch.
-
-#+begin_src scheme :noweb-ref service
-  (extra-special-file
-   "/usr/share/icons"
-   "/var/guix/profiles/per-user/hako/guix-home/profile/share/icons")
-  (extra-special-file
-   "/usr/local/share/fonts"
-   "/var/guix/profiles/per-user/hako/guix-home/profile/share/fonts")
-#+end_src
-
-Expose =/gnu/store= to Flatpak:
-
-#+begin_src bash
-  flatpak --user override --filesystem=/gnu/store:ro
-#+end_src
-
 *** git & jujutsu
 #+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/git/config
   [core]
@@ -1168,40 +1146,60 @@ Jujutsu:
        '("experimental-features = nix-command flakes\n"
          "auto-optimise-store = true\n"
          "substituters = https://mirrors.ustc.edu.cn/nix-channels/store https://cache.nixos.org\n"))))
+
+  (service nix-search-paths-service-type)
+#+end_src
+
+#+begin_src scheme :noweb-ref home-service
+  (service home-nix-search-paths-service-type)
 #+end_src
 
 TODO: Address locale issue.
 
 #+begin_src scheme :noweb-ref package-nix
   (nix-shell-wrapper "nocturne"
-    '("github:NixOS/nixpkgs/nixos-26.05#coreutils"
-      "github:NixOS/nixpkgs/nixos-26.05#nocturne")
-    #:run-command '("env" "LANG=C.UTF-8" "nocturne"))
+    '("github:NixOS/nixpkgs/714a5f8c4ead6b31148d829288440ed033ccc041#nocturne")
+    #:run-command '("nocturne")
+    #:environment-set '(("LANG" . "C.UTF-8")))
 
   (nix-shell-wrapper "readest"
-    '("github:NixOS/nixpkgs/nixos-26.05#coreutils"
-      "github:NixOS/nixpkgs/nixos-26.05#readest")
-    #:run-command '("env" "LANG=C.UTF-8" "readest"))
+    '("github:NixOS/nixpkgs/714a5f8c4ead6b31148d829288440ed033ccc041#readest")
+    #:run-command '("readest")
+    #:environment-set '(("LANG" . "C.UTF-8")))
+#+end_src
+
+Create /etc/fonts/fonts.conf to specify font directories and extra
+configurations, see also my previous modifications to
+home-fontconfig-service-type.
+
+#+begin_src scheme :noweb-ref service
+  (extra-special-file "/etc/fonts/fonts.conf" "/home/hako/.guix-home/files/.config/fontconfig/fonts.conf")
+#+end_src
+
+NixOS installs graphics drivers to /run/opengl-driver, when using Nix packages
+we'll need this as well, since GLX and CUDA drivers don't have search paths.
+Alternatively, you can load them (libGL.so, libcuda.so, libnvcuvid.so) via the
+LD_PRELOAD environment variable.
+
+Even if you're not using a NVIDIA graphics card, add the nvda package from
+Nonguix to system profile as well (not needed for NVIDIA cards though, since
+this has already been handled by nonguix-transformation-nvidia properly).  That
+package provides a mesa variant with GLVND support and search paths for various
+graphics libraries.
+
+#+begin_src scheme :noweb-ref service
+  (extra-special-file "/run/opengl-driver" "/run/booted-system/profile")
 #+end_src
 
 *** prismlauncher
-#+begin_src scheme :noweb-ref package-spec
-  "prismlauncher-dolly"
+#+begin_src scheme :noweb-ref package-nix
+  (nix-shell-wrapper "prismlauncher"
+    '("github:NixOS/nixpkgs/714a5f8c4ead6b31148d829288440ed033ccc041#prismlauncher")
+    #:run-command '("prismlauncher"))
 #+end_src
 
 #+begin_src nftables :noweb-ref nftables-filter-input
   tcp dport 25565 accept
-#+end_src
-
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'openjdk-for-prismlauncher home-files-service-type
-    (map (lambda (jdk)
-           (let ((path (in-vicinity ".local/share/PrismLauncher/java" (package-version jdk))))
-             (list path jdk)))
-         (list openjdk25
-               openjdk21
-               openjdk17
-               icedtea-8)))
 #+end_src
 
 *** steam
@@ -1334,6 +1332,7 @@ Guix System - services
   (gnu services xorg)
   (rosenthal services keyboard)
   (rosenthal services networking)
+  (rosenthal services nix)
   (rosenthal services shellutils)
 #+end_src
 

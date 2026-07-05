@@ -259,7 +259,7 @@
       (version version))))
 
 (define linux-server/dolly
-  (let ((cachyos-version "6.18.36-1"))
+  (let ((cachyos-version "6.18.38-1"))
     (make-linux/dolly
      linux-6.18
      cachyos-version
@@ -269,7 +269,7 @@
              "https://github.com/CachyOS/linux/releases/download/cachyos-"
              cachyos-version "/cachyos-" cachyos-version ".tar.gz"))
        (sha256
-        (base32 "0n3py7dvninj1k2mblaw0cbdq7mjfkj4bwk5w1wgcp1zxinivf2x")))
+        (base32 "1jadhczbqinkwwqk8gvnbmr95lwhzlwncf89szwvb8d1529kqiq0")))
      #:defconfig (%kernel-config "/defconfig_server")
      #:configs
      (string-join
