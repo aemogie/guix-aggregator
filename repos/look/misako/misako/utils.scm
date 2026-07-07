@@ -25,6 +25,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-43)
+  #:use-module (rosenthal utils nix)
   #:export (nvidia-operating-system
             nvidia-home-environment
             obs-nvenc
@@ -42,15 +43,17 @@
             edit
             reconfigure
             secret
-            bin-fix))
+            nix->guix))
 
-(define misako-dir
-  (let* ((relative "/projects/guile/misako")
-         (user-home (getenv "HOME"))
+(define-public misako-user-home
+  (let* ((user-home (getenv "HOME"))
          (doas-user (getenv "DOAS_USER")))
     (if doas-user
-        (string-append "/home/" doas-user relative)
-        (string-append user-home relative))))
+        (string-append "/home/" doas-user)
+        user-home)))
+
+(define misako-dir
+  (string-append misako-user-home "/projects/guile/misako"))
 
 (define yumiko-dir
   (string-append misako-dir "/misako/operating-systems/yumiko"))
@@ -79,9 +82,14 @@
 
 (define (secret key)
   (call-with-input-file
-    (let ((relative-key (string-join key "/")))
+    (let ((relative-key (string-join key "/"))
+          (doas-user (getenv "DOAS_USER")))
       (if (zero? (getuid))
-          (string-append "/run/secrets/" relative-key)
+          (if doas-user
+              (string-append "/run/user/"
+                             (number->string (passwd:uid (getpwnam doas-user)))
+                             "/secrets/" relative-key)
+              (string-append "/run/secrets/" relative-key))
           (string-append "/run/user/"
                          (number->string (getuid))
                          "/secrets/" relative-key)))
@@ -115,19 +123,6 @@
 (define list*
   (compose flatten-package-list list))
 
-(define* (bin-fix pkg drv #:optional (bin-name pkg) #:key (graft-from "mesa"))
-  (let ((store-path (string-trim-right
-                      (with-output-to-string
-                        (lambda ()
-                          (guix-build pkg (string-append "--with-graft=" graft-from "=" drv))))
-                      char-whitespace?)))
-    (list
-      (string-append ".local/bin/" bin-name)
-      (computed-file
-        (string-append "link-" bin-name)
-        #~(symlink #$(string-append store-path "/bin/" bin-name)
-                   #$output)))))
-
 (define-syntax-rule (nvidia-home-environment exp ...)
   "Like 'home-environment' but graft Mesa with the proprietary NVIDIA driver."
   (if nvidia?
@@ -138,3 +133,27 @@
   ((nonguix-transformation-nvidia #:open-source-kernel-module? #t
                                   #:driver nvda-595)
    (operating-system exp ...)))
+
+(define %default-nix-channel "github:NixOS/nixpkgs/nixos-26.05")
+
+(define (spec-ref spec key default)
+  (if (pair? spec)
+      (let ((kv (memq key (cdr spec))))
+        (if kv (cadr kv) default))
+      default))
+
+(define* (nix->guix-one spec #:key (channel %default-nix-channel))
+  (let* ((name (if (pair? spec) (car spec) spec))
+         (name-str (symbol->string name))
+         (channel (spec-ref spec #:channel channel))
+         (command (spec-ref spec #:command name-str))
+         (run-command (spec-ref spec #:run-command name-str)))
+    (nix-shell-wrapper command
+      (list (string-append channel "#" name-str))
+      #:options '("--impure")
+      #:run-command (list run-command))))
+
+(define* (nix->guix specs #:key (channel %default-nix-channel))
+  (with-nix-profile
+    (map (lambda (spec) (nix->guix-one spec #:channel channel))
+         specs)))

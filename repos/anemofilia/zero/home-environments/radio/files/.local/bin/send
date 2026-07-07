@@ -9,7 +9,7 @@ lswt | grep -q 'org.telegram' \
 river-bedload -print tags | jq -e 'map(select(.id == 8)).[].focused' >/dev/null \
 || wlrctl keyboard type '.' modifiers SUPER
 
-lswt -j | jq -e '.toplevels | map(select(."app-id" == "org.telegram")).[].activated' >/dev/null \
+lswt -j | jq -e '.toplevels | map(select(."app-id" == "org.telegram.desktop")).[].activated' >/dev/null \
 || wlrctl toplevel focus org.telegram
 
 realpath -z "$@" | xargs -0 Telegram -sendpath

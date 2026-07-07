@@ -114,6 +114,8 @@
        :space-evenly false
        (image :path {EWW_BATTERY[bat].status == "Charging" ?
                      "icons/battery-charging.png" :
+                     EWW_BATTERY[bat]?.capacity == "null" ?
+                     "icons/battery-empty.png" :
                      EWW_BATTERY[bat].capacity == 0 ?
                      "icons/battery-empty.png" :
                      EWW_BATTERY[bat].capacity <= 25 ?

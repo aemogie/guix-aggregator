@@ -153,6 +153,14 @@
     (flags '(no-atime))
     (options "compress=zstd,subvol=@var/cache,ssd")))
 
+(define var-tmp
+  (file-system
+    (device "none")
+    (type "tmpfs")
+    (mount-point "/var/tmp")
+    (check? #f)
+    (needed-for-boot? #f)))
+
 (define gnu-store
   (file-system
     (device guix-part)
@@ -215,6 +223,7 @@
          var-lib
          var-guix
          var-cache
+         var-tmp
          gnu-store
          gnu-persist
          gnu-persist-ssh

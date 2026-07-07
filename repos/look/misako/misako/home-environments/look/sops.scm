@@ -2,18 +2,19 @@
   #:use-module (sops secrets)
   #:use-module (guix gexp)
   #:use-module (misako utils)
-  #:export (all
-            all-keys))
+  #:export (all))
 
 (define (look-sops-secret keys)
   (map (lambda (key)
          (sops-secret
            (key key)
+           (user "look")
+           (group "users")
            (file (local-file (string-append look-sops-dir "/look.yaml")))
            (permissions #o400)))
        keys))
 
-(define all-keys
+(define-public all-keys
   (list '("aerc" "primary"   "name")
         '("aerc" "primary"   "user")
         '("aerc" "primary"   "url")

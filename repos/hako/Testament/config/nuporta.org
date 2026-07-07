@@ -59,6 +59,7 @@
 | Lycoris/Cache/GuixMoe/Narinfo    | /var/cache/guix-moe/narinfo    | recordsize=8K                 |                       |
 | Lycoris/Cache/GuixPublish        | /var/cache/guix/publish        | recordsize=8K                 |                       |
 | Lycoris/Cache/GuixPublish/Nar    | /var/cache/guix/publish/nar    | compression=off,recordsize=1M |                       |
+| Lycoris/Cache/Nonguix            | /var/cache/nonguix             | compression=off               |                       |
 |                                  |                                |                               |                       |
 | Lycoris/State/Forgejo            | /var/lib/forgejo               |                               |                       |
 | Lycoris/State/PostgreSQL         | /var/lib/postgresql            | recordsize=32K                | true                  |

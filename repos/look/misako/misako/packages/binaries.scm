@@ -51,7 +51,6 @@
   #:use-module (guix git-download)
   #:use-module (guix packages)
   #:use-module (guix utils)
-  #:use-module (guix-science-nonfree packages cuda)
   #:use-module (ice-9 match)
   #:use-module (nongnu packages chromium)
   #:use-module (nongnu packages dotnet)

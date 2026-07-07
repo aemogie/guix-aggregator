@@ -62,13 +62,7 @@
     (file-systems %btrfs-ephemeral-file-systems)
 
     (services
-      (cons* ; (service nvidia-unload-service-type)
-             ; (service samba-service-type
-             ;   (samba-configuration
-             ;     (enable-smbd? #t)
-             ;     (config-file (local-file (string-append yumiko-dir "/samba/smb.conf")))))
-
-             (udev-rules-service 'otd
+      (cons* (udev-rules-service 'otd
                (let ((rules "70-opentabletdriver.rules"))
                  (file->udev-rule rules
                    (local-file
@@ -95,19 +89,19 @@
                    `(("look" ,(local-file "/etc/ssh/look.pub"))))))
 
              #|SOPS services|#
-             ; (service sops-secrets-service-type
-             ;   (sops-service-configuration
-             ;     (gnupg-home "/root/.gnupg")
-             ;     (generate-key? #f)
-             ;     (config (local-file "../../secrets/.sops.yaml" "sops.yaml"))
-             ;     (secrets
-             ;       (list
-             ;         (sops-secret
-             ;           (key '("wireguard"))
-             ;           (file (local-file "../../secrets/yumiko.yaml"))
-             ;           (user "root")
-             ;           (group "root")
-             ;           (permissions #o400))))))
+             ;; (service sops-secrets-service-type
+             ;;   (sops-service-configuration
+             ;;     (gnupg-home "/root/.gnupg")
+             ;;     (generate-key? #f)
+             ;;     (config (local-file "../../secrets/.sops.yaml" "sops.yaml"))
+             ;;     (secrets
+             ;;       (list
+             ;;         (sops-secret
+             ;;           (key '("wireguard"))
+             ;;           (file (local-file "../../secrets/yumiko.yaml"))
+             ;;           (user "root")
+             ;;           (group "root")
+             ;;           (permissions #o400))))))
 
              (service kernel-module-loader-service-type
                '("v4l2loopback" "ntsync"))

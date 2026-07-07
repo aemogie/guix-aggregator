@@ -30,7 +30,7 @@
   (channel
     (name 'saayix)
     (url "https://codeberg.org/look/saayix.git")
-    (branch "entropy")
+    (branch "main")
     (introduction
       (make-channel-introduction
         "12540f593092e9a177eb8a974a57bb4892327752"

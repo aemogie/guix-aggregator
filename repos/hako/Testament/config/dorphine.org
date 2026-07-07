@@ -134,12 +134,7 @@ Application profiles
                  (essential-services
                   (cons* (service home-writable-files-manager-service-type)
                          (modify-services ((@@ (gnu home) home-environment-default-essential-services) this-home-environment)
-                           (delete home-symlink-manager-service-type)
-                           (home-fontconfig-service-type
-                            _ => '("/run/current-system/profile/share/fonts"
-                                   "~/.guix-home/profile/share/fonts"
-                                   "/nix/var/nix/profiles/guix-system-nix-profile/share/fonts"
-                                   "/var/tmp/guix-home-nix-profile/share/fonts")))))
+                           (delete home-symlink-manager-service-type))))
                  (services
                   (cons* <<home-service>> %rosenthal-desktop-home-services))))))
 #+end_src
@@ -1103,6 +1098,22 @@ Jujutsu:
             (stop #~(make-kill-destructor)))))
 #+end_src
 
+*** moor
+[[https://github.com/walles/moor][Moor]] is a pager similar to =less=, with features like syntax highlighting and
+incremental search.
+
+#+begin_src scheme :noweb-ref package-nix
+  (nix-shell-wrapper "moor"
+    '("moor")
+    #:expression (local-file (testament-file "dorphine/nixpkgs.nix"))
+    #:run-command '("moor"))
+#+end_src
+
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'moor-pager home-environment-variables-service-type
+    `(("PAGER" . "moor")))
+#+end_src
+
 *** mpv
 #+begin_src scheme :noweb-ref package-spec
   "mpv-nvidia"
@@ -1146,7 +1157,9 @@ Jujutsu:
        '("experimental-features = nix-command flakes\n"
          "auto-optimise-store = true\n"
          "substituters = https://mirrors.ustc.edu.cn/nix-channels/store https://cache.nixos.org\n"))))
+#+end_src
 
+#+begin_src scheme :noweb-ref service
   (service nix-search-paths-service-type)
 #+end_src
 
@@ -1154,23 +1167,37 @@ Jujutsu:
   (service home-nix-search-paths-service-type)
 #+end_src
 
-TODO: Address locale issue.
+Pin Nixpkgs to avoid networking requirement when using the wrappers.
+
+#+begin_src nix :tangle ../tangled/dorphine/nixpkgs.nix
+  (import (builtins.getFlake "github:NixOS/nixpkgs/714a5f8c4ead6b31148d829288440ed033ccc041") {})
+#+end_src
 
 #+begin_src scheme :noweb-ref package-nix
+  (nix-shell-wrapper "nix-assets"
+    '("glibcLocales")
+    #:expression (local-file (testament-file "dorphine/nixpkgs.nix")))
+
   (nix-shell-wrapper "nocturne"
-    '("github:NixOS/nixpkgs/714a5f8c4ead6b31148d829288440ed033ccc041#nocturne")
-    #:run-command '("nocturne")
-    #:environment-set '(("LANG" . "C.UTF-8")))
+    '("nocturne")
+    #:expression (local-file (testament-file "dorphine/nixpkgs.nix"))
+    #:run-command '("nocturne"))
 
   (nix-shell-wrapper "readest"
-    '("github:NixOS/nixpkgs/714a5f8c4ead6b31148d829288440ed033ccc041#readest")
-    #:run-command '("readest")
-    #:environment-set '(("LANG" . "C.UTF-8")))
+    '("readest")
+    #:expression (local-file (testament-file "dorphine/nixpkgs.nix"))
+    #:run-command '("readest"))
 #+end_src
 
 Create /etc/fonts/fonts.conf to specify font directories and extra
-configurations, see also my previous modifications to
-home-fontconfig-service-type.
+configurations, see also my previous extensions to home-fontconfig-service-type.
+
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'nix-fonts home-fontconfig-service-type
+    '("/run/current-system/profile/share/fonts"
+      "/nix/var/nix/profiles/guix-system-nix-profile/share/fonts"
+      "/var/tmp/guix-home-nix-profile/share/fonts"))
+#+end_src
 
 #+begin_src scheme :noweb-ref service
   (extra-special-file "/etc/fonts/fonts.conf" "/home/hako/.guix-home/files/.config/fontconfig/fonts.conf")
@@ -1194,7 +1221,8 @@ graphics libraries.
 *** prismlauncher
 #+begin_src scheme :noweb-ref package-nix
   (nix-shell-wrapper "prismlauncher"
-    '("github:NixOS/nixpkgs/714a5f8c4ead6b31148d829288440ed033ccc041#prismlauncher")
+    '("prismlauncher")
+    #:expression (local-file (testament-file "dorphine/nixpkgs.nix"))
     #:run-command '("prismlauncher"))
 #+end_src
 

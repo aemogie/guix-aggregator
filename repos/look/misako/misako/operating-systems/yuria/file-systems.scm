@@ -138,6 +138,14 @@
     (options "compress=zstd,subvol=@var/cache,ssd")
     (dependencies %mapped-devices)))
 
+(define var-tmp
+  (file-system
+    (device "none")
+    (type "tmpfs")
+    (mount-point "/var/tmp")
+    (check? #f)
+    (needed-for-boot? #f)))
+
 (define gnu-store
   (file-system
     (device (file-system-label "guix"))
@@ -200,6 +208,7 @@
         var-lib
         var-guix
         var-cache
+        var-tmp
         gnu-store
         gnu-persist
         gnu-persist-ssh

@@ -5,9 +5,8 @@
 (define-public guix
   (channel
     (name 'guix)
-    (url "https://codeberg.org/guix/guix")
-    (branch "master")
-    (commit "c4692e726f695d9e84707a16f1b48ac9ee55f8ea")
+    (url "https://codeberg.org/look/guix")
+    (branch "ungraft-openssl")
     (introduction
       (make-channel-introduction
         "9edb3f66fd807b096b48283debdcddccfea34bad"
@@ -18,8 +17,7 @@
   (channel
     (name 'saayix)
     (url "https://codeberg.org/look/saayix.git")
-    (branch "entropy")
-    (commit "ddd3ced1375b8dc4e653b07cc46e8cd5c92f2595")
+    (branch "main")
     (introduction
       (make-channel-introduction
         "12540f593092e9a177eb8a974a57bb4892327752"
@@ -31,7 +29,6 @@
     (name 'saayix-nonfree)
     (branch "main")
     (url "https://codeberg.org/look/saayix-nonfree")
-    (commit "e064f0ad441828359fbf79e041c34bab3da83879")
     (introduction
       (make-channel-introduction
         "8a0caf3d1dbcd0c9257a23f8b251b5d5ff153c97"
@@ -41,9 +38,8 @@
 (define-public nonguix
   (channel
     (name 'nonguix)
-    (url "https://gitlab.com/nonguix/nonguix")
-    (branch "master")
-    (commit "4bc86c61d5ab661614b099bfe524f7f5798988b3")
+    (url "https://gitlab.com/look7/nonguix")
+    (branch "ungraft-openssl")
     (introduction
       (make-channel-introduction
         "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
@@ -55,7 +51,6 @@
     (name 'radix)
     (url "https://codeberg.org/anemofilia/radix.git")
     (branch "main")
-    (commit "0669b69d8cdfd7cc3ceda31fee1de603adf2d30d")
     (introduction
       (make-channel-introduction
         "f9130e11e35d2c147c6764ef85542dc58dc09c4f"
@@ -67,7 +62,6 @@
     (name 'sops-guix)
     (url "https://github.com/fishinthecalculator/sops-guix")
     (branch "main")
-    (commit "c53e27e533836ea8595626ba6796dee5362f8c4a")
     (introduction
       (make-channel-introduction
         "0bbaf1fdd25266c7df790f65640aaa01e6d2dbc9"
@@ -79,7 +73,6 @@
     (name 'rosenthal)
     (url "https://codeberg.org/hako/rosenthal.git")
     (branch "trunk")
-    (commit "b8f6b048c97ef3c79c115f1933aac8b4c4a02bde")
     (introduction
       (make-channel-introduction
         "7677db76330121a901604dfbad19077893865f35"

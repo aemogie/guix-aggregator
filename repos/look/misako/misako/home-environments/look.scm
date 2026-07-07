@@ -45,16 +45,16 @@
   #|Rosenthal|#
   #:use-module (rosenthal home services desktop)
   #:use-module (rosenthal services desktop)
+  #:use-module (rosenthal services nix)
   #|Saayix Home Services|#
   #:use-module (saayix services home dotfiles)
   #:use-module (saayix-nonfree services home spotify)
   #|SOPS-Guix Secrets|#
   #:use-module (sops secrets)
   #|SOPS-Guix Home Services|#
-  #:use-module (sops home services sops)
-  #:export (look))
+  #:use-module (sops home services sops))
 
-(define look
+(define-public look
   (nvidia-home-environment
     (packages
       (list* packages:bar
@@ -64,7 +64,6 @@
              packages:cursor
              packages:desktop
              packages:downloads
-             ; packages:emacs
              packages:file-management
              packages:fonts
              packages:games
@@ -73,8 +72,8 @@
              packages:image
              packages:mail
              packages:messaging
-             ; packages:music
              packages:news
+             packages:nix
              packages:notifications
              packages:password
              packages:pdf
@@ -140,6 +139,9 @@
         ;   (home-hyprland-configuration
         ;     (package hyprland)))
 
+        #|Nix|#
+        (service home-nix-search-paths-service-type)
+
         (service home-dotfiles-service-type
           (home-dotfiles-configuration
             (source-directory look-files-dir)
@@ -182,16 +184,8 @@
         (service home-sops-secrets-service-type
           (home-sops-service-configuration
             (gnupg-home
-              (string-append (getenv "HOME") "/.gnupg"))
+              (string-append misako-user-home "/.gnupg"))
             (secrets sops-secrets:all)))
-
-        ;; TODO: Remove this or rework bin-fix.
-        ;; Without this, it also tries to build nvidia stuff on non-nvidia systems
-        ;; (if (equal? (gethostname) "yumiko")
-        ;;     (service home-files-service-type
-        ;;       (yumiko?* (bin-fix "mpv-nvidia"  "nvda@595" "mpv")
-        ;;                 (bin-fix "helvum"      "nvda@595")))
-        ;;     (service home-files-service-type))
 
         (service home-xdg-user-directories-service-type
           (home-xdg-user-directories-configuration
@@ -262,6 +256,7 @@
             ("QT_QPA_PLATFORM"     . "wayland")
             #|GTK|#
             ;; ("GTK_IM_MODULE"       . "simple")
+            ("NIXPKGS_ALLOW_UNFREE" . "1")
             #|NVIDIA|#
             ,@(if (not nvidia?) '()
                 `(("QT_WAYLAND_DISABLE_WINDOWDECORATION" . "1")
@@ -271,18 +266,18 @@
                   ("GBM_BACKEND"                         . "nvidia-drm")
                   ("NVD_BACKEND"                         . "direct")
                   ("LIBVA_DRIVER_NAME"                   . "nvidia")
-                  ("VK_ICD_FILENAMES" .
-                   ,(file-append nvda-595 "/share/glvnd/egl_vendor.d/10_nvidia.x86_64.json"))
-                  ("GBM_BACKENDS_PATH" .
-                   ,(file-append nvda-595 "/lib/gbm"))
-                  ("__EGL_EXTERNAL_PLATFORM_CONFIG_DIRS" .
-                   ,(file-append nvda-595 "/share/egl/egl_external_platform.d"))
-                  ("__EGL_VENDOR_LIBRARY_DIRS" .
-                   ,(file-append nvda-595 "/share/glvnd/egl_vendor.d"))
-                  ("LIBVA_DRIVERS_PATH" .
-                   ,(file-append nvda-595 "/lib/dri"))
-                  ("VDPAU_DRIVER_PATH" .
-                   ,(file-append nvda-595 "/lib/vdpau"))
+                  ;; ("VK_ICD_FILENAMES" .
+                  ;;  ,(file-append nvda-595 "/share/vulkan/icd.d/nvidia_icd.x86_64.json"))
+                  ;; ("GBM_BACKENDS_PATH" .
+                  ;;  ,(file-append nvda-595 "/lib/gbm"))
+                  ;; ("__EGL_EXTERNAL_PLATFORM_CONFIG_DIRS" .
+                  ;;  ,(file-append nvda-595 "/share/egl/egl_external_platform.d"))
+                  ;; ("__EGL_VENDOR_LIBRARY_DIRS" .
+                  ;;  ,(file-append nvda-595 "/share/glvnd/egl_vendor.d"))
+                  ;; ("LIBVA_DRIVERS_PATH" .
+                  ;;  ,(file-append nvda-595 "/lib/dri"))
+                  ;; ("VDPAU_DRIVER_PATH" .
+                  ;;  ,(file-append nvda-595 "/lib/vdpau"))
                   ("__GL_SHADER_DISK_CACHE"              . "1")
                   ("__GL_SHADER_DISK_CACHE_PATH"         . "/home/look/games/.nv")
                   ("__GL_SHADER_DISK_CACHE_SKIP_CLEANUP" . "1")
@@ -367,6 +362,13 @@
                            (expansion
                              (symbol-append '~/projects/guile/ channel))))
                        '(guix nonguix saayix misako radix)))))
-            (plugins (list fish-autopair fish-done))))))))
+            (plugins (list fish-autopair fish-done))))))
+    (essential-services
+      (modify-services ((@@ (gnu home) home-environment-default-essential-services) this-home-environment)
+        (home-fontconfig-service-type
+         _ => '("/run/current-system/profile/share/fonts"
+                "~/.guix-home/profile/share/fonts"
+                "/nix/var/nix/profiles/guix-system-nix-profile/share/fonts"
+                "/var/tmp/guix-home-nix-profile/share/fonts"))))))
 
 look

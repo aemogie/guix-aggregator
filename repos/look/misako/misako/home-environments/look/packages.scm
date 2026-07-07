@@ -12,6 +12,7 @@
   #:use-module (gnu packages fonts)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages gcc)
+  #:use-module (gnu packages gl)
   #:use-module (gnu packages glib)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages gnupg)
@@ -44,6 +45,7 @@
   #:use-module (gnu packages tor-browsers)
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages video)
+  #:use-module (gnu packages vulkan)
   #:use-module (gnu packages wm)
   #:use-module (gnu packages xdisorg)
   #:use-module (guix download)
@@ -74,7 +76,6 @@
   #:use-module (saayix packages productivity)
   #:use-module (saayix packages terminals)
   #:use-module (saayix packages wm)
-  #:use-module (saayix-nonfree packages video)
   #:use-module (saayix-nonfree packages binaries)
   #:use-module (sops packages sops))
 
@@ -134,6 +135,8 @@
         sops
         sed
         grep
+        vulkan-tools
+        mesa-utils
         xdg-utils))
 
 (define-public downloads
@@ -214,7 +217,7 @@
 (define-public messaging
   (list senpai
         catgirl
-        cinny-desktop-bin
+        ;; cinny-desktop-bin
         fluxer-canary))
         ;; vesktop))
         ;; telegram-desktop))
@@ -264,7 +267,6 @@
 
 (define-public terminals
   (list ghostty
-        stremio-linux-shell
         foot))
 
 (define-public text-editor
@@ -273,8 +275,7 @@
 (define-public video
   (list yt-dlp
         obs-pipewire-audio-capture
-        ;; (@@ (saayix packages video) mpv-minimal/wayland)
-        (yumiko?* obs-nvidia nvidia-vaapi-driver mpv-nvidia)
+        (yumiko?* obs-nvidia mpv-nvidia)
         (yuria?* ffmpeg obs mpv)))
 
 (define-public virtual-keyboard
@@ -283,3 +284,7 @@
 (define-public typst
   (list (@ (gnu packages rust-apps) typst)
         tinymist-bin))
+
+(define-public nix
+  (nix->guix
+    '(prismlauncher)))

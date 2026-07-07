@@ -4,8 +4,7 @@
   #:use-module (misako utils)
   #:use-module (sops secrets)
   #:use-module (srfi srfi-1)
-  #:export (theme:modus-operandi
-            secrets:all))
+  #:export (theme:modus-operandi))
 
 (define theme:modus-operandi
   `((foreground      . "#000000")
@@ -44,7 +43,7 @@
     (cyan-faint      . "#005077")
     (cyan-intense    . "#008899")))
 
-(define secrets:all
+(define-public secrets:all
   (map (lambda (x)
          (cons (string->symbol (string-join x "."))
                (secret x)))

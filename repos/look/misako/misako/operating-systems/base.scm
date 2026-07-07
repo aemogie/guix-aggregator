@@ -34,6 +34,7 @@
   #:use-module (gnu services linux)
   #:use-module (gnu services mcron)
   #:use-module (gnu services networking)
+  #:use-module (gnu services nix)
   #:use-module (gnu services sysctl)
   #:use-module (gnu services shepherd)
   #|GNU Packages|#
@@ -68,6 +69,8 @@
   #:use-module (saayix packages binaries)
   #:use-module (saayix packages text-editors)
   #:use-module (saayix packages toys)
+  #|Rosenthal|#
+  #:use-module (rosenthal services nix)
   #|Radix|#
   #:use-module (radix utils)
   #:use-module (radix services admin)
@@ -145,6 +148,19 @@
             (port 8081)
             (advertise? #t)
             (compression `(("zstd" 3)))))
+        #|Nix|#
+        (service nix-service-type
+          (nix-configuration
+            (build-directory "/var/tmp")
+            (extra-config
+             '("experimental-features = nix-command flakes\n"
+               "auto-optimise-store = true\n"
+               "substituters = https://cache.nixos.org\n"))))
+        (service nix-search-paths-service-type)
+        (extra-special-file "/run/opengl-driver" "/run/booted-system/profile")
+        (extra-special-file
+          "/etc/fonts/fonts.conf"
+          "/home/look/.guix-home/files/.config/fontconfig/fonts.conf")
 
         #|Guix services|#
         (service shepherd-transient-service-type)
@@ -182,8 +198,7 @@
 
         #|Home environment services|#
         ;; (service guix-home-service-type
-        ;;   (if (file-exists? "/run/current-system/provenance") '()
-        ;;       `(("look" ,home-environment:look))))
+        ;;   `(("look" ,home-environment:look)))
 
         (service shared-cache-service-type
           (shared-cache-configuration
