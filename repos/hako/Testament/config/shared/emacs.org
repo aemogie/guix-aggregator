@@ -157,7 +157,7 @@ Customizations from [[https://cgit.git.savannah.gnu.org/cgit/emacs.git/tree/etc/
     (recentf-mode t)
     ;; Editing-related options
     (electric-pair-mode t)
-    (repeat-mode t)
+    ;; (repeat-mode t)
     ;; (delete-selection-mode t)
     (editorconfig-mode t)
     (indent-tabs-mode nil)
@@ -194,14 +194,13 @@ Customizations from [[https://cgit.git.savannah.gnu.org/cgit/emacs.git/tree/etc/
     ;; (tab-bar-history-mode t)
     ;; (tab-bar-show t)
     ;; Programming-related options
-    (compilation-scroll-output 'first-error)
+    (compilation-scroll-output 'first-error))
     ;; :hook
     ;; (prog-mode . display-line-numbers-mode)
     ;; (prog-mode . flymake-mode)
     ;; (prog-mode . flyspell-prog-mode)
     ;; (text-mode . display-line-numbers-mode)
-    ;; (text-mode . flyspell-mode)
-    )
+    ;; (text-mode . flyspell-mode))
 #+end_src
 
 ** Interface
@@ -1128,10 +1127,13 @@ Interface for [[https://notmuchmail.org/][Notmuch]].
     (notmuch-message-headers
      '("Subject" "To" "Cc" "Date" "Message-ID" "In-Reply-To" "References"))
     (notmuch-search-oldest-first nil)
+    :init
+    (defun hako/notmuch-show-set-fill-column ()
+      (setq-local fill-column 120))
     :config
-    (remove-hook 'notmuch-show-hook 'notmuch-show-turn-on-visual-line-mode)
     (remove-hook 'notmuch-show-insert-text/plain-hook 'notmuch-wash-excerpt-citations)
     :hook
+    (notmuch-show . hako/notmuch-show-set-fill-column)
     (notmuch-show-insert-text/plain . notmuch-wash-convert-inline-patch-to-part)
     :bind
     ("C-c M-m" . message-mark-inserted-region))

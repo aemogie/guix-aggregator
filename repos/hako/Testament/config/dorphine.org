@@ -920,10 +920,20 @@ mbsync:
 #+end_src
 
 l2md:
+
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'l2md home-shepherd-service-type
+    (list (shepherd-service
+           (provision '(l2md))
+           (start
+            #~(make-forkexec-constructor
+               (list #$(file-append l2md "/bin/l2md") "-v")))
+           (stop #~(make-kill-destructor)))))
+#+end_src
+
 #+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/l2md/config
   [general]
           base = ~/.local/share/l2md/
-          oneshot = 1
 
   # emacs-devel@gnu.org
   [repo emacs-devel]
@@ -1149,6 +1159,8 @@ incremental search.
 #+end_src
 
 *** nix
+See also https://ultrarare.space/en/posts/manage-nix-packages-in-guix/
+
 #+begin_src scheme :noweb-ref service
   (service nix-service-type
     (nix-configuration
@@ -1159,12 +1171,34 @@ incremental search.
          "substituters = https://mirrors.ustc.edu.cn/nix-channels/store https://cache.nixos.org\n"))))
 #+end_src
 
+Extend search paths for =with-nix-profile=.
+
 #+begin_src scheme :noweb-ref service
   (service nix-search-paths-service-type)
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
   (service home-nix-search-paths-service-type)
+#+end_src
+
+Graphics drivers, assuming =nvda= is installed in the system profile (this is
+done automatically if using =nonguix-transformation-nvidia=).
+
+#+begin_src scheme :noweb-ref service
+  (extra-special-file "/run/opengl-driver" "/run/booted-system/profile")
+#+end_src
+
+Make fonts available to Nix packages.
+
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'nix-fonts home-fontconfig-service-type
+    '("/run/current-system/profile/share/fonts"
+      "/nix/var/nix/profiles/guix-system-nix-profile/share/fonts"
+      "/var/tmp/guix-home-nix-profile/share/fonts"))
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (extra-special-file "/etc/fonts/fonts.conf" "/home/hako/.guix-home/files/.config/fontconfig/fonts.conf")
 #+end_src
 
 Pin Nixpkgs to avoid networking requirement when using the wrappers.
@@ -1187,35 +1221,6 @@ Pin Nixpkgs to avoid networking requirement when using the wrappers.
     '("readest")
     #:expression (local-file (testament-file "dorphine/nixpkgs.nix"))
     #:run-command '("readest"))
-#+end_src
-
-Create /etc/fonts/fonts.conf to specify font directories and extra
-configurations, see also my previous extensions to home-fontconfig-service-type.
-
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'nix-fonts home-fontconfig-service-type
-    '("/run/current-system/profile/share/fonts"
-      "/nix/var/nix/profiles/guix-system-nix-profile/share/fonts"
-      "/var/tmp/guix-home-nix-profile/share/fonts"))
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (extra-special-file "/etc/fonts/fonts.conf" "/home/hako/.guix-home/files/.config/fontconfig/fonts.conf")
-#+end_src
-
-NixOS installs graphics drivers to /run/opengl-driver, when using Nix packages
-we'll need this as well, since GLX and CUDA drivers don't have search paths.
-Alternatively, you can load them (libGL.so, libcuda.so, libnvcuvid.so) via the
-LD_PRELOAD environment variable.
-
-Even if you're not using a NVIDIA graphics card, add the nvda package from
-Nonguix to system profile as well (not needed for NVIDIA cards though, since
-this has already been handled by nonguix-transformation-nvidia properly).  That
-package provides a mesa variant with GLVND support and search paths for various
-graphics libraries.
-
-#+begin_src scheme :noweb-ref service
-  (extra-special-file "/run/opengl-driver" "/run/booted-system/profile")
 #+end_src
 
 *** prismlauncher
