@@ -179,6 +179,8 @@ Otherwise set locally with `keymap-local-set'."
     (add-to-list 'savehist-additional-variables 'corfu-history)))
 
 (use-package vertico
+  :custom
+  (vertico-resize nil)
   :config
   (vertico-mode 1))
 
@@ -363,6 +365,7 @@ See `my/dired-run-command'."
   (org-clock-sound t)
   (org-insert-heading-respect-content t)
   (org-image-actual-width '(300))
+  (org-export-timestamp-file nil)
 
   (org-log-done 'time)
   (org-log-into-drawer t)
@@ -468,6 +471,8 @@ Helpful advice for face changing functions."
       (file ""))
      ("w" "website" entry
       (file+headline "" "Websites"))
+     ("y" "youtube" entry
+      (file+headline "" "Youtube Channels"))
      ("m" "misc" item
       (file+headline "" "Miscellaneous")))))
 
@@ -495,7 +500,9 @@ Helpful advice for face changing functions."
      (if (featurep 'ef-themes)
          (let* ((palette (modus-themes-get-theme-palette))
                 (orange (cadr (assoc 'yellow-warmer palette)))
-                (green (cadr (assoc 'green-warmer palette))))
+                (green (cadr (assoc 'green-warmer palette)))
+                (purple (cadr (assoc 'magenta-warmer palette)))
+                (blue (cadr (assoc 'blue-warmer palette))))
            (format "\n %s\n %s "
                    (propertize (eshell/pwd)
                                'face `(:foreground ,orange :weight bold))

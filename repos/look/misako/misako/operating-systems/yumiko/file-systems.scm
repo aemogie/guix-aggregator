@@ -170,6 +170,15 @@
     (flags '(read-only no-atime))
     (options "compress=zstd,subvol=@gnu/store,ssd")))
 
+(define nix-store
+  (file-system
+    (device guix-part)
+    (type "btrfs")
+    (mount-point "/nix")
+    (needed-for-boot? #t)
+    (flags '(no-atime))
+    (options "compress=zstd,subvol=@nix,ssd")))
+
 (define gnu-persist
   (file-system
     (device guix-part)
@@ -224,6 +233,7 @@
          var-guix
          var-cache
          var-tmp
+         nix-store
          gnu-store
          gnu-persist
          gnu-persist-ssh

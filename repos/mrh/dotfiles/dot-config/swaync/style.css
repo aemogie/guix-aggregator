@@ -2,13 +2,49 @@
     font-family: DejaVuSansMono;
     font-size: 20px;
     padding: 5px;
+    
+    /* melissa */
     color: #e8e4b1;
+    
+    /* trio */
+    /* color: #d8cfd5; */
+
+    /* dream */
+    /* color: #efd5c5; */
+
+    /* /\* elea *\/ */
+    /* color: #eaf2ef; */
+
 }
 
 .notification {
+
+    /* melissa */
     background-color: rgba(53, 39, 24, 0.95);
+    
+    /* trio */
+    /* background-color: rgba(22, 15, 15, 0.95); */
+
+    /* dream */
+    /* background-color: rgba(35, 32, 37, 0.95); */
+
+    /* /\* elea *\/ */
+    /* background-color: rgba(34, 37, 36, 0.95); */
+
 }
 
 .control-center {
+
+    /* melissa */
     background-color: rgba(53, 39, 24, 0.95);
+    
+    /* trio */
+    /* background-color: rgba(22, 15, 15, 0.95); */
+
+    /* dream */
+    /* background-color: rgba(35, 32, 37, 0.95); */
+
+    /* /\* elea *\/ */
+    /* background-color: rgba(34, 37, 36, 0.95); */
+
 }

@@ -6,37 +6,97 @@
 }
 
 window#waybar {
-    /* background: #352718; */
-    /* background: transparent; */
-    background-color: rgba(53,39,24,0.75);
-    color: #ffffff;
+    color: floralwhite;
+
+    /* melissa */
+    background-color: rgba(53, 39, 24, 0.8);
+    
+    /* trio */
+    /* background-color: rgba(22, 15, 15, 0.8); */
+    
+    /* dream */
+    /* background-color: rgba(35, 32, 37, 0.8); */
+    
+    /* /\* elea *\/ */
+    /* background-color: rgba(34, 37, 36, 0.8); */
+
 }
 
 tooltip {
-    background: #352718;
     border: 1px solid #5d5f63;
+
+    /* melissa */
+    background: #352718;
+    
+    /* trio */
+    /* background: #362f35; */
+    
+    /* dream */
+    /* background: #232025; */
+    
+    /* /\* elea *\/ */
+    /* background: #222524; */
+    
 }
 
 tooltip label {
-  color: white;
+  color: floralwhite;
 }
 
 #workspaces button {
+
+    /* melissa */
     color: #ffa21f;
+
+    /* trio */
+    /* color: #8895ff; */
+
+    /* dream */
+    /* color: #f3c09a; */
+
+    /* /\* elea *\/ */
+    /* color: #7fca5a; */
+    
 }
 
 #workspaces button.persistent {
-    /* color: #dfd2c4; */
-    color: #ffffff
+    color: floralwhite;
 }
 
 #workspaces button.focused {
-    color: #6fd560;
+
+    /* melissa */
+    color: #a0d13a;
+    
+    /* trio */
+    /* color: #ff99ff; */
+    
+    /* dream */
+    /* color: #80aadf; */
+    
+    /* /\* elea *\/ */
+    /* color: #ef7fa8; */
+    
 }
 
 #workspaces button:hover {
+
+    /* melissa */
     background: #fff6d8;
     color: #484431;
+    
+    /* trio */
+    /* background: #ff99ff; */
+    /* color: #160f0f; */
+    
+    /* dream */
+    /* color: #393330; */
+    /* background: #ffead8; */
+
+    /* /\* elea *\/ */
+    /* color: #222524; */
+    /* background: #eaf2ef; */
+
 }
 
 #window {
@@ -50,8 +110,20 @@ tooltip label {
 }
 
 #wireplumber {
+    color:  floralwhite;
+
+    /* melissa */
     border-top: 5px solid #ffa21f;
-    color:  #ffffff;
+    
+    /* trio */
+    /* border-top: 5px solid #ef926f; */
+
+    /* dream */
+    /* border-top: 5px solid #d09950; */
+
+    /* /\* elea *\/ */
+    /* border-top: 5px solid #e0b02f; */
+
 }
 
 #wireplumber.muted {
@@ -59,60 +131,160 @@ tooltip label {
 }
 
 #network {
+    color: floralwhite;
+
+    /* melissa */
 	border-top: 5px solid #6fd560;
-    color: #ffffff;
+    
+    /* trio */
+    /* border-top: 5px solid #60b444; */
+
+    /* dream */
+    border-top: 5px solid #51b04f;
 }
 
 #network.disconnected {
-	border-top: 5px solid #b02930;
-    color: #ffffff;
+    color: floralwhite;
+
+	/* melissa */
+    border-top: 5px solid #b02930;
+    
+    /* trio */
+    /* border-top: 5px solid #ff7560; */
+
+    /* dream */
+    /* border-top: 5px solid #ff7a5f; */
+
+    /* /\* elea *\/ */
+    /* border-top: 5px solid #7fc87f; */
+
 }
 
 #cpu {
+    color: floralwhite;
+
+    /* melissa */
     border-top: 5px solid #57aff6;
-    color: #ffffff;
+    
+    /* trio */
+    /* border-top: 5px solid #7fa5f6; */
+
+    /* dream */
+    /* border-top: 5px solid #57b0ff; */
+
+    /* /\* elea *\/ */
+    /* border-top: 5px solid #57aff6; */
+
 }
 
 #memory {
+    color: floralwhite;
+
+    /* melissa */
     border-top: 5px solid #90918a;
-    color: #ffffff;
+    
+    /* trio */
+    /* border-top: 5px solid floralwhite; */
+
+    /* dream */
+    border-top: 5px solid #8f8886;
 }
 
 #backlight {
+    color: floralwhite;
+
+    /* melissa */
     border-top: 5px solid #6fcad0;
-    color: #ffffff;
+    
+    /* trio */
+    /* border-top: 5px solid #8fbaff; */
+
+    /* dream */
+    /* border-top: 5px solid #6fb3c0; */
+
+    /* /\* elea *\/ */
+    /* border-top: 5px solid #6fcfd2; */
+
 }
 
 #battery.full {
+    color: floralwhite;
+
+    /* melissa */
     border-top: 5px solid #a0d13a;
-    color: #ffffff;
+    
+    /* trio */
+    /* border-top: 5px solid #60b444; */
+
+    /* dream */
+    /* border-top: 5px solid #51b04f; */
+
+    /* /\* elea *\/ */
+    /* border-top: 5px solid #7fc87f; */
+
 }
 
 #battery.good {
+    color: floralwhite;
+
+    /* melissa */
     border-top: 5px solid #e4b53f;
-    color: #ffffff;
+    
+    /* trio */
+    /* border-top: 5px solid #d4a052; */
+
+    /* dream */
+    /* border-top: 5px solid #c0b24f; */
+
+    /* /\* elea *\/ */
+    /* border-top: 5px solid #cac85f; */
+
 }
 
 #battery.critical {
+    color: floralwhite;
+
+    /* melissa */
     border-top: 5px solid #b02930;
-    color: #ffffff;
+    
+    /* trio */
+    /* border-top: 5px solid #ff7560; */
+
+    /* dream */
+    /* border-top: 5px solid #ff7a5f; */
+
+    /* /\* elea *\/ */
+    /* border-top: 5px solid #ff7a5f; */
+
 }
 
 #clock {
+    color: floralwhite;
+
+    /* melissa */
     border-top: 5px solid #f0aac5;
-    color: #ffffff;
+    
+    /* trio */
+    /* border-top: 5px solid #d37faf; */
+
+    /* dream */
+    /* border-top: 5px solid #ffaacf; */
+
+    /* /\* elea *\/ */
+    /* border-top: 5px solid #f59acf; */
+
 }
 
 @keyframes blink {
     to {
-        background-color: #ffffff;
+        background-color: floralwhite;
         color: black;
     }
 }
 
 #battery.warning:not(.charging) {
     background: #f53c3c;
-    color: white;
+    color: floralwhite;
     animation-name: blink;
     animation-duration: 0.5s;
     animation-timing-function: linear;

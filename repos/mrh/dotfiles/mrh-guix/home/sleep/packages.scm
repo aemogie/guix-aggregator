@@ -98,6 +98,7 @@
    emacs-buffer-env
    emacs-consult
    emacs-corfu
+   emacs-csv-mode
    emacs-diredfl
    emacs-disable-mouse
    emacs-eat

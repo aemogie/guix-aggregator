@@ -170,6 +170,15 @@ hl.window_rule({
 })
 
 hl.window_rule({
+    name = "uft",
+    match = {
+        title = "(.*UFT.*)",
+        class = "^(zen)$",
+    },
+    no_screen_share = true,
+})
+
+hl.window_rule({
     name = "pdf",
     match = {
         class = "^(org.pwmt.zathura|sioyek)$",

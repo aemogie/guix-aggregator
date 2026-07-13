@@ -119,10 +119,10 @@
                       (gateway %ipv4-lan-gateway))))
              (name-servers
               (list
-               %ipv4-wireguard-vps
                "9.9.9.9"
-               %ipv6-wireguard-vps
-               "2620:fe::9")))))
+               "2620:fe::9"
+               %ipv4-wireguard-vps
+               %ipv6-wireguard-vps)))))
 
     (service
      wpa-supplicant-service-type
@@ -156,7 +156,6 @@
                  (list (format #f "~a::/64" %ipv6-wireguard-prefix)
                        (format #f "~a.0/24" %ipv4-wireguard-prefix)))
                 (keep-alive 60))
-
               ;; (wireguard-peer
               ;;   (name "sleep")
               ;;   (public-key %sleep-wireguard-key)

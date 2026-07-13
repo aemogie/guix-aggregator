@@ -131,10 +131,23 @@ floating_modifier $mod normal
 font pango:DejaVu Sans Mono 0.1
 titlebar_border_thickness 0
 titlebar_padding 0
-client.focused "ebdbb2" "ffa21f" "282828"
+
+# melissa
+client.focused "f9cf7a" "f9cf7a" "282828"
+
+# # trio
+# client.focused "8895ff" "8895ff" "8895ff"
+
+# # dream
+# client.focused "f3c09a" "f3c09a" "282828"
+
+# # elea
+# client.focused "eba8a8" "eba8a8" "282828"
 
 blur enable
-layer_effects "waybar" {blur enable;}
+layer_effects "waybar" {
+  blur enable;
+}
 
 bar {
     swaybar_command waybar

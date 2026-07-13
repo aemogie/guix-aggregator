@@ -322,8 +322,7 @@
       (service
        i2pd-service-type
        (i2pd-configuration
-        (i2pd (symlink-to
-               "/gnu/store/h0a0z01j87azzr61bfc1z9w5lyaqw5p2-i2pd-2.58.0"))
+        (i2pd i2pd)
         (user %username)
         (conf (format #f "~a/.config/i2pd/i2pd.conf" %user-home))
         (datadir (format #f "~a/.config/i2pd" %user-home))))

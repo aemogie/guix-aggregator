@@ -87,7 +87,7 @@
       (keyboard-layout "br"
         #:options '("caps:swapescape")))
 
-    (kernel linux)
+    (kernel linux-7.1)
     (kernel-arguments
       (list "loglevel=3"
             "quiet"))

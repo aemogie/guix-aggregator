@@ -156,6 +156,15 @@
     (options "compress=zstd,subvol=@gnu/store,ssd")
     (dependencies %mapped-devices)))
 
+(define nix-store
+  (file-system
+    (device guix-part)
+    (type "btrfs")
+    (mount-point "/nix")
+    (needed-for-boot? #t)
+    (flags '(no-atime))
+    (options "compress=zstd,subvol=@nix,ssd")))
+
 (define gnu-persist
   (file-system
     (device (file-system-label "guix"))
@@ -209,6 +218,7 @@
         var-guix
         var-cache
         var-tmp
+        nix-store
         gnu-store
         gnu-persist
         gnu-persist-ssh

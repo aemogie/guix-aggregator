@@ -3,6 +3,7 @@
   #:use-module (gnu packages admin)
   #:use-module (gnu packages audio)
   #:use-module (gnu packages base)
+  #:use-module (gnu packages kde-multimedia)
   #:use-module (gnu packages bittorrent)
   #:use-module (gnu packages browser-extensions)
   #:use-module (gnu packages compression)
@@ -137,6 +138,7 @@
         grep
         vulkan-tools
         mesa-utils
+        libva-utils
         xdg-utils))
 
 (define-public downloads
@@ -185,8 +187,8 @@
         font-nerd-symbols))
 
 (define-public games
-  (yumiko?* steam-nvidia-595
-            heroic-nvidia-595
+  (yumiko?* steam-nvidia-new-feature
+            heroic-nvidia-new-feature
             mangohud
             rusty-path-of-building
             ;; mcpelauncher-client
@@ -272,10 +274,17 @@
 (define-public text-editor
   (list helix))
 
+(define mpv-nvidia/evilest
+  (package/inherit mpv-nvidia
+    (propagated-inputs
+      (modify-inputs (package-propagated-inputs mpv-nvidia)
+        (replace "ffmpeg" ffmpeg/nvidia-new-feature)))))
+
 (define-public video
   (list yt-dlp
         obs-pipewire-audio-capture
-        (yumiko?* obs-nvidia mpv-nvidia)
+        grayjay
+        (yumiko?* obs-nvidia mpv-nvidia/evilest)
         (yuria?* ffmpeg obs mpv)))
 
 (define-public virtual-keyboard

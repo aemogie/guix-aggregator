@@ -36,7 +36,7 @@ Most here is agnostic of that but some is not.
 NOTE: On wayland emacs must be pure GTK (=emacs-pgtk= on guix)
 
 #+begin_src emacs-lisp
-(add-to-list 'default-frame-alist '(alpha-background . 70))
+(add-to-list 'default-frame-alist '(alpha-background . 80))
 #+end_src
 
 *** General Cleanup
@@ -438,6 +438,8 @@ Otherwise set locally with `keymap-local-set'."
 
 #+begin_src emacs-lisp
 (use-package vertico
+  :custom
+  (vertico-resize nil)
   :config
   (vertico-mode 1))
 
@@ -718,6 +720,7 @@ Compile without showing compile buffer
   (org-clock-sound t)
   (org-insert-heading-respect-content t)
   (org-image-actual-width '(300))
+  (org-export-timestamp-file nil)
 
   (org-log-done 'time)
   (org-log-into-drawer t)
@@ -844,6 +847,8 @@ Export to pdf presentations via LaTeX beamer
       (file ""))
      ("w" "website" entry
       (file+headline "" "Websites"))
+     ("y" "youtube" entry
+      (file+headline "" "Youtube Channels"))
      ("m" "misc" item
       (file+headline "" "Miscellaneous")))))
 #+end_src
@@ -887,7 +892,9 @@ Export to pdf presentations via LaTeX beamer
      (if (featurep 'ef-themes)
          (let* ((palette (modus-themes-get-theme-palette))
                 (orange (cadr (assoc 'yellow-warmer palette)))
-                (green (cadr (assoc 'green-warmer palette))))
+                (green (cadr (assoc 'green-warmer palette)))
+                (purple (cadr (assoc 'magenta-warmer palette)))
+                (blue (cadr (assoc 'blue-warmer palette))))
            (format "\n %s\n %s "
                    (propertize (eshell/pwd)
                                'face `(:foreground ,orange :weight bold))
