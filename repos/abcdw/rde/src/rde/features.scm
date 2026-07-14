@@ -439,16 +439,19 @@ can be later used to extend original service with additional configuration."
                            '())))
             (sudoers-file #f)
             (name-service-switch rde-name-service-switch))))
-    ;; Only apply transformations on thunked fields here.
-    (operating-system
-      (inherit computed-os)
-      (essential-services
-       (modify-services (operating-system-essential-services computed-os)
-         (shepherd-root-service-type
-          this-config =>
-          (shepherd-configuration
-           (inherit this-config)
-           (shepherd (get-value 'shepherd config)))))))))
+    ;; Do not require shepherd package to be present in rde config
+    (if (get-value 'shepherd config #f)
+        ;; Only apply transformations on thunked fields here.
+        (operating-system
+          (inherit computed-os)
+          (essential-services
+           (modify-services (operating-system-essential-services computed-os)
+             (shepherd-root-service-type
+              this-config =>
+              (shepherd-configuration
+               (inherit this-config)
+               (shepherd (get-value 'shepherd config)))))))
+        computed-os)))
 
 (define (pretty-print-rde-config config)
   (use-modules (gnu services)
