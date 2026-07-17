@@ -55,7 +55,7 @@
   #|V|# #:use-module (gnu packages version-control)
         #:use-module (gnu packages video)
   #|W|# #:use-module (gnu packages web)
-        #:use-module (gnu packages wm)
+        #:use-module (gnu packages window-management)
   #|X|# #:use-module (gnu packages xdisorg)
 
   #|Guix|#
@@ -83,7 +83,7 @@
   #|T|# #:use-module (radix packages text-editors)
         #:use-module (radix packages toys)
   #|V|# #:use-module (radix packages video)
-  #|W|# #:use-module (radix packages wm)
+  #|W|# #:use-module (radix packages window-management)
   #|X|# #:use-module (radix packages xdisorg)
 
   #|saayix packages|#
