@@ -96,10 +96,6 @@
           (home-graphical-session-configuration
             (wayland? #t)))
 
-        (service home-fcitx5-service-type
-          (home-fcitx5-configuration
-            (wayland-frontend? #t)))
-
         (service home-dbus-service-type)
 
         (service home-spotify-service-type
@@ -225,6 +221,7 @@
           `(#|Guix|#
             ("GUILE_LOAD_PATH"
              . ,(string-join '("$HOME/projects/guile/misako"
+                               "$HOME/projects/guile/guix-contribute/modules"
                                "$XDG_CONFIG_HOME/guix/current/share/guile/site/3.0"
                                "$HOME/.guix-home/profile/share/guile/site/3.0")
                              ":"))

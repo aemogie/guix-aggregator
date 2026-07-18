@@ -1,0 +1,52 @@
+(require "helix/commands.scm")
+(require "helix/static.scm")
+(require "helix/configuration.scm")
+(require "helix/keymaps.scm")
+(require "utils.scm")
+
+(define-public (line-down)
+  (extend_to_line_bounds)
+  (delete_selection)
+  (paste_after))
+
+(define-public (line-up)
+  (extend_to_line_bounds)
+  (delete_selection)
+  (move_line_up)
+  (paste_before))
+
+(define-public (create-code-block)
+  (insert_string "```scheme\n\n```")
+  (move_line_up)
+  (insert_mode)
+  (~> "Created scheme code block"))
+
+;;@doc
+;; Delete the s-expression matching this bracket
+;; If the current selection is not on a bracket, this is a no-op
+(define-public (delete-sexpr)
+  (define current-selection (current-selection->string))
+  (when (or (equal? "(" current-selection) (equal? ")" current-selection))
+    (select_mode)
+    (match_brackets)
+    (delete_selection)
+    (~> "Deleted sexpr")))
+
+(keymap (global)
+  (normal
+    (=        ":pipe parinfer-rust")
+    (A-down   ":line-down")
+    (A-up     ":line-up")
+    (A-c      ":select-whole-expression")
+    (C-backspace  ":delete-sexpr")
+    (space (B ":echo %sh{git blame -L %{cursor_line},+1 %{buffer_name}}"))
+    (@     (m ":cd ~/projects/guile/misako")
+           (s ":cd ~/projects/guile/saayix")
+           (r ":cd ~/projects/guile/radix")
+           (z ":cd ~/projects/guile/zero")
+           (g ":cd ~/projects/guile/guix")
+           (n ":cd ~/projects/guile/nonguix")
+           (R ":cd ~/projects/guile/Rosenthal")
+           (o ":cd ~/projects/guile/sops-guix"))
+    (+     (t ":sh typst compile %{buffer_name} && hx-typ-zathura --watch --kill-on-exit %{buffer_name}"))
+    (-     (c ":create-code-block"))))

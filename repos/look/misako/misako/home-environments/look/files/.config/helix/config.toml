@@ -1,49 +1,8 @@
-# https://docs.helix-editor.com/master/configuration.html
-theme = "modus_operandi_tinted"
-
-[editor]
-line-number = "relative"
-continue-comments = false
-completion-trigger-len = 1
-completion-replace = true
-bufferline = "always"
-indent-heuristic = "hybrid"
-end-of-line-diagnostics = "hint"
-clipboard-provider = "wayland"
-
-[editor.statusline]
-right = ["file-encoding", "file-line-ending", "diagnostics", "selections", "register", "file-type", "total-line-numbers", "position-percentage", "position"]
-separator = "│"
-
-[editor.lsp]
-display-messages = false
-
-[editor.file-picker]
-hidden = false
-
-[editor.whitespace.render]
-space = "all"
-tab = "all"
-nbsp = "all"
-nnbsp = "all"
-newline = "all"
-
-[editor.whitespace.characters]
-space = "·"
-nbsp = "⍽"
-nnbsp = "␣"
-tab = "→"
-newline = "⏎"
-tabpad = "·" # Tabs will look like "→···" (depending on tab width)
-
 [editor.gutters]
 layout = ["diagnostics", "spacer", "line-numbers", "spacer", "diff"]
 
 [editor.gutters.line-numbers]
 min-width = 1
-
-[editor.soft-wrap]
-enable = true
 
 [editor.inline-diagnostics]
 cursor-line = "warning"
@@ -53,34 +12,9 @@ cursor-line = "warning"
 #
 
 [keys.normal]
-"=" = [":pipe parinfer-rust"]
 "A-c" = "@mammammammammammammammammammammammammammammammam"
-A-down = ["extend_to_line_bounds", "delete_selection", "paste_after"]
-A-up = ["extend_to_line_bounds", "delete_selection", "move_line_up", "paste_before"]
-space.B = ":echo %sh{git blame -L %{cursor_line},+1 %{buffer_name}}"
-
-[keys.normal."+"]
-t = ":sh typst compile %{buffer_name} && hx-typ-zathura --watch --kill-on-exit %{buffer_name}"
-
-[keys.normal."@"]
-m = ":cd ~/projects/guile/misako"
-s = ":cd ~/projects/guile/saayix"
-r = ":cd ~/projects/guile/radix"
-z = ":cd ~/projects/guile/zero"
-g = ":cd ~/projects/guile/guix"
-n = ":cd ~/projects/guile/nonguix"
-c = ":cd ~/projects/guile/cargo2guix"
-R = ":cd ~/projects/guile/Rosenthal"
-o = ":cd ~/projects/guile/sops-guix"
-
-[keys.normal."#"]
-h = ":sh guix home reconfigure ~/.config/guix/home.scm --allow-downgrades"
-s = ":sh doas guix system reconfigure /etc/system.scm --allow-downgrades"
-p = ":sh guix pull --allow-downgrades"
 
 [keys.normal.g.a]
-# guix show package where cursor is inside the definition
-s = "@mammammammammammammammammammammammammammammammams\\(name<ret>f\";mim\"0y:sh guix show <C-r>0<ret>"
 # compute and replace HASH for PACKAGE where cursor is inside the definition
 h = "@mammammammammammammammammammammammammammammammams\\(name<ret>f\";mim\"0ymammammammammammammammammammammammammammammammams\\(base32<ret>f\";mimr0:w!<ret>|guix build -L. <C-r>0<ret>sactual hash: *<ret>lvgl<esc>\"0ymim\"0Rzz:w!<ret>;"
 # execute guix build on the current PACKAGE where cursor is inside the definition and display in-line

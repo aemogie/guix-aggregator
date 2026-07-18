@@ -3,13 +3,13 @@
   #:use-module (gnu packages admin)
   #:use-module (gnu packages audio)
   #:use-module (gnu packages base)
-  #:use-module (gnu packages kde-multimedia)
   #:use-module (gnu packages bittorrent)
   #:use-module (gnu packages browser-extensions)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages cpp)
   #:use-module (gnu packages emacs)
   #:use-module (gnu packages emacs-xyz)
+  #:use-module (gnu packages fcitx5)
   #:use-module (gnu packages fonts)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages gcc)
@@ -24,6 +24,7 @@
   #:use-module (gnu packages image)
   #:use-module (gnu packages image-viewers)
   #:use-module (gnu packages irc)
+  #:use-module (gnu packages kde-multimedia)
   #:use-module (gnu packages libcanberra)
   #:use-module (gnu packages libreoffice)
   #:use-module (gnu packages license)
@@ -47,7 +48,7 @@
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages video)
   #:use-module (gnu packages vulkan)
-  #:use-module (gnu packages wm)
+  #:use-module (gnu packages window-management)
   #:use-module (gnu packages xdisorg)
   #:use-module (guix download)
   #:use-module (guix gexp)
@@ -76,6 +77,7 @@
   #:use-module (saayix packages pdf)
   #:use-module (saayix packages productivity)
   #:use-module (saayix packages terminals)
+  #:use-module (saayix packages text-editors)
   #:use-module (saayix packages wm)
   #:use-module (saayix-nonfree packages binaries)
   #:use-module (sops packages sops))
@@ -138,6 +140,7 @@
         grep
         vulkan-tools
         mesa-utils
+        fcitx5
         libva-utils
         xdg-utils))
 
@@ -272,7 +275,7 @@
         foot))
 
 (define-public text-editor
-  (list helix))
+  (list helix/steel))
 
 (define mpv-nvidia/evilest
   (package/inherit mpv-nvidia
