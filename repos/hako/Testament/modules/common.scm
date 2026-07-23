@@ -145,7 +145,7 @@
   `("ip6-privacy.conf"
     ,(ini-file "ip6-privacy.conf"
        #~'(("connection"
-            ("ipv6.ip6-privacy" . 2))))))
+            . (("ipv6.ip6-privacy" . 2)))))))
 
 ;; NOTE: When using on cloud machines, refer to the terms of the provider
 ;; first.
@@ -153,8 +153,8 @@
   `("random-mac-address.conf"
     ,(ini-file "random-mac-address.conf"
        #~'(("connection-mac-randomization"
-            ("ethernet.cloned-mac-address" . "stable")
-            ("wifi.cloned-mac-address" . "stable"))))))
+            . (("ethernet.cloned-mac-address" . "stable")
+               ("wifi.cloned-mac-address" . "stable")))))))
 
 
 ;;;

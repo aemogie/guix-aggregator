@@ -33,6 +33,9 @@ Services, packages and configuration file for Emacs:
          (specifications->manifest
           '(;; Configured packages.
             <<package-spec>>
+            ;; TeX.
+            "texlive-scheme-small"
+            "texlive-dvipng"
             ;; Others.
             "emacs-beancount"
             "emacs-caddyfile-mode"
@@ -921,6 +924,7 @@ Automatic usage and fallback for tree-sitter major modes.
              '(("cmake"      . cmake-ts)
                ("dockerfile" . dockerfile-ts)
                ("go"         . go-ts)
+               ("json"       . json-ts)
                ("lua"        . lua-ts)
                ("nix"        . nix-ts)
                ("rust"       . rust-ts)

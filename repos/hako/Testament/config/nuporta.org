@@ -372,13 +372,9 @@
       ;; 6 hours
       (interval (* 6 3600))
       (parameters
-       (plain-file "cuirass-parameters"
-         (call-with-output-string
-           (lambda (port)
-             (write
-              '(begin
-                 (%cuirass-url "https://ci.guix.moe"))
-              port)))))
+       (scheme-file "cuirass-parameters"
+         #~(begin
+             (%cuirass-url "https://ci.guix.moe"))))
       (remote-server
        (cuirass-remote-server-configuration
          (trigger-url "http://localhost:49637")

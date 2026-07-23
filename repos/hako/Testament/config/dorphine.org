@@ -3,6 +3,8 @@
 #+TITLE: dorphine
 #+PROPERTY: header-args :mkdirp yes :noweb-prefix no
 
+#+html: <img src="https://s3.boiledscript.com/misskey/c3d32a96-2074-4fb4-9382-c484c0754c97.webp">
+
 ** Guix System
 #+begin_src scheme :tangle ../tangled/dorphine/dorphine.scm :noweb yes
   (use-modules <<module>>)
@@ -133,7 +135,7 @@ Application profiles
     `(("hako" ,(home-environment
                  (essential-services
                   (cons* (service home-writable-files-manager-service-type)
-                         (modify-services ((@@ (gnu home) home-environment-default-essential-services) this-home-environment)
+                         (modify-services (home-environment-default-essential-services this-home-environment)
                            (delete home-symlink-manager-service-type))))
                  (services
                   (cons* <<home-service>> %rosenthal-desktop-home-services))))))
@@ -598,13 +600,13 @@ niri supports getting keyboard layout from localed.
           skip-at-startup
   }
 
-  // noctalia
+  // noctalia: https://docs.noctalia.dev/v5/compositor-settings/niri/
   window-rule {
           geometry-corner-radius 20
           clip-to-geometry true
   }
   window-rule {
-          match app-id="dev.noctalia.Noctalia.Settings"
+          match app-id="dev.noctalia.Noctalia"
           open-floating true
           default-column-width { fixed 1080; }
           default-window-height { fixed 920; }
@@ -612,12 +614,31 @@ niri supports getting keyboard layout from localed.
   debug {
           honor-xdg-activation-with-invalid-serial
   }
+  // Stationary Wallpaper.
+  overview {
+          workspace-shadow {
+                  off
+          }
+  }
   layer-rule {
-          match namespace="^noctalia-backdrop"
+          match namespace="^noctalia-wallpaper"
           place-within-backdrop true
   }
-
+  // Blur.
   window-rule {
+          background-effect {
+                  blur true
+                  xray false
+          }
+  }
+  layer-rule {
+          match namespace="^noctalia-(bar-[^\"]+|notification|dock|panel|attached-panel|osd)$"
+          background-effect {
+                  xray false
+          }
+  }
+  layer-rule {
+          match namespace="noctalia-window-switcher"
           background-effect {
                   blur true
                   xray false
@@ -625,7 +646,7 @@ niri supports getting keyboard layout from localed.
   }
 
   window-rule {
-          match app-id="firefox" title="^Picture-in-Picture$"
+          match app-id="Firefox" title="^Picture-in-Picture$"
           open-floating true
   }
 
@@ -649,6 +670,7 @@ niri supports getting keyboard layout from localed.
   }
 
   layout {
+          background-color "transparent"
           always-center-single-column
           focus-ring {
                   off
@@ -686,8 +708,9 @@ niri supports getting keyboard layout from localed.
           Mod+D           { spawn "$$bin/rofi$$" "-show" "combi"; }
           Mod+S           { spawn "noctalia" "msg" "settings-toggle"; }
           Mod+L           { spawn "noctalia" "msg" "session" "lock"; }
-          Ctrl+Alt+Delete { spawn "noctalia" "msg" "panel-toggle" "session"; }
           Mod+Shift+E     { spawn "noctalia" "msg" "panel-toggle" "session"; }
+          Ctrl+Alt+Delete { spawn "noctalia" "msg" "panel-toggle" "session"; }
+          Alt+Tab         { spawn "noctalia" "msg" "window-switcher"; }
 
           Mod+E       { spawn "emacsclient" "--create-frame" "--no-wait"; }
           Mod+Return  { spawn "wezterm"; }
@@ -870,13 +893,13 @@ See [[file:shared/emacs.org][shared/emacs.org]].
                              ("tag:new AND (tag:replied OR tag:sent)"
                               . (-unread))
                              ;; mailing lists
-                             ("tag:new AND folder:lists/emacs-devel"
+                             ("folder:lists/emacs-devel"
                               . (+lists +lists/emacs-devel -inbox -new))
-                             ("tag:new AND folder:lists/guile-devel"
+                             ("folder:lists/guile-devel"
                               . (+lists +lists/guile-devel -inbox -new))
-                             ("tag:new AND folder:lists/guix-devel"
+                             ("folder:lists/guix-devel"
                               . (+lists +lists/guix-devel -inbox -new))
-                             ("tag:new AND folder:lists/guix-user"
+                             ("folder:lists/guix-user"
                               . (+lists +lists/guix-user -inbox -new))
                              ;; folders
                              ("folder:local/Drafts"
@@ -1204,7 +1227,7 @@ Make fonts available to Nix packages.
 Pin Nixpkgs to avoid networking requirement when using the wrappers.
 
 #+begin_src nix :tangle ../tangled/dorphine/nixpkgs.nix
-  (import (builtins.getFlake "github:NixOS/nixpkgs/714a5f8c4ead6b31148d829288440ed033ccc041") {})
+  (import (builtins.getFlake "github:NixOS/nixpkgs/fd1462031fdee08f65fd0b4c6b64e22239a77870") {})
 #+end_src
 
 #+begin_src scheme :noweb-ref package-nix

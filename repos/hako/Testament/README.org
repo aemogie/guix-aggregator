@@ -56,8 +56,6 @@ NOTE:
 - For NVIDIA proprietary driver: avoid GDM if you encounter issues
 
 *** [[file:config/dorphine.org][dorphine]] (x86_64-linux, UEFI, ZFS, NVIDIA) | [[file:deploy/dorphine.scm][deploy]]
-#+html: <img src="https://s3.boiledscript.com/misskey/fe12673c-4e70-4f24-bb20-f21da75af890.png">
-#+html: <img src="https://s3.boiledscript.com/misskey/6b4cb2f8-8996-4b4a-8660-dd85c7585a3d.png">
 
 *** [[file:config/chapra.org][chapra]] (x86_64-linux, UEFI, ZFS) | [[file:deploy/chapra.scm][deploy]]
 
