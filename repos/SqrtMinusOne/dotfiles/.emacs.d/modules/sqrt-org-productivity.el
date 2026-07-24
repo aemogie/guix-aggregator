@@ -1796,7 +1796,11 @@ TODO Write something, maybe? "))))
     (telega-kill t))
   (call-process-shell-command "pkill -f rocketchat-desktop")
   (call-process-shell-command "pkill -f 'bwrap --args 36 element'")
-  (call-process-shell-command "pkill -f element-desktop"))
+  (call-process-shell-command "pkill -f element-desktop")
+  (ignore-errors
+    (rocket-kill t))
+  (ignore-errors
+    (max-kill t)))
 
 (defun my/org-review-set-daily-record ()
   (let* ((today (format-time-string
