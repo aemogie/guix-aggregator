@@ -60,10 +60,6 @@
                   "/Entered on/ %U\n"
                   "/Received on/ %:date-timestamp-inactive\n"
                   "%a\n"))
-        ("f" "elfeed" entry (file "inbox.org")
-         ,(concat "* TODO %:elfeed-entry-title\n"
-                  "/Entered on/ %U\n"
-                  "%a\n"))
         ("n" "note" plain (file my/generate-inbox-note-name)
          ,(concat "#+TODO: PROCESSED(p)\n"
                   "\n"
