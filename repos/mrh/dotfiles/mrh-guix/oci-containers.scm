@@ -53,7 +53,7 @@
        (environment '(("TZ" . "Etc/UTC")))
        (image "lscr.io/linuxserver/radarr")
        (provision radarr-name)
-       (network "host")
+       (network "media")
        (ports '("[::1]:7878:7878"))
        (volumes
         '(("/mnt/big/services/radarr" . "/config")
@@ -64,7 +64,7 @@
        (environment '(("TZ" . "Etc/UTC")))
        (image "ghcr.io/linuxserver/sonarr")
        (provision sonarr-name)
-       (network "host")
+       (network "media")
        (ports '("[::1]:8989:8989"))
        (volumes
         '(("/mnt/big/services/sonarr" . "/config")

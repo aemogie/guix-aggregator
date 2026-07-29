@@ -5,7 +5,7 @@
   #:use-module (gnu)
   #:use-module (gnu services dns))
 
-(use-package-modules admin cryptsetup curl cups nfs version-control wm)
+(use-package-modules admin cryptsetup curl cups nfs version-control window-management)
 (use-service-modules cups dbus desktop networking ssh syncthing vpn xorg)
 
 (define-public %sleep-operating-system

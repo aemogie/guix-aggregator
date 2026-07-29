@@ -42,7 +42,7 @@
                      tree-sitter
                      version-control
                      video
-                     wm
+                     window-management
                      xdisorg)
 
 (define-public %sleep-home-packages
