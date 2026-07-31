@@ -35,7 +35,7 @@ input * {
 
 # default workspaces for apps
 assign [app_id="org.keepassxc.KeePassXC"] 2
-assign [app_id="LibreWolf"] 2
+assign [app_id="librewolf"] 2
 assign [app_id="mpv-album"] 9
 assign [app_id="mpv"] 3
 assign [app_id="org.pwmt.zathura"] 8
