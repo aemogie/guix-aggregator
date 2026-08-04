@@ -2,7 +2,7 @@
 set-option global source_local_kakrc true
 
 #|Radix|#
-declare-option str radix '~/areas/code/scm/radix'
+declare-option str radix '~/projects/code/scm/radix'
 define-command -override radix \
   -docstring 'edit files in the radix git repository' %{
   execute-keys ":e %opt{radix}/"
@@ -32,7 +32,7 @@ define-command -override home-services \
   execute-keys ":e %opt{radix_home_services}/"
 }
 
-declare-option str zero '~/areas/code/scm/zero'
+declare-option str zero '~/projects/code/scm/zero'
 define-command -override zero \
   -docstring 'edit files in the zero git repository' %{
   execute-keys ":e %opt{zero}/"

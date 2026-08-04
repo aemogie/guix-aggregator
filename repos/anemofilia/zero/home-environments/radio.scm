@@ -84,6 +84,7 @@
                       (download "$HOME/media/downloads")
                       (music "$HOME/media/music")
                       (pictures "$HOME/media/pictures")
+                      (projects "$HOME/projects")
                       (videos "$HOME/media/videos")
                       (publicshare "")
                       (templates "")))
@@ -141,15 +142,14 @@
             #|File services|#
             (service home-directories-service-type
                      `(".archive"
-                       "areas/code"
                        "areas/finances"
                        "areas/health"
                        "areas/relationships/self"
-                       "projects"
+                       "projects/code"
+                       "projects/hobbies"
                        "resources/artwork"
                        "resources/bookmarks"
                        "resources/causes"
-                       "resources/code"
                        "resources/documentation"
                        "resources/formal-sciences"
                        "resources/humanities"
@@ -159,21 +159,21 @@
                        ("resources/artwork/guix-artwork"
                         ,(codeberg-url "guix" "artwork"))
                        #|Code|#
-                       ("areas/code/scm/guix"
+                       ("projects/code/scm/guix"
                         ,(codeberg-url "guix"))
-                       ("areas/code/scm/radix"
+                       ("projects/code/scm/radix"
                         ,(codeberg-url "anemofilia" "radix"))
-                       ("areas/code/scm/zero"
+                       ("projects/code/scm/zero"
                         ,(codeberg-url "anemofilia" "zero"))
-                       ("resources/code/scm/misako"
+                       ("projects/code/scm/misako"
                         ,(codeberg-url "look" "misako"))
-                       ("resources/code/scm/saayix"
+                       ("projects/code/scm/saayix"
                         ,(codeberg-url "look" "saayix"))
-                       ("resources/code/scm/goblins"
+                       ("projects/code/scm/goblins"
                         ,(codeberg-url "spritely" "goblins"))
-                       ("resources/code/scm/guile"
+                       ("projects/code/scm/guile"
                         ,(codeberg-url "guile"))
-                       ("resources/code/scm/shepherd"
+                       ("projects/code/scm/shepherd"
                         ,(codeberg-url "shepherd"))))
             (service home-files-service-type
                      `((".config/guix/home.scm" ,(symlink-to radio.scm))))
@@ -334,7 +334,7 @@
                               ("GUILE_HISTORY" . "$XDG_CACHE_HOME/guile/history")
                               ("GUILE_LOAD_PATH"
                                . ,(format #f "~@{~?~}"
-                                             "~@{$HOME/areas/code/scm/~a:~}"
+                                             "~@{$HOME/projects/code/scm/~a:~}"
                                              '(zero)
                                              "~@{~a/share/guile/site/3.0~^:~}"
                                              '($HOME/.config/guix/current
