@@ -1,4 +1,4 @@
-(use-modules (common)
+(use-modules (testament common)
              (gnu machine)
              (gnu machine ssh))
 

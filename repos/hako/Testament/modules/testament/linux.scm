@@ -1,7 +1,7 @@
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 ;;; Copyright © 2026 Hilton Chain <hako@ultrarare.space>
 
-(define-module (linux)
+(define-module (testament linux)
   ;; Guile builtins
   #:use-module (ice-9 match)
   #:use-module (ice-9 regex)

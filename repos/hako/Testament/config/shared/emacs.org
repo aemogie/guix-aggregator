@@ -1348,7 +1348,7 @@ https://web.archive.org/web/20240525203039/http://community.schemewiki.org/?emac
 ** Modules
 Within this repository
 #+begin_src scheme :noweb-ref module
-  (common)
+  (testament common)
 #+end_src
 
 Utilities

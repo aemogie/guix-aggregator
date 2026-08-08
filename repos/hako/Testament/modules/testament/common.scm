@@ -1,8 +1,8 @@
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 ;;; Copyright © 2023-2026 Hilton Chain <hako@ultrarare.space>
 
-(define-module (common)
-  #:use-module (linux)
+(define-module (testament common)
+  #:use-module (testament linux)
   ;; Guile builtins
   #:use-module (ice-9 popen)
   #:use-module (ice-9 textual-ports)
@@ -45,7 +45,6 @@
             %sops-chapra
             %sops-dorphine
             %sops-involemi
-            %sops-nuporta
 
             %guix-keys
             %ssh-key-deploy
@@ -90,8 +89,6 @@
   (local-file (in-vicinity testament-path "secrets/dorphine.yaml")))
 (define %sops-involemi
   (local-file (in-vicinity testament-path "secrets/involemi.yaml")))
-(define %sops-nuporta
-  (local-file (in-vicinity testament-path "secrets/nuporta.yaml")))
 
 
 ;;;
@@ -259,7 +256,7 @@
       (version version))))
 
 (define linux-server/dolly
-  (let ((cachyos-version "6.18.38-1"))
+  (let ((cachyos-version "6.18.40-1"))
     (make-linux/dolly
      linux-6.18
      cachyos-version
@@ -269,7 +266,7 @@
              "https://github.com/CachyOS/linux/releases/download/cachyos-"
              cachyos-version "/cachyos-" cachyos-version ".tar.gz"))
        (sha256
-        (base32 "1jadhczbqinkwwqk8gvnbmr95lwhzlwncf89szwvb8d1529kqiq0")))
+        (base32 "12x43b83dcmjzwrgqmwyv8l12ly8icl5f7af58j78f231kh64f9f")))
      #:defconfig (%kernel-config "/defconfig_server")
      #:configs
      (string-join

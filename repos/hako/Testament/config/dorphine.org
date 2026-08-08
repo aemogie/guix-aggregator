@@ -894,13 +894,21 @@ See [[file:shared/emacs.org][shared/emacs.org]].
                               . (-unread))
                              ;; mailing lists
                              ("folder:lists/emacs-devel"
-                              . (+lists +lists/emacs-devel -inbox -new))
+                              . (+lists +lists/emacs +lists/emacs-devel -inbox -new))
+                             ("folder:lists/guile-bugs"
+                              . (+lists +lists/guile +lists/guile-bugs -inbox -new))
                              ("folder:lists/guile-devel"
-                              . (+lists +lists/guile-devel -inbox -new))
+                              . (+lists +lists/guile +lists/guile-devel -inbox -new))
+                             ("folder:lists/guile-user"
+                              . (+lists +lists/user +lists/guile-user -inbox -new))
+                             ("folder:lists/guix-bugs"
+                              . (+lists +lists/guix +lists/guix-bugs -inbox -new))
                              ("folder:lists/guix-devel"
-                              . (+lists +lists/guix-devel -inbox -new))
+                              . (+lists +lists/guix +lists/guix-devel -inbox -new))
+                             ("folder:lists/guix-patches"
+                              . (+lists +lists/guix +lists/guix-patches -inbox -new))
                              ("folder:lists/guix-user"
-                              . (+lists +lists/guix-user -inbox -new))
+                              . (+lists +lists/guix +lists/guix-user -inbox -new))
                              ;; folders
                              ("folder:local/Drafts"
                               . (+draft -unread -inbox -new))
@@ -958,22 +966,29 @@ l2md:
   [general]
           base = ~/.local/share/l2md/
 
-  # emacs-devel@gnu.org
   [repo emacs-devel]
           url = https://yhetil.org/emacs-devel/0
           maildir = ~/.local/share/mail/lists/emacs-devel
 
-  # guile-devel@gnu.org
+  [repo guile-bugs]
+          url = https://yhetil.org/guile-bugs/0
+          maildir = ~/.local/share/mail/lists/guile-bugs
   [repo guile-devel]
           url = https://yhetil.org/guile-devel/0
           maildir = ~/.local/share/mail/lists/guile-devel
+  [repo guile-user]
+          url = https://yhetil.org/guile-user/0
+          maildir = ~/.local/share/mail/lists/guile-user
 
-  # guix-devel@gnu.org
+  [repo guix-bugs]
+          url = https://yhetil.org/guix-bugs/0
+          maildir = ~/.local/share/mail/lists/guix-bugs
   [repo guix-devel]
           url = https://yhetil.org/guix-devel/0
           maildir = ~/.local/share/mail/lists/guix-devel
-
-  # help-guix@gnu.org
+  [repo guix-patches]
+          url = https://yhetil.org/guix-patches/1
+          maildir = ~/.local/share/mail/lists/guix-patches
   [repo guix-user]
           url = https://yhetil.org/guix-user/0
           maildir = ~/.local/share/mail/lists/guix-user
@@ -1350,7 +1365,7 @@ condition.  Disable one of them.
 ** Modules
 Within this repository
 #+begin_src scheme :noweb-ref module
-  (common)
+  (testament common)
 #+end_src
 
 Guile builtins

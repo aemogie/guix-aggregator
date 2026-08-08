@@ -576,7 +576,7 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
 ** Modules
 Within this repository
 #+begin_src scheme :noweb-ref module
-  (common)
+  (testament common)
 #+end_src
 
 Utilities

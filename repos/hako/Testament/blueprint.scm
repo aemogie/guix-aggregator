@@ -2,7 +2,6 @@
 ;;; Copyright © 2026 Hilton Chain <hako@ultrarare.space>
 
 (use-modules (ice-9 match)
-             (ice-9 threads)
              (srfi srfi-1)
              (srfi srfi-19)
              (srfi srfi-26)
