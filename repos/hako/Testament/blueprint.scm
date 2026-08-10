@@ -180,12 +180,6 @@
 ;;; Commands.
 ;;;
 
-(define-command (serve-command arguments)
-  ((invoke "serve")
-   (category 'development)
-   (synopsis "Start nREPL server for emacs-arei"))
-  ($guix `("repl" "-L" "modules" "--" "scripts/run-nrepl-server.scm")))
-
 (define-command (update-command arguments)
   ((invoke "update")
    (category 'development)
@@ -275,9 +269,7 @@ VARIANTS, saving the results under dist/."))
   (buildables
    (map (cut apply system-config-for <>) %systems))
   (commands
-   (list serve-command
-         update-command
-
+   (list update-command
          build-os-command
          deploy-os-command
          build-iso-command)))

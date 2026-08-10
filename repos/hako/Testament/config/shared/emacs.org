@@ -41,7 +41,6 @@ Services, packages and configuration file for Emacs:
             "emacs-caddyfile-mode"
             "emacs-edit-indirect"
             "emacs-fish-mode"
-            "emacs-guix"
             "emacs-markdown-mode"
             "emacs-nftables-mode"
             "emacs-zig-mode"))))
@@ -520,7 +519,7 @@ multiple backends better.
     (citre-default-create-tags-file-location 'global-cache)
     (citre-edit-ctags-options-manually nil)
     (citre-find-definition-backends
-     '(eglot elisp arei tags dumb-jump))
+     '(eglot elisp geiser tags dumb-jump))
     (citre-find-reference-backends
      '(eglot elisp dumb-jump))
     :bind
@@ -556,59 +555,6 @@ files.
        'elisp
        (lambda () (derived-mode-p 'emacs-lisp-mode))))
     (citre-register-backend 'elisp citre-elisp-backend))
-#+end_src
-
-*** [[https://git.sr.ht/~abcdw/emacs-arei][arei]]
-Guile Scheme IDE based on nREPL protocol, intended for use with [[https://git.sr.ht/~abcdw/guile-ares-rs][guile-ares-rs]].
-
-#+begin_src scheme :noweb-ref package-spec
-  "emacs-arei"
-#+end_src
-
-To start nREPL server for Arei, run the following command under project root
-directory:
-
-#+begin_src bash
-  guix shell guile guile-ares-rs -- guile -c '((@ (ares server) run-nrepl-server))'
-#+end_src
-
-Or the following one for Guix development:
-
-#+begin_src bash
-  echo "(begin (use-modules (ares server) (guix gexp)) (run-nrepl-server))" | guix shell guile guile-ares-rs -- guix repl /dev/stdin
-#+end_src
-
-Then connect to the server via ~arei-connect~ (=C-c C-a=) in Emacs.
-
-#+begin_src elisp :noweb-ref emacs-init
-  (use-package arei
-    :custom
-    ;; Prevent geiser from interfering with completion.
-    (geiser-mode-auto-p nil)
-    :hook
-    (after-init . global-arei-mode))
-#+end_src
-
-Arei Xref backend provides =xref-buffer-location= in =arei-xref--make-xref-loc=
-but Citre expects =xref-file-location=.  Advise the function.
-
-#+begin_src elisp :noweb-ref emacs-init
-  (use-package arei-xref
-    :after citre
-    :config
-    (defun hako/arei-xref--make-xref-loc-advice (identifier)
-      (when-let* ((info (arei-xref--request-lookup identifier))
-                  (file (arei-nrepl-dict-get info "file"))
-                  (line (arei-nrepl-dict-get info "line"))
-                  (column (arei-nrepl-dict-get info "column")))
-        (xref-make-file-location file line column)))
-    (advice-add #'arei-xref--make-xref-loc :override #'hako/arei-xref--make-xref-loc-advice)
-
-    (defvar citre-arei-backend
-      (citre-xref-backend-to-citre-backend
-       'arei
-       #'arei-connected-p))
-    (citre-register-backend 'arei citre-arei-backend))
 #+end_src
 
 *** [[https://github.com/jacktasia/dumb-jump][dumb-jump]]
@@ -781,59 +727,120 @@ Flycheck checker for GNU Guile.
   "emacs-flycheck-guile"
 #+end_src
 
-flycheck-guile gets load paths from geiser.  Define a custom checker to use guix
-repl instead.
-
 #+begin_src elisp :noweb-ref emacs-init
   (use-package flycheck-guile
-    :after flycheck
+    :after (flycheck geiser-guile))
+#+end_src
+
+*** [[https://geiser.nongnu.org/][geiser]]
+Emacs environment to hack and have fun in Scheme.
+
+#+begin_src scheme :noweb-ref package-spec
+  "emacs-geiser"
+  "emacs-geiser-guile"
+  "emacs-geiser-racket"
+#+end_src
+
+#+begin_src elisp :noweb-ref emacs-init
+  (use-package geiser
+    :custom
+    (geiser-active-implementations '(guile racket))
+    (geiser-default-implementation 'guile)
+    (geiser-autodoc-identifier-format "%s → %s")
+    (geiser-mode-smart-tab-p t)
+    (geiser-mode-start-repl-p t)
+    (geiser-repl-query-on-kill-p nil)
+    :bind
+    ([remap geiser-edit-symbol-at-point] . citre-jump)
+    ([remap geiser-pop-symbol-stack]     . citre-jump-back))
+#+end_src
+
+Xref and Citre backend:
+
+#+begin_src elisp :noweb-ref emacs-init
+  (use-package geiser
+    :after citre
     :config
-    (flycheck-define-checker guile-guix
-      "A GNU Guile syntax checker using `guild compile'."
-      :command
-      ("guild" "compile" "-O0"
-       (option-list "-W" flycheck-guile-warnings)
-       (eval (mapcan
-              (lambda (p)
-                (list "-L" p))
-              (read (shell-command-to-string "echo '(write %load-path)' | guix repl /dev/stdin"))))
-       source)
-      :error-filter flycheck-guile--filter-errors
-      :error-patterns
-      ((warning
-        line-start
-        (file-name) ":" line ":" column ": warning:" (message) line-end)
-       (warning
-        line-start
-        "<unknown-location>: warning:" (message) line-end)
-       (error
-        line-start
-        "ice-9/boot-9.scm:" (+ digit) ":" (+ digit) ":" (+ (any space "\n"))
-        "In procedure raise-exception:"                 (+ (any space "\n"))
-        "In procedure " (id (+ (not (any ":")))) ":"    (+ (any space "\n"))
-        (file-name) ":" line ":" column ":" (message (+? anything)) (* space) string-end)
-       (error
-        line-start
-        "ice-9/boot-9.scm:" (+ digit) ":" (+ digit) ":" (+ (any space "\n"))
-        "In procedure raise-exception:"                 (+ (any space "\n"))
-        (id (+ (not (any ":")))) ":"                    (+ (any space "\n"))
-        (file-name) ":" line ":" column ":" (message (+? anything)) (* space) string-end)
-       (error
-        line-start
-        "ice-9/boot-9.scm:" (+ digit) ":" (+ digit) ":" (+ (any space "\n"))
-        "In procedure raise-exception:"                 (+ (any space "\n"))
-        (message (+? anything)) (* space) string-end)
-       (error
-        line-start
-        (file-name) ":" line ":" column ":"             (+ (any space "\n"))
-        "In procedure raise-exception:"                 (+ (any space "\n"))
-        (message (+? anything)) (* space) string-end)
-       (error
-        line-start
-        (file-name) ":" line ":" column ":"             (+ (any space "\n"))
-        (message (+? anything)) (* space) string-end))
-      :modes (scheme-mode))
-    (add-to-list 'flycheck-checkers 'guile-guix))
+    (defun hako/geiser-mode-p ()
+      (and (fboundp 'geiser-eval--connection)
+           (ignore-error t (geiser-eval--connection))
+           t))
+    (defun hako/geiser--xref-backend ()
+      'hako/geiser)
+    (defun hako/geiser--make-xref-loc (identifier)
+      (let* ((id     (make-symbol identifier))
+             (loc    (ensure-list
+                      (or (geiser-edit-symbol-location id)
+                          (geiser-edit-module-location))))
+             (file   (geiser-edit--location-file loc))
+             (line   (geiser-edit--location-line loc))
+             (column (geiser-edit--location-column loc)))
+        (if file
+            (xref-make-file-location file line column)
+          (when-let* ((pos (car (geiser-edit--find-def id))))
+            (save-excursion
+              (goto-char pos)
+              (xref-make-file-location
+               (buffer-file-name)
+               (line-number-at-pos)
+               (current-column)))))))
+    (cl-defmethod xref-backend-identifier-at-point ((_backend (eql hako/geiser)))
+      (thing-at-point 'symbol t))
+    (cl-defmethod xref-backend-definitions ((_backend (eql hako/geiser)) identifier)
+      (when (hako/geiser-mode-p)
+        (when-let* ((loc (hako/geiser--make-xref-loc identifier)))
+          (list (xref-make identifier loc)))))
+    (defvar citre-geiser-backend
+      (citre-xref-backend-to-citre-backend
+       'hako/geiser
+       #'hako/geiser-mode-p))
+    (citre-register-backend 'geiser citre-geiser-backend))
+#+end_src
+
+Guile:
+
+#+begin_src elisp :noweb-ref emacs-init
+  (use-package geiser-guile
+    :after geiser
+    :config
+    (setopt geiser-guile-load-path
+            (read (shell-command-to-string "echo '(write %load-path)' | guix repl -q /dev/stdin")))
+    ;; TODO: Add to `geiser-guile'.
+    (defun hako/geiser-guile--project-path (old)
+      ;; see `geiser-repl--set-up-load-path'
+      (if-let ((geiser-repl-add-project-paths)
+               (root (funcall geiser-repl-current-project-function)))
+          (append
+           old
+           (mapcan (lambda (p)
+                     (list "-L" (expand-file-name p root)))
+                   (cond ((eq t geiser-repl-add-project-paths)
+                          '("."))
+                         ((listp geiser-repl-add-project-paths)
+                          geiser-repl-add-project-paths))))
+        old))
+    (advice-add #'geiser-guile--parameters :filter-return #'hako/geiser-guile--project-path))
+#+end_src
+
+Racket:
+
+#+begin_src elisp :noweb-ref emacs-init
+  (use-package geiser-racket
+    :after geiser)
+#+end_src
+
+*** [[https://doc.guix.gnu.org/emacs-guix/latest/en/html_node/][guix]]
+Emacs interface for the GNU Guix package manager.
+
+#+begin_src scheme :noweb-ref package-spec
+  "emacs-guix"
+#+end_src
+
+#+begin_src elisp :noweb-ref emacs-init
+  (use-package guix
+    :after geiser-guile
+    :hook
+    (scheme-mode . guix-devel-mode))
 #+end_src
 
 *** [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Info-Lookup.html][info-look]]
@@ -869,6 +876,25 @@ Interactive macro-expander.
   (use-package macrostep
     :bind
     ((:map emacs-lisp-mode-map)
+     ("C-c e" . macrostep-expand)))
+#+end_src
+
+*** [[https://github.com/nbfalcon/macrostep-geiser][macrostep-geiser]]
+Macrostep backend powered by geiser.
+
+#+begin_src scheme :noweb-ref package-spec
+  "emacs-macrostep-geiser"
+#+end_src
+
+#+begin_src elisp :noweb-ref emacs-init
+  (use-package macrostep-geiser
+    :after geiser
+    :hook
+    ((geiser-mode geiser-repl-mode) . macrostep-geiser-setup)
+    :bind
+    ((:map geiser-mode-map)
+     ("C-c e" . macrostep-expand))
+    ((:map geiser-repl-mode-map)
      ("C-c e" . macrostep-expand)))
 #+end_src
 
