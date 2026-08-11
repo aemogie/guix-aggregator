@@ -59,7 +59,7 @@
 
   ((nonguix-transformation-nvidia
     #:driver nvda-595
-    #:open-source-kernel-module? #f
+    #:open-source-kernel-module? #t
     #:dynamic-boost? #t
     #:remove-nvenc-restriction? #t)
    %os)
@@ -101,12 +101,12 @@ Application profiles
                . #((("pattern"
                      ("op" . "or")
                      ("sub"
-                      . ,(list->vector
-                          (map (lambda (name)
-                                 `(("feature" . "procname")
-                                   ("matches" . ,name)))
-                               '("firefox"
-                                 "niri")))))
+                      . #$(vector-map
+                           (lambda (index name)
+                             `(("feature" . "procname")
+                               ("matches" . ,name)))
+                           #("firefox"
+                             "niri"))))
                     ("profile" . "No VidMem Reuse")))))))
       ;; https://github.com/Frogging-Family/nvidia-all/blob/master/system/cuda-no-stable-perf-limit
       ("nvidia/nvidia-application-profiles-rc.d/cuda-no-stable-perf-limit.json"
@@ -120,12 +120,12 @@ Application profiles
                . #((("pattern"
                      ("op" . "or")
                      ("sub"
-                      . ,(list->vector
-                          (map (lambda (name)
-                                 `(("feature" . "procname")
-                                   ("matches" . ,name)))
-                               '("firefox"
-                                 "obs")))))
+                      . #$(vector-map
+                           (lambda (index name)
+                             `(("feature" . "procname")
+                               ("matches" . ,name)))
+                           #("firefox"
+                             "obs"))))
                     ("profile" . "CudaNoStablePerfLimit")))))))))
 #+end_src
 
@@ -1242,7 +1242,7 @@ Make fonts available to Nix packages.
 Pin Nixpkgs to avoid networking requirement when using the wrappers.
 
 #+begin_src nix :tangle ../tangled/dorphine/nixpkgs.nix
-  (import (builtins.getFlake "github:NixOS/nixpkgs/fd1462031fdee08f65fd0b4c6b64e22239a77870") {})
+  (import (builtins.getFlake "github:NixOS/nixpkgs/ee48b147c18c7de1e6ec97dc74792be42724bed1") {})
 #+end_src
 
 #+begin_src scheme :noweb-ref package-nix
@@ -1371,6 +1371,7 @@ Within this repository
 Guile builtins
 #+begin_src scheme :noweb-ref module
   (ice-9 match)
+  (srfi srfi-43)
 #+end_src
 
 Utilities

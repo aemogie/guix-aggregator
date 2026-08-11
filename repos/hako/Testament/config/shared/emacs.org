@@ -804,7 +804,9 @@ Guile:
     :after geiser
     :config
     (setopt geiser-guile-load-path
-            (read (shell-command-to-string "echo '(write %load-path)' | guix repl -q /dev/stdin")))
+            (let* ((cmd "echo '(write %load-path)' | guix repl -q --type=machine")
+                   (out (nth 1 (split-string (shell-command-to-string cmd) "\n"))))
+              (read out)))
     ;; TODO: Add to `geiser-guile'.
     (defun hako/geiser-guile--project-path (old)
       ;; see `geiser-repl--set-up-load-path'
@@ -1216,77 +1218,39 @@ Org to [[https://gohugo.io/][Hugo]] exporter.
 #+end_src
 
 ** Fonts
-https://github.com/nykma/nema/blob/develop/my-sample/font.el
+Based on https://github.com/nykma/nema/blob/develop/my-sample/font.el
 
 #+begin_src scheme :noweb-ref package-spec
   "fontconfig"
   "font-adobe-source-serif"
   "font-chiron-sung-hk"
   "font-google-noto-emoji"
+  "font-nerd-symbols"
+  "font-victor-mono"
 #+end_src
 
 #+begin_src elisp :noweb-ref emacs-init
-  (defvar nema--font-size 12 "Font size")
-  (defvar nema-fonts '((sans     . "sans")
-                       (serif    . "serif")
-                       (mono     . "monospace")
-                       (cjk      . "Chiron Sung HK VF")
-                       (symbol   . "Noto Color Emoji")
-                       (modeline . "Source Serif 4"))
-    "Fonts to use.")
-
-  (defun nema//get-font-family (key)
-    (alist-get key nema-fonts))
-
-  (defun nema//generate-font-spec (key)
-    (format "%s-%d"
-            (nema//get-font-family key)
-            nema--font-size))
-
-  (defun nema//load-base-font ()
-    "Load the default font for ascii characters."
-    (let* ((font-spec (nema//generate-font-spec 'mono)))
-      (set-frame-parameter nil 'font font-spec)
-      (add-to-list 'default-frame-alist (cons 'font font-spec))))
-
-  (defun nema//load-face-font ()
-    "Load fonts used in faces.
-
-  This function must be called after frame creation."
-    (let ((mono (nema//generate-font-spec 'mono))
-          (sans (nema//generate-font-spec 'sans))
-          (serif (nema//generate-font-spec 'sans-serif))
-          (modeline (nema//generate-font-spec 'modeline)))
-      (set-face-attribute 'variable-pitch nil :font sans)
-      (set-face-attribute 'variable-pitch-text nil :font serif)
-      (set-face-attribute 'fixed-pitch nil :font mono)
-      (set-face-attribute 'fixed-pitch-serif nil :font mono)
-      (set-face-attribute 'mode-line nil :font modeline)
-      (set-face-attribute 'mode-line-inactive nil :font modeline)))
-
-  (defun nema//load-ext-font ()
-    "Load fonts used for non-ascii characters.
-
-  This function must be called after frame creation."
-    (let ((font (frame-parameter nil 'font))
-          (font-spec-cjk (font-spec :family (nema//get-font-family 'cjk)))
-          (font-spec-symbol (font-spec :family (nema//get-font-family 'symbol))))
-      (dolist (charset '(kana han hangul cjk-misc bopomofo))
-        (set-fontset-font font charset font-spec-cjk))
-      (set-fontset-font font 'symbol font-spec-symbol)))
-
-  (defun nema/load-font ()
-    "Load all font configuration."
-    (interactive)
-    (when (display-graphic-p)
-      (nema//load-base-font)
-      (nema//load-ext-font)
-      (nema//load-face-font)))
+  (defun hako/load-font ()
+    (let* ((size     16)
+           (mono     (font-spec :family "Victor Mono"       :size size))
+           (modeline (font-spec :family "Source Serif 4"    :size size))
+           (cjk      (font-spec :family "Chiron Sung HK VF" :size size))
+           (symbol   (font-spec :family "Symbols Nerd Font" :size size))
+           (emoji    (font-spec :family "Noto Color Emoji"  :size size)))
+      (when (display-graphic-p)
+        (set-face-attribute 'default            nil :font mono)
+        (set-face-attribute 'mode-line          nil :font modeline)
+        (set-face-attribute 'mode-line-active   nil :font modeline)
+        (set-face-attribute 'mode-line-inactive nil :font modeline)
+        (let ((font (frame-parameter nil 'font)))
+          (dolist (charset '(kana han hangul cjk-misc bopomofo))
+            (set-fontset-font font charset cjk))
+          (set-fontset-font font 'symbol symbol nil 'append)
+          (set-fontset-font font 'emoji  emoji  nil 'append)))))
 
   (if (daemonp)
-      (add-hook 'server-after-make-frame-hook #'nema/load-font)
-    ;; Else: not in daemon
-    (add-hook 'after-init-hook #'nema/load-font))
+      (add-hook 'server-after-make-frame-hook #'hako/load-font)
+    (add-hook 'after-init-hook #'hako/load-font))
 #+end_src
 
 ** Indentation
