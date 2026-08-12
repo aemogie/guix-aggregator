@@ -111,8 +111,8 @@
         qt5compat))
 
 (define-public browser
-  (list zen-browser-bin
-        mullvadbrowser))
+  (list zen-browser-bin))
+        ;; mullvadbrowser))
 
 (define-public clipboard
   (list wl-clipboard))

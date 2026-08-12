@@ -158,12 +158,13 @@
 
 (define nix-store
   (file-system
-    (device guix-part)
+    (device (file-system-label "guix"))
     (type "btrfs")
     (mount-point "/nix")
     (needed-for-boot? #t)
     (flags '(no-atime))
-    (options "compress=zstd,subvol=@nix,ssd")))
+    (options "compress=zstd,subvol=@nix,ssd")
+    (dependencies %mapped-devices)))
 
 (define gnu-persist
   (file-system

@@ -150,6 +150,15 @@ hl.window_rule({
 })
 
 hl.window_rule({
+    name = "poe",
+    match = {
+        class = "steam_app_238960",
+    },
+    fullscreen_state = "3 3",
+    suppress_event = "fullscreen maximize activate activatefocus fullscreenoutput x11configurerequest",
+})
+
+hl.window_rule({
     name = "game-fixes",
     match = {
         class = "^(conhost\\.exe)$",
@@ -202,15 +211,9 @@ hl.window_rule({
     match = {
         class = "^(awakened-poe-trade)$",
     },
-    size = "(monitor_w) (monitor_h)",
     float = true,
     no_blur = true,
-    no_focus = true,
     no_shadow = true,
-    pin = true,
-    render_unfocused = true,
-    center = true,
-    fullscreen = true,
 })
 
 hl.window_rule({

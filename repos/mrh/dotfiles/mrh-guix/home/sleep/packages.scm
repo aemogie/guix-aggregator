@@ -58,6 +58,7 @@
    hicolor-icon-theme
    libnotify
    librewolf
+   redshift-wayland
    swayfx
    swaybg
    swayidle

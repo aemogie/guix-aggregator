@@ -191,6 +191,7 @@
             (music       "$HOME/music/")
             (pictures    "$HOME/images/")
             (videos      "$HOME/videos/")
+            (projects    "$HOME/projects/")
             (templates   "")
             (publicshare "")))
 

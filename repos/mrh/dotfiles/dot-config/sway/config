@@ -119,6 +119,7 @@ exec swayidle -w timeout 900 'swaymsg "output * power off"' resume 'swaymsg "out
 # Programs to execute (at startup & after reload).
 ##################################################
 exec_always swaync
+exec_always redshift -c "$XDG_CONFIG_HOME/redshift/redshift.conf"
 
 # Theming.
 ##########

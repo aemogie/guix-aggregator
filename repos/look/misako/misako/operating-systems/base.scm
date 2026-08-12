@@ -172,12 +172,7 @@
             ;; Temporary non-tmpfs directory for large builds
             ;; (tmpdir "/home/look/.cache/guix-build")
             (substitute-urls
-              '(
-                "https://cache-cdn.guix.moe"
-                ; "https://cuirass.genenetwork.org"
-                "https://substitutes.nonguix.org"
-                ; "https://guix.bordeaux.inria.fr"
-                "https://ci.guix.gnu.org"))
+              '("https://ci.guix.gnu.org"))
                 ; "https://bordeaux.guix.gnu.org"))
             (authorized-keys
               (list substitute-key:guix.pub
@@ -185,16 +180,16 @@
                     substitute-key:yumiko.pub
                     substitute-key:yuria.pub
                     substitute-key:buer.pub
-                    substitute-key:nonguix.pub
-                    substitute-key:inria.pub
-                    substitute-key:guix.moe.pub
-                    substitute-key:boiledscript.pub
-                    substitute-key:keyz.pub
-                    substitute-key:genenetwork.pub))
+                    substitute-key:keyz.pub))
             (build-accounts 300)
             (discover? #t)
             (extra-options '("--gc-keep-derivations=yes"
                              "--gc-keep-outputs=yes"))))
+
+        (simple-service 'nonguix-substitutes guix-service-type
+          (guix-extension
+            (substitute-urls (list "https://substitutes.nonguix.org"))
+            (authorized-keys (list substitute-key:nonguix.pub))))
 
         #|Home environment services|#
         ;; (service guix-home-service-type
