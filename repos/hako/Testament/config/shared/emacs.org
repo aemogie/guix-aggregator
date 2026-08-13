@@ -129,7 +129,6 @@ Basic configuration and theming for builtin packages.
     (before-save . delete-trailing-whitespace)
     (prog-mode . display-fill-column-indicator-mode)
     :bind
-    ([remap list-buffers] . switch-to-buffer)
     ("M-o" . other-window))
 #+end_src
 
@@ -206,6 +205,76 @@ Customizations from [[https://cgit.git.savannah.gnu.org/cgit/emacs.git/tree/etc/
 #+end_src
 
 ** Interface
+*** [[https://github.com/minad/consult][consult]]
+Search and navigate via =completing-read=.
+
+#+begin_src scheme :noweb-ref package-spec
+  "emacs-consult"
+  "emacs-consult-flycheck"
+
+  "fd"
+  "ripgrep"
+#+end_src
+
+#+begin_src elisp :noweb-ref emacs-init
+  (use-package consult
+    :custom
+    (completion-in-region-function #'consult-completion-in-region)
+    (xref-show-definitions-function #'consult-xref)
+    (xref-show-xrefs-function #'consult-xref)
+    :bind
+    ;; `C-x ...'
+    ([remap list-buffers]                  . consult-buffer)
+    ([remap switch-to-buffer]              . consult-buffer)
+    ([remap switch-to-buffer-other-frame]  . consult-buffer-other-frame)
+    ([remap switch-to-buffer-other-tab]    . consult-buffer-other-tab)
+    ([remap switch-to-buffer-other-window] . consult-buffer-other-window)
+    ([remap project-list-buffers]          . consult-project-buffer)
+    ([remap project-switch-to-buffer]      . consult-project-buffer)
+    ([remap bookmark-jump]                 . consult-bookmark)
+    ([remap repeat-complex-command]        . consult-complex-command)
+    ;; Others.
+    ([remap yank-pop] . consult-yank-pop)
+    ;; `C-c ...'
+    (:map mode-specific-map)
+    ("M-x" . consult-mode-command)
+    ("h"   . consult-history)
+    ("k"   . consult-kmacro)
+    ("m"   . consult-man)
+    ("i"   . consult-info)
+    (:map Info-mode-map)
+    ([remap Info-search] . consult-info)
+    ;; `M-g ...'
+    (:map goto-map)
+    ("e" . consult-compile-error)
+    ("f" . consult-flycheck)
+    ("o" . consult-outline)
+    ("m" . consult-mark)
+    ("k" . consult-global-mark)
+    ("i" . consult-imenu)
+    ("I" . consult-imenu-multi)
+    (:map global-map)
+    ([remap goto-line] . consult-goto-line)
+    ;; `M-s ...'
+    (:map search-map)
+    ("d" . consult-fd)
+    ("g" . consult-ripgrep)
+    ("l" . consult-line)
+    ("L" . consult-line-multi)
+    ("k" . consult-keep-lines)
+    ("u" . consult-focus-lines)
+    ("e" . consult-isearch-history)
+    ;; `C-s ...'
+    (:map isearch-mode-map)
+    ([remap isearch-edit-string] . consult-isearch-history)
+    ("M-s l" . consult-line)
+    ("M-s L" . consult-line-multi)
+    ;; Minibuffer.
+    (:map minibuffer-local-map)
+    ([remap next-matching-history-element]     . consult-history)
+    ([remap previous-matching-history-element] . consult-history))
+#+end_src
+
 *** [[https://github.com/seagle0128/doom-modeline][doom-modeline]]
 Fancy and fast mode-line inspired by minimalism design.
 
@@ -338,6 +407,23 @@ Colorize Org tags automatically to make them visually distinguishable.
     (org-mode . org-rainbow-tags-mode))
 #+end_src
 
+*** [[https://github.com/oantolin/orderless][orderless]]
+Emacs completion style that matches multiple regexps in any order.
+
+#+begin_src scheme :noweb-ref package-spec
+  "emacs-orderless"
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref emacs-init
+  (use-package orderless
+    :custom
+    (completion-styles '(orderless basic))
+    (completion-category-overrides '((file (styles partial-completion))))
+    (completion-category-defaults nil)
+    (completion-pcm-leading-wildcard t)
+    (orderless-matching-styles '(orderless-literal orderless-flex orderless-regexp)))
+#+end_src
+
 *** [[https://github.com/radian-software/prescient.el][prescient]]
 Frecency based completion sorting and filtering.
 
@@ -348,23 +434,9 @@ Frecency based completion sorting and filtering.
 #+begin_src elisp :noweb-ref emacs-init
   (use-package prescient
     :custom
-    (prescient-filter-method '(literal fuzzy regexp initialism))
+    (completion-preview-sort-function #'prescient-completion-sort)
     :hook
     (after-init . prescient-persist-mode))
-#+end_src
-
-#+begin_src elisp :noweb-ref emacs-init
-  (use-package emacs
-    :custom
-    (completion-styles '(prescient basic))
-    (completion-category-overrides '((file (styles basic partial-completion))))
-    (completion-preview-sort-function #'prescient-completion-sort))
-#+end_src
-
-#+begin_src elisp :noweb-ref emacs-init
-  (use-package vertico-prescient
-    :hook
-    (after-init . vertico-prescient-mode))
 #+end_src
 
 *** [[https://github.com/Fanael/rainbow-delimiters][rainbow-delimiters]]
@@ -429,6 +501,15 @@ Vertical minibuffer completion UI based on the default completion system.
      ("RET" . vertico-directory-enter)
      ("DEL" . vertico-directory-delete-char)
      ("M-DEL" . vertico-directory-delete-word)))
+#+end_src
+
+#+begin_src elisp :noweb-ref emacs-init
+  (use-package vertico-prescient
+    :after vertico prescient
+    :custom
+    (vertico-prescient-enable-filtering nil) ;use orderless for filtering instead
+    :hook
+    (after-init . vertico-prescient-mode))
 #+end_src
 
 #+begin_src elisp :noweb-ref emacs-init
@@ -499,7 +580,6 @@ citre: Code reading & auto-completion tool with pluggable backends.
 
 #+begin_src scheme :noweb-ref package-spec
   "emacs-citre"
-  "ripgrep"
 #+end_src
 
 #+begin_src elisp :noweb-ref emacs-init
@@ -729,7 +809,7 @@ Flycheck checker for GNU Guile.
 
 #+begin_src elisp :noweb-ref emacs-init
   (use-package flycheck-guile
-    :after (flycheck geiser-guile))
+    :after flycheck geiser-guile)
 #+end_src
 
 *** [[https://geiser.nongnu.org/][geiser]]
@@ -1042,32 +1122,6 @@ Simple notes with an efficient file-naming scheme.
     (dired-vc-rename-file t))
 #+end_src
 
-*** [[https://codeberg.org/akib/emacs-eat][eat]]
-Terminal emulator.
-
-Patches https://codeberg.org/akib/emacs-eat/pulls/133 and
-https://codeberg.org/akib/emacs-eat/pulls/228 are applied.
-
-#+begin_src scheme :noweb-ref package-spec
-  "emacs-eat-dolly"
-#+end_src
-
-#+begin_src elisp :noweb-ref emacs-init
-  (use-package eat
-    :custom
-    (eat-kill-buffer-on-exit t)
-    (eshell-visual-commands nil)
-    :hook
-    (eshell-load . eat-eshell-mode))
-
-  (use-package project
-    :config
-    (add-to-list 'project-switch-commands '(eat-project "Eat") t)
-    :bind
-    ((:map project-prefix-map)
-     ("t" . eat-project)))
-#+end_src
-
 *** [[https://github.com/purcell/envrc][envrc]]
 [[https://direnv.net/][direnv]] integration.
 
@@ -1079,6 +1133,31 @@ https://codeberg.org/akib/emacs-eat/pulls/228 are applied.
   (use-package envrc
     :hook
     (after-init . envrc-global-mode))
+#+end_src
+
+*** [[https://github.com/dakra/ghostel][ghostel]]
+Terminal emulator
+
+#+begin_src elisp :noweb-ref emacs-init
+  (use-package ghostel
+    :vc (:url "https://github.com/dakra/ghostel" :lisp-dir "lisp" :rev "v0.49.0")
+    :bind
+    ("C-x t" . ghostel)
+    (:map ghostel-semi-char-mode-map)
+    ("C-s" . isearch-forward)
+    ("M-n" . (lambda () (interactive) (ghostel-send-key "n" "ctrl")))
+    ("M-p" . (lambda () (interactive) (ghostel-send-key "p" "ctrl")))
+    :hook
+    (after-init . ghostel-comint-global-mode)
+    (after-init . ghostel-compile-global-mode)
+    (eshell-load . ghostel-eshell-visual-command-mode))
+
+  (use-package project
+    :config
+    (add-to-list 'project-switch-commands '(ghostel-project "Ghostel") t)
+    :bind
+    (:map project-prefix-map)
+    ("t" . ghostel-project))
 #+end_src
 
 *** [[https://magit.vc/][magit]]

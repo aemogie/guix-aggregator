@@ -354,16 +354,6 @@ Generate random password hash:
   (service home-fish-plugin-zoxide-service-type)
 #+end_src
 
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'fish-emacs-eat home-fish-service-type
-    (home-fish-extension
-      (config
-       (list (plain-file "emacs-eat.fish" "\
-  if test -n \"$EAT_SHELL_INTEGRATION_DIR\"
-      source $EAT_SHELL_INTEGRATION_DIR/fish
-  end\n")))))
-#+end_src
-
 *** SOPS Secrets
 Create GPG home directory specifically for use with SOPS.
 #+begin_src shell
@@ -704,6 +694,7 @@ niri supports getting keyboard layout from localed.
           XF86MonBrightnessUp   allow-when-locked=true { spawn "noctalia" "msg" "brightness-up"; }
           XF86MonBrightnessDown allow-when-locked=true { spawn "noctalia" "msg" "brightness-down"; }
 
+          Mod+Return      { spawn "emacsclient" "--create-frame" "--no-wait"; }
           Mod+A           { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
           Mod+D           { spawn "$$bin/rofi$$" "-show" "combi"; }
           Mod+S           { spawn "noctalia" "msg" "settings-toggle"; }
@@ -711,9 +702,6 @@ niri supports getting keyboard layout from localed.
           Mod+Shift+E     { spawn "noctalia" "msg" "panel-toggle" "session"; }
           Ctrl+Alt+Delete { spawn "noctalia" "msg" "panel-toggle" "session"; }
           Alt+Tab         { spawn "noctalia" "msg" "window-switcher"; }
-
-          Mod+E       { spawn "emacsclient" "--create-frame" "--no-wait"; }
-          Mod+Return  { spawn "wezterm"; }
 
           Mod+Left                       { focus-column-left; }
           Mod+Down                       { focus-window-down; }
@@ -1250,6 +1238,11 @@ Pin Nixpkgs to avoid networking requirement when using the wrappers.
     '("glibcLocales")
     #:expression (local-file (testament-file "dorphine/nixpkgs.nix")))
 
+  (nix-shell-wrapper "element-desktop"
+    '("element-desktop")
+    #:expression (local-file (testament-file "dorphine/nixpkgs.nix"))
+    #:run-command '("element-desktop" "--no-update"))
+
   (nix-shell-wrapper "nocturne"
     '("nocturne")
     #:expression (local-file (testament-file "dorphine/nixpkgs.nix"))
@@ -1336,25 +1329,6 @@ condition.  Disable one of them.
   "ffmpegthumbnailer"
   "tumbler"
   "webp-pixbuf-loader"
-#+end_src
-
-#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/xfce4/helpers.rc
-  TerminalEmulator=open-wezterm-here
-#+end_src
-
-*** wezterm
-#+begin_src scheme :noweb-ref package-spec
-  "wezterm"
-#+end_src
-
-#+begin_src lua :tangle ../tangled/dorphine/dotfiles/.config/wezterm/wezterm.lua
-  local wezterm = require 'wezterm'
-  local config = wezterm.config_builder()
-
-  config.window_background_opacity = 0.90
-  config.color_scheme = 'Catppuccin Mocha'
-
-  return config
 #+end_src
 
 *** wget
