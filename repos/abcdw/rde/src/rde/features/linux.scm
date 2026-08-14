@@ -99,6 +99,18 @@
      ;; TODO: Tune the performance settings
      ;; https://gitlab.freedesktop.org/pipewire/pipewire/-/wikis/Performance-tuning#rlimits
 
+     ;; Without a working realtime service, xdg-desktop-portal advertises a
+     ;; zero RTTimeUSecMax.  PipeWire clients (including wayland compositors)
+     ;; then apply RLIMIT_RTTIME=0 process-wide, and child processes inherit
+     ;; the unusable limit.
+     (simple-service
+      'pipewire-disable-client-realtime-scheduling
+      home-xdg-configuration-files-service-type
+      `(("pipewire/client.conf.d/10-disable-rt.conf"
+         ,(plain-file
+           "pipewire-disable-client-rt.conf"
+           "context.properties = {\n    module.rt = false\n}\n"))))
+
      (simple-service
       'pipewire-add-asoundrc
       home-xdg-configuration-files-service-type

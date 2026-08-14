@@ -38,7 +38,8 @@
           (pinentry-flavor 'qt)
           (default-ttl 86400)
           (gpg-extra-config '())
-          (gpg-agent-extra-config '()))
+          (gpg-agent-extra-config '())
+          (scdaemon-extra-config '()))
   "Sets up gnupg, if SSH-AGENT? specified also sets up gpg's ssh-agent
 and provides GPG-PRIMARY-KEY value for other features."
 
@@ -48,6 +49,7 @@ and provides GPG-PRIMARY-KEY value for other features."
   (ensure-pred integer? default-ttl)
   (ensure-pred list? gpg-extra-config)
   (ensure-pred list? gpg-agent-extra-config)
+  (ensure-pred list? scdaemon-extra-config)
   (ensure-pred ssh-keys-list? ssh-keys)
   (ensure-pred file-like? gnupg)
 
@@ -131,10 +133,14 @@ alias gpg-update-smartcard='gpg-connect-agent \"scd serialno\" \"learn --force\"
           `((default-cache-ttl . ,default-ttl)
             (default-cache-ttl-ssh . ,default-ttl)
             (max-cache-ttl . ,default-ttl)
-            (max-cache-ttl-ssh . ,default-ttl)))
+            (max-cache-ttl-ssh . ,default-ttl)
+            ,@gpg-agent-extra-config))
          (ssh-agent? gpg-ssh-agent?)
          (ssh-keys ssh-keys)
-         (pinentry-flavor pinentry-flavor)))))))
+         (pinentry-flavor pinentry-flavor)))
+       (scdaemon-config
+        (home-scdaemon-configuration
+         (extra-config scdaemon-extra-config)))))))
 
   (feature
    (name 'gnupg)

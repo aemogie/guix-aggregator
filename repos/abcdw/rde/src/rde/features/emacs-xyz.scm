@@ -1960,6 +1960,10 @@ emacs-all-the-icons is in the list of features, respectively."
     (define ripgrep (get-value 'ripgrep config
                                (@ (gnu packages rust-apps) ripgrep)))
     (list
+     (simple-service
+         'add-ripgrep-home-package
+         home-profile-service-type
+       (list ripgrep))
      (rde-elisp-configuration-service
       emacs-f-name
       config
