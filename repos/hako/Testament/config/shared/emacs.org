@@ -127,9 +127,7 @@ Basic configuration and theming for builtin packages.
     :hook
     (after-init . show-paren-mode)
     (before-save . delete-trailing-whitespace)
-    (prog-mode . display-fill-column-indicator-mode)
-    :bind
-    ("M-o" . other-window))
+    (prog-mode . display-fill-column-indicator-mode))
 #+end_src
 
 Customizations from [[https://cgit.git.savannah.gnu.org/cgit/emacs.git/tree/etc/themes/newcomers-presets-theme.el][newcomers-presets-theme]] ([[https://github.com/emacs-mirror/emacs/blob/master/etc/themes/newcomers-presets-theme.el][mirror]]).
@@ -158,13 +156,13 @@ Customizations from [[https://cgit.git.savannah.gnu.org/cgit/emacs.git/tree/etc/
     (recentf-mode t)
     ;; Editing-related options
     (electric-pair-mode t)
-    ;; (repeat-mode t)
-    ;; (delete-selection-mode t)
+    (repeat-mode t)
+    (delete-selection-mode t)
     (editorconfig-mode t)
     (indent-tabs-mode nil)
     (imenu-auto-rescan t)
     (view-read-only t)
-    ;; (column-number-mode t)
+    (column-number-mode t)
     ;; Directory managment-related options
     (dired-auto-revert-buffer t)
     (dired-mouse-drag-files t)
@@ -183,13 +181,13 @@ Customizations from [[https://cgit.git.savannah.gnu.org/cgit/emacs.git/tree/etc/
     (completions-group t)
     (completion-auto-select 'second-tab)
     (completion-eager-update t)
-    ;; (completion-styles '(basic emacs22 flex))
+    (completion-styles '(basic emacs22 flex))
     (global-completion-preview-mode t)
     (tab-always-indent 'complete)
     (which-key-mode t)
     ;; Package-related options
-    ;; (package-autosuggest-mode t)
-    ;; (package-menu-use-current-if-no-marks nil)
+    (package-autosuggest-mode t)
+    (package-menu-use-current-if-no-marks nil)
     ;; Frame- and window-related options
     (frame-inhibit-implied-resize t)
     ;; (tab-bar-history-mode t)
@@ -485,8 +483,8 @@ Vertical minibuffer completion UI based on the default completion system.
     :hook
     (after-init . vertico-mode)
     :bind
-    ((:map vertico-map)
-     ([remap vertico-insert] . hako/vertico-insert)))
+    (:map vertico-map)
+    ([remap vertico-insert] . hako/vertico-insert))
 #+end_src
 
 #+begin_src elisp :noweb-ref emacs-init
@@ -497,10 +495,10 @@ Vertical minibuffer completion UI based on the default completion system.
     (rfn-eshadow-update-overlay . vertico-directory-tidy)
     :bind
     ;; More convenient directory navigation commands.
-    ((:map vertico-map)
-     ("RET" . vertico-directory-enter)
-     ("DEL" . vertico-directory-delete-char)
-     ("M-DEL" . vertico-directory-delete-word)))
+    (:map vertico-map)
+    ("RET" . vertico-directory-enter)
+    ("DEL" . vertico-directory-delete-char)
+    ("M-DEL" . vertico-directory-delete-word))
 #+end_src
 
 #+begin_src elisp :noweb-ref emacs-init
@@ -544,6 +542,33 @@ Vertical minibuffer completion UI based on the default completion system.
   (use-package which-key
     :config
     (which-key-setup-side-window-right-bottom))
+#+end_src
+
+*** [[https://github.com/deb0ch/emacs-winum][winum]]
+Navigate windows and frames using numbers.
+
+#+begin_src scheme :noweb-ref package-spec
+  "emacs-winum"
+#+end_src
+
+https://karthinks.com/software/emacs-window-management-almanac/#winum-mode
+#+begin_src elisp :noweb-ref emacs-init
+  (use-package winum
+    :init
+    (defvar-keymap winum-keymap
+      :doc "Keymap for winum-mode actions."
+      "M-0" 'winum-select-window-0-or-10
+      "M-1" 'winum-select-window-1
+      "M-2" 'winum-select-window-2
+      "M-3" 'winum-select-window-3
+      "M-4" 'winum-select-window-4
+      "M-5" 'winum-select-window-5
+      "M-6" 'winum-select-window-6
+      "M-7" 'winum-select-window-7
+      "M-8" 'winum-select-window-8
+      "M-9" 'winum-select-window-9)
+    :hook
+    (after-init . winum-mode))
 #+end_src
 
 *** [[https://elpa.gnu.org/packages/adaptive-wrap.html][adaptive-wrap]] & [[https://codeberg.org/joostkremers/visual-fill-column][visual-fill-column]]
@@ -957,8 +982,8 @@ Interactive macro-expander.
 #+begin_src elisp :noweb-ref emacs-init
   (use-package macrostep
     :bind
-    ((:map emacs-lisp-mode-map)
-     ("C-c e" . macrostep-expand)))
+    (:map emacs-lisp-mode-map)
+    ("C-c e" . macrostep-expand))
 #+end_src
 
 *** [[https://github.com/nbfalcon/macrostep-geiser][macrostep-geiser]]
@@ -974,10 +999,10 @@ Macrostep backend powered by geiser.
     :hook
     ((geiser-mode geiser-repl-mode) . macrostep-geiser-setup)
     :bind
-    ((:map geiser-mode-map)
-     ("C-c e" . macrostep-expand))
-    ((:map geiser-repl-mode-map)
-     ("C-c e" . macrostep-expand)))
+    (:map geiser-mode-map)
+    ("C-c e" . macrostep-expand)
+    (:map geiser-repl-mode-map)
+    ("C-c e" . macrostep-expand))
 #+end_src
 
 *** [[https://github.com/AmaiKinono/puni][puni]]
@@ -994,10 +1019,10 @@ supports many major modes out of the box.
     ((eval-expression-minibuffer-setup nxml-mode prog-mode sgml-mode tex-mode)
      . puni-mode)
     :bind
-    ((:map puni-mode-map)
-     ("C-M-r" . puni-raise)
-     ("C-M-," . puni-slurp-backward)
-     ("C-M-." . puni-slurp-forward)))
+    (:map puni-mode-map)
+    ("C-M-r" . puni-raise)
+    ("C-M-," . puni-slurp-backward)
+    ("C-M-." . puni-slurp-forward))
 #+end_src
 
 *** [[https://github.com/renzmann/treesit-auto][treesit-auto]]
@@ -1072,6 +1097,8 @@ Simple notes with an efficient file-naming scheme.
 
 #+begin_src scheme :noweb-ref package-spec
   "emacs-denote"
+  "emacs-denote-journal"
+  "emacs-consult-denote"
 #+end_src
 
 #+begin_src elisp :noweb-ref emacs-init
@@ -1085,22 +1112,36 @@ Simple notes with an efficient file-naming scheme.
     :hook
     (dired-mode . denote-dired-mode)
     :bind
-    (("C-c n n" . denote-open-or-create)
-     ("C-c n d" . denote-dired)
-     ("C-c n g" . denote-grep)
-     ("C-c n r" . denote-rename-file)
-     ("C-c n R" . denote-rename-file-using-front-matter)
-     (:map org-mode-map)
-     ("C-c n l" . denote-link)
-     ("C-c n L" . denote-add-links)
-     ("C-c n b" . denote-backlinks)
-     ("C-c n q c" . denote-query-contents-link)
-     ("C-c n q f" . denote-query-filenames-link)
-     (:map dired-mode-map)
-     ("C-c C-d C-i" . denote-dired-link-marked-notes)
-     ("C-c C-d C-r" . denote-dired-rename-files)
-     ("C-c C-d C-k" . denote-dired-rename-marked-files-with-keywords)
-     ("C-c C-d C-R" . denote-dired-rename-marked-files-using-front-matter)))
+    ("C-c n n" . denote-open-or-create)
+    ("C-c n d" . denote-dired)
+    ("C-c n r" . denote-rename-file)
+    ("C-c n R" . denote-rename-file-using-front-matter)
+    (:map org-mode-map)
+    ("C-c n l" . denote-link)
+    ("C-c n L" . denote-add-links)
+    ("C-c n b" . denote-backlinks)
+    ("C-c n q c" . denote-query-contents-link)
+    ("C-c n q f" . denote-query-filenames-link)
+    (:map dired-mode-map)
+    ("C-c C-d C-i" . denote-dired-link-marked-notes)
+    ("C-c C-d C-r" . denote-dired-rename-files)
+    ("C-c C-d C-k" . denote-dired-rename-marked-files-with-keywords)
+    ("C-c C-d C-R" . denote-dired-rename-marked-files-using-front-matter))
+
+  (use-package denote-journal
+    :custom
+    (denote-journal-title-format 'day-date-month-year)
+    :bind
+    ("C-c n j" . denote-journal-new-or-existing-entry)
+    :hook
+    (calendar-mode . denote-journal-calendar-mode))
+
+  (use-package consult-denote
+    :bind
+    ("C-c n f" . consult-denote-find)
+    ("C-c n g" . consult-denote-grep)
+    :hook
+    (after-init . consult-denote-mode))
 #+end_src
 
 *** [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Dired.html][dired]]
@@ -1174,8 +1215,8 @@ Text-based user interface to [[https://git-scm.com/][Git]].
                  '(magit-project-status "Magit")
                  t)
     :bind
-    ((:map project-prefix-map)
-     ("m" . magit-project-status)))
+    (:map project-prefix-map)
+    ("m" . magit-project-status))
 #+end_src
 
 *** [[https://github.com/0WD0/majutsu][majutsu]]
@@ -1213,8 +1254,8 @@ Interface for [[https://www.jj-vcs.dev/latest/][Jujutsu]].
                  '(hako/majutsu-project-log "Majutsu")
                  t)
     :bind
-    ((:map project-prefix-map)
-     ("j" . hako/majutsu-project-log)))
+    (:map project-prefix-map)
+    ("j" . hako/majutsu-project-log))
 #+end_src
 
 *** [[https://notmuchmail.org/notmuch-emacs/][notmuch]]
