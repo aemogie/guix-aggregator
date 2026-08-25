@@ -11,7 +11,7 @@
   #:use-module (gnu home services xdg)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages gnome)
-  #:use-module (gnu packages wm)
+  #:use-module (gnu packages window-management)
   #:use-module (gnu services)
   #:use-module (guix gexp)
   #:export (feature-niri))

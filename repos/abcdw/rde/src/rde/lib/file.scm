@@ -18,7 +18,8 @@
 ;;; along with rde.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (rde lib file)
-  #:export (find-file-in-load-path))
+  #:export (find-file-in-load-path
+            find-file-in-load-path/canonical))
 
 (define (find-file-in-load-path file)
   "Find @code{file} with any extension in @code{%load-path}."
@@ -29,3 +30,7 @@
         (lambda () (set! %load-extensions '("")))
         (lambda () (%search-load-path file))
         (lambda () (set! %load-extensions old-load-extensions)))))
+
+(define (find-file-in-load-path/canonical file)
+  "Find @code{file} in @code{%load-path} and return its canonical path."
+  (canonicalize-path (find-file-in-load-path file)))

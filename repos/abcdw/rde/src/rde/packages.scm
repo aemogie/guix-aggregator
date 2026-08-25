@@ -69,9 +69,10 @@
   (map get-inferior-pkg lst))
 
 (define %channel-root
-  (find (lambda (path)
-          (file-exists? (string-append path "/rde/packages.scm")))
-        %load-path))
+  (canonicalize-path
+   (find (lambda (path)
+           (file-exists? (string-append path "/rde/packages.scm")))
+         %load-path)))
 
 (define %rde-patch-path
   (list (string-append %channel-root "/rde/packages/patches")))

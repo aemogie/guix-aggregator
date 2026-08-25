@@ -2,7 +2,7 @@
   #:use-module (gnu home services)
   #:use-module (rde home services wm)
   #:use-module (gnu home-services-utils)
-  #:use-module (gnu packages wm)
+  #:use-module (gnu packages window-management)
   #:use-module (gnu services configuration)
 
   #:use-module (guix packages)

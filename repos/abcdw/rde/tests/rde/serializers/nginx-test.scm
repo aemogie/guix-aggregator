@@ -1,165 +1,159 @@
-;;; rde --- Reproducible development environment.
-;;;
-;;; Copyright © 2023 Andrew Tropin <andrew@trop.in>
-;;;
-;;; This file is part of rde.
-;;;
-;;; rde is free software; you can redistribute it and/or modify it
-;;; under the terms of the GNU General Public License as published by
-;;; the Free Software Foundation; either version 3 of the License, or (at
-;;; your option) any later version.
-;;;
-;;; rde is distributed in the hope that it will be useful, but
-;;; WITHOUT ANY WARRANTY; without even the implied warranty of
-;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;;; GNU General Public License for more details.
-;;;
-;;; You should have received a copy of the GNU General Public License
-;;; along with rde.  If not, see <http://www.gnu.org/licenses/>.
+;;; SPDX-License-Identifier: GPL-3.0-or-later
+;;; SPDX-FileCopyrightText: 2023, 2026 Andrew Tropin <andrew@trop.in>
 
 (define-module (rde serializers nginx-test)
+  #:use-module (ares suitbl checks)
+  #:use-module (ares suitbl definitions)
   #:use-module (guix gexp)
   #:use-module (rde serializers nginx)
-  #:use-module (rde tests)
   #:use-module (rde api store)
   #:use-module (ice-9 match))
 
 (define (serialize-config config)
   (evaluate-gexp-local (nginx-serialize config)))
 
-(define-test nginx-terms
-  (test-group "nginx terms"
-    (test-equal "number"
-      "123"
-      (serialize-nginx-term 123))
-    (test-equal "string"
-      "\"string here\""
-      (serialize-nginx-term "string here"))
-    (test-equal "symbol"
-      "symbol-here"
-      (serialize-nginx-term 'symbol-here))
-    (test-assert "gexp"
-      (gexp?
-       (serialize-nginx-term #~"gexp")))
-    (test-assert "file-like"
-      (file-like?
-       (serialize-nginx-term (plain-file "name" "content"))))
+
+;;; Tests
 
-    (test-error "true" #t (serialize-nginx-term #t))
-    (test-error "false" #t (serialize-nginx-term #f))
-    (test-error "list" #t (serialize-nginx-term '(a b c)))
-    (test-error "vector" #t (serialize-nginx-term #(a b c)))))
+(define-suite (nginx-terms-tests)
+  (test "number" ()
+    (is (equal? "123" (serialize-nginx-term 123))))
 
-(define-test nginx-vectors
-  (test-group "nginx vectors (conditions)"
-    (test-assert "vector with a few terms"
-      (match (serialize-nginx-vector
-              `#(symbol "string" 123 ,#~(format #f "gexp")))
-        (("(" "symbol" " " "\"string\"" " " "123" " " (? gexp? _) ")") #t)
-        (_ #f)))
+  (test "string" ()
+    (is (equal? "\"string here\""
+                (serialize-nginx-term "string here"))))
 
-    (test-error "nested list" #t (serialize-nginx-vector #(())))
-    (test-error "nested vector" #t (serialize-nginx-vector #(#())))))
+  (test "symbol" ()
+    (is (equal? "symbol-here"
+                (serialize-nginx-term 'symbol-here))))
+
+  (test "gexp" ()
+    (is (gexp? (serialize-nginx-term #~"gexp"))))
+
+  (test "file-like" ()
+    (is (file-like?
+         (serialize-nginx-term (plain-file "name" "content")))))
+
+  (test "true" ()
+    (is (throws-exception? (serialize-nginx-term #t))))
+
+  (test "false" ()
+    (is (throws-exception? (serialize-nginx-term #f))))
+
+  (test "list" ()
+    (is (throws-exception? (serialize-nginx-term '(a b c)))))
+
+  (test "vector" ()
+    (is (throws-exception? (serialize-nginx-term #(a b c))))))
+
+(define-suite (nginx-vectors-tests)
+  (test "vector with a few terms" ()
+    (is (match (serialize-nginx-vector
+                `#(symbol "string" 123 ,#~(format #f "gexp")))
+          (("(" "symbol" " " "\"string\"" " " "123" " " (? gexp? _) ")") #t)
+          (_ #f))))
+
+  (test "nested list" ()
+    (is (throws-exception? (serialize-nginx-vector #(())))))
+
+  (test "nested vector" ()
+    (is (throws-exception? (serialize-nginx-vector #(#()))))))
 
 
-(define-test nginx-contexts
-  (test-group "nginx contexts"
-    (test-assert "simple nested config"
-      (match (serialize-nginx-context
-              `((a b ((c d)))))
-        (("" "a" " " "b" " {\n"
-          "  " "c" " " "d" ";" "\n"
-          "" "}\n") #t)
-        (_ #f)))
+(define-suite (nginx-contexts-tests)
+  (test "simple nested config" ()
+    (is (match (serialize-nginx-context
+                `((a b ((c d)))))
+          (("" "a" " " "b" " {\n"
+            "  " "c" " " "d" ";" "\n"
+            "" "}\n") #t)
+          (_ #f))))
 
-    (test-assert "empty subcontext"
-      (match (serialize-nginx-context
-              `((a b ())))
-        (("" "a" " " "b" " {\n"
-          "" "}\n") #t)
-        (_ #f)))
+  (test "empty subcontext" ()
+    (is (match (serialize-nginx-context
+                `((a b ())))
+          (("" "a" " " "b" " {\n"
+            "" "}\n") #t)
+          (_ #f))))
 
-    (test-assert "double nested config"
-      (match (serialize-nginx-context
-              `((a ((b ((c d)))))))
-        (("" "a" " {\n"
-          "  " "b" " {\n"
-          "    " "c" " " "d" ";" "\n"
-          "  " "}\n"
-          "" "}\n") #t)
-        (_ #f)))
+  (test "double nested config" ()
+    (is (match (serialize-nginx-context
+                `((a ((b ((c d)))))))
+          (("" "a" " {\n"
+            "  " "b" " {\n"
+            "    " "c" " " "d" ";" "\n"
+            "  " "}\n"
+            "" "}\n") #t)
+          (_ #f))))
 
-    (test-assert "double nested config with vector"
-      (match (serialize-nginx-context
-              `((a ((b #() ((c)))))))
-        (("" "a" " {\n"
-          "  " "b" " " "(" ")" " {\n"
-          "    " "c" ";" "\n"
-          "  " "}\n"
-          "" "}\n") #t)
-        (_ #f)))))
+  (test "double nested config with vector" ()
+    (is (match (serialize-nginx-context
+                `((a ((b #() ((c)))))))
+          (("" "a" " {\n"
+            "  " "b" " " "(" ")" " {\n"
+            "    " "c" ";" "\n"
+            "  " "}\n"
+            "" "}\n") #t)
+          (_ #f)))))
 
-(define-test basic-config
-  (test-group "basic config"
-    (test-equal "key-value pairs"
-      "\
+(define-suite (basic-config-tests)
+  (test "key-value pairs" ()
+    (is (equal? "\
 a b;
 c d;
 "
-      (serialize-config '((a b)
-                          (c d))))
+                (serialize-config '((a b)
+                                    (c d))))))
 
-    (test-equal "nested context"
-      "\
+  (test "nested context" ()
+    (is (equal? "\
 a b {
   c d;
 }
 "
-      (serialize-config '((a b ((c d))))))
+                (serialize-config '((a b ((c d))))))))
 
-    (test-equal "simple if statement"
-      "\
+  (test "simple if statement" ()
+    (is (equal? "\
 if (a ~ b) {
   c d;
 }
 "
-      (serialize-config '((if #(a ~ b) ((c d))))))))
+                (serialize-config '((if #(a ~ b) ((c d)))))))))
 
-(define-test gexps
-  (test-group "gexps"
-    (test-equal "simple gexps"
-      "\
+(define-suite (gexps-tests)
+  (test "simple gexps" ()
+    (is (equal? "\
 a hehe;
 "
-      (serialize-config
-       `((a ,#~(format #f "hehe")))))
+                (serialize-config
+                 `((a ,#~(format #f "hehe")))))))
 
-    (test-equal "simple identation of gexps"
-      "\
+  (test "simple identation of gexps" ()
+    (is (equal? "\
 a {
 # gexp
 }
 "
-      (serialize-config
-       `((a (,#~"# gexp")))))
+                (serialize-config
+                 `((a (,#~"# gexp")))))))
 
-    (test-equal "advanced identation of gexps"
-      "\
+  (test "advanced identation of gexps" ()
+    (is (equal? "\
 a {
   a gexp-generated value;
 # unindented
   # indented again;
 }
 "
-      (serialize-config
-       `((a ((a ,#~"gexp-generated" value)
-             ,#~"# unindented"
-             (,#~"# indented again"))))))))
+                (serialize-config
+                 `((a ((a ,#~"gexp-generated" value)
+                       ,#~"# unindented"
+                       (,#~"# indented again")))))))))
 
-(define-test example-config
-  (test-group "example config"
-    (test-equal "location with nested if and empty body"
-      "\
+(define-suite (example-config-tests)
+  (test "location with nested if and empty body" ()
+    (is (equal? "\
 location ~* ^/if-and-alias/(?<file>.*) {
   alias /tmp/$file;
   set $true 1;
@@ -168,16 +162,16 @@ location ~* ^/if-and-alias/(?<file>.*) {
   }
 }
 "
-      (serialize-config
-       `((location ~*
-                   #{^/if-and-alias/(?<file>.*)}# ; guile symbol read syntax
-                   ;; ,#~"^/if-and-alias/(?<file>.*)"
-                   ((alias /tmp/$file)
-                    (set $true 1)
-                    (if #($true) ((,#~"# nothing"))))))))
+                (serialize-config
+                 `((location ~*
+                             #{^/if-and-alias/(?<file>.*)}# ; guile symbol read syntax
+                             ;; ,#~"^/if-and-alias/(?<file>.*)"
+                             ((alias /tmp/$file)
+                              (set $true 1)
+                              (if #($true) ((,#~"# nothing"))))))))))
 
-    (test-equal "location with nested if 2"
-      "\
+  (test "location with nested if 2" ()
+    (is (equal? "\
 location / {
   error_page 418 = @other;
   recursive_error_pages on;
@@ -186,114 +180,112 @@ location / {
   }
 }
 "
-      (serialize-config
-       '((location / ((error_page 418 = @other)
-                      (recursive_error_pages on)
-                      (if #($something)
-                          ((return 418))))))))))
+                (serialize-config
+                 '((location / ((error_page 418 = @other)
+                                (recursive_error_pages on)
+                                (if #($something)
+                                    ((return 418)))))))))))
 
-(define-test nginx-config-merge
-  (test-group "nginx config merge"
+(define-suite (nginx-config-merge-tests)
+  (define gexp-l #~"l")
+  (define gexp-m #~"m")
 
-    (define gexp-l #~"l")
-    (define gexp-m #~"m")
-    (test-equal "simple merge"
-      `((a ((b c)))
-        (j k)
-        ,gexp-l
-        (,gexp-m)
-        (d ((e f)))
-        (g ((h i))))
-      (nginx-merge `((a ((b c)))
-                     (j k)
-                     ,gexp-l
-                     (,gexp-m))
-                   '((d ((e f))))
-                   '((g ((h i))))))
+  (test "simple merge" ()
+    (is (equal? `((a ((b c)))
+                  (j k)
+                  ,gexp-l
+                  (,gexp-m)
+                  (d ((e f)))
+                  (g ((h i))))
+                (nginx-merge `((a ((b c)))
+                               (j k)
+                               ,gexp-l
+                               (,gexp-m))
+                             '((d ((e f))))
+                             '((g ((h i))))))))
 
-    (test-equal "empty context merge"
-      '((a b ((e f))))
-      (nginx-merge '((a b ()))
-                   '((a b ((e f))))))
+  (test "empty context merge" ()
+    (is (equal? '((a b ((e f))))
+                (nginx-merge '((a b ()))
+                             '((a b ((e f))))))))
 
-    (test-equal "advanced merge"
-      '((a b ((b c)
-              (e f)
-              (h i))))
-      (nginx-merge '((a b ((b c))))
-                   '((a b ((e f))))
-                   '((a b ((h i))))))
+  (test "advanced merge" ()
+    (is (equal? '((a b ((b c)
+                        (e f)
+                        (h i))))
+                (nginx-merge '((a b ((b c))))
+                             '((a b ((e f))))
+                             '((a b ((h i))))))))
 
-    ;; It will require some parametrization of merge function.
-    ;; For example providing a list of keys to override.
-    (test-expect-fail 1)
-    (test-equal "merge with override"
-      '((user c d)
-        (a ((b ((c f))))))
-      (nginx-merge '((user a b)
-                     (a ((b ((c d))))))
-                   '((user c d)
-                     (a ((b ((c f))))))))
+  ;; It will require some parametrization of merge function.
+  ;; For example providing a list of keys to override.
+  (test "merge with override" ()
+    'metadata '((expected-failure? . #t))
+    (is (equal? '((user c d)
+                  (a ((b ((c f))))))
+                (nginx-merge '((user a b)
+                               (a ((b ((c d))))))
+                             '((user c d)
+                               (a ((b ((c f))))))))))
 
-    ;; It will require some parametrization of merge function as well.  Maybe
-    ;; a list of nested keys to use for equal comparison or maybe some
-    ;; hardcoded merge logic.
+  ;; It will require some parametrization of merge function as well.  Maybe
+  ;; a list of nested keys to use for equal comparison or maybe some
+  ;; hardcoded merge logic.
 
-    ;; There is a potential problem with gexp-generated content, as it won't
-    ;; be equal to plain strings/symbols.
-    (test-expect-fail 1)
-    (test-equal "merge a few server blocks"
-      '((http ((server ((listen 80)
-                        (server_name a)
-                        (listen 443 ssl)))
-               (server ((listen 80)
-                        (server_name b))))))
-      (nginx-merge '((http ((server ((listen 80)
-                                     (server_name a))))))
-                   '((http ((server ((listen 443 ssl)
-                                     (server_name a))))))
-                   '((http ((server ((listen 80)
-                                     (server_name b))))))))
+  ;; There is a potential problem with gexp-generated content, as it won't
+  ;; be equal to plain strings/symbols.
+  (test "merge a few server blocks" ()
+    'metadata '((expected-failure? . #t))
+    (is (equal? '((http ((server ((listen 80)
+                                  (server_name a)
+                                  (listen 443 ssl)))
+                         (server ((listen 80)
+                                  (server_name b))))))
+                (nginx-merge '((http ((server ((listen 80)
+                                               (server_name a))))))
+                             '((http ((server ((listen 443 ssl)
+                                               (server_name a))))))
+                             '((http ((server ((listen 80)
+                                               (server_name b))))))))))
 
-    (test-equal "deep merge"
-      '((a ((b ((c d)
-                (e f)
-                (g h)))
-            (i j))))
-      (nginx-merge '((a ((b ((c d))))))
-                   '((a ((b ((e f))))))
-                   '((a ((b ((g h)))
-                         (i j))))))
+  (test "deep merge" ()
+    (is (equal? '((a ((b ((c d)
+                          (e f)
+                          (g h)))
+                      (i j))))
+                (nginx-merge '((a ((b ((c d))))))
+                             '((a ((b ((e f))))))
+                             '((a ((b ((g h)))
+                                   (i j))))))))
 
-    (test-equal "deep merge + gexps"
-      `((a ((b ((c d)
-                (,gexp-l) ;; Check that equality compared correctly
-                ,gexp-m
-                (g h)))
-            (i j))))
-      (nginx-merge '((a ((b ((c d))))))
-                   `((a ((b ((,gexp-l)
-                             ,gexp-m)))))
-                   '((a ((b ((g h)))
-                         (i j))))))))
+  (test "deep merge + gexps" ()
+    (is (equal? `((a ((b ((c d)
+                          (,gexp-l) ;; Check that equality compared correctly
+                          ,gexp-m
+                          (g h)))
+                      (i j))))
+                (nginx-merge '((a ((b ((c d))))))
+                             `((a ((b ((,gexp-l)
+                                       ,gexp-m)))))
+                             '((a ((b ((g h)))
+                                   (i j)))))))))
 
-(define-test nginx-config-predicate
-  (test-group "nginx config predicate"
-    (test-assert "valid: simple case"
-      (nginx-config? `((if #(ho) ((b c)))
-                       ,#~"# heh")))
+(define-suite (nginx-config-predicate-tests)
+  (test "valid: simple case" ()
+    (is (nginx-config? `((if #(ho) ((b c)))
+                         ,#~"# heh"))))
 
-    ;; Current implementation doesn't traverse the data structure and doesn't
-    ;; check elements of nginx expression.
-    (test-expect-fail 1)
-    (test-assert "not valid: two subcontexts"
-      (not (nginx-config? '((a ((e f)) ((b c)))))))
+  ;; Current implementation doesn't traverse the data structure and doesn't
+  ;; check elements of nginx expression.
+  (test "not valid: two subcontexts" ()
+    'metadata '((expected-failure? . #t))
+    (is (not (nginx-config? '((a ((e f)) ((b c))))))))
 
-    ;; Current implementation doesn't traverse the data structure and checks
-    ;; only the top level context.
-    (test-expect-fail 1)
-    (test-assert "not valid: incorrect subcontext"
-      (not (nginx-config? '((a (c))))))))
+  ;; Current implementation doesn't traverse the data structure and checks
+  ;; only the top level context.
+  (test "not valid: incorrect subcontext" ()
+    'metadata '((expected-failure? . #t))
+    (is (not (nginx-config? '((a (c))))))))
 
 ;; if ($http_user_agent ~ MSIE) {
 ;;     rewrite ^(.*)$ /msie/$1 break;

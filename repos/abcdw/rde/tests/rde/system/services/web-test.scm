@@ -1,23 +1,8 @@
-;;; rde --- Reproducible development environment.
-;;;
-;;; Copyright © 2023 Andrew Tropin <andrew@trop.in>
-;;;
-;;; This file is part of rde.
-;;;
-;;; rde is free software; you can redistribute it and/or modify it
-;;; under the terms of the GNU General Public License as published by
-;;; the Free Software Foundation; either version 3 of the License, or (at
-;;; your option) any later version.
-;;;
-;;; rde is distributed in the hope that it will be useful, but
-;;; WITHOUT ANY WARRANTY; without even the implied warranty of
-;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;;; GNU General Public License for more details.
-;;;
-;;; You should have received a copy of the GNU General Public License
-;;; along with rde.  If not, see <http://www.gnu.org/licenses/>.
+;;; SPDX-License-Identifier: GPL-3.0-or-later
+;;; SPDX-FileCopyrightText: 2023, 2026 Andrew Tropin <andrew@trop.in>
 
 (define-module (rde system services web-test)
+  #:use-module (ares suitbl definitions)
   #:use-module (guix gexp)
   #:use-module (gnu services)
   #:use-module (gnu services shepherd)
@@ -26,9 +11,11 @@
   #:use-module (gnu packages web)
   #:use-module (rde serializers nginx)
   #:use-module (rde system services web)
-  #:use-module (rde tests)
   #:use-module (rde api store)
   #:use-module (srfi srfi-1)
+  #:use-module ((ice-9 exceptions)
+                #:select (make-assertion-failure
+                          make-exception-with-message))
   #:use-module (ice-9 match)
   #:use-module (ice-9 regex))
 
@@ -72,7 +59,7 @@
       (take-right lines (- (length lines) n 1)))
      "\n")))
 
-(define-test nginx-basic-config
+(define-suite (nginx-basic-config-tests)
   (define services
     (list
      (service
@@ -149,8 +136,7 @@ rtmp {
 }
 ")
 
-  (test-group "nginx basic service config"
-    ;; Should start failing once configuration check implemented
-    (test-equal "service, simple-service http+rtmp contexts"
-      (drop-nth-line pattern 3)
-      (drop-nth-line (services->config-string services) 3))))
+  ;; Should start failing once configuration check implemented.
+  (test "service, simple-service http+rtmp contexts" ()
+    (is (equal? (drop-nth-line pattern 3)
+                (drop-nth-line (services->config-string services) 3)))))

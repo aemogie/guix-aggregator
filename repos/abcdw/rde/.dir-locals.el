@@ -11,6 +11,11 @@
 
    (eval . (put 'eval-when 'scheme-indent-function 1))
    (eval . (put 'call-with-prompt 'scheme-indent-function 1))
+
+   ;; ares-suitbl
+   (eval . (put 'suite 'scheme-indent-function 1))
+   (eval . (put 'test 'scheme-indent-function 2))
+
    (eval . (put 'test-assert 'scheme-indent-function 1))
    (eval . (put 'test-assertm 'scheme-indent-function 1))
    (eval . (put 'test-equalm 'scheme-indent-function 1))

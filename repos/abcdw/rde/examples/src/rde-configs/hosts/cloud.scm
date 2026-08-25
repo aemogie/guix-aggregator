@@ -52,7 +52,7 @@
    #:feature-name-prefix 'cloud-extra
    #:system-services
    (list
-    (service dhcp-client-service-type)
+    (service dhcpcd-service-type)
     (service cloud-init-service-type)
     (service openssh-service-type
              (openssh-configuration

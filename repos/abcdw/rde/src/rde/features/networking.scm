@@ -25,7 +25,11 @@
   #:use-module (gnu home services)
   #:use-module (gnu home services shepherd)
   #:use-module (rde home services i2p)
-  #:use-module (gnu services networking)
+  #:use-module ((gnu services networking)
+                #:hide (iwd-configuration
+                         iwd-service-type
+                         yggdrasil-configuration
+                         yggdrasil-service-type))
   #:use-module (gnu system nss)
   #:use-module (rde system services networking)
   #:use-module (rde system services accounts)

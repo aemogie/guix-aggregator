@@ -18,6 +18,7 @@
 ;;; along with rde.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (rde transitive elixir)
+  #:use-module (rde lib file)
   #:use-module (guix gexp)
   #:use-module (guix build-system copy)
   #:use-module (guix build-system rebar)
@@ -38,7 +39,9 @@
     (name "mixlocktosexp")
     (version "0.1.0")
     (source
-     (local-file (%search-load-path "rde/transitive/elixir/mixlocktosexp.ex")))
+     (local-file
+      (find-file-in-load-path/canonical
+       "rde/transitive/elixir/mixlocktosexp.ex")))
     (arguments (list
                 #:patch-shebangs? #t
                 #:install-plan #~`(("mixlocktosexp.ex" "bin/mixlocktosexp"))
@@ -55,7 +58,7 @@
 
 (define (mixlocktosexp-binary)
   (string-append
-   (car ((@ (rde api store) build-with-store) mixlocktosexp-package))
+   (car ((@ (rde api store) build) mixlocktosexp-package))
    "/bin/mixlocktosexp"))
 
 (define (mixlocktosexp file)

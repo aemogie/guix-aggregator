@@ -1,21 +1,6 @@
-;;; rde --- Reproducible development environment.
-;;;
-;;; Copyright © 2023 Miguel Ángel Moreno <mail@migalmoreno.com>
-;;;
-;;; This file is part of rde.
-;;;
-;;; rde is free software; you can redistribute it and/or modify it
-;;; under the terms of the GNU General Public License as published by
-;;; the Free Software Foundation; either version 3 of the License, or (at
-;;; your option) any later version.
-;;;
-;;; rde is distributed in the hope that it will be useful, but
-;;; WITHOUT ANY WARRANTY; without even the implied warranty of
-;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;;; GNU General Public License for more details.
-;;;
-;;; You should have received a copy of the GNU General Public License
-;;; along with rde.  If not, see <http://www.gnu.org/licenses/>.
+;;; SPDX-License-Identifier: GPL-3.0-or-later
+;;; SPDX-FileCopyrightText: 2023 Miguel Ángel Moreno <mail@migalmoreno.com>
+;;; SPDX-FileCopyrightText: 2026 Andrew Tropin <andrew@trop.in>
 
 (define-module (rde serializers yaml)
   #:use-module (rde serializers utils)
@@ -24,6 +9,12 @@
   #:use-module (guix diagnostics)
   #:use-module (guix gexp)
   #:use-module (guix ui)
+  #:use-module ((ice-9 exceptions)
+                #:select (&exception
+                          define-exception-type
+                          make-exception
+                          make-exception-with-message
+                          raise-exception))
   #:use-module (ice-9 match)
   #:use-module (ice-9 format)
   #:use-module (srfi srfi-1)
@@ -34,7 +25,29 @@
 
             serialize-yaml-term
             serialize-yaml-element
-            serialize-yaml-config))
+            serialize-yaml-config
+
+            yaml-invalid-key-exception?
+            yaml-invalid-key-exception-key))
+
+
+;;; Exceptions
+
+(define-exception-type
+  &yaml-invalid-key-exception &exception
+  %make-yaml-invalid-key-exception yaml-invalid-key-exception?
+  (key yaml-invalid-key-exception-key))
+
+(define (make-yaml-invalid-key-exception key)
+  (make-exception
+   (%make-yaml-invalid-key-exception key)
+   (make-exception-with-message
+    (format #f
+            (G_ "\
+YAML key should be symbol or string. Provided key is:\n ~a")
+            key))))
+
+
 
 (define yaml-config? list?)
 
@@ -68,10 +81,8 @@ is:\n ~a") v)))))
    (cond
     ((symbol? k) (serialize-yaml-symbol k))
     ((string? k) (serialize-yaml-string k))
-    (else (raise (formatted-message
-                  (G_ "\
-YAML key should be symbol or string. Provided key is:\n ~a")
-                  k))))))
+    (else
+     (raise-exception (make-yaml-invalid-key-exception k))))))
 
 (define (serialize-yaml-newline pretty?)
   (if pretty? (list "\n") '()))

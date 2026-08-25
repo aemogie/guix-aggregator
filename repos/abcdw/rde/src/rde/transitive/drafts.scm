@@ -27,7 +27,7 @@
 
 (define (get-nix32-hash-binary)
   (car
-   ((@ (rde api store) build-with-store)
+   ((@ (rde api store) build)
     (program-file
      "get-hash"
      (with-extensions (list guile-json-4 guile-gcrypt)

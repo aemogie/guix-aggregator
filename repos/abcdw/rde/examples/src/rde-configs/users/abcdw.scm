@@ -5,6 +5,7 @@
   #:use-module (gnu home services)
   #:use-module (gnu home-services ssh)
   #:use-module (gnu packages)
+  #:use-module (gnu packages curl)
   #:use-module (gnu packages emacs-xyz)
   #:use-module (gnu packages guile-xyz)
   #:use-module (gnu services)
@@ -203,7 +204,8 @@
      ;; "glib:bin"
 
      ;; "ffmpeg"
-     "ripgrep" "curl"))))
+     "ripgrep")
+    (list curl))))
 
 (define (wallpaper url hash)
   (origin

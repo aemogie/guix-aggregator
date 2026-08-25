@@ -44,7 +44,7 @@
   #:use-module (gnu packages rust-apps)
   #:use-module (gnu packages terminals)
   #:use-module (gnu packages web)
-  #:use-module (gnu packages wm)
+  #:use-module (gnu packages window-management)
   #:use-module (gnu packages xdisorg)
   #:use-module (gnu services)
   #:use-module (gnu services shepherd)

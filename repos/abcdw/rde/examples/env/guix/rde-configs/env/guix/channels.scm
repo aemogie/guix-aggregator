@@ -16,7 +16,7 @@
     (url "https://git.sr.ht/~abcdw/rde")
     (branch "master")
     (commit
-     "aebce75a97570b3877e1fa3a6582510f46053b45")
+     "91163744b7bf75f7b3cc9b3b65de499597177994")
     (introduction
      (make-channel-introduction
       "257cebd587b66e4d865b3537a9a88cccd7107c95"

@@ -15,7 +15,6 @@ EXAMPLES_LOAD_PATH=-L ${EXAMPLES_SRC_DIR}
 DEV_SRC_LOAD_PATH=${RDE_SRC_LOAD_PATH} \
 ${EXAMPLES_LOAD_PATH} \
 -L ./tests \
--L ./files/emacs/gider/src \
 
 QEMU_BASE_ARGS= \
 -m 8192 -smp 1 -enable-kvm \
@@ -30,9 +29,10 @@ all: ares
 	@echo default target
 
 check:
-	${GUIX} shell guile -- \
-	guile -L ./src -L ./tests -L ./files/emacs/gider/src -c \
-	'((@ (rde test-runners) run-project-tests-cli))'
+	${GUIX} shell guile guile-ares-rs -- \
+	ares-suitbl \
+	-s '(@ (rde suitbl schedulers) exclude-expected-failures)' -- \
+	-L ./src -L ./tests
 
 guix-pull:
 	make -C examples guix-pull

@@ -41,7 +41,7 @@
   #:use-module (gnu home services admin)
   #:use-module (gnu home services shepherd)
 
-  #:use-module (gnu packages avahi)
+  #:use-module (gnu packages dns)
   #:use-module (gnu packages nss)
   #:use-module (gnu packages fonts)
   #:use-module (gnu packages glib)

@@ -140,7 +140,7 @@ Most of the targets uses @code{$@{GUIX@}}, which points to the
 @command{guix} binary, it helps to make sure builds are reproducible,
 but you need to create this binary by calling @code{make
 target/profiles/guix}, it will generate a guix binary based on the
-content of @file{env/rde-configs/env/channels.scm}.  After that feel
+content of @file{env/guix/rde-configs/env/guix/channels.scm}.  After that feel
 free to experiment with other targets.
 
 On foreign system you are mostly interested in @code{*/home/*} targets,

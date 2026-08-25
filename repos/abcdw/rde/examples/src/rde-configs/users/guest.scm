@@ -1,6 +1,7 @@
 (define-module (rde-configs users guest)
   #:use-module (gnu home services shepherd)
   #:use-module (gnu home services)
+  #:use-module (gnu packages curl)
   #:use-module (gnu services)
   #:use-module (guix gexp)
   #:use-module (rde features base)
@@ -58,7 +59,8 @@
 
      "binutils" ;; needed for emacs native-comp stuff
 
-     "ripgrep" "curl"))))
+     "ripgrep")
+    (list curl))))
 
 (define example-configs-service
   (simple-service

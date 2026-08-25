@@ -18,7 +18,7 @@
 ;;; along with rde.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (rde packages wm)
-  #:use-module (gnu packages wm)
+  #:use-module (gnu packages window-management)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages web)
   #:use-module (gnu packages pkg-config)

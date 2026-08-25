@@ -1,7 +1,7 @@
 CHANNELS_FILE=./env/guix/rde-configs/env/guix/channels.scm
 CHANNELS_FILE_LOCAL_RDE=./env/guix/rde-configs/env/guix/channels-ci.scm
 CHANNELS_FILE_LATEST_GUIX=./env/guix/rde-configs/env/guix/channels-ci-latest-guix.scm
-GUIXTM=GUILE_LOAD_PATH="../src:../tests:./src" guix time-machine -L ./env/guix -C ${CHANNELS_FILE}
+GUIXTM=GUILE_LOAD_PATH="../src:../tests:./src" guix time-machine --unsafe-channel-evaluation -L ./env/guix -C ${CHANNELS_FILE}
 GUIXTM_LOCAL_RDE=guix time-machine --unsafe-channel-evaluation -L ./env/guix -C ${CHANNELS_FILE_LOCAL_RDE}
 GUIXTM_LATEST_GUIX=guix time-machine --unsafe-channel-evaluation -L ./env/guix -C ${CHANNELS_FILE_LATEST_GUIX}
 
@@ -39,7 +39,7 @@ env/sync: env/guix/rde/env/guix/channels.scm
 guix: env/sync
 
 guix-pull:
-	guix pull -L ./env/guix -C ${CHANNELS_FILE}
+	guix pull -L ./env/guix --unsafe-channel-evaluation -C ${CHANNELS_FILE}
 
 ixy/home/build: guix
 	RDE_TARGET=ixy-home ${GUIX} home \

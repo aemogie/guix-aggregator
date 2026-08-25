@@ -22,7 +22,7 @@
 (define-module (contrib packages node)
   #:use-module (rde packages)
   #:use-module (gnu packages)
-  #:use-module (gnu packages adns)
+  #:use-module (gnu packages dns)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages compression)

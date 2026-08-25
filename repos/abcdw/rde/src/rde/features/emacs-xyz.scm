@@ -3877,7 +3877,7 @@ client."
 
 (define* (feature-emacs-nov-el
           #:key
-          (emacs-nov-el emacs-nov-el))
+          (emacs-nov-el emacs-nov))
   "Configure nov.el for GNU Emacs."
   (define emacs-f-name 'nov-el)
   (define f-name (symbol-append 'emacs- emacs-f-name))

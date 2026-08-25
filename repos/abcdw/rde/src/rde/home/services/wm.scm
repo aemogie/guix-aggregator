@@ -20,7 +20,7 @@
 (define-module (rde home services wm)
   #:use-module (gnu home services)
   #:use-module (gnu home services shepherd)
-  #:use-module (gnu packages wm)
+  #:use-module (gnu packages window-management)
   #:use-module (gnu services configuration)
   #:use-module (rde serializers json)
   #:use-module (rde serializers css)
