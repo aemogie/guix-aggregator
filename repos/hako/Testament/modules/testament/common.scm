@@ -99,24 +99,11 @@
   (list (plain-file "dorphine.pub"
           "(public-key (ecc (curve Ed25519)
 (q #A279175682D0DAE3E11268E67E1F3FA47C38D7E509F7725567CF891E248E719F#)))")
-        (plain-file "nuporta.pub"
-          "(public-key (ecc (curve Ed25519)
-(q #552F670D5005D7EB6ACF05284A1066E52156B51D75DE3EBD3030CD046675D543#)))")
         (plain-file "ignamma.pub"
           "(public-key (ecc (curve Ed25519)
 (q #6FEEB15C4363F9975EB15C908EC911A4362E486DA642431FA2438C0B1C3D55F5#)))")
-        (plain-file "workers-hako.pub"
-          "(public-key (ecc (curve Ed25519)
-(q #7927EA1162184C1FAA62D20C111121A4604F00956E69F0FEB89EEE1721647897#)))")
-        (plain-file "workers-poesty.pub"
-          "(public-key (ecc (curve Ed25519)
-(q #8C4662FA0BC955B33261EEA5AA15F33081A7BEC991E5F990F7382F0988459B37#)))")
-        ;; Guix Moe
-        (plain-file "guix-moe.pub"
-          "(public-key (ecc (curve Ed25519)
-(q #552F670D5005D7EB6ACF05284A1066E52156B51D75DE3EBD3030CD046675D543#)))")
-        ;; Nonguix
-        (plain-file "nonguix.pub"
+        ;; Nonguix head node.
+        (plain-file "nuporta.pub"
           "(public-key (ecc (curve Ed25519)
 (q #C1FD53E5D4CE971933EC50C9F307AE2171A2D3B52C804642A7A35F84F3A4EA98#)))")))
 
@@ -125,13 +112,13 @@
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMLWIp8y5/JGBaw+yFA5MFB5nlFpEx/tjc0q0Ij9KjTu\n"))
 (define %ssh-key-hako
   (plain-file "hako.pub"
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2\n"))
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcTj1N3cL/bh2Uvwh5/YubhZplPFnvGk/iVHQs3FWV2 openpgp:0x77671915\n"))
 (define %ssh-key-jonathan
   (plain-file "jonathan.pub"
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHgzHvP3BRTIZ960LVglrK8w/C0+6Z5VM8/Q5Uwa0o+Z"))
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHgzHvP3BRTIZ960LVglrK8w/C0+6Z5VM8/Q5Uwa0o+Z jonathan@3700X\n"))
 (define %ssh-key-podiki
   (plain-file "podiki.pub"
-    "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDaSmW/3uq5L6ZP6gWmRw5RiTTg0es1PrbAo/x4vkPzwIKTrMFOCBCmcuH3vOCkEZJtNy3OpXbt/a3tDW+cc6dkeq2H4WpogQvyMTXreFS2phMgDTEXW2gGZIP6fA33CHERmhd9A/m0A+NH5KGAmLDQNK8QgPgIjZuseJYtYHNCnN2TCsWQYnbZtVQF5CS6iBUILpVp6p7QlSUokiCGaPjZfrjSFCm1hUPjJYSkv0NTq8TzyDfU2quqP7TBCj4WBi9HoW9+a8tN2TQ/+GYbGqlFljeNdz3vzItcHjidHOQL/42mpvzgZx7o7dtrqX9stp+mI3oBREYSD0bMyvND/dEBRWIbpFvbyYx/leMKq9yUcFNyI2lztk17ObaQkDLxlq4ClytgEtdbP6X0gua29FYK/YlAi13NptK6uy2xB2gsEIt5P4N3u+gZCNA0U3IVd7iMRSpg6PWiL1JguvhYSD5vGOnOjiXVlBCKn+ErTO9Ey/BZqwVBZMeDwynFnU1mYnkxtA+G54VI77gj24FrHw/ClOdJOdBUGAso9P3sFjdykkAJyKd4jiFzpDTOOJNs8qKhmFFzJBnJjn7nzwjElwOCZXdDKTrKqF/51WEqpNr8Za2QjRirV4m7n6FnyyD38b24InAVa+yze3qDI9yk2vjPdtFGCeLODSEjfV3U1z1hiw=="))
+    "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDaSmW/3uq5L6ZP6gWmRw5RiTTg0es1PrbAo/x4vkPzwIKTrMFOCBCmcuH3vOCkEZJtNy3OpXbt/a3tDW+cc6dkeq2H4WpogQvyMTXreFS2phMgDTEXW2gGZIP6fA33CHERmhd9A/m0A+NH5KGAmLDQNK8QgPgIjZuseJYtYHNCnN2TCsWQYnbZtVQF5CS6iBUILpVp6p7QlSUokiCGaPjZfrjSFCm1hUPjJYSkv0NTq8TzyDfU2quqP7TBCj4WBi9HoW9+a8tN2TQ/+GYbGqlFljeNdz3vzItcHjidHOQL/42mpvzgZx7o7dtrqX9stp+mI3oBREYSD0bMyvND/dEBRWIbpFvbyYx/leMKq9yUcFNyI2lztk17ObaQkDLxlq4ClytgEtdbP6X0gua29FYK/YlAi13NptK6uy2xB2gsEIt5P4N3u+gZCNA0U3IVd7iMRSpg6PWiL1JguvhYSD5vGOnOjiXVlBCKn+ErTO9Ey/BZqwVBZMeDwynFnU1mYnkxtA+G54VI77gj24FrHw/ClOdJOdBUGAso9P3sFjdykkAJyKd4jiFzpDTOOJNs8qKhmFFzJBnJjn7nzwjElwOCZXdDKTrKqF/51WEqpNr8Za2QjRirV4m7n6FnyyD38b24InAVa+yze3qDI9yk2vjPdtFGCeLODSEjfV3U1z1hiw== cardno:11 465 639\n"))
 
 
 ;;;
@@ -230,7 +217,7 @@
 ;;;
 
 (define (%kernel-config path)
-  (let* ((commit "959e95c6882daaf7299feb377ae83a879702f6d6")
+  (let* ((commit "49c98a1ee831a527193d9a8c3b56293c5fc6e7d7")
          (source
           (origin
             (method git-fetch)
@@ -239,7 +226,7 @@
                    (commit commit)))
             (file-name (string-append "kernel-config." (string-take commit 7)))
             (sha256
-             (base32 "0nbg64ab4drzig1i7ifya7yx0d93l5fzzqvsj53ykv22wrixwpaa")))))
+             (base32 "08an8armqdr7jj3addl53f44279l3n9g6s2x3qjqsiay5x7rkpb2")))))
     (file-append source path)))
 
 (define* (make-linux/dolly base version source #:key defconfig modconfig (configs ""))
@@ -286,9 +273,9 @@
       "\n"))))
 
 (define linux-desktop/dolly
-  (let ((cachyos-version "7.0.12-2"))
+  (let ((cachyos-version "7.2.0-1"))
     (make-linux/dolly
-     linux-7.0
+     linux-7.2
      cachyos-version
      (origin
        (method url-fetch)
@@ -296,8 +283,8 @@
              "https://github.com/CachyOS/linux/releases/download/cachyos-"
              cachyos-version "/cachyos-" cachyos-version ".tar.gz"))
        (sha256
-        (base32 "1whzwakpcgyvks07ac7lp7yf9vv5aa6h90cpg6jxx0kwaw9n5ibk"))
-       (patches (map %kernel-config '("/patches/bore-cachy-7.0.patch"))))
+        (base32 "03rrghrvxqba375vijvbrvvp0rsl2y03gddz4ksjy47yckw9xr60"))
+       (patches (map %kernel-config '("/patches/bore-cachy-7.2.patch"))))
      #:defconfig (%kernel-config "/defconfig_desktop")
      #:configs
      (string-join

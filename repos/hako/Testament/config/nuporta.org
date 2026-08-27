@@ -57,9 +57,7 @@
 | Lycoris/Cache/GuixMoe/Mirror     | /var/cache/guix-moe/mirror     | recordsize=8K                 |                       |
 | Lycoris/Cache/GuixMoe/Mirror/Nar | /var/cache/guix-moe/mirror/nar | compression=off,recordsize=1M |                       |
 | Lycoris/Cache/GuixMoe/Narinfo    | /var/cache/guix-moe/narinfo    | recordsize=8K                 |                       |
-| Lycoris/Cache/GuixPublish        | /var/cache/guix/publish        | recordsize=8K                 |                       |
-| Lycoris/Cache/GuixPublish/Nar    | /var/cache/guix/publish/nar    | compression=off,recordsize=1M |                       |
-| Lycoris/Cache/Nonguix            | /var/cache/nonguix             | compression=off               |                       |
+| Lycoris/Cache/GuixPublish        | /var/cache/guix/publish        | compression=off               |                       |
 |                                  |                                |                               |                       |
 | Lycoris/State/Forgejo            | /var/lib/forgejo               |                               |                       |
 | Lycoris/State/PostgreSQL         | /var/lib/postgresql            | recordsize=32K                | true                  |
@@ -149,7 +147,6 @@
 
   (service guix-publish-service-type
     (guix-publish-configuration
-      (guix guix/dolly)
       (port 49637)
       (compression '(("zstd" 19)))
       (cache "/var/cache/guix/publish")
@@ -330,8 +327,7 @@
 ** Continuous Integration
 *** cuirass
 #+begin_src caddyfile :noweb-ref caddy-site
-  ci.guix.moe {
-  	import cloudflare_dns
+  substitutes.nonguix.org, cuirass.nonguix.org, ci.guix.moe {
   	import block_bots
 
   	@guix_publish {
@@ -374,7 +370,7 @@
       (parameters
        (scheme-file "cuirass-parameters"
          #~(begin
-             (%cuirass-url "https://ci.guix.moe"))))
+             (%cuirass-url "https://cuirass.nonguix.org"))))
       (remote-server
        (cuirass-remote-server-configuration
          (trigger-url "http://localhost:49637")
@@ -396,10 +392,9 @@
       (systems '("x86_64-linux" "i686-linux"))
       (server "100.97.195.93:5555")       ;nuporta (Tailscale)
       (substitute-urls
-       '("https://ci.guix.moe"
+       '("https://substitutes.nonguix.org"
          "https://ci.guix.gnu.org"
-         "https://bordeaux.guix.gnu.org"
-         "https://substitutes.nonguix.org"))))
+         "https://bordeaux.guix.gnu.org"))))
 #+end_src
 
 *** cuirass specifications
@@ -579,7 +574,7 @@
 
 *** mirroring
 #+begin_src caddyfile :noweb-ref caddy-site
-  cache-test.guix.moe {
+  cache-cdn.guix.moe, cache-test.guix.moe {
   	import cloudflare_dns
   	import block_bots
 
@@ -601,27 +596,15 @@
   	}
   }
 
-  cache-cdn.guix.moe {
-  	import cloudflare_dns
-  	import block_bots
-
-  	handle /*.narinfo {
-  		root * /var/cache/guix-moe/narinfo-cdn
-  		file_server
-  	}
-
-  	respond "Visit guix [dot] moe for more information." 404 {
-  		close
-  	}
-  }
-
   cache-fi.guix.moe {
   	import cloudflare_dns
   	import block_bots
 
-  	handle /*.narinfo {
-  		root * /var/cache/guix-moe/narinfo
-  		file_server
+  	@publish_substitutes {
+  		path /*.narinfo || /nix-cache-info
+  	}
+  	handle @publish_substitutes {
+  		reverse_proxy localhost:13778
   	}
 
   	handle /nar/* {
@@ -655,7 +638,7 @@
                       return response;
                   } else {
                       // In case file syncing hasn't completed.
-                      url.hostname = "cache-test.guix.moe";
+                      url.hostname = "cache-cdn.guix.moe";
                       return fetch(url.toString(), request);
                   }
               } else {
@@ -708,7 +691,7 @@
             (stop #~(make-kill-destructor)))
 
           (shepherd-timer '(guix-moe-mirror-update-store-paths)
-            #~(calendar-event #:hours (iota 12 1 2) #:minutes '(30))
+            #~(calendar-event #:hours '(0) #:minutes '(30))
             #~("/run/privileged/bin/sudo" "-u" "guix-moe" "-g" "guix-moe"
                "/bin/sh" "--login" "-c"
                "pushd /var/cache/guix-moe/store-paths; sh update.sh; popd")
@@ -742,254 +725,6 @@ Maintenance: manually sync mirrored substitutes to remote storage.
        --s3-no-check-bucket \
        --size-only --fast-list
   sudo herd start guix-moe-mirror-remote-upload
-#+end_src
-
-TODO: Remove
-
-rsync://cache.guix.moe
-#+begin_src scheme :noweb-ref service
-  (service rsync-service-type
-    (rsync-configuration
-      (modules
-       (list #;(rsync-module
-               (name "substitutes")
-               (file-name "/var/cache/guix/publish"))
-             (rsync-module
-               (name "narinfo")
-               (file-name "/var/cache/guix-moe/narinfo"))
-             (rsync-module
-               (name "narinfo-cdn")
-               (file-name "/var/cache/guix-moe/narinfo-cdn"))))))
-#+end_src
-
-#+begin_src nftables :noweb-ref nftables-filter-input
-  tcp dport rsync accept
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (simple-service 'setup-mirror shepherd-root-service-type
-    (list (shepherd-timer '(setup-mirror)
-            #~(calendar-event #:minutes '(30))
-            #~("/run/current-system/profile/bin/guix" "repl" "--"
-               #$(local-file (testament-file "nuporta/setup-mirror.scm")))
-            #:requirement '(user-processes))))
-#+end_src
-
-#+begin_src scheme :tangle ../tangled/nuporta/setup-mirror.scm
-  (use-modules (ice-9 match)
-               (ice-9 textual-ports)
-               (srfi srfi-71)
-               (guix build syscalls)
-               (guix build utils)
-               (guix records)
-               (guix utils))
-
-  ;;;
-  ;;; Variables.
-  ;;;
-
-  (define %publish-cache "/var/cache/guix/publish")
-  (define %mirror-cache  "/var/cache/guix-moe")
-
-  (define %narinfo-list      (in-vicinity %mirror-cache "narinfo.txt"))
-  (define %narinfo-list-new  (string-append %narinfo-list ".new"))
-
-  (define %nars-list         (in-vicinity %mirror-cache "nars.txt"))
-  (define %nars-list-new     (string-append %nars-list ".new"))
-
-  (define %rclone-arguments
-    '("--config" "/etc/nuporta-configs/rclone"
-      "--size-only"
-      "--no-traverse"
-      "--s3-no-check-bucket"
-      "--s3-upload-concurrency=8"
-      "--s3-chunk-size=16M"))
-
-  ;;;
-  ;;; Helper procedures.
-  ;;;
-
-  (define ($ cmd)
-    (let* ((pid (spawn (car cmd) cmd))
-           (exit-val (cdr (waitpid pid))))
-      (or (zero? exit-val)
-          (error (format #f "Command ~s exited with non-zero exit status: ~s"
-                         (string-join cmd) exit-val)))))
-
-  (define (copy-file* old new)
-    "Like 'copy-file', but does not raise an error when FILE does not exist."
-    (catch 'system-error
-      (lambda ()
-        (copy-file old new))
-      (lambda args
-        (unless (= ENOENT (system-error-errno args))
-          (apply throw args)))))
-
-  (define (delete-file* file)
-    "Like 'delete-file', but does not raise an error when FILE does not exist."
-    (catch 'system-error
-      (lambda ()
-        (delete-file file))
-      (lambda args
-        (unless (= ENOENT (system-error-errno args))
-          (apply throw args)))))
-
-  (define (list-read file)
-    (if (file-exists? file)
-        (call-with-input-file file
-          (lambda (port)
-            (let loop ((line (get-line port))
-                       (result '()))
-              (if (eof-object? line)
-                  (reverse result)
-                  (loop (get-line port) (cons line result))))))
-        '()))
-
-  (define* (list-diff old new #:key file?)
-    (define (mktemp)
-      "Create temporary file and return its path."
-      (let* ((port (mkstemp "/tmp/guix-moe.XXXXXX"))
-             (file-name (port-filename port)))
-        (close-port port)
-        file-name))
-
-    (define (touch file)
-      "Create empty FILE if it doesn't exist."
-      (unless (file-exists? file)
-        (call-with-output-file file (const #t))))
-
-    (define %diff      (mktemp))
-    (define %to-copy   (mktemp))
-    (define %to-delete (mktemp))
-
-    (for-each touch (list old new))
-    (with-output-to-file %diff
-      (lambda ()
-        ($ `("/bin/sh" "-c"
-             ,(format #f "diff --unified ~a ~a | tail +4" old new)))))
-    (with-output-to-file %to-copy
-      (lambda ()
-        (false-if-exception
-         ($ `("/bin/sh" "-c"
-              ,(format #f "rg '^\\+' ~a --no-line-number --replace ''" %diff))))))
-    (with-output-to-file %to-delete
-      (lambda ()
-        (false-if-exception
-         ($ `("/bin/sh" "-c"
-              ,(format #f "rg '^-' ~a --no-line-number --replace ''" %diff))))))
-    (delete-file* %diff)
-    (let ((to-copy   (list-read %to-copy))
-          (to-delete (list-read %to-delete)))
-      (if file?
-          (values %to-copy
-                  %to-delete)
-          (begin
-            (for-each delete-file* (list %to-copy %to-delete))
-            (values to-copy
-                    to-delete)))))
-
-  (define (copy-narinfo/cdn old new)
-    (catch 'system-error
-      (lambda ()
-        (with-atomic-file-output new
-          (lambda (port)
-            (for-each
-             (match-lambda
-               ((field . value)
-                (format port "~a: ~a~%"
-                        field
-                        (if (string=? field "URL")
-                            (string-append "https://nars.guix.moe/" value)
-                            value))))
-             (call-with-input-file old recutils->alist))
-            ;; Make file world-readable.
-            (chmod port (logand #o644 (lognot (umask)))))))
-      (lambda args
-        (unless (= ENOENT (system-error-errno args))
-          (apply throw args)))))
-
-  ;;;
-  ;;; Syncing procedures.
-  ;;;
-
-  (define (narinfo-list publish-cache old new)
-    (format #t "Listing narinfo files...~%")
-    (with-output-to-file new
-      (lambda ()
-        (with-directory-excursion publish-cache
-          ($ `("/bin/sh" "-c" "fd --glob '*.narinfo' --type f | sort")))))
-    (list-diff old new))
-
-  (define (narinfo-copy publish-cache mirror-cache narinfo-to-copy)
-    (format #t "Copying new narinfo files...~%")
-    (with-directory-excursion mirror-cache
-      (for-each (lambda (narinfo)
-                  (copy-file*
-                   (in-vicinity publish-cache narinfo)
-                   (in-vicinity "narinfo" narinfo))
-                  (copy-narinfo/cdn
-                   (in-vicinity "narinfo" narinfo)
-                   (in-vicinity "narinfo-cdn" narinfo)))
-                narinfo-to-copy)))
-
-  (define (narinfo-delete mirror-cache narinfo-to-delete)
-    (format #t "Deleting expired narinfo files...~%")
-    (with-directory-excursion mirror-cache
-      (for-each (lambda (narinfo)
-                  (for-each delete-file*
-                            (list (in-vicinity "narinfo-cdn" narinfo)
-                                  (in-vicinity "narinfo" narinfo))))
-                narinfo-to-delete)))
-
-  (define (nars-list publish-cache old new)
-    (format #t "Listing NAR archives...~%")
-    (with-output-to-file new
-      (lambda ()
-        (with-directory-excursion (in-vicinity publish-cache "nar")
-          ($ `("/bin/sh" "-c" "fd --exclude '*.tmp' --type f | sort")))))
-    ;; File lists will be passed to rclone.
-    (list-diff old new #:file? #t))
-
-  (define (nars-copy publish-cache rclone-s3-bucket nars-to-copy)
-    (format #t "Copying new NAR archives...~%")
-    ($ `("rclone" "copy" "--files-from" ,nars-to-copy
-         ,(in-vicinity publish-cache "nar")
-         ,(in-vicinity rclone-s3-bucket "nar")
-         ,@%rclone-arguments)))
-
-  (define (nars-delete rclone-s3-bucket nars-to-delete)
-    (format #t "Deleting expired NAR archives...~%")
-    ($ `("rclone" "delete" "--files-from" ,nars-to-delete
-         ,(in-vicinity rclone-s3-bucket "nar")
-         ,@%rclone-arguments)))
-
-  ;;;
-  ;;; Entrypoint.
-  ;;;
-
-  (with-file-lock/no-wait "/var/lock/guix-moe-mirror.lock"
-    (lambda _
-      (error "found ongoing syncing process, exiting"))
-    (begin
-      (setenv "PATH" "/run/current-system/profile/bin")
-      (for-each mkdir-p
-                (list (in-vicinity %publish-cache "nar")
-                      (in-vicinity %mirror-cache  "narinfo")
-                      (in-vicinity %mirror-cache  "narinfo-cdn")))
-      ;; Operate in the following steps to avoid dangling narinfo files.
-      (let ((narinfo-to-copy
-             narinfo-to-delete
-             (narinfo-list %publish-cache %narinfo-list %narinfo-list-new))
-            (nars-to-copy
-             nars-to-delete
-             (nars-list %publish-cache %nars-list %nars-list-new)))
-        (nars-copy      %publish-cache "r2:substitutes-apac" nars-to-copy)
-        (narinfo-delete %mirror-cache narinfo-to-delete)
-        (narinfo-copy   %publish-cache %mirror-cache narinfo-to-copy)
-        (nars-delete    "r2:substitutes-apac" nars-to-delete)
-        (for-each delete-file* (list nars-to-copy nars-to-delete)))
-      (rename-file %nars-list-new    %nars-list)
-      (rename-file %narinfo-list-new %narinfo-list)))
 #+end_src
 
 ** Web Servers & Services
@@ -1074,6 +809,10 @@ See [[file:shared/caddy.org][shared/caddy.org]].
   	handle {
   		redir https://codeberg.org/hako/guix.moe
   	}
+  }
+
+  nonguix.org, www.nonguix.org {
+  	redir https://gitlab.com/nonguix/nonguix
   }
 
   <<caddy-site>>

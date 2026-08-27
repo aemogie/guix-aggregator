@@ -37,11 +37,9 @@
                    "gimp"
                    "imv"
                    "kdenlive"
-                   "libreoffice"
                    "obs-nvidia"
                    "picard"
                    "showmethekey"
-                   "telegram-desktop"
                    <<package-spec>>))
                 (list <<package-nix>>)
                 %testament-cli-packages
@@ -296,7 +294,8 @@ Application profiles
       (authorized-keys %guix-keys)
       (substitute-urls
        '("https://mirror.sjtu.edu.cn/guix-bordeaux"
-         "https://mirror.sjtu.edu.cn/guix"))))
+         "https://mirror.sjtu.edu.cn/guix"
+         "https://substitutes.nonguix.org"))))
 
   (service guix-publish-service-type
     (guix-publish-configuration
@@ -1243,7 +1242,7 @@ Make fonts available to Nix packages.
 Pin Nixpkgs to avoid networking requirement when using the wrappers.
 
 #+begin_src nix :tangle ../tangled/dorphine/nixpkgs.nix
-  (import (builtins.getFlake "github:NixOS/nixpkgs/ee48b147c18c7de1e6ec97dc74792be42724bed1") {})
+  (import (builtins.getFlake "github:NixOS/nixpkgs/f4f698677b11021a8f84f452e23ae9ef2427bec3") {})
 #+end_src
 
 #+begin_src scheme :noweb-ref package-nix
@@ -1251,20 +1250,10 @@ Pin Nixpkgs to avoid networking requirement when using the wrappers.
     '("glibcLocales")
     #:expression (local-file (testament-file "dorphine/nixpkgs.nix")))
 
-  (nix-shell-wrapper "element-desktop"
-    '("element-desktop")
-    #:expression (local-file (testament-file "dorphine/nixpkgs.nix"))
-    #:run-command '("element-desktop" "--no-update"))
-
   (nix-shell-wrapper "nocturne"
     '("nocturne")
     #:expression (local-file (testament-file "dorphine/nixpkgs.nix"))
     #:run-command '("nocturne"))
-
-  (nix-shell-wrapper "readest"
-    '("readest")
-    #:expression (local-file (testament-file "dorphine/nixpkgs.nix"))
-    #:run-command '("readest"))
 #+end_src
 
 *** prismlauncher

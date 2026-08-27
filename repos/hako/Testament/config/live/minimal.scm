@@ -57,14 +57,6 @@
   (plain-file "nonguix.pub" "(public-key (ecc (curve Ed25519)
  (q #C1FD53E5D4CE971933EC50C9F307AE2171A2D3B52C804642A7A35F84F3A4EA98#)))"))
 
-(define guix.moe-signing-key-old
-  (plain-file "guix.moe-old.pub" "(public-key (ecc (curve Ed25519)
-(q #374EC58F5F2EC0412431723AF2D527AD626B049D657B5633AAAEBC694F3E33F9#)))"))
-
-(define guix.moe-signing-key
-  (plain-file "guix.moe.pub" "(public-key (ecc (curve Ed25519)
-(q #552F670D5005D7EB6ACF05284A1066E52156B51D75DE3EBD3030CD046675D543#)))"))
-
 (define %installation-os
   (make-installation-os
    #:efi-only? (string=? (%current-system) "aarch64-linux")))
@@ -110,9 +102,7 @@
               (substitute-urls
                (list "https://cache-cdn.guix.moe"))
               (authorized-keys
-               (list nonguix-signing-key
-                     guix.moe-signing-key-old
-                     guix.moe-signing-key))))
+               (list nonguix-signing-key))))
 
           ;; Modified from `installation-os', with our own examples.
           (service gc-root-service-type

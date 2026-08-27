@@ -66,10 +66,10 @@ NOTE:
 *** [[file:config/involemi.org][involemi]] (x86_64-linux, BIOS, XFS) | [[file:deploy/involemi.scm][deploy]]
 
 *** [[file:config/worker.org][worker]] | [[file:deploy/worker.scm][deploy]]
-Build workers for <https://guix.moe>.
+Build workers for https://cuirass.nonguix.org
 
 *** [[file:config/mirror.org][mirror]] | [[file:deploy/mirror.scm][deploy]]
-Mirrors for <https://guix.moe>.
+Mirrors for https://substitutes.nonguix.org
 
 ** Guix Resources
 *** Getting started

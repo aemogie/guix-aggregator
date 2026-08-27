@@ -24,6 +24,7 @@
       (initrd-modules (cons* "sd_mod" %base-initrd-modules))
       (file-systems (append <<file-systems>> %base-file-systems))
       (swap-devices (append <<swap-devices>>))
+      (groups (cons* <<user-group>> %base-groups))
       (users (cons* <<user-account>> %base-user-accounts))
       (skeletons %rosenthal-skeletons)
       (packages (append %testament-cli-packages %base-packages))
@@ -209,9 +210,11 @@ See [[file:shared/caddy.org][shared/caddy.org]].
   cache-sg.guix.moe, cache-hk.guix.moe {
   	import block_bots
 
-  	handle /*.narinfo {
-  		root * /var/cache/guix-moe/narinfo
-  		file_server
+  	@publish_substitutes {
+  		path /*.narinfo || /nix-cache-info
+  	}
+  	handle @publish_substitutes {
+  		reverse_proxy localhost:13778
   	}
 
   	handle /nar/* {
@@ -228,9 +231,11 @@ See [[file:shared/caddy.org][shared/caddy.org]].
   cache-us-lax.guix.moe {
   	import block_bots
 
-  	handle /*.narinfo {
-  		root * /var/cache/guix-moe/narinfo
-  		file_server
+  	@publish_substitutes {
+  		path /*.narinfo || /nix-cache-info
+  	}
+  	handle @publish_substitutes {
+  		reverse_proxy localhost:13778
   	}
 
   	handle /nar/* {
@@ -243,33 +248,46 @@ See [[file:shared/caddy.org][shared/caddy.org]].
   }
 #+end_src
 
+#+begin_src scheme :noweb-ref user-group
+  (user-group
+    (name "guix-moe")
+    (system? #t))
+#+end_src
+
+#+begin_src scheme :noweb-ref user-account
+  (user-account
+    (name "guix-moe")
+    (group "guix-moe")
+    ;; Writable HOME is required.
+    (home-directory "/var/cache/guix-moe")
+    (shell (file-append shadow "/sbin/nologin"))
+    (system? #t))
+#+end_src
+
 #+begin_src scheme :noweb-ref service
   (simple-service 'guix-moe-mirror shepherd-root-service-type
-    (list (shepherd-timer '(guix-moe-mirror)
-            #~(calendar-event #:minutes '(45))
-            #~(#$(program-file "guix-moe-mirror"
-                   (with-imported-modules
-                       (source-module-closure
-                        '((guix build syscalls)
-                          (guix build utils)))
-                     #~(begin
-                         (use-modules (guix build syscalls)
-                                      (guix build utils))
-                         (with-file-lock/no-wait "/var/lock/guix-moe-mirror.lock"
-                           (lambda _
-                             (error "found ongoing syncing process, exiting"))
-                           (let (($ (lambda (cmd)
-                                      (let* ((pid (spawn (car cmd) cmd))
-                                             (exit-val (cdr (waitpid pid))))
-                                        (or (zero? exit-val)
-                                            (error (format #f "Command ~s exited with non-zero exit status: ~s"
-                                                           (string-join cmd) exit-val)))))))
-                             (setenv "PATH" "/run/current-system/profile/bin")
-                             (mkdir-p "/var/cache/guix-moe/narinfo")
-                             ($ `("rsync" "-rltpHS" "--delete-excluded"
-                                  "rsync://cache.guix.moe/narinfo/"
-                                  "/var/cache/guix-moe/narinfo/"))))))))
-            #:requirement '(user-processes))))
+    (list (shepherd-service
+            (provision '(guix-moe-mirror-publish))
+            (requirement '(user-processes loopback))
+            (start
+             #~(make-forkexec-constructor
+                (list "/run/current-system/profile/bin/publish-substitutes"
+                      "--cache=/var/cache/guix-moe/mirror"
+                      "--listen=127.0.0.1"
+                      "--port=13778"
+                      "--ttl=1m"
+                      "--negative-ttl=300s"
+                      ;; Args for mirror-substitutes
+                      "--substitute-urls=https://cache-cdn.guix.moe"
+                      "--workers=1"
+                      "--narinfo-only")
+                #:user "guix-moe"
+                #:group "guix-moe"
+                #:log-file "/var/log/guix-moe-mirror-publish.log"
+                #:environment-variables
+                (cons* "XDG_CACHE_HOME=/var/cache/guix-moe/.cache"
+                       (default-environment-variables))))
+            (stop #~(make-kill-destructor)))))
 #+end_src
 
 ** Modules
@@ -295,6 +313,7 @@ Guix System - services
 
 Guix packages
 #+begin_src scheme :noweb-ref module
+  (gnu packages admin)
   (gnu packages shells)
   (gnu packages ssh)
   (rosenthal packages web)

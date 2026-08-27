@@ -143,7 +143,8 @@
       (authorized-keys %guix-keys)
       (substitute-urls
        '("https://mirror.sjtu.edu.cn/guix-bordeaux"
-         "https://mirror.sjtu.edu.cn/guix"))))
+         "https://mirror.sjtu.edu.cn/guix"
+         "https://substitutes.nonguix.org"))))
 
   (simple-service 'guix-gc shepherd-root-service-type
     (list (shepherd-timer '(guix-gc)

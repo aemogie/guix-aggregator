@@ -57,7 +57,7 @@
            "--" ,@args))))
 
 (define ($emacs args)
-  ($guix `("shell" "emacs-minimal" "--" "emacs" ,@args)))
+  ($guix `("shell" "--pure" "emacs-minimal" "git-minimal" "--" "emacs" ,@args)))
 
 
 ;;;
