@@ -91,8 +91,8 @@
         "qtwayland-helper"
         "quasselclient"
         (if (supported-package? (specification->package "qutebrowser-with-adblock"))
-          "qutebrowser-with-adblock"
-          "qutebrowser")
+            "qutebrowser-with-adblock"
+            "qutebrowser")
         "tofi"
         "tuba"
         "wl-clipboard"
@@ -109,8 +109,8 @@
 
 (define %not-for-work
   (list "btrfs-progs"
-        "codeberg-cli"
         "ffmpeg"
+        "forgejo-cli"
         "git-annex"
         "isync"
         "khal"
@@ -159,8 +159,8 @@
         ;(if (supported-package? (specification->package "ncdu@2"))
         (if (or (target-x86-64?)
                 (target-aarch64?))
-          "ncdu@2"
-          "ncdu@1")
+            "ncdu@2"
+            "ncdu@1")
         "nmap"
         "nss-certs"
         "openssh"
@@ -192,7 +192,7 @@
 (define with-transformations
   (options->transformation
     (append
-      `()
+      '()
       (cond
         ((string=? (gethostname) "3900XT")
          `((tune . "znver2")))
@@ -212,14 +212,14 @@
                (append
                  (if (or headless?
                          (not guix-system?))
-                   %headless
-                   %GUI-only)
+                     %headless
+                     %GUI-only)
                  (if work-machine?
-                   %work-applications
-                   %not-for-work)
+                     %work-applications
+                     %not-for-work)
                  (if guix-system?
-                   '()
-                   %guix-system-apps)
+                     '()
+                     %guix-system-apps)
                  %cli-apps)))))
 
 ;;; Helper programs.
@@ -304,8 +304,14 @@
 (define %curlrc
   (plain-file
     "curlrc"
-    (string-append
-      "compressed\n")))
+    (string-join
+      (list "compressed"        ; http
+            "compressed-ssh"    ; scp, sftp
+            ;"continue-at -"    ; breaks wcurl https://github.com/curl/wcurl/issues/88
+            "mptcp"
+            "parallel")
+      ;; End with a newline.
+      "\n" 'suffix)))
 
 (define %cvsrc
   (plain-file
@@ -715,28 +721,38 @@
     (string-append "for-self = [\"" %self-gpg-signature "\"]\n")
     "[sign]\n"
     (string-append "signer-self = [\"" %self-gpg-signature "\"]\n")
-    "[pki]\n"
-    (string-append "vouch.certifier-self = \"" %self-gpg-signature "\"\n")))
+    "[pki.vouch]\n"
+    (string-append "certifier-self = \"" %self-gpg-signature "\"\n")))
 
 
 (define %streamlink-config
-  (mixed-text-file
+  (plain-file
     "streamlink-config"
-    "verbose\n"
-    "default-stream 720p,720p60,1080p,best\n"
-    "player=mpv\n"))
+    (string-join
+      (list "verbose"
+            "default-stream 720p,720p60,1080p,best"
+            "player=mpv")
+      ;; End with a newline.
+      "\n" 'suffix)))
 
 (define %wcalcrc
   (plain-file
     "dot-wcalcrc"
-    (string-append
-      "color=yes\n")))
+    (string-join
+      (list "color=yes"
+            "history_limit=no"
+            "show_equals=yes")
+      ;; End with a newline.
+      "\n" 'suffix)))
 
 (define %wgetrc
   (plain-file
     "dot-wgetrc"
-    (string-append
-      "continue=yes\n")))
+    (string-join
+      (list "compression=auto"
+            "continue=yes")
+      ;; End with a newline.
+      "\n" 'suffix)))
 
 (define %wgetpaste.conf
   (plain-file
@@ -1143,8 +1159,8 @@
                       ("GDK_BACKEND" . "wayland")
                       ;; This is necessary on the pbp
                       ,@(if (target-aarch64?)
-                          `(("GSK_RENDERER" . "cairo"))
-                          `())
+                            `(("GSK_RENDERER" . "cairo"))
+                            `())
                       ("MOZ_ENABLE_WAYLAND" . "1")
 
                       ;("GUIX_GPGV_COMMAND" . "gpgv-sq")
@@ -1177,32 +1193,34 @@
                                                  (getenv "HOME")
                                                  "/workspace/guix/pre-inst-env"))
                                  (target-x86-64?))
-                          `(string-append
-                             "~/workspace/guix/pre-inst-env guix home "
-                             "build --no-grafts --fallback "
-                             "-L ~/workspace/my-guix/ "
-                             "~/workspace/guix-config/efraim-home.scm")
-                          `(string-append
-                             "guix home "
-                             "build --no-grafts --fallback "
-                             "-L ~/workspace/my-guix/ "
-                             "~/workspace/guix-config/efraim-home.scm")))
+                            `(string-append
+                               "~/workspace/guix/pre-inst-env "
+                               "guix home "
+                               "build --no-grafts --fallback "
+                               "-L ~/workspace/my-guix/ "
+                               "~/workspace/guix-config/efraim-home.scm")
+                            `(string-append
+                               "guix home "
+                               "build --no-grafts --fallback "
+                               "-L ~/workspace/my-guix/ "
+                               "~/workspace/guix-config/efraim-home.scm")))
                       ("guix-home-reconfigure" .
                        ,(if (and (not work-machine?)
                                  (file-exists? (string-append
                                                  (getenv "HOME")
                                                  "/workspace/guix/pre-inst-env"))
                                  (target-x86-64?))
-                          `(string-append
-                             "~/workspace/guix/pre-inst-env guix home "
-                             "reconfigure --fallback "
-                             "-L ~/workspace/my-guix/ "
-                             "~/workspace/guix-config/efraim-home.scm")
-                          `(string-append
-                             "guix home "
-                             "reconfigure --fallback "
-                             "-L ~/workspace/my-guix/ "
-                             "~/workspace/guix-config/efraim-home.scm")))))
+                            `(string-append
+                               "~/workspace/guix/pre-inst-env "
+                               "guix home "
+                               "reconfigure --fallback "
+                               "-L ~/workspace/my-guix/ "
+                               "~/workspace/guix-config/efraim-home.scm")
+                            `(string-append
+                               "guix home "
+                               "reconfigure --fallback "
+                               "-L ~/workspace/my-guix/ "
+                               "~/workspace/guix-config/efraim-home.scm")))))
                    (bashrc
                      (list
                        (mixed-text-file "bashrc" "\n
@@ -1257,7 +1275,7 @@ fi")))))
                        (file-append (S "pinentry-qt") "/bin/pinentry-qt")))))
 
         (service home-inputrc-service-type
-                   %home-inputrc-configuration)
+                 %home-inputrc-configuration)
 
         (service home-msmtp-service-type
                  (home-msmtp-configuration
@@ -1277,8 +1295,8 @@ fi")))))
                    (hosts %home-openssh-configuration-hosts)))
 
         (service home-parcimonie-service-type
-          (home-parcimonie-configuration
-            (refresh-guix-keyrings? #t)))
+                 (home-parcimonie-configuration
+                   (refresh-guix-keyrings? #t)))
 
         (service home-pipewire-service-type)
 
@@ -1385,27 +1403,27 @@ fi")))))
                  (home-bash-configuration
                    (guix-defaults? #t)
                    (environment-variables
-                     `(("CVS_RSH" . "ssh")
-                       ("EDITOR" . "vim")
-                       ("GPG_TTY" . "$(tty)")
-                       ("XZ_DEFAULTS" . "--threads=0 --memlimit=50%")
-                       ("ZSTD_NBTHREADS" . "0")
-                       ("HISTSIZE" . "3000")
-                       ("HISTFILESIZE" . "10000")
-                       ("HISTCONTROL" . "ignoreboth")
-                       ("HISTIGNORE" . "pwd:exit:fg:bg:top:clear:history:ls:uptime:df")
-                       ("PROMPT_COMMAND" . "history -a; $PROMPT_COMMAND")))
+                    `(("CVS_RSH" . "ssh")
+                      ("EDITOR" . "vim")
+                      ("GPG_TTY" . "$(tty)")
+                      ("XZ_DEFAULTS" . "--threads=0 --memlimit=50%")
+                      ("ZSTD_NBTHREADS" . "0")
+                      ("HISTSIZE" . "3000")
+                      ("HISTFILESIZE" . "10000")
+                      ("HISTCONTROL" . "ignoreboth")
+                      ("HISTIGNORE" . "pwd:exit:fg:bg:top:clear:history:ls:uptime:df")
+                      ("PROMPT_COMMAND" . "history -a; $PROMPT_COMMAND")))
                    (aliases
-                     `(("cp" . "cp --reflink=auto")
+                    `(("cp" . "cp --reflink=auto")
 
-                       ;; I seem to have lost these
-                       ("ls" . "ls -p --color=auto")
-                       ("grep" . "grep --color=auto")
-                       ("ip" . "ip -color")
+                      ;; I seem to have lost these
+                      ("ls" . "ls -p --color=auto")
+                      ("grep" . "grep --color=auto")
+                      ("ip" . "ip -color")
 
-                       ("exitexit" . "exit")
-                       ("clear" . "printf '\\E[H\\E[J\\E[0m'")
-                       ("ime" . "time")))
+                      ("exitexit" . "exit")
+                      ("clear" . "printf '\\E[H\\E[J\\E[0m'")
+                      ("ime" . "time")))
                    (bashrc
                      (list
                        (mixed-text-file "bashrc" "screen -wipe\n")))
@@ -1428,7 +1446,7 @@ fi")))))
       (list
 
         (service home-inputrc-service-type
-                   %home-inputrc-configuration)
+                 %home-inputrc-configuration)
 
         (service home-msmtp-service-type
                  (home-msmtp-configuration
@@ -1494,5 +1512,5 @@ fi")))))
            ("yt-dlp/config" ,%ytdlp-config)))))))
 
 (if guix-system?
-  guix-system-home-environment
-  foreign-home-environment)
+    guix-system-home-environment
+    foreign-home-environment)

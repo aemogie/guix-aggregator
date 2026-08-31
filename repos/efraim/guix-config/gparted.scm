@@ -22,7 +22,7 @@
   linux
   llvm
   package-management
-  wm
+  window-management
   xorg)
 
 ;;
