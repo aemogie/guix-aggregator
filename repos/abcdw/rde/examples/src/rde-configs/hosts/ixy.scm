@@ -63,7 +63,7 @@
    (feature-host-info
     #:host-name "ixy"
     ;; ls `guix build tzdata`/share/zoneinfo
-    #:timezone  "Asia/Bangkok")
+    #:timezone  "Asia/Almaty")
    ;;; Allows to declare specific bootloader configuration,
    ;;; grub-efi-bootloader used by default
    ;; (feature-bootloader)

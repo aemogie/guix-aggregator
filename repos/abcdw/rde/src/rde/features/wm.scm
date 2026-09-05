@@ -2,7 +2,7 @@
 ;;;
 ;;; Copyright © 2021, 2022, 2023, 2024, 2025, 2026 Andrew Tropin <andrew@trop.in>
 ;;; Copyright © 2022 Samuel Culpepper <samuel@samuelculpepper.com>
-;;; Copyright © 2022, 2024, 2025 Nicolas Graves <ngraves@ngraves.fr>
+;;; Copyright © 2022, 2024-2026 Nicolas Graves <ngraves@ngraves.fr>
 ;;;
 ;;; This file is part of rde.
 ;;;
@@ -63,6 +63,7 @@
   #:use-module (srfi srfi-1)
 
   #:export (feature-sway
+            feature-wayland-cursor
             feature-wayland-compositor-run-on-tty
             feature-sway-run-on-tty
             feature-sway-screenshot
@@ -99,6 +100,81 @@
 ;; https://github.com/jjquin/dotfiles/tree/master/sway/.config/sway/config.d
 ;; https://nixos.wiki/wiki/Sway
 ;; https://github.com/swaywm/sway/wiki/Useful-add-ons-for-sway
+
+(define* (feature-wayland-cursor
+          #:key
+          (size #f)
+          (glib glib)
+          (gsettings-desktop-schemas gsettings-desktop-schemas))
+  "Configure the cursor for Wayland clients.
+
+Use the cursor theme provided by @code{feature-gtk3} for Sway, Xcursor
+clients, and GTK's GSettings interface.  SIZE requires that feature to
+provide a cursor theme, because Sway cannot apply a size without a named
+theme."
+  (ensure-pred maybe-integer? size)
+  (ensure-pred file-like? glib)
+  (ensure-pred file-like? gsettings-desktop-schemas)
+
+  (define gsettings
+    (file-append (gexp-input glib "bin") "/bin/gsettings"))
+
+  (define (get-home-services config)
+    (define cursor-theme (get-value 'gtk-cursor-theme config #f))
+    (when size
+      (require-value 'gtk-cursor-theme config
+                     "feature-wayland-cursor with SIZE requires feature-gtk3."))
+    (list
+     ;; GTK on Wayland reads cursor settings from GSettings rather than from
+     ;; settings.ini or XCURSOR_*.  Ship both the tool and its schema so the
+     ;; generated Sway configuration has no dependency on a foreign distro.
+     (simple-service
+      'wayland-cursor-packages
+      home-profile-service-type
+      (list (list glib "bin") gsettings-desktop-schemas))
+
+     (simple-service
+      'wayland-cursor-environment-variables
+      home-environment-variables-service-type
+      `(,@(if cursor-theme
+              `(("XCURSOR_THEME" . ,cursor-theme))
+              '())
+        ,@(if size
+              `(("XCURSOR_SIZE" . ,(number->string size)))
+              '())))
+
+     (when (get-value 'sway config #f)
+       (simple-service
+        'wayland-cursor-sway-configuration
+        home-sway-service-type
+          `(,@(if cursor-theme
+                ;; Sway has no size-only cursor command.
+                `((seat * xcursor_theme
+                        ,cursor-theme
+                        ,@(if size
+                              (list size)
+                              '())))
+                '())
+            ;; Native GTK clients such as PGTK Emacs take their pointer cursor
+            ;; from this interface schema.
+          ,@(if cursor-theme
+                `((exec_always ,gsettings set
+                               org.gnome.desktop.interface cursor-theme
+                               ,cursor-theme))
+                '())
+          ,@(if size
+                `((exec_always ,gsettings set
+                               org.gnome.desktop.interface cursor-size
+                               ,(number->string size)))
+                '()))))))
+
+  (feature
+   (name 'wayland-cursor)
+   (values `((wayland-cursor . #t)
+             (wayland-cursor-size . ,size)
+             (glib . ,glib)
+             (gsettings-desktop-schemas . ,gsettings-desktop-schemas)))
+   (home-services-getter get-home-services)))
 
 (define (keyboard-layout-to-sway-config keyboard-layout)
   (let* ((kb-options (keyboard-layout-options keyboard-layout))
@@ -1291,13 +1367,29 @@ to use this functionality."
   (ensure-pred file-like? kanshi)
 
   (define (get-home-services config)
-    (list
-     (service
-      home-kanshi-service-type
-      (home-kanshi-configuration
-       (kanshi kanshi)
-       (config
-        `(,@extra-config))))))
+    (define herd
+      (file-append (get-value 'shepherd config) "/bin/herd"))
+    (append
+     (list
+      (service
+       home-kanshi-service-type
+       (home-kanshi-configuration
+        (kanshi kanshi)
+        (config
+         `(,@extra-config))))
+      (simple-service
+          'kanshi-reload-config-on-change
+          home-run-on-change-service-type
+        `(("files/.config/kanshi/config"
+           ,#~(system* #$herd "reload" "kanshi")))))
+     ;; `exec_always' is re-executed after every `swaymsg reload', including
+     ;; the power-menu action and the default Sway reload binding.
+     (if (get-value 'sway config #f)
+       (list (simple-service
+              'kanshi-reload-on-sway-reload
+              home-sway-service-type
+              `((exec_always ,herd "reload" "kanshi"))))
+       '())))
 
   (feature
    (name 'kanshi)
@@ -1342,6 +1434,7 @@ to use this functionality."
 ;; [X] feature-sway-outputs (kanshi, workspaces, displays)
 
 ;; [ ] feature-wayland-appearance (sway, gtk, qt themes)
+;; [X] feature-wayland-cursor
 ;; [X] feature-wayland-statusbar
 ;; [X] feature-wayland-notifications
 ;; [ ] feature-wayland-clipboard

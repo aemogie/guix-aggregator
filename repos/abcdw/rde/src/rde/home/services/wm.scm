@@ -383,6 +383,14 @@ The example configuration:
                             (getenv "XDG_STATE_HOME") "/log"
                             "/kanshi.log")))
       (stop #~(make-kill-destructor))
+      (actions
+       (list
+        (shepherd-action
+         (name 'reload)
+         (documentation "Reload the Kanshi configuration file.")
+         (procedure
+          #~(lambda (process . args)
+              (kill (process-id process) SIGHUP))))))
       (documentation "Run Kanshi")))))
 
 (define (home-kanshi-extensions cfg extensions)

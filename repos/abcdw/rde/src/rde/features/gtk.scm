@@ -115,5 +115,6 @@ to be ingested by @code{serialize-css-config}."
 
   (feature
    (name 'gtk)
-   (values `((gtk . #t)))
+   (values `((gtk . #t)
+             (gtk-cursor-theme . ,(and=> cursor-theme theme-name))))
    (home-services-getter get-home-services)))
