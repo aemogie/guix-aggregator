@@ -11,6 +11,8 @@
 (define-public %sleep-operating-system
   (operating-system
     (kernel linux)
+    (kernel-arguments (cons* "amdgpu.dcdebugmask=0x10"
+                             %default-kernel-arguments))
     (firmware (list linux-firmware))
     (host-name "sleep")
     (timezone "America/New_York")

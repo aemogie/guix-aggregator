@@ -36,7 +36,7 @@ Most here is agnostic of that but some is not.
 NOTE: On wayland emacs must be pure GTK (=emacs-pgtk= on guix)
 
 #+begin_src emacs-lisp
-(add-to-list 'default-frame-alist '(alpha-background . 80))
+(add-to-list 'default-frame-alist '(alpha-background . 85))
 #+end_src
 
 *** General Cleanup

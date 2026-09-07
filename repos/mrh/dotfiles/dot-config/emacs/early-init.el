@@ -9,7 +9,7 @@
 
 (add-hook 'emacs-startup-hook #'restore-gc-cons-threshold 105)
 
-(add-to-list 'default-frame-alist '(alpha-background . 80))
+(add-to-list 'default-frame-alist '(alpha-background . 85))
 
 (setopt initial-scratch-message nil
         inhibit-startup-screen t)

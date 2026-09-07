@@ -24,6 +24,7 @@
                      imagemagick
                      image-viewers
                      kde-plasma
+                     libreoffice
                      librewolf
                      linux
                      lisp
@@ -57,6 +58,7 @@
    gtk+
    hicolor-icon-theme
    libnotify
+   libreoffice
    librewolf
    redshift-wayland
    swayfx

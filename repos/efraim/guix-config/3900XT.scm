@@ -2,6 +2,7 @@
 (use-modules
   (gnu)
   (gnu system locale)
+  (nongnu packages linux)
   (guix transformations)
   (config filesystems)
   (config guix-daemon)
@@ -57,6 +58,12 @@
       (bootloader grub-efi-bootloader)
       (targets '("/boot/efi"))
       (keyboard-layout keyboard-layout)))
+
+  (kernel linux)
+  (firmware
+    (list amd-microcode
+          i915-firmware
+          realtek-firmware))
 
   (file-systems
     (cons* (file-system
@@ -245,3 +252,5 @@
 
   ;; Allow resolution of '.local' host names with mDNS.
   (name-service-switch %mdns-host-lookup-nss))
+
+;; time guix system build --no-grafts -L ~/workspace/my-guix/ -L ~/workspace/guix-config/ -L ~/workspace/nonguix/ ~/workspace/guix-config/3900XT.scm
