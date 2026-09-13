@@ -14,7 +14,7 @@
            #:optional
            (system (or (%current-target-system)
                        (%current-system))))
-  "Kernel configurations required by 'default-initrd-modules'."
+  "Kernel configurations required by 'default-linux-libre-initrd-modules'."
   `("CONFIG_NLS_ISO8859_1=m"
 
     "CONFIG_CRYPTO_SERPENT=m"

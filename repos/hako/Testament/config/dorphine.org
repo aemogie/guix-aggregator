@@ -56,7 +56,7 @@
           "\n")))))
 
   ((nonguix-transformation-nvidia
-    #:driver nvda-595
+    #:driver nvda-new-feature
     #:open-source-kernel-module? #t
     #:dynamic-boost? #t
     #:remove-nvenc-restriction? #t)
@@ -625,6 +625,10 @@ niri supports getting keyboard layout from localed.
               (match (@ (app-id "thunar")
                         (title "^File Operation Progress$")))
               (open-floating #t))
+             (window-rule
+              (match (@ (app-id "thunar")
+                        (title "^Rename \".*\"$")))
+              (open-floating #t))
 
              (layout
               (background-color "transparent")
@@ -1130,22 +1134,6 @@ Jujutsu:
   sign-on-push = true
 #+end_src
 
-*** jellyfin-mpv-shim
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'jellyfin-mpv-shim home-shepherd-service-type
-    (list (shepherd-service
-            (provision '(jellyfin-mpv-shim))
-            (requirement '(graphical-session))
-            (auto-start? #f)
-            (start
-             #~(lambda args
-                 ((make-forkexec-constructor
-                   '(#$(file-append jellyfin-mpv-shim "/bin/jellyfin-mpv-shim"))
-                   #:environment-variables (environ))
-                  args)))
-            (stop #~(make-kill-destructor)))))
-#+end_src
-
 *** moor
 [[https://github.com/walles/moor][Moor]] is a pager similar to =less=, with features like syntax highlighting and
 incremental search.
@@ -1177,14 +1165,9 @@ incremental search.
   interpolation=yes
   tscale=oversample
   sub-auto=fuzzy
+  fullscreen=yes
   hwdec=auto-safe
 
-  # uosc
-  osd-bar=no
-  border=no
-
-  fullscreen=yes
-  force-window=yes
   idle=yes
   screenshot-directory=/home/hako/Pictures/MPV/
   screenshot-template="%F %P"
@@ -1242,18 +1225,26 @@ Make fonts available to Nix packages.
 Pin Nixpkgs to avoid networking requirement when using the wrappers.
 
 #+begin_src nix :tangle ../tangled/dorphine/nixpkgs.nix
-  (import (builtins.getFlake "github:NixOS/nixpkgs/f4f698677b11021a8f84f452e23ae9ef2427bec3") {})
+  (import (builtins.getFlake "github:NixOS/nixpkgs/d58a46e3bc02d91ebe04667f8397752a749c0024") {})
 #+end_src
 
 #+begin_src scheme :noweb-ref package-nix
   (nix-shell-wrapper "nix-assets"
-    '("glibcLocales")
+    '("glibcLocales"
+      "adwaita-icon-theme"
+      "qogir-icon-theme")
     #:expression (local-file (testament-file "dorphine/nixpkgs.nix")))
 
   (nix-shell-wrapper "nocturne"
     '("nocturne")
     #:expression (local-file (testament-file "dorphine/nixpkgs.nix"))
+    #:environment-set '(("XDG_DATA_DIRS" . "/nix/var/nix/profiles/guix-system-nix-profile/share"))
     #:run-command '("nocturne"))
+
+  (nix-shell-wrapper "tsukimi"
+    '("github:merrkry/nixpkgs/d604b2aa661ad3a79367e8ba6f04c732dccf7cbc#tsukimi")
+    #:environment-set '(("XDG_DATA_DIRS" . "/nix/var/nix/profiles/guix-system-nix-profile/share"))
+    #:run-command '("tsukimi"))
 #+end_src
 
 *** prismlauncher
@@ -1271,7 +1262,7 @@ Pin Nixpkgs to avoid networking requirement when using the wrappers.
 *** steam
 #+begin_src scheme :noweb-ref package-spec
   "mangohud"
-  "steam-nvidia@595"
+  "steam-nvidia-new-feature"
 #+end_src
 
 #+begin_src nftables :noweb-ref nftables-filter-input

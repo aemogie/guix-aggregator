@@ -52,8 +52,9 @@ Examples:
 
 ** Hosts
 NOTE:
-- ZFS support is implemented in https://codeberg.org/guix/guix/pulls/8346
-- For NVIDIA proprietary driver: avoid GDM if you encounter issues
+- ZFS: Support implemented in [[https://codeberg.org/guix/guix/pulls/8346][guix/guix!8346]]
+- NVIDIA: Avoid GDM if you encounter issues
+- NVIDIA: Open source kernel modules may be affected by [[https://codeberg.org/guix/guix/issues/10409][guix/guix#10409]]
 
 *** [[file:config/dorphine.org][dorphine]] (x86_64-linux, UEFI, ZFS, NVIDIA) | [[file:deploy/dorphine.scm][deploy]]
 

@@ -21,7 +21,7 @@
          (targets (list (or bios-boot "/efi")))))
       (kernel linux-server/dolly)
       (kernel-arguments (cons* <<kernel-argument>> %default-kernel-arguments))
-      (initrd-modules (cons* "sd_mod" %base-initrd-modules))
+      (initrd-modules (cons* "sd_mod" (base-initrd-modules kernel)))
       (file-systems (append <<file-systems>> %base-file-systems))
       (swap-devices (append <<swap-devices>>))
       (users (cons* <<user-account>> %base-user-accounts))

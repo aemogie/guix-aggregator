@@ -21,13 +21,13 @@
          (targets (list (or bios-boot "/efi")))))
       (kernel linux-server/dolly)
       (kernel-arguments (cons* <<kernel-argument>> %default-kernel-arguments))
-      (initrd-modules (cons* "sd_mod" %base-initrd-modules))
+      (initrd-modules (cons* "sd_mod" (base-initrd-modules kernel)))
       (file-systems (append <<file-systems>> %base-file-systems))
       (swap-devices (append <<swap-devices>>))
       (groups (cons* <<user-group>> %base-groups))
       (users (cons* <<user-account>> %base-user-accounts))
       (skeletons %rosenthal-skeletons)
-      (packages (append %testament-cli-packages %base-packages))
+      (packages (append (list mirror-substitutes) %testament-cli-packages %base-packages))
       (services (cons* <<service>> %base-services))
       (sudoers-file
        (plain-file "sudoers"
@@ -316,5 +316,6 @@ Guix packages
   (gnu packages admin)
   (gnu packages shells)
   (gnu packages ssh)
+  (rosenthal packages package-management)
   (rosenthal packages web)
 #+end_src

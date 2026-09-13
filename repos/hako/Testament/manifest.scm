@@ -1,4 +1,9 @@
-(use-modules (guix profiles))
+(use-modules (guix packages)
+             (guix profiles)
+             (guix utils)
+             (bluebox packages blue)
+             (gnu packages)
+             (gnu packages guile))
 
 (define (specifications->development-manifest specs)
   (let ((specification->development-manifest
@@ -7,13 +12,23 @@
     (concatenate-manifests
      (map specification->development-manifest specs))))
 
+(define blue/dolly
+  (package
+    (inherit blue)
+    (inputs
+     (modify-inputs inputs
+       (replace "guile" guile-3.0-latest)))
+    (arguments
+     (substitute-keyword-arguments arguments
+       ((#:tests? _ #t) #f)))))
+
 (concatenate-manifests
- (list (specifications->manifest
-        (list "blue"
-              "gnupg"
+ (list (packages->manifest
+        (list blue/dolly))
+       (specifications->manifest
+        (list "gnupg"
               "sops"
               "guile"
-              "guile-ares-rs"
               ;; For Guix System installer.
               "guile-newt"
               "guile-parted"

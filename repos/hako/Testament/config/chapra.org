@@ -153,6 +153,17 @@
             #:requirement '(user-processes guix-daemon))))
 #+end_src
 
+*** Nix Daemon
+#+begin_src scheme :noweb-ref service
+  (service nix-service-type
+    (nix-configuration
+      (build-directory "/var/tmp")
+      (extra-config
+       '("experimental-features = nix-command flakes\n"
+         "auto-optimise-store = true\n"
+         "substituters = https://mirrors.ustc.edu.cn/nix-channels/store https://cache.nixos.org\n"))))
+#+end_src
+
 *** Users
 #+begin_src scheme :noweb-ref user-account
   (user-account
@@ -170,7 +181,7 @@
   (user-account
     (name "hako")
     (group "users")
-    (supplementary-groups '("wheel"))
+    (supplementary-groups '("wheel" "jellyfin"))
     (shell (file-append fish "/bin/fish")))
 #+end_src
 
@@ -297,23 +308,6 @@
                (enabled? #t))))))
 #+end_src
 
-** Session and Seat Management
-*** elogind
-#+begin_src scheme :noweb-ref service
-  (service elogind-service-type)
-#+end_src
-
-** Containers & Virtualization
-*** containerd
-#+begin_src scheme :noweb-ref service
-  (service containerd-service-type)
-#+end_src
-
-*** docker
-#+begin_src scheme :noweb-ref service
-  (service docker-service-type)
-#+end_src
-
 ** Web Servers & Services
 *** caddy
 #+begin_src scheme :noweb-ref service
@@ -355,19 +349,24 @@
 #+begin_src caddyfile :noweb-ref caddy-site
   shows.urspace.moe {
   	import cloudflare_dns
-  	reverse_proxy localhost:22443
+  	reverse_proxy localhost:8096
   }
 #+end_src
 
 #+begin_src scheme :noweb-ref service
   (service jellyfin-service-type
     (jellyfin-configuration
-      (extra-options
-       `("--volume" "/mnt/Ocimeae/Library/Movies:/media/Movies"
-         "--volume" "/mnt/Ocimeae/Library/Shows:/media/Shows"
-         "--volume"
-         ,(let ((path "/share/fonts/truetype/NotoSansCJK-VF.otf.ttc"))
-            (file-append font-google-noto-sans-cjk path ":/usr" path))))))
+      (jellyfin
+       (nix-shell-wrapper "jellyfin"
+         '("github:NixOS/nixpkgs/f4f698677b11021a8f84f452e23ae9ef2427bec3#jellyfin")
+         #:run-command '("jellyfin")))
+      (user  973)
+      (group 973)))
+#+end_src
+
+#+begin_src nftables :noweb-ref nftables-filter-input
+  udp dport 1900 accept           #DLNA
+  udp dport 7359 accept           #Client Discovery
 #+end_src
 
 *** komga
@@ -436,6 +435,7 @@ Utilities
 #+begin_src scheme :noweb-ref module
   (gnu)
   (rosenthal)
+  (rosenthal utils nix)
   (sops secrets)
 #+end_src
 
@@ -444,11 +444,13 @@ Guix System - services
   (gnu services avahi)
   (gnu services docker)
   (gnu services networking)
+  (gnu services nix)
   (gnu services security)
   (gnu services ssh)
   (gnu services sysctl)
   (rosenthal services bittorrent)
   (rosenthal services networking)
+  (rosenthal services nix)
   (rosenthal services web)
   (sops services sops)
 #+end_src

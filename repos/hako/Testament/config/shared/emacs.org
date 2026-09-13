@@ -205,6 +205,16 @@ Customizations from [[https://cgit.git.savannah.gnu.org/cgit/emacs.git/tree/etc/
     ;; (text-mode . flyspell-mode))
 #+end_src
 
+*** packages (for manual installations)
+#+begin_src elisp :noweb-ref emacs-init
+  (use-package package
+    :custom
+    (package-archives
+     '(("gnu"    . "https://mirrors.ustc.edu.cn/elpa/gnu/")
+       ("melpa"  . "https://mirrors.ustc.edu.cn/elpa/melpa/")
+       ("nongnu" . "https://mirrors.ustc.edu.cn/elpa/nongnu/"))))
+#+end_src
+
 ** Interface
 *** [[https://github.com/minad/consult][consult]]
 Search and navigate via =completing-read=.
@@ -1098,11 +1108,18 @@ Simple notes with an efficient file-naming scheme.
 *** [[https://github.com/dakra/ghostel][ghostel]]
 Terminal emulator
 
+#+begin_src scheme :noweb-ref package-spec
+  "emacs-consult-ghostel"
+#+end_src
+
 #+begin_src elisp :noweb-ref emacs-init
   (use-package ghostel
-    :vc (:url "https://github.com/dakra/ghostel" :lisp-dir "lisp" :rev "v0.49.0")
+    :ensure t
+    :custom
+    (ghostel-tramp-shells
+     '((t login-shell)
+       ("docker" "/bin/sh")))
     :bind
-    ("C-x t" . ghostel)
     (:map ghostel-semi-char-mode-map)
     ("C-s" . isearch-forward)
     ("M-n" . (lambda () (interactive) (ghostel-send-key "n" "ctrl")))
@@ -1112,12 +1129,19 @@ Terminal emulator
     (after-init . ghostel-compile-global-mode)
     (eshell-load . ghostel-eshell-visual-command-mode))
 
+  (use-package consult-ghostel
+    :after (consult ghostel)
+    :bind
+    ("C-x t" . consult-ghostel)
+    (:map ghostel-semi-char-mode-map)
+    ("C-c h" . consult-ghostel-history))
+
   (use-package project
     :config
-    (add-to-list 'project-switch-commands '(ghostel-project "Ghostel") t)
+    (add-to-list 'project-switch-commands '(consult-ghostel-project "Ghostel") t)
     :bind
     (:map project-prefix-map)
-    ("t" . ghostel-project))
+    ("t" . consult-ghostel-project))
 #+end_src
 
 *** [[https://magit.vc/][magit]]
@@ -1256,6 +1280,18 @@ Org to [[https://gohugo.io/][Hugo]] exporter.
     (smtpmail-queue-dir "~/.local/share/queued-mail"))
 #+end_src
 
+*** [[https://github.com/ArthurHeymans/emacs-tramp-rpc][tramp-rpc]]
+High-performance TRAMP backend using JSON-RPC instead of shell parsing.
+
+#+begin_src scheme :noweb-ref package-spec
+  "emacs-tramp-rpc"
+#+end_src
+
+#+begin_src elisp :noweb-ref emacs-init
+  (use-package tramp-rpc
+    :after tramp)
+#+end_src
+
 ** Fonts
 Based on https://github.com/nykma/nema/blob/develop/my-sample/font.el
 
@@ -1359,6 +1395,8 @@ https://web.archive.org/web/20240525203039/http://community.schemewiki.org/?emac
       ;;; Nonguix
       (put 'with-transformation               'scheme-indent-function 1)
       ;;; Rosenthal
+      (put 'match-record/dolly                'scheme-indent-function 3)
+      (put 'match-record-lambda/dolly         'scheme-indent-function 2)
       (put 'computed-substitution-with-inputs 'scheme-indent-function 1)
       (put 'hidden-desktop-entry              'scheme-indent-function 1)
       (put 'modify-services/by-name           'scheme-indent-function 1)

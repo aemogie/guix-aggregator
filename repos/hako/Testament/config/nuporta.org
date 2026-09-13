@@ -22,7 +22,7 @@
     (groups (cons* <<user-group>> %base-groups))
     (users (cons* <<user-account>> %base-user-accounts))
     (skeletons %rosenthal-skeletons)
-    (packages (append %testament-cli-packages %base-packages))
+    (packages (append (list mirror-substitutes) %testament-cli-packages %base-packages))
     (services (cons* <<service>> %base-services))
     (sudoers-file
      (plain-file "sudoers"
@@ -60,6 +60,7 @@
 | Lycoris/Cache/GuixPublish        | /var/cache/guix/publish        | compression=off               |                       |
 |                                  |                                |                               |                       |
 | Lycoris/State/Forgejo            | /var/lib/forgejo               |                               |                       |
+| Lycoris/State/Nonguix            | /var/lib/nonguix               |                               | true                  |
 | Lycoris/State/PostgreSQL         | /var/lib/postgresql            | recordsize=32K                | true                  |
 | Lycoris/State/Tailscale          | /var/lib/tailscale             |                               | true                  |
 | Lycoris/State/Tuwunel            | /var/lib/tuwunel               |                               | true                  |
@@ -337,6 +338,14 @@
   		reverse_proxy localhost:49637
   	}
 
+  	@installer {
+  		path /nonguix-system-install*.iso || /nonguix-system-install*.iso.asc
+  	}
+  	handle @installer {
+  		root * /var/lib/nonguix
+  		file_server
+  	}
+
   	@forgejo_hooks {
   		path /admin/forgejo/event || /jobset/*/hook/evaluate
   	}
@@ -406,10 +415,10 @@
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.guix.moe/mirror/guix.git"))
+             (url "https://git.guix.moe/channels/guix.git"))
            (channel
              (name 'asahi)
-             (url "https://codeberg.org/asahi-guix/channel")
+             (url "https://git.guix.moe/channels/asahi.git")
              (branch "main")
              (introduction
               (make-channel-introduction
@@ -429,10 +438,18 @@
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.guix.moe/mirror/guix.git"))
+             (url "https://git.guix.moe/channels/guix.git"))
+           (channel
+             (name 'nonguix)
+             (url "https://git.guix.moe/channels/nonguix.git")
+             (introduction
+              (make-channel-introduction
+               "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
+               (openpgp-fingerprint
+                "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))
            (channel
              (name 'atomized)
-             (url "https://codeberg.org/ieure/atomized-guix.git")
+             (url "https://git.guix.moe/channels/atomized.git")
              (branch "main")
              (introduction
               (make-channel-introduction
@@ -452,11 +469,11 @@
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.guix.moe/mirror/guix.git"))
+             (url "https://git.guix.moe/channels/guix.git"))
            (channel
              (name 'cast)
              (branch "main")
-             (url "https://codeberg.org/vnpower/cast.git")
+             (url "https://git.guix.moe/channels/cast.git")
              (introduction
               (make-channel-introduction
                "fab73647fd9f0f2167d9ef9d42cddd77500fffb3"
@@ -475,10 +492,10 @@
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.guix.moe/mirror/guix.git"))
+             (url "https://git.guix.moe/channels/guix.git"))
            (channel
              (name 'guixcn)
-             (url "https://codeberg.org/guixcn/guix-channel.git")
+             (url "https://git.guix.moe/channels/guixcn.git")
              (introduction
               (make-channel-introduction
                "993d200265630e9c408028a022f32f34acacdf29"
@@ -497,16 +514,16 @@
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.guix.moe/mirror/guix.git"))
+             (url "https://git.guix.moe/channels/guix.git"))
            (channel
              (name 'nonguix)
-             (url "https://gitlab.com/nonguix/nonguix")
+             (url "https://git.guix.moe/channels/nonguix.git")
              (introduction
               (make-channel-introduction
                "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
                (openpgp-fingerprint
                 "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))))
-    (priority 3)
+    (priority 0)
     (systems '("x86_64-linux" "aarch64-linux")))
 #+end_src
 
@@ -518,10 +535,10 @@
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.guix.moe/mirror/guix.git"))
+             (url "https://git.guix.moe/channels/guix.git"))
            (channel
              (name 'rain-and-roses)
-             (url "https://codeberg.org/untrusem/rain-and-roses.git")
+             (url "https://git.guix.moe/channels/rain-and-roses.git")
              (branch "trunk"))))
     (priority 5)
     (systems '("x86_64-linux"))
@@ -536,10 +553,10 @@
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.guix.moe/mirror/guix.git"))
+             (url "https://git.guix.moe/channels/guix.git"))
            (channel
              (name 'rde)
-             (url "https://git.sr.ht/~abcdw/rde")
+             (url "https://git.guix.moe/channels/rde.git")
              (introduction
               (make-channel-introduction
                "257cebd587b66e4d865b3537a9a88cccd7107c95"
@@ -557,16 +574,39 @@
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.guix.moe/mirror/guix.git"))
+             (url "https://git.guix.moe/channels/guix.git"))
            (channel
              (name 'rosenthal)
-             (url "https://codeberg.org/hako/rosenthal.git")
+             (url "https://git.guix.moe/channels/rosenthal.git")
              (branch "trunk")
              (introduction
               (make-channel-introduction
                "7677db76330121a901604dfbad19077893865f35"
                (openpgp-fingerprint
                 "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7"))))))
+    (priority 5)
+    (systems '("x86_64-linux" "aarch64-linux"))
+    (properties '((forge-type . forgejo))))
+#+end_src
+
+**** testament
+#+begin_src scheme :noweb-ref cuirass-spec
+  (specification
+    (name "testament")
+    (build '(channels testament))
+    (channels
+     (list (channel
+             (inherit %default-guix-channel)
+             (url "https://git.guix.moe/channels/guix.git"))
+           (channel
+             (name 'testament)
+             (url "https://git.guix.moe/channels/testament.git")
+             (branch "trunk")
+             (introduction
+              (make-channel-introduction
+               "c5d46fdfdfbc84fe413f1d930049d1f703f9a0ff"
+               (openpgp-fingerprint
+                "F4C2 D1DF 3FDE EA63 D1D3  0776 ACC6 6D09 CA52 8292"))))))
     (priority 5)
     (systems '("x86_64-linux"))
     (properties '((forge-type . forgejo))))

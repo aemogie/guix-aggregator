@@ -12,7 +12,6 @@
   #:use-module (guix packages)
   #:use-module (guix store)
   #:use-module (guix utils)
-  #:use-module (rosenthal utils file)
   ;; Guix origin methods
   #:use-module (guix download)
   #:use-module (guix git-download)
@@ -37,8 +36,6 @@
   #:use-module (gnu packages sync)
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages vim)
-  #:use-module (nongnu packages linux)
-  #:use-module (rosenthal packages package-management)
   #:export (testament-path
             testament-file
 
@@ -127,18 +124,20 @@
 
 (define %network-manager-ipv6-privacy
   `("ip6-privacy.conf"
-    ,(ini-file "ip6-privacy.conf"
-       #~'(("connection"
-            . (("ipv6.ip6-privacy" . 2)))))))
+    ,(plain-file "ip6-privacy.conf" "\
+[connection]
+ipv6.ip6-privacy=2
+")))
 
 ;; NOTE: When using on cloud machines, refer to the terms of the provider
 ;; first.
 (define %network-manager-random-mac-address
   `("random-mac-address.conf"
-    ,(ini-file "random-mac-address.conf"
-       #~'(("connection-mac-randomization"
-            . (("ethernet.cloned-mac-address" . "stable")
-               ("wifi.cloned-mac-address" . "stable")))))))
+    ,(plain-file "random-mac-address.conf" "\
+[connection-mac-randomization]
+ethernet.cloned-mac-address=stable
+wifi.cloned-mac-address=stable
+")))
 
 
 ;;;
@@ -196,11 +195,11 @@
         file
         git
         `(,git "send-email")
+        glibc
         gnupg
         htop
         jujutsu
         lsof
-        mirror-substitutes
         mosh
         ncdu
         ncurses
@@ -209,7 +208,8 @@
         rsync
         sops
         unzip
-        xxd))
+        xxd
+        zip))
 
 
 ;;;
@@ -217,7 +217,7 @@
 ;;;
 
 (define (%kernel-config path)
-  (let* ((commit "49c98a1ee831a527193d9a8c3b56293c5fc6e7d7")
+  (let* ((commit "343874d509a9ff74729281fd297d8961dcedd342")
          (source
           (origin
             (method git-fetch)
@@ -226,14 +226,13 @@
                    (commit commit)))
             (file-name (string-append "kernel-config." (string-take commit 7)))
             (sha256
-             (base32 "08an8armqdr7jj3addl53f44279l3n9g6s2x3qjqsiay5x7rkpb2")))))
+             (base32 "150nms11b9cdp051i7xn4x8vfj4izhhnmj0h5bj9gqk4fzxqz9n7")))))
     (file-append source path)))
 
-(define* (make-linux/dolly base version source #:key defconfig modconfig (configs ""))
+(define* (make-linux/dolly version source #:key defconfig modconfig (configs ""))
   (let ((kernel
          (customize-linux
           #:name "linux-dolly"
-          #:linux base
           #:source source
           #:defconfig defconfig
           #:modconfig modconfig
@@ -243,9 +242,8 @@
       (version version))))
 
 (define linux-server/dolly
-  (let ((cachyos-version "6.18.42-1"))
+  (let ((cachyos-version "6.18.50-1"))
     (make-linux/dolly
-     linux-6.18
      cachyos-version
      (origin
        (method url-fetch)
@@ -253,7 +251,7 @@
              "https://github.com/CachyOS/linux/releases/download/cachyos-"
              cachyos-version "/cachyos-" cachyos-version ".tar.gz"))
        (sha256
-        (base32 "1by184yvxka24rbqcpzx9qgvijh9vnsvh3knyslhf503bkrn22qp")))
+        (base32 "1yapiq30csr29cw4pgzdn22h648hx1zi7xif6c33n3zw8i7gqksb")))
      #:defconfig (%kernel-config "/defconfig_server")
      #:configs
      (string-join
@@ -273,9 +271,8 @@
       "\n"))))
 
 (define linux-desktop/dolly
-  (let ((cachyos-version "7.2.0-1"))
+  (let ((cachyos-version "7.2.4-1"))
     (make-linux/dolly
-     linux-7.2
      cachyos-version
      (origin
        (method url-fetch)
@@ -283,7 +280,7 @@
              "https://github.com/CachyOS/linux/releases/download/cachyos-"
              cachyos-version "/cachyos-" cachyos-version ".tar.gz"))
        (sha256
-        (base32 "03rrghrvxqba375vijvbrvvp0rsl2y03gddz4ksjy47yckw9xr60"))
+        (base32 "03rnqmic7gkg4551waq8njbx84jp915q9sb11rw2maq6xhar22a0"))
        (patches (map %kernel-config '("/patches/bore-cachy-7.2.patch"))))
      #:defconfig (%kernel-config "/defconfig_desktop")
      #:configs
