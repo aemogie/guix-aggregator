@@ -1,12 +1,12 @@
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 ;;; Copyright © 2026 Hilton Chain <hako@ultrarare.space>
 
-(use-modules (ice-9 match)
+(use-modules (ice-9 format)
+             (ice-9 match)
              (srfi srfi-1)
              (srfi srfi-19)
-             (srfi srfi-26)
              (blue build)
-             (blue computation)
+             (blue states)
              (blue subprocess)
              (blue types)
              (blue types blueprint)
@@ -14,32 +14,30 @@
              (blue types command)
              (blue types configuration)
              (blue types variable)
+             (guix records)
              (guix utils)
-             (guix build utils))
+             ((guix build utils) #:select (delete-file-recursively)))
 
 
 ;;;
-;;; Helper procedures.
+;;; Helpers.
 ;;;
 
 (define-syntax %substitute-urls
-  (identifier-syntax (substitute-urls #%?URL)))
+  (identifier-syntax (guix-substitute-urls #%?URL)))
 
 (define-syntax %build-options
-  (identifier-syntax (build-options)))
+  (identifier-syntax (guix-build-options)))
 
-(define (substitute-urls urls)
+(define (guix-substitute-urls urls)
   (string-append "--substitute-urls=" urls))
 
-(define (build-options)
+(define (guix-build-options)
   `("--keep-failed"
     "--keep-going"
     "--verbosity=1"
     "--load-path=modules"
     ,%substitute-urls))
-
-(define (print-header header target)
-  (format (current-output-port) "\t~a\t~a\n" header target))
 
 (define ($ cmd)
   (match cmd
@@ -47,11 +45,12 @@
      (let ((exit-val (popen prog args)))
        (zero? exit-val)))))
 
-(define* ($guix args #:key fork? (channels "channels.lock") #:allow-other-keys)
+(define* ($guix args #:key use-guix-fork? (channels "channels.lock")
+                #:allow-other-keys)
   (if (getenv "GUIX")                   ;Using pre-inst-env.
       ($ `("guix" ,@args))
       ($ `("guix" "time-machine" ,%substitute-urls
-           "-C" ,@(if fork?
+           "-C" ,@(if use-guix-fork?
                       '("channels-fork.lock" "--disable-authentication")
                       (list channels))
            "--" ,@args))))
@@ -59,58 +58,73 @@
 (define ($emacs args)
   ($guix `("shell" "--pure" "emacs-minimal" "git-minimal" "--" "emacs" ,@args)))
 
+
+(define (build-header action target)
+  (format #f "~a~/~a" action target))
+(define (print-header action target)
+  (format (current-output-port) "~/~a~%" (build-header action target)))
+
+(define (config-source name)
+  (format #f "config/~a.org" name))
+(define (config-output name)
+  (format #f "tangled/~a" (basename name)))
+(define (config-path name)
+  (format #f "tangled/~a/~a.scm" name name))
+(define (config-deploy name)
+  (format #f "deploy/~a.scm" name))
+
+(define (image-source name)
+  (format #f "config/live/~a.scm" name))
+(define (image-name variant)
+  (format #f "rosenthal-~a-~a.~a.iso"
+          variant
+          (date->string (current-date) "~Y~m~d")
+          (%current-system)))
+
 
 ;;;
 ;;; Classes.
 ;;;
 
-(define-blue-class <shared-config>
+(define-blue-class <literate-buildable>
   (inherit <buildable>)
-  (constructor shared-config)
-  (predicate shared-config?))
+  (constructor literate-buildable)
+  (predicate literate-buildable?)
+  (fields
+   (source
+    (getter literate-buildable-source))))
 
-(define-blue-class <system-config>
-  (inherit <buildable>)
-  (constructor system-config)
-  (predicate system-config?))
+(define-blue-method (clean! (this <literate-buildable>))
+  (define (%clean file)
+    (when (file-exists? file)
+      (print-header "RM" file)
+      (unless (dry-build?)
+        (delete-file-recursively file))))
 
-(define-blue-method (clean! (this <buildable>))
-  (for-each (lambda (file)
-              (when (file-exists? file)
-                (print-header "RM" file)
-                (false-if-exception (delete-file-recursively file))))
-            (ask-outputs this)))
+  (for-each clean! (ask-inputs this))
+  (for-each clean! (ask-requirements this))
+  (let ((files (ask-outputs this)))
+    (for-each
+     (match-lambda
+       ((? string? file)
+        (%clean file))
+       ((name . file)
+        (%clean file))
+       (_ #f))
+     files)))
 
-(define-blue-method (ask-build-manifest (this <shared-config>)
-                                        (inputs <list>)
+(define-blue-method (ask-build-manifest (this <literate-buildable>)
+                                        (_ <list>)
                                         (output <string>))
-  (define input
-    (last inputs))
-
-  (make-build-manifest
-   (string-append "TANGLE\t" output)
-   (lambda ()
-     ($emacs
-      `("--quick" "--batch"
-        "--load" "ob-tangle"
-        "--eval" "(setopt org-babel-load-languages '((shell . t)))"
-        "--eval" "(setopt org-confirm-babel-evaluate nil)"
-        "--eval" "(setopt org-id-track-globally nil)"
-        "--eval" ,(format #f "(org-babel-tangle-file ~s)" input)))
-     ($ `("touch" ,output)))))
-
-(define-blue-method (ask-build-manifest (this <system-config>)
-                                        (inputs <list>)
-                                        (output <string>))
-  (define input
-    (last inputs))
+  (define source
+    (literate-buildable-source this))
 
   (define library-of-babel
-    (append-map ask-inputs
-                (filter shared-config? (buildable-inputs this))))
+    (map literate-buildable-source
+         (filter literate-buildable? (ask-inputs this))))
 
   (make-build-manifest
-   (string-append "TANGLE\t" output)
+   (build-header "TANGLE" output)
    (lambda ()
      ($emacs
       `("--quick" "--batch"
@@ -123,7 +137,7 @@
            (lambda (dependency)
              (list "--eval" (format #f "(org-babel-lob-ingest ~s)" dependency)))
            library-of-babel)
-        "--eval" ,(format #f "(org-babel-tangle-file ~s)" input)))
+        "--eval" ,(format #f "(org-babel-tangle-file ~s)" source)))
      ($ `("touch" ,output)))))
 
 
@@ -131,49 +145,86 @@
 ;;; Buildables.
 ;;;
 
-(define %shared-config-caddy
-  (shared-config
-    (inputs '("config/shared/caddy.org"))
-    (outputs '("tangled/caddy"))))
+(define-record-type* <literate-config>
+  literate-config
+  make-literate-config
+  literate-config?
+  this-literate-config
+  (name           literate-config-name)
+  (build?         literate-config-build?
+                  (default #t))
+  (deploy?        literate-config-deploy?
+                  (default #t))
+  (use-guix-fork? literate-config-use-guix-fork?
+                  (default #f))
+  (dependencies   literate-config-dependencies
+                  (default '())))
 
+(define literate-config->buildable
+  (match-record-lambda <literate-config>
+      (name build? deploy? use-guix-fork? dependencies)
+    (literate-buildable
+     (source (config-source name))
+     (inputs dependencies)
+     (outputs (config-output name)))))
+
+(define %shared-config-caddy
+  (literate-config->buildable
+   (literate-config
+    (name "shared/caddy"))))
 (define %shared-config-emacs
-  (shared-config
-    (inputs '("config/shared/emacs.org"))
-    (outputs '("tangled/emacs"))))
+  (literate-config->buildable
+   (literate-config
+    (name "shared/emacs"))))
 
 (define %systems
-  `(("ignamma")
-    ("involemi"            #:dependencies ,(list %shared-config-caddy))
-    ("worker")
-    ("chapra"   #:fork? #t #:dependencies ,(list %shared-config-caddy))
-    ("dorphine" #:fork? #t #:dependencies ,(list %shared-config-emacs))
-    ("nuporta"  #:fork? #t)
-    ("mirror"              #:dependencies ,(list %shared-config-caddy))))
+  (list (literate-config
+         (name "ignamma"))
+        (literate-config
+         (name "involemi")
+         (dependencies
+          (list %shared-config-caddy)))
+        (literate-config
+         (name "worker")
+         (build? #f))
+        (literate-config
+         (name "chapra")
+         (use-guix-fork? #t)
+         (dependencies
+          (list %shared-config-caddy)))
+        (literate-config
+         (name "dorphine")
+         (use-guix-fork? #t)
+         (dependencies
+          (list %shared-config-emacs)))
+        (literate-config
+         (name "nuporta")
+         (use-guix-fork? #t))
+        (literate-config
+         (name "mirror")
+         (build? #f)
+         (dependencies
+          (list %shared-config-caddy)))))
 
 (define %images
   '("minimal"
     "niri"))
-
-(define* (system-config-for name #:key (dependencies '()) #:allow-other-keys)
-  (let ((input (string-append "config/" name ".org"))
-        (output (string-append "tangled/" name)))
-    (system-config
-      (inputs (cons input dependencies))
-      (outputs (list output)))))
 
 (define (systems-from-arguments arguments)
   "Select %systems from ARGUMENTS, select all if no argument is provided."
   (if (null? arguments)
       %systems
       (filter (lambda (system)
-                (member (first system) arguments))
+                (member (literate-config-name system) arguments))
               %systems)))
 
 (define (images-from-arguments arguments)
   "Select %images from ARGUMENTS, select all if no argument is provided."
   (if (null? arguments)
       %images
-      (filter (cut member <> arguments) %images)))
+      (filter (lambda (image)
+                (member image arguments))
+              %images)))
 
 
 ;;;
@@ -193,17 +244,17 @@
    (synopsis "Build Guix System")
    (help "[SYSTEMS] ...
 Build all Guix Systems in this repository or only those matching SYSTEMS."))
-  (every
-   (cut eq? #t <>)
-   (map (match-lambda
-          ((name . args)
-           (let ((config (string-append "tangled/" name "/" name ".scm")))
-             (print-header "BUILD OS" name)
-             (apply $guix `("system" "build" ,config ,@%build-options) args))))
-        (remove
-         (lambda (system)
-           (member (first system) '("mirror" "worker")))
-         (systems-from-arguments arguments)))))
+  (every identity
+         (map-in-order
+          (match-record-lambda <literate-config>
+              (name use-guix-fork?)
+            (print-header "BUILD OS" name)
+            ($guix `("system" "build" ,(config-path name)
+                     ,@(if (dry-build?) '("--dry-run") '())
+                     ,@%build-options)
+                   #:use-guix-fork? use-guix-fork?))
+          (filter literate-config-build?
+                  (systems-from-arguments arguments)))))
 
 (define-command (deploy-os-command arguments)
   ((invoke "deploy-os")
@@ -211,19 +262,19 @@ Build all Guix Systems in this repository or only those matching SYSTEMS."))
    (synopsis "Deploy Guix System")
    (help "[SYSTEMS] ...
 Deploy all Guix Systems in this repository or only those matching SYSTEMS."))
-  (every
-   (cut eq? #t <>)
-   (map (match-lambda
-          ((name . args)
-           (let ((config (string-append "deploy/" name ".scm")))
-             (print-header "DEPLOY OS" name)
-             (apply $guix
-                    `("deploy" ,config
-                      ,@(if #%?CMD
-                            `(,@%build-options "-x" "--" "sh" "--login" "-c" ,#%?CMD)
-                            %build-options))
-                    args))))
-        (systems-from-arguments arguments))))
+  (every identity
+         (map-in-order
+          (match-record-lambda <literate-config>
+              (name use-guix-fork?)
+            (print-header "DEPLOY OS" name)
+            ($guix `("deploy" ,(config-deploy name)
+                     ,@(if (dry-build?) '("--dry-run") '())
+                     ,@(if #%?CMD
+                           `(,@%build-options "-x" "--" "sh" "--login" "-c" ,#%?CMD)
+                           %build-options))
+                   #:use-guix-fork? use-guix-fork?))
+          (filter literate-config-deploy?
+                  (systems-from-arguments arguments)))))
 
 (define-command (build-iso-command arguments)
   ((invoke "build-iso")
@@ -232,22 +283,18 @@ Deploy all Guix Systems in this repository or only those matching SYSTEMS."))
    (help "[VARIANTS] ...
 Build all Guix System Live ISOs in this repository or only those matching \
 VARIANTS, saving the results under dist/."))
-  (every
-   (cut eq? #t <>)
-   (map (lambda (variant)
-          (let ((config (string-append "config/live/" variant ".scm"))
-                (iso (format #f "rosenthal-~a-~a.~a.iso"
-                             variant
-                             (date->string (current-date) "~Y~m~d")
-                             (%current-system))))
-            (print-header "BUILD ISO" iso)
-            ($guix `("repl" "--" "scripts/build-image.scm" ,(in-vicinity "dist" iso)
-                     ,config
-                     "--image-type=iso9660"
-                     "--load-path=config/live/modules"
-                     ,@%build-options)
-                   #:channels "config/live/channels.lock")))
-        (images-from-arguments arguments))))
+  (every identity
+         (map-in-order
+          (lambda (variant)
+            (let ((iso (in-vicinity "dist" (image-name variant))))
+              (print-header "BUILD ISO" iso)
+              ($guix `("repl" "--" "scripts/build-image.scm" ,iso ,(image-source variant)
+                       ,@(if (dry-build?) '("--dry-run") '())
+                       "--image-type=iso9660"
+                       "--load-path=config/live/modules"
+                       ,@%build-options)
+                     #:channels "config/live/channels.lock")))
+          (images-from-arguments arguments))))
 
 
 ;;;
@@ -267,7 +314,7 @@ VARIANTS, saving the results under dist/."))
               (value "https://bordeaux.guix.gnu.org https://ci.guix.gnu.org")
               (hint "Substitute server URLs"))))))
   (buildables
-   (map (cut apply system-config-for <>) %systems))
+   (map literate-config->buildable %systems))
   (commands
    (list update-command
          build-os-command
