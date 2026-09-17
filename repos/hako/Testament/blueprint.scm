@@ -5,6 +5,7 @@
              (ice-9 match)
              (srfi srfi-1)
              (srfi srfi-19)
+             (srfi srfi-71)
              (blue build)
              (blue states)
              (blue subprocess)
@@ -69,7 +70,7 @@
 (define (config-output name)
   (format #f "tangled/~a" (basename name)))
 (define (config-path name)
-  (format #f "tangled/~a/~a.scm" name name))
+  (format #f "tangled/~a/~a.scm" (basename name) (basename name)))
 (define (config-deploy name)
   (format #f "deploy/~a.scm" name))
 
@@ -89,10 +90,7 @@
 (define-blue-class <literate-buildable>
   (inherit <buildable>)
   (constructor literate-buildable)
-  (predicate literate-buildable?)
-  (fields
-   (source
-    (getter literate-buildable-source))))
+  (predicate literate-buildable?))
 
 (define-blue-method (clean! (this <literate-buildable>))
   (define (%clean file)
@@ -116,12 +114,20 @@
 (define-blue-method (ask-build-manifest (this <literate-buildable>)
                                         (_ <list>)
                                         (output <string>))
-  (define source
-    (literate-buildable-source this))
+  (define-values (inputs source)
+    (let ((inputs source (partition literate-buildable? (ask-inputs this))))
+      (values inputs (first source))))
 
-  (define library-of-babel
-    (map literate-buildable-source
-         (filter literate-buildable? (ask-inputs this))))
+  (define (library-of-babel lst)
+    (append-map
+     (lambda (x)
+       (cond
+        ((string? x)
+         (list x))
+        ((literate-buildable? x)
+         (library-of-babel (ask-inputs x)))
+        (else '())))
+     lst))
 
   (make-build-manifest
    (build-header "TANGLE" output)
@@ -136,7 +142,7 @@
         ,@(append-map
            (lambda (dependency)
              (list "--eval" (format #f "(org-babel-lob-ingest ~s)" dependency)))
-           library-of-babel)
+           (library-of-babel inputs))
         "--eval" ,(format #f "(org-babel-tangle-file ~s)" source)))
      ($ `("touch" ,output)))))
 
@@ -162,10 +168,9 @@
 
 (define literate-config->buildable
   (match-record-lambda <literate-config>
-      (name build? deploy? use-guix-fork? dependencies)
+      (name dependencies)
     (literate-buildable
-     (source (config-source name))
-     (inputs dependencies)
+     (inputs (cons (config-source name) dependencies))
      (outputs (config-output name)))))
 
 (define %shared-config-caddy
