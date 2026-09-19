@@ -7,5 +7,9 @@
              (guix describe)
              (guix utils))
 
-(with-atomic-file-output "channels.lock"
-  (cut pretty-print `(list ,@(map channel->code (current-channels))) <>))
+(for-each
+ (lambda (channel-lock-file)
+   (with-atomic-file-output channel-lock-file
+     (cut pretty-print `(list ,@(map channel->code (current-channels))) <>)))
+ '("channels.lock"
+   "channels-fork.lock"))

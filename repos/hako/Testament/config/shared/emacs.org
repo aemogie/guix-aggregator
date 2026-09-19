@@ -1297,18 +1297,17 @@ Based on https://github.com/nykma/nema/blob/develop/my-sample/font.el
 
 #+begin_src scheme :noweb-ref package-spec
   "fontconfig"
-  "font-adobe-source-serif"
+  "font-victor-mono"
   "font-chiron-sung-hk"
   "font-google-noto-emoji"
   "font-nerd-symbols"
-  "font-victor-mono"
 #+end_src
 
 #+begin_src elisp :noweb-ref emacs-init
   (defun hako/load-font ()
     (let* ((size     16)
            (mono     (font-spec :family "Victor Mono"       :size size))
-           (modeline (font-spec :family "Source Serif 4"    :size size))
+           (modeline (font-spec :family "Chiron Sung HK VF" :size size))
            (cjk      (font-spec :family "Chiron Sung HK VF" :size size))
            (symbol   (font-spec :family "Symbols Nerd Font" :size size))
            (emoji    (font-spec :family "Noto Color Emoji"  :size size)))

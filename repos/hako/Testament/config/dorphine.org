@@ -46,7 +46,7 @@
                 %base-packages)))
       (services
        (cons* <<service>>
-              (modify-services %rosenthal-desktop-services/tuigreet <<modify-service>>)))
+              (modify-services %rosenthal-desktop-services/base <<modify-service>>)))
       (name-service-switch %mdns-host-lookup-nss)
       (sudoers-file
        (plain-file "sudoers"
@@ -529,6 +529,22 @@ Generate passwordless ECC key:
 #+end_src
 
 ** Graphical Session
+*** noctalia-greeter
+#+begin_src scheme :noweb-ref service
+  (service noctalia-greeter-service-type
+    (noctalia-greeter-configuration
+     (keyboard-layout keyboard-layout)))
+
+  (service greetd-service-type
+    (greetd-configuration
+      (greeter-supplementary-groups '("video" "input"))
+      (terminals
+       (list (greetd-terminal-configuration
+               (terminal-vt "7")
+               (terminal-switch #t)
+               (default-session-command (greetd-noctalia-greeter-session)))))))
+#+end_src
+
 *** keyboard layout
 niri supports getting keyboard layout from localed.
 
@@ -771,26 +787,6 @@ niri supports getting keyboard layout from localed.
 #+end_src
 
 *** icon theme & fonts
-#+begin_src scheme :noweb-ref package-spec
-  "glib:bin"
-
-  "font-apple-new-york"
-  "font-apple-sf-pro"
-  "font-chiron-hei-hk"
-  "font-chiron-sung-hk"
-  "font-google-noto"
-  "font-google-noto-emoji"
-  "font-nerd-symbols"
-  "font-sarasa-gothic"
-  "font-victor-mono"
-#+end_src
-
-#+begin_src bash
-  gsettings set org.gnome.desktop.interface icon-theme Qogir
-  gsettings set org.gnome.desktop.interface cursor-theme Qogir
-  gsettings set org.gnome.desktop.interface font-name Sans
-#+end_src
-
 #+begin_src scheme :noweb-ref home-service
   (service home-theme-service-type
     (home-theme-configuration
@@ -799,54 +795,97 @@ niri supports getting keyboard layout from localed.
       (cursor-theme "Qogir")))
 #+end_src
 
-fontconfig on Guix is [[https://codeberg.org/guix/guix/pulls/5654#issuecomment-9928509][known]] not working with some locales (e.g. =zh_CN.utf8=),
-use =en_US.utf8= (the default) if you have encountered issues.
+#+begin_src scheme :noweb-ref package-spec
+  "fontconfig"
+  "font-inter"
+  "font-adobe-source-serif"
+  "font-chiron-hei-hk"
+  "font-chiron-sung-hk"
+  "font-sarasa-gothic"
+  "font-google-noto-emoji"
+  "font-nerd-symbols"
+#+end_src
+
+See also: https://wiki.archlinux.org/title/Font_configuration/Examples
 
 #+begin_src scheme :noweb-ref home-service
   (simple-service 'extend-fontconfig home-fontconfig-service-type
-    (let ((sans  "SF Pro Display")
-          (serif "New York Medium")
-          (mono  "Victor Mono")
-          (emoji "Noto Color Emoji"))
-      `((alias
+    (let ((sans      "Inter")
+          (serif     "Source Serif 4")
+          (mono      "Sarasa Mono HC")
+          (cjk-sans  "Chiron Hei HK VF")
+          (cjk-serif "Chiron Sung HK VF")
+          (emoji     "Noto Color Emoji")
+          (symbols   "Symbols Nerd Font"))
+      `(;; Default fonts
+        (alias
+         (@ (binding "strong"))
          (family "sans-serif")
          (prefer
           (family ,sans)
-          (family "Chiron Hei HK VF")
-          (family ,emoji)))
+          (family ,cjk-sans)
+          (family ,emoji)
+          (family ,symbols)))
         (alias
+         (@ (binding "strong"))
          (family "serif")
          (prefer
           (family ,serif)
-          (family "Chiron Sung HK VF")
-          (family ,emoji)))
+          (family ,cjk-serif)
+          (family ,emoji)
+          (family ,symbols)))
         (alias
+         (@ (binding "strong"))
          (family "monospace")
          (prefer
           (family ,mono)
-          (family "Chiron Sung HK VF")
-          (family ,emoji)))
-
-        ,@(map (lambda (name)
-                 `(alias
-                   (family ,name)
-                   (prefer
-                    (family ,sans)
-                    (family "sans-serif"))))
-               '("BlinkMacSystemFont"
-                 "-apple-system"
-                 "system-ui"
-                 "ui-sans-serif"))
+          (family ,emoji)
+          (family ,symbols)))
+        (alias
+         (@ (binding "strong"))
+         (family "emoji")
+         (prefer
+          (family ,emoji)
+          (family ,symbols)))
+        ;; Per-font configurations.
+        ;; https://rsms.me/inter/#features
+        (match (@ (target "font"))
+          (test
+           (@ (name "family")
+              (compare "eq")
+              (ignore-blanks "true"))
+           (string "Inter"))
+          (edit
+           (@ (name "fontfeatures")
+              (mode "append"))
+           (string "calt off")
+           (string "ss01 on")
+           (string "ss02 on")))
+        ;; https://github.com/be5invis/Iosevka#features
+        (match (@ (target "font"))
+          (test
+           (@ (name "family")
+              (compare "eq")
+              (ignore-blanks "true"))
+           (string "Sarasa Mono HC"))
+          (edit
+           (@ (name "fontfeatures")
+              (mode "append"))
+           (string "calt off")))
+        ;; Aliases
+        ;; https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/font-family
+        (alias
+         (family "system-ui")
+         (prefer (family "sans-serif")))
+        (alias
+         (family "ui-sans-serif")
+         (prefer (family "sans-serif")))
         (alias
          (family "ui-serif")
-         (prefer
-          (family ,serif)
-          (family "serif")))
+         (prefer (family "serif")))
         (alias
          (family "ui-monospace")
-         (prefer
-          (family ,mono)
-          (family "monospace"))))))
+         (prefer (family "monospace"))))))
 #+end_src
 
 ** Applications
