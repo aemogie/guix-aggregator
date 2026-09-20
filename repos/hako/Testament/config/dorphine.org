@@ -3,7 +3,7 @@
 #+TITLE: dorphine
 #+PROPERTY: header-args :mkdirp yes :noweb-prefix no
 
-#+html: <img src="https://s3.boiledscript.com/misskey/c3d32a96-2074-4fb4-9382-c484c0754c97.webp">
+#+html: <img src="https://s3.boiledscript.com/misskey/4796f68a-6181-43eb-bbef-7a0fde496d99.png">
 
 ** Guix System
 #+begin_src scheme :tangle ../tangled/dorphine/dorphine.scm :noweb yes
@@ -498,7 +498,7 @@ Generate passwordless ECC key:
 #+begin_src scheme :noweb-ref home-service
   (service home-gpg-agent-service-type
     (home-gpg-agent-configuration
-      (pinentry-program (file-append pinentry-qt "/bin/pinentry-qt"))
+      (pinentry-program (file-append pinentry-gnome3 "/bin/pinentry-gnome3"))
       (ssh-support? #t)
       (shepherd-requirement '(graphical-session))))
 #+end_src
@@ -545,28 +545,13 @@ Generate passwordless ECC key:
                (default-session-command (greetd-noctalia-greeter-session)))))))
 #+end_src
 
-*** keyboard layout
-niri supports getting keyboard layout from localed.
-
-#+begin_src scheme :noweb-ref service
-  (simple-service 'localed-keyboard-layout localed-service-type
-    keyboard-layout)
-#+end_src
-
-#+begin_src scheme :noweb-ref home-service
-  (service home-keyboard-service-type keyboard-layout)
-#+end_src
-
 *** niri
 #+begin_src scheme :noweb-ref package-spec
   "niri"
 
-  "xdg-desktop-portal-gnome"
-  "xdg-desktop-portal-gtk"
-  "xdg-utils"
-
   "dconf"
   "wl-clipboard"
+  "xdg-utils"
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
@@ -574,13 +559,14 @@ niri supports getting keyboard layout from localed.
     (home-graphical-session-configuration
       (wayland? #t)
       (x11? #t)))
+#+end_src
 
+#+begin_src scheme :noweb-ref home-service
   (service home-niri-service-type
     (home-niri-configuration
       (config
        (kdlv1-file "niri.kdl"
          #~'((prefer-no-csd)
-             (screenshot-path "~/Pictures/Screenshots/%Y%m%d-%H%M%S.png")
              (spawn-sh-at-startup
               #$(string-append
                  "herd set-environment graphical-session "
@@ -595,7 +581,7 @@ niri supports getting keyboard layout from localed.
              (hotkey-overlay
               (skip-at-startup))
 
-             ;; noctalia: https://docs.noctalia.dev/v5/compositor-settings/niri/
+             ;; Noctalia: https://docs.noctalia.dev/noctalia/compositor-settings/niri/
              (window-rule
               (match (@ (app-id "dev.noctalia.Noctalia")))
               (open-floating true)
@@ -610,33 +596,15 @@ niri supports getting keyboard layout from localed.
              (layer-rule
               (match (@ (namespace "^noctalia-wallpaper")))
               (place-within-backdrop #t))
-             ;; Blur.
-             (window-rule
-              (background-effect
-               (blur #t)
-               (xray #f)))
-             (layer-rule
-              (match (@ (namespace "^noctalia-(bar-[^\"]+|notification|dock|panel|attached-panel|osd)$")))
-              (background-effect
-               (xray #f)))
-             (layer-rule
-              (match (@ (namespace "noctalia-window-switcher")))
-              (background-effect
-               (blur #t)
-               (xray #f)))
 
              (window-rule
               (match (@ (app-id "Firefox")
                         (title "^Picture-in-Picture$")))
               (open-floating #t))
-
              (window-rule
               (match (@ (app-id "showmethekey")))
               (open-floating #t)
-              (geometry-corner-radius 0)
-              (background-effect
-               (blur #f)))
-
+              (geometry-corner-radius 0))
              (window-rule
               (match (@ (app-id "thunar")
                         (title "^File Operation Progress$")))
@@ -655,7 +623,11 @@ niri supports getting keyboard layout from localed.
              (input
               (keyboard
                (repeat-delay 300)
-               (repeat-rate 30))
+               (repeat-rate 30)
+               (xkb
+                (layout  #$(or (keyboard-layout-name    keyboard-layout) ""))
+                (variant #$(or (keyboard-layout-variant keyboard-layout) ""))
+                (options #$(string-join (keyboard-layout-options keyboard-layout)))))
               (touchpad
                (tap)
                (natural-scroll))
@@ -694,6 +666,12 @@ niri supports getting keyboard layout from localed.
                (spawn "noctalia" "msg" "panel-toggle" "session"))
               (Alt+Tab
                (spawn "noctalia" "msg" "window-switcher"))
+              (Print
+               (spawn "noctalia" "msg" "screenshot-region"))
+              (Ctrl+Print
+               (spawn "noctalia" "msg" "screenshot-fullscreen"))
+              (Alt+Print
+               (spawn "noctalia" "msg" "screenshot-fullscreen" "all"))
 
               (Mod+Left
                (focus-column-left))
@@ -763,14 +741,20 @@ niri supports getting keyboard layout from localed.
 
               (Mod+Tab
                (@ (repeat #f))
-               (toggle-overview))
+               (toggle-overview))))))))
+#+end_src
 
-              (Print
-               (screenshot))
-              (Ctrl+Print
-               (screenshot-screen))
-              (Alt+Print
-               (screenshot-window))))))))
+*** noctalia
+#+begin_src scheme :noweb-ref home-service
+  (service home-noctalia-service-type)
+#+end_src
+
+*** xdg-desktop-portal
+#+begin_src scheme :noweb-ref package-spec
+  "gcr@3"
+  "gnome-keyring"
+  "xdg-desktop-portal-gnome"
+  "xdg-desktop-portal-gtk"
 #+end_src
 
 #+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/xdg-desktop-portal/niri-portals.conf
@@ -779,11 +763,17 @@ niri supports getting keyboard layout from localed.
   org.freedesktop.impl.portal.Access=gtk;
   org.freedesktop.impl.portal.FileChooser=gtk;
   org.freedesktop.impl.portal.Notification=gtk;
+  org.freedesktop.impl.portal.Secret=gnome-keyring;
 #+end_src
 
-*** noctalia
-#+begin_src scheme :noweb-ref home-service
-  (service home-noctalia-service-type)
+https://wiki.gnome.org/Projects(2f)GnomeKeyring(2f)Pam.html
+
+#+begin_src scheme :noweb-ref service
+  (service gnome-keyring-service-type
+    (gnome-keyring-configuration
+      (pam-services
+       '(("greetd" . login)
+         ("passwd" . passwd)))))
 #+end_src
 
 *** icon theme & fonts
@@ -791,6 +781,7 @@ niri supports getting keyboard layout from localed.
   (service home-theme-service-type
     (home-theme-configuration
       (packages (list qogir-icon-theme))
+      (font "sans-serif 10")
       (icon-theme "Qogir")
       (cursor-theme "Qogir")))
 #+end_src
@@ -802,6 +793,7 @@ niri supports getting keyboard layout from localed.
   "font-chiron-hei-hk"
   "font-chiron-sung-hk"
   "font-sarasa-gothic"
+  "font-google-noto"
   "font-google-noto-emoji"
   "font-nerd-symbols"
 #+end_src
