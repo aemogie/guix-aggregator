@@ -7,6 +7,7 @@
   #:use-module (gnu packages browser-extensions)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages cpp)
+  #:use-module (gnu packages disk)
   #:use-module (gnu packages emacs)
   #:use-module (gnu packages emacs-xyz)
   #:use-module (gnu packages fcitx5)
@@ -70,7 +71,6 @@
   #:use-module (radix packages video)
   #:use-module (saayix packages binaries)
   #:use-module (saayix packages emacs-xyz)
-  #:use-module (saayix packages file-managers)
   #:use-module (saayix packages fonts)
   #:use-module (saayix packages games)
   #:use-module (saayix packages minecraft)
@@ -125,6 +125,7 @@
 
 (define-public desktop
   (list git
+        git-tools
         jujutsu
         reuse
         gnupg
@@ -191,7 +192,7 @@
 
 (define-public games
   (yumiko?* steam-nvidia-new-feature
-            heroic-nvidia-new-feature
+            ;; heroic-nvidia-new-feature
             mangohud
             rusty-path-of-building
             ;; mcpelauncher-client
@@ -243,7 +244,8 @@
 
 (define-public pdf
   (list sioyek
-        zaread zathura zathura-pdf-mupdf))
+        zaread
+        zathura zathura-pdf-mupdf))
 
 (define-public portals
   (list xdg-desktop-portal

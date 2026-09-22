@@ -19,9 +19,10 @@
   #:use-module (gnu system accounts)
   #:use-module (gnu system file-systems)
   #:use-module (gnu system keyboard)
+  #:use-module (gnu system linux-initrd)
   #:use-module (gnu system nss)
-  #:use-module (gnu system shadow)
   #:use-module (gnu system pam)
+  #:use-module (gnu system shadow)
   #|GNU Services|#
   #:use-module (gnu services)
   #:use-module (gnu services admin)
@@ -87,7 +88,7 @@
       (keyboard-layout "br"
         #:options '("caps:swapescape")))
 
-    (kernel linux-7.1)
+    (kernel linux)
     (kernel-arguments
       (list "loglevel=3"
             "quiet"))
@@ -296,8 +297,12 @@
                 (list (network-address
                         (device "lo")
                         (value "127.0.0.1/8"))))
-              (provision '(loopback)))))
+              (provision '(loopback))
               ;; (name-servers '("127.0.0.1" "::1")))))
+              (name-servers '("1.1.1.1"
+                              "1.0.0.1"
+                              "2606:4700:4700::1111"
+                              "2606:4700:4700::1001")))))
 
         (simple-service 'extra-hosts hosts-service-type
           (list (host "192.168.100.30" "yuria.local"

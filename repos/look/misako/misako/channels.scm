@@ -5,8 +5,8 @@
 (define-public guix
   (channel
     (name 'guix)
-    (url "https://codeberg.org/look/guix")
-    (branch "ungraft-openssl")
+    (url "https://codeberg.org/guix/guix")
+    (branch "master")
     (introduction
       (make-channel-introduction
         "9edb3f66fd807b096b48283debdcddccfea34bad"
