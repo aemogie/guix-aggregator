@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: t; -*-
 ;; Packages will be initialized by guix later.
 (setq package-enable-at-startup nil)
 (setq package-archives nil)

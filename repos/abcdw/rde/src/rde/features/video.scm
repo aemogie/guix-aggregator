@@ -98,7 +98,7 @@ on-the-fly thumbnail generation for progress bar."
        (home-mpv-configuration
         (mpv mpv)
         (mpv-conf
-         `((global ((script . ,(file-append mpv-mpris "/lib/mpris.so"))
+         `((global ((script . ,(file-append mpv-mpris "/lib/mpv-mpris/mpris.so"))
                     ,@(if font-sans-serif
                           `((osd-font . ,font-sans-serif)
                             (sub-font . ,font-sans-serif))
