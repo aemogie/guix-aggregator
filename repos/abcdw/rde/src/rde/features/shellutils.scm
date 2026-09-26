@@ -66,16 +66,12 @@
         (defvar rde-compile-buffers-to-ignore ',buffers-to-ignore
           "A list of buffers to not send notifications from.")
 
-        (defun rde-compile-ansi-color-apply ()
-          "Translate control sequences into text properties in compile buffer."
-          (interactive)
-          (ansi-color-apply-on-region (point-min) (point-max)))
-
         (autoload 'recompile "compile")
         (define-key global-map (kbd ,recompile-key) 'recompile)
 
         (add-hook 'compilation-start-hook 'toggle-truncate-lines)
-        (add-hook 'compilation-filter-hook 'rde-compile-ansi-color-apply)
+        (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
+        (setq ansi-color-for-compilation-mode t)
 
         (defun rde-compile--notification-on-action (id key)
           (select-frame-set-input-focus (selected-frame)))

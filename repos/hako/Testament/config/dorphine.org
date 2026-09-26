@@ -30,29 +30,29 @@
       (users (cons* <<user-account>> %base-user-accounts))
       (skeletons %rosenthal-skeletons)
       (packages
-       (with-nix-profile
-        (append (specifications->packages
-                 '("digikam"
-                   "firefox"
-                   "gimp"
-                   "imv"
-                   "kdenlive"
-                   "obs-nvidia"
-                   "picard"
-                   "showmethekey"
-                   <<package-spec>>))
-                (list <<package-nix>>)
-                %testament-cli-packages
-                %base-packages)))
+       (append (specifications->packages
+                '("digikam"
+                  "firefox"
+                  "gimp"
+                  "imv"
+                  "kdenlive"
+                  "obs-nvidia"
+                  "picard"
+                  "showmethekey"
+                  <<package-spec>>))
+               (with-nix-profile
+                (list <<package-nix>>))
+               %testament-cli-packages
+               %base-packages))
       (services
        (cons* <<service>>
-              (modify-services %rosenthal-desktop-services/base <<modify-service>>)))
+              (modify-services %desktop-services <<modify-service>>)))
       (name-service-switch %mdns-host-lookup-nss)
       (sudoers-file
        (plain-file "sudoers"
          (string-join
           (list (plain-file-content %sudoers-specification)
-                "deploy ALL=(ALL) NOPASSWD: ALL")
+                <<sudoers>>)
           "\n")))))
 
   ((nonguix-transformation-nvidia
@@ -136,7 +136,8 @@ Application profiles
                          (modify-services (home-environment-default-essential-services this-home-environment)
                            (delete home-symlink-manager-service-type))))
                  (services
-                  (cons* <<home-service>> %rosenthal-desktop-home-services))))))
+                  (cons* <<home-service>>
+                         %base-home-services))))))
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref home-service
@@ -177,6 +178,15 @@ Application profiles
   DBPATH="/home/hako/.config"
   COLORS=light
   IGNORE=(nvidia nvidia_drm nvidia_modeset nvidia_peermem nvidia_uvm)
+#+end_src
+
+*** Console Font
+#+begin_src scheme :noweb-ref modify-service
+  (console-font-service-type
+   _ => (map (lambda (n)
+               (cons (string-append "tty" (number->string n))
+                     (file-append font-terminus "/share/consolefonts/ter-132n")))
+             (iota 6 1)))
 #+end_src
 
 *** File Systems
@@ -309,31 +319,7 @@ Application profiles
 #+end_src
 
 *** Users
-Generate password hash:
-#+begin_src shell
-  guix shell openssl
-  echo <password> | openssl passwd -6 -stdin
-#+end_src
-
-Generate random password hash:
-#+begin_src shell
-  guix shell openssl pwgen
-  pwgen -sync 16 1 | openssl passwd -6 -stdin
-#+end_src
-
 #+begin_src scheme :noweb yes :noweb-ref user-account
-  (user-account
-    (inherit %root-account)
-    (password #f)
-    (shell (file-append fish "/bin/fish")))
-
-  (user-account
-    (name "deploy")
-    (group "nogroup")
-    (home-directory "/var/empty")
-    (create-home-directory? #f)
-    (system? #t))
-
   (user-account
     (name "hako")
     (group "users")
@@ -341,9 +327,48 @@ Generate random password hash:
     (shell (file-append fish "/bin/fish")))
 #+end_src
 
+Account for [[https://guix.gnu.org/manual/devel/en/html_node/Invoking-guix-deploy.html][=guix deploy=]].
+
+#+begin_src scheme :noweb yes :noweb-ref user-account
+  (user-account
+    (name "deploy")
+    (group "nogroup")
+    (home-directory "/var/empty")
+    (create-home-directory? #f)
+    (system? #t))
+#+end_src
+
+#+begin_src scheme :noweb-ref sudoers
+  "deploy ALL=(ALL) NOPASSWD: ALL"
+#+end_src
+
+Authorized SSH keys.
+
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-openssh openssh-service-type
     `(("deploy" ,%ssh-key-deploy)))
+#+end_src
+
+Extra notes:
+
+The =root= account (=%root-account=, added automatically if not declared) by
+default has an empty password.  Delete the password and lock the account when
+the system is functional.
+
+#+begin_src bash
+  sudo passwd --delete --lock root
+#+end_src
+
+Generate password hash:
+#+begin_src bash
+  guix shell openssl
+  echo <password> | openssl passwd -6 -stdin
+#+end_src
+
+Generate random password hash:
+#+begin_src bash
+  guix shell openssl pwgen
+  pwgen -sync 16 1 | openssl passwd -6 -stdin
 #+end_src
 
 *** Shell Utilities
@@ -354,8 +379,20 @@ Generate random password hash:
 #+end_src
 
 *** SOPS Secrets
+#+begin_src scheme :noweb-ref home-service
+  (service home-sops-secrets-service-type
+    (home-sops-service-configuration
+      (gnupg-home (in-vicinity %xdg-data-home "sops"))
+      (secrets
+       (list (sops-secret
+               (key '("mail"))
+               (file %sops-dorphine))))))
+#+end_src
+
+Extra notes:
+
 Create GPG home directory specifically for use with SOPS.
-#+begin_src shell
+#+begin_src bash
   MY_GPGHOME="<GPG homedir>"
 
   mkdir --parents --mode=0700 "$MY_GPGHOME"
@@ -370,7 +407,7 @@ Create GPG home directory specifically for use with SOPS.
 #+end_src
 
 Generate passwordless ECC key:
-#+begin_src shell
+#+begin_src bash
   MY_GPGHOME="<GPG homedir>"
   MY_NAME="<Your Name>"
 
@@ -386,17 +423,12 @@ Generate passwordless ECC key:
   unset MY_GPGHOME MY_NAME
 #+end_src
 
-#+begin_src scheme :noweb-ref home-service
-  (service home-sops-secrets-service-type
-    (home-sops-service-configuration
-      (gnupg-home (in-vicinity %xdg-data-home "sops"))
-      (secrets
-       (list (sops-secret
-               (key '("mail"))
-               (file %sops-dorphine))))))
+** Power Management
+*** power-profiles-daemon
+#+begin_src scheme :noweb-ref service
+  (service power-profiles-daemon-service-type)
 #+end_src
 
-** Power Management
 *** upower
 #+begin_src scheme :noweb-ref modify-service
   (upower-service-type
@@ -414,6 +446,13 @@ Generate passwordless ECC key:
                (extra-configuration-files
                 (list %network-manager-ipv6-privacy
                       %network-manager-random-mac-address))))
+#+end_src
+
+*** bluetooth
+#+begin_src scheme :noweb-ref service
+  (service bluetooth-service-type
+    (bluetooth-configuration
+      (auto-enable? #t)))
 #+end_src
 
 *** nftables
@@ -489,11 +528,6 @@ Generate passwordless ECC key:
 #+end_src
 
 ** OpenPGP & Security Token
-*** pcscd
-#+begin_src scheme :noweb-ref service
-  (service pcscd-service-type)
-#+end_src
-
 *** gpg-agent
 #+begin_src scheme :noweb-ref home-service
   (service home-gpg-agent-service-type
@@ -501,6 +535,11 @@ Generate passwordless ECC key:
       (pinentry-program (file-append pinentry-gnome3 "/bin/pinentry-gnome3"))
       (ssh-support? #t)
       (shepherd-requirement '(graphical-session))))
+#+end_src
+
+*** pcscd
+#+begin_src scheme :noweb-ref service
+  (service pcscd-service-type)
 #+end_src
 
 *** libfido2
@@ -530,6 +569,10 @@ Generate passwordless ECC key:
 
 ** Graphical Session
 *** noctalia-greeter
+#+begin_src scheme :noweb-ref modify-service
+  (delete gdm-service-type)
+#+end_src
+
 #+begin_src scheme :noweb-ref service
   (service noctalia-greeter-service-type
     (noctalia-greeter-configuration
@@ -764,6 +807,11 @@ Generate passwordless ECC key:
   org.freedesktop.impl.portal.FileChooser=gtk;
   org.freedesktop.impl.portal.Notification=gtk;
   org.freedesktop.impl.portal.Secret=gnome-keyring;
+#+end_src
+
+#+begin_src scheme :noweb-ref home-service
+  (service home-dbus-service-type)
+  (service home-pipewire-service-type)
 #+end_src
 
 https://wiki.gnome.org/Projects(2f)GnomeKeyring(2f)Pam.html
@@ -1256,7 +1304,7 @@ Make fonts available to Nix packages.
 Pin Nixpkgs to avoid networking requirement when using the wrappers.
 
 #+begin_src nix :tangle ../tangled/dorphine/nixpkgs.nix
-  (import (builtins.getFlake "github:NixOS/nixpkgs/d58a46e3bc02d91ebe04667f8397752a749c0024") {})
+  (import (builtins.getFlake "github:NixOS/nixpkgs/c508844df6c28fa6dabc1b6af70f3ccbd65c5201") {})
 #+end_src
 
 #+begin_src scheme :noweb-ref package-nix
@@ -1273,7 +1321,7 @@ Pin Nixpkgs to avoid networking requirement when using the wrappers.
     #:run-command '("nocturne"))
 
   (nix-shell-wrapper "tsukimi"
-    '("github:merrkry/nixpkgs/d604b2aa661ad3a79367e8ba6f04c732dccf7cbc#tsukimi")
+    '("github:NixOS/nixpkgs/da100efb6f98396f285ee84b52641bede78e0343#tsukimi")
     #:environment-set '(("XDG_DATA_DIRS" . "/nix/var/nix/profiles/guix-system-nix-profile/share"))
     #:run-command '("tsukimi"))
 #+end_src
@@ -1355,6 +1403,10 @@ condition.  Disable one of them.
   "webp-pixbuf-loader"
 #+end_src
 
+#+begin_src scheme :noweb-ref service
+  (service gvfs-service-type)
+#+end_src
+
 *** wget
 #+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/wgetrc
   hsts-file = ~/.cache/wget-hsts
@@ -1376,9 +1428,8 @@ Guile builtins
 Utilities
 #+begin_src scheme :noweb-ref module
   (gnu)
-  (guix packages)
-  (nonguix)
-  (rosenthal)
+  (nonguix transformations)
+  (rosenthal utils file)
   (rosenthal utils nix)
   (sops secrets)
 #+end_src
@@ -1386,22 +1437,34 @@ Utilities
 Guix System
 #+begin_src scheme :noweb-ref module
   (gnu system accounts)
+  (nongnu system linux-initrd)
+#+end_src
+
+Guix System - bootloaders
+#+begin_src scheme :noweb-ref module
+  (rosenthal bootloader limine)
 #+end_src
 
 Guix System - services
 #+begin_src scheme :noweb-ref module
+  (gnu services)
   (gnu services containers)
+  (gnu services desktop)
+  (gnu services guix)
   (gnu services linux)
   (gnu services networking)
   (gnu services nix)
+  (gnu services pm)
   (gnu services security)
   (gnu services security-token)
+  (gnu services shepherd)
   (gnu services ssh)
   (gnu services syncthing)
   (gnu services sysctl)
   (gnu services virtualization)
   (gnu services xorg)
-  (rosenthal services keyboard)
+  (rosenthal services base)
+  (rosenthal services desktop)
   (rosenthal services networking)
   (rosenthal services nix)
   (rosenthal services shellutils)
@@ -1409,10 +1472,14 @@ Guix System - services
 
 Guix Home - services
 #+begin_src scheme :noweb-ref module
+  (gnu home)
+  (gnu home services)
+  (gnu home services desktop)
   (gnu home services dotfiles)
   (gnu home services fontutils)
   (gnu home services gnupg)
-  (gnu home services shells)
+  (gnu home services shepherd)
+  (gnu home services sound)
   (gnu home services symlink-manager)
   (rosenthal home services desktop)
   (rosenthal home services writable-files-manager)
@@ -1424,10 +1491,10 @@ Guix packages
   (gnu packages android)
   (gnu packages fcitx5)
   (gnu packages file-systems)
+  (gnu packages fonts)
   (gnu packages games)
   (gnu packages gnome-xyz)
   (gnu packages gnupg)
-  (gnu packages java)
   (gnu packages linux)
   (gnu packages mail)
   (gnu packages security-token)
@@ -1436,5 +1503,6 @@ Guix packages
   (gnu packages video)
   (gnu packages xdisorg)
   (gnu packages xorg)
+  (nongnu packages linux)
   (nongnu packages nvidia)
 #+end_src

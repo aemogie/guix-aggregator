@@ -136,9 +136,38 @@
       `("--quick" "--batch"
         "--load" "ob-tangle"
         "--load" "ob-lob"
-        "--eval" "(setopt org-babel-load-languages '((shell . t)))"
+        "--eval" "(setopt org-babel-load-languages '())"
         "--eval" "(setopt org-confirm-babel-evaluate nil)"
         "--eval" "(setopt org-id-track-globally nil)"
+        ;; XXX: `org-babel-lob-ingest' no longer performs noweb expansion when
+        ;; ingesting blocks, redefining it to revert the behavior for now.
+        ;; https://github.com/emacs-mirror/emacs/blob/a360712c9d272d950d8d8255ef74570f7e90b7d9/etc/ORG-NEWS#L693-L704
+        ;; https://list.orgmode.org/CAFqX0E51ib7+1PHDeQ438nCdyqszaeTtcLSa3G-N9y6yHK-Lhw@mail.gmail.com/
+        "--eval"
+        ,(call-with-output-string
+           (lambda (port)
+             (write
+              '(defun org-babel-lob-ingest (&optional file)
+                 "Add all named source blocks defined in FILE to `org-babel-library-of-babel'."
+                 (interactive "fFile: ")
+                 (let ((lob-ingest-count 0))
+                   (org-babel-map-src-blocks file
+                     (let* ((info (org-babel-get-src-block-info 'no-eval))
+                            (source-name (nth 4 info)))
+                       (when source-name
+                         (setf (nth 1 info)
+                               (if (org-babel-noweb-p (nth 2 info) :eval)
+                                   (org-babel-expand-noweb-references info)
+                                 (nth 1 info)))
+                         (let ((source (intern source-name)))
+                           (setq org-babel-library-of-babel
+                                 (cons (cons source info)
+                                       (assq-delete-all source org-babel-library-of-babel))))
+                         (cl-incf lob-ingest-count))))
+                   (message "%d source block%s added to Library of Babel"
+                            lob-ingest-count (if (> lob-ingest-count 1) "s" ""))
+                   lob-ingest-count))
+              port)))
         ,@(append-map
            (lambda (dependency)
              (list "--eval" (format #f "(org-babel-lob-ingest ~s)" dependency)))

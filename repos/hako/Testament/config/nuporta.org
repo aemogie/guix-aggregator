@@ -589,29 +589,6 @@
     (properties '((forge-type . forgejo))))
 #+end_src
 
-**** testament
-#+begin_src scheme :noweb-ref cuirass-spec
-  (specification
-    (name "testament")
-    (build '(channels testament))
-    (channels
-     (list (channel
-             (inherit %default-guix-channel)
-             (url "https://git.guix.moe/channels/guix.git"))
-           (channel
-             (name 'testament)
-             (url "https://git.guix.moe/channels/testament.git")
-             (branch "trunk")
-             (introduction
-              (make-channel-introduction
-               "c5d46fdfdfbc84fe413f1d930049d1f703f9a0ff"
-               (openpgp-fingerprint
-                "F4C2 D1DF 3FDE EA63 D1D3  0776 ACC6 6D09 CA52 8292"))))))
-    (priority 5)
-    (systems '("x86_64-linux"))
-    (properties '((forge-type . forgejo))))
-#+end_src
-
 *** mirroring
 #+begin_src caddyfile :noweb-ref caddy-site
   cache-cdn.guix.moe, cache-test.guix.moe {

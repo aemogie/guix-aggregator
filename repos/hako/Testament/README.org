@@ -43,7 +43,7 @@ Examples:
 - Multiple commands can be chained by =--=, they'll be executed in order.
 
 #+begin_src bash
-  blue build -- compile -- build-os
+  blue build -- build-os
 #+end_src
 
 ** Shared configurations
@@ -54,17 +54,17 @@ Examples:
 NOTE:
 - ZFS: Support implemented in [[https://codeberg.org/guix/guix/pulls/8346][guix/guix!8346]]
 - NVIDIA: Avoid GDM if you encounter issues
-- NVIDIA: Open source kernel modules may be affected by [[https://codeberg.org/guix/guix/issues/10409][guix/guix#10409]]
 
 *** [[file:config/dorphine.org][dorphine]] (x86_64-linux, UEFI, ZFS, NVIDIA) | [[file:deploy/dorphine.scm][deploy]]
 
 *** [[file:config/chapra.org][chapra]] (x86_64-linux, UEFI, ZFS) | [[file:deploy/chapra.scm][deploy]]
 
-*** [[file:config/nuporta.org][nuporta]] (x86_64-linux, UEFI, ZFS) | [[file:deploy/nuporta.scm][deploy]]
-
 *** [[file:config/ignamma.org][ignamma]] (x86_64-linux, UEFI, XFS) | [[file:deploy/ignamma.scm][deploy]]
 
 *** [[file:config/involemi.org][involemi]] (x86_64-linux, BIOS, XFS) | [[file:deploy/involemi.scm][deploy]]
+
+*** [[file:config/nuporta.org][nuporta]] (x86_64-linux, UEFI, ZFS) | [[file:deploy/nuporta.scm][deploy]]
+Head node of https://cuirass.nonguix.org
 
 *** [[file:config/worker.org][worker]] | [[file:deploy/worker.scm][deploy]]
 Build workers for https://cuirass.nonguix.org

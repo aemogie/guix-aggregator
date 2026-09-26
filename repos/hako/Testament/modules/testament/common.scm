@@ -242,7 +242,7 @@ wifi.cloned-mac-address=stable
       (version version))))
 
 (define linux-server/dolly
-  (let ((cachyos-version "6.18.50-1"))
+  (let ((cachyos-version "6.18.52-1"))
     (make-linux/dolly
      cachyos-version
      (origin
@@ -251,7 +251,7 @@ wifi.cloned-mac-address=stable
              "https://github.com/CachyOS/linux/releases/download/cachyos-"
              cachyos-version "/cachyos-" cachyos-version ".tar.gz"))
        (sha256
-        (base32 "1yapiq30csr29cw4pgzdn22h648hx1zi7xif6c33n3zw8i7gqksb")))
+        (base32 "0m3rp34gfddjki662jv0mirig5rfa1chy5vfrvyzcsvvs26qpyrn")))
      #:defconfig (%kernel-config "/defconfig_server")
      #:configs
      (string-join
@@ -271,7 +271,7 @@ wifi.cloned-mac-address=stable
       "\n"))))
 
 (define linux-desktop/dolly
-  (let ((cachyos-version "7.2.4-1"))
+  (let ((cachyos-version "7.2.7-1"))
     (make-linux/dolly
      cachyos-version
      (origin
@@ -280,7 +280,7 @@ wifi.cloned-mac-address=stable
              "https://github.com/CachyOS/linux/releases/download/cachyos-"
              cachyos-version "/cachyos-" cachyos-version ".tar.gz"))
        (sha256
-        (base32 "03rnqmic7gkg4551waq8njbx84jp915q9sb11rw2maq6xhar22a0"))
+        (base32 "1ai3vqvyx28lc7x3mgbq6xq1prv3c3il9y32gl5zikl818acfjsd"))
        (patches (map %kernel-config '("/patches/bore-cachy-7.2.patch"))))
      #:defconfig (%kernel-config "/defconfig_desktop")
      #:configs

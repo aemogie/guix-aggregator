@@ -21,29 +21,30 @@ Services, packages and configuration file for Emacs:
 #+begin_src scheme :noweb yes :noweb-ref home-service
   (service home-emacs-service-type
     (home-emacs-configuration
-      (emacs emacs-next-pgtk)
+      (emacs emacs-pgtk)
       (packages
-       ;; (with-transformation
-       ;;     (package-input-rewriting
-       ;;      `((,(@ (gnu packages emacs) emacs)         . ,emacs)
-       ;;        (,(@ (gnu packages emacs) emacs-minimal) . ,emacs)
-       ;;        (,(@ (gnu packages emacs) emacs-no-x)    . ,emacs)))
-       ;;   )
-       (specifications->manifest
-        '(;; Configured packages.
-          <<package-spec>>
-          ;; TeX.
-          "texlive-scheme-small"
-          "texlive-dvipng"
-          ;; Others.
-          "emacs-beancount"
-          "emacs-caddyfile-mode"
-          "emacs-edit-indirect"
-          "emacs-fish-mode"
-          "emacs-markdown-mode"
-          "emacs-nftables-mode"
-          "emacs-reader"
-          "emacs-zig-mode")))
+       (with-transformation
+           (compose (options->transformation
+                     '((without-tests . "emacs-el-mock")))
+                    (package-input-rewriting
+                     `((,(@ (gnu packages emacs) emacs)         . ,emacs)
+                       (,(@ (gnu packages emacs) emacs-minimal) . ,emacs)
+                       (,(@ (gnu packages emacs) emacs-no-x)    . ,emacs))))
+         (specifications->manifest
+          '(;; Configured packages.
+            <<package-spec>>
+            ;; TeX.
+            "texlive-scheme-small"
+            "texlive-dvipng"
+            ;; Others.
+            "emacs-beancount"
+            "emacs-caddyfile-mode"
+            "emacs-edit-indirect"
+            "emacs-fish-mode"
+            "emacs-markdown-mode"
+            "emacs-nftables-mode"
+            "emacs-reader"
+            "emacs-zig-mode"))))
       (shepherd-requirement '(graphical-session))))
 #+end_src
 
@@ -321,13 +322,13 @@ information.
 
 #+begin_src scheme :noweb-ref package-spec
   "emacs-helpful"
-  "emacs-next-pgtk:doc"
+  "emacs-pgtk:src"
 #+end_src
 
 Source code of Emacs is optional.  It will be used for displaying source of C
 functions.
 
-In Guix, =doc= output of the Emacs package stores source code under the
+In Guix, =src= output of the Emacs package stores source code under the
 =c-source= directory, differing from =src= expected by =helpful--library-path=.
 Advise the function.
 
