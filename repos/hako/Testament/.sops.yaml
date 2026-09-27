@@ -1,9 +1,7 @@
 keys:
     - &hako     576C8A836723183D34C98D12C66DF7E30ED48083
     - &chapra   6AF468407A7BEE532CD6DD48F867327C967BE500
-    - &dorphine 3B6C92CB84BB392FD8DF3609D7428FE2857261AE
     - &involemi 6F3D824054EEAD296E8E330CE8F43387DA717C55
-    - &nuporta  5B266FA1DD023E8F5EC5BD40E666FCFF4F4A22B7
 
 creation_rules:
     - path_regex: .*chapra\.yaml$
@@ -11,18 +9,8 @@ creation_rules:
           - pgp:
                 - *hako
                 - *chapra
-    - path_regex: .*dorphine\.yaml$
-      key_groups:
-          - pgp:
-                - *hako
-                - *dorphine
     - path_regex: .*involemi\.yaml$
       key_groups:
           - pgp:
                 - *hako
                 - *involemi
-    - path_regex: .*nuporta\.yaml$
-      key_groups:
-          - pgp:
-                - *hako
-                - *nuporta

@@ -3,10 +3,6 @@
 #+TITLE: Caddy snippets
 #+PROPERTY: header-args :mkdirp yes :noweb-prefix no
 
-#+begin_src caddyfile :tangle ../../tangled/caddy
-  placeholder
-#+end_src
-
 ** Block bots
 #+name: caddy-snippet-block-bots
 #+begin_src caddyfile

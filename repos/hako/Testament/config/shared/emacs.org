@@ -1005,8 +1005,7 @@ Automatic usage and fallback for tree-sitter major modes.
 #+begin_src elisp :noweb-ref emacs-init
   (use-package auth-source
     :custom
-    (auth-source-gpg-encrypt-to '("220F98D95E86204C0036DA7B6DEC4360408B4185"))
-    (auth-sources '("~/.local/share/authinfo.gpg")))
+    (auth-sources '(default)))
 #+end_src
 
 *** [[https://github.com/cbowdon/daemons.el][daemons]]

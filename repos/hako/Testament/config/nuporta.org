@@ -16,19 +16,32 @@
        (bootloader limine-efi-removable-bootloader)
        (targets '("/efi"))))
     (kernel linux-server/dolly)
-    (kernel-arguments (cons* <<kernel-argument>> %default-kernel-arguments))
-    (file-systems (append <<file-systems>> %base-file-systems))
-    (swap-devices <<swap-devices>>)
-    (groups (cons* <<user-group>> %base-groups))
-    (users (cons* <<user-account>> %base-user-accounts))
-    (skeletons %rosenthal-skeletons)
-    (packages (append (list mirror-substitutes) %testament-cli-packages %base-packages))
-    (services (cons* <<service>> %base-services))
+    (kernel-arguments
+     (cons* <<kernel-argument>>
+            %default-kernel-arguments))
+    (file-systems
+     (append <<file-systems>>
+             %base-file-systems))
+    (swap-devices
+     (append <<swap-devices>>))
+    (groups
+     (cons* <<user-group>>
+            %base-groups))
+    (users
+     (cons* <<user-account>>
+            %base-user-accounts))
+    (packages
+     (append (list mirror-substitutes)
+             %testament-cli-packages
+             %base-packages))
+    (services
+     (cons* <<service>>
+            %base-services))
     (sudoers-file
      (plain-file "sudoers"
        (string-join
         (list (plain-file-content %sudoers-specification)
-              "deploy ALL=(ALL) NOPASSWD: ALL")
+              <<sudoers>>)
         "\n"))))
 #+end_src
 
@@ -160,17 +173,6 @@
 *** Users
 #+begin_src scheme :noweb-ref user-account
   (user-account
-    (inherit %root-account)
-    (password #f)
-    (shell (file-append fish "/bin/fish")))
-  (user-account
-    (name "deploy")
-    (group "nogroup")
-    (home-directory "/var/empty")
-    (create-home-directory? #f)
-    (system? #t))
-
-  (user-account
     (name "hako")
     (group "users")
     (supplementary-groups '("wheel"))
@@ -184,6 +186,23 @@
     (group "users")
     (supplementary-groups '("wheel")))
 #+end_src
+
+Account for [[https://guix.gnu.org/manual/devel/en/html_node/Invoking-guix-deploy.html][=guix deploy=]].
+
+#+begin_src scheme :noweb yes :noweb-ref user-account
+  (user-account
+    (name "deploy")
+    (group "nogroup")
+    (home-directory "/var/empty")
+    (create-home-directory? #f)
+    (system? #t))
+#+end_src
+
+#+begin_src scheme :noweb-ref sudoers
+  "deploy ALL=(ALL) NOPASSWD: ALL"
+#+end_src
+
+Authorized SSH keys.
 
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-openssh openssh-service-type
@@ -204,11 +223,6 @@
 *** ntp
 #+begin_src scheme :noweb-ref service
   (service ntp-service-type)
-#+end_src
-
-*** avahi
-#+begin_src scheme :noweb-ref service
-  (service avahi-service-type)
 #+end_src
 
 *** nftables
@@ -255,15 +269,6 @@
   }
 #+end_src
 
-*** tailscale
-#+begin_src scheme :noweb-ref service
-  (service tailscale-service-type)
-#+end_src
-
-#+begin_src nftables :noweb-ref nftables-filter-input
-  tcp dport 41641 accept
-#+end_src
-
 *** openssh
 #+begin_src scheme :noweb-ref service
   (service openssh-service-type
@@ -271,6 +276,11 @@
       (openssh openssh-sans-x)
       (permit-root-login 'prohibit-password)
       (password-authentication? #f)))
+
+  (simple-service 'openssh-fail2ban-jails fail2ban-service-type
+    (list (fail2ban-jail-configuration
+            (name "sshd")
+            (enabled? #t))))
 #+end_src
 
 #+begin_src nftables :noweb-ref nftables-filter-input
@@ -279,14 +289,18 @@
   udp dport 60000-61000 accept
 #+end_src
 
-*** fail2ban
+*** avahi
 #+begin_src scheme :noweb-ref service
-  (service fail2ban-service-type
-    (fail2ban-configuration
-      (extra-jails
-       (list (fail2ban-jail-configuration
-               (name "sshd")
-               (enabled? #t))))))
+  (service avahi-service-type)
+#+end_src
+
+*** tailscale
+#+begin_src scheme :noweb-ref service
+  (service tailscale-service-type)
+#+end_src
+
+#+begin_src nftables :noweb-ref nftables-filter-input
+  tcp dport 41641 accept
 #+end_src
 
 ** Session and Seat Management
@@ -373,7 +387,6 @@
 #+begin_src scheme :noweb yes :noweb-ref service
   (service cuirass-service-type
     (cuirass-configuration
-      (cuirass cuirass/dolly)
       ;; 6 hours
       (interval (* 6 3600))
       (parameters
@@ -415,10 +428,10 @@
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.guix.moe/channels/guix.git"))
+             (url "https://git.guix.gnu.org/guix.git"))
            (channel
              (name 'asahi)
-             (url "https://git.guix.moe/channels/asahi.git")
+             (url "https://codeberg.org/asahi-guix/channel")
              (branch "main")
              (introduction
               (make-channel-introduction
@@ -438,10 +451,10 @@
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.guix.moe/channels/guix.git"))
+             (url "https://git.guix.gnu.org/guix.git"))
            (channel
              (name 'nonguix)
-             (url "https://git.guix.moe/channels/nonguix.git")
+             (url "https://gitlab.com/nonguix/nonguix")
              (introduction
               (make-channel-introduction
                "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
@@ -449,7 +462,7 @@
                 "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))
            (channel
              (name 'atomized)
-             (url "https://git.guix.moe/channels/atomized.git")
+             (url "https://codeberg.org/ieure/atomized-guix.git")
              (branch "main")
              (introduction
               (make-channel-introduction
@@ -469,11 +482,11 @@
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.guix.moe/channels/guix.git"))
+             (url "https://git.guix.gnu.org/guix.git"))
            (channel
              (name 'cast)
              (branch "main")
-             (url "https://git.guix.moe/channels/cast.git")
+             (url "https://codeberg.org/vnpower/cast.git")
              (introduction
               (make-channel-introduction
                "fab73647fd9f0f2167d9ef9d42cddd77500fffb3"
@@ -492,10 +505,10 @@
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.guix.moe/channels/guix.git"))
+             (url "https://git.guix.gnu.org/guix.git"))
            (channel
              (name 'guixcn)
-             (url "https://git.guix.moe/channels/guixcn.git")
+             (url "https://codeberg.org/guixcn/guix-channel.git")
              (introduction
               (make-channel-introduction
                "993d200265630e9c408028a022f32f34acacdf29"
@@ -514,10 +527,10 @@
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.guix.moe/channels/guix.git"))
+             (url "https://git.guix.gnu.org/guix.git"))
            (channel
              (name 'nonguix)
-             (url "https://git.guix.moe/channels/nonguix.git")
+             (url "https://gitlab.com/nonguix/nonguix")
              (introduction
               (make-channel-introduction
                "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
@@ -535,10 +548,10 @@
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.guix.moe/channels/guix.git"))
+             (url "https://git.guix.gnu.org/guix.git"))
            (channel
              (name 'rain-and-roses)
-             (url "https://git.guix.moe/channels/rain-and-roses.git")
+             (url "https://codeberg.org/untrusem/rain-and-roses.git")
              (branch "trunk"))))
     (priority 5)
     (systems '("x86_64-linux"))
@@ -553,10 +566,10 @@
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.guix.moe/channels/guix.git"))
+             (url "https://git.guix.gnu.org/guix.git"))
            (channel
              (name 'rde)
-             (url "https://git.guix.moe/channels/rde.git")
+             (url "https://git.sr.ht/~abcdw/rde")
              (introduction
               (make-channel-introduction
                "257cebd587b66e4d865b3537a9a88cccd7107c95"
@@ -574,10 +587,10 @@
     (channels
      (list (channel
              (inherit %default-guix-channel)
-             (url "https://git.guix.moe/channels/guix.git"))
+             (url "https://git.guix.gnu.org/guix.git"))
            (channel
              (name 'rosenthal)
-             (url "https://git.guix.moe/channels/rosenthal.git")
+             (url "https://codeberg.org/hako/rosenthal.git")
              (branch "trunk")
              (introduction
               (make-channel-introduction
@@ -953,7 +966,12 @@ Guile builtins
 Utilities
 #+begin_src scheme :noweb-ref module
   (gnu)
-  (rosenthal)
+  (rosenthal utils file)
+#+end_src
+
+Guix System - bootloaders
+#+begin_src scheme :noweb-ref module
+  (rosenthal bootloader limine)
 #+end_src
 
 Guix System - services
@@ -961,9 +979,10 @@ Guix System - services
   (gnu services avahi)
   (gnu services cuirass)
   (gnu services databases)
+  (gnu services desktop)
   (gnu services networking)
-  (gnu services rsync)
   (gnu services security)
+  (gnu services shepherd)
   (gnu services ssh)
   (gnu services sysctl)
   (gnu services web)
@@ -979,8 +998,6 @@ Guix packages
   (gnu packages file-systems)
   (gnu packages shells)
   (gnu packages ssh)
-  (rosenthal packages binaries)
-  (rosenthal packages ci)
   (rosenthal packages package-management)
   (rosenthal packages web)
 #+end_src

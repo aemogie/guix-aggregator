@@ -20,20 +20,35 @@
                grub-efi-removable-bootloader))
          (targets (list (or bios-boot "/efi")))))
       (kernel linux-server/dolly)
-      (kernel-arguments (cons* <<kernel-argument>> %default-kernel-arguments))
-      (initrd-modules (cons* "sd_mod" (base-initrd-modules kernel)))
-      (file-systems (append <<file-systems>> %base-file-systems))
-      (swap-devices (append <<swap-devices>>))
-      (groups (cons* <<user-group>> %base-groups))
-      (users (cons* <<user-account>> %base-user-accounts))
-      (skeletons %rosenthal-skeletons)
-      (packages (append (list mirror-substitutes) %testament-cli-packages %base-packages))
-      (services (cons* <<service>> %base-services))
+      (initrd-modules
+       (cons* "sd_mod"
+              (base-initrd-modules kernel)))
+      (kernel-arguments
+       (cons* <<kernel-argument>>
+              %default-kernel-arguments))
+      (file-systems
+       (append <<file-systems>>
+               %base-file-systems))
+      (swap-devices
+       (append <<swap-devices>>))
+      (groups
+       (cons* <<user-group>>
+              %base-groups))
+      (users
+       (cons* <<user-account>>
+              %base-user-accounts))
+      (packages
+       (append (list mirror-substitutes)
+               %testament-cli-packages
+               %base-packages))
+      (services
+       (cons* <<service>>
+              %base-services))
       (sudoers-file
        (plain-file "sudoers"
          (string-join
           (list (plain-file-content %sudoers-specification)
-                "deploy ALL=(ALL) NOPASSWD: ALL")
+                <<sudoers>>)
           "\n")))))
 #+end_src
 
@@ -84,17 +99,6 @@
 *** Users
 #+begin_src scheme :noweb-ref user-account
   (user-account
-    (inherit %root-account)
-    (password #f)
-    (shell (file-append fish "/bin/fish")))
-  (user-account
-    (name "deploy")
-    (group "nogroup")
-    (home-directory "/var/empty")
-    (create-home-directory? #f)
-    (system? #t))
-
-  (user-account
     (name "hako")
     (group "users")
     (supplementary-groups '("wheel"))
@@ -108,6 +112,23 @@
     (group "users")
     (supplementary-groups '("wheel")))
 #+end_src
+
+Account for [[https://guix.gnu.org/manual/devel/en/html_node/Invoking-guix-deploy.html][=guix deploy=]].
+
+#+begin_src scheme :noweb yes :noweb-ref user-account
+  (user-account
+    (name "deploy")
+    (group "nogroup")
+    (home-directory "/var/empty")
+    (create-home-directory? #f)
+    (system? #t))
+#+end_src
+
+#+begin_src scheme :noweb-ref sudoers
+  "deploy ALL=(ALL) NOPASSWD: ALL"
+#+end_src
+
+Authorized SSH keys.
 
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-openssh openssh-service-type
@@ -137,16 +158,11 @@
       (openssh openssh-sans-x)
       (permit-root-login 'prohibit-password)
       (password-authentication? #f)))
-#+end_src
 
-*** fail2ban
-#+begin_src scheme :noweb-ref service
-  (service fail2ban-service-type
-    (fail2ban-configuration
-      (extra-jails
-       (list (fail2ban-jail-configuration
-               (name "sshd")
-               (enabled? #t))))))
+  (simple-service 'openssh-fail2ban-jails fail2ban-service-type
+    (list (fail2ban-jail-configuration
+            (name "sshd")
+            (enabled? #t))))
 #+end_src
 
 ** Web Servers & Services
@@ -299,14 +315,14 @@ Within this repository
 Utilities
 #+begin_src scheme :noweb-ref module
   (gnu)
-  (guix modules)
-  (rosenthal)
+  (rosenthal utils file)
 #+end_src
 
 Guix System - services
 #+begin_src scheme :noweb-ref module
   (gnu services networking)
   (gnu services security)
+  (gnu services shepherd)
   (gnu services ssh)
   (gnu services sysctl)
 #+end_src

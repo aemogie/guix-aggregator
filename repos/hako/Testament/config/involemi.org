@@ -16,19 +16,31 @@
        (bootloader grub-bootloader)
        (targets '("/dev/sda"))))
     (kernel linux-server/dolly)
-    (kernel-arguments (cons* <<kernel-argument>> %default-kernel-arguments))
-    (file-systems (append <<file-systems>> %base-file-systems))
+    (kernel-arguments
+     (cons* <<kernel-argument>>
+            %default-kernel-arguments))
+    (file-systems
+     (append <<file-systems>>
+             %base-file-systems))
     (swap-devices <<swap-devices>>)
-    (groups (cons* <<user-group>> %base-groups))
-    (users (cons* <<user-account>> %base-user-accounts))
-    (skeletons %rosenthal-skeletons)
-    (packages (append (list mirror-substitutes) %testament-cli-packages %base-packages))
-    (services (cons* <<service>> %base-services))
+    (groups
+     (cons* <<user-group>>
+            %base-groups))
+    (users
+     (cons* <<user-account>>
+            %base-user-accounts))
+    (packages
+     (append (list mirror-substitutes)
+             %testament-cli-packages
+             %base-packages))
+    (services
+     (cons* <<service>>
+            %base-services))
     (sudoers-file
      (plain-file "sudoers"
        (string-join
         (list (plain-file-content %sudoers-specification)
-              "deploy ALL=(ALL) NOPASSWD: ALL")
+              <<sudoers>>)
         "\n"))))
 #+end_src
 
@@ -70,23 +82,28 @@
 *** Users
 #+begin_src scheme :noweb-ref user-account
   (user-account
-    (inherit %root-account)
-    (password #f)
+    (name "hako")
+    (group "users")
+    (supplementary-groups '("wheel"))
     (shell (file-append fish "/bin/fish")))
+#+end_src
 
+Account for [[https://guix.gnu.org/manual/devel/en/html_node/Invoking-guix-deploy.html][=guix deploy=]].
+
+#+begin_src scheme :noweb yes :noweb-ref user-account
   (user-account
     (name "deploy")
     (group "nogroup")
     (home-directory "/var/empty")
     (create-home-directory? #f)
     (system? #t))
-
-  (user-account
-    (name "hako")
-    (group "users")
-    (supplementary-groups '("wheel"))
-    (shell (file-append fish "/bin/fish")))
 #+end_src
+
+#+begin_src scheme :noweb-ref sudoers
+  "deploy ALL=(ALL) NOPASSWD: ALL"
+#+end_src
+
+Authorized SSH keys.
 
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-openssh openssh-service-type
@@ -169,15 +186,6 @@
   }
 #+end_src
 
-*** tailscale
-#+begin_src scheme :noweb-ref service
-  (service tailscale-service-type)
-#+end_src
-
-#+begin_src nftables :noweb-ref nftables-filter-input
-  tcp dport 41641 accept
-#+end_src
-
 *** openssh
 #+begin_src scheme :noweb-ref service
   (service openssh-service-type
@@ -185,6 +193,11 @@
       (openssh openssh-sans-x)
       (permit-root-login 'prohibit-password)
       (password-authentication? #f)))
+
+  (simple-service 'openssh-fail2ban-jails fail2ban-service-type
+    (list (fail2ban-jail-configuration
+            (name "sshd")
+            (enabled? #t))))
 #+end_src
 
 #+begin_src nftables :noweb-ref nftables-filter-input
@@ -193,14 +206,13 @@
   udp dport 60000-61000 accept
 #+end_src
 
-*** fail2ban
+*** tailscale
 #+begin_src scheme :noweb-ref service
-  (service fail2ban-service-type
-    (fail2ban-configuration
-      (extra-jails
-       (list (fail2ban-jail-configuration
-               (name "sshd")
-               (enabled? #t))))))
+  (service tailscale-service-type)
+#+end_src
+
+#+begin_src nftables :noweb-ref nftables-filter-input
+  tcp dport 41641 accept
 #+end_src
 
 ** Session and Seat Management
@@ -582,16 +594,18 @@ Within this repository
 Utilities
 #+begin_src scheme :noweb-ref module
   (gnu)
-  (rosenthal)
+  (rosenthal utils file)
   (sops secrets)
 #+end_src
 
 Guix System - services
 #+begin_src scheme :noweb-ref module
   (gnu services databases)
+  (gnu services desktop)
   (gnu services docker)
   (gnu services networking)
   (gnu services security)
+  (gnu services shepherd)
   (gnu services ssh)
   (gnu services sysctl)
   (rosenthal services mail)

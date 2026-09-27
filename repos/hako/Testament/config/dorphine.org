@@ -14,6 +14,7 @@
       (host-name "dorphine")
       (locale "en_US.UTF-8")
       (timezone "Etc/GMT-8")
+      (name-service-switch %mdns-host-lookup-nss)
       (keyboard-layout
        (keyboard-layout "us" "dvorak" #:options '("ctrl:nocaps")))
       (bootloader
@@ -21,14 +22,24 @@
          (bootloader limine-efi-removable-bootloader)
          (targets '("/efi"))))
       (kernel linux-desktop/dolly)
-      (firmware (cons* linux-firmware %base-firmware))
-      (kernel-arguments (cons* <<kernel-argument>> %default-kernel-arguments))
       (initrd microcode-initrd)
-      (file-systems (append <<file-systems>> %base-file-systems))
-      (swap-devices (append <<swap-devices>>))
-      (groups (cons* <<user-group>> %base-groups))
-      (users (cons* <<user-account>> %base-user-accounts))
-      (skeletons %rosenthal-skeletons)
+      (firmware
+       (cons* linux-firmware
+              %base-firmware))
+      (kernel-arguments
+       (cons* <<kernel-argument>>
+              %default-kernel-arguments))
+      (file-systems
+       (append <<file-systems>>
+               %base-file-systems))
+      (swap-devices
+       (append <<swap-devices>>))
+      (groups
+       (cons* <<user-group>>
+              %base-groups))
+      (users
+       (cons* <<user-account>>
+              %base-user-accounts))
       (packages
        (append (specifications->packages
                 '("digikam"
@@ -46,8 +57,14 @@
                %base-packages))
       (services
        (cons* <<service>>
-              (modify-services %desktop-services <<modify-service>>)))
-      (name-service-switch %mdns-host-lookup-nss)
+              (modify-services %desktop-services
+                (delete gdm-service-type)
+                ;; These services will be configured later.
+                (delete console-font-service-type)
+                (delete guix-service-type)
+                (delete upower-service-type)
+                (delete network-manager-service-type)
+                (delete avahi-service-type))))
       (sudoers-file
        (plain-file "sudoers"
          (string-join
@@ -63,11 +80,95 @@
    %os)
 #+end_src
 
-#+begin_src nftables :noweb-ref nftables-filter-input
-  # allow avahi
-  udp dport mdns accept
+Extra notes:
+
+Search a Guix package:
+#+begin_src bash
+  guix search hello
+#+end_src
+#+begin_example
+  name: hello
+  version: 2.12.3
+  outputs:
+  + out: everything
+  systems: x86_64-linux i686-linux
+  dependencies:
+  location: gnu/packages/base.scm:100:2
+  homepage: https://www.gnu.org/software/hello/
+  license: GPL 3+
+  synopsis: Example GNU package
+  description: GNU Hello prints the message "Hello, world!" and then exits.  It
+  + serves as an example of standard GNU coding practices.  As such, it supports
+  + command-line arguments, multiple languages, and so on.
+  relevance: 34
+#+end_example
+
+Search a Guix System service:
+
+#+begin_src bash
+  guix system search gdm
+#+end_src
+#+begin_example
+  name: gdm
+  location: gnu/services/xorg.scm:1413:2
+  extends: shepherd-root account dconf-profile pam polkit profile dbus
+  + localed
+  shepherdnames: xorg-server
+  description: Run the GNOME Desktop Manager (GDM), a program that allows you to
+  + log in in a graphical session, whether or not you use + GNOME.
+  relevance: 17
+#+end_example
+
+Search a Guix Home service:
+
+#+begin_src bash
+  guix home search fish
+#+end_src
+#+begin_example
+  name: home-fish
+  location: gnu/home/services/shells.scm:640:2
+  extends: home-xdg-configuration home-profile
+  description: Install and configure Fish, the friendly interactive shell.
+  relevance: 5
+#+end_example
+
+View their sources:
+
+#+begin_src bash
+  guix edit hello
+  guix system edit gdm
+  guix home edit home-fish
 #+end_src
 
+** Base
+*** Kernel
+#+begin_src scheme :noweb-ref kernel-argument
+  "memtest=3"
+  "zswap.max_pool_percent=90"
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'extend-kernel-module-loader kernel-module-loader-service-type
+    '("ntsync"))
+
+  (simple-service 'extend-sysctl-rules sysctl-service-type
+    '(("kernel.sysrq" . "1")))
+#+end_src
+
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'modprobed-db home-shepherd-service-type
+    (list (shepherd-timer '(update-modprobed-db)
+            #~(calendar-event #:minutes '(0))
+            #~(#$(file-append modprobed-db "/bin/modprobed-db") "storesilent"))))
+#+end_src
+
+#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/modprobed-db.conf
+  DBPATH="/home/hako/.config"
+  COLORS=light
+  IGNORE=(nvidia nvidia_drm nvidia_modeset nvidia_peermem nvidia_uvm)
+#+end_src
+
+*** NVIDIA
 Extra configurations for NVIDIA proprietary driver
 
 Performance
@@ -127,66 +228,13 @@ Application profiles
                     ("profile" . "CudaNoStablePerfLimit")))))))))
 #+end_src
 
-** Guix Home
-#+begin_src scheme :noweb yes :noweb-ref service
-  (service guix-home-service-type
-    `(("hako" ,(home-environment
-                 (essential-services
-                  (cons* (service home-writable-files-manager-service-type)
-                         (modify-services (home-environment-default-essential-services this-home-environment)
-                           (delete home-symlink-manager-service-type))))
-                 (services
-                  (cons* <<home-service>>
-                         %base-home-services))))))
-#+end_src
-
-#+begin_src scheme :noweb yes :noweb-ref home-service
-  (service home-dotfiles-service-type
-    (home-dotfiles-configuration
-      (directories
-       (list (in-vicinity testament-path "tangled/dorphine/dotfiles")))))
-#+end_src
-
-#+begin_src scheme :noweb yes :noweb-ref home-service
-  (simple-service 'xdg-base-directory home-environment-variables-service-type
-    %xdg-base-directory-env-vars)
-#+end_src
-
-** Base
-*** Kernel
-#+begin_src scheme :noweb-ref kernel-argument
-  "memtest=3"
-  "zswap.max_pool_percent=90"
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (simple-service 'extend-kernel-module-loader kernel-module-loader-service-type
-    '("ntsync"))
-
-  (simple-service 'extend-sysctl-rules sysctl-service-type
-    '(("kernel.sysrq" . "1")))
-#+end_src
-
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'modprobed-db home-shepherd-service-type
-    (list (shepherd-timer '(update-modprobed-db)
-            #~(calendar-event #:minutes '(0))
-            #~(#$(file-append modprobed-db "/bin/modprobed-db") "storesilent"))))
-#+end_src
-
-#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/modprobed-db.conf
-  DBPATH="/home/hako/.config"
-  COLORS=light
-  IGNORE=(nvidia nvidia_drm nvidia_modeset nvidia_peermem nvidia_uvm)
-#+end_src
-
 *** Console Font
-#+begin_src scheme :noweb-ref modify-service
-  (console-font-service-type
-   _ => (map (lambda (n)
-               (cons (string-append "tty" (number->string n))
-                     (file-append font-terminus "/share/consolefonts/ter-132n")))
-             (iota 6 1)))
+#+begin_src scheme :noweb-ref service
+  (service console-font-service-type
+    (map (lambda (n)
+           (cons (string-append "tty" (number->string n))
+                 (file-append font-terminus "/share/consolefonts/ter-132n")))
+         (iota 6 1)))
 #+end_src
 
 *** File Systems
@@ -290,12 +338,11 @@ Application profiles
 #+end_src
 
 *** Guix Daemon
-#+begin_src scheme :noweb-ref modify-service
-  (guix-service-type
-   config => (guix-configuration
-               (inherit config)
-               (discover? #t)
-               (tmpdir "/var/tmp")))
+#+begin_src scheme :noweb-ref service
+  (service guix-service-type
+    (guix-configuration
+      (discover? #t)
+      (tmpdir "/var/tmp")))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -325,6 +372,33 @@ Application profiles
     (group "users")
     (supplementary-groups '("kvm" "wheel" "audio" "video" <<account-group-hako>>))
     (shell (file-append fish "/bin/fish")))
+#+end_src
+
+#+begin_src scheme :noweb yes :noweb-ref service
+  (simple-service 'guix-home-hako guix-home-service-type
+    `(("hako" ,(home-environment
+                 (essential-services
+                  (cons* (service home-writable-files-manager-service-type)
+                         (modify-services (home-environment-default-essential-services this-home-environment)
+                           (delete home-symlink-manager-service-type))))
+                 (services
+                  (cons* <<home-service>>
+
+                         (service home-fish-service-type)
+
+                         (service home-fish-plugin-atuin-service-type)
+                         (service home-fish-plugin-direnv-service-type)
+                         (service home-fish-plugin-zoxide-service-type)
+
+                         (service home-dotfiles-service-type
+                           (home-dotfiles-configuration
+                             (directories
+                              (list (in-vicinity testament-path "tangled/dorphine/dotfiles")))))
+
+                         (simple-service 'xdg-base-directory home-environment-variables-service-type
+                           %xdg-base-directory-env-vars)
+
+                         %base-home-services))))))
 #+end_src
 
 Account for [[https://guix.gnu.org/manual/devel/en/html_node/Invoking-guix-deploy.html][=guix deploy=]].
@@ -371,27 +445,7 @@ Generate random password hash:
   pwgen -sync 16 1 | openssl passwd -6 -stdin
 #+end_src
 
-*** Shell Utilities
-#+begin_src scheme :noweb-ref home-service
-  (service home-fish-plugin-atuin-service-type)
-  (service home-fish-plugin-direnv-service-type)
-  (service home-fish-plugin-zoxide-service-type)
-#+end_src
-
-*** SOPS Secrets
-#+begin_src scheme :noweb-ref home-service
-  (service home-sops-secrets-service-type
-    (home-sops-service-configuration
-      (gnupg-home (in-vicinity %xdg-data-home "sops"))
-      (secrets
-       (list (sops-secret
-               (key '("mail"))
-               (file %sops-dorphine))))))
-#+end_src
-
-Extra notes:
-
-Create GPG home directory specifically for use with SOPS.
+Create GPG home directory specifically for use with SOPS:
 #+begin_src bash
   MY_GPGHOME="<GPG homedir>"
 
@@ -430,22 +484,20 @@ Generate passwordless ECC key:
 #+end_src
 
 *** upower
-#+begin_src scheme :noweb-ref modify-service
-  (upower-service-type
-   config => (upower-configuration
-               (inherit config)
-               (critical-power-action 'power-off)))
+#+begin_src scheme :noweb-ref service
+  (service upower-service-type
+    (upower-configuration
+      (critical-power-action 'power-off)))
 #+end_src
 
 ** Networking & SSH
 *** network-manager
-#+begin_src scheme :noweb-ref modify-service
-  (network-manager-service-type
-   config => (network-manager-configuration
-               (inherit config)
-               (extra-configuration-files
-                (list %network-manager-ipv6-privacy
-                      %network-manager-random-mac-address))))
+#+begin_src scheme :noweb-ref service
+  (service network-manager-service-type
+    (network-manager-configuration
+      (extra-configuration-files
+       (list %network-manager-ipv6-privacy
+             %network-manager-random-mac-address))))
 #+end_src
 
 *** bluetooth
@@ -499,6 +551,29 @@ Generate passwordless ECC key:
   }
 #+end_src
 
+*** openssh
+#+begin_src scheme :noweb-ref service
+  (service openssh-service-type
+    (openssh-configuration
+      (openssh openssh-sans-x)
+      (permit-root-login 'prohibit-password)
+      (password-authentication? #f)))
+
+  (simple-service 'openssh-fail2ban-jails fail2ban-service-type
+    (list (fail2ban-jail-configuration
+            (name "sshd")
+            (enabled? #t))))
+#+end_src
+
+*** avahi
+#+begin_src scheme :noweb-ref service
+  (service avahi-service-type)
+#+end_src
+
+#+begin_src nftables :noweb-ref nftables-filter-input
+  udp dport mdns accept
+#+end_src
+
 *** tailscale
 #+begin_src scheme :noweb-ref service
   (service tailscale-service-type)
@@ -508,33 +583,13 @@ Generate passwordless ECC key:
   tcp dport 41641 accept
 #+end_src
 
-*** openssh
-#+begin_src scheme :noweb-ref service
-  (service openssh-service-type
-    (openssh-configuration
-      (openssh openssh-sans-x)
-      (permit-root-login 'prohibit-password)
-      (password-authentication? #f)))
-#+end_src
-
-*** fail2ban
-#+begin_src scheme :noweb-ref service
-  (service fail2ban-service-type
-    (fail2ban-configuration
-      (extra-jails
-       (list (fail2ban-jail-configuration
-               (name "sshd")
-               (enabled? #t))))))
-#+end_src
-
 ** OpenPGP & Security Token
 *** gpg-agent
 #+begin_src scheme :noweb-ref home-service
   (service home-gpg-agent-service-type
     (home-gpg-agent-configuration
       (pinentry-program (file-append pinentry-gnome3 "/bin/pinentry-gnome3"))
-      (ssh-support? #t)
-      (shepherd-requirement '(graphical-session))))
+      (ssh-support? #t)))
 #+end_src
 
 *** pcscd
@@ -569,10 +624,6 @@ Generate passwordless ECC key:
 
 ** Graphical Session
 *** noctalia-greeter
-#+begin_src scheme :noweb-ref modify-service
-  (delete gdm-service-type)
-#+end_src
-
 #+begin_src scheme :noweb-ref service
   (service noctalia-greeter-service-type
     (noctalia-greeter-configuration
@@ -796,6 +847,7 @@ Generate passwordless ECC key:
 #+begin_src scheme :noweb-ref package-spec
   "gcr@3"
   "gnome-keyring"
+  "libsecret"
   "xdg-desktop-portal-gnome"
   "xdg-desktop-portal-gtk"
 #+end_src
@@ -1020,7 +1072,7 @@ mbsync:
   IMAPAccount hako
   Host mail.boiledscript.com
   User "hako@ultrarare.space"
-  PassCmd "cat $XDG_RUNTIME_DIR/secrets/mail"
+  PassCmd "secret-tool lookup host mail.boiledscript.com user hako@ultrarare.space"
   TLSType IMAPS
 
   IMAPStore remote
@@ -1448,6 +1500,7 @@ Guix System - bootloaders
 Guix System - services
 #+begin_src scheme :noweb-ref module
   (gnu services)
+  (gnu services avahi)
   (gnu services containers)
   (gnu services desktop)
   (gnu services guix)
@@ -1478,6 +1531,7 @@ Guix Home - services
   (gnu home services dotfiles)
   (gnu home services fontutils)
   (gnu home services gnupg)
+  (gnu home services shells)
   (gnu home services shepherd)
   (gnu home services sound)
   (gnu home services symlink-manager)
