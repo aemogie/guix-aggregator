@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright © 2026 Hilton Chain <hako@ultrarare.space>
+#+TITLE: Common snippets
+#+PROPERTY: header-args :mkdirp yes :noweb-prefix no
+
+** Repository path
+#+name: testament-path
+#+begin_src elisp :var path="" :results verbatim
+  (expand-file-name path (project-root (project-current t)))
+#+end_src
+
+Canonical path to repository root, with an optional =path= argument.  Examples:
+
+#+begin_example
+  <<testament-path()>>
+  => "/path/to/repository"
+
+  <<testament-path("my/file")>>
+  => "/path/to/repository/my/file"
+#+end_example

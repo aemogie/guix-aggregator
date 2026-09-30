@@ -1,9 +1,8 @@
-(use-modules (testament common)
-             (gnu machine)
+(use-modules (gnu machine)
              (gnu machine ssh))
 
 (define %os
-  (load (in-vicinity testament-path "tangled/chapra/chapra.scm")))
+  (load "../tangled/chapra/chapra.scm"))
 
 (list
  (machine

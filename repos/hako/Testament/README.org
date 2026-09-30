@@ -46,12 +46,16 @@ Examples:
   blue build -- build-os
 #+end_src
 
-** Shared configurations
+** Shared config
+Shared configurations, functions and code snippets to import into [[https://orgmode.org/manual/Library-of-Babel.html][Library of
+Babel]].
+
++ [[file:config/shared/common.org][common]]
 + [[file:config/shared/caddy.org][caddy]]
 + [[file:config/shared/emacs.org][emacs]]
 
 ** Hosts
-NOTE:
+Note:
 - ZFS: Support implemented in [[https://codeberg.org/guix/guix/pulls/8346][guix/guix!8346]]
 - NVIDIA: Avoid GDM if you encounter issues
 

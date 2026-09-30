@@ -58,9 +58,9 @@ a functional setup with fish login shell.
       ("ESHELL" . ,(file-append fish "/bin/fish"))))
 #+end_src
 
-#+begin_src scheme :noweb-ref home-service
+#+begin_src scheme :noweb yes :noweb-ref home-service
   (simple-service 'emacs-configuration home-xdg-configuration-files-service-type
-    `(("emacs/init.el" ,(local-file (testament-file "emacs/emacs-init.el")))))
+    `(("emacs/init.el" ,(local-file <<testament-path("tangled/emacs/emacs-init.el")>>))))
 #+end_src
 
 #+begin_src elisp :noweb yes :tangle ../../tangled/emacs/emacs-init.el
@@ -131,7 +131,9 @@ Basic configuration and theming for builtin packages.
     :hook
     (after-init . show-paren-mode)
     (before-save . delete-trailing-whitespace)
-    (prog-mode . display-fill-column-indicator-mode))
+    (prog-mode . display-fill-column-indicator-mode)
+    :bind
+    ("C-x C-n" . scratch-buffer))
 #+end_src
 
 Customizations from [[https://cgit.git.savannah.gnu.org/cgit/emacs.git/tree/etc/themes/newcomers-presets-theme.el][newcomers-presets-theme]] ([[https://github.com/emacs-mirror/emacs/blob/master/etc/themes/newcomers-presets-theme.el][mirror]]).
@@ -1415,11 +1417,6 @@ https://web.archive.org/web/20240525203039/http://community.schemewiki.org/?emac
 #+end_src
 
 ** Modules
-Within this repository
-#+begin_src scheme :noweb-ref module
-  (testament common)
-#+end_src
-
 Utilities
 #+begin_src scheme :noweb-ref module
   (guix gexp)

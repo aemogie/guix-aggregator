@@ -9713,9 +9713,13 @@ I used to launch a separate Emacs instance for TRAMP to disable these packages w
 So, to determine if the buffer is in TRAMP:
 #+begin_src emacs-lisp
 (defun my/tramp-p (&optional buffer)
+  "Return BUFFER's remote prefix without communicating with the remote host."
   (file-remote-p
-   (buffer-local-value 'default-directory (or buffer (current-buffer)))))
+   (buffer-local-value 'default-directory (or buffer (current-buffer)))
+   nil 'never))
 #+end_src
+
+Using =file-remote-p= without the ='never= flag sometimes bungled the connection setup because it tried to run this function while the connection wasn't properly estabilished yet. I'm not entirely sure.
 
 And advice to disable a function for TRAMP-related buffers:
 #+begin_src emacs-lisp
@@ -10038,6 +10042,27 @@ Make a dedicated buffer for ghostel in the bottom of the screen.
 
 (add-hook 'ghostel-mode-hook #'my/ghostel-setup)
 #+end_src
+
+**** TRAMP optimizations
+When =ghostel-tramp-shell-integration= is enabled, =ghostel= writes several remote files during connection with ordinary =write-region=, creating lockfiles. This slows down the setup.
+
+This can be helped a bit as follows:
+#+begin_src emacs-lisp
+(defun my/ghostel-write-remote-file-without-locks (original &rest args)
+  (let ((create-lockfiles nil))
+    (apply original args)))
+
+(with-eval-after-load 'ghostel
+  (advice-add 'ghostel--write-remote-file :around
+              #'my/ghostel-write-remote-file-without-locks))
+#+end_src
+
+This disables installing =terminfo= on remote servers, also speeding up the setup:
+#+begin_src emacs-lisp
+(setq ghostel-ssh-install-terminfo nil)
+#+end_src
+
+It fallbacks to =xterm-256color= without it. This must disable certain terminal capabilities (like colored underlines, true color, etc.), but I'm not running Emacs from inside =ghostel= anyway.
 
 *** vterm
 [[https://github.com/akermu/emacs-libvterm][vterm]] is a terminal emulator for Emacs.

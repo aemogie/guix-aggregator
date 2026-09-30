@@ -1,9 +1,8 @@
-(use-modules (testament common)
-             (gnu machine)
+(use-modules (gnu machine)
              (gnu machine ssh))
 
 (define %os
-  (load (in-vicinity testament-path "tangled/involemi/involemi.scm")))
+  (load "../tangled/involemi/involemi.scm"))
 
 (list
  (machine

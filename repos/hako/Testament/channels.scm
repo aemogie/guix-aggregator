@@ -1,5 +1,6 @@
 (list (channel
-        (inherit %default-guix-channel))
+        (inherit %default-guix-channel)
+        (url "https://codeberg.org/guix/guix.git"))
       (channel
         (name 'bluebox)
         (url "https://codeberg.org/lapislazuli/bluebox")

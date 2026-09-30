@@ -25,20 +25,15 @@
 ;;;
 
 (define-syntax %substitute-urls
-  (identifier-syntax (guix-substitute-urls #%?URL)))
+  (identifier-syntax
+   (string-append "--substitute-urls=" #%?URL)))
 
 (define-syntax %build-options
-  (identifier-syntax (guix-build-options)))
-
-(define (guix-substitute-urls urls)
-  (string-append "--substitute-urls=" urls))
-
-(define (guix-build-options)
-  `("--keep-failed"
-    "--keep-going"
-    "--verbosity=1"
-    "--load-path=modules"
-    ,%substitute-urls))
+  (identifier-syntax
+   `("--keep-failed"
+     "--keep-going"
+     "--verbosity=1"
+     ,%substitute-urls)))
 
 (define ($ cmd)
   (match cmd
@@ -136,7 +131,8 @@
       `("--quick" "--batch"
         "--load" "ob-tangle"
         "--load" "ob-lob"
-        "--eval" "(setopt org-babel-load-languages '())"
+        "--load" "project"
+        "--eval" "(setopt org-babel-load-languages '((emacs-lisp . t)))"
         "--eval" "(setopt org-confirm-babel-evaluate nil)"
         "--eval" "(setopt org-id-track-globally nil)"
         ;; XXX: `org-babel-lob-ingest' no longer performs noweb expansion when
@@ -202,6 +198,10 @@
      (inputs (cons (config-source name) dependencies))
      (outputs (config-output name)))))
 
+(define %shared-config-common
+  (literate-config->buildable
+   (literate-config
+    (name "shared/common"))))
 (define %shared-config-caddy
   (literate-config->buildable
    (literate-config
@@ -209,15 +209,20 @@
 (define %shared-config-emacs
   (literate-config->buildable
    (literate-config
-    (name "shared/emacs"))))
+    (name "shared/emacs")
+    (dependencies
+     (list %shared-config-common)))))
 
 (define %systems
   (list (literate-config
-         (name "ignamma"))
+         (name "ignamma")
+         (dependencies
+          (list %shared-config-common)))
         (literate-config
          (name "involemi")
          (dependencies
-          (list %shared-config-caddy)))
+          (list %shared-config-common
+                %shared-config-caddy)))
         (literate-config
          (name "worker")
          (build? #f))
@@ -225,20 +230,25 @@
          (name "chapra")
          (use-guix-fork? #t)
          (dependencies
-          (list %shared-config-caddy)))
+          (list %shared-config-common
+                %shared-config-caddy)))
         (literate-config
          (name "dorphine")
          (use-guix-fork? #t)
          (dependencies
-          (list %shared-config-emacs)))
+          (list %shared-config-common
+                %shared-config-emacs)))
         (literate-config
          (name "nuporta")
-         (use-guix-fork? #t))
+         (use-guix-fork? #t)
+         (dependencies
+          (list %shared-config-common)))
         (literate-config
          (name "mirror")
          (build? #f)
          (dependencies
-          (list %shared-config-caddy)))))
+          (list %shared-config-common
+                %shared-config-caddy)))))
 
 (define %images
   '("minimal"

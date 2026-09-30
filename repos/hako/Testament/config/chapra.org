@@ -16,7 +16,7 @@
      (bootloader-configuration
        (bootloader limine-efi-removable-bootloader)
        (targets '("/efi"))))
-    (kernel linux-server/dolly)
+    (kernel linux-cachyos-lts-server)
     (kernel-arguments
      (cons* <<kernel-argument>>
             %default-kernel-arguments))
@@ -29,7 +29,7 @@
      (cons* <<user-account>>
             %base-user-accounts))
     (packages
-     (append %testament-cli-packages
+     (append %rosenthal-cli-packages
              %base-packages))
     (services
      (cons* <<service>>
@@ -149,7 +149,12 @@
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-guix guix-service-type
     (guix-extension
-      (authorized-keys %guix-keys)
+      (authorized-keys
+       (list %rosenthal-guix-key-dorphine
+             ;; LAN
+             %rosenthal-guix-key-ignamma
+             ;; Nonguix
+             %rosenthal-guix-key-nuporta))
       (substitute-urls
        '("https://mirror.sjtu.edu.cn/guix-bordeaux"
          "https://mirror.sjtu.edu.cn/guix"
@@ -201,20 +206,22 @@ Authorized SSH keys.
 
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-openssh openssh-service-type
-    `(("deploy" ,%ssh-key-deploy)
-      ("hako" ,%ssh-key-hako)))
+    `(("deploy" ,%rosenthal-ssh-key-hako-deploy)
+      ("hako"   ,%rosenthal-ssh-key-hako)))
 #+end_src
 
 *** SOPS Secrets
-#+begin_src scheme :noweb-ref service
+#+begin_src scheme :noweb yes :noweb-ref service
   (service sops-secrets-service-type
     (sops-service-configuration
       (gnupg-home "/var/lib/sops")
       (secrets
-       (list (sops-secret
-               (key '("cloudflare"))
-               (file %sops-chapra)
-               (user "caddy"))))))
+       (let ((%sops-chapra
+              (local-file <<testament-path("secrets/chapra.yaml")>>)))
+         (list (sops-secret
+                (key '("cloudflare"))
+                (file %sops-chapra)
+                (user "caddy")))))))
 #+end_src
 
 ** Networking & SSH
@@ -224,8 +231,8 @@ Authorized SSH keys.
     (network-manager-configuration
       (shepherd-requirement '())
       (extra-configuration-files
-       (list %network-manager-ipv6-privacy
-             %network-manager-random-mac-address))))
+       (list %rosenthal-network-manager-ipv6-privacy
+             %rosenthal-network-manager-random-mac-address))))
 
   (service network-online-service-type)
 #+end_src
@@ -236,10 +243,10 @@ Authorized SSH keys.
 #+end_src
 
 *** nftables
-#+begin_src scheme :noweb-ref service
+#+begin_src scheme :noweb yes :noweb-ref service
   (service nftables-service-type
     (nftables-configuration
-      (ruleset (local-file (testament-file "chapra/chapra.nftables")))))
+      (ruleset (local-file <<testament-path("tangled/chapra/chapra.nftables")>>))))
 #+end_src
 
 #+begin_src nftables :noweb yes :tangle ../tangled/chapra/chapra.nftables
@@ -319,11 +326,11 @@ Authorized SSH keys.
 
 ** Web Servers & Services
 *** caddy
-#+begin_src scheme :noweb-ref service
+#+begin_src scheme :noweb yes :noweb-ref service
   (service caddy-service-type
     (caddy-configuration
       (caddy caddy/dolly)
-      (caddyfile (local-file (testament-file "chapra/chapra.caddyfile")))
+      (caddyfile (local-file <<testament-path("tangled/chapra/chapra.caddyfile")>>))
       (shepherd-requirement '(network-online))))
 #+end_src
 
@@ -430,11 +437,6 @@ Authorized SSH keys.
 #+end_src
 
 ** Modules
-Within this repository
-#+begin_src scheme :noweb-ref module
-  (testament common)
-#+end_src
-
 Guile builtins
 #+begin_src scheme :noweb-ref module
   (ice-9 match)
@@ -444,6 +446,7 @@ Utilities
 #+begin_src scheme :noweb-ref module
   (gnu)
   (rosenthal utils nix)
+  (rosenthal utils others)
   (sops secrets)
 #+end_src
 
@@ -473,5 +476,6 @@ Guix packages
   (gnu packages file-systems)
   (gnu packages shells)
   (gnu packages ssh)
+  (rosenthal packages linux)
   (rosenthal packages web)
 #+end_src

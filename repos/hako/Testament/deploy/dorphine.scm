@@ -1,9 +1,8 @@
-(use-modules (testament common)
-             (gnu machine)
+(use-modules (gnu machine)
              (gnu machine ssh))
 
 (define %os
-  (load (in-vicinity testament-path "tangled/dorphine/dorphine.scm")))
+  (load "../tangled/dorphine/dorphine.scm"))
 
 (list
  (machine

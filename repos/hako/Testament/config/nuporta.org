@@ -15,7 +15,7 @@
      (bootloader-configuration
        (bootloader limine-efi-removable-bootloader)
        (targets '("/efi"))))
-    (kernel linux-server/dolly)
+    (kernel linux-cachyos-lts-server)
     (kernel-arguments
      (cons* <<kernel-argument>>
             %default-kernel-arguments))
@@ -32,7 +32,7 @@
             %base-user-accounts))
     (packages
      (append (list mirror-substitutes)
-             %testament-cli-packages
+             %rosenthal-cli-packages
              %base-packages))
     (services
      (cons* <<service>>
@@ -149,7 +149,11 @@
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-guix guix-service-type
     (guix-extension
-      (authorized-keys %guix-keys)
+      (authorized-keys
+       (list %rosenthal-guix-key-dorphine
+             ;; Build workers
+             %rosenthal-guix-key-bocis
+             %rosenthal-guix-key-ignamma))
       (substitute-urls
        '("https://substitutes.nonguix.org"))))
 
@@ -206,10 +210,10 @@ Authorized SSH keys.
 
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-openssh openssh-service-type
-    `(("deploy" ,%ssh-key-deploy)
-      ("hako" ,%ssh-key-hako)
-      ("jonathan" ,%ssh-key-jonathan)
-      ("podiki" ,%ssh-key-podiki)))
+    `(("deploy"   ,%rosenthal-ssh-key-hako-deploy)
+      ("hako"     ,%rosenthal-ssh-key-hako)
+      ("jonathan" ,%rosenthal-ssh-key-jonathan)
+      ("podiki"   ,%rosenthal-ssh-key-podiki)))
 #+end_src
 
 ** Networking & SSH
@@ -226,10 +230,10 @@ Authorized SSH keys.
 #+end_src
 
 *** nftables
-#+begin_src scheme :noweb-ref service
+#+begin_src scheme :noweb yes :noweb-ref service
   (service nftables-service-type
     (nftables-configuration
-      (ruleset (local-file (testament-file "nuporta/nuporta.nftables")))))
+      (ruleset (local-file <<testament-path("tangled/nuporta/nuporta.nftables")>>))))
 #+end_src
 
 #+begin_src nftables :noweb yes :tangle ../tangled/nuporta/nuporta.nftables
@@ -759,13 +763,13 @@ Maintenance: manually sync mirrored substitutes to remote storage.
 
 ** Web Servers & Services
 *** caddy
-#+begin_src scheme :noweb-ref service
+#+begin_src scheme :noweb yes :noweb-ref service
   (service caddy-service-type
     (caddy-configuration
       (caddy caddy/dolly)
       (caddyfile
        (computed-substitution-with-inputs "nuporta.caddyfile"
-         (local-file (testament-file "nuporta/nuporta.caddyfile"))
+         (local-file <<testament-path("tangled/nuporta/nuporta.caddyfile")>>)
          (list ai-robots-txt)))
       (group-id 967)
       (user-id 972)))
@@ -953,11 +957,6 @@ Troubleshooting:
 #+end_src
 
 ** Modules
-Within this repository
-#+begin_src scheme :noweb-ref module
-  (testament common)
-#+end_src
-
 Guile builtins
 #+begin_src scheme :noweb-ref module
   (ice-9 match)
@@ -967,6 +966,7 @@ Utilities
 #+begin_src scheme :noweb-ref module
   (gnu)
   (rosenthal utils file)
+  (rosenthal utils others)
 #+end_src
 
 Guix System - bootloaders
@@ -998,6 +998,7 @@ Guix packages
   (gnu packages file-systems)
   (gnu packages shells)
   (gnu packages ssh)
+  (rosenthal packages linux)
   (rosenthal packages package-management)
   (rosenthal packages web)
 #+end_src

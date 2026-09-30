@@ -19,7 +19,7 @@
                grub-bootloader
                grub-efi-removable-bootloader))
          (targets (list (or bios-boot "/efi")))))
-      (kernel linux-server/dolly)
+      (kernel linux-cachyos-lts-server)
       (initrd-modules
        (cons* "sd_mod"
               (base-initrd-modules kernel)))
@@ -39,7 +39,7 @@
               %base-user-accounts))
       (packages
        (append (list mirror-substitutes)
-               %testament-cli-packages
+               %rosenthal-cli-packages
                %base-packages))
       (services
        (cons* <<service>>
@@ -87,7 +87,10 @@
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-guix guix-service-type
     (guix-extension
-      (authorized-keys %guix-keys)))
+      (authorized-keys
+       (list %rosenthal-guix-key-dorphine
+             ;; Nonguix
+             %rosenthal-guix-key-nuporta))))
 
   (simple-service 'guix-gc shepherd-root-service-type
     (list (shepherd-timer '(guix-gc)
@@ -132,10 +135,10 @@ Authorized SSH keys.
 
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-openssh openssh-service-type
-    `(("deploy" ,%ssh-key-deploy)
-      ("hako" ,%ssh-key-hako)
-      ("jonathan" ,%ssh-key-jonathan)
-      ("podiki" ,%ssh-key-podiki)))
+    `(("deploy"   ,%rosenthal-ssh-key-hako-deploy)
+      ("hako"     ,%rosenthal-ssh-key-hako)
+      ("jonathan" ,%rosenthal-ssh-key-jonathan)
+      ("podiki"   ,%rosenthal-ssh-key-podiki)))
 #+end_src
 
 ** Networking & SSH
@@ -179,10 +182,10 @@ Authorized SSH keys.
        (computed-substitution-with-inputs (string-append mirror-name ".caddyfile")
          (plain-file "mirror.caddyfile"
            (string-join
-            (list (file-content (testament-file "mirror/mirror.caddyfile"))
+            (list (file-content <<testament-path("tangled/mirror/mirror.caddyfile")>>)
                   (format #f "import $$~a.caddyfile$$" mirror-name))
             "\n"))
-         (list (local-file (testament-file "mirror") #:recursive? #t)
+         (list (local-file <<testament-path("tangled/mirror")>> #:recursive? #t)
                ai-robots-txt)))))
 #+end_src
 
@@ -307,15 +310,11 @@ See [[file:shared/caddy.org][shared/caddy.org]].
 #+end_src
 
 ** Modules
-Within this repository
-#+begin_src scheme :noweb-ref module
-  (testament common)
-#+end_src
-
 Utilities
 #+begin_src scheme :noweb-ref module
   (gnu)
   (rosenthal utils file)
+  (rosenthal utils others)
 #+end_src
 
 Guix System - services
@@ -332,6 +331,7 @@ Guix packages
   (gnu packages admin)
   (gnu packages shells)
   (gnu packages ssh)
+  (rosenthal packages linux)
   (rosenthal packages package-management)
   (rosenthal packages web)
 #+end_src

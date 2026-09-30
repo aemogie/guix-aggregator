@@ -21,7 +21,7 @@
        (bootloader-configuration
          (bootloader limine-efi-removable-bootloader)
          (targets '("/efi"))))
-      (kernel linux-desktop/dolly)
+      (kernel linux-cachyos-bore-zen4)
       (initrd microcode-initrd)
       (firmware
        (cons* linux-firmware
@@ -53,7 +53,7 @@
                   <<package-spec>>))
                (with-nix-profile
                 (list <<package-nix>>))
-               %testament-cli-packages
+               %rosenthal-cli-packages
                %base-packages))
       (services
        (cons* <<service>>
@@ -269,7 +269,6 @@ Application profiles
 | Mentha/Home            | legacy (/home)     |               | true                  |
 |                        |                    |               |                       |
 | Mentha/State/Bluetooth | /var/lib/bluetooth |               | true                  |
-| Mentha/State/SOPS      | /var/lib/sops      |               | true                  |
 | Mentha/State/Tailscale | /var/lib/tailscale |               | true                  |
 |                        |                    |               |                       |
 | Mentha/State/Captures  | /var/lib/Captures  |               |                       |
@@ -348,7 +347,12 @@ Application profiles
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-guix guix-service-type
     (guix-extension
-      (authorized-keys %guix-keys)
+      (authorized-keys
+       (list ;; LAN
+             %rosenthal-guix-key-bocis
+             %rosenthal-guix-key-ignamma
+             ;; Nonguix
+             %rosenthal-guix-key-nuporta))
       (substitute-urls
        '("https://mirror.sjtu.edu.cn/guix-bordeaux"
          "https://mirror.sjtu.edu.cn/guix"
@@ -376,29 +380,54 @@ Application profiles
 
 #+begin_src scheme :noweb yes :noweb-ref service
   (simple-service 'guix-home-hako guix-home-service-type
-    `(("hako" ,(home-environment
-                 (essential-services
-                  (cons* (service home-writable-files-manager-service-type)
-                         (modify-services (home-environment-default-essential-services this-home-environment)
-                           (delete home-symlink-manager-service-type))))
-                 (services
-                  (cons* <<home-service>>
+    `(("hako"
+       ,(home-environment
+          (essential-services
+           (cons* (service home-writable-files-manager-service-type)
+                  (modify-services (home-environment-default-essential-services this-home-environment)
+                    (delete home-symlink-manager-service-type))))
+          (services
+           (cons* <<home-service>>
 
-                         (service home-fish-service-type)
+                  (service home-fish-service-type)
 
-                         (service home-fish-plugin-atuin-service-type)
-                         (service home-fish-plugin-direnv-service-type)
-                         (service home-fish-plugin-zoxide-service-type)
+                  (service home-fish-plugin-atuin-service-type)
+                  (service home-fish-plugin-direnv-service-type)
+                  (service home-fish-plugin-zoxide-service-type)
 
-                         (service home-dotfiles-service-type
-                           (home-dotfiles-configuration
-                             (directories
-                              (list (in-vicinity testament-path "tangled/dorphine/dotfiles")))))
+                  (service home-dotfiles-service-type
+                    (home-dotfiles-configuration
+                      (directories
+                       (list <<testament-path("tangled/dorphine/dotfiles")>>))))
 
-                         (simple-service 'xdg-base-directory home-environment-variables-service-type
-                           %xdg-base-directory-env-vars)
+                  ;; Source: https://wiki.archlinux.org/title/XDG_Base_Directory
+                  (simple-service 'xdg-base-directory home-environment-variables-service-type
+                    '(;; gdb
+                      ("GDBHISTFILE"         . "$XDG_STATE_HOME/gdb/history")
+                      ;; go
+                      ("GOPATH"              . "$XDG_DATA_HOME/go")
+                      ("GOMODCACHE"          . "$XDG_CACHE_HOME/go/mod")
+                      ;; gradle
+                      ("GRADLE_USER_HOME"    . "$XDG_DATA_HOME/gradle")
+                      ;; guile
+                      ("GUILE_HISTORY"       . "$XDG_STATE_HOME/guile/history")
+                      ;; java
+                      ("_JAVA_OPTIONS"       . "-Djava.util.prefs.userRoot=$XDG_CONFIG_HOME/java")
+                      ;; luanti
+                      ("MINETEST_USER_PATH"  . "$XDG_DATA_HOME/luanti")
+                      ;; nvda
+                      ("CUDA_CACHE_PATH"     . "$XDG_CACHE_HOME/nv")
+                      ;; python
+                      ;; TODO: Python 3.13.
+                      ("PYTHON_HISTORY"      . "$XDG_STATE_HOME/python/history")
+                      ("PYTHONPYCACHEPREFIX" . "$XDG_CACHE_HOME/python")
+                      ("PYTHONUSERBASE"      . "$XDG_DATA_HOME/python")
+                      ;; rust
+                      ("CARGO_HOME"          . "$XDG_DATA_HOME/cargo")
+                      ;; sqlite
+                      ("SQLITE_HISTORY"      . "$XDG_STATE_HOME/sqlite_history")))
 
-                         %base-home-services))))))
+                  %base-home-services))))))
 #+end_src
 
 Account for [[https://guix.gnu.org/manual/devel/en/html_node/Invoking-guix-deploy.html][=guix deploy=]].
@@ -420,7 +449,7 @@ Authorized SSH keys.
 
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-openssh openssh-service-type
-    `(("deploy" ,%ssh-key-deploy)))
+    `(("deploy" ,%rosenthal-ssh-key-hako-deploy)))
 #+end_src
 
 Extra notes:
@@ -496,8 +525,8 @@ Generate passwordless ECC key:
   (service network-manager-service-type
     (network-manager-configuration
       (extra-configuration-files
-       (list %network-manager-ipv6-privacy
-             %network-manager-random-mac-address))))
+       (list %rosenthal-network-manager-ipv6-privacy
+             %rosenthal-network-manager-random-mac-address))))
 #+end_src
 
 *** bluetooth
@@ -508,10 +537,10 @@ Generate passwordless ECC key:
 #+end_src
 
 *** nftables
-#+begin_src scheme :noweb-ref service
+#+begin_src scheme :noweb yes :noweb-ref service
   (service nftables-service-type
     (nftables-configuration
-      (ruleset (local-file (testament-file "dorphine/dorphine.nftables")))))
+      (ruleset (local-file <<testament-path("tangled/dorphine/dorphine.nftables")>>))))
 #+end_src
 
 #+begin_src nftables :noweb yes :tangle ../tangled/dorphine/dorphine.nftables
@@ -1002,7 +1031,7 @@ See [[file:shared/emacs.org][shared/emacs.org]].
 #+end_src
 
 *** email
-#+begin_src scheme :noweb-ref home-service
+#+begin_src scheme :noweb yes :noweb-ref home-service
   (simple-service 'update-mailbox home-shepherd-service-type
     (list
      (shepherd-timer '(update-mailbox)
@@ -1014,7 +1043,7 @@ See [[file:shared/emacs.org][shared/emacs.org]].
                                  (guix build utils))
                     ;; Sync with mail server.
                     (invoke #$(file-append isync "/bin/mbsync") "-a"
-                            "--config" #$(local-file (testament-file "dorphine/mbsync.conf")))
+                            "--config" #$(local-file <<testament-path("tangled/dorphine/mbsync.conf")>>))
                     ;; Index.
                     (let ((notmuch #$(file-append notmuch "/bin/notmuch")))
                       (invoke notmuch "new")
@@ -1269,10 +1298,10 @@ Jujutsu:
 [[https://github.com/walles/moor][Moor]] is a pager similar to =less=, with features like syntax highlighting and
 incremental search.
 
-#+begin_src scheme :noweb-ref package-nix
+#+begin_src scheme :noweb yes :noweb-ref package-nix
   (nix-shell-wrapper "moor"
     '("moor")
-    #:expression (local-file (testament-file "dorphine/nixpkgs.nix"))
+    #:expression (local-file <<testament-path("tangled/dorphine/nixpkgs.nix")>>)
     #:run-command '("moor"))
 #+end_src
 
@@ -1359,16 +1388,16 @@ Pin Nixpkgs to avoid networking requirement when using the wrappers.
   (import (builtins.getFlake "github:NixOS/nixpkgs/c508844df6c28fa6dabc1b6af70f3ccbd65c5201") {})
 #+end_src
 
-#+begin_src scheme :noweb-ref package-nix
+#+begin_src scheme :noweb yes :noweb-ref package-nix
   (nix-shell-wrapper "nix-assets"
     '("glibcLocales"
       "adwaita-icon-theme"
       "qogir-icon-theme")
-    #:expression (local-file (testament-file "dorphine/nixpkgs.nix")))
+    #:expression (local-file <<testament-path("tangled/dorphine/nixpkgs.nix")>>))
 
   (nix-shell-wrapper "nocturne"
     '("nocturne")
-    #:expression (local-file (testament-file "dorphine/nixpkgs.nix"))
+    #:expression (local-file <<testament-path("tangled/dorphine/nixpkgs.nix")>>)
     #:environment-set '(("XDG_DATA_DIRS" . "/nix/var/nix/profiles/guix-system-nix-profile/share"))
     #:run-command '("nocturne"))
 
@@ -1379,10 +1408,10 @@ Pin Nixpkgs to avoid networking requirement when using the wrappers.
 #+end_src
 
 *** prismlauncher
-#+begin_src scheme :noweb-ref package-nix
+#+begin_src scheme :noweb yes :noweb-ref package-nix
   (nix-shell-wrapper "prismlauncher"
     '("prismlauncher")
-    #:expression (local-file (testament-file "dorphine/nixpkgs.nix"))
+    #:expression (local-file <<testament-path("tangled/dorphine/nixpkgs.nix")>>)
     #:run-command '("prismlauncher"))
 #+end_src
 
@@ -1465,11 +1494,6 @@ condition.  Disable one of them.
 #+end_src
 
 ** Modules
-Within this repository
-#+begin_src scheme :noweb-ref module
-  (testament common)
-#+end_src
-
 Guile builtins
 #+begin_src scheme :noweb-ref module
   (ice-9 match)
@@ -1483,7 +1507,7 @@ Utilities
   (nonguix transformations)
   (rosenthal utils file)
   (rosenthal utils nix)
-  (sops secrets)
+  (rosenthal utils others)
 #+end_src
 
 Guix System
@@ -1537,7 +1561,6 @@ Guix Home - services
   (gnu home services symlink-manager)
   (rosenthal home services desktop)
   (rosenthal home services writable-files-manager)
-  (sops home services sops)
 #+end_src
 
 Guix packages
@@ -1559,4 +1582,5 @@ Guix packages
   (gnu packages xorg)
   (nongnu packages linux)
   (nongnu packages nvidia)
+  (rosenthal packages linux)
 #+end_src
