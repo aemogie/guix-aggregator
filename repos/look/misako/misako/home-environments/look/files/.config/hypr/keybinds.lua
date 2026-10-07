@@ -30,6 +30,19 @@ hl.bind("CTRL + mouse_up", function()
     end
 end)
 
+hl.bind("mouse:276", function()
+    local w = hl.get_active_window()
+    if w ~= nil and (w.class == "Minecraft*" or w.class:match("^Minecraft")) then
+        hl.dispatch(hl.dsp.exec_cmd("xdotool search --name 'Minecraft' click 3"))
+    end
+end, { repeating = true, ignore_mods = true })
+
+hl.bind("escape", hl.dsp.send_shortcut({
+    mods = "",
+    key = "code:9",
+    window =  "title:(Minecraft.*)"
+}), { ignore_mods = true, repeating = true, non_consuming = true })
+
 --
 -- Window bindings
 --

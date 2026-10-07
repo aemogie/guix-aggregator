@@ -1,5 +1,5 @@
 (define-module (misako home-environments look packages)
-  #:use-module ((gnu packages rust-apps) #:select (helvum typst jujutsu))
+  #:use-module ((gnu packages rust-apps) #:select (helvum jujutsu))
   #:use-module (gnu packages admin)
   #:use-module (gnu packages audio)
   #:use-module (gnu packages base)
@@ -168,7 +168,7 @@
         emacs-pgtk
         emacs-tabspaces
         emacs-vertico
-        emacs-which-key
+        ;; emacs-which-key
         emacs-yasnippet
         guile-ares-rs))
 
@@ -296,7 +296,7 @@
   (list xdotool ydotool))
 
 (define-public typst
-  (list (@ (gnu packages rust-apps) typst)
+  (list (@ (gnu packages typst) typst)
         tinymist-bin))
 
 (define-public nix
