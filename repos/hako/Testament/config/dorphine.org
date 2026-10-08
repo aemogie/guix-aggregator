@@ -171,32 +171,18 @@ View their sources:
 *** NVIDIA
 Extra configurations for NVIDIA proprietary driver
 
-Performance
-#+begin_src scheme :noweb-ref kernel-argument
-  "nvidia.NVreg_RegistryDwords=RmEnableAggressiveVblank=1"
-  "nvidia.NVreg_UsePageAttributeTable=1"
-#+end_src
-
 Power management and suspend
 #+begin_src scheme :noweb-ref kernel-argument
-  "nvidia.NVreg_UseKernelSuspendNotifiers=1"
   "nvidia.NVreg_TemporaryFilePath=/var/tmp"
-  "mem_sleep_default=s2idle"
-  "nvidia.NVreg_EnableS0ixPowerManagement=1"
 #+end_src
 
 Application profiles
 #+begin_src scheme :noweb-ref service
   (simple-service 'nvidia-application-profiles etc-service-type
-    `(;; https://github.com/Frogging-Family/nvidia-all/blob/master/system/limit-vram-usage
+    `(;; https://github.com/Frogging-Family/nvidia-all/blob/master/nvidia-all-config/system/limit-vram-usage
       ("nvidia/nvidia-application-profiles-rc.d/limit-vram-usage.json"
        ,(json-file "nvidia-application-profile-limit-vram-usage.json"
-          #~`(("profiles"
-               . #((("name" . "No VidMem Reuse")
-                    ("settings"
-                     . #((("key" . "GLVidHeapReuseRatio")
-                          ("value" . 0)))))))
-              ("rules"
+          #~`(("rules"
                . #((("pattern"
                      ("op" . "or")
                      ("sub"
@@ -207,7 +193,7 @@ Application profiles
                            #("firefox"
                              "niri"))))
                     ("profile" . "No VidMem Reuse")))))))
-      ;; https://github.com/Frogging-Family/nvidia-all/blob/master/system/cuda-no-stable-perf-limit
+      ;; https://github.com/Frogging-Family/nvidia-all/blob/master/nvidia-all-config/system/cuda-no-stable-perf-limit
       ("nvidia/nvidia-application-profiles-rc.d/cuda-no-stable-perf-limit.json"
        ,(json-file "nvidia-application-profile-cuda-no-stable-perf-limit.json"
           #~`(("profiles"
@@ -223,8 +209,7 @@ Application profiles
                            (lambda (index name)
                              `(("feature" . "procname")
                                ("matches" . ,name)))
-                           #("firefox"
-                             "obs"))))
+                           #("obs"))))
                     ("profile" . "CudaNoStablePerfLimit")))))))))
 #+end_src
 
@@ -728,6 +713,14 @@ Generate passwordless ECC key:
               (match (@ (app-id "showmethekey")))
               (open-floating #t)
               (geometry-corner-radius 0))
+             (window-rule
+              (match (@ (app-id "steam")
+                        (title "^notificationtoasts_[0-9]+_desktop$")))
+              (default-floating-position
+                (@ (x 10)
+                   (y 10)
+                   (relative-to "bottom-right")))
+              (open-focused #f))
              (window-rule
               (match (@ (app-id "thunar")
                         (title "^File Operation Progress$")))
