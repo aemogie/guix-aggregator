@@ -4164,6 +4164,7 @@ DevDocs documentations."
 ;; https://cmdln.org/2023/03/25/how-i-org-in-2023/
 (define* (feature-emacs-org
           #:key
+          (emacs-org emacs-org)
           (emacs-org-modern emacs-org-modern)
           (emacs-org-appear emacs-org-appear)
           (emacs-org-make-toc emacs-org-make-toc)
@@ -4189,6 +4190,7 @@ DevDocs documentations."
   (ensure-pred boolean? org-indent?)
   (ensure-pred boolean? org-modern?)
   (ensure-pred boolean? auto-update-toc?)
+  (ensure-pred file-like? emacs-org)
   (ensure-pred file-like? emacs-org-modern)
   (ensure-pred file-like? emacs-org-appear)
   (ensure-pred file-like? emacs-org-make-toc)
@@ -4403,6 +4405,8 @@ Sensible defaults for org mode"
       #:commentary "\
 Indentation and refile configurations, visual adjustment."
       #:keywords '(convenience org-mode org-modern)
+      #:elisp-packages-rewrites
+      (list (cons "emacs-org" (lambda (_) emacs-org)))
       #:elisp-packages
       (append
        (list emacs-org emacs-org-contrib

@@ -153,16 +153,23 @@ would yield something like:
 Same as @code{init-el}, but result will go to @file{early-init.el}."))
 
 (define (updated-elisp-packages config)
-  (map (if (home-emacs-configuration-native-comp? config)
-           (package-input-rewriting/spec
-            (append
-             `(("emacs-minimal" . ,(const (home-emacs-configuration-emacs config)))
-               ("emacs" . ,(const (home-emacs-configuration-emacs config)))
-               ("emacs-no-x" . ,(const (home-emacs-configuration-emacs config)))
-               ("emacs-no-x-toolkit" . ,(const (home-emacs-configuration-emacs config)))
-               ("emacs-wide-int" . ,(const (home-emacs-configuration-emacs config))))
-             (home-emacs-configuration-elisp-packages-rewrites config)))
-           identity)
+  (define package-rewrites
+    (append
+     (if (home-emacs-configuration-native-comp? config)
+         `(("emacs-minimal" .
+            ,(const (home-emacs-configuration-emacs config)))
+           ("emacs" . ,(const (home-emacs-configuration-emacs config)))
+           ("emacs-no-x" . ,(const (home-emacs-configuration-emacs config)))
+           ("emacs-no-x-toolkit" .
+            ,(const (home-emacs-configuration-emacs config)))
+           ("emacs-wide-int" .
+            ,(const (home-emacs-configuration-emacs config))))
+         '())
+     (home-emacs-configuration-elisp-packages-rewrites config)))
+
+  (map (if (null? package-rewrites)
+           identity
+           (package-input-rewriting/spec package-rewrites))
        (let ((elisp-packages (home-emacs-configuration-elisp-packages config)))
          (concatenate
           (cons elisp-packages
