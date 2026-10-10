@@ -11,6 +11,7 @@
    (configuration
     (machine-ssh-configuration
       (host-name "nuporta")
+      (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILdDyVMnEcVsuTZvnKjnQsgmTN+ebX9ub4ek4xwsqu+K")
       (system "x86_64-linux")
       (user "deploy")
-      (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILdDyVMnEcVsuTZvnKjnQsgmTN+ebX9ub4ek4xwsqu+K")))))
+      (allow-downgrades? #t)))))

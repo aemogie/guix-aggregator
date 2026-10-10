@@ -11,6 +11,7 @@
    (configuration
     (machine-ssh-configuration
       (host-name "chapra")
+      (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIABRu2ARsDnuGIrO/UGwgECgpxPo7RCoM22PAH3tr82h")
       (system "x86_64-linux")
       (user "deploy")
-      (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIABRu2ARsDnuGIrO/UGwgECgpxPo7RCoM22PAH3tr82h")))))
+      (allow-downgrades? #t)))))

@@ -9,75 +9,75 @@
 #+begin_src scheme :tangle ../tangled/dorphine/dorphine.scm :noweb yes
   (use-modules <<module>>)
 
-  (define %os
-    (operating-system
-      (host-name "dorphine")
-      (locale "en_US.UTF-8")
-      (timezone "Etc/GMT-8")
-      (name-service-switch %mdns-host-lookup-nss)
-      (keyboard-layout
-       (keyboard-layout "us" "dvorak" #:options '("ctrl:nocaps")))
-      (bootloader
-       (bootloader-configuration
-         (bootloader limine-efi-removable-bootloader)
-         (targets '("/efi"))))
-      (kernel linux-cachyos-bore-zen4)
-      (initrd microcode-initrd)
-      (firmware
-       (cons* linux-firmware
-              %base-firmware))
-      (kernel-arguments
-       (cons* <<kernel-argument>>
-              %default-kernel-arguments))
-      (file-systems
-       (append <<file-systems>>
-               %base-file-systems))
-      (swap-devices
-       (append <<swap-devices>>))
-      (groups
-       (cons* <<user-group>>
-              %base-groups))
-      (users
-       (cons* <<user-account>>
-              %base-user-accounts))
-      (packages
-       (append (specifications->packages
-                '("digikam"
-                  "firefox"
-                  "gimp"
-                  "imv"
-                  "kdenlive"
-                  "obs-nvidia"
-                  "picard"
-                  "showmethekey"
-                  <<package-spec>>))
-               (with-nix-profile
-                (list <<package-nix>>))
-               %rosenthal-cli-packages
-               %base-packages))
-      (services
-       (cons* <<service>>
-              (modify-services %desktop-services
-                (delete gdm-service-type)
-                ;; These services will be configured later.
-                (delete console-font-service-type)
-                (delete guix-service-type)
-                (delete upower-service-type)
-                (delete network-manager-service-type)
-                (delete avahi-service-type))))
-      (sudoers-file
-       (plain-file "sudoers"
-         (string-join
-          (list (plain-file-content %sudoers-specification)
-                <<sudoers>>)
-          "\n")))))
+  (define nvidia-transform
+    (nonguix-transformation-nvidia
+     #:driver nvda-new-feature
+     #:open-source-kernel-module? #t
+     #:dynamic-boost? #t
+     #:remove-nvenc-restriction? #t))
 
-  ((nonguix-transformation-nvidia
-    #:driver nvda-new-feature
-    #:open-source-kernel-module? #t
-    #:dynamic-boost? #t
-    #:remove-nvenc-restriction? #t)
-   %os)
+  (nvidia-transform
+   (operating-system
+     (host-name "dorphine")
+     (locale "en_US.UTF-8")
+     (timezone "Etc/GMT-8")
+     (name-service-switch %mdns-host-lookup-nss)
+     (keyboard-layout
+      (keyboard-layout "us" "dvorak" #:options '("ctrl:nocaps")))
+     (bootloader
+      (bootloader-configuration
+        (bootloader limine-efi-removable-bootloader)
+        (targets '("/efi"))))
+     (kernel linux-cachyos-bore-zen4)
+     (initrd microcode-initrd)
+     (firmware
+      (cons* linux-firmware
+             %base-firmware))
+     (kernel-arguments
+      (cons* <<kernel-argument>>
+             %default-kernel-arguments))
+     (file-systems
+      (append <<file-systems>>
+              %base-file-systems))
+     (swap-devices
+      (append <<swap-devices>>))
+     (groups
+      (cons* <<user-group>>
+             %base-groups))
+     (users
+      (cons* <<user-account>>
+             %base-user-accounts))
+     (packages
+      (append (specifications->packages
+               '("digikam"
+                 "firefox"
+                 "gimp"
+                 "imv"
+                 "kdenlive"
+                 "obs-nvidia"
+                 "picard"
+                 "showmethekey"
+                 <<package-spec>>))
+              (with-nix-profile
+               (list <<package-nix>>))
+              %rosenthal-cli-packages
+              %base-packages))
+     (services
+      (cons* <<service>>
+             (modify-services %desktop-services
+               (delete gdm-service-type)
+               ;; These services will be configured later.
+               (delete console-font-service-type)
+               (delete guix-service-type)
+               (delete upower-service-type)
+               (delete network-manager-service-type)
+               (delete avahi-service-type))))
+     (sudoers-file
+      (plain-file "sudoers"
+        (string-join
+         (list (plain-file-content %sudoers-specification)
+               <<sudoers>>)
+         "\n")))))
 #+end_src
 
 Extra notes:
@@ -1285,22 +1285,6 @@ Jujutsu:
 
   [git]
   sign-on-push = true
-#+end_src
-
-*** moor
-[[https://github.com/walles/moor][Moor]] is a pager similar to =less=, with features like syntax highlighting and
-incremental search.
-
-#+begin_src scheme :noweb yes :noweb-ref package-nix
-  (nix-shell-wrapper "moor"
-    '("moor")
-    #:expression (local-file <<testament-path("tangled/dorphine/nixpkgs.nix")>>)
-    #:run-command '("moor"))
-#+end_src
-
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'moor-pager home-environment-variables-service-type
-    `(("PAGER" . "moor")))
 #+end_src
 
 *** mpv

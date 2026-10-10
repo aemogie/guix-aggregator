@@ -11,6 +11,6 @@
    (configuration
     (machine-ssh-configuration
       (host-name "ignamma")
+      (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAPBlsRI/35fyLNgRHcOUdwQkagHf6mV75cFycHSyJ2B")
       (system "x86_64-linux")
-      (user "deploy")
-      (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAPBlsRI/35fyLNgRHcOUdwQkagHf6mV75cFycHSyJ2B")))))
+      (user "deploy")))))

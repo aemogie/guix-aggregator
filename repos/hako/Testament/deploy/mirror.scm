@@ -13,17 +13,17 @@
        (host-name
         (or host-name
             (string-append mirror-name ".guix.moe")))
+       (host-key ssh-host-key)
        (system system)
-       (user "deploy")
-       (host-key ssh-host-key)))))
+       (user "deploy")))))
 
 (list (mirror
        #:mirror-name "cache-sg"
-       #:system "x86_64-linux"
        #:ssh-host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC7LUCU7btbuvWNMvS3WnM6lAZLB8AwH/O9LdYhae9Eo"
+       #:system "x86_64-linux"
        #:bios-boot "/dev/vda")
       (mirror
        #:mirror-name "cache-us-lax"
-       #:system "x86_64-linux"
        #:ssh-host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIymKc9HG2Gr+4r2mG3zVdRsCewZ9WuVrOJZipbMWHrl"
+       #:system "x86_64-linux"
        #:bios-boot "/dev/vda"))

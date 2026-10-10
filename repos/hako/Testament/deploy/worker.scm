@@ -11,22 +11,22 @@
     (configuration
      (machine-ssh-configuration
        (host-name address)
+       (host-key ssh-host-key)
        (system system)
-       (user "deploy")
-       (host-key ssh-host-key)))))
+       (user "deploy")))))
 
 (list #;(build-worker
          #:host-name "..."
+         #:ssh-host-key "ssh-ed25519 ..."
          #:address "0.0.0.0"
          #:system "aarch64-linux"
          #:32bit-support? #t
-         #:ssh-host-key "ssh-ed25519 ..."
          #:workers 4)
       #;(build-worker
          #:host-name "..."
+         #:ssh-host-key "ssh-ed25519 ..."
          #:address "0.0.0.0"
          #:system "x86_64-linux"
          #:32bit-support? #t
-         #:ssh-host-key "ssh-ed25519 ..."
          #:workers 4
          #:bios-boot "/dev/sda"))
