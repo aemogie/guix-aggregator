@@ -8,7 +8,7 @@ hl.bind("print"                 , hl.dsp.exec_cmd("grim -g \"$(slurp)\" -t png -
 hl.bind("CTRL + print"          , hl.dsp.exec_cmd("grim -g \"$(slurp -o)\" -t png - | wl-copy -t image/png"))
 hl.bind("CTRL + ALT_L + print"  , hl.dsp.exec_cmd("grim -t png - | wl-copy -t image/png"))
 hl.bind("SUPER + SHIFT + d"     , hl.dsp.exec_cmd("bemenu-run -i -n -l 5 -p spawn:"))
-hl.bind("SUPER + SHIFT + g"     , hl.dsp.exec_cmd("zathura \"$(find /home/look/desktop/graduacao -regex '.*\\.pdf' | bemenu --no-exec -n -i -l 10 -p Book:)\""))
+hl.bind("SUPER + SHIFT + g"     , hl.dsp.exec_cmd("zaread \"$(find /home/look/desktop/graduacao -type f -regextype posix-extended -regex '.*\\.(pdf|doc|docx)$' | bemenu --no-exec -n -i -l 10 -p File:)\""))
 hl.bind("SUPER + SHIFT + b"     , hl.dsp.exec_cmd("zathura \"$(find /home/look/books/direito -regex '.*\\.pdf' | bemenu --no-exec -n -i -l 10 -p Book:)\""))
 
 hl.bind("SUPER + e"             , hl.dsp.exec_cmd(term .. " -e " .. editor))

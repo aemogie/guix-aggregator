@@ -39,7 +39,7 @@
                (resolution `(1920 . 1080))
                (gfxmode `("1920x1080x32"))))))
 
-     (kernel linux-7.0)
+     (kernel linux-7.2)
      (initrd
       (lambda (file-systems . rest)
         (apply microcode-initrd

@@ -56,7 +56,6 @@
   #|T|# #:use-module (radix packages text-editors)
 
   #|Radix services|#
-  #|A|# #:use-module (radix services admin)
   #|P|# #:use-module (radix services pm)
   #|S|# #:use-module (radix services shepherd)
 
@@ -114,7 +113,7 @@
                                      "/backgrounds/guix-silver-16-9.svg"))
                  (gfxmode `("1280x720x32"))))))
 
-    (kernel linux-libre-6.19)
+    (kernel linux-libre-7.1)
     (kernel-arguments
       `("console=tty1"
         "modprobe.blacklist=usbmouse,usbkbd,pcspkr"

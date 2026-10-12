@@ -2,8 +2,10 @@
 # Copyright © 2023-2026 Hilton Chain <hako@ultrarare.space>
 #+TITLE: Testament - Personal dot(?)files
 
-This repository contains my dotfiles and Guix System literate configurations.
 (README for [[file:config/live][LiveCDs]] has been moved to its own directory.)
+
+This repository contains my dotfiles and [[https://guix.gnu.org/manual/1.5.0/en/html_node/System-Configuration.html][Guix System]] [[https://orgmode.org/manual/Working-with-Source-Code.html][literate configurations]]
+[[https://orgmode.org/][written in Org]].
 
 ** Usage
 Environment setup is done via [[https://guix.gnu.org/manual/devel/en/html_node/Invoking-guix-time_002dmachine.html][~guix time-machine~]] and [[https://guix.gnu.org/manual/devel/en/html_node/Invoking-guix-shell.html][~guix shell~]].  [[file:.envrc][.envrc]] is
@@ -13,7 +15,8 @@ available for [[https://direnv.net/][direnv]] to automate the process.
   guix time-machine -C channels.lock -- shell -m manifest.scm
 #+end_src
 
-This repository uses [[https://codeberg.org/lapislazuli/blue][BLUE build system]], the entry point is at [[file:blueprint.scm][blueprint.scm]].
+This repository uses [[https://codeberg.org/lapislazuli/blue][BLUE build system]], the entry point that defines custom
+commands and variables is at [[file:blueprint.scm][blueprint.scm]].
 
 #+begin_src bash
   blue configure
@@ -26,7 +29,7 @@ For available commands, run ~blue help~.
   blue help
 #+end_src
 
-Examples:
+Example BLUE usage in this repository:
 
 - Configure [[https://guix.gnu.org/manual/devel/en/html_node/Substitutes.html][substitute servers]]:
 
@@ -46,17 +49,37 @@ Examples:
   blue build -- build-os
 #+end_src
 
-** Shared config
+** Channels
+The following [[https://guix.gnu.org/manual/1.5.0/en/html_node/Channels.html][Guix channels]] are used among the configurations.
+
+Bindings not coming from the main Guix channel are prefixed in configurations
+for clarification.  The renaming is possible thanks to [[https://doc.guix.gnu.org/guile/3.0.11/en/html_node/Using-Guile-Modules.html#index-use_002dmodules][Guile's flexible module
+system]].
+
++ [[https://codeberg.org/guix/guix][guix]]: Guix itself and the main package + service collection
++ [[https://gitlab.com/nonguix/nonguix][nonguix]] (prefix: =non:=): Support that can't be included upstream, notably proprietary drivers
++ [[https://codeberg.org/hako/rosenthal][rosenthal]] (prefix: =ros:=): My personal experimental channel
++ [[https://github.com/fishinthecalculator/sops-guix][sops-guix]] (prefix: =sop:=): Secret provisioning with [[https://getsops.io/][SOPS]]
++ [[https://codeberg.org/lapislazuli/bluebox][bluebox]] (prefix: =blu:=): The BLUE build system
+
+They are specified in [[file:channels.scm][channels.scm]].  ~blue update~ locks latest revisions of
+these channels for reproducibility and stores them into [[file:channels.lock][channels.lock]] and
+[[file:channels-fork.lock][channels-fork.lock]], the latter uses [[https://codeberg.org/hako/guix][my Guix fork]] for changes not yet upstreamed.
+You can search these three files in blueprint.scm and see how they are used.
+
+** Shared configs
 Shared configurations, functions and code snippets to import into [[https://orgmode.org/manual/Library-of-Babel.html][Library of
-Babel]].
+Babel]].  They'll be used in system configurations later.
 
 + [[file:config/shared/common.org][common]]
 + [[file:config/shared/caddy.org][caddy]]
 + [[file:config/shared/emacs.org][emacs]]
 
-** Hosts
+** System configs
+Guix System and [[https://guix.gnu.org/manual/1.5.0/en/html_node/Invoking-guix-deploy.html][~guix deploy~]] configurations.
+
 Note:
-- ZFS: Support implemented in [[https://codeberg.org/guix/guix/pulls/8346][guix/guix!8346]]
+- ZFS: WIP support implemented in [[https://codeberg.org/guix/guix/pulls/8346][guix/guix!8346]]
 - NVIDIA: Avoid GDM if you encounter issues
 
 *** [[file:config/dorphine.org][dorphine]] (x86_64-linux, UEFI, ZFS, NVIDIA) | [[file:deploy/dorphine.scm][deploy]]

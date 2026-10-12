@@ -20,7 +20,7 @@
    (provision '(symlink-/etc/config.scm))
    (requirement '(user-processes host-name))
    (start #~(lambda _
-              (let* ((zero "/home/radio/areas/code/scm/zero/")
+              (let* ((zero "/home/radio/projects/code/scm/zero/")
                      (host-config (string-append zero "operating-systems/"
                                                  (gethostname) ".scm")))
                 (symlink host-config "/etc/config.scm")

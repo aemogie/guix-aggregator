@@ -52,6 +52,7 @@
         #:use-module (gnu packages tree-sitter)
         #:use-module (gnu packages tmux)
         #:use-module (gnu packages toys)
+        #:use-module (gnu packages typst)
   #|V|# #:use-module (gnu packages version-control)
         #:use-module (gnu packages video)
   #|W|# #:use-module (gnu packages web)
@@ -220,7 +221,7 @@
                 texlive-collection-mathscience))
 
 (define typst
-  (list #|rust-apps|# rheo (@ (gnu packages rust-apps) typst) typstyle
+  (list #|rust-apps|# rheo (@ (gnu packages typst) typst) typstyle
         #|tree-sitter|# tree-sitter-typst))
 
 (define video

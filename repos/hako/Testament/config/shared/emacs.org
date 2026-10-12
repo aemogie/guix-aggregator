@@ -19,11 +19,11 @@ workaround.
 Services, packages and configuration file for Emacs:
 
 #+begin_src scheme :noweb yes :noweb-ref home-service
-  (service home-emacs-service-type
-    (home-emacs-configuration
+  (service ros:home-emacs-service-type
+    (ros:home-emacs-configuration
       (emacs emacs-pgtk)
       (packages
-       (with-transformation
+       (non:with-transformation
            (compose (options->transformation
                      '((without-tests . "emacs-el-mock")))
                     (package-input-rewriting
@@ -1422,14 +1422,14 @@ Utilities
   (guix gexp)
   (guix packages)
   (guix transformations)
-  (nonguix utils)
+  ((nonguix utils) #:prefix non:)
 #+end_src
 
 Guix Home - services
 #+begin_src scheme :noweb-ref module
   (gnu home services)
   (gnu home services shepherd)
-  (rosenthal home services emacs)
+  ((rosenthal home services emacs) #:prefix ros:)
 #+end_src
 
 Guix packages

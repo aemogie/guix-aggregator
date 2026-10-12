@@ -10,8 +10,8 @@
   (use-modules <<module>>)
 
   (define nvidia-transform
-    (nonguix-transformation-nvidia
-     #:driver nvda-new-feature
+    (non:nonguix-transformation-nvidia
+     #:driver non:nvda-new-feature
      #:open-source-kernel-module? #t
      #:dynamic-boost? #t
      #:remove-nvenc-restriction? #t))
@@ -26,12 +26,12 @@
       (keyboard-layout "us" "dvorak" #:options '("ctrl:nocaps")))
      (bootloader
       (bootloader-configuration
-        (bootloader limine-efi-removable-bootloader)
+        (bootloader ros:limine-efi-removable-bootloader)
         (targets '("/efi"))))
-     (kernel linux-cachyos-bore-zen4)
-     (initrd microcode-initrd)
+     (kernel ros:linux-cachyos-bore-zen4)
+     (initrd non:microcode-initrd)
      (firmware
-      (cons* linux-firmware
+      (cons* non:linux-firmware
              %base-firmware))
      (kernel-arguments
       (cons* <<kernel-argument>>
@@ -58,9 +58,9 @@
                  "picard"
                  "showmethekey"
                  <<package-spec>>))
-              (with-nix-profile
+              (ros:with-nix-profile
                (list <<package-nix>>))
-              %rosenthal-cli-packages
+              ros:%rosenthal-cli-packages
               %base-packages))
      (services
       (cons* <<service>>
@@ -181,7 +181,7 @@ Application profiles
   (simple-service 'nvidia-application-profiles etc-service-type
     `(;; https://github.com/Frogging-Family/nvidia-all/blob/master/nvidia-all-config/system/limit-vram-usage
       ("nvidia/nvidia-application-profiles-rc.d/limit-vram-usage.json"
-       ,(json-file "nvidia-application-profile-limit-vram-usage.json"
+       ,(ros:json-file "nvidia-application-profile-limit-vram-usage.json"
           #~`(("rules"
                . #((("pattern"
                      ("op" . "or")
@@ -195,7 +195,7 @@ Application profiles
                     ("profile" . "No VidMem Reuse")))))))
       ;; https://github.com/Frogging-Family/nvidia-all/blob/master/nvidia-all-config/system/cuda-no-stable-perf-limit
       ("nvidia/nvidia-application-profiles-rc.d/cuda-no-stable-perf-limit.json"
-       ,(json-file "nvidia-application-profile-cuda-no-stable-perf-limit.json"
+       ,(ros:json-file "nvidia-application-profile-cuda-no-stable-perf-limit.json"
           #~`(("profiles"
                . #((("name" . "CudaNoStablePerfLimit")
                     ("settings"
@@ -334,10 +334,10 @@ Application profiles
     (guix-extension
       (authorized-keys
        (list ;; LAN
-             %rosenthal-guix-key-bocis
-             %rosenthal-guix-key-ignamma
+             ros:%rosenthal-guix-key-bocis
+             ros:%rosenthal-guix-key-ignamma
              ;; Nonguix
-             %rosenthal-guix-key-nuporta))
+             ros:%rosenthal-guix-key-nuporta))
       (substitute-urls
        '("https://mirror.sjtu.edu.cn/guix-bordeaux"
          "https://mirror.sjtu.edu.cn/guix"
@@ -368,7 +368,7 @@ Application profiles
     `(("hako"
        ,(home-environment
           (essential-services
-           (cons* (service home-writable-files-manager-service-type)
+           (cons* (service ros:home-writable-files-manager-service-type)
                   (modify-services (home-environment-default-essential-services this-home-environment)
                     (delete home-symlink-manager-service-type))))
           (services
@@ -376,9 +376,9 @@ Application profiles
 
                   (service home-fish-service-type)
 
-                  (service home-fish-plugin-atuin-service-type)
-                  (service home-fish-plugin-direnv-service-type)
-                  (service home-fish-plugin-zoxide-service-type)
+                  (service ros:home-fish-plugin-atuin-service-type)
+                  (service ros:home-fish-plugin-direnv-service-type)
+                  (service ros:home-fish-plugin-zoxide-service-type)
 
                   (service home-dotfiles-service-type
                     (home-dotfiles-configuration
@@ -434,7 +434,7 @@ Authorized SSH keys.
 
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-openssh openssh-service-type
-    `(("deploy" ,%rosenthal-ssh-key-hako-deploy)))
+    `(("deploy" ,ros:%rosenthal-ssh-key-hako-deploy)))
 #+end_src
 
 Extra notes:
@@ -510,8 +510,8 @@ Generate passwordless ECC key:
   (service network-manager-service-type
     (network-manager-configuration
       (extra-configuration-files
-       (list %rosenthal-network-manager-ipv6-privacy
-             %rosenthal-network-manager-random-mac-address))))
+       (list ros:%rosenthal-network-manager-ipv6-privacy
+             ros:%rosenthal-network-manager-random-mac-address))))
 #+end_src
 
 *** bluetooth
@@ -590,7 +590,7 @@ Generate passwordless ECC key:
 
 *** tailscale
 #+begin_src scheme :noweb-ref service
-  (service tailscale-service-type)
+  (service ros:tailscale-service-type)
 #+end_src
 
 #+begin_src nftables :noweb-ref nftables-filter-input
@@ -639,8 +639,8 @@ Generate passwordless ECC key:
 ** Graphical Session
 *** noctalia-greeter
 #+begin_src scheme :noweb-ref service
-  (service noctalia-greeter-service-type
-    (noctalia-greeter-configuration
+  (service ros:noctalia-greeter-service-type
+    (ros:noctalia-greeter-configuration
      (keyboard-layout keyboard-layout)))
 
   (service greetd-service-type
@@ -650,7 +650,7 @@ Generate passwordless ECC key:
        (list (greetd-terminal-configuration
                (terminal-vt "7")
                (terminal-switch #t)
-               (default-session-command (greetd-noctalia-greeter-session)))))))
+               (default-session-command (ros:greetd-noctalia-greeter-session)))))))
 #+end_src
 
 *** niri
@@ -663,17 +663,17 @@ Generate passwordless ECC key:
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
-  (service home-graphical-session-service-type
-    (home-graphical-session-configuration
+  (service ros:home-graphical-session-service-type
+    (ros:home-graphical-session-configuration
       (wayland? #t)
       (x11? #t)))
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
-  (service home-niri-service-type
-    (home-niri-configuration
+  (service ros:home-niri-service-type
+    (ros:home-niri-configuration
       (config
-       (kdlv1-file "niri.kdl"
+       (ros:kdlv1-file "niri.kdl"
          #~'((prefer-no-csd)
              (spawn-sh-at-startup
               #$(string-append
@@ -862,7 +862,7 @@ Generate passwordless ECC key:
 
 *** noctalia
 #+begin_src scheme :noweb-ref home-service
-  (service home-noctalia-service-type)
+  (service ros:home-noctalia-service-type)
 #+end_src
 
 *** xdg-desktop-portal
@@ -900,8 +900,8 @@ https://wiki.gnome.org/Projects(2f)GnomeKeyring(2f)Pam.html
 
 *** icon theme & fonts
 #+begin_src scheme :noweb-ref home-service
-  (service home-theme-service-type
-    (home-theme-configuration
+  (service ros:home-theme-service-type
+    (ros:home-theme-configuration
       (packages (list qogir-icon-theme))
       (font "sans-serif 10")
       (icon-theme "Qogir")
@@ -1172,8 +1172,8 @@ notmuch:
 
 *** fcitx5
 #+begin_src scheme :noweb-ref home-service
-  (service home-fcitx5-service-type
-    (home-fcitx5-configuration
+  (service ros:home-fcitx5-service-type
+    (ros:home-fcitx5-configuration
       (themes (list fcitx5-material-color-theme))
       (input-method-editors (list fcitx5-rime fcitx5-skk))
       (wayland-frontend? #t)))
@@ -1332,11 +1332,11 @@ See also https://ultrarare.space/en/posts/manage-nix-packages-in-guix/
 Extend search paths for =with-nix-profile=.
 
 #+begin_src scheme :noweb-ref service
-  (service nix-search-paths-service-type)
+  (service ros:nix-search-paths-service-type)
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
-  (service home-nix-search-paths-service-type)
+  (service ros:home-nix-search-paths-service-type)
 #+end_src
 
 Graphics drivers, assuming =nvda= is installed in the system profile (this is
@@ -1366,19 +1366,19 @@ Pin Nixpkgs to avoid networking requirement when using the wrappers.
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref package-nix
-  (nix-shell-wrapper "nix-assets"
+  (ros:nix-shell-wrapper "nix-assets"
     '("glibcLocales"
       "adwaita-icon-theme"
       "qogir-icon-theme")
     #:expression (local-file <<testament-path("tangled/dorphine/nixpkgs.nix")>>))
 
-  (nix-shell-wrapper "nocturne"
+  (ros:nix-shell-wrapper "nocturne"
     '("nocturne")
     #:expression (local-file <<testament-path("tangled/dorphine/nixpkgs.nix")>>)
     #:environment-set '(("XDG_DATA_DIRS" . "/nix/var/nix/profiles/guix-system-nix-profile/share"))
     #:run-command '("nocturne"))
 
-  (nix-shell-wrapper "tsukimi"
+  (ros:nix-shell-wrapper "tsukimi"
     '("github:NixOS/nixpkgs/da100efb6f98396f285ee84b52641bede78e0343#tsukimi")
     #:environment-set '(("XDG_DATA_DIRS" . "/nix/var/nix/profiles/guix-system-nix-profile/share"))
     #:run-command '("tsukimi"))
@@ -1386,7 +1386,7 @@ Pin Nixpkgs to avoid networking requirement when using the wrappers.
 
 *** prismlauncher
 #+begin_src scheme :noweb yes :noweb-ref package-nix
-  (nix-shell-wrapper "prismlauncher"
+  (ros:nix-shell-wrapper "prismlauncher"
     '("prismlauncher")
     #:expression (local-file <<testament-path("tangled/dorphine/nixpkgs.nix")>>)
     #:run-command '("prismlauncher"))
@@ -1481,21 +1481,21 @@ Guile builtins
 Utilities
 #+begin_src scheme :noweb-ref module
   (gnu)
-  (nonguix transformations)
-  (rosenthal utils file)
-  (rosenthal utils nix)
-  (rosenthal utils others)
+  ((nonguix transformations) #:prefix non:)
+  ((rosenthal utils file) #:prefix ros:)
+  ((rosenthal utils nix) #:prefix ros:)
+  ((rosenthal utils others) #:prefix ros:)
 #+end_src
 
 Guix System
 #+begin_src scheme :noweb-ref module
   (gnu system accounts)
-  (nongnu system linux-initrd)
+  ((nongnu system linux-initrd) #:prefix non:)
 #+end_src
 
 Guix System - bootloaders
 #+begin_src scheme :noweb-ref module
-  (rosenthal bootloader limine)
+  ((rosenthal bootloader limine) #:prefix ros:)
 #+end_src
 
 Guix System - services
@@ -1517,11 +1517,11 @@ Guix System - services
   (gnu services sysctl)
   (gnu services virtualization)
   (gnu services xorg)
-  (rosenthal services base)
-  (rosenthal services desktop)
-  (rosenthal services networking)
-  (rosenthal services nix)
-  (rosenthal services shellutils)
+  ((rosenthal services base) #:prefix ros:)
+  ((rosenthal services desktop) #:prefix ros:)
+  ((rosenthal services networking) #:prefix ros:)
+  ((rosenthal services nix) #:prefix ros:)
+  ((rosenthal services shellutils) #:prefix ros:)
 #+end_src
 
 Guix Home - services
@@ -1536,8 +1536,8 @@ Guix Home - services
   (gnu home services shepherd)
   (gnu home services sound)
   (gnu home services symlink-manager)
-  (rosenthal home services desktop)
-  (rosenthal home services writable-files-manager)
+  ((rosenthal home services desktop) #:prefix ros:)
+  ((rosenthal home services writable-files-manager) #:prefix ros:)
 #+end_src
 
 Guix packages
@@ -1557,7 +1557,7 @@ Guix packages
   (gnu packages video)
   (gnu packages xdisorg)
   (gnu packages xorg)
-  (nongnu packages linux)
-  (nongnu packages nvidia)
-  (rosenthal packages linux)
+  ((nongnu packages linux) #:prefix non:)
+  ((nongnu packages nvidia) #:prefix non:)
+  ((rosenthal packages linux) #:prefix ros:)
 #+end_src

@@ -19,7 +19,7 @@
                grub-bootloader
                grub-efi-removable-bootloader))
          (targets (list (or bios-boot "/efi")))))
-      (kernel linux-cachyos-lts-server)
+      (kernel ros:linux-cachyos-lts-server)
       (initrd-modules
        (cons* "sd_mod"
               (base-initrd-modules kernel)))
@@ -35,7 +35,7 @@
        (cons* <<user-account>>
               %base-user-accounts))
       (packages
-       (append %rosenthal-cli-packages
+       (append ros:%rosenthal-cli-packages
                %base-packages))
       (services
        (cons* <<service>>
@@ -84,9 +84,9 @@
   (simple-service 'extend-guix guix-service-type
     (guix-extension
       (authorized-keys
-       (list %rosenthal-guix-key-dorphine
+       (list ros:%rosenthal-guix-key-dorphine
              ;; Nonguix
-             %rosenthal-guix-key-nuporta))))
+             ros:%rosenthal-guix-key-nuporta))))
 
   (simple-service 'guix-gc shepherd-root-service-type
     (list (shepherd-timer '(guix-gc)
@@ -131,10 +131,10 @@ Authorized SSH keys.
 
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-openssh openssh-service-type
-    `(("deploy"   ,%rosenthal-ssh-key-hako-deploy)
-      ("hako"     ,%rosenthal-ssh-key-hako)
-      ("jonathan" ,%rosenthal-ssh-key-jonathan)
-      ("podiki"   ,%rosenthal-ssh-key-podiki)))
+    `(("deploy"   ,ros:%rosenthal-ssh-key-hako-deploy)
+      ("hako"     ,ros:%rosenthal-ssh-key-hako)
+      ("jonathan" ,ros:%rosenthal-ssh-key-jonathan)
+      ("podiki"   ,ros:%rosenthal-ssh-key-podiki)))
 #+end_src
 
 ** Networking & SSH
@@ -164,7 +164,7 @@ Authorized SSH keys.
 
 *** tailscale
 #+begin_src scheme :noweb-ref service
-  (service tailscale-service-type)
+  (service ros:tailscale-service-type)
 #+end_src
 
 ** Continuous Integration
@@ -194,7 +194,7 @@ Open TCP port 5558 and connect to server IPv4 address.
 Utilities
 #+begin_src scheme :noweb-ref module
   (gnu)
-  (rosenthal utils others)
+  ((rosenthal utils others) #:prefix ros:)
 #+end_src
 
 Guix System - services
@@ -205,12 +205,12 @@ Guix System - services
   (gnu services security)
   (gnu services shepherd)
   (gnu services ssh)
-  (rosenthal services networking)
+  ((rosenthal services networking) #:prefix ros:)
 #+end_src
 
 Guix packages
 #+begin_src scheme :noweb-ref module
   (gnu packages shells)
   (gnu packages ssh)
-  (rosenthal packages linux)
+  ((rosenthal packages linux) #:prefix ros:)
 #+end_src

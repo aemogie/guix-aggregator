@@ -13,9 +13,9 @@
     (timezone "Etc/GMT-8")
     (bootloader
      (bootloader-configuration
-       (bootloader limine-efi-removable-bootloader)
+       (bootloader ros:limine-efi-removable-bootloader)
        (targets '("/efi"))))
-    (kernel linux-cachyos-lts-server)
+    (kernel ros:linux-cachyos-lts-server)
     (kernel-arguments
      (cons* <<kernel-argument>>
             %default-kernel-arguments))
@@ -31,8 +31,8 @@
      (cons* <<user-account>>
             %base-user-accounts))
     (packages
-     (append (list mirror-substitutes)
-             %rosenthal-cli-packages
+     (append (list ros:mirror-substitutes)
+             ros:%rosenthal-cli-packages
              %base-packages))
     (services
      (cons* <<service>>
@@ -150,10 +150,10 @@
   (simple-service 'extend-guix guix-service-type
     (guix-extension
       (authorized-keys
-       (list %rosenthal-guix-key-dorphine
+       (list ros:%rosenthal-guix-key-dorphine
              ;; Build workers
-             %rosenthal-guix-key-bocis
-             %rosenthal-guix-key-ignamma))
+             ros:%rosenthal-guix-key-bocis
+             ros:%rosenthal-guix-key-ignamma))
       (substitute-urls
        '("https://substitutes.nonguix.org"))))
 
@@ -210,10 +210,10 @@ Authorized SSH keys.
 
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-openssh openssh-service-type
-    `(("deploy"   ,%rosenthal-ssh-key-hako-deploy)
-      ("hako"     ,%rosenthal-ssh-key-hako)
-      ("jonathan" ,%rosenthal-ssh-key-jonathan)
-      ("podiki"   ,%rosenthal-ssh-key-podiki)))
+    `(("deploy"   ,ros:%rosenthal-ssh-key-hako-deploy)
+      ("hako"     ,ros:%rosenthal-ssh-key-hako)
+      ("jonathan" ,ros:%rosenthal-ssh-key-jonathan)
+      ("podiki"   ,ros:%rosenthal-ssh-key-podiki)))
 #+end_src
 
 ** Networking & SSH
@@ -300,7 +300,7 @@ Authorized SSH keys.
 
 *** tailscale
 #+begin_src scheme :noweb-ref service
-  (service tailscale-service-type)
+  (service ros:tailscale-service-type)
 #+end_src
 
 #+begin_src nftables :noweb-ref nftables-filter-input
@@ -764,13 +764,13 @@ Maintenance: manually sync mirrored substitutes to remote storage.
 ** Web Servers & Services
 *** caddy
 #+begin_src scheme :noweb yes :noweb-ref service
-  (service caddy-service-type
-    (caddy-configuration
-      (caddy caddy/dolly)
+  (service ros:caddy-service-type
+    (ros:caddy-configuration
+      (caddy ros:caddy/dolly)
       (caddyfile
-       (computed-substitution-with-inputs "nuporta.caddyfile"
+       (ros:computed-substitution-with-inputs "nuporta.caddyfile"
          (local-file <<testament-path("tangled/nuporta/nuporta.caddyfile")>>)
-         (list ai-robots-txt)))
+         (list ros:ai-robots-txt)))
       (group-id 967)
       (user-id 972)))
 #+end_src
@@ -863,8 +863,8 @@ See [[file:shared/caddy.org][shared/caddy.org]].
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (service forgejo-service-type
-    (forgejo-configuration
+  (service ros:forgejo-service-type
+    (ros:forgejo-configuration
       (config "/etc/nuporta-configs/forgejo.ini")
       (group-id 969)
       (user-id 974)))
@@ -878,8 +878,8 @@ Troubleshooting:
 
 *** heisenbridge
 #+begin_src scheme :noweb-ref service
-  (service heisenbridge-service-type
-    (heisenbridge-configuration
+  (service ros:heisenbridge-service-type
+    (ros:heisenbridge-configuration
       (homeserver "http://localhost:26372")
       (config "/etc/nuporta-configs/heisenbridge.yaml")
       (group-id 963)
@@ -889,8 +889,8 @@ Troubleshooting:
 
 *** mautrix-telegram
 #+begin_src scheme :noweb-ref service
-  (service mautrix-telegram-service-type
-    (mautrix-telegram-configuration
+  (service ros:mautrix-telegram-service-type
+    (ros:mautrix-telegram-configuration
       (config "/etc/nuporta-configs/mautrix-telegram.yaml")
       (group-id 964)
       (user-id 968)
@@ -949,8 +949,8 @@ Troubleshooting:
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (service tuwunel-service-type
-    (tuwunel-configuration
+  (service ros:tuwunel-service-type
+    (ros:tuwunel-configuration
       (config "/etc/nuporta-configs/tuwunel.toml")
       (group-id 968)
       (user-id 973)))
@@ -965,13 +965,13 @@ Guile builtins
 Utilities
 #+begin_src scheme :noweb-ref module
   (gnu)
-  (rosenthal utils file)
-  (rosenthal utils others)
+  ((rosenthal utils file) #:prefix ros:)
+  ((rosenthal utils others) #:prefix ros:)
 #+end_src
 
 Guix System - bootloaders
 #+begin_src scheme :noweb-ref module
-  (rosenthal bootloader limine)
+  ((rosenthal bootloader limine) #:prefix ros:)
 #+end_src
 
 Guix System - services
@@ -986,9 +986,9 @@ Guix System - services
   (gnu services ssh)
   (gnu services sysctl)
   (gnu services web)
-  (rosenthal services messaging)
-  (rosenthal services networking)
-  (rosenthal services web)
+  ((rosenthal services messaging) #:prefix ros:)
+  ((rosenthal services networking) #:prefix ros:)
+  ((rosenthal services web) #:prefix ros:)
 #+end_src
 
 Guix packages
@@ -998,7 +998,7 @@ Guix packages
   (gnu packages file-systems)
   (gnu packages shells)
   (gnu packages ssh)
-  (rosenthal packages linux)
-  (rosenthal packages package-management)
-  (rosenthal packages web)
+  ((rosenthal packages linux) #:prefix ros:)
+  ((rosenthal packages package-management) #:prefix ros:)
+  ((rosenthal packages web) #:prefix ros:)
 #+end_src

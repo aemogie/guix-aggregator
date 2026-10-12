@@ -127,7 +127,9 @@
                      EWW_BATTERY[bat].capacity <= 85 ?
                      "icons/battery-high.png" :
                      "icons/battery-full.png"})
-       "${EWW_BATTERY[bat].capacity}%"))
+       "${EWW_BATTERY[bat]?.capacity}%" == "null" ?
+       "0" :
+       "${EWW_BATTERY[bat]?.capacity}%"))
 
 ;; (time) _____________________________________________________________________
 (defvar calendar-visible false)

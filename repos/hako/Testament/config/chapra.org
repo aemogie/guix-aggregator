@@ -14,9 +14,9 @@
     (name-service-switch %mdns-host-lookup-nss)
     (bootloader
      (bootloader-configuration
-       (bootloader limine-efi-removable-bootloader)
+       (bootloader ros:limine-efi-removable-bootloader)
        (targets '("/efi"))))
-    (kernel linux-cachyos-lts-server)
+    (kernel ros:linux-cachyos-lts-server)
     (kernel-arguments
      (cons* <<kernel-argument>>
             %default-kernel-arguments))
@@ -29,7 +29,7 @@
      (cons* <<user-account>>
             %base-user-accounts))
     (packages
-     (append %rosenthal-cli-packages
+     (append ros:%rosenthal-cli-packages
              %base-packages))
     (services
      (cons* <<service>>
@@ -150,11 +150,11 @@
   (simple-service 'extend-guix guix-service-type
     (guix-extension
       (authorized-keys
-       (list %rosenthal-guix-key-dorphine
+       (list ros:%rosenthal-guix-key-dorphine
              ;; LAN
-             %rosenthal-guix-key-ignamma
+             ros:%rosenthal-guix-key-ignamma
              ;; Nonguix
-             %rosenthal-guix-key-nuporta))
+             ros:%rosenthal-guix-key-nuporta))
       (substitute-urls
        '("https://mirror.sjtu.edu.cn/guix-bordeaux"
          "https://mirror.sjtu.edu.cn/guix"
@@ -206,19 +206,19 @@ Authorized SSH keys.
 
 #+begin_src scheme :noweb-ref service
   (simple-service 'extend-openssh openssh-service-type
-    `(("deploy" ,%rosenthal-ssh-key-hako-deploy)
-      ("hako"   ,%rosenthal-ssh-key-hako)))
+    `(("deploy" ,ros:%rosenthal-ssh-key-hako-deploy)
+      ("hako"   ,ros:%rosenthal-ssh-key-hako)))
 #+end_src
 
 *** SOPS Secrets
 #+begin_src scheme :noweb yes :noweb-ref service
-  (service sops-secrets-service-type
-    (sops-service-configuration
+  (service sop:sops-secrets-service-type
+    (sop:sops-service-configuration
       (gnupg-home "/var/lib/sops")
       (secrets
        (let ((%sops-chapra
               (local-file <<testament-path("secrets/chapra.yaml")>>)))
-         (list (sops-secret
+         (list (sop:sops-secret
                 (key '("cloudflare"))
                 (file %sops-chapra)
                 (user "caddy")))))))
@@ -231,10 +231,10 @@ Authorized SSH keys.
     (network-manager-configuration
       (shepherd-requirement '())
       (extra-configuration-files
-       (list %rosenthal-network-manager-ipv6-privacy
-             %rosenthal-network-manager-random-mac-address))))
+       (list ros:%rosenthal-network-manager-ipv6-privacy
+             ros:%rosenthal-network-manager-random-mac-address))))
 
-  (service network-online-service-type)
+  (service ros:network-online-service-type)
 #+end_src
 
 *** ntp
@@ -317,7 +317,7 @@ Authorized SSH keys.
 
 *** tailscale
 #+begin_src scheme :noweb-ref service
-  (service tailscale-service-type)
+  (service ros:tailscale-service-type)
 #+end_src
 
 #+begin_src nftables :noweb-ref nftables-filter-input
@@ -327,9 +327,9 @@ Authorized SSH keys.
 ** Web Servers & Services
 *** caddy
 #+begin_src scheme :noweb yes :noweb-ref service
-  (service caddy-service-type
-    (caddy-configuration
-      (caddy caddy/dolly)
+  (service ros:caddy-service-type
+    (ros:caddy-configuration
+      (caddy ros:caddy/dolly)
       (caddyfile (local-file <<testament-path("tangled/chapra/chapra.caddyfile")>>))
       (shepherd-requirement '(network-online))))
 #+end_src
@@ -370,10 +370,10 @@ Authorized SSH keys.
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (service jellyfin-service-type
-    (jellyfin-configuration
+  (service ros:jellyfin-service-type
+    (ros:jellyfin-configuration
       (jellyfin
-       (nix-shell-wrapper "jellyfin"
+       (ros:nix-shell-wrapper "jellyfin"
          '("github:NixOS/nixpkgs/f4f698677b11021a8f84f452e23ae9ef2427bec3#jellyfin")
          #:run-command '("jellyfin")))
       (user  973)
@@ -394,8 +394,8 @@ Authorized SSH keys.
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (service komga-service-type
-    (komga-configuration
+  (service ros:komga-service-type
+    (ros:komga-configuration
       (port 44293)))
 #+end_src
 
@@ -412,8 +412,8 @@ Authorized SSH keys.
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (service navidrome-service-type
-    (navidrome-configuration
+  (service ros:navidrome-service-type
+    (ros:navidrome-configuration
       (config "/etc/chapra-configs/navidrome.toml")))
 #+end_src
 
@@ -426,8 +426,8 @@ Authorized SSH keys.
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (service qbittorrent-service-type
-    (qbittorrent-configuration
+  (service ros:qbittorrent-service-type
+    (ros:qbittorrent-configuration
       (qbittorrent qbittorrent-enhanced-no-x)
       (webui-port 35951)))
 #+end_src
@@ -445,14 +445,14 @@ Guile builtins
 Utilities
 #+begin_src scheme :noweb-ref module
   (gnu)
-  (rosenthal utils nix)
-  (rosenthal utils others)
-  (sops secrets)
+  ((rosenthal utils nix) #:prefix ros:)
+  ((rosenthal utils others) #:prefix ros:)
+  ((sops secrets) #:prefix sop:)
 #+end_src
 
 Guix System - bootloaders
 #+begin_src scheme :noweb-ref module
-  (rosenthal bootloader limine)
+  ((rosenthal bootloader limine) #:prefix ros:)
 #+end_src
 
 Guix System - services
@@ -464,10 +464,10 @@ Guix System - services
   (gnu services shepherd)
   (gnu services ssh)
   (gnu services sysctl)
-  (rosenthal services bittorrent)
-  (rosenthal services networking)
-  (rosenthal services web)
-  (sops services sops)
+  ((rosenthal services bittorrent) #:prefix ros:)
+  ((rosenthal services networking) #:prefix ros:)
+  ((rosenthal services web) #:prefix ros:)
+  ((sops services sops) #:prefix sop:)
 #+end_src
 
 Guix packages
@@ -476,6 +476,6 @@ Guix packages
   (gnu packages file-systems)
   (gnu packages shells)
   (gnu packages ssh)
-  (rosenthal packages linux)
-  (rosenthal packages web)
+  ((rosenthal packages linux) #:prefix ros:)
+  ((rosenthal packages web) #:prefix ros:)
 #+end_src
