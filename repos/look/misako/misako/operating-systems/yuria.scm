@@ -78,7 +78,8 @@
             (roam-retry-interval 60)
             (country "BR")
             (enable-ipv6? #t)
-            (name-resolving-service 'resolvconf)
+            ;; (name-resolving-service 'resolvconf)
+            (name-resolving-service #f)
             (route-priority-offset 300)
             ;; Blacklist
             (initial-timeout 60)

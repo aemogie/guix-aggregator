@@ -9,6 +9,9 @@ hookspath = ~/.config/git/hooks
 verbose = true
 gpgsign = true
 
+[format]
+pretty = fuller
+
 [diff]
 algorithm = histogram
 

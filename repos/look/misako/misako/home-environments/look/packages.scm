@@ -173,7 +173,8 @@
         guile-ares-rs))
 
 (define-public file-management
-  (list yazi))
+  (list yazi
+        poppler))
 
 (define-public fonts
   (list font-adobe-source-han-sans
@@ -257,7 +258,8 @@
   (list wl-mirror pipectl))
 
 (define-public python
-  (list python-wrapper))
+  (list python-wrapper
+        python-beautifulsoup4))
 
 (define-public screenshot
   (list grim slurp))
@@ -266,7 +268,7 @@
   (list bemenu fuzzel))
 
 (define-public sound
-  (list wireplumber-minimal
+  (list wireplumber
         ncpamixer
         helvum
         playerctl
@@ -279,17 +281,11 @@
 (define-public text-editor
   (list helix/steel))
 
-(define mpv-nvidia/evilest
-  (package/inherit mpv-nvidia
-    (propagated-inputs
-      (modify-inputs (package-propagated-inputs mpv-nvidia)
-        (replace "ffmpeg" ffmpeg/nvidia-new-feature)))))
-
 (define-public video
   (list yt-dlp
         obs-pipewire-audio-capture
         grayjay
-        (yumiko?* obs-nvidia mpv-nvidia/evilest)
+        (yumiko?* obs-nvidia mpv-nvidia shotcut kdenlive)
         (yuria?* ffmpeg obs mpv)))
 
 (define-public virtual-keyboard

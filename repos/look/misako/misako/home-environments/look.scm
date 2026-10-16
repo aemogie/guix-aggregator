@@ -122,9 +122,7 @@
               (file-append pinentry-bemenu "/bin/pinentry-bemenu"))
             (ssh-support? #f)))
 
-        (service home-pipewire-service-type
-          (home-pipewire-configuration
-            (wireplumber wireplumber-minimal)))
+        (service home-pipewire-service-type)
 
         (service home-shepherd-service-type)
         (service home-shepherd-transient-service-type)
@@ -264,18 +262,22 @@
                   ("GBM_BACKEND"                         . "nvidia-drm")
                   ("NVD_BACKEND"                         . "direct")
                   ("LIBVA_DRIVER_NAME"                   . "nvidia")
+                  ("VK_ICD_FILENAMES"
+                   . "/home/look/.guix-home/profile/share/vulkan/icd.d/nvidia_icd.x86_64.json")
                   ;; ("VK_ICD_FILENAMES" .
-                  ;;  ,(file-append nvda-595 "/share/vulkan/icd.d/nvidia_icd.x86_64.json"))
+                  ;;  ,(file-append nvda-new-feature "/share/vulkan/icd.d/nvidia_icd.x86_64.json"))
+                  ;; ("__EGL_VENDOR_LIBRARY_FILENAMES"      .
+                  ;;  ,(file-append nvidia-driver-new-feature "/share/glvnd/egl_vendor.d/10_nvidia.x86_64.json"))
                   ;; ("GBM_BACKENDS_PATH" .
-                  ;;  ,(file-append nvda-595 "/lib/gbm"))
+                  ;;  ,(file-append nvda-new-feature "/lib/gbm"))
                   ;; ("__EGL_EXTERNAL_PLATFORM_CONFIG_DIRS" .
-                  ;;  ,(file-append nvda-595 "/share/egl/egl_external_platform.d"))
+                  ;;  ,(file-append nvda-new-feature "/share/egl/egl_external_platform.d"))
                   ;; ("__EGL_VENDOR_LIBRARY_DIRS" .
-                  ;;  ,(file-append nvda-595 "/share/glvnd/egl_vendor.d"))
+                  ;;  ,(file-append nvda-new-feature "/share/glvnd/egl_vendor.d"))
                   ;; ("LIBVA_DRIVERS_PATH" .
-                  ;;  ,(file-append nvda-595 "/lib/dri"))
+                  ;;  ,(file-append nvda-new-feature "/lib/dri"))
                   ;; ("VDPAU_DRIVER_PATH" .
-                  ;;  ,(file-append nvda-595 "/lib/vdpau"))
+                  ;;  ,(file-append nvda-new-feature "/lib/vdpau"))
                   ("__GL_SHADER_DISK_CACHE"              . "1")
                   ("__GL_SHADER_DISK_CACHE_PATH"         . "/home/look/games/.nv")
                   ("__GL_SHADER_DISK_CACHE_SKIP_CLEANUP" . "1")
@@ -286,7 +288,6 @@
                   ; ("__GL_VRR_ALLOWED"                    . "1")
                   ;; This flag below solves prismlauncher problems
                   ; ("__GL_THREADED_OPTIMIZATIONS"         . "0")
-                  ; ("__EGL_VENDOR_LIBRARY_FILENAMES"      . ,(file-append nvidia-driver "/share/glvnd/egl_vendor.d/10_nvidia.x86_64.json"))
                   ; ("__NV_PRIME_RENDER_OFFLOAD"           . "1")
                   ; ("__GL_SHADER_DISK_CACHE_SIZE"         . "21474836480")
             #|Guile|#

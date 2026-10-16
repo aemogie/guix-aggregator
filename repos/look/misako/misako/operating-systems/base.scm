@@ -74,7 +74,6 @@
   #:use-module (rosenthal services nix)
   #|Radix|#
   #:use-module (radix utils)
-  #:use-module (radix services admin)
   #:use-module (radix system monitoring)
   #:export (base))
 
@@ -297,12 +296,15 @@
                 (list (network-address
                         (device "lo")
                         (value "127.0.0.1/8"))))
-              (provision '(loopback))
+              (provision '(loopback)))))
               ;; (name-servers '("127.0.0.1" "::1")))))
-              (name-servers '("1.1.1.1"
-                              "1.0.0.1"
-                              "2606:4700:4700::1111"
-                              "2606:4700:4700::1001")))))
+              ;; TODO: make this a regular /etc/resolv.conf file
+              ;; instead of a symlink
+              ;; Probably by making a separate dns service on saayix
+              ;; (name-servers '("9.9.9.9"
+              ;;                 "149.112.112.112"
+              ;;                 "2620:fe::fe"
+              ;;                 "2620:fe::9")))))
 
         (simple-service 'extra-hosts hosts-service-type
           (list (host "192.168.100.30" "yuria.local"
@@ -323,9 +325,9 @@
 
         (service mullvad-service-type)
 
-        (service dhcpcd-service-type)
-          ;; (dhcpcd-configuration
-          ;;   (no-hook '("resolv.conf"))))
+        (service dhcpcd-service-type
+          (dhcpcd-configuration
+            (no-hook '("resolv.conf"))))
 
         #|Doas config service|#
         (service opendoas-service-type

@@ -1,5 +1,5 @@
 (define-module (misako operating-systems base opendoas)
-  #:use-module (radix services admin)
+  #:use-module (gnu services admin)
   #:use-module (radix utils)
   #:export (general
             power-management
@@ -7,7 +7,7 @@
 
 (define general
   (list
-    (permit
+    (opendoas-permit-rule
       (identity ":wheel")
       (setenv `(("GUILE_LOAD_PATH" . #t)
                 ("SSL_CERT_FILE" . #t)
@@ -16,7 +16,7 @@
 
 (define power-management
   (map (lambda (cmd)
-         (permit
+         (opendoas-permit-rule
            (identity ":wheel")
            (command cmd)
            (nopass? #t)
@@ -26,14 +26,14 @@
 (define service-management
   (append
     (map (lambda (action)
-           (permit
+           (opendoas-permit-rule
              (identity ":wheel")
              (nopass? #t)
              (command "herd")
              (args (list action))))
          `("status" "detailed-status"))
     (flat-map (lambda (service action)
-                (permit
+                (opendoas-permit-rule
                   (identity ":wheel")
                   (nopass? #t)
                   (command "herd")

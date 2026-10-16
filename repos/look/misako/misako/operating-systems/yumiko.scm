@@ -5,7 +5,6 @@
   #:use-module (misako operating-systems yumiko file-systems)
   #:use-module (misako operating-systems yumiko cuirass)
   #:use-module (misako utils)
-  #:use-module (saayix services system nvidia-unload)
   #|Guix|#
   #:use-module (guix gexp)
   #|GNU System|#
@@ -37,6 +36,8 @@
   #:use-module (nongnu services nvidia)
   #:use-module (nongnu system linux-initrd)
   #|Saayix|#
+  #:use-module (saayix services system nvidia-unload)
+  #:use-module (saayix services system fake-store)
   #|SOPS|#
   #:use-module (sops secrets)
   #|SOPS Service|#
@@ -114,6 +115,12 @@
              (extra-special-file "/etc/system.scm"
                (string-append misako-dir "/misako/operating-systems/yumiko.scm"))
              (extra-special-file "/etc/machine-id" "/gnu/persist/etc/machine-id")
+
+             #|Binfmt|#
+             (service fake-store-service-type)
+             (service qemu-binfmt-service-type
+               (qemu-binfmt-configuration
+                 (platforms (lookup-qemu-platforms "arm" "aarch64"))))
 
              (modify-services (operating-system-user-services base)
                (guix-service-type

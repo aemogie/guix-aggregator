@@ -167,6 +167,7 @@
     (type "btrfs")
     (mount-point "/gnu/store")
     (needed-for-boot? #t)
+    (check? #f)
     (flags '(read-only no-atime))
     (options "compress=zstd,subvol=@gnu/store,ssd")))
 

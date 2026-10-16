@@ -8,6 +8,7 @@ umount /mnt/var/log
 umount /mnt/var/lib
 umount /mnt/var/guix
 umount /mnt/snapshots
+umount /mnt/nix
 
 rm -rf /mnt/home
 rm -rf /mnt/root
@@ -19,3 +20,4 @@ rm -rf /mnt/mnt
 rm -rf /mnt/tmp
 rm -rf /mnt/var
 rm -rf /mnt/snapshots
+rm -rf /mnt/nix

@@ -80,7 +80,7 @@ hl.window_rule({
 hl.window_rule({
     name = "fluxer",
     match = {
-        class = "^(fluxer-canary)$",
+        class = "^(app.fluxer.FluxerDesktopCanary)$",
     },
     workspace = "name:fluxer silent",
     tag = "nofancy",

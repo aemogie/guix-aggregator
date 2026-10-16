@@ -7,6 +7,7 @@ mkdir -p /mnt/var/log
 mkdir -p /mnt/var/lib
 mkdir -p /mnt/var/guix
 mkdir -p /mnt/snapshots
+mkdir -p /mnt/nix
 
 btrfs subvolume create /mnt/@home
 btrfs subvolume create /mnt/@root
@@ -19,6 +20,7 @@ btrfs subvolume create /mnt/@var/log
 btrfs subvolume create /mnt/@var/lib
 btrfs subvolume create /mnt/@var/guix
 btrfs subvolume create /mnt/@snapshots
+btrfs subvolume create /mnt/@nix
 
 mount --bind /mnt/@home /mnt/home
 mount --bind /mnt/@root /mnt/root
@@ -29,6 +31,7 @@ mount --bind /mnt/@var/log /mnt/var/log
 mount --bind /mnt/@var/lib /mnt/var/lib
 mount --bind /mnt/@var/guix /mnt/var/guix
 mount --bind /mnt/@snapshots /mnt/snapshots
+mount --bind /mnt/@nix /mnt/nix
 
 mkdir -p /mnt/@gnu/persist/etc/guix
 mkdir -p /mnt/@gnu/persist/etc/ssh
