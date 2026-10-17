@@ -42,6 +42,7 @@
              (rde packages)
              (rde containers)
              (rde home services emacs)
+             (growl-at features)
              (guix-rde emacs shepherd))
 
 (eval-when (eval load compile)
@@ -221,6 +222,7 @@
             (efi "/dev/nvme0n1p1")
             (encrypted-uuid-mapped "9dbcac0f-e5bd-45fc-a7f2-5841c5ea71b9")
             (btrfs-layout (append '(;;(data . "/data")
+                                    (nix . "/nix")
                                     (btrbk_snapshots . "/btrbk_snapshots")
                                     ;; Necessary for SSH authentication.
                                     (etc@childhurd . "/etc/childhurd"))
@@ -236,9 +238,11 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID3dDHB5z2hr6ngtjj7TvXzbovUdhGzAODifATQdSJN5
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJENtxo6OSdamVVqPlvwBrI5QLe4Wj4244cf51ubp/Uh")
             (guix-pubkey "\
 E5DD64BC1FC283D096D6AD9E2049892130043C7DD38B79A49E169FC43D4CD937")
-            (firmware (or (and=> (or@ (nongnu packages linux) iwlwifi-firmware)
-                                 list)
-                          '())))
+            (firmware
+             (filter-map identity
+                         (list
+                          (or@ (nongnu packages linux) iwlwifi-firmware)
+                          (or@ (nongnu packages linux) ibt-hw-firmware)))))
    (machine (name "2325k55")
             (efi "/dev/sda1")
             (encrypted-uuid-mapped "824f71bd-8709-4b8e-8fd6-deee7ad1e4f0")
@@ -247,7 +251,7 @@ E5DD64BC1FC283D096D6AD9E2049892130043C7DD38B79A49E169FC43D4CD937")
                                  list)
                           '()))
             (desktop? #t)
-            (offload? #t)
+            (offload? #f)
             (ssh-host-key "\
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM+hUmwvYmS8BC2HupASOnn88gLkeeZli7b+ji6Wz/M4")
             (ssh-privkey-location
@@ -345,9 +349,7 @@ D4948F399C2E07238E6701F65F472D42AD86324C51D38A0FB48FA253D5A2F9AB"))))
                (rde packages emacs-xyz)
                (contrib features age)
                (contrib features emacs-xyz)
-               (contrib features machine-learning)
-               (contrib features task-runners)
-               (contrib packages machine-learning)))
+               (contrib features task-runners)))
 
 
 ;; Privacy without GNUPG: currently using age with ssh and git commit signing. ;; TODO more details later.
@@ -377,7 +379,13 @@ D4948F399C2E07238E6701F65F472D42AD86324C51D38A0FB48FA253D5A2F9AB"))))
       (sha256 (base32 "03rn4fw9j31s7hl635q872hzxj4bj5m9hkjd4iqzl8z4lk0n9iiy"))))
   (list
    (feature-hidpi)
+   (feature-guile-completion)
+   (feature-gtk3
+    #:cursor-theme (make-theme "Adwaita"
+                               (@ (gnu packages gnome) adwaita-icon-theme)))
+   (feature-wayland-cursor #:size 36)
    (feature-sway
+    #:primary-wayland-compositor? #t
     #:xwayland? #f
     #:extra-config
     `((bindsym
@@ -412,11 +420,17 @@ D4948F399C2E07238E6701F65F472D42AD86324C51D38A0FB48FA253D5A2F9AB"))))
       (workspace_auto_back_and_forth yes)
       (focus_follows_mouse no)
       (smart_borders on)
+      ;; $mod+minus is workspace 6 on AZERTY; use ² for the scratchpad.
+      (bindsym --to-code $mod+Shift+twosuperior move scratchpad)
+      (bindsym --to-code $mod+twosuperior scratchpad show)
+
       (title_align center)
 
       (output * bg ,background fill)
 
       (for_window "[app_id=\"^.*\"]" inhibit_idle fullscreen)
+      (for_window "[app_id=\"wl-dmenu\"]" floating enable)
+
       (for_window
        "[title=\"^(?:Open|Save) (?:File|Folder|As).*\"]"
        floating enable, resize set width 70 ppt height 70 ppt)
@@ -435,8 +449,12 @@ D4948F399C2E07238E6701F65F472D42AD86324C51D38A0FB48FA253D5A2F9AB"))))
               alias $right-external)
       (output "\"Philips Consumer Electronics Company PHL 243V7 0x000048D4\""
               alias $left-external)
+      (output "\"Philips Consumer Electronics Company PHL 243V7 UHB2233017111\""
+              alias $top-external)
       (profile docked
        ;; HDMI-A-1 is above eDP-1.
+      (output "\"Philips Consumer Electronics Company PHL 241V8 0x0000386B\""
+              alias $philips-external)
        ((output HDMI-A-1 enable mode "1920x1080@60Hz"
                 position "0,0" scale 1)
         (output eDP-1 enable mode "3840x2400@60Hz"
@@ -445,6 +463,21 @@ D4948F399C2E07238E6701F65F472D42AD86324C51D38A0FB48FA253D5A2F9AB"))))
        ;; Keep the dock display above the laptop panel.
        ((output $dock-external enable mode "1920x1080@60Hz"
                 position "0,0" scale 1)
+        (output eDP-1 enable mode "3840x2400@60Hz"
+                position "0,1080" scale 2)))
+      (profile docked-top-displayport
+       ;; Keep the external display above the laptop panel.
+       ((output $top-external enable mode "1920x1080@60Hz"
+                position "0,0" scale 1)
+        (output eDP-1 enable mode "3840x2400@60Hz"
+                position "0,1080" scale 2)))
+      (profile docked-displayport-philips
+       ;; Keep the dock display above the laptop panel, with the Philips
+       ;; display to the right of the dock display.
+       ((output $dock-external enable mode "1920x1080@60Hz"
+                position "0,0" scale 1)
+        (output $philips-external enable mode "1920x1080@60Hz"
+                position "1920,0" scale 1)
         (output eDP-1 enable mode "3840x2400@60Hz"
                 position "0,1080" scale 2)))
       (profile docked-dual-displayport
@@ -463,6 +496,18 @@ D4948F399C2E07238E6701F65F472D42AD86324C51D38A0FB48FA253D5A2F9AB"))))
    (feature-sway-screenshot
     #:screenshot-key 'F10)
    (feature-waybar
+      (profile docked-triple-displayport
+       ;; Same as docked-dual-displayport, with the extra Philips display to
+       ;; the left of the two others.  The laptop panel is below the center
+       ;; display.
+       ((output $philips-external enable mode "1920x1080@60Hz"
+                position "0,0" scale 1)
+        (output $left-external enable mode "1920x1080@60Hz"
+                position "1920,0" scale 1)
+        (output $right-external enable mode "1920x1080@60Hz"
+                position "3840,0" scale 1)
+        (output eDP-1 enable mode "3840x2400@60Hz"
+                position "1920,1080" scale 2)))
     #:waybar-modules
     (list
      ;; (waybar-sway-workspaces)
@@ -788,6 +833,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
     "emacs-forge"
     "emacs-jsonrpc"
     ;; "emacs-magit-stgit"
+    "emacs-mcp-server"
     "emacs-persid"
     ;; "emacs-parseedn"
     ;;"emacs-hl-todo"
@@ -806,6 +852,8 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
     "emacs-wgrep"
     ;; "emacs-flycheck-package"
     "emacs-consult-recoll"
+    "emacs-vulpea-para"
+    "emacs-vulpea-retrieve"
     "emacs-shackle"
     "emacs-agent-shell"
     "emacs-combobulate"
@@ -892,7 +940,9 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
      ;; activation service in RDE.
      (string-append "/home/" %user "/.cache/emacs/org-agenda-files"))
     (feature-emacs-smartparens #:show-smartparens? #t)
-    (feature-emacs-eglot)
+    (feature-emacs-eglot
+     #:emacs-consult-eglot
+     (@ (growl-at packages) emacs-consult-eglot-with-code-actions))
     ;; (feature-emacs-geiser)
     (feature-emacs-graphviz)
     (feature-emacs-guix)
@@ -913,10 +963,14 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
         :if-new (file+head "main/${slug}.org" "#+title: ${title}\n")
         :immediate-finish t
         :unnarrowed t)))
+    (feature-emacs-vulpea
+     #:vulpea-directories (list "~/resources/roam/"))
 
     (feature-emacs-citation
      #:citar-library-paths (list "~/resources/files/library")
      #:citar-notes-paths (list "~/resources/roam/references")
+     #:citar-default-template
+     ''(:file-name "~/resources/roam/references/${citekey}.org")
      #:global-bibliography (list "~/resources/biblio.bib" "~/resources/gen.bib"))
 
     (feature-go)
@@ -924,7 +978,8 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
     (feature-emacs-elisp)
     (feature-emacs-power-menu)
     (feature-emacs-shell)
-    (feature-vterm))
+    (feature-vterm)
+    (feature-ghostty))
    (let* ((commit "1270f2581e47b97aa3c3b7eecfe3dc65bd24c412")
           (revision "4")
           (emacs-arei
@@ -953,11 +1008,80 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
 
 
 ;;; Main features
+(use-modules (gnu services ssh)
+             (gnu packages emacs)
+             )
+
+(define (emacs-append-text-action emacs)
+  "Return a watcher callback that appends ` a' to PATH's Emacs buffer.
+The buffer is deliberately left modified: its next manual save triggers the
+watcher again, making the example recursive but user-paced."
+  #~(lambda (path)
+      (let* ((expression
+              (format #f
+                      "(let ((buffer (find-file-noselect ~s)))
+                         (with-current-buffer buffer
+                           (goto-char (point-max))
+                           (insert \" a\")
+                           (set-buffer-modified-p t)
+                           (buffer-string)))"
+                      path))
+             (status
+              (system* #$(file-append emacs "/bin/emacsclient")
+                       "--alternate-editor=false"
+                       "--eval" expression)))
+        (unless (zero? status)
+          (error "emacsclient append callback failed" status path)))))
 
 (define %base-features
   (append
    (list
+    (feature
+     (name 'eduroam)
+     (home-services-getter
+      (const
+       (list
+        (simple-service 'eduroam-provisioning
+                        home-files-service-type
+                        `((".local/bin/provision-eduroam"
+                           ,(local-file "files/provision-eduroam")))))))
+     (system-services-getter
+      (const
+       (list
+        (simple-service
+         'upjv-eduroam-installer
+         etc-service-type
+         `(("eduroam/install-upjv-eduroam"
+            ,(local-file "files/install-upjv-eduroam"))))
+        (simple-service
+         'upjv-eduroam-provisioning
+         (@ (gnu services) activation-service-type)
+         #~(let ((status (system* "/bin/sh"
+                                 #$(local-file "files/install-upjv-eduroam"))))
+             (unless (zero? status)
+               (error "failed to provision UPJV eduroam" status))))))))
+    (feature-codegraph)
+    (feature-rtk)
     (feature-shepherd)
+    (feature-shepherd-mcp)
+    (feature-shepherd-nrepl
+     #:guile-ares-shepherd (@ (growl-at packages) guile-ares-shepherd))
+    ;; Must match whatever package feature-emacs resolves to
+    ;; (rde's %default-emacs-package, emacs-pgtk, since feature-emacs is
+    ;; called below with no #:emacs override): emacs-mcp-server's daemon
+    ;; execs bin/emacs's wrapper, which re-execs itself with a bare
+    ;; basename argv[0], so Emacs falls back to a PATH search for its own
+    ;; install directory and must find the same package there.
+    (feature-emacs-mcp-server #:emacs emacs-pgtk)
+    (feature-live-reload
+     #:name 'recursive-emacs-text
+     #:root (string-append cwd "/examples/emacs-hot-reload")
+     #:extensions '(".txt")
+     #:on-change (emacs-append-text-action emacs-pgtk)
+     #:requirements '(emacs)
+     #:auto-start? #f)
+    (feature-emacs-guile-ares-lsp
+     #:lint-checkers '("cve" "input-labels" "refresh"))
     ;; XXX: This should probably not be here but in get-desktop-services.
     ;; Since it contains basic things like elogind, I'm not sure we
     ;; can actually avoid to pass that there.
@@ -974,16 +1098,34 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
     (feature-foot
      #:default-terminal? #f
      #:backup-terminal? #t)
-    (feature-zsh #:enable-zsh-autosuggestions? #t)
+    (feature-zsh
+     #:enable-zsh-autosuggestions? #t
+     #:zshenv
+     '("if [ -f ~/.guix-home/profile/etc/profile ]; then . ~/.guix-home/profile/etc/profile; fi"))
     (feature-bash)
     ;; (feature-transmission)
 
     (feature-compile)
     (feature-direnv)
     (feature-custom-services
-     #:feature-name-prefix 'rde-emacs-adoption
+     #:feature-name-prefix 'home-bin
      #:home-services
      (list
+      (simple-service
+          'add-local-bin-to-path
+          home-environment-variables-service-type
+        `(("PATH" . "$HOME/.local/bin:$PATH")))
+      ;; Keep the general Recoll index used by vulpea-retrieve (mail
+      ;; accounts, journal, documents) up to date; runs are incremental.
+      (simple-service
+          'recoll-general-index
+          (@ (gnu home services mcron) home-mcron-service-type)
+        (list #~(job '(next-minute-from (next-hour) '(20))
+                     (lambda ()
+                       (system* "recollindex" "-c"
+                                (string-append
+                                 (getenv "HOME")
+                                 "/.local/var/lib/retrieve/recoll-general"))))))
       ;; The previous Home generation remains the one-command rollback path.
       (service home-emacs-development-service-type)
       (service home-emacs-adoption-service-type)
@@ -998,6 +1140,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
       "python-snakemake-contracts"
       "python-snakemake-contracts-wrapper"
       "node" "codex" "bubblewrap" ; codex-related
+      "tree-sitter-guix"
       ))
     ;; This helps me when both XDG_BASE_DIRS and xdg-container are
     ;; not enough.
@@ -1027,28 +1170,32 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
         #:feature-name-prefix 'cups
         #:system-services
         (list (service (@ (gnu services cups) cups-service-type))))
-       (feature-custom-services
-        #:feature-name-prefix 'nix
-        #:system-services
-        (list (service (@ (gnu services nix) nix-service-type))))
        (feature-docker)
        ;; (feature-podman)
 
-       ;; (feature-bluetooth)
+       (feature-bluetooth)
        ;; (feature-transmission)
        ;; (feature-ledger)
        (and=> (or@ (snakemake-guix features) feature-snakemake)
               (cut apply <>
                    (list
                     #:snakemake-plugins
-                    (specifications->packages
-                     (list "python-snakemake-software-deployment-plugin-guix"
-                           "python-snakemake-storage-plugin-http")))))
+                    (list (@ (snakemake-guix packages)
+                             python-snakemake-software-deployment-plugin-guix)
+                          ))))
        (feature-markdown)
+       (feature-task-spooler)
+       (feature-ast-grep
+        #:ast-grep (@ (gnu packages rust-apps) ast-grep)
+        #:tree-sitter-grammars
+        (list (ast-grep-ts-grammar
+               #:grammar (@ (growl-at packages) tree-sitter-guix)
+               #:extensions '("scm"))))
+
        (feature-tex)
        ;; (feature-yt-dlp)
 
-       (feature-qemu #:emulate-other-archs '("aarch64"))
+       (feature-qemu #:emulate-other-archs '("aarch64" "riscv64"))
        (let ((base-os (@ (gnu services virtualization) %hurd-vm-operating-system))
              (identity-file (machine-ssh-privkey-location (%current-machine))))
          (feature-custom-services
@@ -1088,8 +1235,62 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
 
        (feature-tmux)
        ;; (feature-ungoogled-chromium #:default-browser? #t)
-       (feature-librewolf
-        #:browser (hidden-package (@ (nongnu packages mozilla) firefox)))
+       (let ((firefox-container
+              (xdg-container
+               (name "firefox")
+               (wrap-package (@ (nongnu packages mozilla) firefox))
+               (run "firefox")
+               (shared #~((bash-var-substitute
+                           "$XDG_DATA_HOME/mozilla=$XDG_CONFIG_HOME/mozilla")
+                          (bash-var-substitute
+                           "$XDG_DATA_HOME/downloads=$HOME/Downloads")))
+               (exposed #~((bash-var-substitute "$HOME/.local")
+                           "/dev/bus/usb" ; YubiKey
+                           "/dev/video0" ; webcam
+                           "/dev/snd"))   ; microphone
+               (preserved-env '(;; "^GTK_DATA_PREFIX$"
+                                "^MOZ_ENABLE_WAYLAND$")))))
+         (feature-librewolf
+          #:browser (hidden-package
+                     ;; (@ (nongnu packages mozilla) firefox)
+                     (xdg-container->package firefox-container))))
+
+       (feature-custom-services
+        #:feature-name-prefix 'nix
+        #:home-services
+        (list
+         (simple-service 'nix.conf home-xdg-configuration-files-service-type
+           `(("nix/nix.conf"
+              ,(plain-file "nix.conf"
+                           "experimental-features = nix-command flakes"))))
+         (simple-service 'nix-claude-wrapper home-profile-service-type
+           (list
+            (package
+              (name "nix-claude")
+              (version "1.0.0")
+              (source #f)
+              (build-system (@ (guix build-system trivial) trivial-build-system))
+              (inputs (list (@ (gnu packages bash) bash)))
+              (arguments
+               (list
+                #:modules '((guix build utils))
+                #:builder
+                #~(begin
+                    (use-modules (guix build utils))
+                    (let* ((claude (string-append (assoc-ref %outputs "out") "/bin/claude")))
+                      (mkdir-p (dirname claude))
+                      (call-with-output-file claude
+                        (lambda (port)
+                          (format port "#!~a~%nix run github:ryoppippi/nix-claude-code -- \"$@\"~%"
+                                  (string-append (assoc-ref %build-inputs "bash") "/bin/bash"))))
+                      (chmod claude #o755)))))
+              (home-page "https://github.com/ryoppippi/nix-claude-code")
+              (synopsis "Wrapper for nix claude")
+              (description "A wrapper script that nix runs claude and forwards all arguments.")
+              (license #f)))))
+        #:system-services
+        (list (service (@ (gnu services nix) nix-service-type))
+              ))
 
        (feature-base-packages
         #:home-packages
@@ -1098,9 +1299,10 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
          (@ (gnu packages version-control) lfs-s3)
          ;; (@ (rde packages rust-xyz) rbw-with-ssh)
          (@ (gnu packages gnupg) pinentry-qt)
+         (gexp-input (@ (gnu packages search) recoll-cli) "python")
          ;; (@ (claude-desktop-package) claude-desktop-container)
          (strings->packages
-          ;; "recoll"
+          "recoll-cli"
           "hicolor-icon-theme" "adwaita-icon-theme" ; themes
           "alsa-utils"  ; sound
           "wev" "wlsunset" "cage"  ; wayland
@@ -1123,6 +1325,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
               (list (service (@ (gnu services nix) nix-service-type)))))))
      (_
       (list)))
+   (list
 
     (feature-git
      #:sign-commits? #t
@@ -1199,7 +1402,7 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
         (type "tmpfs")
         (device "none")
         ;; User should have dir ownership.
-        (options "uid=1000,gid=998")
+        (options "uid=1000,gid=998,mode=0755")
         (dependencies (or (and=> (get-mapped-device) list) '())))
       (file-system
         (mount-point "/home")
@@ -1378,17 +1581,6 @@ PACKAGE when it's not available in the store.  Note that this procedure calls
                           profile-service-type
                         (@ (gnu packages gl) mesa-utils)))))
          (list))
-     (cond
-      ((and (machine-nvidia? machine) (machine-desktop? machine))
-       (list (feature-wayland-compositor-run-on-tty
-              #:tty-number 1
-              ;; Currently not working properly on locking
-              ;; see https://github.com/NVIDIA/open-gpu-kernel-modules/issues/472
-              #:launch-arguments '("--unsupported-gpu"))))
-      ((machine-desktop? machine)
-       (list (feature-wayland-compositor-run-on-tty #:tty-number 1)))
-      (else
-       (list)))
      (if (machine-desktop? machine)
          (append (get-desktop-features)
                  (get-emacs-features))
