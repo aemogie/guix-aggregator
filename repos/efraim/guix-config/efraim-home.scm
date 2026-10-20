@@ -167,7 +167,7 @@
         "parallel"
         "qrencode"
         "rsync"
-        "sequoia"
+        "sequoia-sq"
         "sequoia-chameleon-gnupg"
         "screen"
         "tig"
@@ -189,23 +189,11 @@
 
 ;;
 
-(define with-transformations
-  (options->transformation
-    (append
-      '()
-      (cond
-        ((string=? (gethostname) "3900XT")
-         `((tune . "znver2")))
-        ((string=? (gethostname) "X1")
-         `((tune . "cannonlake")))
-        (#t `())))))
-
 (define (S pkg)
-  (with-transformations (specification->package pkg)))
+  (specification->package pkg))
 
 (define package-list
-  (map with-transformations
-    (map specification->package+output
+  (map specification->package+output
        (filter (lambda (pkg)
                  (supported-package?
                    (specification->package+output pkg)))
@@ -220,7 +208,7 @@
                  (if guix-system?
                      '()
                      %guix-system-apps)
-                 %cli-apps)))))
+                 %cli-apps))))
 
 ;;; Helper programs.
 
@@ -995,13 +983,14 @@
                              "/share/backgrounds/guix/guix-checkered-16-9.svg"))))
       (cond
         ((string=? (gethostname) "3900XT")
+         ;; swaymsg -t get_outputs
          (list (sway-output
-                 (identifier "DVI-I-1")
+                 (identifier "HDMI-A-2")
                  (resolution "1920x1080")
                  (position (point (x 0)
                                   (y 0))))
                (sway-output
-                 (identifier "HDMI-A-1")
+                 (identifier "HDMI-A-3")
                  (resolution "1920x1080")
                  (position (point (x 1920)
                                   (y 0))))))
@@ -1050,7 +1039,7 @@
         "for_window [app_id=\"imv\"] floating enable"
         "for_window [app_id=\"mpv\"] floating enable"
         "for_window [title = \"KeePassXC -  Access Request\"] floating enable"
-        "for_window [title = \"IceCat — Sharing Indicator\"] floating enable"
+        ;"for_window [title = \"IceCat — Sharing Indicator\"] floating enable"
         "for_window [title = \"Join Channel\"] floating enable"
         "include /run/current-system/profile/etc/sway/config.d/*"
         "include /etc/sway/config.d/*"
@@ -1145,6 +1134,18 @@
 (define guix-system-home-environment
   (home-environment
     (packages package-list)
+    (transformation
+      (options->transformation
+        (append
+          '()
+          (cond
+            ((string=? (gethostname) "3900XT")
+             `((tune . "znver2")))
+            ((string=? (gethostname) "X1")
+             `((tune . "cannonlake")))
+            (#t `())))
+        #:warn? #f))
+
     (services
       (list
         (service home-bash-service-type
@@ -1260,7 +1261,6 @@ fi")))))
 
         (service home-dbxfs-service-type
                  (dbxfs-configuration
-                   (package (S "dbxfs"))
                    (config-json %dbxfs-config-json)
                    ;; Needs gpg key to unlock.
                    (autostart? #f)
@@ -1271,8 +1271,8 @@ fi")))))
                  (home-gpg-agent-configuration
                    (pinentry-program
                      (if headless?
-                       (file-append (S "pinentry-tty") "/bin/pinentry-tty")
-                       (file-append (S "pinentry-qt") "/bin/pinentry-qt")))))
+                         (file-append (S "pinentry-tty") "/bin/pinentry-tty")
+                         (file-append (S "pinentry-qt") "/bin/pinentry-qt")))))
 
         (service home-inputrc-service-type
                  %home-inputrc-configuration)

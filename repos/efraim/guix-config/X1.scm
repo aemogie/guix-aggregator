@@ -12,6 +12,7 @@
 (use-service-modules
   dns
   desktop
+  firmware
   linux
   mcron
   networking
@@ -137,6 +138,10 @@
            (simple-service 'sway-kbd-fn-keys etc-service-type
                            `(("sway/config.d/function-keys"
                               ,%sway-keyboard-function-keys)))
+
+           (service fwupd-service-type
+                    (fwupd-configuration
+                      (fwupd (S "fwupd-nonfree"))))
 
            (service tlp-service-type)
 
