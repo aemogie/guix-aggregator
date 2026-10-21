@@ -29,6 +29,7 @@
         (bootloader ros:limine-efi-removable-bootloader)
         (targets '("/efi"))))
      (kernel ros:linux-cachyos-bore-zen4)
+     (kernel-loadable-modules `((,zfs "module")))
      (initrd non:microcode-initrd)
      (firmware
       (cons* non:linux-firmware
@@ -259,6 +260,10 @@ Application profiles
 | Mentha/State/Captures  | /var/lib/Captures  |               |                       |
 | Mentha/State/Sandbox   | /var/lib/Sandbox   |               |                       |
 |------------------------+--------------------+---------------+-----------------------|
+
+#+begin_src scheme :noweb-ref service
+  (service zfs-service-type)
+#+end_src
 
 #+begin_src scheme :noweb-ref file-systems
   (map (match-lambda
@@ -676,14 +681,10 @@ Generate passwordless ECC key:
        (ros:kdlv1-file "niri.kdl"
          #~'((prefer-no-csd)
              (spawn-sh-at-startup
-              #$(string-append
-                 "herd set-environment graphical-session "
-                 (string-join
-                  (map (lambda (env)
-                         (string-append env "=$" env))
-                       '("XDG_CURRENT_DESKTOP"
-                         "XDG_SESSION_TYPE"
-                         "NIRI_SOCKET")))))
+              #$(format #f "herd set-environment graphical-session~{ ~a=$~:*~a~}"
+                        '("XDG_CURRENT_DESKTOP"
+                          "XDG_SESSION_TYPE"
+                          "NIRI_SOCKET")))
              (xwayland-satellite
               (path #$(file-append xwayland-satellite "/bin/xwayland-satellite")))
              (hotkey-overlay
@@ -898,11 +899,11 @@ https://wiki.gnome.org/Projects(2f)GnomeKeyring(2f)Pam.html
          ("passwd" . passwd)))))
 #+end_src
 
-*** icon theme & fonts
+*** theming
 #+begin_src scheme :noweb-ref home-service
   (service ros:home-theme-service-type
     (ros:home-theme-configuration
-      (packages (list qogir-icon-theme))
+      (packages (list qogir-icon-theme sound-theme-freedesktop))
       (font "sans-serif 10")
       (icon-theme "Qogir")
       (cursor-theme "Qogir")))
@@ -1225,6 +1226,11 @@ skk
 #+end_src
 
 *** git & jujutsu
+#+begin_src scheme :noweb-ref package-spec
+  "git"
+  "git:send-email"
+#+end_src
+
 #+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/git/config
   [core]
           quotePath = false
@@ -1272,6 +1278,10 @@ skk
 #+end_src
 
 Jujutsu:
+
+#+begin_src scheme :noweb-ref package-spec
+  "jujutsu"
+#+end_src
 
 #+begin_src toml :tangle ../tangled/dorphine/dotfiles/.config/jj/config.toml
   [user]
@@ -1385,11 +1395,19 @@ Pin Nixpkgs to avoid networking requirement when using the wrappers.
 #+end_src
 
 *** prismlauncher
-#+begin_src scheme :noweb yes :noweb-ref package-nix
-  (ros:nix-shell-wrapper "prismlauncher"
-    '("prismlauncher")
-    #:expression (local-file <<testament-path("tangled/dorphine/nixpkgs.nix")>>)
-    #:run-command '("prismlauncher"))
+#+begin_src scheme :noweb-ref package-spec
+  "prismlauncher-dolly"
+#+end_src
+
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'prismlauncher-openjdk home-files-service-type
+    (map (lambda (jdk)
+           (let ((path (in-vicinity ".local/share/PrismLauncher/java" (package-version jdk))))
+             (list path jdk)))
+         (list openjdk25
+               openjdk21
+               openjdk17
+               icedtea-8)))
 #+end_src
 
 #+begin_src nftables :noweb-ref nftables-filter-input
@@ -1473,6 +1491,7 @@ condition.  Disable one of them.
 ** Modules
 Guile builtins
 #+begin_src scheme :noweb-ref module
+  (ice-9 format)
   (ice-9 match)
   (srfi srfi-1)
   (srfi srfi-43)
@@ -1481,6 +1500,7 @@ Guile builtins
 Utilities
 #+begin_src scheme :noweb-ref module
   (gnu)
+  (guix packages)
   ((nonguix transformations) #:prefix non:)
   ((rosenthal utils file) #:prefix ros:)
   ((rosenthal utils nix) #:prefix ros:)
@@ -1549,6 +1569,8 @@ Guix packages
   (gnu packages games)
   (gnu packages gnome-xyz)
   (gnu packages gnupg)
+  (gnu packages java)
+  (gnu packages libcanberra)
   (gnu packages linux)
   (gnu packages mail)
   (gnu packages security-token)

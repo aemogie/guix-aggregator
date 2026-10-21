@@ -23,28 +23,21 @@ Services, packages and configuration file for Emacs:
     (ros:home-emacs-configuration
       (emacs emacs-pgtk)
       (packages
-       (non:with-transformation
-           (compose (options->transformation
-                     '((without-tests . "emacs-el-mock")))
-                    (package-input-rewriting
-                     `((,(@ (gnu packages emacs) emacs)         . ,emacs)
-                       (,(@ (gnu packages emacs) emacs-minimal) . ,emacs)
-                       (,(@ (gnu packages emacs) emacs-no-x)    . ,emacs))))
-         (specifications->manifest
-          '(;; Configured packages.
-            <<package-spec>>
-            ;; TeX.
-            "texlive-scheme-small"
-            "texlive-dvipng"
-            ;; Others.
-            "emacs-beancount"
-            "emacs-caddyfile-mode"
-            "emacs-edit-indirect"
-            "emacs-fish-mode"
-            "emacs-markdown-mode"
-            "emacs-nftables-mode"
-            "emacs-reader"
-            "emacs-zig-mode"))))
+       (specifications->manifest
+        '(;; Configured packages.
+          <<package-spec>>
+          ;; TeX.
+          "texlive-scheme-small"
+          "texlive-dvipng"
+          ;; Others.
+          "emacs-beancount"
+          "emacs-caddyfile-mode"
+          "emacs-edit-indirect"
+          "emacs-fish-mode"
+          "emacs-markdown-mode"
+          "emacs-nftables-mode"
+          "emacs-reader"
+          "emacs-zig-mode")))
       (shepherd-requirement '(graphical-session))))
 #+end_src
 
@@ -1371,6 +1364,7 @@ https://web.archive.org/web/20240525203039/http://community.schemewiki.org/?emac
       (put 'with-imported-modules             'scheme-indent-function 1)
       (put 'with-extensions                   'scheme-indent-function 1)
       (put 'with-parameters                   'scheme-indent-function 1)
+      (put 'with-transformation               'scheme-indent-function 1)
       (put 'let-system                        'scheme-indent-function 1)
       (put 'with-build-variables              'scheme-indent-function 2)
       (put 'computed-file                     'scheme-indent-function 1)
@@ -1393,8 +1387,6 @@ https://web.archive.org/web/20240525203039/http://community.schemewiki.org/?emac
       (put 'call-with-compressed-output-port  'scheme-indent-function 2)
       (put 'call-with-decompressed-port       'scheme-indent-function 2)
       (put 'with-environment-variables        'scheme-indent-function 1)
-      ;;; Nonguix
-      (put 'with-transformation               'scheme-indent-function 1)
       ;;; Rosenthal
       (put 'match-record/dolly                'scheme-indent-function 3)
       (put 'match-record-lambda/dolly         'scheme-indent-function 2)
@@ -1420,9 +1412,6 @@ https://web.archive.org/web/20240525203039/http://community.schemewiki.org/?emac
 Utilities
 #+begin_src scheme :noweb-ref module
   (guix gexp)
-  (guix packages)
-  (guix transformations)
-  ((nonguix utils) #:prefix non:)
 #+end_src
 
 Guix Home - services

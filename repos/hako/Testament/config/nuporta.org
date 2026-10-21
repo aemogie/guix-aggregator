@@ -16,6 +16,7 @@
        (bootloader ros:limine-efi-removable-bootloader)
        (targets '("/efi"))))
     (kernel ros:linux-cachyos-lts-server)
+    (kernel-loadable-modules `((,zfs "module")))
     (kernel-arguments
      (cons* <<kernel-argument>>
             %default-kernel-arguments))
@@ -79,6 +80,10 @@
 | Lycoris/State/Tuwunel            | /var/lib/tuwunel               |                               | true                  |
 | Lycoris/State/WebPublic          | /var/lib/webpublic             |                               | true                  |
 |----------------------------------+--------------------------------+-------------------------------+-----------------------|
+
+#+begin_src scheme :noweb-ref service
+  (service zfs-service-type)
+#+end_src
 
 #+begin_src scheme :noweb-ref file-systems
   (cons (file-system
@@ -980,6 +985,7 @@ Guix System - services
   (gnu services cuirass)
   (gnu services databases)
   (gnu services desktop)
+  (gnu services linux)
   (gnu services networking)
   (gnu services security)
   (gnu services shepherd)

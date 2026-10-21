@@ -2,7 +2,7 @@
        (name 'guix)
        (url "https://codeberg.org/hako/guix.git")
        (branch #f)
-       (commit "2026.09.28"))
+       (commit "2026.10.18"))
       (channel
        (name 'bluebox)
        (url "https://codeberg.org/lapislazuli/bluebox")
@@ -17,7 +17,7 @@
        (name 'nonguix)
        (url "https://gitlab.com/nonguix/nonguix")
        (branch "master")
-       (commit "2a16e08d40b913e593c7c9ea29bc82b96f117e24")
+       (commit "25226c35c150f03d469b0c855d10b2402a094bc1")
        (introduction
         (make-channel-introduction
          "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
@@ -27,7 +27,7 @@
        (name 'rosenthal)
        (url "https://codeberg.org/hako/rosenthal.git")
        (branch "trunk")
-       (commit "1f35f0e393dc3af2f1643ac3166e4075c5a85cf3")
+       (commit "a7073acb3964baafad4ef48bdab19f9b92170552")
        (introduction
         (make-channel-introduction
          "7677db76330121a901604dfbad19077893865f35"

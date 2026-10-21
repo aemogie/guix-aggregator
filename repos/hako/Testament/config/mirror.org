@@ -290,7 +290,7 @@ See [[file:shared/caddy.org][shared/caddy.org]].
                       "--cache=/var/cache/guix-moe/mirror"
                       "--listen=127.0.0.1"
                       "--port=13778"
-                      "--ttl=1m"
+                      "--ttl=15d"
                       "--negative-ttl=300s"
                       ;; Args for mirror-substitutes
                       "--substitute-urls=https://cache-cdn.guix.moe"

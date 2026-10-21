@@ -1,4 +1,5 @@
 # -*- mode: conf -*-
+/dist/
 /tangled/
 /.blue-store/
 /.nrepl-port
