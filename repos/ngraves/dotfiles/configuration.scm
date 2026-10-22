@@ -1062,6 +1062,11 @@ watcher again, making the example recursive but user-paced."
                (error "failed to provision UPJV eduroam" status))))))))
     (feature-codegraph)
     (feature-rtk)
+    ;; GitLab token (scope api) in passage, read at each glab call.
+    (feature-glab
+     #:token-command (list (file-append (specification->package "pass-age")
+                                        "/bin/passage")
+                           "show" "gitlab/glab-token"))
     (feature-shepherd)
     (feature-shepherd-mcp)
     (feature-shepherd-nrepl
@@ -1096,6 +1101,7 @@ watcher again, making the example recursive but user-paced."
                 '())))
 
     (feature-foot
+     #:primary-paste-override? #t
      #:default-terminal? #f
      #:backup-terminal? #t)
     (feature-zsh
