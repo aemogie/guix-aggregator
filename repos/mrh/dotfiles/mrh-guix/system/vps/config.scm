@@ -322,7 +322,8 @@
       (service
        i2pd-service-type
        (i2pd-configuration
-        (i2pd i2pd)
+        (i2pd (local-file "/gnu/store/sjl2wpla69x53j0wzv1gs02w1yc7b5xf-i2pd-2.61.0"
+                          #:recursive? #t))
         (user %username)
         (conf (format #f "~a/.config/i2pd/i2pd.conf" %user-home))
         (datadir (format #f "~a/.config/i2pd" %user-home))))

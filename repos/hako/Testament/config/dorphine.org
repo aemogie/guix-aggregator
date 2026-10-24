@@ -381,8 +381,8 @@ Application profiles
 
                   (service home-fish-service-type)
 
-                  (service ros:home-fish-plugin-atuin-service-type)
                   (service ros:home-fish-plugin-direnv-service-type)
+                  (service ros:home-fish-plugin-stinkpot-service-type)
                   (service ros:home-fish-plugin-zoxide-service-type)
 
                   (service home-dotfiles-service-type
@@ -1372,7 +1372,7 @@ Make fonts available to Nix packages.
 Pin Nixpkgs to avoid networking requirement when using the wrappers.
 
 #+begin_src nix :tangle ../tangled/dorphine/nixpkgs.nix
-  (import (builtins.getFlake "github:NixOS/nixpkgs/c508844df6c28fa6dabc1b6af70f3ccbd65c5201") {})
+  (import (builtins.getFlake "github:NixOS/nixpkgs/da6dc0e7b26060f2f71ce3ef7088fb56ee44fa36") {})
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref package-nix
@@ -1389,7 +1389,7 @@ Pin Nixpkgs to avoid networking requirement when using the wrappers.
     #:run-command '("nocturne"))
 
   (ros:nix-shell-wrapper "tsukimi"
-    '("github:NixOS/nixpkgs/da100efb6f98396f285ee84b52641bede78e0343#tsukimi")
+    '("github:NixOS/nixpkgs/02c087f3fe673c9e317f206a627cb6b910336dbe#tsukimi")
     #:environment-set '(("XDG_DATA_DIRS" . "/nix/var/nix/profiles/guix-system-nix-profile/share"))
     #:run-command '("tsukimi"))
 #+end_src

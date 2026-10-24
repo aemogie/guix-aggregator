@@ -57,13 +57,14 @@ Default keybindings:
 
 ** Build
 #+begin_src bash
-  git clone --recurse-submodules https://codeberg.org/hako/testament.git
+  git clone --depth=1 https://codeberg.org/hako/testament.git
   cd testament
+  git submodule update --init --depth=1 -- config/live/modules
 
   guix time-machine -C channels.lock -- shell -m manifest.scm
 
   blue configure
-  blue build-iso minimal          # or niri
+  blue build-iso
 #+end_src
 
-The resulted image will be copied to the dist directory.
+The resulted images will be copied to the dist directory.

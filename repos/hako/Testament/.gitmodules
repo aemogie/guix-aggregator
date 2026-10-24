@@ -1,3 +1,6 @@
 [submodule "installer"]
 	path = config/live/modules
 	url = https://codeberg.org/nonguix/installer.git
+[submodule "secrets"]
+	path = secrets
+	url = https://git.guix.moe/hako/sops-secrets.git

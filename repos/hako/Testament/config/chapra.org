@@ -379,7 +379,7 @@ Authorized SSH keys.
     (ros:jellyfin-configuration
       (jellyfin
        (ros:nix-shell-wrapper "jellyfin"
-         '("github:NixOS/nixpkgs/f4f698677b11021a8f84f452e23ae9ef2427bec3#jellyfin")
+         '("github:NixOS/nixpkgs/da6dc0e7b26060f2f71ce3ef7088fb56ee44fa36#jellyfin")
          #:run-command '("jellyfin")))
       (user  973)
       (group 973)))

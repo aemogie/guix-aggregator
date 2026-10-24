@@ -1173,14 +1173,14 @@ Interface for [[https://www.jj-vcs.dev/latest/][Jujutsu]].
       (when (fboundp 'project-root)
         (let ((directory (project-root (project-current t))))
           (majutsu-log directory))))
-    (defvaralias 'hako/jjdescription-mode-hook 'git-commit-mode-hook)
-    (defvaralias 'hako/jjdescription-mode-map  'git-commit-redundant-bindings)
-    (define-minor-mode hako/jjdescription-mode
-      "Set up `git-commit-mode' for `majutsu'.")
+    (defun hako/majutsu-jjdescription-mode-setup ()
+      (setq-local fill-column 80)
+      (set-keymap-parent majutsu-jjdescription-mode-map git-commit-redundant-bindings)
+      (run-hooks 'git-commit-setup-hook))
     :config
     (require 'magit)
     :hook
-    (majutsu-jjdescription-mode . hako/jjdescription-mode)
+    (majutsu-jjdescription-mode . hako/majutsu-jjdescription-mode-setup)
     :bind
     ("C-x j" . majutsu-log))
 #+end_src

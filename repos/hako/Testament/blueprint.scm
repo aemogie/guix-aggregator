@@ -282,23 +282,61 @@
   ($guix `("repl" "--" "scripts/write-channels.scm")
          #:channels "channels.scm"))
 
+(define (for-each-system header proc systems)
+  (every identity
+         (map-in-order
+          (match-record-lambda <literate-config>
+              (name use-guix-fork?)
+            (print-header header name)
+            ($guix (proc name) #:use-guix-fork? use-guix-fork?))
+          systems)))
+
+(define (graph-commands guix-command)
+  (lambda (name)
+    `("shell" "bash-minimal" "graphviz-minimal" "imv"
+      ,@%build-options
+      ,@(if (dry-build?) '("--dry-run") '())
+      "--"
+      "bash" "-c"
+      ,(string-join
+        (list (format #f "guix system ~a ~a" guix-command (config-path name))
+              "dot -Tsvg -Granksep=2"
+              "imv -")
+        " | "))))
+
+(define-command (extension-graph-command arguments)
+  ((invoke "extension-graph")
+   (category 'development)
+   (synopsis "Show Guix System service extension graph")
+   (help "[SYSTEMS] ..."))
+  (for-each-system "EXTENSION GRAPH"
+                   (graph-commands "extension-graph")
+                   (filter literate-config-build?
+                           (systems-from-arguments arguments))))
+
+(define-command (shepherd-graph-command arguments)
+  ((invoke "shepherd-graph")
+   (category 'development)
+   (synopsis "Show Guix System Shepherd services graph")
+   (help "[SYSTEMS] ..."))
+  (for-each-system "SHEPHERD GRAPH"
+                   (graph-commands "shepherd-graph")
+                   (filter literate-config-build?
+                           (systems-from-arguments arguments))))
+
 (define-command (build-os-command arguments)
   ((invoke "build-os")
    (category 'deployment)
    (synopsis "Build Guix System")
    (help "[SYSTEMS] ...
 Build all Guix Systems in this repository or only those matching SYSTEMS."))
-  (every identity
-         (map-in-order
-          (match-record-lambda <literate-config>
-              (name use-guix-fork?)
-            (print-header "BUILD OS" name)
-            ($guix `("system" "build" ,(config-path name)
-                     ,@(if (dry-build?) '("--dry-run") '())
-                     ,@%build-options)
-                   #:use-guix-fork? use-guix-fork?))
-          (filter literate-config-build?
-                  (systems-from-arguments arguments)))))
+  (for-each-system "BUILD OS"
+                   (lambda (name)
+                     `("system" "build" ,(config-path name)
+                       ,@(if (dry-build?) '("--dry-run") '())
+                       ,@%build-options))
+                   (filter literate-config-build?
+                           (systems-from-arguments arguments))))
 
 (define-command (deploy-os-command arguments)
   ((invoke "deploy-os")
@@ -306,19 +344,15 @@ Build all Guix Systems in this repository or only those matching SYSTEMS."))
    (synopsis "Deploy Guix System")
    (help "[SYSTEMS] ...
 Deploy all Guix Systems in this repository or only those matching SYSTEMS."))
-  (every identity
-         (map-in-order
-          (match-record-lambda <literate-config>
-              (name use-guix-fork?)
-            (print-header "DEPLOY OS" name)
-            ($guix `("deploy" ,(config-deploy name)
-                     ,@(if (dry-build?) '("--dry-run") '())
-                     ,@(if #%?CMD
-                           `(,@%build-options "-x" "--" "sh" "--login" "-c" ,#%?CMD)
-                           %build-options))
-                   #:use-guix-fork? use-guix-fork?))
-          (filter literate-config-deploy?
-                  (systems-from-arguments arguments)))))
+  (for-each-system "DEPLOY OS"
+                   (lambda (name)
+                     `("deploy" ,(config-deploy name)
+                       ,@(if (dry-build?) '("--dry-run") '())
+                       ,@(if #%?CMD
+                             `(,@%build-options "-x" "--" "sh" "--login" "-c" ,#%?CMD)
+                             %build-options)))
+                   (filter literate-config-deploy?
+                           (systems-from-arguments arguments))))
 
 (define-command (build-iso-command arguments)
   ((invoke "build-iso")
@@ -361,6 +395,8 @@ VARIANTS, saving the results under dist/."))
    (map literate-config->buildable %systems))
   (commands
    (list update-command
+         extension-graph-command
+         shepherd-graph-command
          build-os-command
          deploy-os-command
          build-iso-command)))
