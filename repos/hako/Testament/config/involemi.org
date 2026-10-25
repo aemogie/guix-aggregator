@@ -426,11 +426,13 @@ See [[file:shared/caddy.org][shared/caddy.org]].
 #+end_src
 
 #+begin_src conf :tangle ../tangled/involemi/mail-crypt.conf
-  mail_plugins = $mail_plugins mail_crypt
-  plugin {
-    mail_crypt_global_private_key = </certs/ecprivkey.pem
-    mail_crypt_global_public_key = </certs/ecpubkey.pem
-    mail_crypt_save_version = 2
+  mail_plugins {
+    mail_crypt = yes
+  }
+
+  crypt_global_public_key_file = /certs/ecpubkey.pem
+  crypt_global_private_key main {
+    crypt_private_key_file = /certs/ecprivkey.pem
   }
 #+end_src
 
@@ -569,25 +571,6 @@ https://github.com/misskey-dev/misskey/blob/develop/.config/example.yml
            ("proxyRemoteFiles" . #t)
            ("signToActivityPubGet" . #t)))
       (user-id 975)))
-#+end_src
-
-*** vaultwarden
-#+begin_src caddyfile :noweb-ref caddy-site
-  vault.urspace.moe {
-  	import block_bots
-  	reverse_proxy localhost:23263
-  }
-#+end_src
-
-#+begin_src scheme :noweb-ref service
-  (service ros:vaultwarden-service-type
-    (ros:vaultwarden-configuration
-      (postgresql-password-file "")
-      (database-url "postgresql://vaultwarden:placeholder@localhost/vaultwarden")
-      (port 23263)
-      (extra-options '(("ROCKET_ADDRESS" . "127.0.0.1")))
-      (group-id 981)
-      (user-id 977)))
 #+end_src
 
 ** Modules

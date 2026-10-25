@@ -55,6 +55,7 @@
                  "gimp"
                  "imv"
                  "kdenlive"
+                 "keepassxc"
                  "obs-nvidia"
                  "picard"
                  "showmethekey"
