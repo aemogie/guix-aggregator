@@ -55,7 +55,6 @@
                  "gimp"
                  "imv"
                  "kdenlive"
-                 "keepassxc"
                  "obs-nvidia"
                  "picard"
                  "showmethekey"
@@ -1298,6 +1297,16 @@ Jujutsu:
   sign-on-push = true
 #+end_src
 
+*** keepassxc
+#+begin_src scheme :noweb-ref package-spec
+  "keepassxc"
+#+end_src
+
+#+begin_src scheme :noweb-ref service
+  (simple-service 'keepassxc-quick-unlock polkit-service-type
+    (list keepassxc))
+#+end_src
+
 *** mpv
 #+begin_src scheme :noweb-ref package-spec
   "mpv-nvidia"
@@ -1524,6 +1533,7 @@ Guix System - services
   (gnu services)
   (gnu services avahi)
   (gnu services containers)
+  (gnu services dbus)
   (gnu services desktop)
   (gnu services guix)
   (gnu services linux)
@@ -1574,6 +1584,7 @@ Guix packages
   (gnu packages libcanberra)
   (gnu packages linux)
   (gnu packages mail)
+  (gnu packages password-utils)
   (gnu packages security-token)
   (gnu packages shells)
   (gnu packages ssh)
