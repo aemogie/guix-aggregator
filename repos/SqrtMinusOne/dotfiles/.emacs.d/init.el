@@ -27,6 +27,20 @@
 
 (straight-use-package 'org)
 
+(unless (fboundp 'custom-initialize-after-file-load)
+  (defun custom-initialize-after-file-load (symbol exp)
+    "Initialize SYMBOL from EXP once its defining file has loaded."
+    (internal--define-uninitialized-variable symbol)
+    (if (null load-file-name)
+        (custom-initialize-set symbol exp)
+      (let ((target load-file-name))
+        (letrec ((initialize
+                  (lambda (loaded)
+                    (when (equal loaded target)
+                      (remove-hook 'after-load-functions initialize)
+                      (custom-initialize-set symbol exp)))))
+          (add-hook 'after-load-functions initialize))))))
+
 (defun my/get-env ()
   (or (getenv "EMACS_ENV")
       (when (member (system-name) '("dev-digital" "viridian"))
@@ -197,8 +211,8 @@
    (require 'sqrt-misc-internet) (require 'sqrt-erc)
    (require 'sqrt-mastodon) (require 'sqrt-ement)
    (require 'sqrt-telega) (require 'sqrt-rocket) (require 'sqrt-max)
-   (require 'sqrt-docs) (require 'sqrt-ai) (require 'sqrt-index)
-   (require 'sqrt-deterred) (require 'sqrt-pass)
+   (require 'sqrt-elia) (require 'sqrt-docs) (require 'sqrt-ai)
+   (require 'sqrt-index) (require 'sqrt-deterred) (require 'sqrt-pass)
    (require 'sqrt-docker) (require 'sqrt-misc-apps)
    (require 'sqrt-guix) (require 'sqrt-productivity-apps)
    (require 'sqrt-chess) (require 'sqrt-gource))

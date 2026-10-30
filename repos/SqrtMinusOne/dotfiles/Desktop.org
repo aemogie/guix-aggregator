@@ -1145,6 +1145,7 @@ And the EXWM config itself.
   :straight t
   :config
   (setq exwm-workspace-number 6)
+  (setq xcb:connection-timeout 10)
   (add-hook 'exwm-init-hook #'my/exwm-init)
   (add-hook 'exwm-update-class-hook #'my/exwm-update-class)
 
@@ -1872,7 +1873,6 @@ As we want to interweave polybar modules with these glyphs in the right order an
 |     4 | ram-memory  | light-green   | +     |
 |     5 | swap-memory | green         | +     |
 |     6 | bandwidth   | light-red     | +     |
-|     7 | openvpn     | light-red     |       |
 |     8 | xkeyboard   | red           | +     |
 |    10 | weather     | light-yellow  | +     |
 |    12 | sun         | yellow        | +     |
@@ -2651,7 +2651,7 @@ get_weather_desc() {
 }
 
 # Get coordinates from city name using Open-Meteo Geocoding API
-geo_response=$(curl -sf "https://geocoding-api.open-meteo.com/v1/search?name=${location}&count=1" 2>/dev/null)
+geo_response=$(curl -sf "https://i.sqrtminusone.xyz/open-meteo-geo/v1/search?name=${location}&count=1" 2>/dev/null)
 if [ -z "$geo_response" ]; then
     echo "??"
     exit 1
@@ -2670,7 +2670,7 @@ temp_unit="celsius"
 [ "$units" = "fahrenheit" ] && temp_unit="fahrenheit"
 
 # Get current weather from Open-Meteo API
-weather_response=$(curl -sf "https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m&temperature_unit=${temp_unit}" 2>/dev/null)
+weather_response=$(curl -sf "https://i.sqrtminusone.xyz/open-meteo/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m&temperature_unit=${temp_unit}" 2>/dev/null)
 if [ -z "$weather_response" ]; then
     echo "??"
     exit 1
@@ -2835,7 +2835,7 @@ EXCLUDE_PATTERN="dbus-launch --exit-with-session emacs"
 EMACS_PIDS=$(pgrep -f "emacs.*${EMACS_FLAG}")
 SIGNAL_SENT=false
 
-for PID in $EMACS_PIDS; d   o
+for PID in $EMACS_PIDS; do
     CMDLINE=$(ps -p "$PID" -o args=)
 
     if [[ "$CMDLINE" == *"$EXCLUDE_PATTERN"* ]]; then
