@@ -156,19 +156,6 @@ View their sources:
     '(("kernel.sysrq" . "1")))
 #+end_src
 
-#+begin_src scheme :noweb-ref home-service
-  (simple-service 'modprobed-db home-shepherd-service-type
-    (list (shepherd-timer '(update-modprobed-db)
-            #~(calendar-event #:minutes '(0))
-            #~(#$(file-append modprobed-db "/bin/modprobed-db") "storesilent"))))
-#+end_src
-
-#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/modprobed-db.conf
-  DBPATH="/home/hako/.config"
-  COLORS=light
-  IGNORE=(nvidia nvidia_drm nvidia_modeset nvidia_peermem nvidia_uvm)
-#+end_src
-
 *** NVIDIA
 Extra configurations for NVIDIA proprietary driver
 
@@ -224,64 +211,112 @@ Application profiles
 #+end_src
 
 *** File Systems
+#+begin_src scheme :noweb-ref swap-devices
+  (list (swap-space
+          (target (uuid "7de33202-1010-4297-ba9c-8e7fa419f891"))))
+#+end_src
+
 #+begin_src scheme :noweb-ref file-systems
   (list (file-system
+          (type "vfat")
           (device (uuid "2574-B3EC" 'fat))
           (mount-point "/efi")
-          (type "vfat")
           (flags '(no-exec no-suid no-dev))
           (options "fmask=0177,dmask=0077")
           (create-mount-point? #t))
         (file-system
+          (type "tmpfs")
           (device "tmpfs")
           (mount-point "/")
-          (type "tmpfs")
           (options "mode=0755,nr_inodes=1m,size=25%")
           (check? #f)))
 #+end_src
-
-| ZFS Dataset            | Mount Point        | Options       | com.sun:auto-snapshot |
-|------------------------+--------------------+---------------+-----------------------|
-| Mentha                 | /mnt/Mentha        | acltype=posix |                       |
-| Mentha/Boot            | /boot              |               |                       |
-|                        |                    |               |                       |
-| Mentha/Config          | legacy (/etc)      |               | true                  |
-| Mentha/Data            | legacy (/var)      |               |                       |
-| Mentha/State           | legacy (/var/lib)  |               |                       |
-| Mentha/Log             | legacy (/var/log)  |               |                       |
-| Mentha/Guix            | legacy (/var/guix) |               |                       |
-| Mentha/Store           | legacy (/gnu)      | atime=off     |                       |
-| Mentha/Nix             | legacy (/nix)      | atime=off     |                       |
-| Mentha/Home            | legacy (/home)     |               | true                  |
-|                        |                    |               |                       |
-| Mentha/State/Bluetooth | /var/lib/bluetooth |               | true                  |
-| Mentha/State/Tailscale | /var/lib/tailscale |               | true                  |
-|                        |                    |               |                       |
-| Mentha/State/Captures  | /var/lib/Captures  |               |                       |
-| Mentha/State/Sandbox   | /var/lib/Sandbox   |               |                       |
-|------------------------+--------------------+---------------+-----------------------|
 
 #+begin_src scheme :noweb-ref service
   (service zfs-service-type)
 #+end_src
 
-#+begin_src scheme :noweb-ref file-systems
-  (map (match-lambda
-         ((path . mount-point)
-          (file-system
-            (device (zfs-dataset "Mentha" path))
-            (mount-point mount-point)
-            (type "zfs")
-            (create-mount-point? #t)
-            (check? #f))))
-       '(("Config" . "/etc")
-         ("Data"   . "/var")
-         ("State"  . "/var/lib")
-         ("Log"    . "/var/log")
-         ("Guix"   . "/var/guix")
-         ("Store"  . "/gnu")
-         ("Nix"    . "/nix")
-         ("Home"   . "/home")))
+#+begin_src scheme :noweb yes :noweb-ref file-systems
+  (let ((zfs-spec->file-system
+         (match-lambda
+           ((pool
+             (('dataset . datasets)
+              ('mount-point . mount-points)
+              ('options . options))
+             ...)
+            (map (lambda (dataset mount-point)
+                   (file-system
+                     (type "zfs")
+                     (device (zfs-dataset pool dataset))
+                     (mount-point mount-point)
+                     (create-mount-point? #t)
+                     (check? #f)))
+                 datasets
+                 mount-points)))))
+    (append-map zfs-spec->file-system <<zfs-spec>>))
+#+end_src
+
+#+begin_src scheme :noweb-ref zfs-spec
+  '(("Mentha"
+     ((dataset . #f)
+      (mount-point . "/mnt/Mentha")
+      (options
+       ("acltype=posix")))
+
+     ((dataset . "Boot")
+      (mount-point . "/boot")
+      (options
+       ()))
+     ((dataset . "Config")
+      (mount-point . "/etc")
+      (options
+       ("com.sun:auto-snapshot=true")))
+     ((dataset . "Home")
+      (mount-point . "/home")
+      (options
+       ("com.sun:auto-snapshot=true")))
+     ((dataset . "Store")
+      (mount-point . "/gnu")
+      (options
+       ("atime=off")))
+     ((dataset . "Nix")
+      (mount-point . "/nix")
+      (options
+       ("atime=off")))
+
+     ((dataset . "Data")
+      (mount-point . "/var")
+      (options
+       ()))
+     ((dataset . "Guix")
+      (mount-point . "/var/guix")
+      (options
+       ()))
+     ((dataset . "Log")
+      (mount-point . "/var/log")
+      (options
+       ()))
+
+     ((dataset . "State")
+      (mount-point . "/var/lib")
+      (options
+       ()))
+     ((dataset . "State/Bluetooth")
+      (mount-point . "/var/lib/bluetooth")
+      (options
+       ("com.sun:auto-snapshot=true")))
+     ((dataset . "State/Tailscale")
+      (mount-point . "/var/lib/tailscale")
+      (options
+       ("com.sun:auto-snapshot=true")))
+     ((dataset . "State/Captures")
+      (mount-point . "/var/lib/Captures")
+      (options
+       ()))
+     ((dataset . "State/Sandbox")
+      (mount-point . "/var/lib/Sandbox")
+      (options
+       ()))))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -318,12 +353,6 @@ Application profiles
                          (invoke #$(file-append zfs-auto-snapshot "/sbin/zfs-auto-snapshot")
                                  "--default-exclude" "--skip-scrub" "--keep=31" "--label=daily" "//")))))
             #:requirement '(user-processes))))
-#+end_src
-
-#+begin_src scheme :noweb-ref swap-devices
-  (list (swap-space
-          (target
-           (uuid "7de33202-1010-4297-ba9c-8e7fa419f891"))))
 #+end_src
 
 *** Guix Daemon
@@ -642,22 +671,6 @@ Generate passwordless ECC key:
 #+end_src
 
 ** Graphical Session
-*** noctalia-greeter
-#+begin_src scheme :noweb-ref service
-  (service ros:noctalia-greeter-service-type
-    (ros:noctalia-greeter-configuration
-     (keyboard-layout keyboard-layout)))
-
-  (service greetd-service-type
-    (greetd-configuration
-      (greeter-supplementary-groups '("video" "input"))
-      (terminals
-       (list (greetd-terminal-configuration
-               (terminal-vt "7")
-               (terminal-switch #t)
-               (default-session-command (ros:greetd-noctalia-greeter-session)))))))
-#+end_src
-
 *** niri
 #+begin_src scheme :noweb-ref package-spec
   "niri"
@@ -672,6 +685,18 @@ Generate passwordless ECC key:
     (ros:home-graphical-session-configuration
       (wayland? #t)
       (x11? #t)))
+#+end_src
+
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'start-niri-on-tty1-login home-fish-service-type
+    (home-fish-extension
+      (config
+       (list (mixed-text-file "niri.fish" "\
+  if status is-login
+      if test -z \"$WAYLAND_DISPLAY\" && test -n \"$XDG_VTNR\" && test \"$XDG_VTNR\" = 1
+          exec " niri "/bin/niri --session
+      end
+  end\n")))))
 #+end_src
 
 #+begin_src scheme :noweb-ref home-service
@@ -772,7 +797,7 @@ Generate passwordless ECC key:
               (Mod+A
                (spawn "noctalia" "msg" "panel-toggle" "control-center"))
               (Mod+D
-               (spawn #$(file-append rofi "/bin/rofi") "-show" "combi"))
+               (spawn "noctalia" "msg" "panel-toggle" "launcher"))
               (Mod+S
                (spawn "noctalia" "msg" "settings-toggle"))
               (Mod+L
@@ -895,7 +920,7 @@ https://wiki.gnome.org/Projects(2f)GnomeKeyring(2f)Pam.html
   (service gnome-keyring-service-type
     (gnome-keyring-configuration
       (pam-services
-       '(("greetd" . login)
+       '(("login"  . login)
          ("passwd" . passwd)))))
 #+end_src
 
@@ -1025,91 +1050,6 @@ See [[file:shared/emacs.org][shared/emacs.org]].
 #+end_src
 
 *** email
-#+begin_src scheme :noweb yes :noweb-ref home-service
-  (simple-service 'update-mailbox home-shepherd-service-type
-    (list
-     (shepherd-timer '(update-mailbox)
-       #~(calendar-event #:minutes '(0 15 30 45))
-       #~(#$(program-file "update-mailbox"
-              (with-imported-modules '((guix build utils))
-                #~(begin
-                    (use-modules (ice-9 match)
-                                 (guix build utils))
-                    ;; Sync with mail server.
-                    (invoke #$(file-append isync "/bin/mbsync") "-a"
-                            "--config" #$(local-file <<testament-path("tangled/dorphine/mbsync.conf")>>))
-                    ;; Index.
-                    (let ((notmuch #$(file-append notmuch "/bin/notmuch")))
-                      (invoke notmuch "new")
-                      (map (match-lambda
-                             ((query . tags)
-                              (apply invoke notmuch "tag"
-                                     `(,@(map symbol->string tags) "--" ,query))))
-                           '(;; self
-                             ("tag:new AND from:hako@ultrarare.space"
-                              . (+sent))
-                             ("tag:new AND (tag:replied OR tag:sent)"
-                              . (-unread))
-                             ;; mailing lists
-                             ("folder:lists/emacs-devel"
-                              . (+lists +lists/emacs +lists/emacs-devel -inbox -new))
-                             ("folder:lists/guile-bugs"
-                              . (+lists +lists/guile +lists/guile-bugs -inbox -new))
-                             ("folder:lists/guile-devel"
-                              . (+lists +lists/guile +lists/guile-devel -inbox -new))
-                             ("folder:lists/guile-user"
-                              . (+lists +lists/user +lists/guile-user -inbox -new))
-                             ("folder:lists/guix-bugs"
-                              . (+lists +lists/guix +lists/guix-bugs -inbox -new))
-                             ("folder:lists/guix-devel"
-                              . (+lists +lists/guix +lists/guix-devel -inbox -new))
-                             ("folder:lists/guix-patches"
-                              . (+lists +lists/guix +lists/guix-patches -inbox -new))
-                             ("folder:lists/guix-user"
-                              . (+lists +lists/guix +lists/guix-user -inbox -new))
-                             ;; folders
-                             ("folder:local/Drafts"
-                              . (+draft -unread -inbox -new))
-                             ("folder:imap/Archive"
-                              . (+archive -unread -inbox -new))
-                             ("folder:imap/Junk"
-                              . (+spam -inbox -new))
-                             ;; others
-                             ("tag:new"
-                              . (+inbox -new)))))
-                    ;; Send queued mail.
-                    (invoke "emacsclient" "--eval" "(smtpmail-send-queued-mail)"))))))))
-#+end_src
-
-mbsync:
-#+begin_src conf :tangle ../tangled/dorphine/mbsync.conf
-  Create Both
-  Expunge Both
-  CopyArrivalDate yes
-
-  MaildirStore local
-  Path ~/.local/share/mail/imap/
-  Inbox ~/.local/share/mail/imap/INBOX
-  Subfolders Verbatim
-
-  IMAPAccount hako
-  Host mail.boiledscript.com
-  User "hako@ultrarare.space"
-  PassCmd "secret-tool lookup host mail.boiledscript.com user hako@ultrarare.space"
-  TLSType IMAPS
-
-  IMAPStore remote
-  Account hako
-
-  Channel hako
-  Far :remote:
-  Near :local:
-  Pattern *
-  SyncState *
-#+end_src
-
-l2md:
-
 #+begin_src scheme :noweb-ref home-service
   (simple-service 'l2md home-shepherd-service-type
     (list (shepherd-service
@@ -1118,57 +1058,144 @@ l2md:
             #~(make-forkexec-constructor
                (list #$(file-append l2md "/bin/l2md") "-v")))
            (stop #~(make-kill-destructor)))))
+
+  (simple-service 'l2md-config home-xdg-configuration-files-service-type
+    `(("l2md/config"
+       ,(ros:ini-file "l2md.ini"
+          `(("general"
+             . (("base" . "~/.local/share/l2md/")))
+            ,@(map (match-lambda
+                     ((name . url)
+                      (cons (string-append "repo " name)
+                            `(("url"     . ,url)
+                              ("maildir" . ,(string-append "~/.local/share/mail/lists/" name))))))
+                   '(("emacs-devel"  . "https://yhetil.org/emacs-devel/0")
+                     ("guile-bugs"   . "https://yhetil.org/guile-bugs/0")
+                     ("guile-devel"  . "https://yhetil.org/guile-devel/0")
+                     ("guile-user"   . "https://yhetil.org/guile-user/0")
+                     ("guix-bugs"    . "https://yhetil.org/guix-bugs/0")
+                     ("guix-devel"   . "https://yhetil.org/guix-devel/0")
+                     ("guix-patches" . "https://yhetil.org/guix-patches/1")
+                     ("guix-user"    . "https://yhetil.org/guix-user/0"))))))))
 #+end_src
 
-#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/l2md/config
-  [general]
-          base = ~/.local/share/l2md/
-
-  [repo emacs-devel]
-          url = https://yhetil.org/emacs-devel/0
-          maildir = ~/.local/share/mail/lists/emacs-devel
-
-  [repo guile-bugs]
-          url = https://yhetil.org/guile-bugs/0
-          maildir = ~/.local/share/mail/lists/guile-bugs
-  [repo guile-devel]
-          url = https://yhetil.org/guile-devel/0
-          maildir = ~/.local/share/mail/lists/guile-devel
-  [repo guile-user]
-          url = https://yhetil.org/guile-user/0
-          maildir = ~/.local/share/mail/lists/guile-user
-
-  [repo guix-bugs]
-          url = https://yhetil.org/guix-bugs/0
-          maildir = ~/.local/share/mail/lists/guix-bugs
-  [repo guix-devel]
-          url = https://yhetil.org/guix-devel/0
-          maildir = ~/.local/share/mail/lists/guix-devel
-  [repo guix-patches]
-          url = https://yhetil.org/guix-patches/1
-          maildir = ~/.local/share/mail/lists/guix-patches
-  [repo guix-user]
-          url = https://yhetil.org/guix-user/0
-          maildir = ~/.local/share/mail/lists/guix-user
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'notmuch-config home-xdg-configuration-files-service-type
+    `(("notmuch/default/config"
+       ,(ros:ini-file "notmuch.ini"
+          '(("database"
+             . (("path" . "/home/hako/.local/share/mail")))
+            ("user"
+             . (("name" . "Hilton Chain")
+                ("primary_email" . "hako@ultrarare.space")))
+            ("show"
+             . (("extra_headers" . "Message-ID;In-Reply-To;References")))
+            ("new"
+             . (("tags" . "new")))
+            ("search"
+             . (("exclude_tags" . "draft;spam"))))))))
 #+end_src
 
-notmuch:
-#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/notmuch/default/config
-  [database]
-  path=/home/hako/.local/share/mail
-
-  [user]
-  name=Hilton Chain
-  primary_email=hako@ultrarare.space
-
-  [show]
-  extra_headers=Message-ID;In-Reply-To;References
-
-  [new]
-  tags=new
-
-  [search]
-  exclude_tags=draft;spam
+#+begin_src scheme :noweb-ref home-service
+  (simple-service 'update-mailbox home-shepherd-service-type
+    (list
+     (shepherd-timer '(update-mailbox)
+       #~(calendar-event #:minutes '(0 15 30 45))
+       #~(#$(program-file "update-mailbox"
+              (with-imported-modules '((guix build utils))
+                #~(begin
+                    (use-modules (ice-9 match)
+                                 (ice-9 popen)
+                                 (guix build utils))
+                    (let* ((isync       #$(file-append isync "/bin/mbsync"))
+                           (notify-send #$(file-append libnotify "/bin/notify-send"))
+                           (notmuch     #$(file-append notmuch "/bin/notmuch"))
+                           (notmuch-tag
+                            (match-lambda
+                              ((query . tags)
+                               (apply invoke notmuch "tag"
+                                      `(,@(map symbol->string tags) "--" ,query)))))
+                           (notmuch-search
+                            (match-lambda
+                              ((query . args)
+                               (read (apply open-pipe* OPEN_READ notmuch "search"
+                                            `("--format=sexp" ,@args ,query))))))
+                           (notmuch-sexp->subject
+                            (lambda (keywords)
+                              (let loop ((keywords keywords)
+                                         (result #f))
+                                (match keywords
+                                  (() result)
+                                  ((kw val rest ...)
+                                   (if (eq? kw ':subject)
+                                       (loop '() val)
+                                       (loop rest #f))))))))
+                      ;; Send.
+                      (system* "emacsclient" "--eval" "(smtpmail-send-queued-mail)")
+                      ;; Sync.
+                      (invoke isync "--all" "--config"
+                              #$(plain-file "mbsync.conf"
+                                  (apply string-append
+                                         (map (match-lambda
+                                                (((keys . vals) ...)
+                                                 (format #f "~{~a ~s~%~}~%"
+                                                         (apply append (zip keys vals)))))
+                                              '((("Create" . "Both")
+                                                 ("Expunge" . "Both")
+                                                 ("CopyArrivalDate" . "yes"))
+                                                (("MaildirStore" . "local")
+                                                 ("Path" . "~/.local/share/mail/imap/")
+                                                 ("Inbox" . "~/.local/share/mail/imap/INBOX")
+                                                 ("Subfolders" . "Verbatim"))
+                                                (("IMAPAccount" . "hako")
+                                                 ("Host" . "mail.boiledscript.com")
+                                                 ("User" . "hako@ultrarare.space")
+                                                 ("PassCmd" . "secret-tool lookup host mail.boiledscript.com user hako@ultrarare.space")
+                                                 ("TLSType" . "IMAPS"))
+                                                (("IMAPStore" . "remote")
+                                                 ("Account" . "hako"))
+                                                (("Channel" . "hako")
+                                                 ("Far" . ":remote:")
+                                                 ("Near" . ":local:")
+                                                 ("Pattern" . "*")
+                                                 ("SyncState" . "*")))))))
+                      ;; Index.
+                      (invoke notmuch "new")
+                      (for-each notmuch-tag
+                                '(;; self
+                                  ("tag:new AND from:hako@ultrarare.space"
+                                   . (+sent))
+                                  ("tag:new AND (tag:replied OR tag:sent)"
+                                   . (-unread))
+                                  ;; mailing lists
+                                  ("folder:lists/emacs-devel"
+                                   . (+lists +lists/emacs +lists/emacs-devel -inbox -new))
+                                  ("folder:lists/guile-bugs"
+                                   . (+lists +lists/guile +lists/guile-bugs -inbox -new))
+                                  ("folder:lists/guile-devel"
+                                   . (+lists +lists/guile +lists/guile-devel -inbox -new))
+                                  ("folder:lists/guile-user"
+                                   . (+lists +lists/user +lists/guile-user -inbox -new))
+                                  ("folder:lists/guix-bugs"
+                                   . (+lists +lists/guix +lists/guix-bugs -inbox -new))
+                                  ("folder:lists/guix-devel"
+                                   . (+lists +lists/guix +lists/guix-devel -inbox -new))
+                                  ("folder:lists/guix-patches"
+                                   . (+lists +lists/guix +lists/guix-patches -inbox -new))
+                                  ("folder:lists/guix-user"
+                                   . (+lists +lists/guix +lists/guix-user -inbox -new))
+                                  ;; folders
+                                  ("folder:local/Drafts"
+                                   . (+draft -unread -inbox -new))
+                                  ("folder:imap/Archive"
+                                   . (+archive -unread -inbox -new))
+                                  ("folder:imap/Junk"
+                                   . (+spam -inbox -new))))
+                      ;; Notify.
+                      (let ((new-mails (map notmuch-sexp->subject (notmuch-search '("tag:new")))))
+                        (unless (null? new-mails)
+                          (system* notify-send "New mail(s)!" (string-join new-mails "\n"))))
+                      (notmuch-tag '("tag:new" . (+inbox -new)))))))))))
 #+end_src
 
 *** fcitx5
@@ -1312,28 +1339,26 @@ Jujutsu:
   "mpv-nvidia"
 #+end_src
 
-#+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/mpv/mpv.conf
-  # https://vcb-s.com/archives/7594
-  profile=high-quality
-  cscale=catmull_rom
-  deband=yes
-  blend-subtitles=video
-  video-sync=display-resample
-  interpolation=yes
-  tscale=oversample
-  sub-auto=fuzzy
-  fullscreen=yes
-  hwdec=auto-safe
-
-  idle=yes
-  screenshot-directory=/home/hako/Pictures/MPV/
-  screenshot-template="%F %P"
-#+end_src
-
 #+begin_src scheme :noweb-ref home-service
-  (simple-service 'mpv-mpris home-xdg-configuration-files-service-type
-    `(("mpv/scripts/mpris.so"
-       ,(file-append mpv-mpris "/lib/mpv-mpris/mpris.so"))))
+  (service home-mpv-service-type
+    (make-home-mpv-configuration
+     #:global
+     ;; https://vcb-s.com/archives/7594
+     (make-mpv-profile-configuration
+      #:profile '("high-quality")
+      #:cscale 'catmull_rom
+      #:deband? #t
+      #:blend-subtitles 'video
+      #:video-sync 'display-resample
+      #:interpolation? #t
+      #:tscale 'oversample
+      #:sub-auto 'fuzzy
+      #:fullscreen? #t
+      #:hwdec '("auto-safe")
+      #:idle 'yes
+      #:screenshot-directory "/home/hako/Pictures/MPV/"
+      #:screenshot-template "%F %P"
+      #:scripts (list (file-append mpv-mpris "/lib/mpv-mpris/mpris.so")))))
 #+end_src
 
 *** nix
@@ -1548,7 +1573,6 @@ Guix System - services
   (gnu services sysctl)
   (gnu services virtualization)
   (gnu services xorg)
-  ((rosenthal services base) #:prefix ros:)
   ((rosenthal services desktop) #:prefix ros:)
   ((rosenthal services networking) #:prefix ros:)
   ((rosenthal services nix) #:prefix ros:)
@@ -1563,6 +1587,7 @@ Guix Home - services
   (gnu home services dotfiles)
   (gnu home services fontutils)
   (gnu home services gnupg)
+  (gnu home services mpv)
   (gnu home services shells)
   (gnu home services shepherd)
   (gnu home services sound)
@@ -1578,18 +1603,18 @@ Guix packages
   (gnu packages file-systems)
   (gnu packages fonts)
   (gnu packages games)
+  (gnu packages gnome)
   (gnu packages gnome-xyz)
   (gnu packages gnupg)
   (gnu packages java)
   (gnu packages libcanberra)
-  (gnu packages linux)
   (gnu packages mail)
   (gnu packages password-utils)
   (gnu packages security-token)
   (gnu packages shells)
   (gnu packages ssh)
   (gnu packages video)
-  (gnu packages xdisorg)
+  (gnu packages window-management)
   (gnu packages xorg)
   ((nongnu packages linux) #:prefix non:)
   ((nongnu packages nvidia) #:prefix non:)

@@ -59,47 +59,92 @@
 #+end_src
 
 *** File Systems
+#+begin_src scheme :noweb-ref swap-devices
+  (list (swap-space
+          (target (uuid "b955a6b1-9dd9-4e91-b9d9-b4e15473396c"))))
+#+end_src
 
-| ZFS Dataset             | Mount Point          | Options       | com.sun:auto-snapshot |
-|-------------------------+----------------------+---------------+-----------------------|
-| Ocimeae                 | /mnt/Ocimeae         | acltype=posix |                       |
-| Ocimeae/Library         | /mnt/Ocimeae/Library |               | true                  |
-|                         |                      |               |                       |
-| Ocimeae/Root            | legacy (/)           |               |                       |
-| Ocimeae/Config          | legacy (/etc)        |               | true                  |
-| Ocimeae/State           | legacy (/var/lib)    |               |                       |
-| Ocimeae/Store           | legacy (/gnu)        | atime=off     |                       |
-|                         |                      |               |                       |
-| Ocimeae/State/Jellyfin  | /var/lib/jellyfin    |               | true                  |
-| Ocimeae/State/Komga     | /var/lib/komga       |               | true                  |
-| Ocimeae/State/Navidrome | /var/lib/navidrome   |               | true                  |
-| Ocimeae/State/SOPS      | /var/lib/sops        |               | true                  |
-| Ocimeae/State/Tailscale | /var/lib/tailscale   |               | true                  |
-|-------------------------+----------------------+---------------+-----------------------|
+#+begin_src scheme :noweb-ref file-systems
+  (list (file-system
+          (type "vfat")
+          (device (uuid "4E36-D157" 'fat))
+          (mount-point "/efi")
+          (flags '(no-exec no-suid no-dev))
+          (options "fmask=0177,dmask=0077")))
+#+end_src
 
 #+begin_src scheme :noweb-ref service
   (service zfs-service-type)
 #+end_src
 
-#+begin_src scheme :noweb-ref file-systems
-  (cons (file-system
-          (device (uuid "4E36-D157" 'fat))
-          (mount-point "/efi")
-          (type "vfat")
-          (flags '(no-exec no-suid no-dev))
-          (options "fmask=0177,dmask=0077"))
-        (map (match-lambda
-               ((path . mount-point)
-                (file-system
-                  (device (zfs-dataset "Ocimeae" path))
-                  (mount-point mount-point)
-                  (type "zfs")
-                  (create-mount-point? #t)
-                  (check? #f))))
-             '(("Root"   . "/")
-               ("Config" . "/etc")
-               ("State"  . "/var/lib")
-               ("Store"  . "/gnu"))))
+#+begin_src scheme :noweb yes :noweb-ref file-systems
+  (let ((zfs-spec->file-system
+         (match-lambda
+           ((pool
+             (('dataset . datasets)
+              ('mount-point . mount-points)
+              ('options . options))
+             ...)
+            (map (lambda (dataset mount-point)
+                   (file-system
+                     (type "zfs")
+                     (device (zfs-dataset pool dataset))
+                     (mount-point mount-point)
+                     (create-mount-point? #t)
+                     (check? #f)))
+                 datasets
+                 mount-points)))))
+    (append-map zfs-spec->file-system <<zfs-spec>>))
+#+end_src
+
+#+begin_src scheme :noweb-ref zfs-spec
+  '(("Ocimeae"
+     ((dataset . #f)
+      (mount-point . "/mnt/Ocimeae")
+      (options
+       ("acltype=posix")))
+     ((dataset . "Library")
+      (mount-point . "/mnt/Ocimeae/Library")
+      (options
+       ("com.sun:auto-snapshot=true")))
+
+     ((dataset . "Root")
+      (mount-point . "/")
+      (options
+       ()))
+     ((dataset . "Config")
+      (mount-point . "/etc")
+      (options
+       ("com.sun:auto-snapshot=true")))
+     ((dataset . "Store")
+      (mount-point . "/gnu")
+      (options
+       ("atime=off")))
+
+     ((dataset . "State")
+      (mount-point . "/var/lib")
+      (options
+       ()))
+     ((dataset . "State/Jellyfin")
+      (mount-point . "/var/lib/jellyfin")
+      (options
+       ("com.sun:auto-snapshot=true")))
+     ((dataset . "State/Komga")
+      (mount-point . "/var/lib/komga")
+      (options
+       ("com.sun:auto-snapshot=true")))
+     ((dataset . "State/Navidrome")
+      (mount-point . "/var/lib/navidrome")
+      (options
+       ("com.sun:auto-snapshot=true")))
+     ((dataset . "State/SOPS")
+      (mount-point . "/var/lib/sops")
+      (options
+       ("com.sun:auto-snapshot=true")))
+     ((dataset . "State/Tailscale")
+      (mount-point . "/var/lib/tailscale")
+      (options
+       ("com.sun:auto-snapshot=true")))))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -136,12 +181,6 @@
                          (invoke #$(file-append zfs-auto-snapshot "/sbin/zfs-auto-snapshot")
                                  "--default-exclude" "--skip-scrub" "--keep=31" "--label=daily" "//")))))
             #:requirement '(user-processes))))
-#+end_src
-
-#+begin_src scheme :noweb-ref swap-devices
-  (list (swap-space
-          (target
-           (uuid "b955a6b1-9dd9-4e91-b9d9-b4e15473396c"))))
 #+end_src
 
 *** Guix Daemon
@@ -445,6 +484,7 @@ Authorized SSH keys.
 Guile builtins
 #+begin_src scheme :noweb-ref module
   (ice-9 match)
+  (srfi srfi-1)
 #+end_src
 
 Utilities

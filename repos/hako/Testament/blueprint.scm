@@ -295,7 +295,7 @@
   (lambda (name)
     `("shell" "bash-minimal" "graphviz-minimal" "imv"
       ,@%build-options
-      ,@(if (dry-build?) '("--dry-run") '())
+      ,@(if (dry-build?) '("--no-grafts" "--dry-run") `())
       "--"
       "bash" "-c"
       ,(string-join
@@ -333,7 +333,7 @@ Build all Guix Systems in this repository or only those matching SYSTEMS."))
   (for-each-system "BUILD OS"
                    (lambda (name)
                      `("system" "build" ,(config-path name)
-                       ,@(if (dry-build?) '("--dry-run") '())
+                       ,@(if (dry-build?) '("--no-grafts" "--dry-run") '())
                        ,@%build-options))
                    (filter literate-config-build?
                            (systems-from-arguments arguments))))
@@ -347,7 +347,7 @@ Deploy all Guix Systems in this repository or only those matching SYSTEMS."))
   (for-each-system "DEPLOY OS"
                    (lambda (name)
                      `("deploy" ,(config-deploy name)
-                       ,@(if (dry-build?) '("--dry-run") '())
+                       ,@(if (dry-build?) '("--no-grafts" "--dry-run") '())
                        ,@(if #%?CMD
                              `(,@%build-options "-x" "--" "sh" "--login" "-c" ,#%?CMD)
                              %build-options)))
@@ -367,7 +367,7 @@ VARIANTS, saving the results under dist/."))
             (let ((iso (in-vicinity "dist" (image-name variant))))
               (print-header "BUILD ISO" iso)
               ($guix `("repl" "--" "scripts/build-image.scm" ,iso ,(image-source variant)
-                       ,@(if (dry-build?) '("--dry-run") '())
+                       ,@(if (dry-build?) '("--no-grafts" "--dry-run") '())
                        "--image-type=iso9660"
                        "--load-path=config/live/modules"
                        ,@%build-options)

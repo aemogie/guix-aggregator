@@ -56,55 +56,121 @@
 #+end_src
 
 *** File Systems
+#+begin_src scheme :noweb-ref swap-devices
+  (list (swap-space
+          (target (file-system-label "swap"))))
+#+end_src
 
-| ZFS Dataset                      | Mount Point                    | Options                       | com.sun:auto-snapshot |
-|----------------------------------+--------------------------------+-------------------------------+-----------------------|
-| Lycoris                          | /mnt/Lycoris                   | acltype=posix                 |                       |
-|                                  |                                |                               |                       |
-| Lycoris/Root                     | legacy (/)                     |                               |                       |
-| Lycoris/Config                   | legacy (/etc)                  |                               | true                  |
-| Lycoris/Cache                    | legacy (/var/cache)            |                               |                       |
-| Lycoris/State                    | legacy (/var/lib)              |                               |                       |
-| Lycoris/Store                    | legacy (/gnu)                  | atime=off                     |                       |
-|                                  |                                |                               |                       |
-| Lycoris/Cache/GuixMoe            | /var/cache/guix-moe            |                               |                       |
-| Lycoris/Cache/GuixMoe/Mirror     | /var/cache/guix-moe/mirror     | recordsize=8K                 |                       |
-| Lycoris/Cache/GuixMoe/Mirror/Nar | /var/cache/guix-moe/mirror/nar | compression=off,recordsize=1M |                       |
-| Lycoris/Cache/GuixMoe/Narinfo    | /var/cache/guix-moe/narinfo    | recordsize=8K                 |                       |
-| Lycoris/Cache/GuixPublish        | /var/cache/guix/publish        | compression=off               |                       |
-|                                  |                                |                               |                       |
-| Lycoris/State/Forgejo            | /var/lib/forgejo               |                               |                       |
-| Lycoris/State/Nonguix            | /var/lib/nonguix               |                               | true                  |
-| Lycoris/State/PostgreSQL         | /var/lib/postgresql            | recordsize=32K                | true                  |
-| Lycoris/State/Tailscale          | /var/lib/tailscale             |                               | true                  |
-| Lycoris/State/Tuwunel            | /var/lib/tuwunel               |                               | true                  |
-| Lycoris/State/WebPublic          | /var/lib/webpublic             |                               | true                  |
-|----------------------------------+--------------------------------+-------------------------------+-----------------------|
+#+begin_src scheme :noweb-ref file-systems
+  (list (file-system
+          (type "vfat")
+          (device (file-system-label "boot"))
+          (mount-point "/efi")
+          (flags '(no-exec no-suid no-dev))
+          (options "fmask=0177,dmask=0077")))
+#+end_src
 
 #+begin_src scheme :noweb-ref service
   (service zfs-service-type)
 #+end_src
 
-#+begin_src scheme :noweb-ref file-systems
-  (cons (file-system
-          (device (file-system-label "boot"))
-          (mount-point "/efi")
-          (type "vfat")
-          (flags '(no-exec no-suid no-dev))
-          (options "fmask=0177,dmask=0077"))
-        (map (match-lambda
-               ((path . mount-point)
-                (file-system
-                  (device (zfs-dataset "Lycoris" path))
-                  (mount-point mount-point)
-                  (type "zfs")
-                  (create-mount-point? #t)
-                  (check? #f))))
-             '(("Root"   . "/")
-               ("Config" . "/etc")
-               ("Cache"  . "/var/cache")
-               ("State"  . "/var/lib")
-               ("Store"  . "/gnu"))))
+#+begin_src scheme :noweb yes :noweb-ref file-systems
+  (let ((zfs-spec->file-system
+         (match-lambda
+           ((pool
+             (('dataset . datasets)
+              ('mount-point . mount-points)
+              ('options . options))
+             ...)
+            (map (lambda (dataset mount-point)
+                   (file-system
+                     (type "zfs")
+                     (device (zfs-dataset pool dataset))
+                     (mount-point mount-point)
+                     (create-mount-point? #t)
+                     (check? #f)))
+                 datasets
+                 mount-points)))))
+    (append-map zfs-spec->file-system <<zfs-spec>>))
+#+end_src
+
+#+begin_src scheme :noweb-ref zfs-spec
+  '(("Lycoris"
+     ((dataset . #f)
+      (mount-point . "/mnt/Lycoris")
+      (options
+       ("acltype=posix")))
+
+     ((dataset . "Root")
+      (mount-point . "/")
+      (options
+       ()))
+     ((dataset . "Config")
+      (mount-point . "/etc")
+      (options
+       ("com.sun:auto-snapshot=true")))
+     ((dataset . "Store")
+      (mount-point . "/gnu")
+      (options
+       ("atime=off")))
+
+     ((dataset . "State")
+      (mount-point . "/var/lib")
+      (options
+       ()))
+     ((dataset . "State/Forgejo")
+      (mount-point . "/var/lib/forgejo")
+      (options
+       ()))
+     ((dataset . "State/Nonguix")
+      (mount-point . "/var/lib/nonguix")
+      (options
+       ("com.sun:auto-snapshot=true")))
+     ((dataset . "State/PostgreSQL")
+      (mount-point . "/var/lib/postgresql")
+      (options
+       ("recordsize=32K"
+        "com.sun:auto-snapshot=true")))
+     ((dataset . "State/Tailscale")
+      (mount-point . "/var/lib/tailscale")
+      (options
+       ("com.sun:auto-snapshot=true")))
+     ((dataset . "State/Tuwunel")
+      (mount-point . "/var/lib/tuwunel")
+      (options
+       ("atime=off"
+        "compression=off"
+        "logbias=throughput"
+        "primarycache=metadata"
+        "recordsize=128K"
+        "com.sun:auto-snapshot=true")))
+     ((dataset . "State/WebPublic")
+      (mount-point . "/var/lib/webpublic")
+      (options
+       ("com.sun:auto-snapshot=true")))
+
+     ((dataset . "Cache")
+      (mount-point . "/var/cache")
+      (options
+       ()))
+     ((dataset . "Cache/GuixMoe")
+      (mount-point . "/var/cache/guix-moe")
+      (options
+       ()))
+     ((dataset . "Cache/GuixMoe/Mirror")
+      (mount-point . "/var/cache/guix-moe/mirror")
+      (options
+       ("recordsize=8K")))
+     ((dataset . "Cache/GuixMoe/Mirror/Nar")
+      (mount-point . "/var/cache/guix-moe/mirror/nar")
+      (options
+       ("atime=off"
+        "compression=off"
+        "recordsize=1M")))
+     ((dataset . "Cache/GuixPublish")
+      (mount-point . "/var/cache/guix/publish")
+      (options
+       ("compression=off")))))
 #+end_src
 
 #+begin_src scheme :noweb-ref service
@@ -143,11 +209,6 @@
                          (invoke #$(file-append zfs-auto-snapshot "/sbin/zfs-auto-snapshot")
                                  "--default-exclude" "--skip-scrub" "--keep=31" "--label=daily" "//")))))
             #:requirement '(user-processes))))
-#+end_src
-
-#+begin_src scheme :noweb-ref swap-devices
-  (list (swap-space
-          (target (file-system-label "swap"))))
 #+end_src
 
 *** Guix Daemon
@@ -965,6 +1026,7 @@ Troubleshooting:
 Guile builtins
 #+begin_src scheme :noweb-ref module
   (ice-9 match)
+  (srfi srfi-1)
 #+end_src
 
 Utilities
