@@ -1100,195 +1100,210 @@ See [[file:shared/emacs.org][shared/emacs.org]].
   (simple-service 'update-mailbox home-shepherd-service-type
     (list
      (shepherd-timer '(update-mailbox)
-       #~(calendar-event #:minutes '(0))
+       #~(calendar-event #:minutes '(0 10 20 30 40 50))
        #~(#$(program-file "update-mailbox"
-              (with-imported-modules '((guix build utils))
+              (with-imported-modules '((guix records)
+                                       (guix build utils))
                 #~(begin
                     (use-modules (ice-9 match)
                                  (ice-9 popen)
                                  (srfi srfi-1)
                                  (srfi srfi-26)
+                                 (guix records)
                                  (guix build utils))
-                    (let* ((notify-send #$(file-append libnotify "/bin/notify-send"))
-                           (notmuch     #$(file-append notmuch "/bin/notmuch"))
-                           (mbsync      #$(file-append isync "/bin/mbsync"))
-                           (mbsync.conf
-                            #$(plain-file "mbsync.conf"
-                                (apply string-append
-                                       (map (match-lambda
-                                              (((keys . vals) ...)
-                                               (format #f "~{~a ~s~%~}~%"
-                                                       (apply append (zip keys vals)))))
-                                            `((("Create" . "Both")
-                                               ("Expunge" . "Both")
-                                               ("CopyArrivalDate" . "yes"))
-                                              (("MaildirStore" . "local")
-                                               ("Path" . "~/.local/share/mail/imap/")
-                                               ("Inbox" . "~/.local/share/mail/imap/INBOX")
-                                               ("Subfolders" . "Verbatim"))
-                                              (("IMAPAccount" . "hako")
-                                               ("Host" . "mail.boiledscript.com")
-                                               ("User" . "hako@ultrarare.space")
-                                               ("PassCmd" . "secret-tool lookup host mail.boiledscript.com user hako@ultrarare.space")
-                                               ("TLSType" . "IMAPS"))
-                                              (("IMAPStore" . "remote")
-                                               ("Account" . "hako"))
-                                              (("Channel" . "hako")
-                                               ("Far" . ":remote:")
-                                               ("Near" . ":local:")
-                                               ("Pattern" . "*")
-                                               ("SyncState" . "*")))))))
-                           (delete-mail
-                            (lambda (file)
-                              (format #t "deleting '~a'..." file)
-                              (delete-file file)
-                              (format #t "done~%")))
-                           (move-mail
-                            (lambda (file dest)
-                              (let* ((mail-dir "/home/hako/.local/share/mail/")
-                                     (file* (string-drop file (string-length mail-dir)))
-                                     (state (basename (dirname file*)))
-                                     (new-file
-                                      (fold-right in-vicinity
-                                                  (basename file)
-                                                  (list mail-dir dest state))))
-                                (mkdir-p (dirname new-file))
-                                (format #t "moving '~a' -> '~a'..." file* dest)
-                                (rename-file file new-file)
-                                (format #t "done~%"))))
-                           (notmuch-tag
-                            (lambda (query tags)
-                              (apply invoke notmuch "tag"
-                                     `(,@(map symbol->string tags) "--" ,query))))
-                           (notmuch-search
-                            (lambda* (query #:optional (args '()))
-                              (read (apply open-pipe* OPEN_READ notmuch "search"
-                                           `("--format=sexp" ,@args ,query)))))
-                           (notmuch-search-files
-                            (lambda (query)
-                              (notmuch-search query
-                                              '("--output=files" "--exclude=false"))))
-                           (notmuch-sexp->subject
-                            (lambda (keywords)
-                              (let loop ((keywords keywords)
-                                         (result #f))
-                                (match keywords
-                                  (() result)
-                                  ((kw val rest ...)
-                                   (if (eq? kw ':subject)
-                                       (loop '() val)
-                                       (loop rest result))))))))
-                      ((match-lambda
-                         (((('to-tag  . queries-to-tag)
-                            ('tags    . tags*)
-                            ('to-move . queries-to-move)
-                            ('dest    . destinations))
-                           ...)
-                          ;; Send.
-                          (system* "emacsclient" "--eval" "(smtpmail-send-queued-mail)")
-                          ;; Delete.
-                          (for-each delete-mail (notmuch-search-files "tag:trash"))
-                          ;; Move.
-                          (for-each (lambda (to-move dest)
-                                      (when to-move
-                                        (for-each (cut move-mail <> dest)
-                                                  (notmuch-search-files to-move))))
-                                    queries-to-move
-                                    destinations)
-                          ;; Sync.
-                          (invoke mbsync "--all" "--config" mbsync.conf)
-                          ;; Index.
-                          (invoke notmuch "new")
-                          (for-each (lambda (to-tag tags)
-                                      (when to-tag
-                                        (notmuch-tag to-tag tags)))
-                                    queries-to-tag
-                                    tags*)
-                          ;; Notify.
-                          (let ((new-mails (map notmuch-sexp->subject (notmuch-search "tag:new"))))
-                            (unless (null? new-mails)
-                              (system* notify-send "You've got mail" (string-join new-mails "\n"))))
-                          (notmuch-tag "tag:new" '(+inbox -new))))
-                       '(;; self
-                         ((to-tag  . "from:hako@ultrarare.space")
-                          (tags +sent)
-                          (to-move . #f)
-                          (dest    . #f))
-                         ((to-tag  . "tag:replied OR tag:sent")
-                          (tags -unread)
-                          (to-move . #f)
-                          (dest    . #f))
 
-                         ;; folders
-                         ((to-tag  . #f)
-                          (tags)
-                          (to-move . "tag:inbox AND NOT folder:local/INBOX")
-                          (dest    . "local/INBOX"))
+                    (define-record-type* <rule> rule make-rule rule?
+                      (query   rule-query)
+                      (tags    rule-tags    (default '()))
+                      (move-to rule-move-to (default #f)))
 
-                         ((to-tag  . "folder:local/Archive")
-                          (tags +archive -unread -inbox -new)
-                          (to-move . "tag:archive AND NOT folder:local/Archive")
-                          (dest    . "local/Archive"))
+                    (define (main mbsync.conf rules)
+                      (let* ((notify-send #$(file-append libnotify "/bin/notify-send"))
+                             (notmuch     #$(file-append notmuch "/bin/notmuch"))
+                             (mbsync      #$(file-append isync "/bin/mbsync"))
+                             (delete-mail
+                              (lambda (file)
+                                (format #t "deleting '~a'..." file)
+                                (delete-file file)
+                                (format #t "done~%")))
+                             (move-mail
+                              (lambda (file dest)
+                                (let* ((mail-dir "/home/hako/.local/share/mail/")
+                                       (file* (string-drop file (string-length mail-dir)))
+                                       (state (basename (dirname file*)))
+                                       (new-file
+                                        (fold-right in-vicinity
+                                                    (basename file)
+                                                    (list mail-dir dest state))))
+                                  (mkdir-p (dirname new-file))
+                                  (format #t "moving '~a' -> '~a'..." file* dest)
+                                  (rename-file file new-file)
+                                  (format #t "done~%"))))
+                             (notmuch-tag
+                              (lambda (query tags)
+                                (apply invoke notmuch "tag"
+                                       `(,@(map symbol->string tags) "--" ,query))))
+                             (notmuch-search
+                              (lambda* (query #:optional (args '()))
+                                (read (apply open-pipe* OPEN_READ notmuch "search"
+                                             `("--format=sexp" ,@args ,query)))))
+                             (notmuch-search-files
+                              (lambda (query)
+                                (notmuch-search query '("--output=files" "--exclude=false"))))
+                             (notmuch-sexp->subject
+                              (lambda (keywords)
+                                (let loop ((keywords keywords)
+                                           (result #f))
+                                  (match keywords
+                                    (() result)
+                                    ((kw val rest ...)
+                                     (if (eq? kw ':subject)
+                                         (loop '() val)
+                                         (loop rest result))))))))
+                        ;; Send.
+                        (system* "emacsclient" "--eval" "(smtpmail-send-queued-mail)")
+                        ;; Delete.
+                        (for-each delete-mail (notmuch-search-files "tag:trash"))
+                        ;; Move.
+                        (for-each (match-record-lambda <rule>
+                                      (query move-to)
+                                    (when move-to
+                                      (for-each (cut move-mail <> move-to)
+                                                (notmuch-search-files query))))
+                                  rules)
+                        ;; Sync.
+                        (invoke mbsync "--all" "--config" mbsync.conf)
+                        ;; Index.
+                        (invoke notmuch "new")
+                        (for-each (match-record-lambda <rule>
+                                      (query tags)
+                                    (unless (null? tags)
+                                      (notmuch-tag query tags)))
+                                  rules)
+                        ;; Notify.
+                        (let ((new-mails (map notmuch-sexp->subject (notmuch-search "tag:new"))))
+                          (unless (null? new-mails)
+                            (system* notify-send "You've got mail" (string-join new-mails "\n"))))
+                        (notmuch-tag "tag:new" '(+inbox -new))))
 
-                         ((to-tag  . "folder:local/Billing")
-                          (tags +billing -inbox -new)
-                          (to-move . "tag:billing AND NOT folder:local/Billing")
-                          (dest    . "local/Billing"))
+                    (main
+                     #$(plain-file "mbsync.conf"
+                         (apply string-append
+                                (map (match-lambda
+                                       (((keys . vals) ...)
+                                        (format #f "~{~a ~s~%~}~%"
+                                                (apply append (zip keys vals)))))
+                                     `((("Create" . "Both")
+                                        ("Expunge" . "Both")
+                                        ("CopyArrivalDate" . "yes"))
+                                       (("MaildirStore" . "local")
+                                        ("Path" . "~/.local/share/mail/imap/")
+                                        ("Inbox" . "~/.local/share/mail/imap/INBOX")
+                                        ("Subfolders" . "Verbatim"))
+                                       (("IMAPAccount" . "hako")
+                                        ("Host" . "mail.boiledscript.com")
+                                        ("User" . "hako@ultrarare.space")
+                                        ("PassCmd" . "secret-tool lookup host mail.boiledscript.com user hako@ultrarare.space")
+                                        ("TLSType" . "IMAPS"))
+                                       (("IMAPStore" . "remote")
+                                        ("Account" . "hako"))
+                                       (("Channel" . "hako")
+                                        ("Far" . ":remote:")
+                                        ("Near" . ":local:")
+                                        ("Pattern" . "*")
+                                        ("SyncState" . "*"))))))
+                     (list
+                      ;; self
+                      (rule
+                       (query "from:hako@ultrarare.space")
+                       (tags '(+sent)))
+                      (rule
+                       (query "tag:replied OR tag:sent")
+                       (tags '(-unread)))
 
-                         ((to-tag  . "folder:local/Drafts")
-                          (tags +draft -unread -inbox -new)
-                          (to-move . "tag:draft AND NOT folder:local/Drafts")
-                          (dest    . "local/Drafts"))
+                      ;; forges
+                      (rule
+                       (query "from:noreply@codeberg.org")
+                       (tags '(+forges +forges/codeberg -inbox -new)))
+                      (rule
+                       (query "tag:forges/codeberg AND body:\"  mentioned you:\"")
+                       (tags '(+inbox)))
+                      (rule
+                       (query "tag:forges/codeberg AND NOT tag:inbox AND NOT folder:forges/codeberg")
+                       (move-to "forges/codeberg"))
 
-                         ((to-tag  . "folder:imap/Junk")
-                          (tags +spam -inbox -new)
-                          (to-move . "tag:spam AND NOT folder:imap/Junk")
-                          (dest    . "imap/Junk"))
+                      (rule
+                       (query "from:gitlab@mg.gitlab.com")
+                       (tags '(+forges +forges/gitlab -inbox -new)))
+                      (rule
+                       (query "tag:forges/gitlab AND body:\"@hakourspace\"")
+                       (tags '(+inbox)))
+                      (rule
+                       (query "tag:forges/gitlab AND NOT tag:inbox AND NOT folder:forges/gitlab")
+                       (move-to "forges/gitlab"))
 
-                         ;; forges
-                         ((to-tag  . "from:noreply@codeberg.org")
-                          (tags +forges +forges/codeberg -inbox -new)
-                          (to-move . "tag:forges/codeberg AND NOT folder:forges/codeberg")
-                          (dest    . "forges/codeberg"))
+                      ;; mailing lists
+                      (rule
+                       (query "folder:lists/emacs-devel")
+                       (tags '(+emacs +lists +lists/emacs-devel -inbox -new)))
+                      (rule
+                       (query "folder:lists/guile-bugs")
+                       (tags '(+guile +lists +lists/guile-bugs -inbox -new)))
+                      (rule
+                       (query "folder:lists/guile-devel")
+                       (tags '(+guile +lists +lists/guile-devel -inbox -new)))
+                      (rule
+                       (query "folder:lists/guile-user")
+                       (tags '(+guile +lists +lists/guile-user -inbox -new)))
+                      (rule
+                       (query "folder:lists/guix-bugs")
+                       (tags '(+guix +lists +lists/guix-bugs -inbox -new)))
+                      (rule
+                       (query "folder:lists/guix-devel")
+                       (tags '(+guix +lists +lists/guix-devel -inbox -new)))
+                      (rule
+                       (query "folder:lists/guix-patches")
+                       (tags '(+guix +lists +lists/guix-patches -inbox -new)))
+                      (rule
+                       (query "folder:lists/guix-user")
+                       (tags '(+guix +lists +lists/guix-user -inbox -new)))
 
-                         ((to-tag  . "from:gitlab@mg.gitlab.com")
-                          (tags +forges +forges/gitlab -inbox -new)
-                          (to-move . "tag:forges/gitlab AND NOT folder:forges/gitlab")
-                          (dest    . "forges/gitlab"))
+                      (rule
+                       (query "tag:lists AND (from:hako@ultrarare.space OR to:hako@ultrarare.space)")
+                       (tags '(+inbox)))
 
-                         ;; mailing lists
-                         ((to-tag  . "folder:lists/emacs-devel")
-                          (tags +emacs +lists +lists/emacs-devel -inbox -new)
-                          (to-move . #f)
-                          (dest    . #f))
-                         ((to-tag  . "folder:lists/guile-bugs")
-                          (tags +guile +lists +lists/guile-bugs -inbox -new)
-                          (to-move . #f)
-                          (dest    . #f))
-                         ((to-tag  . "folder:lists/guile-devel")
-                          (tags +guile +lists +lists/guile-devel -inbox -new)
-                          (to-move . #f)
-                          (dest    . #f))
-                         ((to-tag  . "folder:lists/guile-user")
-                          (tags +guile +lists +lists/guile-user -inbox -new)
-                          (to-move . #f)
-                          (dest    . #f))
-                         ((to-tag  . "folder:lists/guix-bugs")
-                          (tags +guix +lists +lists/guix-bugs -inbox -new)
-                          (to-move . #f)
-                          (dest    . #f))
-                         ((to-tag  . "folder:lists/guix-devel")
-                          (tags +guix +lists +lists/guix-devel -inbox -new)
-                          (to-move . #f)
-                          (dest    . #f))
-                         ((to-tag  . "folder:lists/guix-patches")
-                          (tags +guix +lists +lists/guix-patches -inbox -new)
-                          (to-move . #f)
-                          (dest    . #f))
-                         ((to-tag  . "folder:lists/guix-user")
-                          (tags +guix +lists +lists/guix-user -inbox -new)
-                          (to-move . #f)
-                          (dest    . #f))))))))))))
+                      ;; folders
+                      (rule
+                       (query "tag:inbox AND NOT folder:local/INBOX")
+                       (move-to "local/INBOX"))
+
+                      (rule
+                       (query "folder:local/Archive")
+                       (tags '(+archive -unread -inbox -new)))
+                      (rule
+                       (query "tag:archive AND NOT folder:local/Archive")
+                       (move-to "local/Archive"))
+
+                      (rule
+                       (query "folder:local/Billing")
+                       (tags '(+billing -inbox -new)))
+                      (rule
+                       (query "tag:billing AND NOT folder:local/Billing")
+                       (move-to "local/Billing"))
+
+                      (rule
+                       (query "folder:local/Drafts")
+                       (tags '(+draft -unread -inbox -new)))
+                      (rule
+                       (query "tag:draft AND NOT folder:local/Drafts")
+                       (move-to "local/Drafts"))
+
+                      (rule
+                       (query "folder:imap/Junk")
+                       (tags '(+spam -inbox -new)))
+                      (rule
+                       (query "tag:spam AND NOT folder:imap/Junk")
+                       (move-to "imap/Junk")))))))))))
 #+end_src
 
 *** fcitx5
