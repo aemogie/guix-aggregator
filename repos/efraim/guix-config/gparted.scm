@@ -230,13 +230,12 @@
       (arguments
        (substitute-keyword-arguments (package-arguments base)
          ((#:phases phases)
-          `(modify-phases ,phases
-             (delete 'install-vim-files)
-             (add-after 'install 'adjust-fluxbox-menu
-               (lambda* (#:key outputs #:allow-other-keys)
-                (let ((out (assoc-ref %outputs "out")))
-                  (substitute* (string-append out "/share/fluxbox/menu")
-                    (("\\(firefox.*") "(gparted) {gparted}\n"))))))))))))
+          #~(modify-phases #$phases
+              (delete 'install-vim-files)
+              (add-after 'install 'adjust-fluxbox-menu
+                (lambda _
+                  (substitute* (string-append #$output "/share/fluxbox/menu")
+                    (("\\(firefox.*") "(gparted) {gparted}\n")))))))))))
 
 (define gparted-custom
   (package
@@ -322,10 +321,7 @@
 
   ;; Use a modified list of setuid-programs.
   ;; Are there any we need? We run as root.
-  (privileged-programs
-    (list
-  ;    (setuid-program (program (file-append foo "/bin/foo")))
-    ))
+  (privileged-programs '())
 
   (services
    (append

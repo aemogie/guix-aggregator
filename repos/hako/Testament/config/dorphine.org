@@ -1117,7 +1117,7 @@ See [[file:shared/emacs.org][shared/emacs.org]].
                       (tags    rule-tags    (default '()))
                       (move-to rule-move-to (default #f)))
 
-                    (define (main mbsync.conf rules)
+                    (define (main mbsync-config notmuch-rules)
                       (let* ((notify-send #$(file-append libnotify "/bin/notify-send"))
                              (notmuch     #$(file-append notmuch "/bin/notmuch"))
                              (mbsync      #$(file-append isync "/bin/mbsync"))
@@ -1164,22 +1164,24 @@ See [[file:shared/emacs.org][shared/emacs.org]].
                         (system* "emacsclient" "--eval" "(smtpmail-send-queued-mail)")
                         ;; Delete.
                         (for-each delete-mail (notmuch-search-files "tag:trash"))
-                        ;; Move.
-                        (for-each (match-record-lambda <rule>
-                                      (query move-to)
-                                    (when move-to
-                                      (for-each (cut move-mail <> move-to)
-                                                (notmuch-search-files query))))
-                                  rules)
                         ;; Sync.
-                        (invoke mbsync "--all" "--config" mbsync.conf)
-                        ;; Index.
+                        (invoke mbsync "--all" "--config" mbsync-config)
                         (invoke notmuch "new")
+                        ;; Tag.
                         (for-each (match-record-lambda <rule>
                                       (query tags)
                                     (unless (null? tags)
                                       (notmuch-tag query tags)))
-                                  rules)
+                                  notmuch-rules)
+                        ;; Move.
+                        (for-each (match-record-lambda <rule>
+                                      (query move-to)
+                                    (when move-to
+                                      (let ((mails (notmuch-search-files query)))
+                                        (for-each (cut move-mail <> move-to) mails)
+                                        (unless (null? mails)
+                                          (invoke notmuch "new")))))
+                                  notmuch-rules)
                         ;; Notify.
                         (let ((new-mails (map notmuch-sexp->subject (notmuch-search "tag:new"))))
                           (unless (null? new-mails)
@@ -1224,53 +1226,55 @@ See [[file:shared/emacs.org][shared/emacs.org]].
                       ;; forges
                       (rule
                        (query "from:noreply@codeberg.org")
-                       (tags '(+forges +forges/codeberg -inbox -new)))
+                       (tags '(+forges +forges/codeberg -inbox)))
                       (rule
-                       (query "tag:forges/codeberg AND body:\"  mentioned you:\"")
-                       (tags '(+inbox)))
+                       (query "tag:forges/codeberg AND (body:\"  mentioned you:\" OR subject:\"/^[[]hako[/]/\")")
+                       (tags '(+notifications)))
                       (rule
-                       (query "tag:forges/codeberg AND NOT tag:inbox AND NOT folder:forges/codeberg")
+                       (query "tag:forges/codeberg AND NOT tag:notifications")
+                       (tags '(-new)))
+                      (rule
+                       (query "tag:forges/codeberg AND NOT folder:forges/codeberg")
                        (move-to "forges/codeberg"))
 
                       (rule
                        (query "from:gitlab@mg.gitlab.com")
-                       (tags '(+forges +forges/gitlab -inbox -new)))
+                       (tags '(+notifications +forges +forges/gitlab -inbox)))
                       (rule
-                       (query "tag:forges/gitlab AND body:\"@hakourspace\"")
-                       (tags '(+inbox)))
-                      (rule
-                       (query "tag:forges/gitlab AND NOT tag:inbox AND NOT folder:forges/gitlab")
+                       (query "tag:forges/gitlab AND NOT folder:forges/gitlab")
                        (move-to "forges/gitlab"))
 
                       ;; mailing lists
                       (rule
                        (query "folder:lists/emacs-devel")
-                       (tags '(+emacs +lists +lists/emacs-devel -inbox -new)))
+                       (tags '(+emacs +lists +lists/emacs-devel -inbox)))
                       (rule
                        (query "folder:lists/guile-bugs")
-                       (tags '(+guile +lists +lists/guile-bugs -inbox -new)))
+                       (tags '(+guile +lists +lists/guile-bugs -inbox)))
                       (rule
                        (query "folder:lists/guile-devel")
-                       (tags '(+guile +lists +lists/guile-devel -inbox -new)))
+                       (tags '(+guile +lists +lists/guile-devel -inbox)))
                       (rule
                        (query "folder:lists/guile-user")
-                       (tags '(+guile +lists +lists/guile-user -inbox -new)))
+                       (tags '(+guile +lists +lists/guile-user -inbox)))
                       (rule
                        (query "folder:lists/guix-bugs")
-                       (tags '(+guix +lists +lists/guix-bugs -inbox -new)))
+                       (tags '(+guix +lists +lists/guix-bugs -inbox)))
                       (rule
                        (query "folder:lists/guix-devel")
-                       (tags '(+guix +lists +lists/guix-devel -inbox -new)))
+                       (tags '(+guix +lists +lists/guix-devel -inbox)))
                       (rule
                        (query "folder:lists/guix-patches")
-                       (tags '(+guix +lists +lists/guix-patches -inbox -new)))
+                       (tags '(+guix +lists +lists/guix-patches -inbox)))
                       (rule
                        (query "folder:lists/guix-user")
-                       (tags '(+guix +lists +lists/guix-user -inbox -new)))
-
+                       (tags '(+guix +lists +lists/guix-user -inbox)))
                       (rule
                        (query "tag:lists AND (from:hako@ultrarare.space OR to:hako@ultrarare.space)")
-                       (tags '(+inbox)))
+                       (tags '(+notifications)))
+                      (rule
+                       (query "tag:lists AND NOT tag:notifications")
+                       (tags '(-new)))
 
                       ;; folders
                       (rule

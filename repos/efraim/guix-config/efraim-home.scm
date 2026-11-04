@@ -486,7 +486,7 @@
   (plain-file
     "mpv.conf"
     (string-join
-      (list "no-audio-display"
+      (list "audio-display=no"
             ;; https://github.com/yt-dlp/yt-dlp?tab=readme-ov-file#format-selection
             ;; Upscaling from 720 causes fewer dropped frames on most machines.
             (string-append "ytdl-format='"
@@ -506,6 +506,7 @@
             "[twitch]"
             "profile-cond=get('path', ''):find('^https?://[wm]w?w?.twitch.tv/') ~= nil"
             "profile-restore=copy-equal"
+            "fullscreen=yes"
             "sub-font-size=16"
             "sub-align-x=right"
             "sub-align-y=top"
