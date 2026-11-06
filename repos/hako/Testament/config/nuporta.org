@@ -72,6 +72,22 @@
 
 #+begin_src scheme :noweb-ref service
   (service zfs-service-type)
+
+  ;; Use a shepherd service instead of /etc/modprobe.d.  The module is loaded at
+  ;; early boot and config files won't be available at the time.
+  (simple-service 'limit-zfs-arc-size shepherd-root-service-type
+    (list (shepherd-service
+           (provision '(zfs-arc-size))
+           (requirement '(file-systems))
+           (one-shot? #t)
+           (start
+            #~(lambda _
+                (let ((param "/sys/module/zfs/parameters/zfs_arc_max"))
+                  (when (file-exists? param)
+                    (call-with-output-file param
+                      (lambda (port)
+                        ;; 16GiB
+                        (display (* 16 1024 1024 1024) port))))))))))
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref file-systems

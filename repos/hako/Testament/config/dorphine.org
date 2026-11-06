@@ -234,6 +234,22 @@ Application profiles
 
 #+begin_src scheme :noweb-ref service
   (service zfs-service-type)
+
+  ;; Use a shepherd service instead of /etc/modprobe.d.  The module is loaded at
+  ;; early boot and config files won't be available at the time.
+  (simple-service 'limit-zfs-arc-size shepherd-root-service-type
+    (list (shepherd-service
+           (provision '(zfs-arc-size))
+           (requirement '(file-systems))
+           (one-shot? #t)
+           (start
+            #~(lambda _
+                (let ((param "/sys/module/zfs/parameters/zfs_arc_max"))
+                  (when (file-exists? param)
+                    (call-with-output-file param
+                      (lambda (port)
+                        ;; 16GiB
+                        (display (* 16 1024 1024 1024) port))))))))))
 #+end_src
 
 #+begin_src scheme :noweb yes :noweb-ref file-systems
@@ -1051,35 +1067,6 @@ See [[file:shared/emacs.org][shared/emacs.org]].
 
 *** email
 #+begin_src scheme :noweb-ref home-service
-  (simple-service 'l2md home-shepherd-service-type
-    (list (shepherd-service
-           (provision '(l2md))
-           (start
-            #~(make-forkexec-constructor
-               (list #$(file-append l2md "/bin/l2md") "-v")))
-           (stop #~(make-kill-destructor)))))
-
-  (simple-service 'l2md-config home-xdg-configuration-files-service-type
-    `(("l2md/config"
-       ,(ros:ini-file "l2md.ini"
-          `(("general"
-             . (("base" . "~/.local/share/l2md/")))
-            ,@(map (match-lambda
-                     ((name . url)
-                      (cons (string-append "repo " name)
-                            `(("url"     . ,url)
-                              ("maildir" . ,(string-append "~/.local/share/mail/lists/" name))))))
-                   '(("emacs-devel"  . "https://yhetil.org/emacs-devel/0")
-                     ("guile-bugs"   . "https://yhetil.org/guile-bugs/0")
-                     ("guile-devel"  . "https://yhetil.org/guile-devel/0")
-                     ("guile-user"   . "https://yhetil.org/guile-user/0")
-                     ("guix-bugs"    . "https://yhetil.org/guix-bugs/0")
-                     ("guix-devel"   . "https://yhetil.org/guix-devel/0")
-                     ("guix-patches" . "https://yhetil.org/guix-patches/1")
-                     ("guix-user"    . "https://yhetil.org/guix-user/0"))))))))
-#+end_src
-
-#+begin_src scheme :noweb-ref home-service
   (simple-service 'notmuch-config home-xdg-configuration-files-service-type
     `(("notmuch/default/config"
        ,(ros:ini-file "notmuch.ini"
@@ -1100,7 +1087,7 @@ See [[file:shared/emacs.org][shared/emacs.org]].
   (simple-service 'update-mailbox home-shepherd-service-type
     (list
      (shepherd-timer '(update-mailbox)
-       #~(calendar-event #:minutes '(0 10 20 30 40 50))
+       #~(calendar-event #:hours (iota 4 0 6) #:minutes '(0))
        #~(#$(program-file "update-mailbox"
               (with-imported-modules '((guix records)
                                        (guix build utils))
@@ -1117,9 +1104,10 @@ See [[file:shared/emacs.org][shared/emacs.org]].
                       (tags    rule-tags    (default '()))
                       (move-to rule-move-to (default #f)))
 
-                    (define (main mbsync-config notmuch-rules)
+                    (define (main l2md-config-home mbsync-config notmuch-rules)
                       (let* ((notify-send #$(file-append libnotify "/bin/notify-send"))
                              (notmuch     #$(file-append notmuch "/bin/notmuch"))
+                             (l2md        #$(file-append l2md "/bin/l2md"))
                              (mbsync      #$(file-append isync "/bin/mbsync"))
                              (delete-mail
                               (lambda (file)
@@ -1165,7 +1153,15 @@ See [[file:shared/emacs.org][shared/emacs.org]].
                         ;; Delete.
                         (for-each delete-mail (notmuch-search-files "tag:trash"))
                         ;; Sync.
-                        (invoke mbsync "--all" "--config" mbsync-config)
+                        (let ((environment (environ)))
+                          (dynamic-wind
+                            (lambda ()
+                              (setenv "XDG_CONFIG_HOME" l2md-config-home))
+                            (lambda ()
+                              (system* l2md))
+                            (lambda ()
+                              (environ environment))))
+                        (system* mbsync "--all" "--config" mbsync-config)
                         (invoke notmuch "new")
                         ;; Tag.
                         (for-each (match-record-lambda <rule>
@@ -1189,6 +1185,31 @@ See [[file:shared/emacs.org][shared/emacs.org]].
                         (notmuch-tag "tag:new" '(+inbox -new))))
 
                     (main
+                     #$(computed-file "l2md-config-home"
+                         (with-imported-modules '((guix build utils))
+                           #~(begin
+                               (use-modules (guix build utils))
+                               (let ((dest (in-vicinity #$output "l2md/config"))
+                                     (config
+                                      #$(ros:ini-file "l2md.ini"
+                                          `(("general"
+                                             . (("base" . "~/.local/share/l2md/")
+                                                ("oneshot" . "1")))
+                                            ,@(map (match-lambda
+                                                     ((name . url)
+                                                      (cons (string-append "repo " name)
+                                                            `(("url"     . ,url)
+                                                              ("maildir" . ,(string-append "~/.local/share/mail/lists/" name))))))
+                                                   '(("emacs-devel"  . "https://yhetil.org/emacs-devel/0")
+                                                     ("guile-bugs"   . "https://yhetil.org/guile-bugs/0")
+                                                     ("guile-devel"  . "https://yhetil.org/guile-devel/0")
+                                                     ("guile-user"   . "https://yhetil.org/guile-user/0")
+                                                     ("guix-bugs"    . "https://yhetil.org/guix-bugs/0")
+                                                     ("guix-devel"   . "https://yhetil.org/guix-devel/0")
+                                                     ("guix-patches" . "https://yhetil.org/guix-patches/1")
+                                                     ("guix-user"    . "https://yhetil.org/guix-user/0")))))))
+                                 (mkdir-p (dirname dest))
+                                 (copy-file config dest)))))
                      #$(plain-file "mbsync.conf"
                          (apply string-append
                                 (map (match-lambda
@@ -1215,13 +1236,37 @@ See [[file:shared/emacs.org][shared/emacs.org]].
                                         ("Pattern" . "*")
                                         ("SyncState" . "*"))))))
                      (list
-                      ;; self
+                      ;; folders
                       (rule
-                       (query "from:hako@ultrarare.space")
-                       (tags '(+sent)))
+                       (query "folder:local/Archive")
+                       (tags '(+archive -unread -inbox -new)))
                       (rule
-                       (query "tag:replied OR tag:sent")
-                       (tags '(-unread)))
+                       (query "tag:archive AND NOT folder:local/Archive")
+                       (move-to "local/Archive"))
+
+                      (rule
+                       (query "folder:local/Billing")
+                       (tags '(+billing -inbox -new)))
+                      (rule
+                       (query "tag:billing AND NOT folder:local/Billing")
+                       (move-to "local/Billing"))
+
+                      (rule
+                       (query "folder:local/Drafts")
+                       (tags '(+draft -unread -inbox -new)))
+                      (rule
+                       (query "tag:draft AND NOT folder:local/Drafts")
+                       (move-to "local/Drafts"))
+
+                      (rule
+                       (query "folder:imap/Junk AND tag:new")
+                       (tags '(+spam -inbox -new)))
+                      (rule
+                       (query "folder:imap/Junk AND NOT tag:spam")
+                       (tags '(+inbox)))
+                      (rule
+                       (query "tag:spam AND NOT folder:imap/Junk")
+                       (move-to "imap/Junk"))
 
                       ;; forges
                       (rule
@@ -1276,38 +1321,16 @@ See [[file:shared/emacs.org][shared/emacs.org]].
                        (query "tag:lists AND NOT tag:notifications")
                        (tags '(-new)))
 
-                      ;; folders
+                      ;; self
+                      (rule
+                       (query "from:hako@ultrarare.space")
+                       (tags '(+sent)))
+                      (rule
+                       (query "tag:replied OR tag:sent")
+                       (tags '(-unread)))
                       (rule
                        (query "tag:inbox AND NOT folder:local/INBOX")
-                       (move-to "local/INBOX"))
-
-                      (rule
-                       (query "folder:local/Archive")
-                       (tags '(+archive -unread -inbox -new)))
-                      (rule
-                       (query "tag:archive AND NOT folder:local/Archive")
-                       (move-to "local/Archive"))
-
-                      (rule
-                       (query "folder:local/Billing")
-                       (tags '(+billing -inbox -new)))
-                      (rule
-                       (query "tag:billing AND NOT folder:local/Billing")
-                       (move-to "local/Billing"))
-
-                      (rule
-                       (query "folder:local/Drafts")
-                       (tags '(+draft -unread -inbox -new)))
-                      (rule
-                       (query "tag:draft AND NOT folder:local/Drafts")
-                       (move-to "local/Drafts"))
-
-                      (rule
-                       (query "folder:imap/Junk")
-                       (tags '(+spam -inbox -new)))
-                      (rule
-                       (query "tag:spam AND NOT folder:imap/Junk")
-                       (move-to "imap/Junk")))))))))))
+                       (move-to "local/INBOX")))))))))))
 #+end_src
 
 *** fcitx5

@@ -1111,6 +1111,7 @@ Terminal emulator
   (use-package ghostel
     :ensure t
     :custom
+    (ghostel-term "xterm-256color")       ;TODO: Remove when ncurses is updated.
     (ghostel-tramp-shells
      '((t login-shell)
        ("docker" "/bin/sh")))
