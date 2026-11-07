@@ -1163,15 +1163,11 @@ See [[file:shared/emacs.org][shared/emacs.org]].
                               (environ environment))))
                         (system* mbsync "--all" "--config" mbsync-config)
                         (invoke notmuch "new")
-                        ;; Tag.
+                        ;; Tag & Refile.
                         (for-each (match-record-lambda <rule>
-                                      (query tags)
+                                      (query tags move-to)
                                     (unless (null? tags)
-                                      (notmuch-tag query tags)))
-                                  notmuch-rules)
-                        ;; Move.
-                        (for-each (match-record-lambda <rule>
-                                      (query move-to)
+                                      (notmuch-tag query tags))
                                     (when move-to
                                       (let ((mails (notmuch-search-files query)))
                                         (for-each (cut move-mail <> move-to) mails)
