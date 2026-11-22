@@ -451,6 +451,15 @@ D4948F399C2E07238E6701F65F472D42AD86324C51D38A0FB48FA253D5A2F9AB"))))
               alias $left-external)
       (output "\"Philips Consumer Electronics Company PHL 243V7 UHB2233017111\""
               alias $top-external)
+      (output "\"Fujitsu Siemens Computers GmbH B22W-7 LED YV6W056492\""
+              alias $fujitsu-external)
+      ;; Must come before `docked', which matches any HDMI-A-1 display.
+      (profile docked-hdmi-fujitsu
+       ;; The B22W-7 is 1680x1050, not 1080p.  Keep it above the laptop panel.
+       ((output $fujitsu-external enable mode "1680x1050@60Hz"
+                position "0,0" scale 1)
+        (output eDP-1 enable mode "3840x2400@60Hz"
+                position "0,1050" scale 2)))
       (profile docked
        ;; HDMI-A-1 is above eDP-1.
       (output "\"Philips Consumer Electronics Company PHL 241V8 0x0000386B\""

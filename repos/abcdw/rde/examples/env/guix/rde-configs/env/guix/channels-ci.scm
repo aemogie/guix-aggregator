@@ -7,7 +7,8 @@
 (define-module (rde-configs env guix channels-ci)
   #:use-module (guix channels)
   #:use-module ((rde env guix channels) #:prefix rde:)
-  #:use-module (srfi srfi-1))
+  #:use-module (srfi srfi-1)
+  #:export (core-channels-with-local-rde))
 
 (define core-channels-with-local-rde
   (cons

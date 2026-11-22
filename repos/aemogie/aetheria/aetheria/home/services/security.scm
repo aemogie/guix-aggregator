@@ -95,6 +95,8 @@
   (default-cache-ttl-ssh (merge conflict-strategy)) ; integer
   (max-cache-ttl-ssh     (merge conflict-strategy)) ; integer
   (extra-content         (merge lines-strategy))    ; raw-configuration-string
+  (home                  (merge conflict-strategy)) ; ??? where are these even defined
+  (shepherd-requirement  (merge append-strategy))   ; ??? huh?
   (%location             home-gpg-agent-configuration-source-location
                          (merge source-location-strategy)))
 

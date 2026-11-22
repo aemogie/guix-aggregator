@@ -50,7 +50,7 @@
    (extensions (list (service-extension home-profile-service-type identity)))))
 
 (define %desktop-home-packages
-  (list hyprland waybar wl-clipboard cage bluez
+  (list wl-clipboard cage bluez
         librewolf foot))
 
 (define home-desktop-service-type
@@ -65,7 +65,7 @@
                      (service-extension home-dbus-service-type (const #f))
                      (service-extension home-pipewire-service-type (const #f))
                      (service-extension home-emacs-service-type
-                                        (const (home-emacs-configuration)))))))
+                                        (const (list (home-emacs-configuration))))))))
 
 (define %aetheria-desktop-home-services
   (list

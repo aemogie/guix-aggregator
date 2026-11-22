@@ -45,7 +45,7 @@
       (description "a script to launch emacs from serena's nivea partition")
       ;; this repo is gpl3 so, those two lines of gexp up there are the same as well
       (license license:gpl3)
-      (home-page "https://github.com/aemogie/nivea"))))
+      (home-page "https://codeberg.org/aemogie/nivea"))))
 
 (define (serena-keyboard)
   ;; order is irrelevant as we'll be using match-lambda to generate the layers

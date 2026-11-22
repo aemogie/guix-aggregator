@@ -34,12 +34,12 @@
     (error (format #f "file '~a' doesn't produce a record of type ~a" file type-name)))
   loaded)
 
-(define* (system-config #:optional (host (gethostname)))
+(define* (system-config #:optional (host (or (getenv "AETHERIA_HOST") (gethostname))))
   (eval-as-type (string-append "aetheria/hosts/" host ".scm")
                 "<operating-system>"
                 operating-system?))
 
-(define* (home-config #:optional (user (getlogin)))
+(define* (home-config #:optional (user (or (getenv "AETHERIA_USER") (getlogin))))
   (eval-as-type (string-append "aetheria/users/" user ".scm")
                 "<home-environment>"
                 home-environment?))

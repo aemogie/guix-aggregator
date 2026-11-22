@@ -1,26 +1,12 @@
 ;;; rde --- Reproducible development environment.
 ;;;
-;;; Copyright © 2022 Demis Balbach <db@minikn.xyz>
-;;; Copyright © 2022 Andrew Tropin <andrew@trop.in>
-;;; Copyright © 2023 Miguel Ángel Moreno <mail@migalmoreno.com>
+;;; SPDX-FileCopyrightText: 2022 Demis Balbach <db@minikn.xyz>
+;;; SPDX-FileCopyrightText: 2022 Andrew Tropin <andrew@trop.in>
+;;; SPDX-FileCopyrightText: 2023 Miguel Ángel Moreno <mail@migalmoreno.com>
 ;;;
-;;; This file is a part of rde.
-;;;
-;;; rde is free software; you can redistribute it and/or modify it
-;;; under the terms of the GNU General Public License as published by
-;;; the Free Software Foundation; either version 3 of the License, or (at
-;;; your option) any later version.
-;;;
-;;; rde is distributed in the hope that it will be useful, but
-;;; WITHOUT ANY WARRANTY; without even the implied warranty of
-;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;;; GNU General Public License for more details.
-;;;
-;;; You should have received a copy of the GNU General Public License
-;;; along with rde.  If not, see <http://www.gnu.org/licenses/>.
+;;; SPDX-License-Identifier: GPL-3.0-or-later
 
 (define-module (contrib packages node-xyz)
-  #:use-module (contrib packages node)
   #:use-module (gnu packages base)
   #:use-module (gnu packages node)
   #:use-module (gnu packages node-xyz)
@@ -1463,7 +1449,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -1576,7 +1562,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -1609,7 +1595,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -2110,7 +2096,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -2140,7 +2126,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -2737,7 +2723,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -2803,7 +2789,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -2919,7 +2905,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -2949,7 +2935,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -3011,7 +2997,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -3040,7 +3026,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -3097,7 +3083,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -3128,7 +3114,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -3216,7 +3202,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -3273,7 +3259,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -3333,7 +3319,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -3363,7 +3349,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -3416,7 +3402,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -3445,7 +3431,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -3504,10 +3490,16 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
+          (add-before 'patch-dependencies 'remove-eslint-peer-dependency
+            (lambda _
+              ;; ESLint depends on this package, so promoting its peer
+              ;; dependency to a regular dependency would create a cycle.
+              (modify-json "package.json"
+                (delete-json-fields '("peerDependencies")))))
           (delete 'configure)
           (delete 'build))))
     (inputs
@@ -3534,7 +3526,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -3560,12 +3552,14 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
           (delete 'configure)
           (delete 'build))))
+    (inputs
+     (list node-acorn-8.7.1))
     (home-page
       "https://github.com/acornjs/acorn-jsx")
     (synopsis "Modern, fast React.js JSX parser")
@@ -3615,7 +3609,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -3676,7 +3670,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -3871,7 +3865,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -3906,7 +3900,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -3936,7 +3930,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -3968,7 +3962,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -4027,7 +4021,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -4085,7 +4079,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -4172,7 +4166,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -4229,7 +4223,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -4317,7 +4311,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -4376,7 +4370,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -4623,7 +4617,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -4653,7 +4647,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -4712,7 +4706,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -4803,7 +4797,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases
@@ -4920,7 +4914,7 @@ exec -a dapDebugServer " node " " exe " " "$@\n"
     (arguments
       `(#:tests?
         #f
-        #:node ,node-stable
+        #:node ,node-lts
         #:phases
         (modify-phases
           %standard-phases

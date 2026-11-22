@@ -11,7 +11,8 @@
                                               %default-nanorc))
   #:use-module ((gnu home services) #:select (home-files-service-type
                                               home-xdg-configuration-files-service-type))
-  #:use-module ((gnu home services shepherd) #:select (home-shepherd-service-type))
+  #:use-module ((gnu home services shepherd) #:select (home-shepherd-service-type
+                                                       home-shepherd-transient-service-type))
   #:use-module ((gnu home services shells) #:select (home-bash-service-type
                                                      home-bash-extension))
   #:use-module ((gnu home services syncthing) #:select (home-syncthing-service-type))
@@ -45,6 +46,7 @@
                                                  (provision '(repl))
                                                  (modules '((shepherd service repl)))
                                                  (free-form #~(repl-service))))))
+                (service-extension home-shepherd-transient-service-type (const '()))
                 (service-extension home-files-service-type
                                    (const `((".guile" ,%default-dotguile)
                                             (".Xdefaults" ,%default-xdefaults))))

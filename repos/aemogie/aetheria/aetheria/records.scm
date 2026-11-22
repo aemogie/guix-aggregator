@@ -87,6 +87,10 @@
             (and (or a b)
                  (raise (condition (&record-source-location-merge))))))))
 
+(define-condition-type &missing-unwrap-field &implementation-restriction
+  missing-unwrap-field?
+  (field-name missing-unwrap-field-field-name))
+
 (define-syntax define-record-type2
   (lambda (syn)
     (define (attrs-loop merges? attrs-syn forward strategy default-value)
@@ -351,6 +355,9 @@
                                            (map (lambda (field-name)
                                                   (let* ((field (assoc-ref fields-list
                                                                            field-name))
+                                                         (_ (unless field
+                                                              (raise (condition (&missing-unwrap-field
+                                                                                 (field-name field-name))))))
                                                          (get (list-ref field 0))
                                                          (value (get self))
                                                          (unset? (and (= 2 (length field))

@@ -1,9 +1,12 @@
 (define-module (aetheria build-system file-like)
   #:use-module ((ice-9 match) #:select (match))
+  #:use-module ((rnrs bytevectors) #:select (make-bytevector))
   #:use-module ((guix monads) #:select (return
                                         with-monad
                                         mlet))
   #:use-module ((guix store) #:select (%store-monad))
+  #:use-module ((guix packages) #:select (origin
+                                           content-hash))
   #:use-module ((guix gexp) #:select (gexp
                                       lower-object
                                       gexp->derivation
@@ -12,7 +15,8 @@
                                       with-imported-modules))
   #:use-module ((guix build-system) #:select (bag build-system))
   #:export (raw-build-system
-            program-file-build-system))
+            program-file-build-system
+            single-file-source))
 
 (define* (build-raw _name _inputs #:key system source target #:allow-other-keys)
   (mlet %store-monad ((obj source))
@@ -63,3 +67,9 @@
     (name 'program-file)
     (description "package a <program-file> into /bin/")
     (lower lower-program-file)))
+
+(define (single-file-source file)
+  (origin
+    (method (lambda (file . _) (mlet %store-monad () (lower-object file))))
+    (uri file)
+    (hash (content-hash (make-bytevector 32 0)))))

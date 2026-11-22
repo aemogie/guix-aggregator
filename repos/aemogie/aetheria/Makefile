@@ -1,15 +1,17 @@
 verbosity ?= 3
-system ?= $(shell hostname)
-home ?= $(shell whoami)
+AETHERIA_HOST ?= $(shell hostname)
+AETHERIA_USER ?= $(shell whoami)
+export AETHERIA_HOST
+export AETHERIA_USER
 
 # do it twice because guile auto compiles the channel file
 # so if the channel definition abi changed we have to compile it again
 # it's cached so negligible on performances
-guix := guix time-machine -C channels.lock.scm -- \
-	     time-machine -C channels.lock.scm --
+guix := guix time-machine -C channels.lock.scm -c $$(nproc) --
 sources := $(wildcard aetheria/**/*.scm)
-guix_system_options := -v $(verbosity) -L. -e '((@ (aetheria) system-config) "$(system)")'
-guix_home_options := -v $(verbosity) -L. -e '((@ (aetheria) home-config) "$(home)")'
+guix_system_options := -v $(verbosity) -c $$(nproc) -L. -e '((@ (aetheria) system-config))'
+guix_home_options := -v $(verbosity) -c $$(nproc) -L. -e '((@ (aetheria) home-config))'
+export GUILE_AUTO_COMPILE=0
 
 .PHONY: system home geiser-repl --build-dirs update-lockfile system-container home-container run-vm style! clean
 
@@ -39,15 +41,12 @@ define guile_helpers
       (display ";; DO NOT MODIFY!" lockfile) (newline lockfile)
       (display ";; instead, make your changes to channels.scm, then run `make update-lockfile`"
                lockfile) (newline lockfile)
-      (define header (call-with-input-file "channels.scm" read))
-      (pretty-print header lockfile)
       (newline lockfile))))
 endef
 $(guile $(guile_helpers))
 build/tmp/channels.lock.scm: --build-dirs
 	$(guile (write-channel-lock-header))
-	guix time-machine -C channels.scm -- \
-	     time-machine -C channels.scm -- \
+	guix time-machine -C channels.scm -c $$(nproc) -- \
 	     describe -f channels >> build/tmp/channels.lock.scm || exit 1
 
 # doesnt depend on channels.scm as you might need to update lockfile without updating channels
@@ -59,6 +58,11 @@ build/system: $(sources) channels.lock.scm --build-dirs
 	$(guix) system build $(guix_system_options) -r"build/tmp/system" || exit 1
 	rm -f build/system
 	mv build/tmp/system build/system
+
+build/system.img: $(sources) channels.lock.scm --build-dirs
+	$(guix) system image -t efi-raw --image-size=8G $(guix_system_options) -r"build/tmp/system.img" || exit 1
+	rm -f build/system.img
+	mv build/tmp/system.img build/system.img
 
 build/home: $(sources) channels.lock.scm --build-dirs
 	$(guix) home build $(guix_home_options) # why no gcroot option?
@@ -113,11 +117,13 @@ clean:
 	rm -f build/repl
 	$(call clean_file,build/tmp/channels.lock.scm)
 	$(call clean_link,build/tmp/system)
+	$(call clean_link,build/tmp/system.img)
 	$(call clean_link,build/tmp/run-vm)
 	$(call clean_link,build/tmp/run-container)
 	$(call clean_dir,build/tmp/)
 
 	$(call clean_link,build/system)
+	$(call clean_link,build/system.img)
 	$(call clean_link,build/run-vm)
 	$(call clean_link,build/run-container)
 	$(call clean_dir,build/)

@@ -378,6 +378,11 @@ different level headings will have different size."
                `(header-line
                  ((,c :box (:line-width ,rde-modus-themes-header-line-padding
                             :color ,bg-dim))))
+               ;; Modus Themes does not inherit header-line for the
+               ;; inactive header introduced in Emacs 31.
+               `(header-line-inactive
+                 ((,c :box (:line-width ,rde-modus-themes-header-line-padding
+                            :color ,bg-dim))))
                `(git-gutter-fr:added ((,c :foreground ,bg-added-fringe
                                           :background ,bg-main)))
                `(git-gutter-fr:deleted ((,c :foreground ,bg-removed-fringe
@@ -560,8 +565,7 @@ which-key buffer to popup."
 Tooltips for keychords"
       #:commentary "\
 Keybinding for top level chords and small appearance adjustments."
-      #:keywords '(convenience faces)
-      #:elisp-packages (list emacs-which-key))))
+      #:keywords '(convenience faces))))
 
   (feature
    (name f-name)
