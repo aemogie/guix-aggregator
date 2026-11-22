@@ -16,7 +16,6 @@ your dotfiles instead, also please, PRs are welcome.
 | [[repos/jjba23/sss]]             | https://codeberg.org/jjba23/sss.git             | trunk   |
 | [[repos/divyaranjan/dotfiles]]   | https://codeberg.org/divyaranjan/dotfiles.git   | master  |
 | [[repos/wloxyz/guix-configs]]    | https://codeberg.org/wloxyz/guix-configs.git    | main    |
-| [[repos/lynn/galahad]]           | https://git.transistor.house/lynn/galahad.git   | main    |
 | [[repos/ngraves/dotfiles]]       | https://git.sr.ht/~ngraves/dotfiles             | main    |
 | [[repos/efraim/guix-config]]     | https://git.sr.ht/~efraim/guix-config           | master  |
 | [[repos/SqrtMinusOne/dotfiles]]  | https://github.com/SqrtMinusOne/dotfiles.git    | master  |
@@ -27,6 +26,7 @@ your dotfiles instead, also please, PRs are welcome.
 | [[repos/SunJukebox/guix-config]] | https://github.com/SunJukebox/guix-config       | master  |
 | [[repos/mrh/dotfiles]]           | https://codeberg.org/mrh/dotfiles.git           | trunk   |
 | [[repos/krevedkokun/dotfiles]]   | https://git.sr.ht/~krevedkokun/dotfiles         | master  |
+# | [[repos/lynn/galahad]]           | https://git.transistor.house/lynn/galahad.git   | main    |
 # END REPOLIST
 
 * motivation
