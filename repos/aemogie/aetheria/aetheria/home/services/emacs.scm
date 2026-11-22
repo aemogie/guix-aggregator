@@ -80,7 +80,7 @@ as just another guix package.")
                                   (load-profile
                                    #$(profile
                                        (name "emacs-extra-packages")
-				       (content (packages->manifest (cons* emacs (make-emacs-default-package config)
+                                       (content (packages->manifest (cons* emacs (make-emacs-default-package config)
                                                                            extra-packages)))))
                                   (exec-command (list #$(file-append emacs "/bin/emacs") "--fg-daemon")
                                                 #:environment-variables (environ)))
