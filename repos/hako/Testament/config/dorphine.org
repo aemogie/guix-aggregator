@@ -1435,8 +1435,8 @@ skk
 
 #+begin_src conf :tangle ../tangled/dorphine/dotfiles/.config/git/config
   [alias]
-  	pr-push  = "!f() { topic=$1; branch=$2; shift; shift; git push origin $topic:refs/for/$branch/$topic -o force-push \"$@\"; }; f"
-  	pr-apply = "!f() { for id in $(git cherry HEAD pullreqs/$1 | cut -c2-); do git cherry-pick --signoff $id; done; }; f"
+  	pr-push  = "!f() { set -eo pipefail; topic=$1; branch=$2; shift; shift; git push origin $topic:refs/for/$branch/$topic -o force-push \"$@\"; }; f"
+  	pr-apply = "!f() { set -eo pipefail; for id in $(git cherry HEAD pullreqs/$1 | cut -c2-); do git cherry-pick --signoff $id; done; git commit --amend --no-edit --trailer 'Merges: #'$1; }; f"
 #+end_src
 
 Jujutsu:
