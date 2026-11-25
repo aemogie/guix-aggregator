@@ -361,7 +361,7 @@ See [[file:shared/caddy.org][shared/caddy.org]].
          ("ENABLE_OPENDMARC" . "0")
          ("ENABLE_POLICYD_SPF" . "0")
          ("ENABLE_RSPAMD" . "1")
-         ("ENABLE_RSPAMD_REDIS" . "0")
+         ("ENABLE_RSPAMD_VALKEY" . "0")
          ("ENABLE_SPAMASSASSIN" . "0")
          ("NETWORK_INTERFACE" . "eth0")
          ("OVERRIDE_HOSTNAME" . "mail.boiledscript.com")
@@ -383,46 +383,14 @@ See [[file:shared/caddy.org][shared/caddy.org]].
 
          "--volume"
          ,(file-append
-           (plain-file "rspamd-redis.conf" "\
-  servers = \"127.0.0.1:6379\";
-  expand_keys = true;")
+           (plain-file "rspamd-valkey.conf" "servers = \"127.0.0.1:6379\";")
            ":/etc/rspamd/local.d/redis.conf:ro")
-         "--volume"
-         ,(file-append
-           (local-file <<testament-path("tangled/involemi/rspamd-dkim-signing.conf")>>)
-           ":/etc/rspamd/override.d/dkim_signing.conf:ro")
 
          "--volume"
          ,(file-append
            (local-file <<testament-path("tangled/involemi/mail-crypt.conf")>>)
            ":/etc/dovecot/conf.d/10-custom.conf:ro")
          "--volume" "/run/secrets/docker-mailserver:/certs:ro"))))
-#+end_src
-
-#+begin_src conf :tangle ../tangled/involemi/rspamd-dkim-signing.conf
-  enabled = true;
-  sign_authenticated = true;
-  sign_local = true;
-
-  use_domain = "header";
-  use_redis = false;
-  use_esld = true;
-  check_pubkey = true;
-
-  domain {
-      boiledscript.com {
-          path = "/tmp/docker-mailserver/rspamd/dkim/rsa-2048-mail-boiledscript.com.private.txt";
-          selector = "mail";
-      }
-      ultrarare.space {
-          path = "/tmp/docker-mailserver/rspamd/dkim/rsa-2048-mail-ultrarare.space.private.txt";
-          selector = "mail";
-      }
-      urspace.moe {
-          path = "/tmp/docker-mailserver/rspamd/dkim/rsa-2048-mail-urspace.moe.private.txt";
-          selector = "mail";
-      }
-  }
 #+end_src
 
 #+begin_src conf :tangle ../tangled/involemi/mail-crypt.conf

@@ -36,7 +36,7 @@ Services, packages and configuration file for Emacs:
           "emacs-fish-mode"
           "emacs-markdown-mode"
           "emacs-nftables-mode"
-          "emacs-reader"
+          "emacs-emureader"
           "emacs-zig-mode")))
       (shepherd-requirement '(graphical-session))))
 #+end_src
@@ -1162,7 +1162,7 @@ Text-based user interface to [[https://git-scm.com/][Git]].
 Interface for [[https://www.jj-vcs.dev/latest/][Jujutsu]].
 
 #+begin_src scheme :noweb-ref package-spec
-  "emacs-majutsu-dolly"
+  "emacs-majutsu"
 #+end_src
 
 #+begin_src elisp :noweb-ref emacs-init

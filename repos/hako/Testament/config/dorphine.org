@@ -11,7 +11,7 @@
 
   (define nvidia-transform
     (non:nonguix-transformation-nvidia
-     #:driver non:nvda-new-feature
+     #:driver non:nvda-620
      #:open-source-kernel-module? #t
      #:dynamic-boost? #t
      #:remove-nvenc-restriction? #t))
@@ -29,7 +29,7 @@
         (bootloader ros:limine-efi-removable-bootloader)
         (targets '("/efi"))))
      (kernel ros:linux-cachyos-bore-zen4)
-     (kernel-loadable-modules `((,zfs "module")))
+     (kernel-loadable-modules `((,ros:zfs-cachyos "module")))
      (initrd non:microcode-initrd)
      (firmware
       (cons* non:linux-firmware
@@ -57,7 +57,6 @@
                  "kdenlive"
                  "obs-nvidia"
                  "picard"
-                 "showmethekey"
                  <<package-spec>>))
               (ros:with-nix-profile
                (list <<package-nix>>))
@@ -233,7 +232,9 @@ Application profiles
 #+end_src
 
 #+begin_src scheme :noweb-ref service
-  (service zfs-service-type)
+  (service zfs-service-type
+    (zfs-configuration
+     (zfs ros:zfs-cachyos)))
 
   ;; Use a shepherd service instead of /etc/modprobe.d.  The module is loaded at
   ;; early boot and config files won't be available at the time.
@@ -1452,14 +1453,12 @@ Jujutsu:
 
   [revsets]
   log = "trunk() | ancestors(@, 10) | ancestors(immutable_heads().., 5) | ancestors(untracked_remote_bookmarks(), 2)"
+  git-sign-on-push = "~signed() & mine()"
 
   [signing]
   behavior = "drop"
   backend = "gpg"
   key = "ACC66D09CA528292"
-
-  [git]
-  sign-on-push = true
 #+end_src
 
 *** keepassxc
@@ -1589,8 +1588,7 @@ Pin Nixpkgs to avoid networking requirement when using the wrappers.
 
 *** steam
 #+begin_src scheme :noweb-ref package-spec
-  "mangohud"
-  "steam-nvidia-new-feature"
+  "steam-nvidia@620"
 #+end_src
 
 #+begin_src nftables :noweb-ref nftables-filter-input
@@ -1758,5 +1756,6 @@ Guix packages
   (gnu packages xorg)
   ((nongnu packages linux) #:prefix non:)
   ((nongnu packages nvidia) #:prefix non:)
+  ((rosenthal packages file-systems) #:prefix ros:)
   ((rosenthal packages linux) #:prefix ros:)
 #+end_src
