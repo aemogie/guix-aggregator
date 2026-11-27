@@ -1,15 +1,13 @@
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 ;;; Copyright © 2026 Hilton Chain <hako@ultrarare.space>
 
-(use-modules (gnu system)
-             (gnu services)
+(use-modules (gnu)
              (gnu services guix)
+             (rosenthal services base)
              (rosenthal services desktop)
              (gnu home)
-             (gnu services base)
-             (rosenthal services base)
-             (gnu packages)
-             (gnu packages wm))
+             (rosenthal home services desktop)
+             (gnu packages window-management))
 
 (define %graphical-home
   (load "graphical-home.scm"))
@@ -48,8 +46,7 @@
                 "xfconf"))
              (home-environment-packages %graphical-home)))
     (services
-     (cons* (service home-noctalia-shell-service-type)
-            (service home-polkit-gnome-service-type)
+     (cons* (service home-noctalia-service-type)
             (service home-swaybg-service-type)
             (home-environment-user-services %graphical-home)))))
 

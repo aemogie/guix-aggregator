@@ -3,11 +3,12 @@
 
 (use-modules (gnu)
              (guix channels)
-             (nonguix)
              (gnu services networking)
              (gnu services ssh)
+             (gnu packages linux)
              (gnu packages screen)
-             (gnu packages ssh))
+             (gnu packages ssh)
+             (nongnu packages linux))
 
 (define channels-with-nonguix
   (list (channel
@@ -68,6 +69,11 @@
   ;; Globally-installed packages.
   (packages (cons screen %base-packages))
 
+  ;; Optionally, transform every package referred to by this operating system
+  ;; by its Skylake-optimized variant, where applicable.
+  ;; (transformation (options->transformation '((tune . "skylake"))
+  ;;                                          #:warn? #f))
+
   ;; Add services to the baseline: a DHCP client and an SSH
   ;; server.  You may wish to add an NTP service here.
   (services (append (list (service dhcpcd-service-type)
@@ -76,12 +82,10 @@
                               (openssh openssh-sans-x)
                               (port-number 2222)))
                           ;; Use substitutes from Nonguix.
-                          (simple-service 'substitute-servers guix-service-type
+                          (simple-service 'nonguix-substitutes guix-service-type
                             (guix-extension
-                              (substitute-urls
-                               (list "https://substitutes.nonguix.org"))
-                              (authorized-keys
-                               (list nonguix-signing-key)))))
+                              (authorized-keys (list nonguix-signing-key))
+                              (substitute-urls (list "https://substitutes.nonguix.org")))))
                     (modify-services %base-services
                       ;; Set up Nonguix channel in /etc/guix/channels.scm.
                       (guix-service-type

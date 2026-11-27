@@ -5,12 +5,12 @@
 (use-modules (gnu)
              (guix channels)
              (guix utils)
-             (nonguix)
-             (gnu system nss)
              (gnu services desktop)
              (gnu services sddm)
              (gnu services xorg)
-             (gnu packages gnome))
+             (gnu packages linux)
+             (gnu packages gnome)
+             (nongnu packages linux))
 
 (define channels-with-nonguix
   (list (channel
@@ -118,12 +118,10 @@
 
                     (list
                      ;; Use substitutes from Nonguix.
-                     (simple-service 'substitute-servers guix-service-type
+                     (simple-service 'nonguix-substitutes guix-service-type
                        (guix-extension
-                         (substitute-urls
-                          (list "https://substitutes.nonguix.org"))
-                         (authorized-keys
-                          (list nonguix-signing-key)))))
+                         (authorized-keys (list nonguix-signing-key))
+                         (substitute-urls (list "https://substitutes.nonguix.org")))))
                     (modify-services %desktop-services
                       ;; Set up Nonguix channel in /etc/guix/channels.scm.
                       (guix-service-type

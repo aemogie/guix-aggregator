@@ -3,16 +3,16 @@
 
 (use-modules (gnu)
              (guix channels)
-             (nonguix)
-             (gnu system nss)
              (gnu services desktop)
              (gnu packages bootloaders)
              (gnu packages emacs)
              (gnu packages emacs-xyz)
+             (gnu packages linux)
              (gnu packages ratpoison)
              (gnu packages suckless)
              (gnu packages wm)
-             (gnu packages xorg))
+             (gnu packages xorg)
+             (nongnu packages linux))
 
 (define channels-with-nonguix
   (list (channel
@@ -80,12 +80,10 @@
   ;; log-in service, networking with NetworkManager, and more.
   (services (append (list
                      ;; Use substitutes from Nonguix.
-                     (simple-service 'substitute-servers guix-service-type
+                     (simple-service 'nonguix-substitutes guix-service-type
                        (guix-extension
-                         (substitute-urls
-                          (list "https://substitutes.nonguix.org"))
-                         (authorized-keys
-                          (list nonguix-signing-key)))))
+                         (authorized-keys (list nonguix-signing-key))
+                         (substitute-urls (list "https://substitutes.nonguix.org")))))
                     (modify-services %desktop-services
                       ;; Set up Nonguix channel in /etc/guix/channels.scm.
                       (guix-service-type

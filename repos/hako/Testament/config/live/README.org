@@ -2,10 +2,6 @@
 # Copyright © 2025-2026 Hilton Chain <hako@ultrarare.space>
 #+TITLE: Guix System Installation Live ISOs
 
-*NOTE*: Currently installation image updates are blocked by
-https://codeberg.org/guix/guix/issues/7373 , newer ISOs can't be produced unless
-the issue is resolved.
-
 ** Variants
 - [[file:minimal.scm][minimal]]: console-based installation, the installer runs on [[https://www.freedesktop.org/wiki/Software/kmscon/][kmscon]].
 - [[file:niri.scm][niri]]: start installation in a desktop environment built around [[https://github.com/YaLTeR/niri][niri]] Wayland
@@ -30,9 +26,8 @@ Comparing with the official one, these images integrate Linux kernel and
 non-free firmware from [[https://gitlab.com/nonguix/nonguix][Nonguix channel]] to support more hardware.  The process
 should be the same as installing on hardware that supports Linux Libre.
 
-To provide better downloading experience in more regions, they are configured to
-use [[https://guix.moe/][Guix Moe]]'s experimental infrastructure.  It won't be available in the
-installed system, you'll need to set it up later if you want.
+To provide better downloading experience in more regions, the images are
+configured to use [[https://guix.moe/][Nonguix's experimental infrastructure]].
 
 For manual installation, [[https://fishshell.com/][fish]] is chosen as the login shell and several Guix
 System configuration examples are available under =/etc/configuration=.  These
@@ -42,9 +37,9 @@ For images with a desktop environment:
 
 User name: =live=, password: =live=, in case you'll need them.
 
-Dotfiles, including a pre-configured Emacs text editor, are [[https://codeberg.org/hako/Rosenthal/src/branch/trunk/modules/rosenthal/examples][managed in the
-Rosenthal channel]], exposed as =%rosenthal-skeletons= and available under
-=/etc/skel= when configured.
+Dotfiles are [[https://codeberg.org/hako/Rosenthal/src/branch/trunk/modules/rosenthal/examples][managed in the Rosenthal channel]], exposed as =%rosenthal-skeletons=
+and available under =/etc/skel= when configured.  The Emacs text editor
+configuration used in the images is from [[https://codeberg.org/hako/emacs-guix-starter][emacs-guix-starter]].
 
 *** niri
 Default keybindings:

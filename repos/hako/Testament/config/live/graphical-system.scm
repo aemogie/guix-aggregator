@@ -1,13 +1,8 @@
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 ;;; Copyright © 2026 Hilton Chain <hako@ultrarare.space>
 
-(use-modules (guix gexp)
-             (guix utils)
-             (gnu system)
+(use-modules (gnu)
              (gnu system privilege)
-             (gnu system shadow)
-             (gnu services)
-             (gnu services base)
              (gnu services dbus)
              (gnu services desktop)
              (gnu services networking)

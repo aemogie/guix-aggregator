@@ -1,17 +1,13 @@
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 ;;; Copyright © 2026 Hilton Chain <hako@ultrarare.space>
 
-(use-modules (guix gexp)
-             (gnu services)
+(use-modules (gnu)
              (rosenthal services desktop)
              (gnu home)
-             (gnu home services fontutils)
              (gnu home services shells)
              (gnu home services shepherd)
-             (gnu packages)
              (gnu packages fcitx5)
-             (gnu packages gnome-xyz)
-             (gnu packages shells))
+             (gnu packages gnome-xyz))
 
 
 ;;;
@@ -28,31 +24,32 @@
                "emacs-pgtk"
                "neovim"
 
-               "emacs-corfu"
-               "emacs-doom-modeline"
-               "emacs-edit-indirect"    ;for emacs-markdown-mode
-               "emacs-envrc"
-               "emacs-evil"
-               "emacs-fish-mode"
+               "emacs-no-littering"
+               ;; Guile & Guix hacking.
                "emacs-flycheck"
                "emacs-flycheck-guile"
-               "emacs-forge"
-               "emacs-gcmh"
                "emacs-geiser"
                "emacs-geiser-guile"
-               "emacs-helpful"
-               "emacs-hl-todo"
-               "emacs-json-mode"
+               "emacs-guix"
                "emacs-macrostep"
                "emacs-macrostep-geiser"
-               "emacs-magit"
-               "emacs-markdown-mode"
-               "emacs-mwim"
-               "emacs-no-littering"
+               "emacs-parinfer-rust-mode"
+               ;; Completion.
+               "emacs-corfu"
                "emacs-orderless"
-               "emacs-puni"
-               "emacs-rainbow-delimiters"
                "emacs-vertico"
+               ;; Vim-like editing experience.
+               "emacs-evil"
+               "emacs-evil-collection"
+               "emacs-goto-chg"           ;dependency of emacs-evil
+               ;; Enhancements to the default interface.
+               "emacs-eldoc-box"
+               "emacs-helpful"
+               "emacs-mwim"
+               ;; Theming.
+               "emacs-doom-modeline"
+               ;; Other useful packages.
+               "emacs-magit"
 
                ;; Fonts.
                "font-adobe-source-serif"
@@ -64,28 +61,39 @@
   (services
    (cons* (service home-fish-service-type)
 
+          (service home-graphical-session-service-type
+            (home-graphical-session-configuration
+             (timeout 600)
+             (wayland? #t)
+             (x11? #t)))
+
           ;; XXX: Wait for proper WezTerm window size.
           ;; Load fish so that other terminals will start faster.
           (simple-service 'workaround home-shepherd-service-type
             (list (shepherd-service
                     (provision '(workaround))
+                    (requirement '(graphical-session x11-display))
                     (one-shot? #t)
                     (start
-                     #~(make-forkexec-constructor
-                        '("wezterm" "start" "--always-new-process" "--"
-                          "fish" "--login" "-c"
-                          "sleep 1 && herd start installer"))))))
-
+                     #~(lambda args
+                         ((make-forkexec-constructor
+                           '("wezterm" "start" "--always-new-process" "--"
+                             "fish" "--login" "-c"
+                             "sleep 1 && herd start installer")
+                           #:environment-variables (environ))
+                          args))))))
           (simple-service 'installer home-shepherd-service-type
             (list (shepherd-service
                     (provision '(installer))
                     (auto-start? #f)
                     (one-shot? #t)
                     (start
-                     #~(make-forkexec-constructor
-                        '("wezterm" "start" "--always-new-process" "--"
-                          "sudo" "guix-system-installer"))))))
-
+                     #~(lambda args
+                         ((make-forkexec-constructor
+                           '("wezterm" "start" "--always-new-process" "--"
+                             "sudo" "guix-system-installer")
+                           #:environment-variables (environ))
+                          args))))))
           ;; Default cursor theme.
           (service home-theme-service-type
             (home-theme-configuration
@@ -96,8 +104,7 @@
           ;; Input method.
           (service home-fcitx5-service-type
             (home-fcitx5-configuration
-              (gtk-im-module? #t)
-              (qt-im-module? #t)
+              (wayland-frontend? #t)
               (themes (list fcitx5-material-color-theme))
               (input-method-editors
                (list fcitx5-anthy

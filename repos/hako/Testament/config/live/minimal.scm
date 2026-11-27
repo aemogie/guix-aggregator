@@ -3,25 +3,19 @@
 
 (use-modules (srfi srfi-19)
              (guix channels)
-             (guix gexp)
              (guix packages)
              (guix scripts pull)
-             (nonguix transformations)
-             (rosenthal utils transformations)
-             (gnu system)
+             (gnu)
              (gnu system install)
              (gnu system locale)
-             (gnu system privilege)
-             (gnu services base)
              (rosenthal services file-systems)
-             (gnu packages)
-             (gnu packages base)
              (gnu packages guile)
              (gnu packages linux)
              (gnu packages package-management)
              (gnu packages shells)
              (gnu packages texinfo)
-             (nongnu packages linux))
+             (nongnu packages linux)
+             (rosenthal packages file-systems))
 
 
 ;;;
@@ -94,6 +88,7 @@
   (services
    (cons* (service zfs-service-type
             (zfs-configuration
+             (zfs zfs-cachyos)
              (auto-mount? #f)))
 
           ;; Use substitutes from guix.moe.
