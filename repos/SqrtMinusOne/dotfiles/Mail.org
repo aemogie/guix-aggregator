@@ -301,7 +301,7 @@ echo "Running pre-new filters"
 <<mail-tags(move="t",archive_root="Archive",root="pvkorytov_etu_mbox")>>
 echo "Pre-new filters done"
 
-parallel --link -j0 "(cd /home/pavel/Mail/{1}/ && {2} {3})" ::: thexcloud progin6304 pvkorytov_etu ::: "$GMI" "$GMI" "offlineimap" ::: sync sync "-a pvkorytov-mbox"
+parallel --link -j0 "(cd /home/pavel/Mail/{1}/ && {2} {3})" ::: thexcloud pvkorytov_etu ::: "$GMI" "offlineimap" ::: sync "-a pvkorytov-mbox"
 #+end_src
 
 *** Blacklist
@@ -365,12 +365,10 @@ ALL_UNREAD=$(notmuch count "$ALL_QUERY")
 
 if [ $NEW_UNREAD -gt 0 ]; then
     MAIN_UNREAD=$(notmuch count "tag:unread AND tag:main")
-    PROGIN_UNREAD=$(notmuch count "tag:unread AND tag:progin")
     ETU_UNREAD=$(notmuch count "tag:unread AND tag:pvkorytov")
     read -r -d '' NOTIFICATION <<EOM
 $NEW_UNREAD new messages
 $MAIN_UNREAD thexcloud@gmail.com
-$PROGIN_UNREAD progin6304@gmail.com
 $ETU_UNREAD pvkorytov@etu.ru
 $ALL_UNREAD total
 EOM
@@ -450,7 +448,7 @@ msmtp --serverinfo --tls --tls-certcheck=off -a pvkorytov
 
 | Arch dependency |
 |-----------------|
-| notmuch    |
+| notmuch         |
 
 Finally, Emacs configuration. Let's start with some variables:
 #+begin_src emacs-lisp
@@ -530,7 +528,6 @@ Root keybindings:
 | Root tag  | Prefix | Keybinding description |
 |-----------+--------+------------------------|
 | main      | m      | thexcloud@gmail.com    |
-| progin    | p      | progin6304@gmail.com   |
 | pvkorytov | v      | pvkorytov@etu.ru       |
 
 #+NAME: filter_tags

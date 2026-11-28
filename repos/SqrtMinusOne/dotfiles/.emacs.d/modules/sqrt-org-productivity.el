@@ -2088,7 +2088,8 @@ With prefix ARG, choose a file from `org-agenda-files'."
     "r" #'org-priority
     "l" #'my/org-insert-heading-link
     ;; Focus
-    "f" #'my/org-focus-task-dwim)
+    "f" #'my/org-focus-task-dwim
+    "t" #'my/org-process-task)
 
   (my-leader-def
     :states '(normal motion)
@@ -2154,8 +2155,9 @@ With prefix ARG, choose a file from `org-agenda-files'."
   (org-journal-tags-prop-apply-delta :add (list (format "host.%s" (my/system-name))))
   (when (boundp 'my/location)
     (org-set-property "Location" my/location)
-    (when-let ((weather (my/weather-get)))
-      (org-set-property "Weather" weather)))
+    ;; (when-let ((weather (my/weather-get)))
+    ;;   (org-set-property "Weather" weather))
+    )
   (when (boundp 'my/loc-tag)
     (org-journal-tags-prop-apply-delta :add (list my/loc-tag)))
   (when (fboundp 'emms-playlist-current-selected-track)
@@ -2745,6 +2747,34 @@ TODO Write something, maybe? "))))
 
 (with-eval-after-load 'org-journal
   (my-leader-def "ojz" #'my/org-review-zk))
+
+(defun my/org-process-task ()
+  (interactive)
+  (let* ((heading (save-excursion
+                    (org-back-to-heading t)
+                    (org-element-headline-parser)))
+         (need-refile (equal (buffer-file-name)
+                             (concat org-directory "/inbox.org")))
+         (need-focus (not (org-element-property :FOCUS heading)))
+         (need-effort (and (not (org-element-property :EFFORT heading))
+                           (not (my/org-planned-effort-parse))
+                           (eq (org-element-property :todo-type heading) 'todo)))
+         (need-date (and (not (org-element-property :scheduled heading))
+                         (not (org-element-property :deadline heading))
+                         (eq (org-element-property :todo-type heading) 'todo))))
+    (when need-focus
+      (with-local-quit
+        (my/org-focus-assign-to-task
+         (my/org-focus--pick))))
+    (when need-effort
+      (with-local-quit
+        (org-set-property "EFFORT" nil)))
+    (when need-date
+      (with-local-quit
+        (org-deadline nil)))
+    (when need-refile
+      (with-local-quit
+        (org-refile)))))
 
 (use-package org-contacts
   :straight (:type git :repo "https://repo.or.cz/org-contacts.git")
